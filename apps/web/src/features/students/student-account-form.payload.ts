@@ -1,12 +1,12 @@
 import type { CreateStudentDto } from './types';
 import type { CreateStudentFormData } from './student-account-form.schema';
 import { combineParentDisplayName, resolveStudentCreateAge } from './student-account-form.age';
-import { resolveDateOfBirthToIso } from './student-dob-date';
+import { resolveDmyOrIsoToIso } from '@/shared/lib/dmy-date';
 
 /** Same mapping as Add New Student submit — keep CRM registration in sync. */
 export function formDataToCreateStudentDto(data: CreateStudentFormData): CreateStudentDto {
   const effectiveAge = resolveStudentCreateAge(data);
-  const dobIso = resolveDateOfBirthToIso(data.dateOfBirth?.trim());
+  const dobIso = resolveDmyOrIsoToIso(data.dateOfBirth?.trim());
   return {
     email: data.email,
     password: data.password,
@@ -14,7 +14,7 @@ export function formDataToCreateStudentDto(data: CreateStudentFormData): CreateS
     lastName: data.lastName,
     phone: data.phone || undefined,
     dateOfBirth: dobIso,
-    firstLessonDate: resolveDateOfBirthToIso(data.firstLessonDate?.trim()),
+    firstLessonDate: resolveDmyOrIsoToIso(data.firstLessonDate?.trim()),
     age: effectiveAge,
     groupId: data.groupId || undefined,
     teacherId: data.teacherId || undefined,

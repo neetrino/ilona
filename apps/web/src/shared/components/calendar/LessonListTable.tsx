@@ -412,7 +412,7 @@ export function LessonListTable({
                           </svg>
                           <div className="min-w-0">
                             <p className="text-left text-[11px] font-medium text-[#1f2937]">
-                              {new Date(lesson.scheduledAt).toLocaleDateString(locale === 'hy' ? 'hy-AM' : 'en-US', {
+                              {new Date(lesson.scheduledAt).toLocaleDateString(locale === 'hy' ? 'hy-AM' : 'en-GB', {
                                 weekday: 'short',
                                 month: 'short',
                                 day: 'numeric',

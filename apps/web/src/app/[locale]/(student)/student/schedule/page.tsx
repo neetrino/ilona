@@ -102,12 +102,12 @@ export default function StudentSchedulePage() {
 
   const periodLabel = useMemo(() => {
     if (viewMode === 'month') {
-      return currentDate.toLocaleDateString('en-US', {
+      return currentDate.toLocaleDateString('en-GB', {
         month: 'long',
         year: 'numeric',
       });
     }
-    return `${weekDates[0].toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${weekDates[6].toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
+    return `${weekDates[0].toLocaleDateString('en-GB', { month: 'short', day: 'numeric' })} - ${weekDates[6].toLocaleDateString('en-GB', { month: 'short', day: 'numeric', year: 'numeric' })}`;
   }, [currentDate, viewMode, weekDates]);
 
   const onPeriodNavigate = (direction: 'prev' | 'next') => {

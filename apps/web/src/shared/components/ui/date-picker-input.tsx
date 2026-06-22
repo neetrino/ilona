@@ -4,7 +4,7 @@ import * as React from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { addDays, addMonths, format, isSameDay, isSameMonth, parseISO, startOfMonth, startOfWeek } from 'date-fns';
-import { enUS, hy } from 'date-fns/locale';
+import { enGB, hy } from 'date-fns/locale';
 import { cn } from '@/shared/lib/utils';
 import { useOutsidePress } from '@/shared/hooks/useOutsidePress';
 
@@ -62,7 +62,7 @@ export const DatePickerInput = React.forwardRef<HTMLInputElement, DatePickerInpu
   ) => {
     const locale = useLocale();
     const tCommon = useTranslations('common');
-    const dateLocale = locale === 'hy' ? hy : enUS;
+    const dateLocale = locale === 'hy' ? hy : enGB;
     const isControlled = value !== undefined;
     const [uncontrolledValue, setUncontrolledValue] = React.useState<string>(() =>
       toDateString(defaultValue)
@@ -166,7 +166,7 @@ export const DatePickerInput = React.forwardRef<HTMLInputElement, DatePickerInpu
 
     const monthLabel = format(monthDate, 'MMMM yyyy', { locale: dateLocale });
     const days = React.useMemo(() => createCalendarDays(monthDate), [monthDate]);
-    const displayValue = selectedDate ? format(selectedDate, 'yyyy-MM-dd') : placeholder ?? '';
+    const displayValue = selectedDate ? format(selectedDate, 'dd/MM/yyyy') : '';
 
     const selectDate = (date: Date) => {
       if (isOutOfRange(date) || disabled) return;

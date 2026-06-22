@@ -120,7 +120,7 @@ export function SalaryBreakdownModal({
     if (isNaN(date.getTime())) {
       return '';
     }
-    return date.toLocaleDateString('en-US', {
+    return date.toLocaleDateString('en-GB', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
@@ -144,7 +144,7 @@ export function SalaryBreakdownModal({
     if (isNaN(date.getTime())) {
       return '';
     }
-    return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+    return date.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
   };
 
   // Handle sorting

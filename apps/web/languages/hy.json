@@ -1698,7 +1698,7 @@
     "parentEmail": "Ծնողի էլ. փոստ",
     "parentPassport": "Ծնողի անձնագրի տվյալներ",
     "studentPassport": "Աշակերտի անձնագրի տվյալներ",
-    "dateOfBirth": "Ծննդյան ամսաթիվ (ամիս/օր/տարի)",
+    "dateOfBirth": "Ծննդյան ամսաթիվ",
     "firstLessonDate": "Առաջին դասի ամսաթիվ",
     "archiveReasonOptional": "Արխիվացման պատճառ (ընտրովի)",
     "archiveReasonPlaceholder": "Արխիվացման պատճառ",

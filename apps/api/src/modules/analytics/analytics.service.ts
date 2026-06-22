@@ -258,8 +258,8 @@ export class AnalyticsService {
       const expenses = Number(salaries._sum?.netAmount) || 0;
       const monthName =
         t1 - t0 <= 864e5
-          ? from.toLocaleDateString('en-US', { dateStyle: 'long' })
-          : `${from.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} – ${to.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
+          ? from.toLocaleDateString('en-GB', { dateStyle: 'long' })
+          : `${from.toLocaleDateString('en-GB', { month: 'short', day: 'numeric' })} – ${to.toLocaleDateString('en-GB', { month: 'short', day: 'numeric', year: 'numeric' })}`;
       return [
         {
           month: from.toISOString(),
@@ -337,7 +337,7 @@ export class AnalyticsService {
         const expenses = expByDay.get(ymd) ?? 0;
         out.push({
           month: d.toISOString(),
-          monthName: d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+          monthName: d.toLocaleDateString('en-GB', { month: 'short', day: 'numeric' }),
           income,
           expenses,
           profit: income - expenses,
@@ -387,7 +387,7 @@ export class AnalyticsService {
         const expenses = Number(salaries._sum?.netAmount) || 0;
         results.push({
           month: mStart.toISOString(),
-          monthName: mStart.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
+          monthName: mStart.toLocaleDateString('en-GB', { month: 'short', year: 'numeric' }),
           income,
           expenses,
           profit: income - expenses,
@@ -435,7 +435,7 @@ export class AnalyticsService {
 
       results.push({
         month: date.toISOString(),
-        monthName: date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
+        monthName: date.toLocaleDateString('en-GB', { month: 'short', year: 'numeric' }),
         income,
         expenses,
         profit: income - expenses,

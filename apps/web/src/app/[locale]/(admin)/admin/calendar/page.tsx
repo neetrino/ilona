@@ -400,8 +400,8 @@ export default function CalendarPage() {
   };
 
   // Week/month header
-  const weekHeader = `${weekDates[0].toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${weekDates[6].toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
-  const monthHeader = currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  const weekHeader = `${weekDates[0].toLocaleDateString('en-GB', { month: 'short', day: 'numeric' })} - ${weekDates[6].toLocaleDateString('en-GB', { month: 'short', day: 'numeric', year: 'numeric' })}`;
+  const monthHeader = currentDate.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
 
   // Handle filter changes and update URL - memoized to prevent infinite loops
   const handleSearchChange = useCallback((value: string) => {
@@ -575,7 +575,7 @@ export default function CalendarPage() {
                   }`}
                 >
                   <p className="text-xs text-[#8b8b90] uppercase">
-                    {date.toLocaleDateString('en-US', { weekday: 'short' })}
+                    {date.toLocaleDateString('en-GB', { weekday: 'short' })}
                   </p>
                   <p className={`text-lg font-semibold ${
                     isToday(date) ? 'text-blue-600' : 'text-[#3b3b40]'

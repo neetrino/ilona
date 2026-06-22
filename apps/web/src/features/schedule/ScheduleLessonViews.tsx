@@ -58,12 +58,12 @@ function formatMinutesToLabel(totalMinutes: number): string {
 
 function formatWeekdayLabel(date: Date): string {
   return date
-    .toLocaleDateString('en-US', { weekday: 'short' })
+    .toLocaleDateString('en-GB', { weekday: 'short' })
     .toUpperCase();
 }
 
 function formatWeekdayShort(date: Date): string {
-  return date.toLocaleDateString('en-US', { weekday: 'short' });
+  return date.toLocaleDateString('en-GB', { weekday: 'short' });
 }
 
 function getLessonTimeBounds(lesson: Lesson): { start: number; end: number } | null {
@@ -295,7 +295,7 @@ export function WeekLessonGrid({
         </div>
         <div className="min-h-0 flex-1 overflow-y-auto px-3 py-3 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
           <h3 className="text-[1.85rem] font-semibold tracking-[-0.02em] text-[#1f2937]">
-            {selectedDate.toLocaleDateString('en-US', {
+            {selectedDate.toLocaleDateString('en-GB', {
               weekday: 'long',
               month: 'short',
               day: 'numeric',

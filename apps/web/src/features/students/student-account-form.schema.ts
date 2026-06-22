@@ -1,10 +1,10 @@
 import { z } from 'zod';
-import { ISO_DATE_RE, resolveDateOfBirthToIso } from './student-dob-date';
+import { resolveDmyOrIsoToIso } from '@/shared/lib/dmy-date';
 
-export { ISO_DATE_RE } from './student-dob-date';
+export { ISO_DATE_RE } from '@/shared/lib/dmy-date';
 
 export function computeAgeFromDob(dob: string | undefined): number | undefined {
-  const iso = resolveDateOfBirthToIso(dob);
+  const iso = resolveDmyOrIsoToIso(dob);
   if (!iso) return undefined;
   const birth = new Date(`${iso}T00:00:00Z`);
   if (Number.isNaN(birth.getTime())) return undefined;
@@ -25,7 +25,7 @@ function preprocessManualAge(val: unknown): number | undefined {
 const optionalFormDate = z.union([
   z
     .string()
-    .refine((value) => resolveDateOfBirthToIso(value) !== undefined, 'Use DD/MM/YYYY format'),
+    .refine((value) => resolveDmyOrIsoToIso(value) !== undefined, 'Use DD/MM/YYYY format'),
   z.literal(''),
 ]);
 

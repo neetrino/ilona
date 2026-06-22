@@ -173,7 +173,7 @@ export function getPaymentColumns({
         const date = new Date(payment.dueDate);
         return (
           <span className="text-[#8b8b90]">
-            {date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+            {date.toLocaleDateString('en-GB', { month: 'short', day: 'numeric', year: 'numeric' })}
           </span>
         );
       },

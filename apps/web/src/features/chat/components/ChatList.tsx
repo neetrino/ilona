@@ -104,11 +104,11 @@ export function ChatList({ onSelectChat }: ChatListProps) {
 
     // This week
     if (diff < 7 * 24 * 60 * 60 * 1000) {
-      return date.toLocaleDateString('en-US', { weekday: 'short' });
+      return date.toLocaleDateString('en-GB', { weekday: 'short' });
     }
 
     // Older
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    return date.toLocaleDateString('en-GB', { month: 'short', day: 'numeric' });
   };
 
   return (

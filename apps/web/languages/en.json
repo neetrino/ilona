@@ -1675,7 +1675,7 @@
     "parentEmail": "Parent email",
     "parentPassport": "Parent passport details",
     "studentPassport": "Student passport details",
-    "dateOfBirth": "Date of birth (mm/dd/yyyy)",
+    "dateOfBirth": "Date of birth",
     "firstLessonDate": "First lesson date",
     "archiveReasonOptional": "Archive reason (optional)",
     "archiveReasonPlaceholder": "Reason for archiving",

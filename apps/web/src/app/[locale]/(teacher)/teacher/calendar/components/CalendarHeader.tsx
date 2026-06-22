@@ -19,9 +19,9 @@ export function CalendarHeader({
 }: CalendarHeaderProps) {
   const formatHeader = () => {
     if (viewMode === 'week' && weekDates) {
-      return `${weekDates[0].toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${weekDates[6].toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
+      return `${weekDates[0].toLocaleDateString('en-GB', { month: 'short', day: 'numeric' })} - ${weekDates[6].toLocaleDateString('en-GB', { month: 'short', day: 'numeric', year: 'numeric' })}`;
     }
-    return currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+    return currentDate.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
   };
 
   return (

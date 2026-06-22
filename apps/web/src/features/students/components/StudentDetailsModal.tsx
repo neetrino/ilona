@@ -6,7 +6,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { AdminAvatarPhotoLightbox, Avatar, Badge, PublicAssetImage } from '@/shared/components/ui';
-import { cn, formatCurrency, formatPhoneForDisplay } from '@/shared/lib/utils';
+import { cn, formatCurrency, formatPhoneForDisplay, getAppDateLocaleTag } from '@/shared/lib/utils';
 import { portalInnerCardClass, portalPrimaryButtonClass } from '@/shared/lib/portal-theme';
 import { STUDENT_DASHBOARD_ASSETS } from '@/features/student-dashboard/assets';
 import { useStudent, useStudentStatistics } from '../hooks/useStudents';
@@ -33,11 +33,15 @@ export interface StudentDetailsModalProps {
   locale: string;
 }
 
-function formatDisplayDate(value: string | null | undefined): string {
+function formatDisplayDate(value: string | null | undefined, locale: string): string {
   if (!value) return '—';
   const d = new Date(value);
   if (Number.isNaN(d.getTime())) return '—';
-  return d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+  return d.toLocaleDateString(getAppDateLocaleTag(locale), {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
 }
 
 type StudentModalStatCardProps = {
@@ -358,7 +362,7 @@ export function StudentDetailsModal({ studentId, open, onClose, locale }: Studen
                   <Calendar className="h-4 w-4 text-slate-400 shrink-0" aria-hidden="true" />
                   {t('memberSince')}
                 </label>
-                <p className="text-slate-800 text-sm sm:text-base">{formatDisplayDate(student.user?.createdAt)}</p>
+                <p className="text-slate-800 text-sm sm:text-base">{formatDisplayDate(student.user?.createdAt, locale)}</p>
               </div>
               {student.dateOfBirth && (
                 <div className="rounded-lg border border-slate-200 bg-slate-50/60 p-4 space-y-1">
@@ -366,7 +370,7 @@ export function StudentDetailsModal({ studentId, open, onClose, locale }: Studen
                     <UserCircle className="h-4 w-4 text-slate-400 shrink-0" aria-hidden="true" />
                     {t('dateOfBirth')}
                   </label>
-                  <p className="text-slate-800 text-sm sm:text-base">{formatDisplayDate(student.dateOfBirth)}</p>
+                  <p className="text-slate-800 text-sm sm:text-base">{formatDisplayDate(student.dateOfBirth, locale)}</p>
                 </div>
               )}
               <div className="rounded-lg border border-slate-200 bg-slate-50/60 p-4 space-y-1">
@@ -418,7 +422,7 @@ export function StudentDetailsModal({ studentId, open, onClose, locale }: Studen
               {student.registerDate && (
                 <div className="rounded-lg border border-slate-200 bg-slate-50/60 p-4 space-y-1 sm:col-span-2">
                   <label className="text-sm font-medium text-slate-600">{t('registerDateLabel')}</label>
-                  <p className="text-slate-800 text-sm sm:text-base">{formatDisplayDate(student.registerDate)}</p>
+                  <p className="text-slate-800 text-sm sm:text-base">{formatDisplayDate(student.registerDate, locale)}</p>
                 </div>
               )}
             </div>

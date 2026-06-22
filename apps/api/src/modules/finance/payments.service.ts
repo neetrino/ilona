@@ -519,12 +519,12 @@ export class PaymentsService {
     const now = new Date();
     const window = isPaymentAllowedInWindow(payment.month, now);
     if (!window.allowed) {
-      const paymentMonthLabel = payment.month.toLocaleString('en-US', {
+      const paymentMonthLabel = payment.month.toLocaleString('en-GB', {
         timeZone: 'UTC',
         month: 'long',
         year: 'numeric',
       });
-      const currentMonthLabel = now.toLocaleString('en-US', {
+      const currentMonthLabel = now.toLocaleString('en-GB', {
         timeZone: 'UTC',
         month: 'long',
         year: 'numeric',
