@@ -227,7 +227,7 @@ export function StudentAccountFormFieldsCrmLeadLayout({
               placeholder={tForm('dateOfBirthPlaceholder')}
               value={watchedDateOfBirth}
               onChange={(e) =>
-                setValue('dateOfBirth', formatDmyInputValue(e.target.value), {
+                setValue('dateOfBirth', formatDmyInputValue(e.target.value, watchedDateOfBirth), {
                   shouldValidate: true,
                   shouldDirty: true,
                 })
@@ -248,7 +248,7 @@ export function StudentAccountFormFieldsCrmLeadLayout({
               placeholder={tForm('firstLessonDatePlaceholder')}
               value={watchedFirstLessonDate}
               onChange={(e) =>
-                setValue('firstLessonDate', formatDmyInputValue(e.target.value), {
+                setValue('firstLessonDate', formatDmyInputValue(e.target.value, watchedFirstLessonDate), {
                   shouldValidate: true,
                   shouldDirty: true,
                 })

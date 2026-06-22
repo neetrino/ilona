@@ -661,7 +661,6 @@
       "ageInt": "Age must be a whole number",
       "ageMin": "Age must be at least 1",
       "ageMax": "Age must be reasonable",
-      "dateFormat": "Use DD/MM/YYYY format",
       "parentNameMax": "Parent name must be at most 100 characters",
       "parentPhoneMax": "Parent phone must be at most 50 characters",
       "passportMax": "Passport info must be at most 100 characters",

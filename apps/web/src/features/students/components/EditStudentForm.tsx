@@ -70,28 +70,8 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
           .min(1, tVal('ageMin'))
           .max(120, tVal('ageMax'))
           .optional(),
-        dateOfBirth: z
-          .union([
-            z
-              .string()
-              .refine(
-                (value) => !value || resolveDmyOrIsoToIso(value) !== undefined,
-                tVal('dateFormat'),
-              ),
-            z.literal(''),
-          ])
-          .optional(),
-        firstLessonDate: z
-          .union([
-            z
-              .string()
-              .refine(
-                (value) => !value || resolveDmyOrIsoToIso(value) !== undefined,
-                tVal('dateFormat'),
-              ),
-            z.literal(''),
-          ])
-          .optional(),
+        dateOfBirth: z.union([z.string(), z.literal('')]).optional(),
+        firstLessonDate: z.union([z.string(), z.literal('')]).optional(),
         status: z.enum(['ACTIVE', 'INACTIVE', 'SUSPENDED']),
         groupId: z.string().optional().or(z.literal('')),
         teacherId: z.string().optional().or(z.literal('')),

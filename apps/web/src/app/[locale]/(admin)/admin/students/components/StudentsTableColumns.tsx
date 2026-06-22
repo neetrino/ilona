@@ -6,6 +6,7 @@ import { ActionButtons, Avatar } from '@/shared/components/ui';
 import { SelectAllCheckbox } from '@/shared/components/ui/select-all-checkbox';
 import { InlineSelect } from '@/features/students';
 import { cn, formatCurrency, formatPhoneForDisplay } from '@/shared/lib/utils';
+import { formatDmyInputValue, parseDmyToIso } from '@/shared/lib/dmy-date';
 import { getErrorMessage } from '@/shared/lib/api';
 import type { Student, TeacherAssignedItem } from '@/features/students';
 import { getItemId, isOnboardingItem } from '@/features/students';
@@ -133,28 +134,9 @@ function formatRegisterDate(value: string | null | undefined): string {
   return `${day}/${month}/${year}`;
 }
 
-/** Format raw input to DD/MM/YYYY: only digits allowed, slashes auto-inserted and never removed */
-function formatDateInput(nextInput: string): string {
-  const digits = nextInput.replace(/\D/g, '').slice(0, 8);
-  if (digits.length <= 2) return digits;
-  if (digits.length <= 4) return `${digits.slice(0, 2)}/${digits.slice(2)}`;
-  return `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4)}`;
-}
-
 /** Parse DD/MM/YYYY to YYYY-MM-DD for API, or null if invalid/empty */
 function parseDDMMYYYYToISO(str: string): string | null {
-  const trimmed = str.trim();
-  if (!trimmed) return null;
-  const parts = trimmed.split('/');
-  if (parts.length !== 3) return null;
-  const day = parseInt(parts[0], 10);
-  const month = parseInt(parts[1], 10) - 1;
-  const year = parseInt(parts[2], 10);
-  if (Number.isNaN(day) || Number.isNaN(year)) return null;
-  if (month < 0 || month > 11) return null;
-  const d = new Date(year, month, day);
-  if (d.getFullYear() !== year || d.getMonth() !== month || d.getDate() !== day) return null;
-  return `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+  return parseDmyToIso(str.trim()) ?? null;
 }
 
 function RegisterDateCell({
@@ -218,8 +200,8 @@ function RegisterDateCell({
     if (v === '' || iso !== null) {
       handleSave(v === '' ? null : iso);
     } else {
-      setError('Use DD/MM/YYYY');
-      setTimeout(() => setError(null), 3000);
+      setLocalValue(prevDisplay);
+      setEditing(false);
     }
   };
 
@@ -230,8 +212,8 @@ function RegisterDateCell({
       if (v === '' || iso !== null) {
         handleSave(v === '' ? null : iso);
       } else {
-        setError('Use DD/MM/YYYY');
-        setTimeout(() => setError(null), 3000);
+        setLocalValue(formatRegisterDate(value));
+        setEditing(false);
       }
     }
     if (e.key === 'Escape') {
@@ -248,7 +230,7 @@ function RegisterDateCell({
           type="text"
           value={localValue}
           placeholder="DD/MM/YYYY"
-          onChange={(e) => setLocalValue(formatDateInput(e.target.value))}
+          onChange={(e) => setLocalValue(formatDmyInputValue(e.target.value, localValue))}
           onBlur={handleBlur}
           onKeyDown={handleKeyDown}
           disabled={saving}

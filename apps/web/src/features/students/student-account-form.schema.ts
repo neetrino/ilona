@@ -22,12 +22,7 @@ function preprocessManualAge(val: unknown): number | undefined {
   return Math.trunc(n);
 }
 
-const optionalFormDate = z.union([
-  z
-    .string()
-    .refine((value) => resolveDmyOrIsoToIso(value) !== undefined, 'Use DD/MM/YYYY format'),
-  z.literal(''),
-]);
+const optionalFormDate = z.union([z.string(), z.literal('')]);
 
 const optionalDob = optionalFormDate;
 

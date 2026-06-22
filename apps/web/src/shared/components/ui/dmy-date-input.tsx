@@ -30,7 +30,7 @@ export function DmyDateInput({
       autoComplete={autoComplete}
       placeholder={placeholder}
       value={value}
-      onChange={(event) => onChange(formatDmyInputValue(event.target.value))}
+      onChange={(event) => onChange(formatDmyInputValue(event.target.value, value))}
       className={cn(className)}
       disabled={disabled}
     />
