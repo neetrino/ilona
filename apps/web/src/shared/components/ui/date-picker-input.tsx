@@ -2,8 +2,19 @@
 
 import * as React from 'react';
 import { useLocale, useTranslations } from 'next-intl';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { addDays, addMonths, format, isSameDay, isSameMonth, parseISO, startOfMonth, startOfWeek } from 'date-fns';
+import { CalendarDays, ChevronLeft, ChevronRight } from 'lucide-react';
+import {
+  addDays,
+  addMonths,
+  format,
+  isSameDay,
+  isSameMonth,
+  isValid,
+  parse,
+  parseISO,
+  startOfMonth,
+  startOfWeek,
+} from 'date-fns';
 import { enGB, hy } from 'date-fns/locale';
 import { cn } from '@/shared/lib/utils';
 import { useOutsidePress } from '@/shared/hooks/useOutsidePress';
@@ -39,6 +50,21 @@ function toDateString(value?: string | number | readonly string[]): string {
   return String(value);
 }
 
+const MANUAL_DATE_FORMATS = ['dd/MM/yyyy', 'd/M/yyyy', 'dd/MM/yy', 'd/M/yy', 'yyyy-MM-dd'] as const;
+
+function parseManualDate(text: string): Date | null {
+  const trimmed = text.trim();
+  if (!trimmed) return null;
+
+  for (const dateFormat of MANUAL_DATE_FORMATS) {
+    const parsed = parse(trimmed, dateFormat, new Date());
+    if (isValid(parsed)) return parsed;
+  }
+
+  const iso = parseISO(trimmed);
+  return Number.isNaN(iso.getTime()) ? null : iso;
+}
+
 export const DatePickerInput = React.forwardRef<HTMLInputElement, DatePickerInputProps>(
   (
     {
@@ -71,6 +97,8 @@ export const DatePickerInput = React.forwardRef<HTMLInputElement, DatePickerInpu
     const selectedDate = React.useMemo(() => parseValue(currentValue), [currentValue]);
     const [monthDate, setMonthDate] = React.useState<Date>(() => selectedDate ?? new Date());
     const [open, setOpen] = React.useState(false);
+    const [isEditing, setIsEditing] = React.useState(false);
+    const [draftText, setDraftText] = React.useState('');
     const rootRef = React.useRef<HTMLDivElement>(null);
     const [popoverPosition, setPopoverPosition] = React.useState<PopoverPosition | null>(null);
     const generatedId = React.useId();
@@ -102,7 +130,7 @@ export const DatePickerInput = React.forwardRef<HTMLInputElement, DatePickerInpu
     );
 
     const updatePopoverPosition = React.useCallback(() => {
-      const trigger = rootRef.current?.querySelector<HTMLButtonElement>('[data-role="date-trigger"]');
+      const trigger = rootRef.current?.querySelector<HTMLElement>('[data-role="date-trigger"]');
       if (!trigger) return;
 
       const rect = trigger.getBoundingClientRect();
@@ -167,9 +195,54 @@ export const DatePickerInput = React.forwardRef<HTMLInputElement, DatePickerInpu
     const monthLabel = format(monthDate, 'MMMM yyyy', { locale: dateLocale });
     const days = React.useMemo(() => createCalendarDays(monthDate), [monthDate]);
     const displayValue = selectedDate ? format(selectedDate, 'dd/MM/yyyy') : '';
+    const inputValue = isEditing ? draftText : displayValue;
+
+    const commitDraftText = React.useCallback(() => {
+      const trimmed = draftText.trim();
+      if (!trimmed) {
+        if (allowClear && !required) {
+          emitChange('');
+        }
+        return;
+      }
+
+      const parsed = parseManualDate(trimmed);
+      if (!parsed) return;
+
+      if (isOutOfRange(parsed) || disabled) return;
+
+      emitChange(format(parsed, 'yyyy-MM-dd'));
+      setMonthDate(parsed);
+    }, [allowClear, disabled, draftText, emitChange, isOutOfRange, required]);
+
+    const handleInputFocus = () => {
+      setDraftText(displayValue);
+      setIsEditing(true);
+    };
+
+    const handleInputBlur = (event: React.FocusEvent<HTMLInputElement>) => {
+      setIsEditing(false);
+      commitDraftText();
+      onBlur?.(event);
+    };
+
+    const handleInputKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        setIsEditing(false);
+        commitDraftText();
+        handleOpenChange(false);
+      }
+      if (event.key === 'Escape') {
+        setIsEditing(false);
+        setDraftText(displayValue);
+        handleOpenChange(false);
+      }
+    };
 
     const selectDate = (date: Date) => {
       if (isOutOfRange(date) || disabled) return;
+      setIsEditing(false);
       emitChange(format(date, 'yyyy-MM-dd'));
       setOpen(false);
     };
@@ -189,37 +262,60 @@ export const DatePickerInput = React.forwardRef<HTMLInputElement, DatePickerInpu
     return (
       <div ref={rootRef} className="relative w-full">
         <input
-          {...rest}
-          ref={ref}
-          id={triggerId}
           name={name}
           value={currentValue}
           onChange={onChange}
-          onBlur={onBlur}
           required={required}
           min={min}
           max={max}
           disabled={disabled}
           type="hidden"
+          tabIndex={-1}
+          aria-hidden
         />
-        <button
-          type="button"
-          data-role="date-trigger"
-          onClick={() => !disabled && handleOpenChange(!open)}
-          className={cn(
-            'h-10 w-full rounded-lg border border-slate-300 px-3 text-left text-[16px] transition-colors lg:text-sm',
-            'focus:outline-none focus:ring-2 focus:ring-[#3036b6]/25',
-            selectedDate ? 'text-slate-900' : 'text-slate-400',
-            disabled && 'cursor-not-allowed opacity-60',
-            className
-          )}
-          aria-haspopup="dialog"
-          aria-expanded={open}
-          aria-controls={`${triggerId}-dialog`}
-          disabled={disabled}
-        >
-          {displayValue || placeholder || ''}
-        </button>
+        <div className="relative w-full">
+          <input
+            {...rest}
+            ref={ref}
+            id={triggerId}
+            type="text"
+            inputMode="numeric"
+            autoComplete="off"
+            data-role="date-trigger"
+            value={inputValue}
+            onChange={(event) => setDraftText(event.target.value)}
+            onFocus={handleInputFocus}
+            onBlur={handleInputBlur}
+            onKeyDown={handleInputKeyDown}
+            placeholder={placeholder ?? 'DD/MM/YYYY'}
+            disabled={disabled}
+            aria-haspopup="dialog"
+            aria-expanded={open}
+            aria-controls={`${triggerId}-dialog`}
+            className={cn(
+              'h-10 w-full rounded-lg border border-slate-300 py-2 pl-3 pr-10 text-[16px] transition-colors lg:text-sm',
+              'focus:outline-none focus:ring-2 focus:ring-[#3036b6]/25',
+              selectedDate || isEditing ? 'text-slate-900' : 'text-slate-400',
+              disabled && 'cursor-not-allowed opacity-60',
+              className
+            )}
+          />
+          <button
+            type="button"
+            tabIndex={-1}
+            onMouseDown={(event) => event.preventDefault()}
+            onClick={() => !disabled && handleOpenChange(!open)}
+            className={cn(
+              'absolute right-2 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-md text-slate-500',
+              'hover:bg-slate-100 hover:text-slate-700',
+              disabled && 'pointer-events-none opacity-60'
+            )}
+            aria-label={placeholder || tCommon('date')}
+            disabled={disabled}
+          >
+            <CalendarDays className="h-4 w-4" />
+          </button>
+        </div>
 
         {open && popoverPosition ? (
           <div
