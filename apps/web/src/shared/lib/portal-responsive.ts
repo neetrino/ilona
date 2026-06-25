@@ -11,6 +11,10 @@ export const portalPageStackClass =
 export const portalCardClass =
   'rounded-2xl border border-[rgba(14,14,16,0.07)] bg-white p-[clamp(0.875rem,1.75vw,1.5rem)] sm:rounded-3xl';
 
+/** Dashboard aside card — matches Today’s lessons shell; use with fillHeight in a flex column */
+export const portalDashboardAsideCardClass =
+  'rounded-3xl border border-[rgba(14,14,16,0.07)] p-5 sm:p-6';
+
 /** Inner nested card */
 export const portalInnerCardClass =
   'rounded-[1.125rem] border border-[rgba(14,14,16,0.07)] bg-[#fafafa] p-[clamp(0.75rem,1.5vw,1rem)]';

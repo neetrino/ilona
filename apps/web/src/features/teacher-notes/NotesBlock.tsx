@@ -9,6 +9,7 @@ import {
 } from './hooks';
 import type { TeacherNote } from './types';
 import { StudentCard, StudentInput, StudentPrimaryButton, StudentSectionHeader } from '@/features/student-ui';
+import { cn } from '@/shared/lib/utils';
 
 const ROTATIONS = ['-rotate-1', 'rotate-1', '-rotate-2', 'rotate-2', 'rotate-0'];
 
@@ -68,9 +69,11 @@ function NoteCard({ note, index, onDelete, isDeleting, variant }: NoteCardProps)
 
 type NotesBlockProps = {
   variant?: 'default' | 'dashboard';
+  fillHeight?: boolean;
+  className?: string;
 };
 
-export function NotesBlock({ variant = 'default' }: NotesBlockProps) {
+export function NotesBlock({ variant = 'default', fillHeight = false, className }: NotesBlockProps) {
   const t = useTranslations('dashboard.notes');
   const [draft, setDraft] = useState('');
   const { data: notes = [], isLoading } = useMyTeacherNotes();
@@ -86,12 +89,18 @@ export function NotesBlock({ variant = 'default' }: NotesBlockProps) {
 
   if (variant === 'dashboard') {
     return (
-      <section className="rounded-3xl border border-[rgba(14,14,16,0.07)] bg-[#fff8ca] p-5 sm:p-6 lg:p-8">
-        <header className="mb-5">
+      <section
+        className={cn(
+          'rounded-3xl border border-[rgba(14,14,16,0.07)] bg-[#fff8ca] p-5 sm:p-6',
+          fillHeight && 'flex min-h-0 flex-col',
+          className,
+        )}
+      >
+        <header className="mb-5 shrink-0">
           <h2 className="text-base font-semibold text-[#5e2d00]">{t('title')}</h2>
           <p className="mt-1 text-xs text-[#8b8b90]">{t('pinnedDefault')}</p>
         </header>
-        <div className="mb-5 flex flex-col gap-2 sm:flex-row">
+        <div className="mb-5 flex shrink-0 flex-col gap-2 sm:flex-row">
           <input
             type="text"
             value={draft}
@@ -114,24 +123,33 @@ export function NotesBlock({ variant = 'default' }: NotesBlockProps) {
             {create.isPending ? t('saving') : t('save')}
           </button>
         </div>
-        {isLoading ? (
-          <p className="text-sm text-[#8b8b90]">{t('loading')}</p>
-        ) : notes.length === 0 ? (
-          <p className="text-sm text-[#8b8b90]">{t('empty')}</p>
-        ) : (
-          <div className="max-h-[15rem] overflow-y-auto pr-1">
-            {notes.map((note, idx) => (
-              <NoteCard
-                key={note.id}
-                note={note}
-                index={idx}
-                onDelete={(id) => remove.mutate(id)}
-                isDeleting={remove.isPending}
-                variant="dashboard"
-              />
-            ))}
-          </div>
-        )}
+        <div className={cn(fillHeight && 'flex min-h-0 flex-1 flex-col')}>
+          {isLoading ? (
+            <p className="text-sm text-[#8b8b90]">{t('loading')}</p>
+          ) : notes.length === 0 ? (
+            <p className={cn('text-sm text-[#8b8b90]', fillHeight && 'flex flex-1 items-center')}>
+              {t('empty')}
+            </p>
+          ) : (
+            <div
+              className={cn(
+                'overflow-y-auto pr-1',
+                fillHeight ? 'min-h-0 flex-1' : 'max-h-[15rem]',
+              )}
+            >
+              {notes.map((note, idx) => (
+                <NoteCard
+                  key={note.id}
+                  note={note}
+                  index={idx}
+                  onDelete={(id) => remove.mutate(id)}
+                  isDeleting={remove.isPending}
+                  variant="dashboard"
+                />
+              ))}
+            </div>
+          )}
+        </div>
       </section>
     );
   }
