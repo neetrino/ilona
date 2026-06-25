@@ -108,11 +108,11 @@ export function AnalyticsTimeFilterBar({
         <span
           aria-hidden
           className={cn(
-            'pointer-events-none absolute z-0 h-8 transition-[transform,width,opacity] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]',
+            'pointer-events-none absolute left-0 top-1 z-0 h-8 transition-[transform,width,opacity] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]',
             isPillModeToggle
               ? 'rounded-full bg-[#1010a3]'
               : usesGroupAccent
-                ? 'rounded-md bg-[#1010a3]'
+                ? 'rounded-md bg-[#1010a3] shadow-sm'
                 : 'rounded-md bg-primary shadow-sm',
           )}
           style={{
@@ -130,8 +130,8 @@ export function AnalyticsTimeFilterBar({
               modeButtonRefs.current[m.id] = node;
             }}
             className={cn(
-              'relative z-10 inline-flex h-8 min-w-0 items-center justify-center px-3 text-center text-sm font-medium transition-colors sm:min-w-[5.75rem]',
-              isPillModeToggle ? 'rounded-full' : 'rounded-md',
+              'relative z-10 inline-flex h-8 min-w-0 items-center justify-center px-3 text-center text-sm font-semibold transition-colors duration-300 sm:min-w-[5.75rem]',
+              isPillModeToggle ? 'rounded-full font-medium' : 'rounded-md',
               mode === m.id
                 ? 'text-white'
                 : usesGroupAccent
