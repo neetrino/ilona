@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { readUrlSearchParam } from '@/shared/lib/url-search-params';
 import { useAppSearchUrl } from '@/shared/hooks/useAppSearchUrl';
@@ -9,6 +10,8 @@ import { ChatList } from './ChatList';
 import { StudentChatList } from './StudentChatList';
 import { TeacherChatList } from './TeacherChatList';
 import { ChatWindow } from './ChatWindow';
+import { MobileChatSlidePanel } from './MobileChatSlidePanel';
+import { ChatBackButton } from './ChatBackButton';
 import { useChatStore } from '../store/chat.store';
 import { useSocket, useChats, useCreateDirectChat } from '../hooks';
 import { useMyTeachers } from '@/features/students/hooks/useStudents';
@@ -24,6 +27,8 @@ interface ChatContainerProps {
 }
 
 function ChatContent({ emptyTitle, emptyDescription, className }: ChatContainerProps) {
+  const tChat = useTranslations('chat');
+  const tCommon = useTranslations('common');
   const router = useRouter();
   const { searchParams, urlRevision, replaceAllParams } = useAppSearchUrl();
   const { user } = useAuthStore();
@@ -40,6 +45,7 @@ function ChatContent({ emptyTitle, emptyDescription, className }: ChatContainerP
   const createDirectChat = useCreateDirectChat();
   const { data: teachers = [], isLoading: isLoadingTeachers } = useMyTeachers(user?.role === 'STUDENT');
   const isInitialMount = useRef(true);
+  const [mobileChatPanelOpen, setMobileChatPanelOpen] = useState(false);
 
   const replaceSearchParams = useCallback(
     (mutate: (params: URLSearchParams) => void) => {
@@ -270,6 +276,7 @@ function ChatContent({ emptyTitle, emptyDescription, className }: ChatContainerP
   const handleSelectChat = (chat: Chat) => {
     setActiveChat(chat);
     setMobileListVisible(false);
+    setMobileChatPanelOpen(true);
     // Update URL immediately - remove type and teacherId params if present
     replaceSearchParams((params) => {
       params.delete('type');
@@ -288,6 +295,25 @@ function ChatContent({ emptyTitle, emptyDescription, className }: ChatContainerP
     });
   };
 
+  useEffect(() => {
+    if (activeChat && !isMobileListVisible) {
+      setMobileChatPanelOpen(true);
+    }
+  }, [activeChat, isMobileListVisible]);
+
+  const handleMobileBack = useCallback(() => {
+    setMobileChatPanelOpen(false);
+  }, []);
+
+  const finalizeMobileChatClose = useCallback(() => {
+    setMobileListVisible(true);
+    setActiveChat(null);
+    replaceSearchParams((params) => {
+      params.delete('chatId');
+      params.delete('conversationId');
+    });
+  }, [replaceSearchParams, setActiveChat, setMobileListVisible]);
+
   // Check if we're in full-screen mode (when className includes rounded-none)
   const isFullScreen = className?.includes('rounded-none');
   const containerHeight = isFullScreen ? 'h-screen' : 'h-[calc(100vh-200px)]';
@@ -295,19 +321,30 @@ function ChatContent({ emptyTitle, emptyDescription, className }: ChatContainerP
 
   return (
     <div className={cn(containerHeight, ui.shell, 'overflow-hidden flex flex-col', className)}>
-      {/* Back Button Header */}
-      <div className={cn('flex items-center justify-between p-4 border-b flex-shrink-0', ui.border, ui.headerBg)}>
-        <button
+      {/* Back Button Header — hidden on mobile when a conversation is open */}
+      <div
+        className={cn(
+          'flex flex-shrink-0 items-center justify-between border-b p-4',
+          ui.border,
+          ui.headerBg,
+          activeChat && 'max-lg:hidden',
+        )}
+      >
+        <ChatBackButton
           onClick={handleBackToPrevious}
-          className={cn('flex items-center gap-2 px-4 py-2 transition-colors', ui.backBtn)}
-          aria-label="Back to previous page"
+          aria-label={tChat('backToPreviousPage')}
+          className="lg:hidden"
+        />
+        <button
+          type="button"
+          onClick={handleBackToPrevious}
+          className={cn(
+            'hidden items-center gap-2 px-4 py-2 transition-colors lg:flex',
+            ui.backBtn,
+          )}
+          aria-label={tChat('backToPreviousPage')}
         >
-          <svg
-            className="w-5 h-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
+          <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -315,13 +352,13 @@ function ChatContent({ emptyTitle, emptyDescription, className }: ChatContainerP
               d="M10 19l-7-7m0 0l7-7m-7 7h18"
             />
           </svg>
-          <span className="font-medium">Back</span>
+          <span className="font-medium">{tCommon('back')}</span>
         </button>
-        <h2 className={cn('text-lg font-semibold', ui.title)}>Chat</h2>
+        <h2 className={cn('text-xl font-bold', ui.title)}>{tChat('title')}</h2>
         <div className="w-20" /> {/* Spacer for centering */}
       </div>
 
-      <div className={cn("flex flex-1 overflow-hidden", contentHeight)}>
+      <div className={cn('flex min-h-0 flex-1 overflow-hidden', contentHeight)}>
         {/* Chat List */}
         <div
           className={cn(
@@ -339,17 +376,12 @@ function ChatContent({ emptyTitle, emptyDescription, className }: ChatContainerP
           )}
         </div>
 
-        {/* Chat Window */}
-        <div
-          className={cn(
-            'flex-1 flex flex-col',
-            isMobileListVisible && !activeChat && 'hidden lg:flex'
-          )}
-        >
+        {/* Chat Window — desktop */}
+        <div className="hidden min-h-0 flex-1 flex-col overflow-hidden lg:flex">
           {activeChat ? (
             <ChatWindow chat={activeChat} onBack={handleBack} />
           ) : (
-            <div className={cn('flex-1 flex items-center justify-center', ui.messagesBg)}>
+            <div className={cn('flex flex-1 items-center justify-center', ui.messagesBg)}>
               <div className="text-center">
                 <div
                   className={cn(
@@ -372,16 +404,26 @@ function ChatContent({ emptyTitle, emptyDescription, className }: ChatContainerP
                   </svg>
                 </div>
                 <h3 className={cn('mb-1 text-lg font-semibold', ui.title)}>
-                  {emptyTitle || 'Select a chat'}
+                  {emptyTitle || tChat('selectChat')}
                 </h3>
                 <p className={cn('text-sm', ui.muted)}>
-                  {emptyDescription || 'Choose a conversation from the list to start messaging'}
+                  {emptyDescription || tChat('selectChatDescription')}
                 </p>
               </div>
             </div>
           )}
         </div>
       </div>
+
+      {activeChat ? (
+        <MobileChatSlidePanel
+          active={mobileChatPanelOpen}
+          onExitComplete={finalizeMobileChatClose}
+          className="lg:hidden"
+        >
+          <ChatWindow chat={activeChat} onBack={handleMobileBack} />
+        </MobileChatSlidePanel>
+      ) : null}
     </div>
   );
 }

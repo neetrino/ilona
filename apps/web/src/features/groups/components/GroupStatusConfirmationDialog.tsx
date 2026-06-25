@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import {
   Dialog,
   DialogContent,
@@ -31,17 +32,18 @@ export function GroupStatusConfirmationDialog({
   isLoading = false,
   error,
 }: GroupStatusConfirmationDialogProps) {
+  const t = useTranslations('groups');
+  const tCommon = useTranslations('common');
   const isDeactivate = action === 'deactivate';
-  const title = isDeactivate ? 'Deactivate group' : 'Activate group';
-  const baseMessage = isDeactivate
-    ? 'Are you sure you want to deactivate this group?'
-    : 'Are you sure you want to activate this group?';
+  const title = isDeactivate ? t('groupStatusDeactivateTitle') : t('groupStatusActivateTitle');
   const message =
     groupName && groupName.trim().length > 0
       ? isDeactivate
-        ? `Are you sure you want to deactivate "${groupName}"?`
-        : `Are you sure you want to activate "${groupName}"?`
-      : baseMessage;
+        ? t('groupStatusDeactivateWithName', { name: groupName })
+        : t('groupStatusActivateWithName', { name: groupName })
+      : isDeactivate
+        ? t('groupStatusDeactivateGeneric')
+        : t('groupStatusActivateGeneric');
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -62,7 +64,7 @@ export function GroupStatusConfirmationDialog({
             onClick={() => onOpenChange(false)}
             disabled={isLoading}
           >
-            Cancel
+            {tCommon('cancel')}
           </Button>
           <Button
             type="button"
@@ -70,7 +72,7 @@ export function GroupStatusConfirmationDialog({
             onClick={onConfirm}
             isLoading={isLoading}
           >
-            {isLoading ? 'Saving…' : 'Confirm'}
+            {isLoading ? t('groupStatusSaving') : tCommon('confirm')}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -10,53 +10,58 @@ type PartialMessage = {
   isSystem?: boolean;
 } | null | undefined;
 
+export type MessagePreviewLabels = {
+  noMessagesYet: string;
+  voiceMessage: string;
+  photo: string;
+  video: string;
+  attachment: string;
+  systemMessage: string;
+  message: string;
+};
+
 /**
  * Formats a message preview for display in the chat list sidebar.
  * Handles different message types (text, voice, file, image, etc.)
  */
-export function formatMessagePreview(message: Message | PartialMessage): string {
+export function formatMessagePreview(
+  message: Message | PartialMessage,
+  labels: MessagePreviewLabels,
+): string {
   if (!message) {
-    return 'No messages yet';
+    return labels.noMessagesYet;
   }
 
   const messageType = (message as Message).type || (message as PartialMessage)?.type;
 
-  // Text messages
   if (messageType === 'TEXT' && message.content) {
-    // Truncate long messages
     const maxLength = 50;
     return message.content.length > maxLength
       ? `${message.content.substring(0, maxLength)}...`
       : message.content;
   }
 
-  // Voice messages
   if (messageType === 'VOICE') {
-    return 'Voice message';
+    return labels.voiceMessage;
   }
 
-  // Image messages
   if (messageType === 'IMAGE') {
-    return 'Photo';
+    return labels.photo;
   }
 
-  // Video messages
   if (messageType === 'VIDEO') {
-    return 'Video';
+    return labels.video;
   }
 
-  // File messages
   if (messageType === 'FILE') {
     const fileName = (message as Message).fileName || (message as PartialMessage)?.fileName;
-    return fileName ? `📎 ${fileName}` : 'Attachment';
+    return fileName ? `📎 ${fileName}` : labels.attachment;
   }
 
-  // System messages (should be filtered out, but handle gracefully)
   if ((message as Message).isSystem || (message as PartialMessage)?.isSystem) {
-    return message.content || 'System message';
+    return message.content || labels.systemMessage;
   }
 
-  // Fallback: if we have content, use it (might be a text message without type specified)
   if (message.content) {
     const maxLength = 50;
     return message.content.length > maxLength
@@ -64,7 +69,5 @@ export function formatMessagePreview(message: Message | PartialMessage): string 
       : message.content;
   }
 
-  // Final fallback
-  return 'Message';
+  return labels.message;
 }
-

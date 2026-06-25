@@ -3,6 +3,7 @@
 import React, { useCallback, useEffect, useRef, useState, type TouchEvent } from 'react';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { useTranslations } from 'next-intl';
+import { X } from 'lucide-react';
 import { formatCurrency, formatPhoneForDisplay, cn } from '@/shared/lib/utils';
 import { Avatar, Badge } from '@/shared/components/ui';
 import { useTeacher } from '../hooks/useTeachers';
@@ -176,6 +177,7 @@ export function TeacherDetailsModal({
             'duration-700 ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out min-[1367px]:duration-350 min-[1367px]:ease-[cubic-bezier(0.22,1,0.36,1)]',
             'data-[state=open]:slide-in-from-bottom-full data-[state=closed]:slide-out-to-bottom-full',
             'h-[calc(94dvh+7px)] [@media(min-width:1024px)_and_(max-width:1366px)_and_(min-height:1000px)]:h-[56dvh] grid-rows-[auto_1fr] gap-0 overflow-hidden rounded-t-[22px] border border-slate-200 bg-[#f8f9fb] shadow-xl',
+            'min-[1367px]:grid-rows-[auto_1fr]',
             'min-[1367px]:inset-0 min-[1367px]:m-auto min-[1367px]:w-[95vw] min-[1367px]:max-w-2xl min-[1367px]:h-auto min-[1367px]:max-h-[90vh] min-[1367px]:translate-x-0 min-[1367px]:translate-y-0 min-[1367px]:rounded-2xl',
             'min-[1367px]:data-[state=open]:fade-in-0 min-[1367px]:data-[state=closed]:fade-out-0 min-[1367px]:data-[state=open]:slide-in-from-bottom-0 min-[1367px]:data-[state=closed]:slide-out-to-bottom-0'
           )}
@@ -194,7 +196,15 @@ export function TeacherDetailsModal({
           <DialogPrimitive.Title className="sr-only">
             {fullName} - {t('teacherDetails')}
           </DialogPrimitive.Title>
-          <div className="overflow-y-auto px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-4 min-[1367px]:p-6">
+          <div className="hidden min-[1367px]:flex shrink-0 items-center justify-end bg-[#f8f9fb] px-2 pt-2">
+            <DialogPrimitive.Close
+              className="inline-flex h-8 w-8 items-center justify-center rounded-full text-slate-500 transition hover:bg-slate-100 hover:text-slate-700"
+              aria-label={tCommon('close')}
+            >
+              <X className="h-4 w-4" />
+            </DialogPrimitive.Close>
+          </div>
+          <div className="overflow-y-auto px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-4 min-[1367px]:px-6 min-[1367px]:pb-6 min-[1367px]:pt-2">
 
             {!teacherId ? (
               <div className="py-8 text-center text-[#8b8b90]">{t('teacherNotFound')}</div>

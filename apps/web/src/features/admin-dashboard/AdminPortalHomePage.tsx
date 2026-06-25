@@ -50,7 +50,11 @@ export function AdminPortalHomePage() {
             <AdminPortalNavCard
               key={item.href}
               href={`/${locale}${item.href}`}
-              label={tNav(item.labelKey)}
+              label={
+                locale === 'hy' && item.labelKey === 'dailyDuties'
+                  ? tNav('dailyDutiesMobile')
+                  : tNav(item.labelKey)
+              }
               icon={item.icon}
             />
           ))}

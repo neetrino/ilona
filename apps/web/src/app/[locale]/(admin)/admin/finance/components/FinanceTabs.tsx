@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { useTranslations } from 'next-intl';
 
 interface FinanceTabsProps {
   activeTab: 'payments' | 'salaries';
@@ -10,6 +11,7 @@ interface FinanceTabsProps {
 }
 
 export function FinanceTabs({ activeTab, totalPayments, totalSalaries, onTabChange }: FinanceTabsProps) {
+  const t = useTranslations('finance');
   const tabsTrackRef = useRef<HTMLDivElement | null>(null);
   const tabRefs = useRef<Record<'payments' | 'salaries', HTMLButtonElement | null>>({
     payments: null,
@@ -51,7 +53,7 @@ export function FinanceTabs({ activeTab, totalPayments, totalSalaries, onTabChan
             : 'text-[#8b8b90] hover:text-[#3b3b40]'
         }`}
       >
-        Student Payments ({totalPayments})
+        {t('studentPaymentsTab', { count: totalPayments })}
       </button>
       <button
         ref={(node) => {
@@ -64,7 +66,7 @@ export function FinanceTabs({ activeTab, totalPayments, totalSalaries, onTabChan
             : 'text-[#8b8b90] hover:text-[#3b3b40]'
         }`}
       >
-        Teacher Salaries ({totalSalaries})
+        {t('teacherSalariesTab', { count: totalSalaries })}
       </button>
       <span
         className="pointer-events-none absolute bottom-0 left-0 h-0.5 bg-[#1010a3] transition-[transform,width,opacity] duration-300 ease-out"

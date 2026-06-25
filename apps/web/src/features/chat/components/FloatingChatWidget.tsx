@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { useLocale } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { useChats } from '@/features/chat/hooks';
 import { cn } from '@/shared/lib/utils';
@@ -10,6 +10,7 @@ import { navigateToPortalChat } from '@/features/chat/lib/navigate-to-portal-cha
 import { isAdminPortalPath, isAdminPortalSubpage } from '@/shared/lib/role-routes';
 
 export function FloatingChatWidget() {
+  const tChat = useTranslations('chat');
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -77,7 +78,7 @@ export function FloatingChatWidget() {
           fabFocus,
           'md:hover:scale-105',
         )}
-        aria-label="Open chat"
+        aria-label={tChat('openChat')}
       >
         <svg
           className="w-6 h-6 sm:w-7 sm:h-7"

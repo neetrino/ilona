@@ -15,6 +15,7 @@ import {
   STUDENT_SIDEBAR_ASSETS,
   type StudentSidebarIconKey,
 } from '@/features/student-dashboard/studentSidebarAssets';
+import { PORTAL_SIDEBAR_NAV_ITEM_GAP_CLASS, PORTAL_SIDEBAR_NAV_LABEL_HY_CLASS, getPortalSidebarWidthClass } from './student-layout';
 
 type NavEntry = {
   labelKey: string;
@@ -31,12 +32,14 @@ function NavLink({
   collapsed,
   label,
   onNavigate,
+  isArmenianLocale,
 }: {
   item: NavEntry & { href: string };
   active: boolean;
   collapsed: boolean;
   label: string;
   onNavigate?: () => void;
+  isArmenianLocale: boolean;
 }) {
   return (
     <Link
@@ -44,7 +47,8 @@ function NavLink({
       title={collapsed ? label : undefined}
       onClick={onNavigate}
       className={cn(
-        'flex min-h-12 w-full items-center gap-1 transition-colors',
+        'flex min-h-12 w-full items-center transition-colors',
+        PORTAL_SIDEBAR_NAV_ITEM_GAP_CLASS,
         active
           ? 'rounded-[3.375rem] bg-[#1010a3] py-1 pl-1.5 pr-3'
           : 'rounded-[0.875rem] px-3 py-1 hover:bg-[#f6f6f7]',
@@ -58,6 +62,7 @@ function NavLink({
         <span
           className={cn(
             'min-w-0 flex-1 overflow-visible pr-0.5 text-sm italic leading-snug',
+            isArmenianLocale && PORTAL_SIDEBAR_NAV_LABEL_HY_CLASS,
             active ? 'font-semibold text-white' : 'font-medium text-[#787878]',
           )}
         >
@@ -129,10 +134,8 @@ export function TeacherSidebar({
           : cn(
               'h-screen py-3 pl-3 pr-2 sm:pl-4 sm:pr-3',
               collapsed
-                ? 'w-[4.5rem]'
-                : isArmenianLocale && isIPad
-                  ? 'w-[clamp(14.75rem,18vw,20.75rem)]'
-                  : 'w-[clamp(12.5rem,15vw,18rem)]',
+                ? getPortalSidebarWidthClass(true, isArmenianLocale, isIPad)
+                : getPortalSidebarWidthClass(false, isArmenianLocale, isIPad),
             ),
       )}
     >
@@ -196,7 +199,8 @@ export function TeacherSidebar({
 
         <nav
           className={cn(
-            'flex min-h-0 flex-1 flex-col overflow-x-visible overflow-y-auto px-3 py-4 pr-3.5',
+            'flex min-h-0 flex-1 flex-col overflow-x-visible overflow-y-auto py-4 pr-3.5',
+            isArmenianLocale ? 'px-4' : 'px-3',
             NAV_LIST_GAP_CLASS,
             !showLabels && '[scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden',
           )}
@@ -209,6 +213,7 @@ export function TeacherSidebar({
               collapsed={!showLabels}
               label={t(item.labelKey)}
               onNavigate={onNavigate}
+              isArmenianLocale={isArmenianLocale}
             />
           ))}
         </nav>

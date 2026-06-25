@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import {
   Dialog,
   DialogContent,
@@ -27,15 +28,18 @@ export function DeactivateCenterDialog({
   isLoading = false,
   error,
 }: DeactivateCenterDialogProps) {
+  const t = useTranslations('centers');
+  const tCommon = useTranslations('common');
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>Deactivate Center</DialogTitle>
+          <DialogTitle>{t('deactivateCenterTitle')}</DialogTitle>
           <DialogDescription>
             {centerName
-              ? `Are you sure you want to deactivate ${centerName}? You can activate this center again later.`
-              : 'Are you sure you want to deactivate this center? You can activate it again later.'}
+              ? t('deactivateCenterWithName', { name: centerName })
+              : t('deactivateCenterGeneric')}
           </DialogDescription>
         </DialogHeader>
 
@@ -52,7 +56,7 @@ export function DeactivateCenterDialog({
             onClick={() => onOpenChange(false)}
             disabled={isLoading}
           >
-            Cancel
+            {tCommon('cancel')}
           </Button>
           <Button
             type="button"
@@ -60,11 +64,10 @@ export function DeactivateCenterDialog({
             onClick={onConfirm}
             isLoading={isLoading}
           >
-            {isLoading ? 'Deactivating...' : 'Deactivate'}
+            {isLoading ? t('deactivating') : t('deactivateAction')}
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
   );
 }
-

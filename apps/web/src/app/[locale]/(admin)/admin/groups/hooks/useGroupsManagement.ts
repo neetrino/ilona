@@ -1,4 +1,5 @@
 import { useState, useMemo, startTransition } from 'react';
+import { useTranslations } from 'next-intl';
 import { useGroups, useDeleteGroup, useToggleGroupActive, type Group } from '@/features/groups';
 import { useCenters, useCenter } from '@/features/centers';
 import { getErrorMessage } from '@/shared/lib/api';
@@ -17,6 +18,7 @@ export function useGroupsManagement(
   /** Selected branch tab on main board (no route) */
   boardTabCenterId: string | null | undefined
 ) {
+  const t = useTranslations('groups');
   const [createGroupOpen, setCreateGroupOpen] = useState(false);
   const [editGroupId, setEditGroupId] = useState<string | null>(null);
   const [deleteGroupId, setDeleteGroupId] = useState<string | null>(null);
@@ -185,7 +187,7 @@ export function useGroupsManagement(
       setDeleteGroupId(null);
       setDeleteGroupError(null);
     } catch (err: unknown) {
-      const message = getErrorMessage(err, 'Failed to delete group. Please try again.');
+      const message = getErrorMessage(err, t('failedDeleteGroupRetry'));
       setDeleteGroupError(message);
     }
   };
@@ -251,7 +253,7 @@ export function useGroupsManagement(
           await deleteGroup.mutateAsync(id);
           successCount++;
         } catch (err: unknown) {
-          const message = getErrorMessage(err, 'Failed to delete group.');
+          const message = getErrorMessage(err, t('failedDeleteGroup'));
           lastError = message;
         }
       }
@@ -271,10 +273,10 @@ export function useGroupsManagement(
       }
 
       if (lastError && successCount < count) {
-        setBulkDeleteError(`Deleted ${successCount} of ${count} groups. ${lastError}`);
+        setBulkDeleteError(t('partialDeleteGroups', { success: successCount, total: count, error: lastError }));
       }
     } catch (err: unknown) {
-      const message = getErrorMessage(err, 'Failed to delete groups. Please try again.');
+      const message = getErrorMessage(err, t('failedDeleteGroups'));
       setBulkDeleteError(message);
     }
   };

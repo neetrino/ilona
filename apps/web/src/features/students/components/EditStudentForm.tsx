@@ -14,7 +14,9 @@ import { useState, useEffect, useMemo, useRef, type TouchEvent } from 'react';
 import type { UserStatus } from '@/types';
 import { getErrorMessage } from '@/shared/lib/api';
 import { cn, formatPhoneForDisplay } from '@/shared/lib/utils';
+import { X } from 'lucide-react';
 import { teacherBelongsToCenter } from '../lib/center-scoped-assignment';
+import { getStudentDobMaxDate, getStudentDobMinDate } from '../student-account-form.schema';
 import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
 import { computeAgeFromDob } from '../student-account-form.schema';
 import { isoToDmy, resolveDmyOrIsoToIso } from '@/shared/lib/dmy-date';
@@ -217,6 +219,15 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
     return [...new Set([...fromLinks, ...fromGroups])].join(', ');
   }, [selectedTeacher, groupsForTeacher]);
 
+  const statusOptions = useMemo(
+    () => [
+      { id: 'ACTIVE', label: tStatus('active') },
+      { id: 'INACTIVE', label: tStatus('inactive') },
+      { id: 'SUSPENDED', label: tStatus('suspended') },
+    ],
+    [tStatus],
+  );
+
   // Pre-fill form when student data is loaded
   useEffect(() => {
     if (student && open) {
@@ -399,6 +410,7 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
           'duration-700 ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out min-[1367px]:duration-350 min-[1367px]:ease-[cubic-bezier(0.22,1,0.36,1)]',
           'data-[state=open]:slide-in-from-bottom-full data-[state=closed]:slide-out-to-bottom-full',
           'h-[calc(94dvh+7px)] [@media(min-width:1024px)_and_(max-width:1366px)_and_(min-height:1000px)]:h-[56dvh] grid-rows-[auto_1fr] gap-0 overflow-hidden rounded-t-[22px] border border-slate-200 bg-[#f8f9fb] shadow-xl',
+          'min-[1367px]:grid-rows-[auto_1fr]',
           'min-[1367px]:inset-0 min-[1367px]:m-auto min-[1367px]:w-[95vw] min-[1367px]:max-w-2xl min-[1367px]:h-auto min-[1367px]:max-h-[90vh] min-[1367px]:translate-x-0 min-[1367px]:translate-y-0 min-[1367px]:rounded-2xl',
           'min-[1367px]:data-[state=open]:fade-in-0 min-[1367px]:data-[state=closed]:fade-out-0 min-[1367px]:data-[state=open]:slide-in-from-bottom-0 min-[1367px]:data-[state=closed]:slide-out-to-bottom-0'
         )}
@@ -416,7 +428,15 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
           <div className="h-1.5 w-14 rounded-full bg-slate-400" />
         </div>
         <DialogPrimitive.Title className="sr-only">{tForm('editTitle')}</DialogPrimitive.Title>
-        <div className="min-h-0 overflow-y-auto overflow-x-hidden overscroll-y-contain [touch-action:pan-y] [-webkit-overflow-scrolling:touch] px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-4 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden min-[1367px]:px-0 min-[1367px]:pb-0 min-[1367px]:pt-0">
+        <div className="hidden min-[1367px]:flex shrink-0 items-center justify-end bg-[#f8f9fb] px-2 pt-2">
+          <DialogPrimitive.Close
+            className="inline-flex h-8 w-8 items-center justify-center rounded-full text-slate-500 transition hover:bg-slate-100 hover:text-slate-700"
+            aria-label={tCommon('close')}
+          >
+            <X className="h-4 w-4" />
+          </DialogPrimitive.Close>
+        </div>
+        <div className="min-h-0 overflow-y-auto overflow-x-hidden overscroll-y-contain [touch-action:pan-y] [-webkit-overflow-scrolling:touch] px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-4 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden min-[1367px]:px-6 min-[1367px]:pb-6 min-[1367px]:pt-2">
           <div className="mb-4">
             <h2 className="text-lg font-semibold text-[#3b3b40]">{tForm('editTitle')}</h2>
             <p className="mt-1 text-sm text-[#8b8b90]">{tForm('editDescription')}</p>
@@ -476,7 +496,7 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
               />
             </div>
 
-            <div className="grid grid-cols-1 gap-4">
+            <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="dateOfBirth">{t('dateOfBirth')}</Label>
                 <DmyDateInput
@@ -492,8 +512,12 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
                 {errors.dateOfBirth && (
                   <p className="text-sm text-red-600">{errors.dateOfBirth.message}</p>
                 )}
-                {effectiveAge !== undefined && (
+                {effectiveAge !== undefined ? (
                   <p className="text-xs text-slate-500">{tForm('ageHint', { age: effectiveAge })}</p>
+                ) : (
+                  <p className="hidden text-xs text-slate-500 min-[1367px]:block" aria-hidden>
+                    {'\u00A0'}
+                  </p>
                 )}
               </div>
 
@@ -515,55 +539,53 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="status">{tCommon('status')}</Label>
-              <input type="hidden" {...register('status')} />
-              <SingleSelectDropdown
-                id="status"
-                options={[
-                  { id: 'ACTIVE', label: tStatus('active') },
-                  { id: 'INACTIVE', label: tStatus('inactive') },
-                  { id: 'SUSPENDED', label: tStatus('suspended') },
-                ]}
-                value={watchedStatus}
-                onValueChange={(nextValue) =>
-                  setValue('status', (nextValue as UserStatus) ?? 'ACTIVE', {
-                    shouldDirty: true,
-                    shouldValidate: true,
-                  })
-                }
-              />
-              {errors.status && (
-                <p className="text-sm text-red-600">{errors.status.message}</p>
-              )}
+            <div className="grid grid-cols-[minmax(9rem,34%)_minmax(0,1fr)] items-start gap-4 min-[1367px]:grid-cols-2">
+              <div className="min-w-0 space-y-2">
+                <Label htmlFor="status">{tCommon('status')}</Label>
+                <input type="hidden" {...register('status')} />
+                <SingleSelectDropdown
+                  id="status"
+                  options={statusOptions}
+                  value={watchedStatus}
+                  onValueChange={(nextValue) =>
+                    setValue('status', (nextValue as UserStatus) ?? 'ACTIVE', {
+                      shouldDirty: true,
+                      shouldValidate: true,
+                    })
+                  }
+                />
+                {errors.status && (
+                  <p className="text-sm text-red-600">{errors.status.message}</p>
+                )}
+              </div>
+
+              <div className="min-w-0 space-y-2">
+                <Label htmlFor="centerId">{tCommon('center')}</Label>
+                <input type="hidden" {...register('centerId')} />
+                <SingleSelectDropdown
+                  id="centerId"
+                  options={[
+                    { id: '', label: tCommon('notAssigned') },
+                    ...centers.map((center) => ({
+                      id: center.id,
+                      label: center.name,
+                    })),
+                  ]}
+                  value={watchedCenterId}
+                  onValueChange={(nextValue) => {
+                    setValue('centerId', nextValue ?? '', { shouldDirty: true, shouldValidate: true });
+                    setValue('teacherId', '', { shouldDirty: true, shouldValidate: true });
+                    setValue('groupId', '', { shouldDirty: true, shouldValidate: true });
+                  }}
+                  disabled={isLoadingCenters || isSubmitting}
+                />
+                {errors.centerId && (
+                  <p className="text-sm text-red-600">{errors.centerId.message}</p>
+                )}
+              </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="centerId">{tCommon('center')}</Label>
-              <input type="hidden" {...register('centerId')} />
-              <SingleSelectDropdown
-                id="centerId"
-                options={[
-                  { id: '', label: tCommon('notAssigned') },
-                  ...centers.map((center) => ({
-                    id: center.id,
-                    label: center.name,
-                  })),
-                ]}
-                value={watchedCenterId}
-                onValueChange={(nextValue) => {
-                  setValue('centerId', nextValue ?? '', { shouldDirty: true, shouldValidate: true });
-                  setValue('teacherId', '', { shouldDirty: true, shouldValidate: true });
-                  setValue('groupId', '', { shouldDirty: true, shouldValidate: true });
-                }}
-                disabled={isLoadingCenters || isSubmitting}
-              />
-              {errors.centerId && (
-                <p className="text-sm text-red-600">{errors.centerId.message}</p>
-              )}
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 min-[1367px]:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="teacherId">{t('teacher')}</Label>
                 <input type="hidden" {...register('teacherId')} />
@@ -640,78 +662,84 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="monthlyFee">
-                {t('monthlyFeeLabel')} (֏) <span className="text-red-500">{tForm('requiredMark')}</span>
-              </Label>
-              <Input
-                id="monthlyFee"
-                type="number"
-                step="0.01"
-                min="0"
-                {...register('monthlyFee', { valueAsNumber: true })}
-                error={errors.monthlyFee?.message}
-                placeholder="50000"
-              />
-            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="monthlyFee">
+                  {t('monthlyFeeLabel')} (֏) <span className="text-red-500">{tForm('requiredMark')}</span>
+                </Label>
+                <Input
+                  id="monthlyFee"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  {...register('monthlyFee', { valueAsNumber: true })}
+                  error={errors.monthlyFee?.message}
+                  placeholder="50000"
+                />
+              </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="registerDate">{t('registerDateLabel')}</Label>
-              <Input
-                id="registerDate"
-                type="date"
-                {...register('registerDate')}
-                error={errors.registerDate?.message}
-              />
+              <div className="space-y-2">
+                <Label htmlFor="registerDate">{t('registerDateLabel')}</Label>
+                <Input
+                  id="registerDate"
+                  type="date"
+                  {...register('registerDate')}
+                  error={errors.registerDate?.message}
+                />
+              </div>
             </div>
 
             {showParentSection && (
             <div className="border-t pt-4">
-              <h3 className="text-sm font-semibold text-slate-800 mb-4">
+              <h3 className="mb-4 text-sm font-semibold text-[#1010a3]">
                 {tForm('parentDetailsSection')}
               </h3>
 
               <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="parentName">{t('parentName')}</Label>
-                  <Input
-                    id="parentName"
-                    {...register('parentName')}
-                    error={errors.parentName?.message}
-                    placeholder={tForm('firstNamePlaceholder')}
-                  />
+                <div className="grid grid-cols-1 gap-4 min-[1367px]:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="parentName">{t('parentName')}</Label>
+                    <Input
+                      id="parentName"
+                      {...register('parentName')}
+                      error={errors.parentName?.message}
+                      placeholder={tForm('firstNamePlaceholder')}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="parentPhone">{t('parentPhone')}</Label>
+                    <Input
+                      id="parentPhone"
+                      type="tel"
+                      {...register('parentPhone')}
+                      error={errors.parentPhone?.message}
+                      placeholder={t('phonePlaceholder')}
+                    />
+                  </div>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="parentPhone">{t('parentPhone')}</Label>
-                  <Input
-                    id="parentPhone"
-                    type="tel"
-                    {...register('parentPhone')}
-                    error={errors.parentPhone?.message}
-                    placeholder={t('phonePlaceholder')}
-                  />
-                </div>
+                <div className="grid grid-cols-1 gap-4 min-[1367px]:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="parentEmail">{t('parentEmail')}</Label>
+                    <Input
+                      id="parentEmail"
+                      type="email"
+                      {...register('parentEmail')}
+                      error={errors.parentEmail?.message}
+                      placeholder={tForm('emailPlaceholder')}
+                    />
+                  </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="parentEmail">{t('parentEmail')}</Label>
-                  <Input
-                    id="parentEmail"
-                    type="email"
-                    {...register('parentEmail')}
-                    error={errors.parentEmail?.message}
-                    placeholder={tForm('emailPlaceholder')}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="parentPassportInfo">{tForm('parentPassportInfo')}</Label>
-                  <Input
-                    id="parentPassportInfo"
-                    {...register('parentPassportInfo')}
-                    error={errors.parentPassportInfo?.message}
-                    placeholder={tForm('parentPassportInfo')}
-                  />
+                  <div className="space-y-2">
+                    <Label htmlFor="parentPassportInfo">{tForm('parentPassportInfo')}</Label>
+                    <Input
+                      id="parentPassportInfo"
+                      {...register('parentPassportInfo')}
+                      error={errors.parentPassportInfo?.message}
+                      placeholder={tForm('parentPassportInfo')}
+                    />
+                  </div>
                 </div>
               </div>
             </div>

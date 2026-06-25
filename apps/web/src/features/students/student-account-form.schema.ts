@@ -1,7 +1,16 @@
 import { z } from 'zod';
+import { format, subYears } from 'date-fns';
 import { resolveDmyOrIsoToIso } from '@/shared/lib/dmy-date';
 
 export { ISO_DATE_RE } from '@/shared/lib/dmy-date';
+
+export function getStudentDobMinDate(): string {
+  return format(subYears(new Date(), 120), 'yyyy-MM-dd');
+}
+
+export function getStudentDobMaxDate(): string {
+  return format(new Date(), 'yyyy-MM-dd');
+}
 
 export function computeAgeFromDob(dob: string | undefined): number | undefined {
   const iso = resolveDmyOrIsoToIso(dob);

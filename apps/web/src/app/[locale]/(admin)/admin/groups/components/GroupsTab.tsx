@@ -899,7 +899,7 @@ export function GroupsTab({
                         onClick={() =>
                           goToDesktopBoardPage(Math.max(0, safeDesktopBoardPage - 1))
                         }
-                        aria-label="Previous cards page"
+                        aria-label={t('previousCardsPage')}
                       >
                         <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -921,7 +921,7 @@ export function GroupsTab({
                             Math.min(desktopBoardTotalPages - 1, safeDesktopBoardPage + 1),
                           )
                         }
-                        aria-label="Next cards page"
+                        aria-label={t('nextCardsPage')}
                       >
                         <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -946,7 +946,7 @@ export function GroupsTab({
                         }`}
                         disabled={safeMobileBoardPage === 0}
                         onClick={() => goToMobileBoardPage(Math.max(0, safeMobileBoardPage - 1))}
-                        aria-label="Previous cards page"
+                        aria-label={t('previousCardsPage')}
                       >
                         <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -968,7 +968,7 @@ export function GroupsTab({
                             Math.min(mobileBoardTotalPages - 1, safeMobileBoardPage + 1),
                           )
                         }
-                        aria-label="Next cards page"
+                        aria-label={t('nextCardsPage')}
                       >
                         <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />

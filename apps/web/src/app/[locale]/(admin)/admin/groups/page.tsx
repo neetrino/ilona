@@ -2,6 +2,7 @@
 
 import { portalPageStackClass } from '@/shared/lib/portal-theme';
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { useTranslations } from 'next-intl';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { GroupsTab } from './components/GroupsTab';
 import { CentersTab } from './components/CentersTab';
@@ -14,6 +15,8 @@ import { cn } from '@/shared/lib/utils';
 type TabType = 'groups' | 'centers';
 
 export default function GroupsPage() {
+  const tNav = useTranslations('nav');
+  const t = useTranslations('groups');
   const { user } = useAuthStore();
   const isLg = useIsLgViewport();
   const isManager = user?.role === 'MANAGER';
@@ -128,8 +131,8 @@ export default function GroupsPage() {
 
   return (
     <DashboardLayout 
-      title="Groups & Centers" 
-      subtitle="Manage learning groups and center branches."
+      title={tNav('groups')} 
+      subtitle={t('pageSubtitle')}
     >
       <div className={portalPageStackClass}>
         {/* Tabs */}
@@ -151,7 +154,7 @@ export default function GroupsPage() {
                     : 'text-[#3b3b40]'
                 )}
               >
-                Centers / Branches
+                {t('centersBranchesTab')}
               </button>
               <button
                 ref={(node) => {
@@ -168,7 +171,7 @@ export default function GroupsPage() {
                     : 'text-[#3b3b40]'
                 )}
               >
-                Groups
+                {t('groupsLabel')}
               </button>
               <span
                 aria-hidden
@@ -186,7 +189,7 @@ export default function GroupsPage() {
                 className="relative px-4 py-2 text-sm font-medium text-[#1010a3] focus:outline-none after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:bg-[#1010a3]"
                 aria-current="page"
               >
-                Groups
+                {t('groupsLabel')}
               </button>
             </nav>
           )}

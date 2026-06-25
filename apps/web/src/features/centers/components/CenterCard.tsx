@@ -1,7 +1,11 @@
+'use client';
+
 import { Building2, MapPin, Phone, Mail, Users } from 'lucide-react';
+import { useLocale, useTranslations } from 'next-intl';
 import type { CenterWithCount } from '../types';
-import { formatPhoneForDisplay, getContrastColor } from '@/shared/lib/utils';
+import { cn, formatPhoneForDisplay, getContrastColor } from '@/shared/lib/utils';
 import { ActionButtons } from '@/shared/components/ui';
+import { usePortalSidebarCollapsed } from '@/shared/context/portal-shell-context';
 
 interface CenterCardProps {
   center: CenterWithCount;
@@ -13,8 +17,13 @@ interface CenterCardProps {
 }
 
 export function CenterCard({ center, onEdit, onDelete, onToggleActive, onOpenDetails }: CenterCardProps) {
+  const t = useTranslations('centers');
+  const locale = useLocale();
+  const sidebarCollapsed = usePortalSidebarCollapsed();
+  const stackBranchBadge = locale === 'hy' && !sidebarCollapsed;
   const primaryColor = center.colorHex || '#253046';
   const titleColor = getContrastColor(primaryColor) === 'white' ? 'text-white' : 'text-slate-900';
+  const groupCount = center._count?.groups || 0;
 
   const handleCardActivate = () => {
     if (onOpenDetails) onOpenDetails();
@@ -45,7 +54,12 @@ export function CenterCard({ center, onEdit, onDelete, onToggleActive, onOpenDet
       <div className="flex flex-1 flex-col p-5">
         <div className="space-y-3">
           <div className="flex items-start justify-between gap-3">
-            <div className="flex items-center gap-2">
+            <div
+              className={cn(
+                'flex gap-2',
+                stackBranchBadge ? 'lg:flex-col lg:items-start' : 'items-center',
+              )}
+            >
               <span
                 className="inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold ring-1 ring-inset"
                 style={{
@@ -56,10 +70,10 @@ export function CenterCard({ center, onEdit, onDelete, onToggleActive, onOpenDet
                     : 'inset 0 0 0 1px rgba(245, 158, 11, 0.24)',
                 }}
               >
-                {center.isActive ? 'Active' : 'Inactive'}
+                {center.isActive ? t('activeStatus') : t('inactiveStatus')}
               </span>
               <span className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[11px] font-medium text-slate-600">
-                Branch
+                {t('branch')}
               </span>
             </div>
 
@@ -71,14 +85,14 @@ export function CenterCard({ center, onEdit, onDelete, onToggleActive, onOpenDet
                 isActive={center.isActive}
                 size="sm"
                 ariaLabels={{
-                  edit: 'Edit center',
-                  delete: 'Delete center',
-                  disable: center.isActive ? 'Deactivate center' : 'Activate center',
+                  edit: t('editCenter'),
+                  delete: t('deleteCenter'),
+                  disable: center.isActive ? t('deactivateCenter') : t('activateCenter'),
                 }}
                 titles={{
-                  edit: 'Edit center',
-                  delete: 'Delete center',
-                  disable: center.isActive ? 'Deactivate center' : 'Activate center',
+                  edit: t('editCenter'),
+                  delete: t('deleteCenter'),
+                  disable: center.isActive ? t('deactivateCenter') : t('activateCenter'),
                 }}
               />
             </div>
@@ -130,7 +144,7 @@ export function CenterCard({ center, onEdit, onDelete, onToggleActive, onOpenDet
               <Users className="h-3.5 w-3.5 text-slate-400" />
             </span>
             <span className="font-medium text-slate-700">
-              {center._count?.groups || 0} {center._count?.groups === 1 ? 'group' : 'groups'}
+              {t('groupCount', { count: groupCount })}
             </span>
           </div>
         </div>
@@ -138,4 +152,3 @@ export function CenterCard({ center, onEdit, onDelete, onToggleActive, onOpenDet
     </div>
   );
 }
-

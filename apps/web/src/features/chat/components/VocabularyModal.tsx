@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 
 interface VocabularyModalProps {
   isOpen: boolean;
@@ -15,6 +16,8 @@ export function VocabularyModal({
   onSubmit,
   isSubmitting,
 }: VocabularyModalProps) {
+  const tChat = useTranslations('chat');
+  const tCommon = useTranslations('common');
   const [words, setWords] = useState<string[]>(['', '', '', '', '']);
 
   const handleWordChange = (index: number, value: string) => {
@@ -49,10 +52,10 @@ export function VocabularyModal({
         <div className="p-4 border-b border-slate-200 bg-gradient-to-r from-purple-600 to-purple-700">
           <h3 className="text-lg font-semibold text-white flex items-center gap-2">
             <span>📚</span>
-            Send Vocabulary (Բառեր)
+            {tChat('sendVocabularyModalTitle')}
           </h3>
           <p className="text-sm text-purple-200 mt-1">
-            Add today's vocabulary words for your students
+            {tChat('sendVocabularyModalDescription')}
           </p>
         </div>
 
@@ -65,7 +68,7 @@ export function VocabularyModal({
                   type="text"
                   value={word}
                   onChange={(e) => handleWordChange(index, e.target.value)}
-                  placeholder="Enter word or phrase..."
+                  placeholder={tChat('enterWordPlaceholder')}
                   className="flex-1 px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500"
                 />
                 <button
@@ -88,7 +91,7 @@ export function VocabularyModal({
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
-            Add another word
+            {tChat('addAnotherWord')}
           </button>
         </div>
 
@@ -97,7 +100,7 @@ export function VocabularyModal({
             onClick={onClose}
             className="flex-1 px-4 py-2 text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors"
           >
-            Cancel
+            {tCommon('cancel')}
           </button>
           <button
             onClick={handleSubmit}
@@ -107,12 +110,12 @@ export function VocabularyModal({
             {isSubmitting ? (
               <>
                 <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                Sending...
+                {tChat('sending')}
               </>
             ) : (
               <>
                 <span>📤</span>
-                Send Vocabulary
+                {tChat('sendVocabularyModalTitle')}
               </>
             )}
           </button>
@@ -121,4 +124,3 @@ export function VocabularyModal({
     </div>
   );
 }
-

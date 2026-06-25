@@ -54,15 +54,15 @@ export function FinanceFilters({
   const statusOptions =
     activeTab === 'payments'
       ? [
-          { id: '', label: 'All statuses' },
+          { id: '', label: t('allStatuses') },
           { id: 'PAID', label: t('paid') },
           { id: 'OVERDUE', label: t('overdue') },
           { id: 'CANCELLED', label: t('cancelled') },
         ]
       : [
-          { id: '', label: 'All statuses' },
-          { id: 'PENDING', label: 'Pending' },
-          { id: 'PAID', label: 'Paid' },
+          { id: '', label: t('allStatuses') },
+          { id: 'PENDING', label: t('pending') },
+          { id: 'PAID', label: t('paid') },
         ];
 
   return (
