@@ -189,11 +189,11 @@ export default function TeacherSalaryPage() {
     >
       {/* Period Filter */}
       <div className="mb-6 flex flex-col gap-3 rounded-xl border border-[rgba(14,14,16,0.07)] bg-white p-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex min-w-0 items-center overflow-x-auto">
+        <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center">
           <div
             role="group"
             aria-label={t('period')}
-            className="relative grid shrink-0 rounded-lg border border-[rgba(14,14,16,0.12)] bg-[#f6f6f7] p-1 shadow-sm"
+            className="relative grid w-full shrink-0 rounded-lg border border-[rgba(14,14,16,0.12)] bg-[#f6f6f7] p-1 shadow-sm sm:w-auto"
             style={{ gridTemplateColumns: `repeat(${PERIOD_PRESETS.length}, minmax(0, 1fr))` }}
           >
             {selectedPresetIndex >= 0 ? (
@@ -229,19 +229,23 @@ export default function TeacherSalaryPage() {
             })}
           </div>
           {preset === 'custom' && (
-            <div className="ml-10 flex shrink-0 items-center gap-4">
-              <label className="text-sm text-[#8b8b90]">{tCommon('from')}</label>
-              <DatePickerInput
-                value={customFrom}
-                onValueChange={setCustomFrom}
-                className="w-[9.5rem] rounded-lg border border-[rgba(14,14,16,0.07)] px-2 py-1 text-sm"
-              />
-              <label className="text-sm text-[#8b8b90]">{tCommon('to')}</label>
-              <DatePickerInput
-                value={customTo}
-                onValueChange={setCustomTo}
-                className="w-[9.5rem] rounded-lg border border-[rgba(14,14,16,0.07)] px-2 py-1 text-sm"
-              />
+            <div className="grid w-full grid-cols-2 gap-3 sm:ml-10 sm:flex sm:w-auto sm:flex-row sm:items-center sm:gap-4">
+              <div className="flex min-w-0 flex-col gap-1.5 sm:flex-row sm:items-center sm:gap-2">
+                <label className="shrink-0 text-sm font-medium text-[#8b8b90]">{tCommon('from')}</label>
+                <DatePickerInput
+                  value={customFrom}
+                  onValueChange={setCustomFrom}
+                  className="h-10 w-full rounded-lg border border-[rgba(14,14,16,0.07)] text-sm sm:w-[9.5rem]"
+                />
+              </div>
+              <div className="flex min-w-0 flex-col gap-1.5 sm:flex-row sm:items-center sm:gap-2">
+                <label className="shrink-0 text-sm font-medium text-[#8b8b90]">{tCommon('to')}</label>
+                <DatePickerInput
+                  value={customTo}
+                  onValueChange={setCustomTo}
+                  className="h-10 w-full rounded-lg border border-[rgba(14,14,16,0.07)] text-sm sm:w-[9.5rem]"
+                />
+              </div>
             </div>
           )}
         </div>
