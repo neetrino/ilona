@@ -618,8 +618,12 @@ export default function StudentPaymentsPage() {
       </StudentPageStack>
 
       <Dialog open={!!processModal} onOpenChange={(open) => !open && setProcessModal(null)}>
-        <DialogContent className="border-[rgba(14,14,16,0.07)] lg:max-w-md lg:rounded-3xl">
-          <DialogHeader>
+        <DialogContent
+          variant="portal"
+          className="border-[rgba(14,14,16,0.07)] lg:max-w-md lg:rounded-3xl"
+          aria-describedby={undefined}
+        >
+          <DialogHeader className="hidden lg:flex">
             <DialogTitle className="text-[#1010a3]">{t('pay')}</DialogTitle>
             <DialogDescription className="sr-only">{t('paymentMethod')}</DialogDescription>
           </DialogHeader>
@@ -631,20 +635,23 @@ export default function StudentPaymentsPage() {
                 </div>
               ) : (
                 <>
-                  <p className="mb-4 text-sm text-[#8b8b90]">
+                  <div className="mb-4 lg:hidden">
+                    <h2 className="text-lg font-semibold text-[#3b3b40]">{t('pay')}</h2>
+                  </div>
+                  <p className="mb-3 lg:mb-4 text-sm text-[#8b8b90]">
                     {(processModal.month ? new Date(processModal.month) : new Date(processModal.dueDate)).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })} — {formatCurrency(Number(processModal.amount))}
                   </p>
                   {!confirmStep ? (
                     <>
                       <Label className="mb-2 block text-[#3b3b40]">{t('paymentMethod')}</Label>
-                      <div className="mb-4 grid grid-cols-1 gap-2 sm:grid-cols-3">
+                      <div className="mb-3 lg:mb-4 grid grid-cols-3 gap-2 sm:grid-cols-3">
                         {(['cash', 'card', 'idram'] as const).map((method) => (
                           <button
                             key={method}
                             type="button"
                             onClick={() => setPaymentMethod(method)}
                             className={cn(
-                              'rounded-[0.875rem] border-2 py-3 px-3 text-sm font-medium transition-colors',
+                              'rounded-[0.875rem] border-2 px-1.5 py-2.5 text-xs font-medium transition-colors lg:px-3 lg:py-3 lg:text-sm',
                               paymentMethod === method
                                 ? 'border-[#1010a3] bg-[#d9d9f4] text-[#1010a3]'
                                 : 'border-[rgba(14,14,16,0.07)] text-[#3b3b40] hover:bg-[#f6f6f7]',
@@ -658,7 +665,7 @@ export default function StudentPaymentsPage() {
                           </button>
                         ))}
                       </div>
-                      <DialogFooter className="gap-2 sm:gap-0">
+                      <DialogFooter className="max-lg:flex-row max-lg:justify-end max-lg:pt-4 gap-2 sm:gap-0">
                         <StudentGhostButton type="button" onClick={() => setProcessModal(null)}>
                           {tCommon('cancel')}
                         </StudentGhostButton>
@@ -669,7 +676,7 @@ export default function StudentPaymentsPage() {
                     </>
                   ) : (
                     <>
-                      <p className="mb-4 text-sm text-[#8b8b90]">
+                      <p className="mb-3 lg:mb-4 text-sm text-[#8b8b90]">
                         {t('payConfirm', {
                           amount: formatCurrency(Number(processModal.amount)),
                           method:
@@ -680,7 +687,7 @@ export default function StudentPaymentsPage() {
                                 : t('methodIdram'),
                         })}
                       </p>
-                      <DialogFooter className="gap-2 sm:gap-0">
+                      <DialogFooter className="max-lg:flex-row max-lg:justify-end max-lg:pt-4 gap-2 sm:gap-0">
                         <StudentGhostButton type="button" onClick={() => setConfirmStep(false)}>
                           {tCommon('back')}
                         </StudentGhostButton>
