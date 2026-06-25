@@ -86,26 +86,26 @@ model Group {
   description          String?
   maxStudents          Int       @default(8)
   centerId             String
-  teacherId            String?
-  substituteTeacherId  String?
-  schedule             Json?
-  isActive             Boolean   @default(true)
-  createdAt            DateTime  @default(now())
-  updatedAt            DateTime  @updatedAt
-  chat                 Chat?
-  crmLeads             CrmLead[]
-  center               Center    @relation(fields: [centerId], references: [id], onDelete: Cascade)
-  teacher              Teacher?  @relation(fields: [teacherId], references: [id])
-  substituteTeacher    Teacher?  @relation("GroupSubstitute", fields: [substituteTeacherId], references: [id])
-  lessons              Lesson[]
-  students             Student[]
-  studentHistoryEntries StudentGroupHistory[]
-  dailyPlans           DailyPlan[]
-  recordingItems       RecordingItem[]
+  teacherId              String?
+  secondTeacherId        String?
+  schedule               Json?
+  isActive               Boolean   @default(true)
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+  chat                   Chat?
+  crmLeads               CrmLead[]
+  center                 Center    @relation(fields: [centerId], references: [id], onDelete: Cascade)
+  teacher                Teacher?  @relation(fields: [teacherId], references: [id])
+  secondTeacher          Teacher?  @relation("GroupSecondTeacher", fields: [secondTeacherId], references: [id])
+  lessons                Lesson[]
+  students               Student[]
+  studentHistoryEntries  StudentGroupHistory[]
+  dailyPlans             DailyPlan[]
+  recordingItems         RecordingItem[]
 
   @@index([centerId])
   @@index([teacherId])
-  @@index([substituteTeacherId])
+  @@index([secondTeacherId])
   @@map("groups")
 }
 
@@ -125,9 +125,9 @@ model Teacher {
   crmLeads            CrmLead[]
   deductions          Deduction[]
   feedbacks           Feedback[]
-  groups              Group[]
-  substituteForGroups Group[]        @relation("GroupSubstitute")
-  substituteLessons   Lesson[]       @relation("LessonSubstituteTeacher")
+  groups                   Group[]
+  secondTeacherForGroups   Group[]        @relation("GroupSecondTeacher")
+  substituteLessons        Lesson[]       @relation("LessonSubstituteTeacher")
   lessons             Lesson[]
   salaryRecords       SalaryRecord[]
   students            Student[]

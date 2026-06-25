@@ -289,7 +289,7 @@ export class CentersService {
         orderBy: { name: 'asc' },
         include: {
           teacher: { include: { user: { select: userSelect } } },
-          substituteTeacher: { include: { user: { select: userSelect } } },
+          secondTeacher: { include: { user: { select: userSelect } } },
           students: {
             include: { user: { select: userSelect } },
           },

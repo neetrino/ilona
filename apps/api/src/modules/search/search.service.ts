@@ -283,7 +283,7 @@ export class SearchService {
               OR: [
                 { centerLinks: { some: { centerId } } },
                 { groups: { some: { centerId } } },
-                { substituteForGroups: { some: { centerId } } },
+                { secondTeacherForGroups: { some: { centerId } } },
               ],
             },
           ],
@@ -488,7 +488,7 @@ export class SearchService {
     const groupRows = await this.prisma.group.findMany({
       where: {
         isActive: true,
-        OR: [{ teacherId: teacher.id }, { substituteTeacherId: teacher.id }],
+        OR: [{ teacherId: teacher.id }, { secondTeacherId: teacher.id }],
       },
       select: { id: true },
     });

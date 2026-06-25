@@ -37,10 +37,11 @@ export function TeacherGroupsModal({
   const groupsSource =
     teacherDetails && teacherDetails.id === teacherId ? teacherDetails : teacher;
   const mainGroups = (groupsSource.groups ?? []).map((group) => group.name);
-  const substituteGroups = (groupsSource.substituteForGroups ?? []).map((group) => group.name);
+  const secondTeacherGroups = (groupsSource.secondTeacherForGroups ?? []).map((group) => group.name);
   const firstName = groupsSource.user?.firstName ?? '';
   const lastName = groupsSource.user?.lastName ?? '';
-  const activeTab = initialTab === 'subgroups' ? 'Sub-groups' : 'Groups';
+  const allGroups = [...new Set([...mainGroups, ...secondTeacherGroups])];
+  const activeTab = initialTab === 'subgroups' ? 'All groups' : 'Groups';
 
   const showLoading = open && isLoading && !teacherDetails;
   const showError = open && isError && !teacherDetails;
@@ -51,7 +52,7 @@ export function TeacherGroupsModal({
         <DialogHeader>
           <DialogTitle>{firstName} {lastName} — {activeTab}</DialogTitle>
           <DialogDescription>
-            Quick list of assigned groups and substitute groups.
+            Assigned groups for this teacher (both rotation slots).
           </DialogDescription>
         </DialogHeader>
         {showLoading ? (
@@ -61,22 +62,7 @@ export function TeacherGroupsModal({
             Could not load latest groups. Showing available data.
           </p>
         ) : null}
-        <div className="grid gap-4 md:grid-cols-2">
-          <div className="space-y-2">
-            <p className="text-sm font-semibold text-[#3b3b40]">Groups</p>
-            <TeacherGroupsList
-              names={mainGroups}
-              emptyText="No assigned groups."
-            />
-          </div>
-          <div className="space-y-2">
-            <p className="text-sm font-semibold text-[#3b3b40]">Sub-groups</p>
-            <TeacherGroupsList
-              names={substituteGroups}
-              emptyText="No substitute groups."
-            />
-          </div>
-        </div>
+        <TeacherGroupsList names={allGroups} emptyText="No assigned groups." />
       </DialogContent>
     </Dialog>
   );

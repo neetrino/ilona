@@ -21,7 +21,7 @@ export interface Teacher {
   videoUrl?: string | null;
   user: Pick<User, 'id' | 'email' | 'firstName' | 'lastName' | 'phone' | 'avatarUrl' | 'status' | 'lastLoginAt' | 'createdAt'>;
   groups?: TeacherGroup[];
-  substituteForGroups?: TeacherGroup[];
+  secondTeacherForGroups?: TeacherGroup[];
   centers?: Array<{
     id: string;
     name: string;
@@ -33,9 +33,9 @@ export interface Teacher {
     groups: number;
     lessons: number;
     students: number;
-    substituteForGroups?: number;
+    secondTeacherForGroups?: number;
   };
-  substituteForGroupsCount?: number;
+  secondTeacherForGroupsCount?: number;
   obligationsDoneCount?: number;
   obligationsTotal?: number;
   deductionAmount?: number;

@@ -275,7 +275,7 @@ export class ChatListsService {
         {
           OR: [
             { teacherId: teacher.id },
-            { substituteTeacherId: teacher.id },
+            { secondTeacherId: teacher.id },
             {
               lessons: {
                 some: { substituteTeacherId: teacher.id },

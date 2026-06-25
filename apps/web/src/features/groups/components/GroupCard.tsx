@@ -1,5 +1,5 @@
 import Image from 'next/image';
-import { Clock, Pencil, Trash2, UserPlus } from 'lucide-react';
+import { Clock, Pencil, Trash2 } from 'lucide-react';
 import { Badge, ActionButtons } from '@/shared/components/ui';
 import type { Group, GroupScheduleEntry } from '../types';
 import { getGroupOccupancyMeta } from '../occupancy';
@@ -76,9 +76,13 @@ export function GroupCard({
   isStatusTogglePending = false,
 }: GroupCardProps) {
   const teacherName = group.teacher ? `${group.teacher.user.firstName} ${group.teacher.user.lastName}` : null;
-  const substituteName = group.substituteTeacher
-    ? `${group.substituteTeacher.user.firstName} ${group.substituteTeacher.user.lastName}`
+  const secondTeacherName = group.secondTeacher
+    ? `${group.secondTeacher.user.firstName} ${group.secondTeacher.user.lastName}`
     : null;
+  const teachersDisplay =
+    teacherName && secondTeacherName
+      ? `${teacherName} · ${secondTeacherName}`
+      : teacherName || secondTeacherName;
   const scheduleSummary = formatScheduleSummary(getGroupWeeklySlots(group.schedule));
   const studentCount = group._count?.students || 0;
   const occupancy = getGroupOccupancyMeta(studentCount);
@@ -124,7 +128,7 @@ export function GroupCard({
         <div className="flex items-center justify-between px-4 py-3">
           <div className="flex min-w-0 items-center gap-2">
             <Image src="/teachers-logo.webp" alt="" width={20} height={20} className="h-5 w-5 shrink-0 object-contain" />
-            <p className="truncate text-[1.125rem] font-medium text-[#3b3b40]">{teacherName || 'Not assigned'}</p>
+            <p className="truncate text-[1.125rem] font-medium text-[#3b3b40]">{teachersDisplay || 'Not assigned'}</p>
           </div>
           <div className="flex items-center gap-1">
             <button
@@ -187,8 +191,8 @@ export function GroupCard({
                 {group.name}
               </h4>
             </div>
-            {teacherName && (
-              <div className="ml-2 flex shrink-0 items-center gap-1.5 border-l border-slate-200 pl-2" title={teacherName}>
+            {teachersDisplay && (
+              <div className="ml-2 flex shrink-0 items-center gap-1.5 border-l border-slate-200 pl-2" title={teachersDisplay}>
                 <Image
                   src="/teachers-logo.webp"
                   alt=""
@@ -196,7 +200,7 @@ export function GroupCard({
                   height={20}
                   className="h-5 w-5 shrink-0 object-contain"
                 />
-                <span className="max-w-[11rem] truncate text-sm font-medium text-slate-600">{teacherName}</span>
+                <span className="max-w-[11rem] truncate text-sm font-medium text-slate-600">{teachersDisplay}</span>
               </div>
             )}
             <ActionButtons
@@ -218,16 +222,8 @@ export function GroupCard({
               }}
             />
           </div>
-          {(substituteName || scheduleSummary) && (
+          {scheduleSummary && (
             <div className="mt-2 flex flex-col items-start gap-1.5 text-xs text-slate-600">
-              {substituteName && (
-                <span
-                  className="inline-flex max-w-full items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-amber-800"
-                  title={`Substitute teacher: ${substituteName}`}
-                >
-                  <UserPlus className="h-3 w-3" /> Sub: <span className="font-medium">{substituteName}</span>
-                </span>
-              )}
               {scheduleSummary && (
                 <div className="flex w-full min-w-0 items-start gap-1 text-slate-600">
                   <Clock className="mt-0.5 h-3 w-3 shrink-0 text-slate-400" />

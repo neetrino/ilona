@@ -166,13 +166,13 @@ export function createTeachersTableColumns({
     },
     {
       key: 'subGroups',
-      header: 'Sub-groups',
+      header: 'Groups (T2)',
       sortable: false,
       className: '!pl-4 !pr-4 !w-[170px] !min-w-[170px] !max-w-[170px] text-center',
       render: (teacher: Teacher) => {
         const count =
-          teacher.substituteForGroupsCount ??
-          teacher._count?.substituteForGroups ??
+          teacher.secondTeacherForGroupsCount ??
+          teacher._count?.secondTeacherForGroups ??
           0;
         return (
           <div className="flex justify-center">
@@ -183,7 +183,7 @@ export function createTeachersTableColumns({
                 onOpenGroupsModal(teacher, 'subgroups');
               }}
               className="inline-flex items-center justify-center rounded-md bg-amber-50 px-2 py-0.5 text-sm font-semibold text-amber-700"
-              title="View all substitute groups"
+              title="View groups as second rotation teacher"
             >
               {count}
             </button>

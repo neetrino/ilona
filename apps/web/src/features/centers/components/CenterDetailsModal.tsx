@@ -103,7 +103,7 @@ function mapCenterGroupToScheduleGroup(data: CenterDetails, group: CenterDetails
     schedule: normalizeSchedule(group.schedule),
     center: { id: data.center.id, name: data.center.name },
     teacher: mapTeacherToGroupTeacher(group.teacher),
-    substituteTeacher: mapTeacherToGroupTeacher(group.substituteTeacher),
+    secondTeacher: mapTeacherToGroupTeacher(group.secondTeacher),
     _count: { students: group._count?.students ?? group.students.length, lessons: group._count?.lessons ?? 0 },
     students: group.students.map((s) => ({
       id: s.id,
@@ -503,13 +503,13 @@ function GroupsTab({ data }: { data: CenterDetails }) {
             </div>
           </div>
           <p className="mt-1 text-xs text-slate-500">
-            {t('mainTeacherLabel')}{' '}
+            {t('teacher1Label')}{' '}
             <span className="text-slate-700">{teacherName(g.teacher)}</span>
-            {g.substituteTeacher && (
+            {g.secondTeacher && (
               <>
                 {' '}
-                · {t('substituteTeacherLabel')}{' '}
-                <span className="text-slate-700">{teacherName(g.substituteTeacher)}</span>
+                · {t('teacher2Label')}{' '}
+                <span className="text-slate-700">{teacherName(g.secondTeacher)}</span>
               </>
             )}
           </p>

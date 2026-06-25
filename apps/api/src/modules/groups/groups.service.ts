@@ -79,7 +79,9 @@ export class GroupsService {
 
     const scopedCenterId = assertManagerCenterAccess(currentUser, centerId);
     if (scopedCenterId) where.centerId = scopedCenterId;
-    if (teacherId) where.teacherId = teacherId;
+    if (teacherId) {
+      where.OR = [{ teacherId }, { secondTeacherId: teacherId }];
+    }
     if (isActive !== undefined) where.isActive = isActive;
     if (level) where.level = level;
 
@@ -102,7 +104,7 @@ export class GroupsService {
         select: { id: true, name: true },
       },
       teacher: teacherInclude,
-      substituteTeacher: teacherInclude,
+      secondTeacher: teacherInclude,
       _count: {
         select: { students: true, lessons: true },
       },
@@ -216,7 +218,7 @@ export class GroupsService {
       include: {
         center: true,
         teacher: detailTeacherInclude,
-        substituteTeacher: detailTeacherInclude,
+        secondTeacher: detailTeacherInclude,
         students: {
           include: {
             user: {
@@ -267,14 +269,13 @@ export class GroupsService {
    * This is the canonical method for fetching teacher groups - used by all endpoints
    */
   async findByTeacher(teacherId: string) {
-    // Include groups the teacher leads OR substitutes, so downstream
-    // consumers (e.g. teacher schedule grid) see every relevant slot.
+    // Include groups where the teacher is assigned as either rotation teacher.
     const groups = await this.prisma.prismaWithRetry(
       () =>
         this.prisma.group.findMany({
           where: {
             isActive: true,
-            OR: [{ teacherId }, { substituteTeacherId: teacherId }],
+            OR: [{ teacherId }, { secondTeacherId: teacherId }],
           },
           include: {
             center: { select: { id: true, name: true } },
@@ -284,7 +285,7 @@ export class GroupsService {
                 user: { select: { id: true, firstName: true, lastName: true, email: true } },
               },
             },
-            substituteTeacher: {
+            secondTeacher: {
               select: {
                 id: true,
                 user: { select: { id: true, firstName: true, lastName: true, email: true } },
@@ -343,6 +344,62 @@ export class GroupsService {
     return this.findByTeacher(teacher.id);
   }
 
+  private validateGroupTeachers(params: {
+    teacherId?: string | null;
+    secondTeacherId?: string | null;
+    requireBoth?: boolean;
+  }) {
+    const teacherId = params.teacherId ?? null;
+    const secondTeacherId = params.secondTeacherId ?? null;
+
+    if (params.requireBoth) {
+      if (!teacherId || !secondTeacherId) {
+        throw new BadRequestException('Assign both teachers to the group.');
+      }
+    }
+
+    if (teacherId && secondTeacherId && teacherId === secondTeacherId) {
+      throw new BadRequestException('The two group teachers must be different people.');
+    }
+  }
+
+  private async assertTeachersExist(teacherIds: string[]) {
+    for (const id of teacherIds) {
+      const teacher = await this.prisma.teacher.findUnique({ where: { id } });
+      if (!teacher) {
+        throw new BadRequestException(`Teacher with ID ${id} not found`);
+      }
+    }
+  }
+
+  private async syncGroupTeachersInChat(
+    groupId: string,
+    groupName: string,
+    teacherIds: Array<string | null | undefined>,
+  ) {
+    const uniqueTeacherIds = [...new Set(teacherIds.filter(Boolean))] as string[];
+    if (uniqueTeacherIds.length === 0) return;
+
+    let chat = await this.prisma.chat.findUnique({ where: { groupId } });
+    if (!chat) {
+      chat = await this.createGroupChat(groupId, groupName, uniqueTeacherIds);
+      return;
+    }
+
+    for (const tid of uniqueTeacherIds) {
+      const teacher = await this.prisma.teacher.findUnique({
+        where: { id: tid },
+        select: { userId: true },
+      });
+      if (!teacher) continue;
+      await this.prisma.chatParticipant.upsert({
+        where: { chatId_userId: { chatId: chat.id, userId: teacher.userId } },
+        update: { isAdmin: true, leftAt: null },
+        create: { chatId: chat.id, userId: teacher.userId, isAdmin: true },
+      });
+    }
+  }
+
   async create(dto: CreateGroupDto, currentUser?: JwtPayload) {
     const managerCenterId = getManagerCenterIdOrThrow(currentUser);
     if (managerCenterId && dto.centerId !== managerCenterId) {
@@ -358,39 +415,16 @@ export class GroupsService {
       throw new BadRequestException(`Center with ID ${dto.centerId} not found`);
     }
 
-    // Validate teacher if provided
-    if (dto.teacherId) {
-      const teacher = await this.prisma.teacher.findUnique({
-        where: { id: dto.teacherId },
-      });
+    this.validateGroupTeachers({
+      teacherId: dto.teacherId,
+      secondTeacherId: dto.secondTeacherId,
+      requireBoth: true,
+    });
 
-      if (!teacher) {
-        throw new BadRequestException(`Teacher with ID ${dto.teacherId} not found`);
-      }
-    }
-
-    if (dto.substituteTeacherId) {
-      if (dto.substituteTeacherId === dto.teacherId) {
-        throw new BadRequestException(
-          'Substitute teacher cannot be the same as the main teacher',
-        );
-      }
-      const substitute = await this.prisma.teacher.findUnique({
-        where: { id: dto.substituteTeacherId },
-      });
-      if (!substitute) {
-        throw new BadRequestException(
-          `Substitute teacher with ID ${dto.substituteTeacherId} not found`,
-        );
-      }
-    }
+    const teacherIdsToValidate = [dto.teacherId, dto.secondTeacherId].filter(Boolean) as string[];
+    await this.assertTeachersExist([...new Set(teacherIdsToValidate)]);
 
     if (dto.calendarPlan) {
-      if (!dto.teacherId) {
-        throw new BadRequestException(
-          'Assign a main teacher to the group to generate calendar lessons from the schedule.',
-        );
-      }
       if (!dto.schedule?.length) {
         throw new BadRequestException('Add at least one weekly time slot to generate calendar lessons.');
       }
@@ -420,7 +454,7 @@ export class GroupsService {
           },
         },
       },
-      substituteTeacher: {
+      secondTeacher: {
         include: {
           user: {
             select: { id: true, firstName: true, lastName: true, email: true },
@@ -438,22 +472,27 @@ export class GroupsService {
         maxStudents: FIXED_GROUP_MAX_STUDENTS,
         centerId: dto.centerId,
         teacherId: dto.teacherId,
-        substituteTeacherId: dto.substituteTeacherId,
+        secondTeacherId: dto.secondTeacherId,
         schedule: scheduleForCreate ?? undefined,
         isActive: dto.isActive ?? true,
       },
       include: groupInclude,
     });
 
-    await this.createGroupChat(group.id, group.name, dto.teacherId);
+    await this.createGroupChat(group.id, group.name, [
+      dto.teacherId as string,
+      dto.secondTeacherId as string,
+    ]);
 
     const syncedSchedule = await this.groupScheduleLessonsService.syncAfterGroupSaved({
       groupId: group.id,
       teacherId: group.teacherId,
+      secondTeacherId: group.secondTeacherId,
       weeklySlots,
       calendar: nextCalendar,
       previousScheduleJson: null,
       previousTeacherId: null,
+      previousSecondTeacherId: null,
       confirmReplaceGeneratedLessons: false,
     });
 
@@ -491,102 +530,54 @@ export class GroupsService {
       }
     }
 
-    // Validate teacher if changing
-    if (dto.teacherId !== undefined) {
-      if (dto.teacherId) {
-        const teacher = await this.prisma.teacher.findUnique({
-          where: { id: dto.teacherId },
-        });
+    const nextTeacherId =
+      dto.teacherId !== undefined ? dto.teacherId || null : currentGroup.teacherId;
+    const nextSecondTeacherId =
+      dto.secondTeacherId !== undefined
+        ? dto.secondTeacherId || null
+        : currentGroup.secondTeacherId;
 
-        if (!teacher) {
-          throw new BadRequestException(`Teacher with ID ${dto.teacherId} not found`);
-        }
-      }
+    this.validateGroupTeachers({
+      teacherId: nextTeacherId,
+      secondTeacherId: nextSecondTeacherId,
+      requireBoth: true,
+    });
 
-      // Handle teacher assignment/removal
-      const oldTeacherId = currentGroup.teacherId;
-      const newTeacherId = dto.teacherId || null;
+    const teacherIdsToValidate = [nextTeacherId, nextSecondTeacherId].filter(Boolean) as string[];
+    await this.assertTeachersExist([...new Set(teacherIdsToValidate)]);
 
-      // If teacher is being removed, mark them as left in chat
-      if (oldTeacherId && oldTeacherId !== newTeacherId) {
+    // Sync chat participants when group teachers change
+    const oldTeacherIds = [currentGroup.teacherId, currentGroup.secondTeacherId];
+    const newTeacherIds = [nextTeacherId, nextSecondTeacherId];
+    const teachersChangedForChat =
+      oldTeacherIds.some((id, i) => id !== newTeacherIds[i]) ||
+      dto.teacherId !== undefined ||
+      dto.secondTeacherId !== undefined;
+
+    if (teachersChangedForChat) {
+      for (const oldId of oldTeacherIds) {
+        if (!oldId || newTeacherIds.includes(oldId)) continue;
         const oldTeacher = await this.prisma.teacher.findUnique({
-          where: { id: oldTeacherId },
+          where: { id: oldId },
           select: { userId: true },
         });
-
-        if (oldTeacher) {
-          const chat = await this.prisma.chat.findUnique({
-            where: { groupId: id },
-          });
-
-          if (chat) {
-            await this.prisma.chatParticipant.updateMany({
-              where: {
-                chatId: chat.id,
-                userId: oldTeacher.userId,
-              },
-              data: { leftAt: new Date() },
-            });
-          }
-        }
-      }
-
-      // If new teacher is being assigned, ensure they're added to chat
-      if (newTeacherId && newTeacherId !== oldTeacherId) {
-        const newTeacher = await this.prisma.teacher.findUnique({
-          where: { id: newTeacherId },
-          include: { user: true },
+        if (!oldTeacher) continue;
+        const chat = await this.prisma.chat.findUnique({ where: { groupId: id } });
+        if (!chat) continue;
+        await this.prisma.chatParticipant.updateMany({
+          where: { chatId: chat.id, userId: oldTeacher.userId },
+          data: { leftAt: new Date() },
         });
-
-        if (newTeacher) {
-          let chat = await this.prisma.chat.findUnique({
-            where: { groupId: id },
-          });
-
-          if (!chat) {
-            chat = await this.createGroupChat(id, currentGroup.name, newTeacherId);
-          } else {
-            await this.prisma.chatParticipant.upsert({
-              where: {
-                chatId_userId: { chatId: chat.id, userId: newTeacher.userId },
-              },
-              update: { isAdmin: true, leftAt: null },
-              create: {
-                chatId: chat.id,
-                userId: newTeacher.userId,
-                isAdmin: true,
-              },
-            });
-          }
-        }
       }
-    }
-
-    if (dto.substituteTeacherId !== undefined) {
-      const nextSub = dto.substituteTeacherId || null;
-      const nextMain = dto.teacherId !== undefined ? (dto.teacherId || null) : currentGroup.teacherId;
-      if (nextSub && nextSub === nextMain) {
-        throw new BadRequestException(
-          'Substitute teacher cannot be the same as the main teacher',
-        );
-      }
-      if (nextSub) {
-        const substitute = await this.prisma.teacher.findUnique({
-          where: { id: nextSub },
-        });
-        if (!substitute) {
-          throw new BadRequestException(
-            `Substitute teacher with ID ${nextSub} not found`,
-          );
-        }
-      }
+      await this.syncGroupTeachersInChat(id, currentGroup.name, newTeacherIds);
     }
 
     const {
       schedule: scheduleDto,
       calendarPlan,
       confirmReplaceGeneratedLessons,
-      substituteTeacherId,
+      teacherId: _dtoTeacherId,
+      secondTeacherId,
       ...rest
     } = dto;
 
@@ -610,15 +601,7 @@ export class GroupsService {
       };
     }
 
-    const nextTeacherId =
-      dto.teacherId !== undefined ? dto.teacherId || null : currentGroup.teacherId;
-
     if (nextCalendar) {
-      if (!nextTeacherId) {
-        throw new BadRequestException(
-          'Assign a main teacher to the group to use calendar generation.',
-        );
-      }
       if (nextWeekly.length === 0) {
         throw new BadRequestException('Add at least one weekly time slot for calendar generation.');
       }
@@ -635,10 +618,12 @@ export class GroupsService {
     const synced = await this.groupScheduleLessonsService.syncAfterGroupSaved({
       groupId: id,
       teacherId: nextTeacherId,
+      secondTeacherId: nextSecondTeacherId,
       weeklySlots: nextWeekly,
       calendar: nextCalendar,
       previousScheduleJson: currentGroup.schedule,
       previousTeacherId: currentGroup.teacherId,
+      previousSecondTeacherId: currentGroup.secondTeacherId,
       confirmReplaceGeneratedLessons: confirmReplaceGeneratedLessons ?? false,
     });
     if (synced !== undefined) {
@@ -656,9 +641,8 @@ export class GroupsService {
       where: { id },
       data: {
         ...rest,
-        ...(substituteTeacherId !== undefined
-          ? { substituteTeacherId: substituteTeacherId || null }
-          : {}),
+        ...(secondTeacherId !== undefined ? { secondTeacherId: secondTeacherId || null } : {}),
+        teacherId: nextTeacherId,
         ...scheduleUpdate,
         maxStudents: FIXED_GROUP_MAX_STUDENTS,
       },
@@ -671,7 +655,7 @@ export class GroupsService {
             },
           },
         },
-        substituteTeacher: {
+        secondTeacher: {
           include: {
             user: {
               select: { id: true, firstName: true, lastName: true, email: true },
@@ -941,7 +925,11 @@ export class GroupsService {
     return { success: true };
   }
 
-  private async createGroupChat(groupId: string, groupName: string, teacherId?: string) {
+  private async createGroupChat(
+    groupId: string,
+    groupName: string,
+    teacherIds?: string | string[],
+  ) {
     const chat = await this.prisma.chat.create({
       data: {
         type: 'GROUP',
@@ -950,8 +938,11 @@ export class GroupsService {
       },
     });
 
-    // Add teacher as admin if exists
-    if (teacherId) {
+    const ids = (Array.isArray(teacherIds) ? teacherIds : teacherIds ? [teacherIds] : []).filter(
+      Boolean,
+    ) as string[];
+
+    for (const teacherId of [...new Set(ids)]) {
       const teacher = await this.prisma.teacher.findUnique({
         where: { id: teacherId },
       });

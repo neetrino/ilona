@@ -65,7 +65,8 @@ export function TeacherDetailsModal({
       ? Number(lessonRateRaw)
       : hourlyRateFallback;
   const groups = teacher?.groups || [];
-  const substituteGroups = teacher?.substituteForGroups || [];
+  const secondTeacherGroups = teacher?.secondTeacherForGroups || [];
+  const allGroups = [...(teacher?.groups || []), ...secondTeacherGroups];
   const explicitCenters = teacher?.centerLinks?.map((link) => link.center) ?? [];
   const groupCenters = groups.filter((group) => group.center).map((group) => group.center!);
   const centers =
@@ -272,8 +273,7 @@ export function TeacherDetailsModal({
                 {showInternalStats && (
                   <section className="rounded-[15px] border border-[rgba(14,14,16,0.07)] bg-white p-4">
                     <h3 className="mb-2 text-sm font-semibold text-[#1010a3]">{t('statistics')}</h3>
-                    <InfoRow label={t('totalGroups')} value={teacher._count?.groups ?? 0} />
-                    <InfoRow label="Sub-groups" value={teacher.substituteForGroupsCount ?? teacher._count?.substituteForGroups ?? 0} />
+                    <InfoRow label={t('totalGroups')} value={(teacher._count?.groups ?? 0) + (teacher.secondTeacherForGroupsCount ?? teacher._count?.secondTeacherForGroups ?? 0)} />
                     <InfoRow label={t('totalLessons')} value={teacher._count?.lessons ?? 0} />
                     <InfoRow label={t('totalStudents')} value={teacher._count?.students ?? 0} />
                   </section>
@@ -282,29 +282,11 @@ export function TeacherDetailsModal({
                 {showInternalStats && (
                   <section className="rounded-[15px] border border-[rgba(14,14,16,0.07)] bg-white p-4">
                     <h3 className="mb-2 text-sm font-semibold text-[#1010a3]">Groups</h3>
-                    {groups.length === 0 ? (
+                    {allGroups.length === 0 ? (
                       <p className="text-sm text-[#8b8b90]">No groups assigned.</p>
                     ) : (
                       <ul className="space-y-2">
-                        {groups.map((group) => (
-                          <li key={group.id} className="rounded-[15px] border border-[rgba(14,14,16,0.07)] px-3 py-2">
-                            <p className="text-sm font-medium text-[#3b3b40]">{group.name}</p>
-                            <p className="text-xs text-[#8b8b90]">{group.center?.name || '—'}</p>
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                  </section>
-                )}
-
-                {showInternalStats && (
-                  <section className="rounded-[15px] border border-[rgba(14,14,16,0.07)] bg-white p-4">
-                    <h3 className="mb-2 text-sm font-semibold text-[#1010a3]">Sub-groups</h3>
-                    {substituteGroups.length === 0 ? (
-                      <p className="text-sm text-[#8b8b90]">No sub-groups assigned.</p>
-                    ) : (
-                      <ul className="space-y-2">
-                        {substituteGroups.map((group) => (
+                        {allGroups.map((group) => (
                           <li key={group.id} className="rounded-[15px] border border-[rgba(14,14,16,0.07)] px-3 py-2">
                             <p className="text-sm font-medium text-[#3b3b40]">{group.name}</p>
                             <p className="text-xs text-[#8b8b90]">{group.center?.name || '—'}</p>
