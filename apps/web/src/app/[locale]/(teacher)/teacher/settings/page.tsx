@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { LanguageSwitcher } from '@/shared/components/LanguageSwitcher';
@@ -78,21 +78,81 @@ export default function TeacherSettingsPage() {
     },
   ];
 
+  const mobileTabs = tabs.filter((tab) => tab.id !== 'system');
+  const tabsTrackRef = useRef<HTMLDivElement | null>(null);
+  const tabRefs = useRef<Record<SettingsTab, HTMLButtonElement | null>>({
+    security: null,
+    notifications: null,
+    system: null,
+  });
+  const [tabIndicator, setTabIndicator] = useState({ x: 0, width: 0, visible: false });
+
+  useEffect(() => {
+    const syncIndicator = () => {
+      const activeTabEl = tabRefs.current[activeTab];
+      const tabsTrackEl = tabsTrackRef.current;
+      if (!activeTabEl || !tabsTrackEl || activeTab === 'system') {
+        setTabIndicator((prev) => ({ ...prev, visible: false }));
+        return;
+      }
+      setTabIndicator({
+        x: activeTabEl.offsetLeft,
+        width: activeTabEl.offsetWidth,
+        visible: true,
+      });
+    };
+
+    syncIndicator();
+    window.addEventListener('resize', syncIndicator);
+    return () => window.removeEventListener('resize', syncIndicator);
+  }, [activeTab]);
+
   return (
     <DashboardLayout title={t('title')} subtitle={t('teacherSubtitle')}>
       <StudentPageStack>
+        <div className="mb-6 w-full min-w-0 overflow-x-auto border-b border-[rgba(14,14,16,0.07)] [-webkit-overflow-scrolling:touch] [-ms-overflow-style:none] [scrollbar-width:none] lg:hidden [&::-webkit-scrollbar]:hidden">
+          <div ref={tabsTrackRef} className="relative flex w-full min-w-full">
+            {mobileTabs.map((tab) => (
+              <button
+                key={tab.id}
+                type="button"
+                ref={(node) => {
+                  tabRefs.current[tab.id] = node;
+                }}
+                onClick={() => setActiveTab(tab.id)}
+                className={cn(
+                  'relative flex-1 whitespace-nowrap px-4 py-3 text-center text-sm font-medium transition-colors',
+                  activeTab === tab.id
+                    ? 'text-blue-600'
+                    : 'text-[#3b3b40] hover:text-[#1010a3]',
+                )}
+              >
+                {tab.label}
+              </button>
+            ))}
+            <span
+              aria-hidden
+              className="pointer-events-none absolute bottom-0 h-0.5 bg-blue-600 transition-[transform,width,opacity] duration-300 ease-out"
+              style={{
+                width: `${tabIndicator.width}px`,
+                transform: `translateX(${tabIndicator.x}px)`,
+                opacity: tabIndicator.visible ? 1 : 0,
+              }}
+            />
+          </div>
+        </div>
+
         <div className="flex flex-col gap-5 lg:flex-row lg:gap-6">
-          <div className="w-full shrink-0 lg:w-64">
+          <div className="hidden w-full shrink-0 lg:block lg:w-64">
             <StudentCard className="p-2 sm:p-2">
-              <nav className="flex flex-row gap-1 overflow-x-auto lg:flex-col lg:overflow-visible">
+              <nav className="flex flex-col">
                 {tabs.map((tab) => (
                   <button
                     key={tab.id}
                     type="button"
                     onClick={() => setActiveTab(tab.id)}
                     className={cn(
-                      'flex min-w-[8.5rem] items-center gap-3 rounded-[0.875rem] px-4 py-3 text-left transition-colors lg:min-w-0 lg:w-full',
-                      tab.id === 'system' && 'hidden lg:flex',
+                      'flex w-full items-center gap-3 rounded-[0.875rem] px-4 py-3 text-left transition-colors',
                       activeTab === tab.id
                         ? 'bg-[#1010a3] text-white'
                         : 'text-[#3b3b40] hover:bg-[#f6f6f7]',
