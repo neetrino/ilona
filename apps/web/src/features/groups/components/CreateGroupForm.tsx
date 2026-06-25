@@ -367,6 +367,7 @@ export function CreateGroupForm({ open, onOpenChange }: CreateGroupFormProps) {
             <GroupIconPicker
               value={iconKey}
               onChange={setIconKey}
+              defaultSelectsRandom
               disabled={isSubmitting}
               aria-labelledby="group-icon-label"
             />

@@ -7,9 +7,19 @@ import { getGroupIconComponent } from '../group-icon-registry';
 interface GroupIconPickerProps {
   value: GroupIconKey | null;
   onChange: (key: GroupIconKey | null) => void;
+  /** When true, the Default tile picks a random icon instead of clearing selection. */
+  defaultSelectsRandom?: boolean;
   disabled?: boolean;
   id?: string;
   'aria-labelledby'?: string;
+}
+
+function pickRandomGroupIconKey(exclude?: GroupIconKey | null): GroupIconKey {
+  const pool = exclude
+    ? GROUP_ICON_DEFINITIONS.filter((def) => def.key !== exclude)
+    : GROUP_ICON_DEFINITIONS;
+  const index = Math.floor(Math.random() * pool.length);
+  return (pool[index] ?? GROUP_ICON_DEFINITIONS[0]).key;
 }
 
 /**
@@ -18,10 +28,21 @@ interface GroupIconPickerProps {
 export function GroupIconPicker({
   value,
   onChange,
+  defaultSelectsRandom = false,
   disabled,
   id,
   'aria-labelledby': ariaLabelledBy,
 }: GroupIconPickerProps) {
+  const handleDefaultClick = () => {
+    if (defaultSelectsRandom) {
+      onChange(pickRandomGroupIconKey(value));
+      return;
+    }
+    onChange(null);
+  };
+
+  const isDefaultSelected = !defaultSelectsRandom && value === null;
+
   return (
     <div
       id={id}
@@ -32,12 +53,12 @@ export function GroupIconPicker({
       <button
         type="button"
         role="radio"
-        aria-checked={value === null}
+        aria-checked={isDefaultSelected}
         disabled={disabled}
-        onClick={() => onChange(null)}
+        onClick={handleDefaultClick}
         className={cn(
           'flex aspect-square items-center justify-center rounded-lg border text-xs font-medium transition-colors',
-          value === null
+          isDefaultSelected
             ? 'border-primary bg-primary/10 text-primary ring-2 ring-primary/40 ring-offset-2 ring-offset-white'
             : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50',
           disabled && 'cursor-not-allowed opacity-50',
