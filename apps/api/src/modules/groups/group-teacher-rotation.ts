@@ -1,6 +1,10 @@
 /**
  * Weekly teacher rotation for groups with two assigned teachers.
- * Week 0 (anchor week) → teacherId; week 1 → secondTeacherId; alternates thereafter.
+ *
+ * Anchor: ISO week (Mon–Sun) that contains the schedule start date (`dateFrom`).
+ * - That week → Teacher 1 (`teacherId`)
+ * - Next ISO week → Teacher 2 (`secondTeacherId`)
+ * - Then alternates every ISO week
  */
 
 function parseYmd(ymd: string): Date {
@@ -19,8 +23,9 @@ export function startOfIsoWeek(date: Date): Date {
   return d;
 }
 
-export function weekIndexSinceAnchor(lessonDate: Date, anchorDateYmd: string): number {
-  const anchor = startOfIsoWeek(parseYmd(anchorDateYmd));
+/** 0-based ISO week index since the schedule start week. */
+export function weekIndexSinceScheduleStart(lessonDate: Date, scheduleStartDateYmd: string): number {
+  const anchor = startOfIsoWeek(parseYmd(scheduleStartDateYmd));
   const lessonWeek = startOfIsoWeek(lessonDate);
   const diffMs = lessonWeek.getTime() - anchor.getTime();
   return Math.floor(diffMs / (7 * 24 * 60 * 60 * 1000));
@@ -30,10 +35,15 @@ export function resolveRotatingTeacherId(params: {
   lessonDate: Date;
   teacherId: string;
   secondTeacherId: string;
-  rotationAnchorDateYmd: string;
+  scheduleStartDateYmd: string;
 }): string {
-  const weekIndex = weekIndexSinceAnchor(params.lessonDate, params.rotationAnchorDateYmd);
+  const weekIndex = weekIndexSinceScheduleStart(params.lessonDate, params.scheduleStartDateYmd);
   return weekIndex % 2 === 0 ? params.teacherId : params.secondTeacherId;
+}
+
+/** @deprecated Use weekIndexSinceScheduleStart */
+export function weekIndexSinceAnchor(lessonDate: Date, anchorDateYmd: string): number {
+  return weekIndexSinceScheduleStart(lessonDate, anchorDateYmd);
 }
 
 export function groupTeacherIds(group: {

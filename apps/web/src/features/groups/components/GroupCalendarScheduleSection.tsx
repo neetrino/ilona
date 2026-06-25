@@ -5,7 +5,7 @@ import { Label } from '@/shared/components/ui';
 import { DatePickerInput } from '@/shared/components/ui/date-picker-input';
 import type { GroupScheduleEntry } from '../types';
 import { GroupScheduleEditor } from './GroupScheduleEditor';
-import { addOneMonthToYmd, scheduleSlotsValidationError } from '../group-schedule-utils';
+import { scheduleEndDateFromStart, scheduleSlotsValidationError } from '../group-schedule-utils';
 
 export interface GroupCalendarScheduleSectionProps {
   schedule: GroupScheduleEntry[];
@@ -32,7 +32,7 @@ export function GroupCalendarScheduleSection({
     (next: string) => {
       onDateFromChange(next);
       if (next) {
-        onDateToChange(addOneMonthToYmd(next));
+        onDateToChange(scheduleEndDateFromStart(next));
       }
     },
     [onDateFromChange, onDateToChange],

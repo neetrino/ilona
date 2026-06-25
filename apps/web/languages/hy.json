@@ -820,6 +820,7 @@
       "selectCenter": "Ընտրել կենտրոն",
       "teacher1": "Teacher 1",
       "teacher2": "Teacher 2",
+      "teacherRotationHint": "Teacher 1-ը դասեր է տալիս schedule start date-ը պարունակող ISO շաբաթը (երկ–կիր), Teacher 2-ը՝ հաջորդ շաբաթը, ապա շաբագնական հերթափոխվում են (generated lesson-ների համար)։",
       "optional": "(Ընտրովի)",
       "noTeacherAssigned": "Ընտրել ուսուցիչ",
       "loadingCenters": "Կենտրոնները բեռնվում են...",

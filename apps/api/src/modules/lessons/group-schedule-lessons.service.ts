@@ -241,7 +241,7 @@ export class GroupScheduleLessonsService {
         lessonDate: at,
         teacherId,
         secondTeacherId,
-        rotationAnchorDateYmd: dateFrom,
+        scheduleStartDateYmd: dateFrom,
       });
 
       const endAt = new Date(at.getTime() + duration * 60_000);

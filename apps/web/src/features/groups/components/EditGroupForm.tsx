@@ -576,6 +576,8 @@ export function EditGroupForm({ open, onOpenChange, groupId }: EditGroupFormProp
             />
           </div>
 
+          <p className="text-xs text-slate-500">{tForm('teacherRotationHint')}</p>
+
           <GroupCalendarScheduleSection
             schedule={schedule}
             onScheduleChange={setSchedule}

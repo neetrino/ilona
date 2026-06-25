@@ -43,14 +43,28 @@ export function formatLocalYmd(date: Date): string {
   return `${y}-${m}-${d}`;
 }
 
-/** Default calendar range when opening group create/edit: today through last day of current month. */
+/** Default span from schedule start to end date (inclusive offset in days). */
+export const GROUP_SCHEDULE_DEFAULT_DURATION_DAYS = 30;
+
+export function addDaysToYmd(ymd: string, days: number): string {
+  const d = parseYmd(ymd);
+  if (!d) return ymd;
+  d.setDate(d.getDate() + days);
+  return formatLocalYmd(d);
+}
+
+/** Default calendar range when opening group create/edit: today through 30 days later. */
 export function defaultMonthDateRange(): { from: string; to: string } {
-  const now = new Date();
-  const end = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+  const from = formatLocalYmd(new Date());
   return {
-    from: formatLocalYmd(now),
-    to: formatLocalYmd(end),
+    from,
+    to: addDaysToYmd(from, GROUP_SCHEDULE_DEFAULT_DURATION_DAYS),
   };
+}
+
+/** End date for a schedule that starts on `startYmd` (start + default duration). */
+export function scheduleEndDateFromStart(startYmd: string): string {
+  return addDaysToYmd(startYmd, GROUP_SCHEDULE_DEFAULT_DURATION_DAYS);
 }
 
 function parseYmd(ymd: string): Date | null {
