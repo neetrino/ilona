@@ -295,7 +295,7 @@ export function StudentDetailsModal({ studentId, open, onClose, locale }: Studen
         <p className="text-slate-500">{t('studentNotFound')}</p>
       ) : (
         <>
-          <div className="flex flex-col sm:flex-row items-start gap-4 sm:gap-6 pb-6 border-b border-slate-200">
+          <div className="flex flex-col sm:flex-row items-start gap-4 sm:gap-6 pb-6">
             <button
               type="button"
               onClick={() => student.user?.avatarUrl && setPhotoPreviewOpen(true)}
@@ -501,7 +501,7 @@ export function StudentDetailsModal({ studentId, open, onClose, locale }: Studen
             </div>
           )}
 
-          <div className="flex flex-wrap items-center gap-3 border-t border-[rgba(14,14,16,0.07)] pt-4">
+          <div className="flex flex-wrap items-center gap-3 pt-4">
             <Link href={`/${locale}${basePath}/students/${student.id}`} className={portalPrimaryButtonClass} onClick={() => onClose()}>
               {t('openFullProfile')}
             </Link>
