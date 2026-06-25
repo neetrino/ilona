@@ -73,7 +73,7 @@ export function DashboardLayout({
   const hasAdminBottomNav = isAdminPortal && isAdminPortalSubpage(normalizedPath, role);
   const isPortalShell = isStudentPortal || isTeacherPortal || isAdminPortal;
   const isDashboardHome = isPortalShell && !title;
-  const adminPageSubtitle = isAdminPortal ? undefined : subtitle;
+  const portalHeaderSubtitle = isDashboardHome ? subtitle : undefined;
 
   useEffect(() => {
     setMobileNavOpen(false);
@@ -174,20 +174,20 @@ export function DashboardLayout({
           {isStudentPortal ? (
             <StudentDashboardHeader
               pageTitle={isDashboardHome ? undefined : title}
-              pageSubtitle={isDashboardHome ? undefined : subtitle}
+              pageSubtitle={portalHeaderSubtitle}
               onMenuClick={() => setMobileNavOpen(true)}
             />
           ) : isTeacherPortal ? (
             <TeacherDashboardHeader
               pageTitle={isDashboardHome ? undefined : title}
-              pageSubtitle={isDashboardHome ? undefined : subtitle}
+              pageSubtitle={portalHeaderSubtitle}
               onMenuClick={() => setMobileNavOpen(true)}
             />
           ) : isAdminPortal ? (
             <div className={cn(mobileFullBleed && 'hidden lg:block')}>
               <AdminDashboardHeader
                 pageTitle={isDashboardHome ? undefined : title}
-                pageSubtitle={isDashboardHome ? undefined : adminPageSubtitle}
+                pageSubtitle={portalHeaderSubtitle}
                 headerContent={headerContent}
               />
             </div>
