@@ -16,7 +16,6 @@ import { getErrorMessage } from '@/shared/lib/api';
 import { cn, formatPhoneForDisplay } from '@/shared/lib/utils';
 import { X } from 'lucide-react';
 import { teacherBelongsToCenter } from '../lib/center-scoped-assignment';
-import { getStudentDobMaxDate, getStudentDobMinDate } from '../student-account-form.schema';
 import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
 import { computeAgeFromDob } from '../student-account-form.schema';
 import { isoToDmy, resolveDmyOrIsoToIso } from '@/shared/lib/dmy-date';
