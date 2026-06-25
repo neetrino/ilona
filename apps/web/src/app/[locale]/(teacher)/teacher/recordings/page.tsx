@@ -10,8 +10,10 @@ import {
   StudentGhostButton,
   StudentInput,
   StudentPageStack,
+  studentInputClass,
   studentTableHeadClass,
 } from '@/features/student-ui';
+import { DatePickerInput } from '@/shared/components/ui';
 import { cn } from '@/shared/lib/utils';
 import { VoiceMessagePlayer } from '@/features/chat/components/VoiceMessagePlayer';
 import { MultiSelectChipsDropdown } from '@/shared/components/ui/multi-select-chips-dropdown';
@@ -289,8 +291,8 @@ export default function TeacherRecordingsPage() {
     >
       <StudentPageStack>
       <StudentCard>
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-6">
-        <div className="md:col-span-2">
+      <div className="grid w-full min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-[repeat(auto-fit,minmax(min(100%,11rem),1fr))]">
+        <div className="min-w-0 sm:col-span-2 lg:col-span-1">
           <MultiSelectChipsDropdown
             label={tCommon('group')}
             options={groupMultiOptions}
@@ -303,7 +305,7 @@ export default function TeacherRecordingsPage() {
             isLoading={isLoadingDirectory}
           />
         </div>
-        <div className="md:col-span-2">
+        <div className="min-w-0 sm:col-span-2 lg:col-span-1">
           <MultiSelectChipsDropdown
             label={tCommon('searchTypeStudent')}
             options={studentMultiOptions}
@@ -316,25 +318,27 @@ export default function TeacherRecordingsPage() {
             isLoading={isLoadingDirectory}
           />
         </div>
-        <div>
-          <StudentFieldLabel htmlFor="recordings-from">{tCommon('from')}</StudentFieldLabel>
-          <StudentInput
-            id="recordings-from"
-            type="date"
-            value={dateFrom}
-            max={dateTo || undefined}
-            onChange={(event) => setDateFrom(event.target.value)}
-          />
-        </div>
-        <div>
-          <StudentFieldLabel htmlFor="recordings-to">{tCommon('to')}</StudentFieldLabel>
-          <StudentInput
-            id="recordings-to"
-            type="date"
-            value={dateTo}
-            min={dateFrom || undefined}
-            onChange={(event) => setDateTo(event.target.value)}
-          />
+        <div className="grid min-w-0 grid-cols-2 gap-3 sm:contents">
+          <div className="min-w-0">
+            <StudentFieldLabel htmlFor="recordings-from">{tCommon('from')}</StudentFieldLabel>
+            <DatePickerInput
+              id="recordings-from"
+              value={dateFrom}
+              max={dateTo || undefined}
+              onValueChange={setDateFrom}
+              className={studentInputClass}
+            />
+          </div>
+          <div className="min-w-0">
+            <StudentFieldLabel htmlFor="recordings-to">{tCommon('to')}</StudentFieldLabel>
+            <DatePickerInput
+              id="recordings-to"
+              value={dateTo}
+              min={dateFrom || undefined}
+              onValueChange={setDateTo}
+              className={studentInputClass}
+            />
+          </div>
         </div>
       </div>
 
