@@ -46,9 +46,9 @@ const rectangularConfig: Record<
   },
   md: {
     track:
-      'relative inline-flex h-11 w-full flex-wrap items-center rounded-lg border border-[rgba(14,14,16,0.12)] bg-[#f6f6f7] p-1.5 shadow-sm sm:w-auto',
+      'relative flex h-11 w-full items-center rounded-lg border border-[rgba(14,14,16,0.12)] bg-[#f6f6f7] p-1.5 shadow-sm sm:inline-flex sm:w-auto',
     button:
-      'inline-flex h-8 min-w-[5.25rem] flex-1 items-center justify-center rounded-md px-5 text-sm font-semibold sm:flex-none',
+      'inline-flex h-8 min-w-0 flex-1 items-center justify-center rounded-md px-2 text-sm font-semibold sm:min-w-[5.25rem] sm:flex-none sm:px-5',
     indicatorRadius: 'rounded-md shadow-sm',
   },
 };

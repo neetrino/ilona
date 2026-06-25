@@ -139,8 +139,8 @@ export function StudentUpcomingLessonsCard({
 
   return (
     <section className="flex h-full min-h-0 flex-col rounded-3xl border border-[rgba(14,14,16,0.07)] bg-white p-5 sm:p-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0">
           <h3 className="text-base font-semibold tracking-tight text-[#1010a3]">
             {t('upcomingLessonsTitle')}
           </h3>
@@ -152,7 +152,9 @@ export function StudentUpcomingLessonsCard({
           options={filters.map(({ key, label }) => ({ value: key, label }))}
           value={filter}
           onChange={setFilter}
+          shape="rectangular"
           size="md"
+          className="w-full shrink-0 sm:w-auto"
         />
       </div>
 
