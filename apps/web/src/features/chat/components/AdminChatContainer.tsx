@@ -15,7 +15,7 @@ import { ChatBackButton } from './ChatBackButton';
 import { ChatEmptyState } from './ChatEmptyState';
 import { MobileChatSlidePanel } from './MobileChatSlidePanel';
 import { useChatStore } from '../store/chat.store';
-import { useSocket, useChatDetail, chatKeys } from '../hooks';
+import { useSocket, useChatDetail, chatKeys, clearChatUnreadInCache } from '../hooks';
 import type { Chat } from '../types';
 import { cn } from '@/shared/lib/utils';
 import { ADMIN_PORTAL_MOBILE_BOTTOM_NAV_OFFSET_CLASS } from '@/features/admin-dashboard/admin-portal-layout';
@@ -255,7 +255,8 @@ function AdminChatContent({ emptyTitle, emptyDescription, className }: AdminChat
   const queryClient = useQueryClient();
 
   const handleSelectChat = (chat: Chat) => {
-    setActiveChat(chat);
+    clearChatUnreadInCache(queryClient, chat.id);
+    setActiveChat({ ...chat, unreadCount: 0 });
     setMobileListVisible(false);
     setMobileChatPanelOpen(true);
     

@@ -238,25 +238,14 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
   markAsReadRef.current = markAsRead;
 
   useEffect(() => {
-    // Mark as read if:
-    // 1. chat.id exists
-    // 2. conversationId changed (not the same conversation)
-    // 3. Messages query has finished loading (either loaded messages or confirmed empty)
-    // 4. We haven't already marked this conversation as read
-    // Note: markAsRead will use HTTP fallback if socket is not connected
-    if (
-      chat.id &&
-      chat.id !== lastMarkedConversationIdRef.current &&
-      !isLoading // Wait for messages to finish loading (even if empty)
-    ) {
-      lastMarkedConversationIdRef.current = chat.id;
-      markAsReadRef.current(chat.id).catch((error) => {
-        console.error('[ChatWindow] Failed to mark as read:', error);
-        // Don't reset ref on error - only reset if chat actually changes
-        // This prevents infinite retry loops
-      });
-    }
-  }, [chat.id, isLoading]);
+    // Mark as read when the conversation is opened (user has entered the chat).
+    if (!chat.id || chat.id === lastMarkedConversationIdRef.current) return;
+
+    lastMarkedConversationIdRef.current = chat.id;
+    markAsReadRef.current(chat.id).catch((error) => {
+      console.error('[ChatWindow] Failed to mark as read:', error);
+    });
+  }, [chat.id]);
 
   // Reset input value when chat changes - only load user's own draft, never from messages
   useEffect(() => {

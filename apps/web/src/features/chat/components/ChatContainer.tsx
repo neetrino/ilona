@@ -4,6 +4,7 @@ import { useTranslations } from 'next-intl';
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { readUrlSearchParam } from '@/shared/lib/url-search-params';
 import { useAppSearchUrl } from '@/shared/hooks/useAppSearchUrl';
+import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from '@/config/navigation';
 import { useAuthStore, getDashboardPath } from '@/features/auth/store/auth.store';
 import { ChatList } from './ChatList';
@@ -14,7 +15,7 @@ import { MobileChatSlidePanel } from './MobileChatSlidePanel';
 import { ChatBackButton } from './ChatBackButton';
 import { ChatEmptyState } from './ChatEmptyState';
 import { useChatStore } from '../store/chat.store';
-import { useSocket, useChats, useCreateDirectChat } from '../hooks';
+import { useSocket, useChats, useCreateDirectChat, clearChatUnreadInCache } from '../hooks';
 import { useMyTeachers } from '@/features/students/hooks/useStudents';
 import { fetchChat } from '../api/chat.api';
 import type { Chat } from '../types';
@@ -32,6 +33,7 @@ function ChatContent({ emptyTitle, emptyDescription, className }: ChatContainerP
   const tChat = useTranslations('chat');
   const tCommon = useTranslations('common');
   const router = useRouter();
+  const queryClient = useQueryClient();
   const { searchParams, urlRevision, replaceAllParams } = useAppSearchUrl();
   const { user } = useAuthStore();
   const { activeChat, setActiveChat, isMobileListVisible, setMobileListVisible, setAccountKey } =
@@ -276,7 +278,8 @@ function ChatContent({ emptyTitle, emptyDescription, className }: ChatContainerP
   }, [activeChat, conversationIdFromUrl, replaceSearchParams, urlRevision]);
 
   const handleSelectChat = (chat: Chat) => {
-    setActiveChat(chat);
+    clearChatUnreadInCache(queryClient, chat.id);
+    setActiveChat({ ...chat, unreadCount: 0 });
     setMobileListVisible(false);
     setMobileChatPanelOpen(true);
     // Update URL immediately - remove type and teacherId params if present

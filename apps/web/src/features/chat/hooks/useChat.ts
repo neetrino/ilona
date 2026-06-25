@@ -28,7 +28,12 @@ import {
   fetchTeacherStudents,
   fetchTeacherAdmin,
   fetchStudentAdmin,
+  type TeacherGroup,
+  type TeacherStudent,
+  type TeacherAdmin,
+  type StudentAdmin,
 } from '../api/chat.api';
+import { useChatStore } from '../store/chat.store';
 
 // Query keys
 export const chatKeys = {
@@ -309,6 +314,59 @@ export function useRemoveMessageFromCache() {
 }
 
 /**
+ * Clear unread badge for a chat across all React Query caches (main list, teacher
+ * groups/students/admin, student admin). Call when the user opens a conversation.
+ */
+export function clearChatUnreadInCache(queryClient: QueryClient, chatId: string): void {
+  queryClient.setQueryData(chatKeys.list(), (oldData: Chat[] | undefined) => {
+    if (!oldData) return oldData;
+    return oldData.map((chat) =>
+      chat.id === chatId ? { ...chat, unreadCount: 0 } : chat
+    );
+  });
+
+  queryClient.setQueryData(chatKeys.detail(chatId), (oldData: Chat | undefined) => {
+    if (!oldData) return oldData;
+    return { ...oldData, unreadCount: 0 };
+  });
+
+  queryClient.setQueriesData<TeacherGroup[]>(
+    { queryKey: [...chatKeys.all, 'teacher', 'groups'] },
+    (oldData) => {
+      if (!oldData) return oldData;
+      return oldData.map((group) =>
+        group.chatId === chatId ? { ...group, unreadCount: 0 } : group
+      );
+    }
+  );
+
+  queryClient.setQueriesData<TeacherStudent[]>(
+    { queryKey: [...chatKeys.all, 'teacher', 'students'] },
+    (oldData) => {
+      if (!oldData) return oldData;
+      return oldData.map((student) =>
+        student.chatId === chatId ? { ...student, unreadCount: 0 } : student
+      );
+    }
+  );
+
+  queryClient.setQueryData(chatKeys.teacherAdmin(), (oldData: TeacherAdmin | null | undefined) => {
+    if (!oldData || oldData.chatId !== chatId) return oldData;
+    return { ...oldData, unreadCount: 0 };
+  });
+
+  queryClient.setQueryData(chatKeys.studentAdmin(), (oldData: StudentAdmin | null | undefined) => {
+    if (!oldData || oldData.chatId !== chatId) return oldData;
+    return { ...oldData, unreadCount: 0 };
+  });
+
+  const { activeChat, setActiveChat } = useChatStore.getState();
+  if (activeChat?.id === chatId) {
+    setActiveChat({ ...activeChat, unreadCount: 0 });
+  }
+}
+
+/**
  * Hook to update chat unread count in cache after mark-as-read
  * This prevents infinite loops by updating cache directly instead of invalidating
  */
@@ -316,7 +374,11 @@ export function useUpdateChatUnreadCount() {
   const queryClient = useQueryClient();
 
   return (chatId: string, unreadCount: number) => {
-    // Update the chat list cache
+    if (unreadCount === 0) {
+      clearChatUnreadInCache(queryClient, chatId);
+      return;
+    }
+
     queryClient.setQueryData(
       chatKeys.list(),
       (oldData: Array<{ id: string; unreadCount?: number }> | undefined) => {

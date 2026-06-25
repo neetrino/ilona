@@ -3,7 +3,6 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '@/features/auth/store/auth.store';
-import { useChatStore } from '../store/chat.store';
 import {
   initSocket,
   disconnectSocket,
@@ -22,13 +21,14 @@ import {
 import { markChatAsRead, sendMessageHttp } from '../api/chat.api';
 import {
   chatKeys,
+  clearChatUnreadInCache,
   createOptimisticTextMessage,
   PENDING_MESSAGE_ID_PREFIX,
   pushMessageToCache,
   removeMessageFromMessagesCache,
   upsertIncomingMessageInCache,
 } from './useChat';
-import type { Message, Chat } from '../types';
+import type { Message } from '../types';
 
 interface UseSocketOptions {
   onNewMessage?: (message: Message) => void;
@@ -318,9 +318,11 @@ export function useSocket(options: UseSocketOptions = {}) {
 
   // Mark as read
   const markAsRead = useCallback(async (chatId: string) => {
+    clearChatUnreadInCache(queryClient, chatId);
+
     // Try socket first, fallback to HTTP if socket not connected
     let result = await emitMarkAsRead(chatId);
-    
+
     // If socket failed (not connected), try HTTP API as fallback
     if (!result.success) {
       try {
@@ -330,37 +332,11 @@ export function useSocket(options: UseSocketOptions = {}) {
         return { success: false };
       }
     }
-    
-    // Update cache after marking as read (set unreadCount to 0 for this chat)
-    // This prevents infinite loops by updating cache directly instead of invalidating
-    // Preserve all chat properties including groupId, type, participants, etc.
+
     if (result.success) {
-      queryClient.setQueryData(
-        chatKeys.list(),
-        (oldData: Chat[] | undefined) => {
-          if (!oldData) return oldData;
-          return oldData.map((chat) =>
-            chat.id === chatId ? { ...chat, unreadCount: 0 } : chat
-          );
-        }
-      );
-      
-      // Also update the chat detail cache if it exists
-      queryClient.setQueryData(
-        chatKeys.detail(chatId),
-        (oldData: Chat | undefined) => {
-          if (!oldData) return oldData;
-          return { ...oldData, unreadCount: 0 };
-        }
-      );
-      
-      // Update activeChat in store if it matches the chatId
-      const { activeChat, setActiveChat } = useChatStore.getState();
-      if (activeChat && activeChat.id === chatId) {
-        setActiveChat({ ...activeChat, unreadCount: 0 });
-      }
+      clearChatUnreadInCache(queryClient, chatId);
     }
-    
+
     return result;
   }, [queryClient]);
 
