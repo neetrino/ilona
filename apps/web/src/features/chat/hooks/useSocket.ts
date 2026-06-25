@@ -20,8 +20,14 @@ import {
   emitSendVocabulary,
 } from '../lib/socket';
 import { markChatAsRead, sendMessageHttp } from '../api/chat.api';
-import { chatKeys } from './useChat';
-import { sortChatListItems } from '../utils/chat-utils';
+import {
+  chatKeys,
+  createOptimisticTextMessage,
+  PENDING_MESSAGE_ID_PREFIX,
+  pushMessageToCache,
+  removeMessageFromMessagesCache,
+  upsertIncomingMessageInCache,
+} from './useChat';
 import type { Message, Chat } from '../types';
 
 interface UseSocketOptions {
@@ -119,60 +125,7 @@ export function useSocket(options: UseSocketOptions = {}) {
     // New message
     unsubscribers.push(
       onSocketEvent('message:new', (message) => {
-        // Update messages cache
-        queryClient.setQueryData(
-          chatKeys.messages(message.chatId),
-          (oldData: { pages: { items: Message[] }[] } | undefined) => {
-            if (!oldData) return oldData;
-
-            // Check if message already exists
-            const exists = oldData.pages.some((page) =>
-              page.items.some((m) => m.id === message.id)
-            );
-            if (exists) return oldData;
-
-            // Add to first page (newest messages) to match addMessageToCache and API order (createdAt desc)
-            return {
-              ...oldData,
-              pages: oldData.pages.map((page, index) => {
-                if (index === 0) {
-                  return {
-                    ...page,
-                    items: [...page.items, message],
-                  };
-                }
-                return page;
-              }),
-            };
-          }
-        );
-
-        // Update chat list with new message, lastMessageAt, and unreadCount
-        queryClient.setQueryData(
-          chatKeys.list(),
-          (oldData: Chat[] | undefined) => {
-            if (!oldData) return oldData;
-
-            const { user } = useAuthStore.getState();
-            const isFromOtherUser = message.senderId !== user?.id;
-
-            return sortChatListItems(
-              oldData.map((chat) => {
-                if (chat.id !== message.chatId) return chat;
-                return {
-                  ...chat,
-                  lastMessage: message,
-                  lastMessageAt: message.createdAt,
-                  updatedAt: message.createdAt,
-                  unreadCount: isFromOtherUser
-                    ? (chat.unreadCount || 0) + 1
-                    : chat.unreadCount,
-                };
-              }),
-              (chat) => chat,
-            );
-          },
-        );
+        upsertIncomingMessageInCache(queryClient, message.chatId, message);
 
         optionsRef.current.onNewMessage?.(message);
       })
@@ -282,24 +235,63 @@ export function useSocket(options: UseSocketOptions = {}) {
   // Send message
   const sendMessage = useCallback(
     async (chatId: string, content: string, type = 'TEXT') => {
-      if (!content.trim()) return { success: false, error: 'Empty message' };
-      
+      const trimmedContent = content.trim();
+      if (!trimmedContent) return { success: false, error: 'Empty message' };
+
+      const { user } = useAuthStore.getState();
+      if (!user) return { success: false, error: 'Not authenticated' };
+
+      const clientId = `${PENDING_MESSAGE_ID_PREFIX}${crypto.randomUUID()}`;
+      const optimisticMessage = createOptimisticTextMessage({
+        clientId,
+        chatId,
+        content: trimmedContent,
+        type: type as Message['type'],
+        senderId: user.id,
+        sender: {
+          id: user.id,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          avatarUrl: user.avatarUrl,
+          role: user.role,
+        },
+      });
+
+      pushMessageToCache(queryClient, chatId, optimisticMessage);
+
+      const confirmMessage = (message: Message) => {
+        upsertIncomingMessageInCache(queryClient, chatId, message);
+      };
+
+      const revertOptimisticMessage = () => {
+        removeMessageFromMessagesCache(queryClient, chatId, clientId);
+        void queryClient.invalidateQueries({ queryKey: chatKeys.list() });
+      };
+
       // Try socket first
-      const socketResult = await emitSendMessage(chatId, content.trim(), type);
+      const socketResult = await emitSendMessage(chatId, trimmedContent, type);
       if (socketResult.success) {
+        if (socketResult.message) {
+          confirmMessage(socketResult.message as Message);
+        }
         return socketResult;
       }
-      
+
       // Fallback to HTTP if socket is not connected
       try {
-        const message = await sendMessageHttp(chatId, content.trim(), type);
+        const message = await sendMessageHttp(chatId, trimmedContent, type);
+        confirmMessage(message);
         return { success: true, message };
       } catch (error) {
+        revertOptimisticMessage();
         console.error('[useSocket] Failed to send message via HTTP:', error);
-        return { success: false, error: error instanceof Error ? error.message : 'Failed to send message' };
+        return {
+          success: false,
+          error: error instanceof Error ? error.message : 'Failed to send message',
+        };
       }
     },
-    []
+    [queryClient],
   );
 
   // Edit message

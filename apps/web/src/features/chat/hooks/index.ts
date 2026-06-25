@@ -22,6 +22,7 @@ export {
   useTeacherUnreadCounts,
   useStudentUnreadCounts,
   chatKeys,
+  isPendingMessageId,
 } from './useChat';
 
 export {

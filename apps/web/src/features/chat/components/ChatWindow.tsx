@@ -9,6 +9,7 @@ import {
   useAddMessageToCache,
   useCreateDirectChat,
   useChatMessageNavigation,
+  isPendingMessageId,
 } from '../hooks';
 import { useChatStore } from '../store/chat.store';
 import type { Chat } from '../types';
@@ -521,19 +522,20 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
   };
 
   // Handle send
-  const handleSend = useCallback(async () => {
+  const handleSend = useCallback(() => {
     const content = inputValue.trim();
-    if (!content) return; // Allow sending even if socket is not connected (will use HTTP fallback)
+    if (!content) return;
 
     setInputValue('');
     clearDraft(chat.id);
     stopTyping(chat.id);
 
-    const result = await sendMessage(chat.id, content);
-    if (!result.success) {
-      console.error('Failed to send message:', result.error);
-      setInputValue(content); // Restore on failure
-    }
+    void sendMessage(chat.id, content).then((result) => {
+      if (!result.success) {
+        console.error('Failed to send message:', result.error);
+        setInputValue(content);
+      }
+    });
   }, [inputValue, chat.id, sendMessage, clearDraft, stopTyping]);
 
   // Handle key press
@@ -720,6 +722,7 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
         ) : (
             filteredMessages.map((message, index) => {
               const isOwn = message.senderId === user?.id;
+              const isPending = isPendingMessageId(message.id);
               const senderDisplay = getMessageSenderDisplay(message, senderLabels);
               const prevMessage = filteredMessages[index - 1];
               const showDateSeparator = shouldShowDateSeparator(message, prevMessage);
@@ -806,7 +809,7 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
                     onClick={isOwn ? (event) => handleOwnMessageTap(message.id, event) : undefined}
                   >
                     {/* Delete button (only for own messages) */}
-                    {isOwn && (
+                    {isOwn && !isPending && (
                       <button
                         type="button"
                         onClick={(event) => {
@@ -851,6 +854,7 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
                     <div
                       className={cn(
                         'px-4 py-2 rounded-2xl',
+                        isPending && 'opacity-70',
                         isVocabulary
                           ? 'bg-gradient-to-br from-purple-500 to-purple-600 text-white rounded-lg border-2 border-purple-300'
                           : isOwn
