@@ -560,6 +560,8 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
   const onlineStatus = getOnlineStatus();
   const isMobileConversation = Boolean(onBack);
   const isAdminPortalChat = user?.role === 'ADMIN' || user?.role === 'MANAGER';
+  const needsMobileBottomNavComposerOffset =
+    isMobileConversation && (isAdminPortalChat || isPortalChatRole(user?.role));
 
   return (
     <div className="flex h-full min-h-0 flex-1 flex-col overflow-hidden">
@@ -908,11 +910,10 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
         className={cn(
           'shrink-0 border-t p-4',
           isMobileConversation && 'max-lg:sticky max-lg:bottom-0 max-lg:z-20',
-          isMobileConversation &&
-            isAdminPortalChat &&
+          needsMobileBottomNavComposerOffset &&
             'max-lg:pb-[calc(6rem+env(safe-area-inset-bottom))]',
           isMobileConversation &&
-            !isAdminPortalChat &&
+            !needsMobileBottomNavComposerOffset &&
             'max-lg:pb-[env(safe-area-inset-bottom)]',
           ui.border,
           ui.headerBg,

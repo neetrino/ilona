@@ -21,6 +21,7 @@ import {
 } from '../lib/socket';
 import { markChatAsRead, sendMessageHttp } from '../api/chat.api';
 import { chatKeys } from './useChat';
+import { sortChatListItems } from '../utils/chat-utils';
 import type { Message, Chat } from '../types';
 
 interface UseSocketOptions {
@@ -147,7 +148,6 @@ export function useSocket(options: UseSocketOptions = {}) {
         );
 
         // Update chat list with new message, lastMessageAt, and unreadCount
-        // Optimize: Only re-sort if the updated chat is not already first
         queryClient.setQueryData(
           chatKeys.list(),
           (oldData: Chat[] | undefined) => {
@@ -155,55 +155,23 @@ export function useSocket(options: UseSocketOptions = {}) {
 
             const { user } = useAuthStore.getState();
             const isFromOtherUser = message.senderId !== user?.id;
-            const messageTime = new Date(message.createdAt).getTime();
 
-            // Find the chat index
-            const chatIndex = oldData.findIndex((chat) => chat.id === message.chatId);
-            if (chatIndex === -1) return oldData;
-
-            // Update the chat
-            const updatedChat = {
-              ...oldData[chatIndex],
-              lastMessage: message,
-              lastMessageAt: message.createdAt,
-              updatedAt: message.createdAt,
-              unreadCount: isFromOtherUser 
-                ? (oldData[chatIndex].unreadCount || 0) + 1 
-                : oldData[chatIndex].unreadCount,
-            };
-
-            // If chat is already first, just update it without sorting
-            if (chatIndex === 0) {
-              const newData = [...oldData];
-              newData[0] = updatedChat;
-              return newData;
-            }
-
-            // Check if updated chat should be first (has newer message than current first)
-            const firstChat = oldData[0];
-            const firstChatTime = firstChat.lastMessageAt 
-              ? new Date(firstChat.lastMessageAt).getTime()
-              : (firstChat.lastMessage?.createdAt ? new Date(firstChat.lastMessage.createdAt).getTime() : new Date(firstChat.updatedAt).getTime());
-
-            // If new message is older than first chat, just update in place
-            if (messageTime <= firstChatTime) {
-              const newData = [...oldData];
-              newData[chatIndex] = updatedChat;
-              return newData;
-            }
-
-            // New message is newest - move chat to top and re-sort only if needed
-            const newData = [...oldData];
-            newData[chatIndex] = updatedChat;
-            
-            // Move to front
-            newData.splice(chatIndex, 1);
-            newData.unshift(updatedChat);
-            
-            // Only sort if there are other chats that might have newer messages
-            // (In practice, this is rare, so we can skip full sort)
-            return newData;
-          }
+            return sortChatListItems(
+              oldData.map((chat) => {
+                if (chat.id !== message.chatId) return chat;
+                return {
+                  ...chat,
+                  lastMessage: message,
+                  lastMessageAt: message.createdAt,
+                  updatedAt: message.createdAt,
+                  unreadCount: isFromOtherUser
+                    ? (chat.unreadCount || 0) + 1
+                    : chat.unreadCount,
+                };
+              }),
+              (chat) => chat,
+            );
+          },
         );
 
         optionsRef.current.onNewMessage?.(message);

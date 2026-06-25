@@ -11,7 +11,7 @@ import type { AssignedTeacher } from '@/features/students/api/students.api';
 import { cn } from '@/shared/lib/utils';
 import { getChatTheme } from '../lib/chat-theme';
 import { formatMessagePreview } from '../utils';
-import { formatChatListTime } from '../utils/chat-utils';
+import { formatChatListTime, sortChatListItems, type ChatListSortable } from '../utils/chat-utils';
 import Image from 'next/image';
 import { formatDisplayName, getInitials, getInitialsFromParts } from '@/shared/components/ui/avatar';
 import { OnlineStatusDot } from './OnlineStatusDot';
@@ -66,11 +66,7 @@ export function StudentChatList({ onSelectChat }: StudentChatListProps) {
         return fullName.includes(query);
       });
     });
-    list = [...list].sort((a, b) => {
-      const aTime = new Date(a.lastMessage?.createdAt || a.updatedAt || 0).getTime();
-      const bTime = new Date(b.lastMessage?.createdAt || b.updatedAt || 0).getTime();
-      return bTime - aTime;
-    });
+    list = sortChatListItems(list, (chat) => chat);
     return list;
   }, [chats, searchQuery]);
 
@@ -99,7 +95,12 @@ export function StudentChatList({ onSelectChat }: StudentChatListProps) {
       items.push({ type: 'chat', chat });
     }
 
-    return items;
+    return sortChatListItems(items, (item) => {
+      if (item.type === 'chat') {
+        return item.chat;
+      }
+      return { unreadCount: 0 };
+    });
   }, [filteredChats, teachers, user?.id, searchQuery]);
 
   // Get chat display info

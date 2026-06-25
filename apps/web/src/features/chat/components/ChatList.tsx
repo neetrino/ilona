@@ -9,7 +9,7 @@ import type { Chat } from '../types';
 import { cn } from '@/shared/lib/utils';
 import { formatDisplayName, getInitialsFromParts } from '@/shared/components/ui/avatar';
 import { formatMessagePreview } from '../utils';
-import { formatChatListTime } from '../utils/chat-utils';
+import { formatChatListTime, sortChatListItems, type ChatListSortable } from '../utils/chat-utils';
 import Image from 'next/image';
 import { OnlineStatusDot } from './OnlineStatusDot';
 
@@ -43,17 +43,8 @@ export function ChatList({ onSelectChat }: ChatListProps) {
     [tChat],
   );
 
-  // Sort chats by lastMessageAt (newest first), then filter by search
-  const sortedChats = [...chats].sort((a, b) => {
-    // Use lastMessageAt if available, otherwise fall back to lastMessage.createdAt, then updatedAt
-    const aTime = a.lastMessageAt 
-      ? new Date(a.lastMessageAt).getTime()
-      : (a.lastMessage?.createdAt ? new Date(a.lastMessage.createdAt).getTime() : new Date(a.updatedAt).getTime());
-    const bTime = b.lastMessageAt 
-      ? new Date(b.lastMessageAt).getTime()
-      : (b.lastMessage?.createdAt ? new Date(b.lastMessage.createdAt).getTime() : new Date(b.updatedAt).getTime());
-    return bTime - aTime; // DESC order (newest first)
-  });
+  // Sort chats: unread first, then by most recent message
+  const sortedChats = sortChatListItems(chats, (chat) => chat);
 
   // Filter chats by search
   const filteredChats = sortedChats.filter((chat) => {

@@ -3,6 +3,7 @@
 import React from 'react';
 import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from '@tanstack/react-query';
 import { useAuthStore } from '@/features/auth/store/auth.store';
+import { sortChatListItems, type ChatListSortable } from '../utils/chat-utils';
 import {
   fetchChats,
   fetchChat,
@@ -145,33 +146,30 @@ export function useAddMessageToCache() {
         const { user } = useAuthStore.getState();
         const isFromOtherUser = messageWithDate?.senderId && messageWithDate.senderId !== user?.id;
 
-        return oldData.map((chat) => {
-          if (chat.id === chatId) {
-            // Update lastMessage, lastMessageAt, and updatedAt
-            // Also increment unreadCount if message is from another user
-            const newUnreadCount = isFromOtherUser 
-              ? (chat.unreadCount || 0) + 1 
-              : chat.unreadCount;
+        return sortChatListItems(
+          oldData.map((chat) => {
+            if (chat.id === chatId) {
+              const newUnreadCount = isFromOtherUser
+                ? (chat.unreadCount || 0) + 1
+                : chat.unreadCount;
 
-            return {
-              ...chat,
-              lastMessage: message,
-              lastMessageAt,
-              updatedAt: now,
-              unreadCount: newUnreadCount,
-            };
-          }
-          return chat;
-        }).sort((a, b) => {
-          // Re-sort by lastMessageAt (newest first)
-          const aTime = a.lastMessageAt 
-            ? new Date(a.lastMessageAt).getTime()
-            : (a.lastMessage && typeof a.lastMessage === 'object' && 'createdAt' in a.lastMessage ? new Date((a.lastMessage as { createdAt: string }).createdAt).getTime() : new Date(a.updatedAt).getTime());
-          const bTime = b.lastMessageAt 
-            ? new Date(b.lastMessageAt).getTime()
-            : (b.lastMessage && typeof b.lastMessage === 'object' && 'createdAt' in b.lastMessage ? new Date((b.lastMessage as { createdAt: string }).createdAt).getTime() : new Date(b.updatedAt).getTime());
-          return bTime - aTime; // DESC order
-        });
+              return {
+                ...chat,
+                lastMessage: message,
+                lastMessageAt,
+                updatedAt: now,
+                unreadCount: newUnreadCount,
+              };
+            }
+            return chat;
+          }),
+          (chat) => ({
+            lastMessage: chat.lastMessage as ChatListSortable['lastMessage'],
+            lastMessageAt: chat.lastMessageAt,
+            updatedAt: chat.updatedAt,
+            unreadCount: chat.unreadCount,
+          }),
+        );
       }
     );
   };
