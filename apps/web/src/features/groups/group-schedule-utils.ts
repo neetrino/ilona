@@ -35,14 +35,21 @@ export function normalizeGroupSchedulePayload(raw: unknown): {
   return { weeklySlots: [], calendar: null };
 }
 
-/** Default calendar generation range: first–last day of the current month (YYYY-MM-DD). */
+/** Format a Date as YYYY-MM-DD in local time (avoids UTC shift from toISOString). */
+export function formatLocalYmd(date: Date): string {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
+/** Default calendar range when opening group create/edit: today through last day of current month. */
 export function defaultMonthDateRange(): { from: string; to: string } {
   const now = new Date();
-  const start = new Date(now.getFullYear(), now.getMonth(), 1);
   const end = new Date(now.getFullYear(), now.getMonth() + 1, 0);
   return {
-    from: start.toISOString().slice(0, 10),
-    to: end.toISOString().slice(0, 10),
+    from: formatLocalYmd(now),
+    to: formatLocalYmd(end),
   };
 }
 

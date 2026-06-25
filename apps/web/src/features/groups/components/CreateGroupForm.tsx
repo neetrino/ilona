@@ -124,7 +124,15 @@ export function CreateGroupForm({ open, onOpenChange, defaultCenterId }: CreateG
     setIsDialogOpen(open);
   }, [open]);
 
-  // Reset form when dialog closes
+  // Reset form when dialog closes; refresh calendar dates each time modal opens
+  useEffect(() => {
+    if (open) {
+      const r = defaultMonthDateRange();
+      setDateFrom(r.from);
+      setDateTo(r.to);
+    }
+  }, [open]);
+
   useEffect(() => {
     if (!open) {
       reset({
