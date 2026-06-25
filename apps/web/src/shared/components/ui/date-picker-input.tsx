@@ -591,6 +591,7 @@ export const DatePickerInput = React.forwardRef<HTMLInputElement, DatePickerInpu
             onKeyDown={handleInputKeyDown}
             placeholder={placeholder ?? 'DD/MM/YYYY'}
             disabled={disabled}
+            role="combobox"
             aria-haspopup="dialog"
             aria-expanded={open}
             aria-controls={`${triggerId}-dialog`}
