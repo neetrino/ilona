@@ -18,19 +18,12 @@ import { X } from 'lucide-react';
 import { teacherBelongsToCenter } from '../lib/center-scoped-assignment';
 import { getStudentDobMaxDate, getStudentDobMinDate } from '../student-account-form.schema';
 import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
+import { computeAgeFromDob } from '../student-account-form.schema';
+import { isoToDmy, resolveDmyOrIsoToIso } from '@/shared/lib/dmy-date';
+import { DmyDateInput } from '@/shared/components/ui/dmy-date-input';
 
-const ISO_DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
-
-function computeAgeFromDob(dob: string | undefined): number | undefined {
-  if (!dob || !ISO_DATE_RE.test(dob)) return undefined;
-  const birth = new Date(`${dob}T00:00:00Z`);
-  if (Number.isNaN(birth.getTime())) return undefined;
-  const now = new Date();
-  let age = now.getUTCFullYear() - birth.getUTCFullYear();
-  const m = now.getUTCMonth() - birth.getUTCMonth();
-  if (m < 0 || (m === 0 && now.getUTCDate() < birth.getUTCDate())) age -= 1;
-  return age >= 0 && age <= 120 ? age : undefined;
-}
+const dmyInputClassName =
+  'flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50';
 
 type UpdateStudentFormData = {
   firstName: string;
@@ -79,12 +72,8 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
           .min(1, tVal('ageMin'))
           .max(120, tVal('ageMax'))
           .optional(),
-        dateOfBirth: z
-          .union([z.string().regex(ISO_DATE_RE, tVal('dateFormat')), z.literal('')])
-          .optional(),
-        firstLessonDate: z
-          .union([z.string().regex(ISO_DATE_RE, tVal('dateFormat')), z.literal('')])
-          .optional(),
+        dateOfBirth: z.union([z.string(), z.literal('')]).optional(),
+        firstLessonDate: z.union([z.string(), z.literal('')]).optional(),
         status: z.enum(['ACTIVE', 'INACTIVE', 'SUSPENDED']),
         groupId: z.string().optional().or(z.literal('')),
         teacherId: z.string().optional().or(z.literal('')),
@@ -149,7 +138,8 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
   const watchedTeacherId = watch('teacherId') || '';
   const watchedGroupId = watch('groupId') || '';
   const watchedStatus = watch('status') || 'ACTIVE';
-  const watchedDob = watch('dateOfBirth');
+  const watchedDob = watch('dateOfBirth') ?? '';
+  const watchedFirstLessonDate = watch('firstLessonDate') ?? '';
   const watchedAge = watch('age');
   const computedAge = useMemo(() => computeAgeFromDob(watchedDob), [watchedDob]);
   // Keep age field in sync with DOB, while still allowing legacy age-only records.
@@ -245,14 +235,8 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
       setValue('lastName', student.user?.lastName || '');
       setValue('phone', student.user?.phone || '');
       setValue('age', student.age ?? undefined);
-      setValue(
-        'dateOfBirth',
-        student.dateOfBirth ? new Date(student.dateOfBirth).toISOString().split('T')[0] : '',
-      );
-      setValue(
-        'firstLessonDate',
-        student.firstLessonDate ? new Date(student.firstLessonDate).toISOString().split('T')[0] : '',
-      );
+      setValue('dateOfBirth', isoToDmy(student.dateOfBirth));
+      setValue('firstLessonDate', isoToDmy(student.firstLessonDate));
       setValue('status', student.user?.status || 'ACTIVE');
       setValue('teacherId', student.teacherId || '');
       setValue('groupId', student.groupId || '');
@@ -362,12 +346,12 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
       if (dirtyFields.phone) payload.phone = data.phone || undefined;
       if (dirtyFields.age) payload.age = data.age;
       if (dirtyFields.dateOfBirth) {
-        payload.dateOfBirth = data.dateOfBirth?.trim() ? data.dateOfBirth.trim() : null;
+        const trimmed = data.dateOfBirth?.trim();
+        payload.dateOfBirth = trimmed ? resolveDmyOrIsoToIso(trimmed) ?? null : null;
       }
       if (dirtyFields.firstLessonDate) {
-        payload.firstLessonDate = data.firstLessonDate?.trim()
-          ? data.firstLessonDate.trim()
-          : null;
+        const trimmed = data.firstLessonDate?.trim();
+        payload.firstLessonDate = trimmed ? resolveDmyOrIsoToIso(trimmed) ?? null : null;
       }
       if (dirtyFields.status) payload.status = data.status;
       if (dirtyFields.groupId) payload.groupId = data.groupId?.trim() ? data.groupId.trim() : null;
@@ -515,14 +499,19 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="dateOfBirth">{t('dateOfBirth')}</Label>
-                <Input
+                <DmyDateInput
                   id="dateOfBirth"
-                  type="date"
-                  {...register('dateOfBirth')}
-                  min={getStudentDobMinDate()}
-                  max={getStudentDobMaxDate()}
-                  error={errors.dateOfBirth?.message}
+                  value={watchedDob}
+                  placeholder={tForm('dateOfBirthPlaceholder')}
+                  onChange={(value) =>
+                    setValue('dateOfBirth', value, { shouldDirty: true, shouldValidate: true })
+                  }
+                  className={dmyInputClassName}
+                  disabled={isSubmitting}
                 />
+                {errors.dateOfBirth && (
+                  <p className="text-sm text-red-600">{errors.dateOfBirth.message}</p>
+                )}
                 {effectiveAge !== undefined ? (
                   <p className="text-xs text-slate-500">{tForm('ageHint', { age: effectiveAge })}</p>
                 ) : (
@@ -534,15 +523,19 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
 
               <div className="space-y-2">
                 <Label htmlFor="firstLessonDate">{tForm('firstLessonDate')}</Label>
-                <Input
+                <DmyDateInput
                   id="firstLessonDate"
-                  type="date"
-                  {...register('firstLessonDate')}
-                  error={errors.firstLessonDate?.message}
+                  value={watchedFirstLessonDate}
+                  placeholder={tForm('firstLessonDatePlaceholder')}
+                  onChange={(value) =>
+                    setValue('firstLessonDate', value, { shouldDirty: true, shouldValidate: true })
+                  }
+                  className={dmyInputClassName}
+                  disabled={isSubmitting}
                 />
-                <p className="hidden text-xs text-slate-500 min-[1367px]:block" aria-hidden>
-                  {'\u00A0'}
-                </p>
+                {errors.firstLessonDate && (
+                  <p className="text-sm text-red-600">{errors.firstLessonDate.message}</p>
+                )}
               </div>
             </div>
 

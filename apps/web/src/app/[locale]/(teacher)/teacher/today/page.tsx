@@ -245,7 +245,7 @@ export default function TeacherDailyPlanPage() {
 
   // Group by date for week view
   const lessonsByDate = sortedLessons.reduce((acc, lesson) => {
-    const date = new Date(lesson.scheduledAt).toLocaleDateString('en-US', {
+    const date = new Date(lesson.scheduledAt).toLocaleDateString('en-GB', {
       weekday: 'long',
       month: 'short',
       day: 'numeric',
@@ -324,7 +324,7 @@ export default function TeacherDailyPlanPage() {
         {/* Date Display */}
         <p className="text-[#8b8b90]">
           {viewMode === 'today'
-            ? displayDate.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
+            ? displayDate.toLocaleDateString('en-GB', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
             : formatWeekRange(currentDate)}
         </p>
       </div>

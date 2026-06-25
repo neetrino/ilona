@@ -28,7 +28,7 @@ function formatTime(dateStr: string, locale: string): string {
 
 function formatDate(dateStr: string, locale: string): string {
   const date = new Date(dateStr);
-  return date.toLocaleDateString(locale === 'hy' ? 'hy-AM' : 'en-US', {
+  return date.toLocaleDateString(locale === 'hy' ? 'hy-AM' : 'en-GB', {
     weekday: 'short',
     month: 'short',
     day: 'numeric',

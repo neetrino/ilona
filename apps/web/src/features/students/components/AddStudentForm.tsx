@@ -13,14 +13,14 @@ import { useCenters } from '@/features/centers';
 import { useState, useEffect, useMemo, useCallback, useRef, type TouchEvent } from 'react';
 import { getErrorMessage } from '@/shared/lib/api';
 import {
-  computeAgeFromDob,
-  createStudentSchema,
-  type CreateStudentFormData,
+  createStudentWithConfirmSchema,
+  type CreateStudentWithConfirmFormData,
 } from '../student-account-form.schema';
 import { formDataToCreateStudentDto } from '../student-account-form.payload';
 import { resolveAgeFromDobAndManual } from '../student-account-form.age';
 import { StudentAccountFormFieldsCrmLeadLayout } from './StudentAccountFormFieldsCrmLeadLayout';
 import { useAuthStore } from '@/features/auth/store/auth.store';
+import { useTranslations } from 'next-intl';
 import { cn } from '@/shared/lib/utils';
 import { X } from 'lucide-react';
 
@@ -30,6 +30,7 @@ interface AddStudentFormProps {
 }
 
 export function AddStudentForm({ open, onOpenChange }: AddStudentFormProps) {
+  const tForm = useTranslations('students.form');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(open);
@@ -61,18 +62,19 @@ export function AddStudentForm({ open, onOpenChange }: AddStudentFormProps) {
     reset,
     watch,
     setValue,
-  } = useForm<CreateStudentFormData>({
-    resolver: zodResolver(createStudentSchema),
+  } = useForm<CreateStudentWithConfirmFormData>({
+    resolver: zodResolver(createStudentWithConfirmSchema),
     defaultValues: {
       email: '',
       password: '',
+      confirmPassword: '',
       firstName: '',
       lastName: '',
       phone: '',
       dateOfBirth: '',
       firstLessonDate: '',
       manualAge: undefined,
-      levelId: 'A1',
+      levelId: '',
       groupId: '',
       teacherId: '',
       centerId: '',
@@ -81,7 +83,7 @@ export function AddStudentForm({ open, onOpenChange }: AddStudentFormProps) {
       parentPhone: '',
       parentEmail: '',
       parentPassportInfo: '',
-      monthlyFee: 0,
+      monthlyFee: undefined,
       notes: '',
       receiveReports: true,
     },
@@ -127,17 +129,6 @@ export function AddStudentForm({ open, onOpenChange }: AddStudentFormProps) {
   }, [watchedTeacherId, watchedGroupId, watchedLevelId, groupsData?.items, setValue]);
 
   const showParentSection = computedAge !== undefined && computedAge < 18;
-
-  useEffect(() => {
-    const fromDob = computeAgeFromDob(watchedDob?.trim() || undefined);
-    if (fromDob !== undefined) {
-      setValue('manualAge', fromDob, { shouldDirty: true, shouldValidate: true });
-      return;
-    }
-    if (!watchedDob?.trim()) {
-      setValue('manualAge', undefined, { shouldDirty: true, shouldValidate: true });
-    }
-  }, [watchedDob, setValue]);
 
   useEffect(() => {
     setIsDialogOpen(open);
@@ -238,7 +229,7 @@ export function AddStudentForm({ open, onOpenChange }: AddStudentFormProps) {
     }
   }, [computedAge, setValue]);
 
-  const onSubmit = async (data: CreateStudentFormData) => {
+  const onSubmit = async (data: CreateStudentWithConfirmFormData) => {
     setErrorMessage(null);
     try {
       const payload = formDataToCreateStudentDto(data);
@@ -295,10 +286,7 @@ export function AddStudentForm({ open, onOpenChange }: AddStudentFormProps) {
           <div className="min-h-0 overflow-y-auto overscroll-y-contain [touch-action:pan-y] [-webkit-overflow-scrolling:touch] px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-4 min-[1367px]:p-6">
             <div className="mb-4">
               <h2 className="text-lg font-semibold text-[#3b3b40]">Add New Student</h2>
-              <p className="mt-1 text-sm text-[#8b8b90]">
-                Basic info and phone first, then account credentials, dates, parent details when under 18, academic
-                assignment, then billing. Voice and lead comment stay on the CRM board only.
-              </p>
+              <p className="mt-1 text-sm text-[#8b8b90]">{tForm('createDescription')}</p>
             </div>
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -318,6 +306,7 @@ export function AddStudentForm({ open, onOpenChange }: AddStudentFormProps) {
             setValue={setValue}
             errors={errors}
             watch={watch}
+            computedAge={computedAge}
             showParentSection={showParentSection}
             groupsForTeacher={groupsForTeacher}
             teachers={teachers}

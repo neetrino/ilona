@@ -5,7 +5,7 @@ import { Badge, Input, Label } from '@/shared/components/ui';
 import { formatPhoneForDisplay } from '@/shared/lib/utils';
 import type { WeeklySchedule as WeeklyScheduleType } from '@/features/teachers/components/WeeklySchedule';
 import type { Teacher } from '@/features/teachers';
-import { getExperienceYearsFromHireDate, formatExperienceLabel } from '@/features/teachers/utils/experience';
+import { getExperienceLabelFromHireDate, experienceYearsFieldRegisterOptions } from '@/features/teachers/utils/experience';
 import { DAYS_OF_WEEK } from '../schemas';
 import type { UseFormRegister, UseFormWatch, UseFormSetValue } from 'react-hook-form';
 import type { UpdateTeacherFormData } from '../schemas';
@@ -73,7 +73,7 @@ export function TeacherDetails({
                   min="0"
                   max="80"
                   step="1"
-                  {...register('experienceYears', { valueAsNumber: true })}
+                  {...register('experienceYears', experienceYearsFieldRegisterOptions)}
                   error={errors?.experienceYears?.message}
                   placeholder="5"
                 />
@@ -97,12 +97,14 @@ export function TeacherDetails({
                 <label className="text-sm font-medium text-[#8b8b90]">{tc('phone')}</label>
                 <p className="text-[#3b3b40] mt-1">{formatPhoneForDisplay(teacher.user?.phone, na)}</p>
               </div>
-              <div>
-                <label className="text-sm font-medium text-[#8b8b90]">{tc('experience')}</label>
-                <p className="text-[#3b3b40] mt-1">
-                  {formatExperienceLabel(getExperienceYearsFromHireDate(teacher.hireDate))}
-                </p>
-              </div>
+              {getExperienceLabelFromHireDate(teacher.hireDate) ? (
+                <div>
+                  <label className="text-sm font-medium text-[#8b8b90]">{tc('experience')}</label>
+                  <p className="text-[#3b3b40] mt-1">
+                    {getExperienceLabelFromHireDate(teacher.hireDate)}
+                  </p>
+                </div>
+              ) : null}
             </>
           )}
           <div>

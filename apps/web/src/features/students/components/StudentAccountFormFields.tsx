@@ -1,8 +1,9 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import type { FieldErrors, UseFormRegister, UseFormWatch } from 'react-hook-form';
+import type { FieldErrors, UseFormRegister, UseFormSetValue, UseFormWatch } from 'react-hook-form';
 import { Input, Label, PasswordInput } from '@/shared/components/ui';
+import { DmyDateInput } from '@/shared/components/ui/dmy-date-input';
 import { formatPhoneForDisplay } from '@/shared/lib/utils';
 import type { CreateStudentFormData } from '../student-account-form.schema';
 
@@ -24,6 +25,7 @@ export interface StudentAccountFormFieldsProps {
   register: UseFormRegister<CreateStudentFormData>;
   errors: FieldErrors<CreateStudentFormData>;
   watch: UseFormWatch<CreateStudentFormData>;
+  setValue: UseFormSetValue<CreateStudentFormData>;
   computedAge: number | undefined;
   showParentSection: boolean;
   groupsForTeacher: StudentAccountGroupOption[];
@@ -42,8 +44,10 @@ export interface StudentAccountFormFieldsProps {
   idPrefix?: string;
 }
 
-const selectClassName =
-  'unified-native-select flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50';
+const dmyInputClassName =
+  'flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50';
+
+const selectClassName = `unified-native-select ${dmyInputClassName}`;
 
 const LEVEL_FILTER_OPTIONS = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'] as const;
 
@@ -51,6 +55,7 @@ export function StudentAccountFormFields({
   register,
   errors,
   watch,
+  setValue,
   computedAge,
   showParentSection,
   groupsForTeacher,
@@ -71,6 +76,8 @@ export function StudentAccountFormFields({
   const p = (id: string) => (idPrefix ? `${idPrefix}-${id}` : id);
   const watchedTeacherId = watch('teacherId') || '';
   const watchedGroupId = watch('groupId') || '';
+  const watchedDateOfBirth = watch('dateOfBirth') ?? '';
+  const watchedFirstLessonDate = watch('firstLessonDate') ?? '';
   const selectedTeacher = teachers.find((te) => te.id === watchedTeacherId);
   const centerNamesFromTeacher = [
     ...new Set(
@@ -162,12 +169,19 @@ export function StudentAccountFormFields({
         </div>
         <div className="space-y-2">
           <Label htmlFor={p('dateOfBirth')}>{t('dateOfBirth')}</Label>
-          <Input
+          <DmyDateInput
             id={p('dateOfBirth')}
-            type="date"
-            {...register('dateOfBirth')}
-            error={errors.dateOfBirth?.message}
+            value={watchedDateOfBirth}
+            placeholder={tForm('dateOfBirthPlaceholder')}
+            onChange={(value) =>
+              setValue('dateOfBirth', value, { shouldValidate: true, shouldDirty: true })
+            }
+            className={dmyInputClassName}
+            disabled={isSubmitting}
           />
+          {errors.dateOfBirth && (
+            <p className="text-sm text-red-600">{errors.dateOfBirth.message}</p>
+          )}
           {computedAge !== undefined && (
             <p className="text-xs text-slate-500">{tForm('ageHint', { age: computedAge })}</p>
           )}
@@ -175,12 +189,19 @@ export function StudentAccountFormFields({
 
         <div className="space-y-2">
           <Label htmlFor={p('firstLessonDate')}>{tForm('firstLessonDate')}</Label>
-          <Input
+          <DmyDateInput
             id={p('firstLessonDate')}
-            type="date"
-            {...register('firstLessonDate')}
-            error={errors.firstLessonDate?.message}
+            value={watchedFirstLessonDate}
+            placeholder={tForm('firstLessonDatePlaceholder')}
+            onChange={(value) =>
+              setValue('firstLessonDate', value, { shouldValidate: true, shouldDirty: true })
+            }
+            className={dmyInputClassName}
+            disabled={isSubmitting}
           />
+          {errors.firstLessonDate && (
+            <p className="text-sm text-red-600">{errors.firstLessonDate.message}</p>
+          )}
         </div>
       </div>
 

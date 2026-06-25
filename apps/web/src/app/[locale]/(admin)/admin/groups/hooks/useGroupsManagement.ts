@@ -95,10 +95,17 @@ export function useGroupsManagement(
 
   /** Board + branch tab: only show groups for the selected center (filter, not just API trust). */
   const displayGroups = useMemo(() => {
+    let result = groups;
     if (viewMode === 'board' && activeCenterId) {
-      return groups.filter((g) => g.centerId === activeCenterId);
+      result = groups.filter((g) => g.centerId === activeCenterId);
     }
-    return groups;
+    if (viewMode === 'board') {
+      return result.map((group) => ({
+        ...group,
+        students: group.students ?? [],
+      }));
+    }
+    return result;
   }, [groups, viewMode, activeCenterId]);
 
   const statsSourceGroups = useMemo(

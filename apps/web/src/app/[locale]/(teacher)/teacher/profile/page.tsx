@@ -41,9 +41,10 @@ export default function TeacherProfilePage() {
   const [phone, setPhone] = useState(user?.phone || '');
   const [bio, setBio] = useState(user?.teacher?.bio || '');
   const [videoUrl, setVideoUrl] = useState(user?.teacher?.videoUrl || '');
-  const [experienceYears, setExperienceYears] = useState(
-    getExperienceYearsFromHireDate(user?.teacher?.hireDate)
-  );
+  const [experienceYears, setExperienceYears] = useState<string>(() => {
+    const years = getExperienceYearsFromHireDate(user?.teacher?.hireDate);
+    return years === null ? '' : String(years);
+  });
 
   // Update form state when user changes
   useEffect(() => {
@@ -53,7 +54,8 @@ export default function TeacherProfilePage() {
       setPhone(user.phone || '');
       setVideoUrl(user.teacher?.videoUrl || '');
       setBio(user.teacher?.bio || '');
-      setExperienceYears(getExperienceYearsFromHireDate(user.teacher?.hireDate));
+      const years = getExperienceYearsFromHireDate(user.teacher?.hireDate);
+      setExperienceYears(years === null ? '' : String(years));
     }
   }, [user]);
 
@@ -71,7 +73,7 @@ export default function TeacherProfilePage() {
         phone: phone || undefined,
         videoUrl: trimmedVideoUrl ? trimmedVideoUrl : null,
         bio: bio.trim() ? bio.trim() : null,
-        experienceYears,
+        experienceYears: experienceYears === '' ? null : Number(experienceYears),
       });
       setUploadSuccess(t('profileUpdatedSuccess') ?? 'Profile updated successfully!');
     } catch (error) {
@@ -281,14 +283,14 @@ export default function TeacherProfilePage() {
                 max={80}
                 step={1}
                 value={experienceYears}
-                onChange={(e) =>
-                  setExperienceYears(Math.max(0, Math.trunc(Number(e.target.value || 0))))
-                }
+                onChange={(e) => setExperienceYears(e.target.value)}
                 placeholder="5"
               />
-              <p className="mt-1 text-xs text-[#8b8b90]">
-                {formatExperienceLabel(experienceYears)}
-              </p>
+              {experienceYears !== '' ? (
+                <p className="mt-1 text-xs text-[#8b8b90]">
+                  {formatExperienceLabel(Number(experienceYears))}
+                </p>
+              ) : null}
             </div>
 
             <div>

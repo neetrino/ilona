@@ -79,11 +79,10 @@ export function ScheduleBoard({
         : 'hidden sm:inline-flex '
       : '';
   const studentBoardSizeClass = isIPad
-    ? 'flex min-h-[min(70vh,32rem)] flex-col overflow-hidden rounded-3xl border border-[rgba(14,14,16,0.07)] bg-white md:min-h-[min(75vh,36rem)]'
-    : 'flex min-h-[min(70vh,32rem)] flex-col overflow-hidden rounded-3xl border border-[rgba(14,14,16,0.07)] bg-white md:min-h-[min(75vh,36rem)] lg:h-[calc(100vh-260px)] lg:min-h-0';
-  const defaultBoardSizeClass = isIPad
-    ? 'flex min-h-[min(70vh,32rem)] w-full min-w-0 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white md:min-h-[min(75vh,36rem)]'
-    : 'flex min-h-[min(70vh,32rem)] w-full min-w-0 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white md:min-h-[min(75vh,36rem)] lg:h-[min(calc(100vh-260px),75vh)] lg:min-h-0';
+    ? 'flex w-full min-w-0 flex-col rounded-3xl border border-[rgba(14,14,16,0.07)] bg-white'
+    : 'flex w-full min-w-0 flex-col rounded-3xl border border-[rgba(14,14,16,0.07)] bg-white';
+  const defaultBoardSizeClass =
+    'flex w-full min-w-0 flex-col overflow-visible rounded-xl border border-slate-200 bg-white';
 
   useEffect(() => {
     if (typeof navigator === 'undefined' || typeof window === 'undefined') {
@@ -236,7 +235,7 @@ export function ScheduleBoard({
           </div>
         </div>
 
-        <div className="min-h-0 flex-1 flex flex-col">
+        <div>
           {viewMode === 'week' ? (
             <WeekLessonGrid
               weekDates={weekDates}
@@ -248,7 +247,6 @@ export function ScheduleBoard({
             />
           ) : (
             <MonthLessonGrid
-              className="min-h-0 flex-1"
               monthDates={monthDates}
               lessonsByDate={lessonsByDate}
               isLoading={isLoading}

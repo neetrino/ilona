@@ -6,6 +6,7 @@ import { ActionButtons, Avatar } from '@/shared/components/ui';
 import { SelectAllCheckbox } from '@/shared/components/ui/select-all-checkbox';
 import { InlineSelect } from '@/features/students';
 import { cn, formatCurrency, formatPhoneForDisplay } from '@/shared/lib/utils';
+import { formatDmyInputValue, parseDmyToIso } from '@/shared/lib/dmy-date';
 import { getErrorMessage } from '@/shared/lib/api';
 import type { Student, TeacherAssignedItem } from '@/features/students';
 import { getItemId, isOnboardingItem } from '@/features/students';
@@ -133,28 +134,9 @@ function formatRegisterDate(value: string | null | undefined): string {
   return `${day}/${month}/${year}`;
 }
 
-/** Format raw input to DD/MM/YYYY: only digits allowed, slashes auto-inserted and never removed */
-function formatDateInput(nextInput: string): string {
-  const digits = nextInput.replace(/\D/g, '').slice(0, 8);
-  if (digits.length <= 2) return digits;
-  if (digits.length <= 4) return `${digits.slice(0, 2)}/${digits.slice(2)}`;
-  return `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4)}`;
-}
-
 /** Parse DD/MM/YYYY to YYYY-MM-DD for API, or null if invalid/empty */
 function parseDDMMYYYYToISO(str: string): string | null {
-  const trimmed = str.trim();
-  if (!trimmed) return null;
-  const parts = trimmed.split('/');
-  if (parts.length !== 3) return null;
-  const day = parseInt(parts[0], 10);
-  const month = parseInt(parts[1], 10) - 1;
-  const year = parseInt(parts[2], 10);
-  if (Number.isNaN(day) || Number.isNaN(year)) return null;
-  if (month < 0 || month > 11) return null;
-  const d = new Date(year, month, day);
-  if (d.getFullYear() !== year || d.getMonth() !== month || d.getDate() !== day) return null;
-  return `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+  return parseDmyToIso(str.trim()) ?? null;
 }
 
 function RegisterDateCell({
@@ -218,8 +200,8 @@ function RegisterDateCell({
     if (v === '' || iso !== null) {
       handleSave(v === '' ? null : iso);
     } else {
-      setError('Use DD/MM/YYYY');
-      setTimeout(() => setError(null), 3000);
+      setLocalValue(prevDisplay);
+      setEditing(false);
     }
   };
 
@@ -230,8 +212,8 @@ function RegisterDateCell({
       if (v === '' || iso !== null) {
         handleSave(v === '' ? null : iso);
       } else {
-        setError('Use DD/MM/YYYY');
-        setTimeout(() => setError(null), 3000);
+        setLocalValue(formatRegisterDate(value));
+        setEditing(false);
       }
     }
     if (e.key === 'Escape') {
@@ -248,7 +230,7 @@ function RegisterDateCell({
           type="text"
           value={localValue}
           placeholder="DD/MM/YYYY"
-          onChange={(e) => setLocalValue(formatDateInput(e.target.value))}
+          onChange={(e) => setLocalValue(formatDmyInputValue(e.target.value, localValue))}
           onBlur={handleBlur}
           onKeyDown={handleKeyDown}
           disabled={saving}
@@ -358,13 +340,13 @@ export function createStudentsTableColumns({
           />
         );
       },
-      className: '!w-9 !min-w-9 !max-w-9 shrink-0 !pl-2 !pr-1',
+      className: '!w-9 !min-w-9 shrink-0 !pl-2 !pr-1',
     },
     {
       key: 'student',
       header: 'STUDENT',
       sortable: true,
-      className: '!min-w-[14rem] !pl-0 !pr-2 align-top',
+      className: '!w-[18%] !min-w-[12rem] !pl-0 !pr-2 align-top',
       render: (row: TeacherAssignedItem) => {
         const firstName = isOnboardingItem(row) ? (row.firstName ?? '') : (row.user?.firstName ?? '');
         const lastName = isOnboardingItem(row) ? (row.lastName ?? '') : (row.user?.lastName ?? '');
@@ -409,7 +391,7 @@ export function createStudentsTableColumns({
     {
       key: 'center',
       header: 'CENTER',
-      className: '!min-w-[8.75rem] align-top',
+      className: '!w-[13%] !min-w-[8.75rem] align-top',
       render: (row: TeacherAssignedItem) => {
         if (isOnboardingItem(row)) return <span className="text-[#8b8b90]">—</span>;
         // Center column = manual `student.centerId` only; never mirror group.center (avoids "auto-select" when group changes).
@@ -433,7 +415,7 @@ export function createStudentsTableColumns({
     {
       key: 'teacher',
       header: 'TEACHER',
-      className: '!min-w-[8.75rem] align-top',
+      className: '!w-[13%] !min-w-[8.75rem] align-top',
       render: (row: TeacherAssignedItem) => {
         if (isOnboardingItem(row)) return <span className="text-[#8b8b90]">—</span>;
         const manualCenterId = row.centerId ?? null;
@@ -463,7 +445,7 @@ export function createStudentsTableColumns({
     {
       key: 'group',
       header: 'GROUP',
-      className: '!min-w-[8.75rem] align-top',
+      className: '!w-[13%] !min-w-[8.75rem] align-top',
       render: (row: TeacherAssignedItem) => {
         if (isOnboardingItem(row)) return <span className="text-[#8b8b90]">—</span>;
         const manualCenterId = row.centerId ?? null;
@@ -495,7 +477,7 @@ export function createStudentsTableColumns({
       key: 'register',
       header: 'REGISTER',
       sortable: true,
-      className: '!w-[8.25rem] !min-w-[8.25rem] !max-w-[8.25rem] whitespace-nowrap text-left align-top',
+      className: '!w-[10%] !min-w-[8.25rem] whitespace-nowrap text-left align-top',
       render: (row: TeacherAssignedItem) => {
         if (isOnboardingItem(row)) return <span className="text-[#8b8b90]">—</span>;
         return (
@@ -512,7 +494,7 @@ export function createStudentsTableColumns({
       key: 'monthlyFee',
       header: 'MONTHLY FEE',
       sortable: true,
-      className: '!min-w-[6rem] whitespace-nowrap text-center align-top',
+      className: '!w-[11%] !min-w-[6.5rem] whitespace-nowrap text-center align-top',
       render: (row: TeacherAssignedItem) => {
         if (isOnboardingItem(row)) return <span className="text-[#8b8b90]">—</span>;
         const fee = typeof row.monthlyFee === 'string' ? parseFloat(row.monthlyFee) : Number(row.monthlyFee || 0);
@@ -527,7 +509,7 @@ export function createStudentsTableColumns({
       key: 'absence',
       header: 'ABSENCE',
       sortable: true,
-      className: '!min-w-[5rem] whitespace-nowrap text-center align-top',
+      className: '!w-[8%] !min-w-[5rem] whitespace-nowrap text-center align-top',
       render: (row: TeacherAssignedItem) => {
         if (isOnboardingItem(row)) {
           return (
@@ -547,7 +529,7 @@ export function createStudentsTableColumns({
     {
       key: 'actions',
       header: 'ACTIONS',
-      className: '!min-w-[9.5rem] shrink-0 !px-2 !py-3 text-center align-top',
+      className: '!w-[11%] !min-w-[9.5rem] shrink-0 !px-2 !py-3 text-center align-top',
       render: (row: TeacherAssignedItem) => {
         if (isOnboardingItem(row)) {
           return (

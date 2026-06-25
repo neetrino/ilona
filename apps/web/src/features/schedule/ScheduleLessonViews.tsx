@@ -58,12 +58,12 @@ function formatMinutesToLabel(totalMinutes: number): string {
 
 function formatWeekdayLabel(date: Date): string {
   return date
-    .toLocaleDateString('en-US', { weekday: 'short' })
+    .toLocaleDateString('en-GB', { weekday: 'short' })
     .toUpperCase();
 }
 
 function formatWeekdayShort(date: Date): string {
-  return date.toLocaleDateString('en-US', { weekday: 'short' });
+  return date.toLocaleDateString('en-GB', { weekday: 'short' });
 }
 
 function getLessonTimeBounds(lesson: Lesson): { start: number; end: number } | null {
@@ -121,7 +121,7 @@ function LessonCard({
 
   return (
     <div
-      className={`rounded-md border leading-tight ${lessonCardTone(lesson, { highlightPastLessonCards, referenceTime, variant: uiVariant })} ${compact ? 'px-1.5 py-0.5 text-[9px] sm:px-1.5 sm:py-1 sm:text-[10px]' : 'px-2.5 py-2 text-sm'}`}
+      className={`rounded-md border leading-snug ${lessonCardTone(lesson, { highlightPastLessonCards, referenceTime, variant: uiVariant })} ${compact ? 'px-1.5 py-1 text-[10px]' : 'px-2.5 py-2 text-sm'}`}
     >
       <div
         className={cn(
@@ -248,7 +248,7 @@ export function WeekLessonGrid({
     return (
       <div
         className={cn(
-          'flex h-full items-center justify-center p-10 text-center text-sm',
+          'p-10 text-center text-sm',
           isStudent ? studentScheduleTable.emptyText : 'text-slate-500',
         )}
       >
@@ -258,10 +258,9 @@ export function WeekLessonGrid({
   }
 
   return (
-    <div className="h-full">
+    <div>
       <div
         className={cn(
-          'flex h-full min-h-0 flex-col',
           forceMobileLayout ? 'min-[769px]:hidden' : 'sm:hidden',
         )}
       >
@@ -293,9 +292,9 @@ export function WeekLessonGrid({
             })}
           </div>
         </div>
-        <div className="min-h-0 flex-1 overflow-y-auto px-3 py-3 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+        <div className="px-3 py-3">
           <h3 className="text-[1.85rem] font-semibold tracking-[-0.02em] text-[#1f2937]">
-            {selectedDate.toLocaleDateString('en-US', {
+            {selectedDate.toLocaleDateString('en-GB', {
               weekday: 'long',
               month: 'short',
               day: 'numeric',
@@ -357,12 +356,13 @@ export function WeekLessonGrid({
         </div>
       </div>
 
-      <table
+      <div
         className={cn(
-          'hidden h-full w-full border-collapse table-fixed',
-          forceMobileLayout ? 'min-[769px]:table' : 'sm:table',
+          'hidden',
+          forceMobileLayout ? 'min-[769px]:block' : 'sm:block',
         )}
       >
+      <table className="w-full border-collapse table-fixed">
         <thead>
           <tr>
             <th
@@ -396,11 +396,17 @@ export function WeekLessonGrid({
           </tr>
         </thead>
         <tbody>
-          {slots.map((slot) => (
+          {slots.map((slot) => {
+            const rowHasLessons = weekDates.some((_, dayIdx) => {
+              const key = `${dayIdx}|${slot}`;
+              return (cells.get(key) ?? []).length > 0;
+            });
+            return (
             <tr key={slot} className="align-top">
               <td
                 className={cn(
-                  'h-8 border-b-2 border-r-2 px-1.5 py-0.5 text-[10px] font-semibold',
+                  'border-b-2 border-r-2 px-1.5 py-1 text-[10px] font-semibold align-top',
+                  rowHasLessons ? 'min-h-0' : 'h-8',
                   isStudent
                     ? `${studentScheduleTable.border} ${studentScheduleTable.cellText}`
                     : 'border-slate-200 text-slate-500',
@@ -418,11 +424,12 @@ export function WeekLessonGrid({
                   <td
                     key={key}
                     className={cn(
-                      'h-8 border-b-2 border-r-2 px-0.5 py-0.5 align-top last:border-r-0',
+                      'border-b-2 border-r-2 px-0.5 py-0.5 align-top last:border-r-0',
+                      rowHasLessons ? 'min-h-0' : 'h-8',
                       isStudent ? studentScheduleTable.border : 'border-slate-200',
                     )}
                   >
-                    <div className="space-y-0.5">
+                    <div className="space-y-1">
                       {items.map((lesson) => (
                         <LessonCard
                           key={lesson.id}
@@ -437,9 +444,11 @@ export function WeekLessonGrid({
                 );
               })}
             </tr>
-          ))}
+            );
+          })}
         </tbody>
       </table>
+      </div>
     </div>
   );
 }

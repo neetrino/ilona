@@ -42,7 +42,7 @@ export class NotificationsService {
         return;
       }
 
-      const lessonDate = new Date(lesson.scheduledAt).toLocaleDateString('en-US', {
+      const lessonDate = new Date(lesson.scheduledAt).toLocaleDateString('en-GB', {
         weekday: 'long',
         year: 'numeric',
         month: 'long',
@@ -83,7 +83,7 @@ export class NotificationsService {
         return;
       }
 
-      const dueDate = new Date(payment.dueDate).toLocaleDateString('en-US', {
+      const dueDate = new Date(payment.dueDate).toLocaleDateString('en-GB', {
         year: 'numeric',
         month: 'long',
         day: 'numeric',
@@ -126,7 +126,7 @@ export class NotificationsService {
         return;
       }
 
-      const lessonDate = new Date(lesson.scheduledAt).toLocaleDateString('en-US', {
+      const lessonDate = new Date(lesson.scheduledAt).toLocaleDateString('en-GB', {
         weekday: 'long',
         year: 'numeric',
         month: 'long',
@@ -175,7 +175,7 @@ export class NotificationsService {
         return;
       }
 
-      const lessonDate = new Date(lesson.scheduledAt).toLocaleDateString('en-US', {
+      const lessonDate = new Date(lesson.scheduledAt).toLocaleDateString('en-GB', {
         weekday: 'long',
         year: 'numeric',
         month: 'long',

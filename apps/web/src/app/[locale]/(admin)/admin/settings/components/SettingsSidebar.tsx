@@ -10,7 +10,8 @@ type SettingsTab =
   | 'system'
   | 'penalty'
   | 'manager'
-  | 'dashboard-banner';
+  | 'dashboard-banner'
+  | 'sidebar-visibility';
 
 interface SettingsSidebarProps {
   activeTab: SettingsTab;
@@ -77,6 +78,15 @@ export function SettingsSidebar({ activeTab, onTabChange, allowedTabs }: Setting
       icon: (
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 5a2 2 0 012-2h12a2 2 0 012 2v14l-4-3-4 3-4-3-4 3V5z" />
+        </svg>
+      ),
+    },
+    {
+      id: 'sidebar-visibility',
+      label: t('sidebarVisibilityTab'),
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h10M4 18h16" />
         </svg>
       ),
     },

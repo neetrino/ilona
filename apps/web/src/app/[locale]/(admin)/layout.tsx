@@ -3,8 +3,10 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { usePathname } from 'next/navigation';
+import { notFound } from 'next/navigation';
 import { useAuthStore } from '@/features/auth/store/auth.store';
-import { isAdminOnlyPathForManager } from '@/shared/lib/role-routes';
+import { isAdminOnlyPathForManager, stripLocaleFromPath } from '@/shared/lib/role-routes';
+import { useAdminHiddenNavGuard } from '@/shared/hooks/useAdminHiddenNavGuard';
 
 export default function AdminLayout({
   children,
@@ -14,7 +16,7 @@ export default function AdminLayout({
   const router = useRouter();
   const pathname = usePathname();
   const { isAuthenticated, isHydrated, user } = useAuthStore();
-  const pathWithoutLocale = pathname.replace(/^\/[a-z]{2}/, '');
+  const pathWithoutLocale = stripLocaleFromPath(pathname);
   const isManager = user?.role === 'MANAGER';
   const isAdmin = user?.role === 'ADMIN';
   const isAdminPath = pathWithoutLocale.startsWith('/admin');
@@ -26,6 +28,7 @@ export default function AdminLayout({
     ? pathWithoutLocale.replace(/^\/manager/, '/admin')
     : '/admin/dashboard';
   const isManagerRestrictedPath = isManager && isAdminOnlyPathForManager(pathWithoutLocale);
+  const { isBlocked: isHiddenNavPath, isChecking: isCheckingHiddenNavPath } = useAdminHiddenNavGuard();
 
   useEffect(() => {
     // Wait for hydration before making any decisions
@@ -78,13 +81,22 @@ export default function AdminLayout({
     );
   }
 
-  // Block restricted manager routes from rendering while redirecting.
-  if (isManagerRestrictedPath || (isManager && isAdminPath) || (isAdmin && isManagerPath)) {
+  // Block restricted manager routes while redirecting.
+  if (
+    isManagerRestrictedPath ||
+    (isManager && isAdminPath) ||
+    (isAdmin && isManagerPath) ||
+    isCheckingHiddenNavPath
+  ) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#ececec]">
         <div className="h-12 w-12 animate-spin rounded-full border-2 border-[#f1f1f2] border-t-[#1010a3]" />
       </div>
     );
+  }
+
+  if (isHiddenNavPath) {
+    notFound();
   }
 
   return <>{children}</>;

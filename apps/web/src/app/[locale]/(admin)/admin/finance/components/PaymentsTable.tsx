@@ -120,7 +120,7 @@ export function PaymentsTable({
               typeof payment.amount === 'string'
                 ? parseFloat(payment.amount)
                 : Number(payment.amount);
-            const dueDate = new Date(payment.dueDate).toLocaleDateString('en-US', {
+            const dueDate = new Date(payment.dueDate).toLocaleDateString('en-GB', {
               month: 'short',
               day: 'numeric',
               year: 'numeric',

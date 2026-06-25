@@ -14,4 +14,5 @@ export {
   useDashboardBanner,
   useUploadDashboardBanner,
   useDeleteDashboardBanner,
+  useUpdateDashboardBannerText,
 } from './useDashboardBanner';

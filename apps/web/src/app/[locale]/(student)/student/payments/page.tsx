@@ -205,7 +205,7 @@ export default function StudentPaymentsPage() {
           <StudentAlert variant="info" title={t('nextPaymentDue')}>
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <span className="text-sm">
-                {new Date(summary.nextPayment.dueDate).toLocaleDateString('en-US', {
+                {new Date(summary.nextPayment.dueDate).toLocaleDateString('en-GB', {
                   month: 'long',
                   year: 'numeric',
                 })}
@@ -282,14 +282,14 @@ export default function StudentPaymentsPage() {
                   const groupName = payment.student?.group?.name;
                   const description = payment.notes || payment.description;
                   const windowReason = payment.paymentWindowReason;
-                  const monthLabel = monthDate.toLocaleDateString('en-US', {
+                  const monthLabel = monthDate.toLocaleDateString('en-GB', {
                     month: 'long',
                     year: 'numeric',
                   });
                   const dateLabel =
                     payment.status === 'PAID' && payment.paidAt
-                      ? `${t('paidOn')} ${new Date(payment.paidAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
-                      : new Date(payment.dueDate).toLocaleDateString('en-US', {
+                      ? `${t('paidOn')} ${new Date(payment.paidAt).toLocaleDateString('en-GB', { month: 'short', day: 'numeric', year: 'numeric' })}`
+                      : new Date(payment.dueDate).toLocaleDateString('en-GB', {
                           month: 'short',
                           day: 'numeric',
                           year: 'numeric',
@@ -379,7 +379,7 @@ export default function StudentPaymentsPage() {
               ) : (
                 <>
                   <p className="mb-4 text-sm text-[#8b8b90]">
-                    {(processModal.month ? new Date(processModal.month) : new Date(processModal.dueDate)).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })} — {formatCurrency(Number(processModal.amount))}
+                    {(processModal.month ? new Date(processModal.month) : new Date(processModal.dueDate)).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })} — {formatCurrency(Number(processModal.amount))}
                   </p>
                   {!confirmStep ? (
                     <>

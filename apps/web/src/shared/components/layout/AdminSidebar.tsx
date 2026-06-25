@@ -1,6 +1,5 @@
 'use client';
 
-import { useMemo } from 'react';
 import Image from 'next/image';
 import { PublicAssetImage } from '@/shared/components/ui';
 import { StudentLogoutControl } from './StudentLogoutControl';
@@ -11,10 +10,10 @@ import { usePathname } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { cn } from '@/shared/lib/utils';
 import { useIsIPad } from '@/shared/hooks/useIsIPad';
-import { useAuthStore } from '@/features/auth/store/auth.store';
 import { useLogo } from '@/features/settings/hooks/useSettings';
 import { getFullApiUrl } from '@/shared/lib/api';
-import { getAdminNavEntries, type AdminNavEntry, type AdminNavIcon } from '@/shared/lib/admin-nav-entries';
+import { type AdminNavEntry, type AdminNavIcon } from '@/shared/lib/admin-nav-entries';
+import { useAdminNavEntries } from '@/shared/hooks/useAdminNavEntries';
 import { STUDENT_SIDEBAR_ASSETS } from '@/features/student-dashboard/studentSidebarAssets';
 import { PORTAL_SIDEBAR_NAV_ITEM_GAP_CLASS, PORTAL_SIDEBAR_NAV_LABEL_HY_CLASS, getPortalSidebarWidthClass } from './student-layout';
 
@@ -160,8 +159,6 @@ export function AdminSidebar({
   const locale = useLocale();
   const t = useTranslations('nav');
   const tCommon = useTranslations('common');
-  const { user } = useAuthStore();
-  const role = user?.role ?? 'ADMIN';
   const isIPad = useIsIPad();
   const isArmenianLocale = locale === 'hy';
 
@@ -172,7 +169,7 @@ export function AdminSidebar({
   const apiLogo = getFullApiUrl(logoData?.logoUrl);
   const brandLogo = apiLogo || STUDENT_SIDEBAR_ASSETS.brandLogo;
 
-  const navItems = useMemo(() => getAdminNavEntries(role), [role]);
+  const navItems = useAdminNavEntries();
 
   const isActive = (href: string) => {
     const pathWithoutLocale = pathname.replace(/^\/[a-z]{2}\//, '/');

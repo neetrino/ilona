@@ -253,6 +253,7 @@ export function PaidRegistrationModal({
                   register={register}
                   errors={errors}
                   watch={watch}
+                  setValue={setValue}
                   computedAge={computedAge}
                   showParentSection={showParentSection}
                   groupsForTeacher={groupsForTeacher}

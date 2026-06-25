@@ -7,7 +7,7 @@ import { X } from 'lucide-react';
 import { formatCurrency, formatPhoneForDisplay, cn } from '@/shared/lib/utils';
 import { Avatar, Badge } from '@/shared/components/ui';
 import { useTeacher } from '../hooks/useTeachers';
-import { getExperienceYearsFromHireDate, formatExperienceLabel } from '../utils/experience';
+import { getExperienceLabelFromHireDate } from '../utils/experience';
 
 interface TeacherDetailsModalProps {
   teacherId: string | null;
@@ -71,6 +71,7 @@ export function TeacherDetailsModal({
   const centers =
     teacher?.centers ??
     Array.from(new Map([...explicitCenters, ...groupCenters].map((center) => [center.id, center])).values());
+  const experienceLabel = getExperienceLabelFromHireDate(teacher?.hireDate);
   const [isDialogOpen, setIsDialogOpen] = useState(open);
   const [dragOffsetY, setDragOffsetY] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
@@ -235,10 +236,9 @@ export function TeacherDetailsModal({
                   </div>
                   <InfoRow label={t('phoneNumber')} value={phone} />
                   <InfoRow label={tCommon('email')} value={email || '—'} />
-                  <InfoRow
-                    label="Experience"
-                    value={formatExperienceLabel(getExperienceYearsFromHireDate(teacher.hireDate))}
-                  />
+                  {experienceLabel ? (
+                    <InfoRow label="Experience" value={experienceLabel} />
+                  ) : null}
                   <InfoRow label="Joined" value={formatDate(teacher.createdAt)} />
                 </section>
 

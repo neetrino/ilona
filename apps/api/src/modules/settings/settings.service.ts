@@ -33,6 +33,8 @@ type SystemSettingsWithOptionalPenalties = SystemSettings & {
   penaltyTextAmd?: Prisma.Decimal | number;
   penaltyDailyPlanAmd?: Prisma.Decimal | number;
   dashboardBannerUrl?: string | null;
+  dashboardBannerTitle?: string | null;
+  dashboardBannerSubtitle?: string | null;
 };
 
 @Injectable()
@@ -309,6 +311,114 @@ export class SettingsService {
     } catch (error) {
       this.logger.error(
         `Failed to update dashboard banner key: ${error instanceof Error ? error.message : String(error)}`,
+        error instanceof Error ? error.stack : undefined,
+      );
+      throw error;
+    }
+  }
+
+  private static readonly DASHBOARD_BANNER_TITLE_MAX = 150;
+  private static readonly DASHBOARD_BANNER_SUBTITLE_MAX = 400;
+
+  private normalizeDashboardBannerText(
+    value: string | null | undefined,
+    maxLength: number,
+  ): string | null {
+    if (value == null) return null;
+
+    const trimmed = value.trim();
+    if (!trimmed) return null;
+    if (trimmed.length > maxLength) {
+      throw new BadRequestException(
+        `Dashboard banner text must be at most ${maxLength} characters.`,
+      );
+    }
+
+    return trimmed;
+  }
+
+  /**
+   * Get dashboard banner text overrides (stored in system settings).
+   */
+  async getDashboardBannerText(): Promise<{
+    title: string | null;
+    subtitle: string | null;
+  }> {
+    try {
+      const settings = await this.getSystemSettings();
+      const settingsWithBanner = settings as SystemSettingsWithOptionalPenalties;
+
+      return {
+        title: settingsWithBanner.dashboardBannerTitle ?? null,
+        subtitle: settingsWithBanner.dashboardBannerSubtitle ?? null,
+      };
+    } catch (error) {
+      this.logger.error(
+        `Failed to get dashboard banner text: ${error instanceof Error ? error.message : String(error)}`,
+        error instanceof Error ? error.stack : undefined,
+      );
+      this.logger.warn('Returning null dashboard banner text due to error');
+      return { title: null, subtitle: null };
+    }
+  }
+
+  /**
+   * Update dashboard banner text overrides.
+   */
+  async updateDashboardBannerText(input: {
+    title?: string | null;
+    subtitle?: string | null;
+  }): Promise<{ title: string | null; subtitle: string | null }> {
+    const title =
+      input.title !== undefined
+        ? this.normalizeDashboardBannerText(
+            input.title,
+            SettingsService.DASHBOARD_BANNER_TITLE_MAX,
+          )
+        : undefined;
+    const subtitle =
+      input.subtitle !== undefined
+        ? this.normalizeDashboardBannerText(
+            input.subtitle,
+            SettingsService.DASHBOARD_BANNER_SUBTITLE_MAX,
+          )
+        : undefined;
+
+    if (title === undefined && subtitle === undefined) {
+      throw new BadRequestException('At least one banner text field must be provided.');
+    }
+
+    try {
+      const settings = await this.prisma.systemSettings.findFirst();
+      const data = {} as SystemSettingsUpdateData;
+
+      if (title !== undefined) {
+        (data as SystemSettingsWithOptionalPenalties).dashboardBannerTitle = title;
+      }
+      if (subtitle !== undefined) {
+        (data as SystemSettingsWithOptionalPenalties).dashboardBannerSubtitle = subtitle;
+      }
+
+      if (!settings) {
+        await this.prisma.systemSettings.create({
+          data: data as unknown as SystemSettingsCreateData,
+        });
+      } else {
+        await this.prisma.systemSettings.update({
+          where: { id: settings.id },
+          data,
+        });
+      }
+
+      await this.cache.del(SettingsService.CACHE_KEY_SYSTEM);
+      return this.getDashboardBannerText();
+    } catch (error) {
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+
+      this.logger.error(
+        `Failed to update dashboard banner text: ${error instanceof Error ? error.message : String(error)}`,
         error instanceof Error ? error.stack : undefined,
       );
       throw error;

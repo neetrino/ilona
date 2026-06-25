@@ -120,6 +120,7 @@ export function StudentsList({
         sortOrder={sortOrder}
         onSort={onSort}
         compact
+        tableClassName="table-fixed w-full min-w-[70rem]"
       />
       </div>
 

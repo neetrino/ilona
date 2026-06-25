@@ -23,6 +23,7 @@ import { useGroupsManagement } from '../hooks/useGroupsManagement';
 import { readUrlSearchParam, getLiveSearchParams } from '../utils/url';
 import { GroupStudentsModal } from './GroupStudentsModal';
 import { StudentDetailsModal } from './StudentDetailsModal';
+import { GroupsUniqueTotalStat } from './GroupsUniqueTotalStat';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { getAdminPortalBasePath } from '@/shared/lib/role-routes';
 import { useIsLgViewport } from '@/shared/hooks/useIsLgViewport';
@@ -741,7 +742,13 @@ export function GroupsTab({
             ) : allCenters.length === 0 ? (
               <div className="py-4 text-sm text-[#8b8b90]">{t('noBranchesCreateCenter')}</div>
             ) : (
-              <div className="overflow-x-auto pb-3 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              <div className="flex flex-col gap-3 pb-3 sm:flex-row sm:items-center sm:gap-3">
+                <GroupsUniqueTotalStat
+                  count={totalGroupsAcrossCenters}
+                  isLoading={isLoadingBranchTabs}
+                  t={t}
+                />
+                <div className="min-w-0 flex-1 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                 <nav
                   className="flex min-w-max items-center gap-2.5"
                   role="tablist"
@@ -813,6 +820,7 @@ export function GroupsTab({
                     );
                   })}
                 </nav>
+                </div>
               </div>
             )}
             {centersForBranchTabs.length === 0 && !isLoadingBranchTabs && allCenters.length > 0 && (
