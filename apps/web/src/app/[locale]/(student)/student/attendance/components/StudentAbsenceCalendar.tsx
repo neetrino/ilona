@@ -12,7 +12,6 @@ import {
   getPreviousMonth,
   getNextMonth,
 } from '@/features/attendance/utils/dateUtils';
-import { Button } from '@/shared/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -25,10 +24,9 @@ import {
   useCreateMyPlannedAbsence,
   useDeleteMyPlannedAbsence,
 } from '@/features/attendance';
+import { StudentGhostButton, StudentIconButton, StudentPrimaryButton } from '@/features/student-ui';
 import {
-  studentGhostButtonClass,
   studentInputClass,
-  studentPrimaryButtonClass,
 } from '@/features/student-ui/tokens';
 
 interface StudentAbsenceCalendarProps {
@@ -318,41 +316,36 @@ export function StudentAbsenceCalendar({
 
   return (
     <div className="rounded-3xl border border-[rgba(14,14,16,0.07)] bg-white p-4 sm:p-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-        <div className="flex items-center justify-center sm:justify-start gap-4">
-          <Button
-            variant="outline"
-            size="icon"
+      <div className="mb-6 flex flex-wrap items-center justify-center gap-2 sm:justify-start">
+          <StudentIconButton
             onClick={handlePreviousMonth}
             disabled={isLoading}
             type="button"
-            className={studentGhostButtonClass}
+            aria-label="Previous month"
+            className="h-11 w-11 rounded-[0.875rem]"
           >
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          <h2 className="min-w-[180px] text-center text-xl font-semibold tracking-tight text-[#1010a3] sm:min-w-[200px]">
+            <ChevronLeft className="h-5 w-5" />
+          </StudentIconButton>
+          <h2 className="min-w-[9rem] flex-1 text-center text-base font-semibold tracking-tight text-[#1010a3] sm:min-w-[12rem] sm:flex-none sm:text-lg">
             {formatMonthDisplay(currentMonth)}
           </h2>
-          <Button
-            variant="outline"
-            size="icon"
+          <StudentIconButton
             onClick={handleNextMonth}
             disabled={isLoading}
             type="button"
-            className={studentGhostButtonClass}
+            aria-label="Next month"
+            className="h-11 w-11 rounded-[0.875rem]"
           >
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-        </div>
-        <Button
-          variant="outline"
-          onClick={handleToday}
-          disabled={isLoading}
-          type="button"
-          className={cn('self-center sm:self-auto', studentGhostButtonClass)}
-        >
-          {tCommon('today')}
-        </Button>
+            <ChevronRight className="h-5 w-5" />
+          </StudentIconButton>
+          <StudentGhostButton
+            onClick={handleToday}
+            disabled={isLoading}
+            type="button"
+            className="h-11 shrink-0 px-4 text-sm font-semibold"
+          >
+            {tCommon('today')}
+          </StudentGhostButton>
       </div>
 
       <div className="grid grid-cols-7 gap-1.5 sm:gap-2">
@@ -505,24 +498,21 @@ export function StudentAbsenceCalendar({
                   />
                   {formError && <p className="text-sm text-red-600">{formError}</p>}
                   <div className="flex flex-wrap gap-2">
-                    <Button
+                    <StudentPrimaryButton
                       type="button"
                       onClick={handleSubmitPlanned}
                       disabled={createPlanned.isPending || deletePlanned.isPending}
-                      className={studentPrimaryButtonClass}
                     >
                       {selectedPlanned ? t('updatePlannedAbsence') : t('savePlannedAbsence')}
-                    </Button>
+                    </StudentPrimaryButton>
                     {selectedPlanned && (
-                      <Button
+                      <StudentGhostButton
                         type="button"
-                        variant="outline"
                         onClick={handleDeletePlanned}
                         disabled={createPlanned.isPending || deletePlanned.isPending}
-                        className={studentGhostButtonClass}
                       >
                         {t('cancelPlannedAbsence')}
-                      </Button>
+                      </StudentGhostButton>
                     )}
                   </div>
                 </div>
