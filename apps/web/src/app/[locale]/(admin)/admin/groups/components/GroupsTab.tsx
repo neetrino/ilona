@@ -1055,7 +1055,6 @@ export function GroupsTab({
       <CreateGroupForm 
         open={isAddGroupOpen} 
         onOpenChange={handleCreateGroupOpenChange}
-        defaultCenterId={activeCenterId ?? undefined}
       />
       {editGroupId && (
         <EditGroupForm 

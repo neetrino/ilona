@@ -41,10 +41,9 @@ function translateScheduleSlotError(
 interface CreateGroupFormProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  defaultCenterId?: string;
 }
 
-export function CreateGroupForm({ open, onOpenChange, defaultCenterId }: CreateGroupFormProps) {
+export function CreateGroupForm({ open, onOpenChange }: CreateGroupFormProps) {
   const tForm = useTranslations('groups.form');
   const tVal = useTranslations('groups.validation');
   const tCommon = useTranslations('common');
@@ -100,7 +99,7 @@ export function CreateGroupForm({ open, onOpenChange, defaultCenterId }: CreateG
     defaultValues: {
       name: '',
       level: '',
-      centerId: defaultCenterId || '',
+      centerId: '',
       teacherId: '',
       secondTeacherId: '',
     },
@@ -109,51 +108,38 @@ export function CreateGroupForm({ open, onOpenChange, defaultCenterId }: CreateG
   const watchedCenterId = watch('centerId');
   const watchedSecondTeacherId = watch('secondTeacherId');
 
-  // Watch centerId to update when defaultCenterId changes
-  const centerId = watch('centerId');
-
-  // Update centerId when defaultCenterId prop changes
-  useEffect(() => {
-    if (defaultCenterId && defaultCenterId !== centerId) {
-      setValue('centerId', defaultCenterId);
-    }
-  }, [defaultCenterId, centerId, setValue]);
-
   // Reset form when dialog closes
   useEffect(() => {
     setIsDialogOpen(open);
   }, [open]);
 
-  // Reset form when dialog closes; refresh calendar dates each time modal opens
+  // Fresh form + calendar dates each time modal opens
   useEffect(() => {
     if (open) {
-      const r = defaultMonthDateRange();
-      setDateFrom(r.from);
-      setDateTo(r.to);
-    }
-  }, [open]);
-
-  useEffect(() => {
-    if (!open) {
       reset({
         name: '',
         level: '',
-        centerId: defaultCenterId || '',
+        centerId: '',
         teacherId: '',
         secondTeacherId: '',
       });
       setSchedule([]);
-      const r = defaultMonthDateRange();
-      setDateFrom(r.from);
-      setDateTo(r.to);
       setIconKey(null);
       setErrorMessage(null);
       setSuccessMessage(null);
+      const r = defaultMonthDateRange();
+      setDateFrom(r.from);
+      setDateTo(r.to);
+    }
+  }, [open, reset]);
+
+  useEffect(() => {
+    if (!open) {
       setDragOffsetY(0);
       setIsDragging(false);
       setIsSettling(false);
     }
-  }, [open, reset, defaultCenterId]);
+  }, [open]);
 
   useEffect(() => {
     return () => {
@@ -279,7 +265,7 @@ export function CreateGroupForm({ open, onOpenChange, defaultCenterId }: CreateG
       reset({
         name: '',
         level: '',
-        centerId: defaultCenterId || '',
+        centerId: '',
         teacherId: '',
         secondTeacherId: '',
       });

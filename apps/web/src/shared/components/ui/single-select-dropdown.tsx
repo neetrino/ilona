@@ -5,6 +5,7 @@ import { useState, useRef, useEffect } from 'react';
 import { cn } from '@/shared/lib/utils';
 import {
   DROPDOWN_CHEVRON_CLASS,
+  DROPDOWN_CHEVRON_SELECTED_CLASS,
   DROPDOWN_LABEL_CLASS,
   DROPDOWN_MENU_SURFACE_CLASS,
   DROPDOWN_OPTION_BASE_CLASS,
@@ -15,6 +16,7 @@ import {
   DROPDOWN_TRIGGER_DISABLED_CLASS,
   DROPDOWN_TRIGGER_INTERACTIVE_CLASS,
   DROPDOWN_TRIGGER_OPEN_CLASS,
+  DROPDOWN_TRIGGER_SELECTED_CLASS,
   DROPDOWN_VALUE_TEXT_CLASS,
 } from './dropdown-theme';
 import { useOutsidePress } from '@/shared/hooks/useOutsidePress';
@@ -65,6 +67,7 @@ export function SingleSelectDropdown({
   const labelId = label ? `${triggerId}-label` : undefined;
   const listboxId = `${triggerId}-listbox`;
 
+  const hasSelection = Boolean(value);
   const selectedOption = options.find((opt) => opt.id === value);
   const displayText = selectedOption ? selectedOption.label : placeholder;
 
@@ -211,6 +214,7 @@ export function SingleSelectDropdown({
             DROPDOWN_TRIGGER_BASE_CLASS,
             DROPDOWN_TRIGGER_INTERACTIVE_CLASS,
             DROPDOWN_TRIGGER_DISABLED_CLASS,
+            hasSelection && !isOpen && DROPDOWN_TRIGGER_SELECTED_CLASS,
             isOpen && DROPDOWN_TRIGGER_OPEN_CLASS,
             error && 'border-red-500'
           )}
@@ -219,13 +223,14 @@ export function SingleSelectDropdown({
             <span className={cn(
               'text-sm',
               'truncate',
-              !selectedOption ? DROPDOWN_PLACEHOLDER_TEXT_CLASS : DROPDOWN_VALUE_TEXT_CLASS
+              hasSelection ? DROPDOWN_VALUE_TEXT_CLASS : DROPDOWN_PLACEHOLDER_TEXT_CLASS
             )}>
               {isLoading ? 'Loading...' : displayText}
             </span>
             <svg
               className={cn(
                 DROPDOWN_CHEVRON_CLASS,
+                hasSelection && DROPDOWN_CHEVRON_SELECTED_CLASS,
                 isOpen && 'rotate-180'
               )}
               fill="none"
