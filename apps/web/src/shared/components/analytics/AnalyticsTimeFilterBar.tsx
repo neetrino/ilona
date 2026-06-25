@@ -213,7 +213,27 @@ export function AnalyticsTimeFilterBar({
             )}
           </label>
         )}
-        {mode === 'date' && (
+        {mode === 'date' && isStudent ? (
+          <div className="flex w-full flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-2">
+            <label className="flex w-full flex-col gap-1.5 sm:w-auto sm:flex-row sm:items-center sm:gap-2">
+              <span className="whitespace-nowrap text-[#8b8b90]">{t('timeFilterFrom')}</span>
+              <StudentDatePicker
+                className="w-full sm:w-auto"
+                value={customFromYmd}
+                onValueChange={onCustomFromYmd}
+              />
+            </label>
+            <label className="flex w-full flex-col gap-1.5 sm:w-auto sm:flex-row sm:items-center sm:gap-2">
+              <span className="whitespace-nowrap text-[#8b8b90]">{t('timeFilterTo')}</span>
+              <StudentDatePicker
+                className="w-full sm:w-auto"
+                value={customToYmd}
+                onValueChange={onCustomToYmd}
+              />
+            </label>
+          </div>
+        ) : null}
+        {mode === 'date' && !isStudent && (
           <div className="flex w-full justify-center overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:w-auto sm:justify-start sm:overflow-visible">
             <div className="inline-flex min-w-max flex-nowrap items-center gap-2">
               <span
@@ -225,15 +245,11 @@ export function AnalyticsTimeFilterBar({
                 {t('timeFilterFrom')}
               </span>
               <div className="min-w-[8.5rem] shrink-0 sm:min-w-[9.5rem]">
-                {isStudent ? (
-                  <StudentDatePicker value={customFromYmd} onValueChange={onCustomFromYmd} />
-                ) : (
-                  <DatePickerInput
-                    className={adminDatePickerClassName}
-                    value={customFromYmd}
-                    onValueChange={onCustomFromYmd}
-                  />
-                )}
+                <DatePickerInput
+                  className={adminDatePickerClassName}
+                  value={customFromYmd}
+                  onValueChange={onCustomFromYmd}
+                />
               </div>
               <span
                 className={cn(
@@ -244,15 +260,11 @@ export function AnalyticsTimeFilterBar({
                 {t('timeFilterTo')}
               </span>
               <div className="min-w-[8.5rem] shrink-0 sm:min-w-[9.5rem]">
-                {isStudent ? (
-                  <StudentDatePicker value={customToYmd} onValueChange={onCustomToYmd} />
-                ) : (
-                  <DatePickerInput
-                    className={adminDatePickerClassName}
-                    value={customToYmd}
-                    onValueChange={onCustomToYmd}
-                  />
-                )}
+                <DatePickerInput
+                  className={adminDatePickerClassName}
+                  value={customToYmd}
+                  onValueChange={onCustomToYmd}
+                />
               </div>
             </div>
           </div>
