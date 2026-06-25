@@ -108,6 +108,9 @@ const PERIOD_PRESET_KEYS = {
   custom: 'periodCustom',
 } as const satisfies Record<PeriodPreset, string>;
 
+const PERIOD_PRESETS: PeriodPreset[] = ['day', 'week', 'month', 'custom'];
+const PERIOD_TRACK_PADDING_PX = 4;
+
 export default function TeacherSalaryPage() {
   const t = useTranslations('finance');
   const tCommon = useTranslations('common');
@@ -176,47 +179,73 @@ export default function TeacherSalaryPage() {
     .filter((s) => s.status === 'PAID')
     .reduce((sum, s) => sum + Number(s.netAmount ?? 0), 0);
 
+  const selectedPresetIndex = PERIOD_PRESETS.indexOf(preset);
+  const presetSegmentShare = 100 / PERIOD_PRESETS.length;
+
   return (
     <DashboardLayout
       title={t('salary')}
       subtitle={t('salarySubtitle')}
     >
       {/* Period Filter */}
-      <div className="mb-6 flex flex-wrap items-end gap-3 rounded-xl border border-[rgba(14,14,16,0.07)] bg-white p-4">
-        <div className="flex gap-1 rounded-lg bg-[#f6f6f7] p-1">
-          {(['day', 'week', 'month', 'custom'] as PeriodPreset[]).map((p) => (
-            <button
-              key={p}
-              type="button"
-              onClick={() => setPreset(p)}
-              className={cn(
-                'rounded-md px-3 py-1.5 text-sm font-medium capitalize transition-colors',
-                preset === p
-                  ? 'bg-white text-[#1010a3] shadow-sm'
-                  : 'text-[#8b8b90] hover:text-[#1010a3]',
-              )}
-            >
-              {t(PERIOD_PRESET_KEYS[p])}
-            </button>
-          ))}
-        </div>
-        {preset === 'custom' && (
-          <div className="flex flex-wrap items-center gap-2">
-            <label className="text-sm text-[#8b8b90]">{tCommon('from')}</label>
-            <DatePickerInput
-              value={customFrom}
-              onValueChange={setCustomFrom}
-              className="rounded-lg border border-[rgba(14,14,16,0.07)] px-2 py-1 text-sm"
-            />
-            <label className="text-sm text-[#8b8b90]">{tCommon('to')}</label>
-            <DatePickerInput
-              value={customTo}
-              onValueChange={setCustomTo}
-              className="rounded-lg border border-[rgba(14,14,16,0.07)] px-2 py-1 text-sm"
-            />
+      <div className="mb-6 flex flex-col gap-3 rounded-xl border border-[rgba(14,14,16,0.07)] bg-white p-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex min-w-0 items-center overflow-x-auto">
+          <div
+            role="group"
+            aria-label={t('period')}
+            className="relative grid shrink-0 rounded-lg border border-[rgba(14,14,16,0.12)] bg-[#f6f6f7] p-1 shadow-sm"
+            style={{ gridTemplateColumns: `repeat(${PERIOD_PRESETS.length}, minmax(0, 1fr))` }}
+          >
+            {selectedPresetIndex >= 0 ? (
+              <span
+                aria-hidden
+                className="pointer-events-none absolute z-0 rounded-md bg-[#1010a3] shadow-sm transition-[left,width] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]"
+                style={{
+                  top: PERIOD_TRACK_PADDING_PX,
+                  bottom: PERIOD_TRACK_PADDING_PX,
+                  left: `calc(${selectedPresetIndex * presetSegmentShare}% + ${PERIOD_TRACK_PADDING_PX}px)`,
+                  width: `calc(${presetSegmentShare}% - ${PERIOD_TRACK_PADDING_PX * 2}px)`,
+                }}
+              />
+            ) : null}
+            {PERIOD_PRESETS.map((p) => {
+              const isSelected = preset === p;
+              return (
+                <button
+                  key={p}
+                  type="button"
+                  onClick={() => setPreset(p)}
+                  className={cn(
+                    'relative z-10 rounded-md px-3 py-2 text-sm font-semibold capitalize transition-colors duration-300 focus:outline-none',
+                    isSelected
+                      ? 'text-white'
+                      : 'text-[#3b3b40] hover:text-[#1010a3]',
+                  )}
+                  aria-pressed={isSelected}
+                >
+                  {t(PERIOD_PRESET_KEYS[p])}
+                </button>
+              );
+            })}
           </div>
-        )}
-        <span className="ml-auto text-xs text-[#8b8b90]">
+          {preset === 'custom' && (
+            <div className="ml-10 flex shrink-0 items-center gap-4">
+              <label className="text-sm text-[#8b8b90]">{tCommon('from')}</label>
+              <DatePickerInput
+                value={customFrom}
+                onValueChange={setCustomFrom}
+                className="w-[9.5rem] rounded-lg border border-[rgba(14,14,16,0.07)] px-2 py-1 text-sm"
+              />
+              <label className="text-sm text-[#8b8b90]">{tCommon('to')}</label>
+              <DatePickerInput
+                value={customTo}
+                onValueChange={setCustomTo}
+                className="w-[9.5rem] rounded-lg border border-[rgba(14,14,16,0.07)] px-2 py-1 text-sm"
+              />
+            </div>
+          )}
+        </div>
+        <span className="shrink-0 text-xs text-[#8b8b90] sm:ml-auto">
           {from.toLocaleDateString(locale)} – {to.toLocaleDateString(locale)}
         </span>
       </div>

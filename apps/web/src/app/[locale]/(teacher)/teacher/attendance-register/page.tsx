@@ -142,6 +142,7 @@ export default function TeacherAttendanceRegisterPage() {
           showAbsenceTypeFilter={true}
           absenceFilter={absenceFilter}
           onAbsenceFilterChange={setAbsenceFilter}
+          viewModeSelectorVariant="teacher"
         />
 
         {/* Statistics */}
