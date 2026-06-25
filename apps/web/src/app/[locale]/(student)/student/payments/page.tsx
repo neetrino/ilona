@@ -385,8 +385,11 @@ export default function StudentPaymentsPage() {
           </StudentAlert>
         )}
 
-        <StudentCard noPadding>
-          <div className="border-b border-[rgba(14,14,16,0.07)] p-4 sm:p-5">
+        <StudentCard
+          noPadding
+          className="rounded-none border-0 bg-transparent p-0 sm:rounded-none md:rounded-3xl md:border md:border-[rgba(14,14,16,0.07)] md:bg-white"
+        >
+          <div className="border-b border-[rgba(14,14,16,0.07)] pb-4 md:p-4 md:pb-4 lg:p-5">
             <StudentFilterPills
               options={filterOptions}
               value={filter}
@@ -398,7 +401,7 @@ export default function StudentPaymentsPage() {
           </div>
 
           {!showPaymentsReady ? (
-            <div className="space-y-4 p-4 sm:p-5">
+            <div className="space-y-4 pt-4 md:p-4 md:pt-4 lg:p-5">
               {[1, 2, 3].map((i) => (
                 <div
                   key={i}
@@ -407,18 +410,20 @@ export default function StudentPaymentsPage() {
               ))}
             </div>
           ) : payments.length === 0 ? (
-            <StudentEmptyState
-              title={t('noPaymentsFound')}
-              message={
-                filter === 'all'
-                  ? t('paymentHistoryEmpty')
-                  : t('noStatusPayments', { status: filter.toLowerCase() })
-              }
-            />
+            <div className="pt-4 md:pt-0">
+              <StudentEmptyState
+                title={t('noPaymentsFound')}
+                message={
+                  filter === 'all'
+                    ? t('paymentHistoryEmpty')
+                    : t('noStatusPayments', { status: filter.toLowerCase() })
+                }
+              />
+            </div>
           ) : (
             <>
               <div ref={mobilePaymentsStartRef} className="md:hidden" />
-              <div className="space-y-4 p-4 md:hidden">
+              <div className="space-y-4 pt-4 md:hidden">
                 {mobilePayments.map((payment) => (
                   <PaymentMobileCard
                     key={payment.id}
@@ -431,7 +436,7 @@ export default function StudentPaymentsPage() {
                 ))}
               </div>
               {payments.length > MOBILE_PAYMENTS_PAGE_SIZE && (
-                <div className="flex items-center justify-between px-4 pb-4 text-sm text-[#8b8b90] md:hidden">
+                <div className="flex items-center justify-between pt-2 pb-2 text-sm text-[#8b8b90] md:hidden">
                   <span>
                     {safeMobilePage * MOBILE_PAYMENTS_PAGE_SIZE + 1}-
                     {Math.min((safeMobilePage + 1) * MOBILE_PAYMENTS_PAGE_SIZE, payments.length)} /{' '}
