@@ -126,6 +126,7 @@ export default function TeacherSchedulePage() {
     >
       <ScheduleBoard
         variant="student"
+        rectangularViewToggle
         lessons={lessons}
         isLoading={!isAuthReady || isGroupsLoading || isLessonsLoading}
         highlightPastLessonCards
@@ -136,15 +137,14 @@ export default function TeacherSchedulePage() {
               <StudentSelect
                 id="schedule-center-teacher"
                 value={centerId}
-                onChange={(e) => setCenterId(e.target.value)}
-              >
-                <option value="">All centers</option>
-                {visibleCenters.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name || c.id}
-                  </option>
-                ))}
-              </StudentSelect>
+                onChange={setCenterId}
+                placeholder="All centers"
+                allowClear
+                options={visibleCenters.map((c) => ({
+                  value: c.id,
+                  label: c.name || c.id,
+                }))}
+              />
             </div>
             <div className="min-w-0 flex-1 text-sm text-[#8b8b90]">
               Showing {visibleGroups.length} active group{visibleGroups.length !== 1 ? 's' : ''}

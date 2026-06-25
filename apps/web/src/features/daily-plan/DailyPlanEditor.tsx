@@ -8,6 +8,7 @@ import {
 } from './hooks';
 import { useMyGroups } from '@/features/groups/hooks/useGroups';
 import { DatePickerInput } from '@/shared/components/ui/date-picker-input';
+import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
 import type {
   DailyPlan,
   DailyPlanResourceKind,
@@ -308,20 +309,15 @@ export function DailyPlanEditor({
                   {selectedGroupName}
                 </div>
               ) : (
-                <select
+                <SingleSelectDropdown
                   id="dp-group"
-                  value={groupId}
-                  onChange={(e) => setGroupId(e.target.value)}
+                  options={myGroups.map((group) => ({ id: group.id, label: group.name }))}
+                  value={groupId || null}
+                  onValueChange={(next) => setGroupId(next ?? '')}
+                  placeholder="Select group"
                   disabled={isLoadingGroups || readOnly}
-                  className="unified-native-select h-10 w-full px-3 bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary disabled:opacity-60"
-                >
-                  <option value="">Select group</option>
-                  {myGroups.map((group) => (
-                    <option key={group.id} value={group.id}>
-                      {group.name}
-                    </option>
-                  ))}
-                </select>
+                  isLoading={isLoadingGroups}
+                />
               )}
             </div>
           </div>

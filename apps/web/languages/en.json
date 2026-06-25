@@ -1928,6 +1928,7 @@
     "list": "List",
     "week": "Week",
     "month": "Month",
+    "viewMode": "View mode",
     "today": "Today",
     "addCourse": "Add Course",
     "addCourseDescription": "Fill in the information below to create a new course. Fields marked with * are required.",

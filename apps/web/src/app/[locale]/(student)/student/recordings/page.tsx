@@ -212,52 +212,52 @@ export default function StudentRecordingsPage() {
             <div>
               <StudentFieldLabel>{tCommon('year')}</StudentFieldLabel>
               <StudentSelect
-                value={filterYear === '' ? 'all' : filterYear}
-                onChange={(e) => {
-                  const v = e.target.value;
+                value={filterYear === '' ? 'all' : String(filterYear)}
+                onChange={(v) => {
                   setFilterYear(v === 'all' ? '' : Number(v));
                   setFilterMonth('');
                   setFilterDay('');
                 }}
-              >
-                <option value="all">{t('allYears')}</option>
-                {yearOptions.map((y) => (
-                  <option key={y} value={y}>{y}</option>
-                ))}
-              </StudentSelect>
+                placeholder={t('allYears')}
+                options={[
+                  { value: 'all', label: t('allYears') },
+                  ...yearOptions.map((y) => ({ value: String(y), label: String(y) })),
+                ]}
+              />
             </div>
             <div>
               <StudentFieldLabel>{tCommon('month')}</StudentFieldLabel>
               <StudentSelect
-                value={filterMonth === '' ? 'all' : filterMonth}
-                onChange={(e) => {
-                  const v = e.target.value;
+                value={filterMonth === '' ? 'all' : String(filterMonth)}
+                onChange={(v) => {
                   setFilterMonth(v === 'all' ? '' : Number(v));
                   setFilterDay('');
                 }}
                 disabled={filterYear === ''}
-              >
-                <option value="all">{t('allMonths')}</option>
-                {monthOptions.map((m) => (
-                  <option key={m.value} value={m.value}>{m.label}</option>
-                ))}
-              </StudentSelect>
+                placeholder={t('allMonths')}
+                options={[
+                  { value: 'all', label: t('allMonths') },
+                  ...monthOptions.map((m) => ({
+                    value: String(m.value),
+                    label: m.label,
+                  })),
+                ]}
+              />
             </div>
             <div>
               <StudentFieldLabel>{tCommon('date')}</StudentFieldLabel>
               <StudentSelect
-                value={filterDay === '' ? 'all' : filterDay}
-                onChange={(e) => {
-                  const v = e.target.value;
+                value={filterDay === '' ? 'all' : String(filterDay)}
+                onChange={(v) => {
                   setFilterDay(v === 'all' ? '' : Number(v));
                 }}
                 disabled={filterYear === '' || filterMonth === ''}
-              >
-                <option value="all">{t('allDays')}</option>
-                {dayOptions.map((d) => (
-                  <option key={d} value={d}>{d}</option>
-                ))}
-              </StudentSelect>
+                placeholder={t('allDays')}
+                options={[
+                  { value: 'all', label: t('allDays') },
+                  ...dayOptions.map((d) => ({ value: String(d), label: String(d) })),
+                ]}
+              />
             </div>
             {hasDateFilter ? (
               <div>

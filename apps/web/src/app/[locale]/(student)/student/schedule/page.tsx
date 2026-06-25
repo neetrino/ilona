@@ -142,15 +142,14 @@ export default function StudentSchedulePage() {
                     <StudentSelect
                       id="schedule-center-student"
                       value={centerId}
-                      onChange={(e) => setCenterId(e.target.value)}
-                    >
-                      <option value="">All centers</option>
-                      {profileCenters.map((c) => (
-                        <option key={c.id} value={c.id}>
-                          {c.name || c.id}
-                        </option>
-                      ))}
-                    </StudentSelect>
+                      onChange={setCenterId}
+                      placeholder="All centers"
+                      allowClear
+                      options={profileCenters.map((c) => ({
+                        value: c.id,
+                        label: c.name || c.id,
+                      }))}
+                    />
                   </div>
                 ) : null}
                 <p className="flex-1 text-sm text-[#8b8b90]">
