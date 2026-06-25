@@ -269,7 +269,7 @@ export default function StudentPaymentsPage() {
                     <button
                       type="button"
                       onClick={() => handleSort('status')}
-                      className="inline-flex items-center justify-center hover:text-[#1010a3]"
+                      className="inline-flex w-full items-center justify-center hover:text-[#1010a3]"
                     >
                       {t('status') ?? 'Status'}
                       {sortIndicator('status')}
@@ -332,8 +332,10 @@ export default function StudentPaymentsPage() {
                       >
                         {formatCurrency(Number(payment.amount))}
                       </StudentTd>
-                      <StudentTd className="text-center">
-                        <PaymentStatusBadge status={payment.status} t={t} />
+                      <StudentTd className="align-middle text-center">
+                        <div className="flex justify-center">
+                          <PaymentStatusBadge status={payment.status} t={t} />
+                        </div>
                       </StudentTd>
                       <StudentTd className="text-center">
                         <span className="text-[#8b8b90]">{dateLabel}</span>

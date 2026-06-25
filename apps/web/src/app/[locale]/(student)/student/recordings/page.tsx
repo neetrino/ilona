@@ -14,13 +14,12 @@ import {
   StudentBadge,
   StudentCard,
   StudentFieldLabel,
-  StudentFilterGrid,
   StudentGhostButton,
   StudentInnerCard,
   StudentPageStack,
   StudentPlayButton,
+  StudentDatePicker,
   StudentSectionHeader,
-  StudentSelect,
   StudentTableBody,
   StudentTableHead,
   StudentTableRow,
@@ -29,9 +28,6 @@ import {
   StudentTh,
 } from '@/features/student-ui';
 
-function getDaysInMonth(year: number, month: number): number {
-  return new Date(year, month, 0).getDate();
-}
 
 function formatDuration(
   seconds: number,
@@ -142,52 +138,32 @@ export default function StudentRecordingsPage() {
   const tNav = useTranslations('nav');
   const t = useTranslations('recordings');
   const tCommon = useTranslations('common');
-  const now = useMemo(() => new Date(), []);
-  const currentYear = now.getFullYear();
   const [activeRecordingId, setActiveRecordingId] = useState<string | null>(null);
-  const [filterYear, setFilterYear] = useState<number | ''>(() => new Date().getFullYear());
-  const [filterMonth, setFilterMonth] = useState<number | ''>('');
-  const [filterDay, setFilterDay] = useState<number | ''>('');
-
-  const apiFilters = useMemo(() => {
-    const f: { year?: number; month?: number; day?: number } = {};
-    if (filterYear !== '') f.year = filterYear;
-    if (filterMonth !== '' && filterYear !== '') f.month = filterMonth;
-    if (filterDay !== '' && filterMonth !== '' && filterYear !== '') f.day = filterDay;
-    return Object.keys(f).length ? f : undefined;
-  }, [filterYear, filterMonth, filterDay]);
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
 
   const { data: voiceToTeacherRecordings = [], isLoading: isLoadingVoiceToTeacher } = useQuery({
-    queryKey: [...chatKeys.all, 'student', 'voice-to-teacher-recordings', apiFilters ?? 'all'],
-    queryFn: () => fetchStudentVoiceToTeacherRecordings(apiFilters),
+    queryKey: [...chatKeys.all, 'student', 'voice-to-teacher-recordings'],
+    queryFn: () => fetchStudentVoiceToTeacherRecordings(),
   });
 
-  const monthOptions = useMemo(
-    () =>
-      Array.from({ length: 12 }, (_, i) => ({
-        value: i + 1,
-        label: tCommon(`months.${i + 1}` as 'months.1'),
-      })),
-    [tCommon],
-  );
+  const filteredRecordings = useMemo(() => {
+    const fromTs = dateFrom ? new Date(`${dateFrom}T00:00:00`).getTime() : null;
+    const toTs = dateTo ? new Date(`${dateTo}T23:59:59.999`).getTime() : null;
 
-  const yearOptions = useMemo(
-    () => Array.from({ length: 5 }, (_, i) => currentYear - 2 + i),
-    [currentYear],
-  );
+    return voiceToTeacherRecordings.filter((recording) => {
+      const ts = new Date(recording.createdAt).getTime();
+      if (fromTs !== null && ts < fromTs) return false;
+      if (toTs !== null && ts > toTs) return false;
+      return true;
+    });
+  }, [voiceToTeacherRecordings, dateFrom, dateTo]);
 
-  const dayOptions = useMemo(() => {
-    if (filterYear === '' || filterMonth === '') return [];
-    const days = getDaysInMonth(filterYear, filterMonth);
-    return Array.from({ length: days }, (_, i) => i + 1);
-  }, [filterYear, filterMonth]);
-
-  const hasDateFilter = filterYear !== '' || filterMonth !== '' || filterDay !== '';
+  const hasDateFilter = Boolean(dateFrom || dateTo);
 
   const handleResetFilters = () => {
-    setFilterYear('');
-    setFilterMonth('');
-    setFilterDay('');
+    setDateFrom('');
+    setDateTo('');
   };
 
   const emptyContent = hasDateFilter ? (
@@ -208,70 +184,37 @@ export default function StudentRecordingsPage() {
     <DashboardLayout title={tNav('recordings')} subtitle={tNav('recordingsSubtitle')}>
       <StudentPageStack>
         <StudentCard>
-          <StudentFilterGrid>
-            <div>
-              <StudentFieldLabel>{tCommon('year')}</StudentFieldLabel>
-              <StudentSelect
-                value={filterYear === '' ? 'all' : String(filterYear)}
-                onChange={(v) => {
-                  setFilterYear(v === 'all' ? '' : Number(v));
-                  setFilterMonth('');
-                  setFilterDay('');
-                }}
-                placeholder={t('allYears')}
-                options={[
-                  { value: 'all', label: t('allYears') },
-                  ...yearOptions.map((y) => ({ value: String(y), label: String(y) })),
-                ]}
-              />
-            </div>
-            <div>
-              <StudentFieldLabel>{tCommon('month')}</StudentFieldLabel>
-              <StudentSelect
-                value={filterMonth === '' ? 'all' : String(filterMonth)}
-                onChange={(v) => {
-                  setFilterMonth(v === 'all' ? '' : Number(v));
-                  setFilterDay('');
-                }}
-                disabled={filterYear === ''}
-                placeholder={t('allMonths')}
-                options={[
-                  { value: 'all', label: t('allMonths') },
-                  ...monthOptions.map((m) => ({
-                    value: String(m.value),
-                    label: m.label,
-                  })),
-                ]}
-              />
-            </div>
-            <div>
-              <StudentFieldLabel>{tCommon('date')}</StudentFieldLabel>
-              <StudentSelect
-                value={filterDay === '' ? 'all' : String(filterDay)}
-                onChange={(v) => {
-                  setFilterDay(v === 'all' ? '' : Number(v));
-                }}
-                disabled={filterYear === '' || filterMonth === ''}
-                placeholder={t('allDays')}
-                options={[
-                  { value: 'all', label: t('allDays') },
-                  ...dayOptions.map((d) => ({ value: String(d), label: String(d) })),
-                ]}
-              />
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
+            <div className="grid min-w-0 flex-1 grid-cols-2 gap-3">
+              <div className="min-w-0">
+                <StudentFieldLabel htmlFor="student-recordings-from">{tCommon('from')}</StudentFieldLabel>
+                <StudentDatePicker
+                  id="student-recordings-from"
+                  value={dateFrom}
+                  max={dateTo || undefined}
+                  onValueChange={setDateFrom}
+                />
+              </div>
+              <div className="min-w-0">
+                <StudentFieldLabel htmlFor="student-recordings-to">{tCommon('to')}</StudentFieldLabel>
+                <StudentDatePicker
+                  id="student-recordings-to"
+                  value={dateTo}
+                  min={dateFrom || undefined}
+                  onValueChange={setDateTo}
+                />
+              </div>
             </div>
             {hasDateFilter ? (
-              <div>
-                <StudentFieldLabel>&nbsp;</StudentFieldLabel>
-                <StudentGhostButton type="button" onClick={handleResetFilters} className="w-full">
-                  {t('resetAll')}
-                </StudentGhostButton>
-              </div>
+              <StudentGhostButton type="button" onClick={handleResetFilters} className="shrink-0">
+                {t('resetAll')}
+              </StudentGhostButton>
             ) : null}
-          </StudentFilterGrid>
+          </div>
         </StudentCard>
 
         <p className="text-sm text-[#8b8b90]">
-          {t('recordingsAvailable', { count: voiceToTeacherRecordings.length })}
+          {t('recordingsAvailable', { count: filteredRecordings.length })}
         </p>
 
         <StudentCard noPadding>
@@ -287,10 +230,10 @@ export default function StudentRecordingsPage() {
               Array.from({ length: 3 }).map((_, idx) => (
                 <div key={`mobile-skeleton-${idx}`} className="h-28 animate-pulse rounded-[1.125rem] bg-[#f6f6f7]" />
               ))
-            ) : voiceToTeacherRecordings.length === 0 ? (
+            ) : filteredRecordings.length === 0 ? (
               <div className="py-10 text-center text-sm text-[#8b8b90]">{emptyContent}</div>
             ) : (
-              voiceToTeacherRecordings.map((recording) => (
+              filteredRecordings.map((recording) => (
                 <VoiceToTeacherCard
                   key={recording.id}
                   recording={recording}
@@ -321,14 +264,14 @@ export default function StudentRecordingsPage() {
                       </StudentTd>
                     </StudentTableRow>
                   ))
-                ) : voiceToTeacherRecordings.length === 0 ? (
+                ) : filteredRecordings.length === 0 ? (
                   <StudentTableRow>
                     <StudentTd colSpan={5}>
                       <div className="py-10 text-center text-sm text-[#8b8b90]">{emptyContent}</div>
                     </StudentTd>
                   </StudentTableRow>
                 ) : (
-                  voiceToTeacherRecordings.map((recording) => (
+                  filteredRecordings.map((recording) => (
                     <VoiceToTeacherRow
                       key={recording.id}
                       recording={recording}

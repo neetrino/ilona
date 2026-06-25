@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { cn } from '@/shared/lib/utils';
 import { type TimeFilterMode } from '@/shared/lib/analytics-time-range';
 import { DatePickerInput } from '@/shared/components/ui';
+import { StudentAnimatedPillSwitcher, StudentDatePicker } from '@/features/student-ui';
 
 type ApplyAction = {
   onApply: () => void;
@@ -65,6 +66,8 @@ export function AnalyticsTimeFilterBar({
   ];
 
   useEffect(() => {
+    if (isStudent) return;
+
     const syncModeIndicator = () => {
       const activeModeEl = modeButtonRefs.current[mode];
       const trackEl = modeTrackRef.current;
@@ -82,7 +85,14 @@ export function AnalyticsTimeFilterBar({
     syncModeIndicator();
     window.addEventListener('resize', syncModeIndicator);
     return () => window.removeEventListener('resize', syncModeIndicator);
-  }, [mode]);
+  }, [mode, isStudent]);
+
+  const adminDatePickerClassName = cn(
+    'rounded-[0.875rem] border bg-white px-2 py-1.5',
+    usesGroupAccent
+      ? 'border-[rgba(14,14,16,0.07)] text-[#3b3b40] focus:border-[#1010a3] focus:outline-none focus:ring-2 focus:ring-[#1010a3]/15'
+      : 'rounded-md border-slate-200 text-slate-800',
+  );
 
   return (
     <div
@@ -94,6 +104,16 @@ export function AnalyticsTimeFilterBar({
         className,
       )}
     >
+      {isStudent ? (
+        <StudentAnimatedPillSwitcher
+          options={modes.map((m) => ({ value: m.id, label: m.label }))}
+          value={mode}
+          onChange={onModeChange}
+          shape="rectangular"
+          size="md"
+          className="w-full sm:w-auto"
+        />
+      ) : (
       <div
         className={cn(
           'relative grid w-full grid-cols-3 items-center p-1 sm:w-auto',
@@ -143,6 +163,7 @@ export function AnalyticsTimeFilterBar({
           </button>
         ))}
       </div>
+      )}
 
       <div
         className={cn(
@@ -160,16 +181,15 @@ export function AnalyticsTimeFilterBar({
             >
               {t('timeFilterSelectDay')}
             </span>
-            <DatePickerInput
-              className={cn(
-                'rounded-[0.875rem] border bg-white px-2 py-1.5',
-                usesGroupAccent
-                  ? 'border-[rgba(14,14,16,0.07)] text-[#3b3b40] focus:border-[#1010a3] focus:outline-none focus:ring-2 focus:ring-[#1010a3]/15'
-                  : 'rounded-md border-slate-200 text-slate-800',
-              )}
-              value={dayYmd}
-              onValueChange={onDayYmdChange}
-            />
+            {isStudent ? (
+              <StudentDatePicker value={dayYmd} onValueChange={onDayYmdChange} />
+            ) : (
+              <DatePickerInput
+                className={adminDatePickerClassName}
+                value={dayYmd}
+                onValueChange={onDayYmdChange}
+              />
+            )}
           </label>
         )}
         {mode === 'week' && (
@@ -182,16 +202,15 @@ export function AnalyticsTimeFilterBar({
             >
               {t('timeFilterSelectWeek')}
             </span>
-            <DatePickerInput
-              className={cn(
-                'rounded-[0.875rem] border bg-white px-2 py-1.5',
-                usesGroupAccent
-                  ? 'border-[rgba(14,14,16,0.07)] text-[#3b3b40] focus:border-[#1010a3] focus:outline-none focus:ring-2 focus:ring-[#1010a3]/15'
-                  : 'rounded-md border-slate-200 text-slate-800',
-              )}
-              value={weekAnchorYmd}
-              onValueChange={onWeekAnchorYmdChange}
-            />
+            {isStudent ? (
+              <StudentDatePicker value={weekAnchorYmd} onValueChange={onWeekAnchorYmdChange} />
+            ) : (
+              <DatePickerInput
+                className={adminDatePickerClassName}
+                value={weekAnchorYmd}
+                onValueChange={onWeekAnchorYmdChange}
+              />
+            )}
           </label>
         )}
         {mode === 'date' && (
@@ -205,17 +224,16 @@ export function AnalyticsTimeFilterBar({
               >
                 {t('timeFilterFrom')}
               </span>
-              <div className="w-[7.5rem] shrink-0 sm:w-[8rem]">
-                <DatePickerInput
-                  className={cn(
-                    'rounded-[0.875rem] border bg-white px-2 py-1.5',
-                    usesGroupAccent
-                      ? 'border-[rgba(14,14,16,0.07)] text-[#3b3b40] focus:border-[#1010a3] focus:outline-none focus:ring-2 focus:ring-[#1010a3]/15'
-                      : 'rounded-md border-slate-200 text-slate-800',
-                  )}
-                  value={customFromYmd}
-                  onValueChange={onCustomFromYmd}
-                />
+              <div className="min-w-[8.5rem] shrink-0 sm:min-w-[9.5rem]">
+                {isStudent ? (
+                  <StudentDatePicker value={customFromYmd} onValueChange={onCustomFromYmd} />
+                ) : (
+                  <DatePickerInput
+                    className={adminDatePickerClassName}
+                    value={customFromYmd}
+                    onValueChange={onCustomFromYmd}
+                  />
+                )}
               </div>
               <span
                 className={cn(
@@ -225,17 +243,16 @@ export function AnalyticsTimeFilterBar({
               >
                 {t('timeFilterTo')}
               </span>
-              <div className="w-[7.5rem] shrink-0 sm:w-[8rem]">
-                <DatePickerInput
-                  className={cn(
-                    'rounded-[0.875rem] border bg-white px-2 py-1.5',
-                    usesGroupAccent
-                      ? 'border-[rgba(14,14,16,0.07)] text-[#3b3b40] focus:border-[#1010a3] focus:outline-none focus:ring-2 focus:ring-[#1010a3]/15'
-                      : 'rounded-md border-slate-200 text-slate-800',
-                  )}
-                  value={customToYmd}
-                  onValueChange={onCustomToYmd}
-                />
+              <div className="min-w-[8.5rem] shrink-0 sm:min-w-[9.5rem]">
+                {isStudent ? (
+                  <StudentDatePicker value={customToYmd} onValueChange={onCustomToYmd} />
+                ) : (
+                  <DatePickerInput
+                    className={adminDatePickerClassName}
+                    value={customToYmd}
+                    onValueChange={onCustomToYmd}
+                  />
+                )}
               </div>
             </div>
           </div>

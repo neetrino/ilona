@@ -17,6 +17,7 @@ import {
 } from '@/shared/lib/analytics-time-range';
 import {
   StudentAlert,
+  StudentBadge,
   StudentCard,
   StudentLoadingState,
   StudentPageStack,
@@ -30,6 +31,7 @@ import {
   StudentTableShell,
   StudentTd,
   StudentTh,
+  paymentStatusVariant,
 } from '@/features/student-ui';
 
 interface StudentAttendanceStats {
@@ -63,8 +65,17 @@ function ringColor(value: number): string {
   return '#b42318';
 }
 
+function paymentStatusLabel(status: string, t: (key: string) => string): string {
+  if (status === 'PENDING') return t('pending');
+  if (status === 'PAID') return t('paid');
+  if (status === 'OVERDUE') return t('overdue');
+  if (status === 'CANCELLED') return t('cancelled');
+  return status;
+}
+
 export default function StudentAnalyticsPage() {
   const t = useTranslations('analytics');
+  const tFinance = useTranslations('finance');
   const defPay = useMemo(() => defaultCustomRangeLast30Days(), []);
   const [timeMode, setTimeMode] = useState<TimeFilterMode>('date');
   const [dayYmd, setDayYmd] = useState(() => toYmd(new Date()));
@@ -195,11 +206,16 @@ export default function StudentAnalyticsPage() {
                 </div>
                 {payPeriodList.length > 0 && (
                   <StudentTableShell>
+                    <colgroup>
+                      <col />
+                      <col className="w-[30%]" />
+                      <col className="w-[30%]" />
+                    </colgroup>
                     <StudentTableHead>
                       <tr>
                         <StudentTh>Period</StudentTh>
-                        <StudentTh>Status</StudentTh>
-                        <StudentTh className="text-right">Amount</StudentTh>
+                        <StudentTh className="!text-center">Status</StudentTh>
+                        <StudentTh className="!text-center">Amount</StudentTh>
                       </tr>
                     </StudentTableHead>
                     <StudentTableBody>
@@ -215,10 +231,14 @@ export default function StudentAnalyticsPage() {
                                 : '—'}
                             </span>
                           </StudentTd>
-                          <StudentTd>
-                            <span className="text-[#3b3b40]">{p.status}</span>
+                          <StudentTd className="align-middle">
+                            <div className="flex justify-center">
+                              <StudentBadge variant={paymentStatusVariant(p.status)}>
+                                {paymentStatusLabel(p.status, tFinance)}
+                              </StudentBadge>
+                            </div>
                           </StudentTd>
-                          <StudentTd className="text-right font-semibold text-[#1010a3]">
+                          <StudentTd className="!text-center align-middle font-semibold text-[#1010a3]">
                             {formatCurrency(Number(p.amount))}
                           </StudentTd>
                         </StudentTableRow>

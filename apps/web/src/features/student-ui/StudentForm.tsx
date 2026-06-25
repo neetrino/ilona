@@ -5,6 +5,7 @@ import { cn } from '@/shared/lib/utils';
 import { studentLabelClass, studentInputClass } from './tokens';
 import { DatePickerInput } from '@/shared/components/ui';
 import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
+import type { DatePickerInputProps } from '@/shared/components/ui/date-picker-input';
 
 export function StudentFieldLabel({
   htmlFor,
@@ -28,9 +29,22 @@ export function StudentInput({
   ...props
 }: InputHTMLAttributes<HTMLInputElement>) {
   if (type === 'date') {
-    return <DatePickerInput className={cn(studentInputClass, className)} {...props} />;
+    return <StudentDatePicker className={className} {...props} />;
   }
   return <input className={cn(studentInputClass, className)} {...props} />;
+}
+
+export function StudentDatePicker({
+  className,
+  ...props
+}: Omit<DatePickerInputProps, 'popoverExpanded'>) {
+  return (
+    <DatePickerInput
+      popoverExpanded
+      className={cn(studentInputClass, className)}
+      {...props}
+    />
+  );
 }
 
 export type StudentSelectOption = {
