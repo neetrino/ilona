@@ -28,20 +28,25 @@ interface NoteCardProps {
 function NoteCard({ note, index, onDelete, isDeleting, variant }: NoteCardProps) {
   if (variant === 'dashboard') {
     return (
-      <div className="relative border-t border-dashed border-[rgba(14,14,16,0.07)] py-4 first:border-t-0 first:pt-0">
-        <span className="absolute left-0 top-5 h-2 w-2 rounded bg-[#1010a3]" aria-hidden />
-        <div className="flex flex-col gap-3 pl-4 sm:flex-row sm:items-start sm:justify-between">
-          <p className="min-w-0 flex-1 text-[0.8125rem] leading-relaxed text-[#1010a3]">
-            {note.content}
-          </p>
-          <button
-            type="button"
-            onClick={() => onDelete(note.id)}
-            disabled={isDeleting}
-            className="shrink-0 rounded-full bg-[#b4e288] px-4 py-2 text-[0.8125rem] font-semibold text-[#146e23] hover:bg-[#a3d97a] disabled:opacity-50"
-          >
-            Done
-          </button>
+      <div className="border-t border-dashed border-[rgba(14,14,16,0.07)] py-4 first:border-t-0 first:pt-0">
+        <div className="flex items-start gap-2.5">
+          <span
+            className="mt-[0.375rem] h-2 w-2 shrink-0 rounded-sm bg-[#1010a3]"
+            aria-hidden
+          />
+          <div className="flex min-w-0 flex-1 flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <p className="min-w-0 flex-1 text-[0.8125rem] leading-[1.25rem] text-[#1010a3]">
+              {note.content}
+            </p>
+            <button
+              type="button"
+              onClick={() => onDelete(note.id)}
+              disabled={isDeleting}
+              className="shrink-0 rounded-full bg-[#b4e288] px-4 py-2 text-[0.8125rem] font-semibold leading-none text-[#146e23] hover:bg-[#a3d97a] disabled:opacity-50"
+            >
+              Done
+            </button>
+          </div>
         </div>
       </div>
     );
