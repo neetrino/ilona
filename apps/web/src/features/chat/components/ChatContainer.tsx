@@ -12,6 +12,7 @@ import { TeacherChatList } from './TeacherChatList';
 import { ChatWindow } from './ChatWindow';
 import { MobileChatSlidePanel } from './MobileChatSlidePanel';
 import { ChatBackButton } from './ChatBackButton';
+import { ChatEmptyState } from './ChatEmptyState';
 import { useChatStore } from '../store/chat.store';
 import { useSocket, useChats, useCreateDirectChat } from '../hooks';
 import { useMyTeachers } from '@/features/students/hooks/useStudents';
@@ -316,17 +317,35 @@ function ChatContent({ emptyTitle, emptyDescription, className }: ChatContainerP
 
   // Check if we're in full-screen mode (when className includes rounded-none)
   const isFullScreen = className?.includes('rounded-none');
-  const containerHeight = isFullScreen ? 'h-screen' : 'h-[calc(100vh-200px)]';
-  const contentHeight = isFullScreen ? 'h-[calc(100vh-73px)]' : 'h-[calc(100%-73px)]';
+  const useAdminPortalLayout = isTeacher && isFullScreen;
+  const containerHeight = useAdminPortalLayout
+    ? 'min-h-0 flex-1 lg:min-h-0 lg:h-auto'
+    : isFullScreen
+      ? 'h-screen'
+      : 'h-[calc(100vh-200px)]';
+  const contentHeight = useAdminPortalLayout
+    ? 'flex-1 min-h-0'
+    : isFullScreen
+      ? 'h-[calc(100vh-73px)]'
+      : 'h-[calc(100%-73px)]';
 
   return (
-    <div className={cn(containerHeight, ui.shell, 'overflow-hidden flex flex-col', className)}>
+    <div
+      className={cn(
+        useAdminPortalLayout
+          ? 'flex min-h-0 flex-1 flex-col overflow-hidden bg-white max-lg:max-h-[100dvh] max-lg:min-h-0 max-lg:flex-1 max-lg:overflow-hidden lg:min-h-0 lg:h-auto'
+          : cn(containerHeight, ui.shell, 'flex flex-col overflow-hidden'),
+        useAdminPortalLayout && activeChat && 'max-lg:h-[100dvh]',
+        className,
+      )}
+    >
       {/* Back Button Header — hidden on mobile when a conversation is open */}
       <div
         className={cn(
           'flex flex-shrink-0 items-center justify-between border-b p-4',
-          ui.border,
-          ui.headerBg,
+          useAdminPortalLayout
+            ? 'border-[rgba(14,14,16,0.07)] bg-white px-3 py-3 sm:px-4'
+            : cn(ui.border, ui.headerBg),
           activeChat && 'max-lg:hidden',
         )}
       >
@@ -340,7 +359,9 @@ function ChatContent({ emptyTitle, emptyDescription, className }: ChatContainerP
           onClick={handleBackToPrevious}
           className={cn(
             'hidden items-center gap-2 px-4 py-2 transition-colors lg:flex',
-            ui.backBtn,
+            useAdminPortalLayout
+              ? 'gap-1.5 rounded-[0.875rem] px-2 py-2 text-[#3b3b40] hover:text-[#1010a3] focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20 focus:ring-offset-2'
+              : ui.backBtn,
           )}
           aria-label={tChat('backToPreviousPage')}
         >
@@ -352,19 +373,40 @@ function ChatContent({ emptyTitle, emptyDescription, className }: ChatContainerP
               d="M10 19l-7-7m0 0l7-7m-7 7h18"
             />
           </svg>
-          <span className="font-medium">{tCommon('back')}</span>
+          <span className={useAdminPortalLayout ? 'text-sm font-medium' : 'font-medium'}>
+            {tCommon('back')}
+          </span>
         </button>
-        <h2 className={cn('text-xl font-bold', ui.title)}>{tChat('title')}</h2>
-        <div className="w-20" /> {/* Spacer for centering */}
+        <h2
+          className={cn(
+            'font-bold',
+            useAdminPortalLayout
+              ? 'text-lg text-[#3b3b40] sm:text-xl'
+              : cn('text-xl', ui.title),
+          )}
+        >
+          {tChat('title')}
+        </h2>
+        {useAdminPortalLayout ? (
+          <div className="w-10" />
+        ) : (
+          <div className="w-20" />
+        )}
       </div>
 
-      <div className={cn('flex min-h-0 flex-1 overflow-hidden', contentHeight)}>
+      <div
+        className={cn(
+          'flex min-h-0 flex-1 overflow-hidden',
+          useAdminPortalLayout ? 'flex-col lg:flex-row' : contentHeight,
+        )}
+      >
         {/* Chat List */}
         <div
           className={cn(
-            'w-full lg:w-80 border-r flex-shrink-0',
-            ui.border,
-            !isMobileListVisible && 'hidden lg:block'
+            useAdminPortalLayout
+              ? 'flex min-h-0 w-full flex-1 flex-col overflow-hidden bg-white lg:w-80 lg:shrink-0 lg:flex-none lg:border-r lg:border-[rgba(14,14,16,0.07)]'
+              : cn('w-full lg:w-80 border-r flex-shrink-0', ui.border),
+            !isMobileListVisible && (useAdminPortalLayout ? 'hidden lg:flex' : 'hidden lg:block'),
           )}
         >
           {isStudent ? (
@@ -377,9 +419,15 @@ function ChatContent({ emptyTitle, emptyDescription, className }: ChatContainerP
         </div>
 
         {/* Chat Window — desktop */}
-        <div className="hidden min-h-0 flex-1 flex-col overflow-hidden lg:flex">
+        <div className="hidden min-h-0 flex-1 flex-col overflow-hidden bg-white lg:flex">
           {activeChat ? (
-            <ChatWindow chat={activeChat} onBack={handleBack} />
+            <ChatWindow chat={activeChat} onBack={handleBack} onChatUpdated={setActiveChat} />
+          ) : useAdminPortalLayout ? (
+            <ChatEmptyState
+              title={emptyTitle || tChat('selectChat')}
+              description={emptyDescription || tChat('selectChatDescription')}
+              className="bg-white lg:bg-[#fafafa]"
+            />
           ) : (
             <div className={cn('flex flex-1 items-center justify-center', ui.messagesBg)}>
               <div className="text-center">
@@ -421,7 +469,11 @@ function ChatContent({ emptyTitle, emptyDescription, className }: ChatContainerP
           onExitComplete={finalizeMobileChatClose}
           className="lg:hidden"
         >
-          <ChatWindow chat={activeChat} onBack={handleMobileBack} />
+          <ChatWindow
+            chat={activeChat}
+            onBack={handleMobileBack}
+            onChatUpdated={setActiveChat}
+          />
         </MobileChatSlidePanel>
       ) : null}
     </div>
