@@ -35,8 +35,7 @@ export function DeleteConfirmationDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        overlayClassName="duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]"
-        className="w-[calc(100%-1.5rem)] max-w-sm rounded-[15px] p-5 duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] sm:w-full"
+        className="lg:max-w-md lg:rounded-[15px] p-5 duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] lg:w-full"
       >
         <DialogHeader>
           <DialogTitle>{dialogTitle}</DialogTitle>

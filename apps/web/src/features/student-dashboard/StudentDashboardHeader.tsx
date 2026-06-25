@@ -8,18 +8,17 @@ import { PortalHeaderSearch } from '@/features/search/components/PortalHeaderSea
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { useMyDashboard } from '@/features/students';
 import { isStudentPortalSubpage } from '@/shared/lib/role-routes';
+import { PORTAL_MOBILE_HEADER_ID } from '@/shared/lib/portal-mobile-layout';
 import { STUDENT_DASHBOARD_ASSETS } from './assets';
 
 type StudentDashboardHeaderProps = {
   pageTitle?: string;
   pageSubtitle?: string;
-  onMenuClick?: () => void;
 };
 
 export function StudentDashboardHeader({
   pageTitle,
   pageSubtitle,
-  onMenuClick,
 }: StudentDashboardHeaderProps) {
   const t = useTranslations('dashboard');
   const tNav = useTranslations('nav');
@@ -38,28 +37,13 @@ export function StudentDashboardHeader({
   const shouldShowSecondaryRowOnMobile = !isStudentMobileSubpage;
 
   return (
-    <header className="shrink-0 bg-transparent px-[clamp(0.75rem,2vw,2rem)] py-[clamp(0.35rem,0.8vw,0.6rem)]">
+    <header
+      id={PORTAL_MOBILE_HEADER_ID}
+      className="shrink-0 bg-transparent px-[clamp(0.75rem,2vw,2rem)] py-[clamp(0.35rem,0.8vw,0.6rem)]"
+    >
       <div className="w-full min-w-0 rounded-full border border-[rgba(14,14,16,0.07)] bg-white px-[clamp(0.75rem,1.5vw,1.25rem)] py-[clamp(0.55rem,1vw,0.9rem)] lg:rounded-[4rem]">
         <div className="flex flex-col gap-3 md:flex-row md:min-h-14 md:items-center md:gap-4">
           <div className="flex min-w-0 items-center gap-2 sm:gap-3 lg:self-stretch lg:items-stretch">
-            {onMenuClick ? (
-              <button
-                type="button"
-                onClick={onMenuClick}
-                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-[#1010a3] hover:bg-[#f6f6f7] lg:hidden"
-                aria-label="Open navigation menu"
-              >
-                <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M4 6h16M4 12h16M4 18h16"
-                  />
-                </svg>
-              </button>
-            ) : null}
-
             <div className="flex min-h-11 min-w-0 flex-1 flex-col justify-center text-center lg:min-h-full lg:text-left">
               {isSubpage ? (
                 <>
@@ -101,7 +85,6 @@ export function StudentDashboardHeader({
                 </>
               )}
             </div>
-            {onMenuClick ? <div className="h-11 w-11 shrink-0 lg:hidden" aria-hidden /> : null}
           </div>
 
           <div

@@ -6,3 +6,4 @@ export { StudentUpcomingLessonsCard } from './StudentUpcomingLessonsCard';
 export { StudentProgressCard } from './StudentProgressCard';
 export { StudentPaymentPendingCard } from './StudentPaymentPendingCard';
 export { StudentDashboardHeader } from './StudentDashboardHeader';
+export { StudentPortalHomePage } from './StudentPortalHomePage';

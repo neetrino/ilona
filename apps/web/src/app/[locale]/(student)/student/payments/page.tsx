@@ -365,7 +365,7 @@ export default function StudentPaymentsPage() {
       </StudentPageStack>
 
       <Dialog open={!!processModal} onOpenChange={(open) => !open && setProcessModal(null)}>
-        <DialogContent className="rounded-3xl border-[rgba(14,14,16,0.07)] sm:max-w-md">
+        <DialogContent className="border-[rgba(14,14,16,0.07)] lg:max-w-md lg:rounded-3xl">
           <DialogHeader>
             <DialogTitle className="text-[#1010a3]">{t('pay')}</DialogTitle>
             <DialogDescription className="sr-only">{t('paymentMethod')}</DialogDescription>

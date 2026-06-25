@@ -19,6 +19,7 @@ import { useMyTeachers } from '@/features/students/hooks/useStudents';
 import { fetchChat } from '../api/chat.api';
 import type { Chat } from '../types';
 import { cn } from '@/shared/lib/utils';
+import { PORTAL_MOBILE_BOTTOM_NAV_OFFSET_CLASS } from '@/shared/lib/portal-mobile-layout';
 import { getChatThemeForRole } from '../lib/chat-theme';
 
 interface ChatContainerProps {
@@ -317,7 +318,7 @@ function ChatContent({ emptyTitle, emptyDescription, className }: ChatContainerP
 
   // Check if we're in full-screen mode (when className includes rounded-none)
   const isFullScreen = className?.includes('rounded-none');
-  const useAdminPortalLayout = isTeacher && isFullScreen;
+  const useAdminPortalLayout = (isTeacher || isStudent) && isFullScreen;
   const containerHeight = useAdminPortalLayout
     ? 'min-h-0 flex-1 lg:min-h-0 lg:h-auto'
     : isFullScreen
@@ -342,10 +343,10 @@ function ChatContent({ emptyTitle, emptyDescription, className }: ChatContainerP
       {/* Back Button Header — hidden on mobile when a conversation is open */}
       <div
         className={cn(
-          'flex flex-shrink-0 items-center justify-between border-b p-4',
+          'flex shrink-0 items-center justify-between border-b',
           useAdminPortalLayout
             ? 'border-[rgba(14,14,16,0.07)] bg-white px-3 py-3 sm:px-4'
-            : cn(ui.border, ui.headerBg),
+            : cn('p-4', ui.border, ui.headerBg),
           activeChat && 'max-lg:hidden',
         )}
       >
@@ -398,6 +399,7 @@ function ChatContent({ emptyTitle, emptyDescription, className }: ChatContainerP
         className={cn(
           'flex min-h-0 flex-1 overflow-hidden',
           useAdminPortalLayout ? 'flex-col lg:flex-row' : contentHeight,
+          useAdminPortalLayout && !activeChat && PORTAL_MOBILE_BOTTOM_NAV_OFFSET_CLASS,
         )}
       >
         {/* Chat List */}
@@ -490,11 +492,20 @@ export function ChatContainer(props: ChatContainerProps) {
   }, []);
 
   if (!mounted) {
+    const isFullScreenLoading = props.className?.includes('rounded-none');
+    const isPortalChatLoading =
+      (user?.role === 'TEACHER' || user?.role === 'STUDENT') && isFullScreenLoading;
+
     return (
       <div
-        className={cn('h-[calc(100vh-200px)] overflow-hidden', loadingUi.shell, props.className)}
+        className={cn(
+          isPortalChatLoading
+            ? 'flex min-h-0 flex-1 flex-col overflow-hidden bg-white max-lg:max-h-[100dvh] max-lg:min-h-0 max-lg:flex-1 lg:min-h-0 lg:h-auto'
+            : cn('h-[calc(100vh-200px)] overflow-hidden', loadingUi.shell),
+          props.className,
+        )}
       >
-        <div className="flex h-full items-center justify-center">
+        <div className="flex h-full min-h-0 flex-1 items-center justify-center">
           <div className={cn('h-8 w-8 animate-spin rounded-full', loadingUi.spinner)} />
         </div>
       </div>

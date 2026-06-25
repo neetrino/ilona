@@ -92,6 +92,7 @@ export default function TeacherSettingsPage() {
                     onClick={() => setActiveTab(tab.id)}
                     className={cn(
                       'flex min-w-[8.5rem] items-center gap-3 rounded-[0.875rem] px-4 py-3 text-left transition-colors lg:min-w-0 lg:w-full',
+                      tab.id === 'system' && 'hidden lg:flex',
                       activeTab === tab.id
                         ? 'bg-[#1010a3] text-white'
                         : 'text-[#3b3b40] hover:bg-[#f6f6f7]',
@@ -210,7 +211,7 @@ export default function TeacherSettingsPage() {
             )}
 
             {activeTab === 'system' && (
-              <StudentCard>
+              <StudentCard className="hidden lg:block">
                 <StudentSectionHeader title={t('appearance')} />
                 <div>
                   <label className="mb-3 block text-sm font-medium text-[#3b3b40]">

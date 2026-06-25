@@ -420,7 +420,7 @@ export function StudentAbsenceCalendar({
       </div>
 
       <Dialog open={!!selectedDate} onOpenChange={closeDialog}>
-        <DialogContent className="max-h-[90vh] max-w-md overflow-y-auto rounded-3xl border border-[rgba(14,14,16,0.07)]">
+        <DialogContent className="max-h-[90vh] lg:max-w-md overflow-y-auto border border-[rgba(14,14,16,0.07)] lg:rounded-3xl">
           <DialogHeader>
             <DialogTitle className="text-[#1010a3]">
               {selectedDate &&
