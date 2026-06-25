@@ -46,7 +46,7 @@ export class UpstashThrottlerStorage implements ThrottlerStorage {
     const ttlMs = ttl;
     const blockDurationMs = blockDuration;
 
-    let record =
+    const record =
       (await redis.get<StoredThrottleRecord>(storageKey)) ??
       emptyRecord(throttlerName, now, ttlMs);
 

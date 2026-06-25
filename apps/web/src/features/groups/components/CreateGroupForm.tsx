@@ -57,7 +57,7 @@ export function CreateGroupForm({ open, onOpenChange }: CreateGroupFormProps) {
         teacherId: z.string().min(1, tForm('selectBothTeachers')),
         secondTeacherId: z.string().min(1, tForm('selectBothTeachers')),
       }),
-    [tVal],
+    [tVal, tForm],
   );
 
   const resolver = useMemo(() => zodResolver(createGroupSchema), [createGroupSchema]);

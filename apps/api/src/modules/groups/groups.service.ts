@@ -940,7 +940,7 @@ export class GroupsService {
 
     const ids = (Array.isArray(teacherIds) ? teacherIds : teacherIds ? [teacherIds] : []).filter(
       Boolean,
-    ) as string[];
+    );
 
     for (const teacherId of [...new Set(ids)]) {
       const teacher = await this.prisma.teacher.findUnique({

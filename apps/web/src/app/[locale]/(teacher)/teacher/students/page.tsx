@@ -39,9 +39,8 @@ export default function TeacherStudentsPage() {
   const [feedbackStudent, setFeedbackStudent] = useState<Student | null>(null);
   const queryClient = useQueryClient();
 
-  const { isHydrated, isAuthenticated, tokens, user } = useAuthStore();
+  const { isHydrated, isAuthenticated, tokens } = useAuthStore();
   const isAuthReady = isHydrated && isAuthenticated && !!tokens?.accessToken;
-  const currentUserId = user?.id;
 
   const { data: groups, isLoading: isLoadingGroups } = useMyGroups();
   const groupsList = useMemo(() => groups || [], [groups]);

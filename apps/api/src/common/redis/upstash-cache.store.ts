@@ -67,8 +67,9 @@ export function createUpstashCacheStore(): Store {
       await redis.del(...keys.map(toFullKey));
     },
 
-    async keys(): Promise<string[]> {
-      return [];
+    keys(): Promise<string[]> {
+      // Intentionally empty: key scanning is unsafe in shared Redis.
+      return Promise.resolve([]);
     },
 
     async ttl(key: string): Promise<number> {
