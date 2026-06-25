@@ -54,7 +54,7 @@ export function StudentDashboardStatCards({
             <span className="text-[2.375rem] font-bold leading-none tracking-[-0.03em] text-[#1010a3]">
               {attendancePct}
             </span>
-            <span className="pb-1 text-sm font-medium text-[#8b8b90]">%</span>
+            <span className="text-sm font-medium text-[#8b8b90]">%</span>
           </>
         }
         badge={
@@ -76,7 +76,7 @@ export function StudentDashboardStatCards({
             <span className="text-[2.375rem] font-bold leading-none tracking-[-0.03em] text-[#1010a3]">
               {attendedLessons}
             </span>
-            <span className="pb-1 text-sm font-medium text-[#8b8b90]">/ {totalLessons}</span>
+            <span className="text-sm font-medium text-[#8b8b90]">/ {totalLessons}</span>
           </>
         }
         badge={

@@ -45,8 +45,8 @@ export function PortalDashboardStatCard({
           <PublicAssetImage src={iconSrc} alt="" width={24} height={24} className="h-6 w-6 object-contain" />
         </div>
       </div>
-      <div className="mt-3 flex flex-wrap items-end gap-2">
-        {valueNode}
+      <div className="mt-3 flex flex-wrap items-center gap-2">
+        <div className="flex items-baseline gap-1">{valueNode}</div>
         {badge}
       </div>
       <p className="mt-2 text-xs text-[#3b3b40]">{caption}</p>
