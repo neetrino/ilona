@@ -205,23 +205,23 @@ export default function StudentAnalyticsPage() {
                   </div>
                 </div>
                 {payPeriodList.length > 0 && (
-                  <StudentTableShell>
+                  <StudentTableShell className="[&_table]:table-fixed [&_table]:min-w-full">
                     <colgroup>
-                      <col />
-                      <col className="w-[30%]" />
-                      <col className="w-[30%]" />
+                      <col className="w-1/3" />
+                      <col className="w-1/3" />
+                      <col className="w-1/3" />
                     </colgroup>
                     <StudentTableHead>
                       <tr>
-                        <StudentTh>Period</StudentTh>
+                        <StudentTh className="!text-left">Period</StudentTh>
                         <StudentTh className="!text-center">Status</StudentTh>
-                        <StudentTh className="!text-center">Amount</StudentTh>
+                        <StudentTh className="!text-right">Amount</StudentTh>
                       </tr>
                     </StudentTableHead>
                     <StudentTableBody>
                       {payPeriodList.map((p) => (
                         <StudentTableRow key={p.id}>
-                          <StudentTd>
+                          <StudentTd className="!text-left align-middle">
                             <span className="font-medium text-[#1010a3]">
                               {p.month
                                 ? new Date(p.month).toLocaleDateString(undefined, {
@@ -231,14 +231,12 @@ export default function StudentAnalyticsPage() {
                                 : '—'}
                             </span>
                           </StudentTd>
-                          <StudentTd className="align-middle">
-                            <div className="flex justify-center">
-                              <StudentBadge variant={paymentStatusVariant(p.status)}>
-                                {paymentStatusLabel(p.status, tFinance)}
-                              </StudentBadge>
-                            </div>
+                          <StudentTd className="!text-center align-middle">
+                            <StudentBadge variant={paymentStatusVariant(p.status)}>
+                              {paymentStatusLabel(p.status, tFinance)}
+                            </StudentBadge>
                           </StudentTd>
-                          <StudentTd className="!text-center align-middle font-semibold text-[#1010a3]">
+                          <StudentTd className="!text-right align-middle font-semibold text-[#1010a3]">
                             {formatCurrency(Number(p.amount))}
                           </StudentTd>
                         </StudentTableRow>
