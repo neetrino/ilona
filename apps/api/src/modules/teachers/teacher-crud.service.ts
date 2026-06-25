@@ -151,7 +151,7 @@ export class TeacherCrudService {
           },
         },
         _count: {
-          select: { groups: true, lessons: true, substituteForGroups: true },
+          select: { groups: true, lessons: true, secondTeacherForGroups: true },
         },
       },
     });
@@ -397,7 +397,7 @@ export class TeacherCrudService {
         })),
         // Add all unique centers for this teacher (from all groups, not just the first 3)
         centers: teacherCentersMap.get(teacher.id) || [],
-        substituteForGroupsCount: teacher._count.substituteForGroups ?? 0,
+        secondTeacherForGroupsCount: teacher._count.secondTeacherForGroups ?? 0,
         // Add obligation fields
         obligationsDoneCount: obligations.completed,
         obligationsTotal: 5, // Always 5 actions required
@@ -473,7 +473,7 @@ export class TeacherCrudService {
             _count: { select: { students: true } },
           },
         },
-        substituteForGroups: {
+        secondTeacherForGroups: {
           include: {
             center: { select: { id: true, name: true } },
             _count: { select: { students: true } },
@@ -483,7 +483,7 @@ export class TeacherCrudService {
           select: { center: { select: { id: true, name: true } } },
         },
         _count: {
-          select: { groups: true, lessons: true, feedbacks: true, substituteForGroups: true },
+          select: { groups: true, lessons: true, feedbacks: true, secondTeacherForGroups: true },
         },
       },
     });

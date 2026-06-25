@@ -229,12 +229,16 @@ interface ScheduleCardProps {
 }
 
 function ScheduleCard({ group, entry, compact = false }: ScheduleCardProps) {
-  const teacherName = group.teacher
+  const teacher1Name = group.teacher
     ? `${group.teacher.user.firstName} ${group.teacher.user.lastName}`.trim()
-    : 'No teacher';
-  const subName = group.substituteTeacher
-    ? `${group.substituteTeacher.user.firstName} ${group.substituteTeacher.user.lastName}`.trim()
     : null;
+  const teacher2Name = group.secondTeacher
+    ? `${group.secondTeacher.user.firstName} ${group.secondTeacher.user.lastName}`.trim()
+    : null;
+  const teachersLine =
+    teacher1Name && teacher2Name
+      ? `${teacher1Name} · ${teacher2Name}`
+      : teacher1Name || teacher2Name || 'No teachers';
 
   return (
     <div
@@ -253,14 +257,9 @@ function ScheduleCard({ group, entry, compact = false }: ScheduleCardProps) {
           ) : null}
         </span>
       </div>
-      <div className="text-slate-600 truncate" title={teacherName}>
-        {teacherName}
+      <div className="text-slate-600 truncate" title={teachersLine}>
+        {teachersLine}
       </div>
-      {subName && (
-        <div className="text-amber-700 truncate" title={`Substitute: ${subName}`}>
-          Sub: {subName}
-        </div>
-      )}
       <div className="text-slate-400">
         {entry.startTime}–{entry.endTime}
       </div>
@@ -269,12 +268,16 @@ function ScheduleCard({ group, entry, compact = false }: ScheduleCardProps) {
 }
 
 function MobileScheduleCard({ group, entry }: { group: Group; entry: GroupScheduleEntry }) {
-  const teacherName = group.teacher
+  const teacher1Name = group.teacher
     ? `${group.teacher.user.firstName} ${group.teacher.user.lastName}`.trim()
-    : 'No teacher';
-  const subName = group.substituteTeacher
-    ? `${group.substituteTeacher.user.firstName} ${group.substituteTeacher.user.lastName}`.trim()
     : null;
+  const teacher2Name = group.secondTeacher
+    ? `${group.secondTeacher.user.firstName} ${group.secondTeacher.user.lastName}`.trim()
+    : null;
+  const teachersLine =
+    teacher1Name && teacher2Name
+      ? `${teacher1Name} · ${teacher2Name}`
+      : teacher1Name || teacher2Name || 'No teachers';
 
   return (
     <article className="rounded-2xl border border-slate-200 bg-white px-4 py-3.5">
@@ -285,8 +288,7 @@ function MobileScheduleCard({ group, entry }: { group: Group; entry: GroupSchedu
         <Building2 className="size-4 shrink-0 text-slate-500" />
         <p className="truncate text-xl font-semibold tracking-[-0.01em] text-slate-900">{group.name}</p>
       </div>
-      <p className="truncate text-base text-slate-600">{teacherName}</p>
-      {subName ? <p className="truncate text-base font-medium text-[#c56b2f]">Sub: {subName}</p> : null}
+      <p className="truncate text-base text-slate-600">{teachersLine}</p>
     </article>
   );
 }

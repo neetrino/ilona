@@ -171,7 +171,7 @@ exports.Prisma.GroupScalarFieldEnum = {
   maxStudents: 'maxStudents',
   centerId: 'centerId',
   teacherId: 'teacherId',
-  substituteTeacherId: 'substituteTeacherId',
+  secondTeacherId: 'secondTeacherId',
   schedule: 'schedule',
   isActive: 'isActive',
   createdAt: 'createdAt',

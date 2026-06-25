@@ -13,9 +13,9 @@ export class ChatAuthorizationService {
    *
    * A teacher can access a group chat if:
    * 1. They are the assigned group teacher (Group.teacherId === Teacher.id), OR
-   * 2. They are the group's substitute teacher (Group.substituteTeacherId), OR
-   * 3. They have lessons in that group as primary teacher (Lesson.teacherId), OR
-   * 4. They cover at least one lesson in that group as substitute (Lesson.substituteTeacherId)
+   * 2. They are one of the group's two assigned teachers (teacherId or secondTeacherId), OR
+   * 3. They have lessons in that group as scheduled teacher (Lesson.teacherId), OR
+   * 4. They cover at least one lesson as override instructor (Lesson.substituteTeacherId)
    *
    * This is the canonical source of truth for teacher->group chat access.
    *
@@ -31,7 +31,7 @@ export class ChatAuthorizationService {
     debug?: {
       teacherId?: string;
       groupTeacherId?: string | null;
-      groupSubstituteTeacherId?: string | null;
+      groupSecondTeacherId?: string | null;
       hasLessons: boolean;
       hasSubstituteLessons: boolean;
     };
@@ -48,7 +48,7 @@ export class ChatAuthorizationService {
         debug: {
           teacherId: undefined,
           groupTeacherId: undefined,
-          groupSubstituteTeacherId: undefined,
+          groupSecondTeacherId: undefined,
           hasLessons: false,
           hasSubstituteLessons: false,
         },
@@ -58,7 +58,7 @@ export class ChatAuthorizationService {
     // Get group with teacher assignment
     const group = await this.prisma.group.findUnique({
       where: { id: groupId },
-      select: { teacherId: true, substituteTeacherId: true },
+      select: { teacherId: true, secondTeacherId: true },
     });
 
     if (!group) {
@@ -67,15 +67,15 @@ export class ChatAuthorizationService {
         debug: {
           teacherId: teacher.id,
           groupTeacherId: undefined,
-          groupSubstituteTeacherId: undefined,
+          groupSecondTeacherId: undefined,
           hasLessons: false,
           hasSubstituteLessons: false,
         },
       };
     }
 
-    const isGroupTeacher = group.teacherId === teacher.id;
-    const isGroupSubstitute = group.substituteTeacherId === teacher.id;
+    const isGroupTeacher =
+      group.teacherId === teacher.id || group.secondTeacherId === teacher.id;
 
     const [primaryLessonCount, substituteLessonCount] = await Promise.all([
       this.prisma.lesson.count({
@@ -95,14 +95,14 @@ export class ChatAuthorizationService {
     const hasLessons = primaryLessonCount > 0;
     const hasSubstituteLessons = substituteLessonCount > 0;
 
-    const hasAccess = isGroupTeacher || isGroupSubstitute || hasLessons || hasSubstituteLessons;
+    const hasAccess = isGroupTeacher || hasLessons || hasSubstituteLessons;
 
     return {
       hasAccess,
       debug: {
         teacherId: teacher.id,
         groupTeacherId: group.teacherId,
-        groupSubstituteTeacherId: group.substituteTeacherId,
+        groupSecondTeacherId: group.secondTeacherId,
         hasLessons,
         hasSubstituteLessons,
       },

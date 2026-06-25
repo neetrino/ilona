@@ -35,15 +35,36 @@ export function normalizeGroupSchedulePayload(raw: unknown): {
   return { weeklySlots: [], calendar: null };
 }
 
-/** Default calendar generation range: first–last day of the current month (YYYY-MM-DD). */
+/** Format a Date as YYYY-MM-DD in local time (avoids UTC shift from toISOString). */
+export function formatLocalYmd(date: Date): string {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
+/** Default span from schedule start to end date (inclusive offset in days). */
+export const GROUP_SCHEDULE_DEFAULT_DURATION_DAYS = 30;
+
+export function addDaysToYmd(ymd: string, days: number): string {
+  const d = parseYmd(ymd);
+  if (!d) return ymd;
+  d.setDate(d.getDate() + days);
+  return formatLocalYmd(d);
+}
+
+/** Default calendar range when opening group create/edit: today through 30 days later. */
 export function defaultMonthDateRange(): { from: string; to: string } {
-  const now = new Date();
-  const start = new Date(now.getFullYear(), now.getMonth(), 1);
-  const end = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+  const from = formatLocalYmd(new Date());
   return {
-    from: start.toISOString().slice(0, 10),
-    to: end.toISOString().slice(0, 10),
+    from,
+    to: addDaysToYmd(from, GROUP_SCHEDULE_DEFAULT_DURATION_DAYS),
   };
+}
+
+/** End date for a schedule that starts on `startYmd` (start + default duration). */
+export function scheduleEndDateFromStart(startYmd: string): string {
+  return addDaysToYmd(startYmd, GROUP_SCHEDULE_DEFAULT_DURATION_DAYS);
 }
 
 function parseYmd(ymd: string): Date | null {

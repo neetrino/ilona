@@ -87,7 +87,7 @@ model Group {
   maxStudents           Int                   @default(8)
   centerId              String
   teacherId             String?
-  substituteTeacherId   String?
+  secondTeacherId       String?
   schedule              Json?
   isActive              Boolean               @default(true)
   createdAt             DateTime              @default(now())
@@ -96,7 +96,7 @@ model Group {
   crmLeads              CrmLead[]
   center                Center                @relation(fields: [centerId], references: [id], onDelete: Cascade)
   teacher               Teacher?              @relation(fields: [teacherId], references: [id])
-  substituteTeacher     Teacher?              @relation("GroupSubstitute", fields: [substituteTeacherId], references: [id])
+  secondTeacher         Teacher?              @relation("GroupSecondTeacher", fields: [secondTeacherId], references: [id])
   lessons               Lesson[]
   students              Student[]
   studentHistoryEntries StudentGroupHistory[]
@@ -105,36 +105,36 @@ model Group {
 
   @@index([centerId])
   @@index([teacherId])
-  @@index([substituteTeacherId])
+  @@index([secondTeacherId])
   @@map("groups")
 }
 
 model Teacher {
-  id                  String          @id @default(cuid())
-  userId              String          @unique
-  bio                 String?
-  specialization      String?
-  hourlyRate          Decimal         @db.Decimal(10, 2)
-  lessonRateAMD       Decimal?        @db.Decimal(10, 2)
-  videoUrl            String?
-  workingDays         String[]
-  workingHours        Json?
-  hireDate            DateTime?
-  createdAt           DateTime        @default(now())
-  updatedAt           DateTime        @updatedAt
-  crmLeads            CrmLead[]
-  deductions          Deduction[]
-  feedbacks           Feedback[]
-  groups              Group[]
-  substituteForGroups Group[]         @relation("GroupSubstitute")
-  substituteLessons   Lesson[]        @relation("LessonSubstituteTeacher")
-  lessons             Lesson[]
-  salaryRecords       SalaryRecord[]
-  students            Student[]
-  user                User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  centerLinks         TeacherCenter[]
-  notes               TeacherNote[]
-  dailyPlans          DailyPlan[]
+  id                     String          @id @default(cuid())
+  userId                 String          @unique
+  bio                    String?
+  specialization         String?
+  hourlyRate             Decimal         @db.Decimal(10, 2)
+  lessonRateAMD          Decimal?        @db.Decimal(10, 2)
+  videoUrl               String?
+  workingDays            String[]
+  workingHours           Json?
+  hireDate               DateTime?
+  createdAt              DateTime        @default(now())
+  updatedAt              DateTime        @updatedAt
+  crmLeads               CrmLead[]
+  deductions             Deduction[]
+  feedbacks              Feedback[]
+  groups                 Group[]
+  secondTeacherForGroups Group[]         @relation("GroupSecondTeacher")
+  substituteLessons      Lesson[]        @relation("LessonSubstituteTeacher")
+  lessons                Lesson[]
+  salaryRecords          SalaryRecord[]
+  students               Student[]
+  user                   User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  centerLinks            TeacherCenter[]
+  notes                  TeacherNote[]
+  dailyPlans             DailyPlan[]
 
   @@map("teachers")
 }

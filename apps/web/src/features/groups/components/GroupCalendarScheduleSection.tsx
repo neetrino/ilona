@@ -1,10 +1,11 @@
 'use client';
 
+import { useCallback } from 'react';
 import { Label } from '@/shared/components/ui';
 import { DatePickerInput } from '@/shared/components/ui/date-picker-input';
 import type { GroupScheduleEntry } from '../types';
 import { GroupScheduleEditor } from './GroupScheduleEditor';
-import { scheduleSlotsValidationError } from '../group-schedule-utils';
+import { scheduleEndDateFromStart, scheduleSlotsValidationError } from '../group-schedule-utils';
 
 export interface GroupCalendarScheduleSectionProps {
   schedule: GroupScheduleEntry[];
@@ -27,6 +28,16 @@ export function GroupCalendarScheduleSection({
 }: GroupCalendarScheduleSectionProps) {
   const slotError = schedule.length > 0 ? scheduleSlotsValidationError(schedule) : null;
 
+  const handleDateFromChange = useCallback(
+    (next: string) => {
+      onDateFromChange(next);
+      if (next) {
+        onDateToChange(scheduleEndDateFromStart(next));
+      }
+    },
+    [onDateFromChange, onDateToChange],
+  );
+
   return (
     <div className="space-y-4 rounded-lg border border-slate-200 bg-slate-50/40 p-3">
       <div className="space-y-2">
@@ -43,7 +54,7 @@ export function GroupCalendarScheduleSection({
           <DatePickerInput
             id="schedule-date-from"
             value={dateFrom}
-            onValueChange={onDateFromChange}
+            onValueChange={handleDateFromChange}
             disabled={disabled}
             className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm"
           />

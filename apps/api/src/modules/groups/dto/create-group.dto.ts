@@ -74,7 +74,7 @@ export class CreateGroupDto {
 
   @IsString()
   @IsOptional()
-  substituteTeacherId?: string;
+  secondTeacherId?: string;
 
   @IsArray()
   @ValidateNested({ each: true })

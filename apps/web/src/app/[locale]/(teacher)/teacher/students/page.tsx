@@ -39,9 +39,8 @@ export default function TeacherStudentsPage() {
   const [feedbackStudent, setFeedbackStudent] = useState<Student | null>(null);
   const queryClient = useQueryClient();
 
-  const { isHydrated, isAuthenticated, tokens, user } = useAuthStore();
+  const { isHydrated, isAuthenticated, tokens } = useAuthStore();
   const isAuthReady = isHydrated && isAuthenticated && !!tokens?.accessToken;
-  const currentUserId = user?.id;
 
   const { data: groups, isLoading: isLoadingGroups } = useMyGroups();
   const groupsList = useMemo(() => groups || [], [groups]);
@@ -105,15 +104,6 @@ export default function TeacherStudentsPage() {
     return groupsList.find((g) => g.id === validSelectedGroupId) || null;
   }, [validSelectedGroupId, groupsList]);
 
-  const getGroupRole = (group: (typeof groupsList)[number]): 'MAIN' | 'SECONDARY' => {
-    if (currentUserId && group.teacher?.user?.id === currentUserId) return 'MAIN';
-    if (currentUserId && group.substituteTeacher?.user?.id === currentUserId)
-      return 'SECONDARY';
-    return 'MAIN';
-  };
-
-  const selectedGroupRole = selectedGroup ? getGroupRole(selectedGroup) : 'MAIN';
-
   const handleGroupSelect = (groupId: string) => {
     setPendingGroupId(groupId);
     replaceParams({ groupId });
@@ -146,7 +136,6 @@ export default function TeacherStudentsPage() {
             <div className="flex flex-wrap gap-2">
               {groupsList.map((group) => {
                 const isSelected = validSelectedGroupId === group.id;
-                const role = getGroupRole(group);
                 const studentCount = group._count?.students ?? 0;
                 return (
                   <button
@@ -169,16 +158,6 @@ export default function TeacherStudentsPage() {
                       >
                         {group.name}
                       </span>
-                      <span
-                        className={cn(
-                          'rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase',
-                          role === 'MAIN'
-                            ? 'bg-emerald-100 text-emerald-700'
-                            : 'bg-amber-100 text-amber-700',
-                        )}
-                      >
-                        {role === 'MAIN' ? 'Main' : 'Secondary'}
-                      </span>
                     </div>
                     <div className="mt-0.5 text-xs text-[#8b8b90]">
                       {group.level ? getLevelDisplay(group.level) : 'No level'} ·{' '}
@@ -194,24 +173,9 @@ export default function TeacherStudentsPage() {
         {/* Students Content */}
         <div className="overflow-hidden rounded-xl border border-[rgba(14,14,16,0.07)] bg-white">
           {selectedGroup ? (
-            <div
-              className={cn(
-                'border-b border-[rgba(14,14,16,0.07)] bg-[#fafafa] p-4',
-                selectedGroupRole === 'SECONDARY' && 'bg-amber-50',
-              )}
-            >
+            <div className="border-b border-[rgba(14,14,16,0.07)] bg-[#fafafa] p-4">
               <div className="flex items-center gap-2">
                 <h3 className="font-semibold text-[#1010a3]">{selectedGroup.name}</h3>
-                <span
-                  className={cn(
-                    'rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase',
-                    selectedGroupRole === 'MAIN'
-                      ? 'bg-emerald-100 text-emerald-700'
-                      : 'bg-amber-100 text-amber-700',
-                  )}
-                >
-                  {selectedGroupRole === 'MAIN' ? 'Main' : 'Secondary'}
-                </span>
               </div>
               <p className="mt-1 text-sm text-[#8b8b90]">
                 {selectedGroup.level ? getLevelDisplay(selectedGroup.level) : 'No level'} ·{' '}

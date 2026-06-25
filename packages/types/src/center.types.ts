@@ -30,6 +30,7 @@ export interface Group {
   maxStudents: number;
   centerId: string;
   teacherId?: string | null;
+  secondTeacherId?: string | null;
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -38,6 +39,15 @@ export interface Group {
 export interface GroupWithRelations extends Group {
   center?: Center;
   teacher?: {
+    id: string;
+    user: {
+      id: string;
+      firstName: string;
+      lastName: string;
+      email: string;
+    };
+  } | null;
+  secondTeacher?: {
     id: string;
     user: {
       id: string;
@@ -80,7 +90,8 @@ export interface CreateGroupDto {
   level?: string;
   description?: string;
   centerId: string;
-  teacherId?: string;
+  teacherId: string;
+  secondTeacherId: string;
 }
 
 export interface UpdateGroupDto {
@@ -88,6 +99,7 @@ export interface UpdateGroupDto {
   level?: string;
   description?: string;
   teacherId?: string;
+  secondTeacherId?: string | null;
   isActive?: boolean;
 }
 

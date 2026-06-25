@@ -24,8 +24,8 @@ type CreateGroupFormData = {
   name: string;
   level?: string;
   centerId: string;
-  teacherId?: string;
-  substituteTeacherId?: string;
+  teacherId: string;
+  secondTeacherId: string;
 };
 
 function translateScheduleSlotError(
@@ -41,10 +41,9 @@ function translateScheduleSlotError(
 interface CreateGroupFormProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  defaultCenterId?: string;
 }
 
-export function CreateGroupForm({ open, onOpenChange, defaultCenterId }: CreateGroupFormProps) {
+export function CreateGroupForm({ open, onOpenChange }: CreateGroupFormProps) {
   const tForm = useTranslations('groups.form');
   const tVal = useTranslations('groups.validation');
   const tCommon = useTranslations('common');
@@ -55,10 +54,10 @@ export function CreateGroupForm({ open, onOpenChange, defaultCenterId }: CreateG
         name: z.string().min(2, tVal('nameMin')).max(100, tVal('nameMax')),
         level: z.string().max(50, tVal('levelMax')).optional().or(z.literal('')),
         centerId: z.string().min(1, tVal('selectCenter')),
-        teacherId: z.string().optional().or(z.literal('')),
-        substituteTeacherId: z.string().optional().or(z.literal('')),
+        teacherId: z.string().min(1, tForm('selectBothTeachers')),
+        secondTeacherId: z.string().min(1, tForm('selectBothTeachers')),
       }),
-    [tVal],
+    [tVal, tForm],
   );
 
   const resolver = useMemo(() => zodResolver(createGroupSchema), [createGroupSchema]);
@@ -100,52 +99,47 @@ export function CreateGroupForm({ open, onOpenChange, defaultCenterId }: CreateG
     defaultValues: {
       name: '',
       level: '',
-      centerId: defaultCenterId || '',
+      centerId: '',
       teacherId: '',
-      substituteTeacherId: '',
+      secondTeacherId: '',
     },
   });
   const watchedTeacherId = watch('teacherId');
   const watchedCenterId = watch('centerId');
-  const watchedSubstituteTeacherId = watch('substituteTeacherId');
-
-  // Watch centerId to update when defaultCenterId changes
-  const centerId = watch('centerId');
-
-  // Update centerId when defaultCenterId prop changes
-  useEffect(() => {
-    if (defaultCenterId && defaultCenterId !== centerId) {
-      setValue('centerId', defaultCenterId);
-    }
-  }, [defaultCenterId, centerId, setValue]);
+  const watchedSecondTeacherId = watch('secondTeacherId');
 
   // Reset form when dialog closes
   useEffect(() => {
     setIsDialogOpen(open);
   }, [open]);
 
-  // Reset form when dialog closes
+  // Fresh form + calendar dates each time modal opens
   useEffect(() => {
-    if (!open) {
+    if (open) {
       reset({
         name: '',
         level: '',
-        centerId: defaultCenterId || '',
+        centerId: '',
         teacherId: '',
-        substituteTeacherId: '',
+        secondTeacherId: '',
       });
       setSchedule([]);
-      const r = defaultMonthDateRange();
-      setDateFrom(r.from);
-      setDateTo(r.to);
       setIconKey(null);
       setErrorMessage(null);
       setSuccessMessage(null);
+      const r = defaultMonthDateRange();
+      setDateFrom(r.from);
+      setDateTo(r.to);
+    }
+  }, [open, reset]);
+
+  useEffect(() => {
+    if (!open) {
       setDragOffsetY(0);
       setIsDragging(false);
       setIsSettling(false);
     }
-  }, [open, reset, defaultCenterId]);
+  }, [open]);
 
   useEffect(() => {
     return () => {
@@ -225,18 +219,14 @@ export function CreateGroupForm({ open, onOpenChange, defaultCenterId }: CreateG
     setErrorMessage(null);
     
     try {
-      if (
-        data.substituteTeacherId &&
-        data.teacherId &&
-        data.substituteTeacherId === data.teacherId
-      ) {
-        setErrorMessage(tForm('substituteSameAsMain'));
+      if (data.teacherId === data.secondTeacherId) {
+        setErrorMessage(tForm('teachersMustDiffer'));
         return;
       }
 
       if (schedule.length > 0) {
-        if (!data.teacherId?.trim()) {
-          setErrorMessage(tForm('selectMainTeacherForCalendar'));
+        if (!data.teacherId?.trim() || !data.secondTeacherId?.trim()) {
+          setErrorMessage(tForm('selectBothTeachersForCalendar'));
           return;
         }
         const slotErr = translateScheduleSlotError(scheduleSlotsValidationError(schedule), tVal);
@@ -258,8 +248,8 @@ export function CreateGroupForm({ open, onOpenChange, defaultCenterId }: CreateG
         name: data.name,
         level: data.level || undefined,
         centerId: data.centerId,
-        teacherId: data.teacherId || undefined,
-        substituteTeacherId: data.substituteTeacherId || undefined,
+        teacherId: data.teacherId,
+        secondTeacherId: data.secondTeacherId,
         schedule: schedule.length > 0 ? schedule : undefined,
         calendarPlan: schedule.length > 0 ? { dateFrom, dateTo } : undefined,
         ...(iconKey ? { iconKey } : {}),
@@ -275,9 +265,9 @@ export function CreateGroupForm({ open, onOpenChange, defaultCenterId }: CreateG
       reset({
         name: '',
         level: '',
-        centerId: defaultCenterId || '',
+        centerId: '',
         teacherId: '',
-        substituteTeacherId: '',
+        secondTeacherId: '',
       });
       setSchedule([]);
       const r = defaultMonthDateRange();
@@ -377,6 +367,7 @@ export function CreateGroupForm({ open, onOpenChange, defaultCenterId }: CreateG
             <GroupIconPicker
               value={iconKey}
               onChange={setIconKey}
+              defaultSelectsRandom
               disabled={isSubmitting}
               aria-labelledby="group-icon-label"
             />
@@ -415,12 +406,7 @@ export function CreateGroupForm({ open, onOpenChange, defaultCenterId }: CreateG
 
           <div className="space-y-2">
             <Label htmlFor="teacherId">
-              {tForm('mainTeacher')}{' '}
-              {schedule.length > 0 ? (
-                <span className="text-red-500">*</span>
-              ) : (
-                tForm('optional')
-              )}
+              {tForm('teacher1')} <span className="text-red-500">*</span>
             </Label>
             <input type="hidden" {...register('teacherId')} />
             <SingleSelectDropdown
@@ -436,8 +422,8 @@ export function CreateGroupForm({ open, onOpenChange, defaultCenterId }: CreateG
                   shouldDirty: true,
                   shouldValidate: true,
                 });
-                if (watchedSubstituteTeacherId && watchedSubstituteTeacherId === nextTeacherId) {
-                  setValue('substituteTeacherId', '', {
+                if (watchedSecondTeacherId && watchedSecondTeacherId === nextTeacherId) {
+                  setValue('secondTeacherId', '', {
                     shouldDirty: true,
                     shouldValidate: true,
                   });
@@ -454,29 +440,33 @@ export function CreateGroupForm({ open, onOpenChange, defaultCenterId }: CreateG
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="substituteTeacherId">{tForm('substituteTeacherOptional')}</Label>
-            <input type="hidden" {...register('substituteTeacherId')} />
+            <Label htmlFor="secondTeacherId">
+              {tForm('teacher2')} <span className="text-red-500">*</span>
+            </Label>
+            <input type="hidden" {...register('secondTeacherId')} />
             <SingleSelectDropdown
-              id="substituteTeacherId"
+              id="secondTeacherId"
               options={teachers
                 .filter((teacher) => teacher.id !== watchedTeacherId)
                 .map((teacher) => ({
                   id: teacher.id,
                   label: `${teacher.user.firstName} ${teacher.user.lastName}`,
                 }))}
-              value={watchedSubstituteTeacherId || null}
+              value={watchedSecondTeacherId || null}
               onValueChange={(nextValue) =>
-                setValue('substituteTeacherId', nextValue ?? '', {
+                setValue('secondTeacherId', nextValue ?? '', {
                   shouldDirty: true,
                   shouldValidate: true,
                 })
               }
-              placeholder={tForm('noSubstitute')}
+              placeholder={tForm('noTeacherAssigned')}
               isLoading={isLoadingTeachers}
-              error={errors.substituteTeacherId?.message ?? null}
+              error={errors.secondTeacherId?.message ?? null}
               disabled={isSubmitting || createGroup.isPending || isLoadingTeachers}
             />
           </div>
+
+          <p className="text-xs text-slate-500">{tForm('teacherRotationHint')}</p>
 
           <GroupCalendarScheduleSection
             schedule={schedule}

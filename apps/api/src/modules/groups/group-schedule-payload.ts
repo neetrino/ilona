@@ -48,6 +48,7 @@ export function parseGroupSchedulePayload(raw: unknown): {
 
 export function computeGenerationKey(
   teacherId: string,
+  secondTeacherId: string,
   weeklySlots: GroupWeeklySlot[],
   dateFrom: string,
   dateTo: string,
@@ -65,7 +66,7 @@ export function computeGenerationKey(
         a.endTime.localeCompare(b.endTime),
     );
   return createHash('sha256')
-    .update(JSON.stringify({ teacherId, normalized, dateFrom, dateTo }))
+    .update(JSON.stringify({ teacherId, secondTeacherId, normalized, dateFrom, dateTo }))
     .digest('hex');
 }
 

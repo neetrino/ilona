@@ -8,6 +8,7 @@ import {
   computeGenerationKey,
   parseGroupSchedulePayload,
 } from '../groups/group-schedule-payload';
+import { resolveRotatingTeacherId } from '../groups/group-teacher-rotation';
 
 const MAX_OCCURRENCES = 200;
 
@@ -110,22 +111,26 @@ export class GroupScheduleLessonsService {
 
   /**
    * Creates/updates GROUP_SCHEDULE lessons from weekly slots + calendar range.
-   * Returns JSON to persist on Group.schedule (with generationKey and suppressed).
+   * Assigns teachers via alternating weekly rotation between the two group teachers.
    */
   async syncAfterGroupSaved(params: {
     groupId: string;
     teacherId: string | null | undefined;
+    secondTeacherId: string | null | undefined;
     weeklySlots: GroupWeeklySlot[];
     calendar: GroupCalendarStored | null;
     previousScheduleJson: unknown;
     previousTeacherId: string | null;
+    previousSecondTeacherId: string | null;
     confirmReplaceGeneratedLessons: boolean;
   }): Promise<Prisma.InputJsonValue | typeof Prisma.JsonNull | undefined> {
     const teacherId = params.teacherId ?? null;
+    const secondTeacherId = params.secondTeacherId ?? null;
     const prev = parseGroupSchedulePayload(params.previousScheduleJson);
 
     if (
       !teacherId ||
+      !secondTeacherId ||
       params.weeklySlots.length === 0 ||
       !params.calendar ||
       !params.calendar.dateFrom ||
@@ -142,15 +147,23 @@ export class GroupScheduleLessonsService {
       throw new BadRequestException('Calendar end date must be on or after start date');
     }
 
-    const newKey = computeGenerationKey(teacherId, params.weeklySlots, dateFrom, dateTo);
+    const newKey = computeGenerationKey(
+      teacherId,
+      secondTeacherId,
+      params.weeklySlots,
+      dateFrom,
+      dateTo,
+    );
     const oldKey = prev.calendar?.generationKey ?? null;
 
-    const teacherChanged =
+    const teachersChanged =
       oldKey !== null &&
       params.previousTeacherId != null &&
-      teacherId !== params.previousTeacherId;
+      params.previousSecondTeacherId != null &&
+      (teacherId !== params.previousTeacherId ||
+        secondTeacherId !== params.previousSecondTeacherId);
 
-    const needsReplace = oldKey !== null && (newKey !== oldKey || teacherChanged);
+    const needsReplace = oldKey !== null && (newKey !== oldKey || teachersChanged);
 
     if (needsReplace && !params.confirmReplaceGeneratedLessons) {
       throw new ConflictException('GROUP_SCHEDULE_REGENERATION_CONFIRMATION_REQUIRED');
@@ -209,12 +222,12 @@ export class GroupScheduleLessonsService {
 
     const teacherBusy = await this.prisma.lesson.findMany({
       where: {
-        teacherId,
+        teacherId: { in: [teacherId, secondTeacherId] },
         scheduledAt: { gte: rangeStart, lte: rangeEnd },
         status: { not: LessonStatus.CANCELLED },
         NOT: { groupId: params.groupId },
       },
-      select: { scheduledAt: true, duration: true },
+      select: { teacherId: true, scheduledAt: true, duration: true },
     });
 
     const toCreate: Prisma.LessonCreateManyInput[] = [];
@@ -224,14 +237,23 @@ export class GroupScheduleLessonsService {
       if (suppressed.has(iso)) continue;
       if (existingGroupTimes.has(at.getTime())) continue;
 
+      const assignedTeacherId = resolveRotatingTeacherId({
+        lessonDate: at,
+        teacherId,
+        secondTeacherId,
+        scheduleStartDateYmd: dateFrom,
+      });
+
       const endAt = new Date(at.getTime() + duration * 60_000);
-      const conflict = teacherBusy.some((row) =>
-        intervalsOverlap(
-          at,
-          endAt,
-          row.scheduledAt,
-          new Date(row.scheduledAt.getTime() + row.duration * 60_000),
-        ),
+      const conflict = teacherBusy.some(
+        (row) =>
+          row.teacherId === assignedTeacherId &&
+          intervalsOverlap(
+            at,
+            endAt,
+            row.scheduledAt,
+            new Date(row.scheduledAt.getTime() + row.duration * 60_000),
+          ),
       );
       if (conflict) {
         throw new BadRequestException(
@@ -241,7 +263,7 @@ export class GroupScheduleLessonsService {
 
       toCreate.push({
         groupId: params.groupId,
-        teacherId,
+        teacherId: assignedTeacherId,
         scheduledAt: at,
         duration,
         topic: params.calendar.topic ?? null,
@@ -255,7 +277,7 @@ export class GroupScheduleLessonsService {
       await this.prisma.lesson.createMany({ data: toCreate });
     }
 
-    if (!replaceMode && oldKey === newKey && !teacherChanged) {
+    if (!replaceMode && oldKey === newKey && !teachersChanged) {
       const data: Prisma.LessonUpdateManyMutationInput = {};
       if (params.calendar.topic !== undefined) {
         data.topic = params.calendar.topic;

@@ -52,7 +52,7 @@ export interface CenterDetailGroup {
   name: string;
   schedule: unknown;
   teacher: CenterDetailTeacher | null;
-  substituteTeacher: CenterDetailTeacher | null;
+  secondTeacher: CenterDetailTeacher | null;
   students: Array<{ id: string; user: CenterDetailUser | null }>;
   _count?: { students: number; lessons: number };
 }
