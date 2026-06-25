@@ -7,9 +7,15 @@ type PortalSidebarRevealProps = {
   open: boolean;
   children: React.ReactNode;
   className?: string;
+  allowOverflow?: boolean;
 };
 
-export function PortalSidebarReveal({ open, children, className }: PortalSidebarRevealProps) {
+export function PortalSidebarReveal({
+  open,
+  children,
+  className,
+  allowOverflow = false,
+}: PortalSidebarRevealProps) {
   return (
     <span
       className={cn(
@@ -20,7 +26,14 @@ export function PortalSidebarReveal({ open, children, className }: PortalSidebar
       )}
       aria-hidden={!open}
     >
-      <span className="min-w-0 overflow-hidden">{children}</span>
+      <span
+        className={cn(
+          'min-w-0',
+          allowOverflow && open ? 'overflow-visible' : 'overflow-hidden',
+        )}
+      >
+        {children}
+      </span>
     </span>
   );
 }

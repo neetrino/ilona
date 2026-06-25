@@ -15,7 +15,25 @@ import {
   STUDENT_SIDEBAR_ASSETS,
   type StudentSidebarIconKey,
 } from '@/features/student-dashboard/studentSidebarAssets';
-import { getPortalSidebarWidthClass, PORTAL_SIDEBAR_SHELL_TRANSITION_CLASS } from './student-layout';
+import { PORTAL_SIDEBAR_SHELL_TRANSITION_CLASS, PORTAL_SIDEBAR_WIDTH_CLASS } from './student-layout';
+
+const STUDENT_SIDEBAR_WIDTH_CLASS = {
+  default: 'w-[clamp(13.75rem,16.5vw,19.5rem)]',
+  hy: 'w-[clamp(17rem,21vw,24rem)]',
+  hyIpad: 'w-[clamp(18rem,22vw,25.5rem)]',
+} as const;
+
+function getStudentSidebarWidthClass(
+  collapsed: boolean,
+  isArmenianLocale: boolean,
+  isIPad: boolean,
+): string {
+  if (collapsed) return PORTAL_SIDEBAR_WIDTH_CLASS.collapsed;
+  if (isArmenianLocale) {
+    return isIPad ? STUDENT_SIDEBAR_WIDTH_CLASS.hyIpad : STUDENT_SIDEBAR_WIDTH_CLASS.hy;
+  }
+  return STUDENT_SIDEBAR_WIDTH_CLASS.default;
+}
 
 type NavEntry = {
   labelKey: string;
@@ -113,8 +131,8 @@ export function StudentSidebar({
           : cn(
               'h-screen py-3 pl-3 pr-2 sm:pl-4 sm:pr-3',
               collapsed
-                ? getPortalSidebarWidthClass(true, isArmenianLocale, isIPad)
-                : getPortalSidebarWidthClass(false, isArmenianLocale, isIPad),
+                ? getStudentSidebarWidthClass(true, isArmenianLocale, isIPad)
+                : getStudentSidebarWidthClass(false, isArmenianLocale, isIPad),
             ),
       )}
     >
@@ -139,7 +157,7 @@ export function StudentSidebar({
           className={cn(
             'flex min-h-0 flex-1 flex-col overflow-x-visible overflow-y-auto py-4',
             showLabels
-              ? cn('pr-3.5', isArmenianLocale ? 'px-4' : 'px-3')
+              ? cn('pl-2 pr-2.5', isArmenianLocale && 'pl-2.5')
               : 'px-2',
             NAV_LIST_GAP_CLASS,
             !showLabels && '[scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden',
@@ -156,6 +174,7 @@ export function StudentSidebar({
               onNavigate={onNavigate}
               isArmenianLocale={isArmenianLocale}
               badge={item.badge}
+              compact
             />
           ))}
         </nav>
