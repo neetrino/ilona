@@ -220,10 +220,12 @@ export default function StudentPaymentsPage() {
         <StudentCard noPadding>
           <div className="border-b border-[rgba(14,14,16,0.07)] p-4 sm:p-5">
             <StudentFilterPills
-              prefix={`${t('filter')}:`}
               options={filterOptions}
               value={filter}
               onChange={setFilter}
+              shape="rectangular"
+              size="md"
+              className="w-full"
             />
           </div>
 
@@ -252,21 +254,33 @@ export default function StudentPaymentsPage() {
                       {sortIndicator('month')}
                     </button>
                   </StudentTh>
-                  <StudentTh>{tCommon('group') ?? 'Group'}</StudentTh>
-                  <StudentTh>
-                    <button type="button" onClick={() => handleSort('amount')} className="hover:text-[#1010a3]">
+                  <StudentTh className="text-center">{tCommon('group') ?? 'Group'}</StudentTh>
+                  <StudentTh className="text-center">
+                    <button
+                      type="button"
+                      onClick={() => handleSort('amount')}
+                      className="inline-flex items-center justify-center hover:text-[#1010a3]"
+                    >
                       {t('amount') ?? 'Amount'}
                       {sortIndicator('amount')}
                     </button>
                   </StudentTh>
-                  <StudentTh>
-                    <button type="button" onClick={() => handleSort('status')} className="hover:text-[#1010a3]">
+                  <StudentTh className="text-center">
+                    <button
+                      type="button"
+                      onClick={() => handleSort('status')}
+                      className="inline-flex items-center justify-center hover:text-[#1010a3]"
+                    >
                       {t('status') ?? 'Status'}
                       {sortIndicator('status')}
                     </button>
                   </StudentTh>
-                  <StudentTh>
-                    <button type="button" onClick={() => handleSort('dueDate')} className="hover:text-[#1010a3]">
+                  <StudentTh className="text-center">
+                    <button
+                      type="button"
+                      onClick={() => handleSort('dueDate')}
+                      className="inline-flex items-center justify-center hover:text-[#1010a3]"
+                    >
                       {t('dueDate') ?? 'Due / Paid'}
                       {sortIndicator('dueDate')}
                     </button>
@@ -303,12 +317,12 @@ export default function StudentPaymentsPage() {
                           <p className="mt-0.5 text-xs text-[#8b8b90]">{description}</p>
                         ) : null}
                       </StudentTd>
-                      <StudentTd>
+                      <StudentTd className="text-center">
                         <span className="text-[#3b3b40]">{groupName ?? '—'}</span>
                       </StudentTd>
                       <StudentTd
                         className={cn(
-                          'font-semibold',
+                          'text-center font-semibold',
                           payment.status === 'PAID'
                             ? 'text-[#0a7a3e]'
                             : payment.status === 'OVERDUE'
@@ -318,10 +332,10 @@ export default function StudentPaymentsPage() {
                       >
                         {formatCurrency(Number(payment.amount))}
                       </StudentTd>
-                      <StudentTd>
+                      <StudentTd className="text-center">
                         <PaymentStatusBadge status={payment.status} t={t} />
                       </StudentTd>
-                      <StudentTd>
+                      <StudentTd className="text-center">
                         <span className="text-[#8b8b90]">{dateLabel}</span>
                         {unpaid && !canPay && windowReason === 'past' && (
                           <p className="mt-1 text-xs text-[#8b4a00]" role="status">

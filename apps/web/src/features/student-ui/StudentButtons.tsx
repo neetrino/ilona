@@ -3,13 +3,14 @@
 import type { ButtonHTMLAttributes, ReactNode } from 'react';
 import { cn } from '@/shared/lib/utils';
 import {
+  StudentAnimatedPillSwitcher,
+  type StudentPillOption,
+} from './StudentAnimatedPillSwitcher';
+import {
   studentGhostButtonClass,
   studentIconButtonClass,
   studentPrimaryButtonClass,
   studentSecondaryButtonClass,
-  studentPillActiveClass,
-  studentPillInactiveClass,
-  studentPillTrackClass,
 } from './tokens';
 
 type BtnProps = ButtonHTMLAttributes<HTMLButtonElement> & {
@@ -49,7 +50,7 @@ export function StudentIconButton({ children, className, ...props }: BtnProps) {
   );
 }
 
-type PillOption<T extends string> = { value: T; label: string };
+type PillOption<T extends string> = StudentPillOption<T>;
 
 export function StudentFilterPills<T extends string>({
   options,
@@ -57,28 +58,27 @@ export function StudentFilterPills<T extends string>({
   onChange,
   className,
   prefix,
+  shape = 'pill',
+  size = 'sm',
 }: {
   options: PillOption<T>[];
   value: T;
   onChange: (v: T) => void;
   className?: string;
   prefix?: ReactNode;
+  shape?: 'pill' | 'rectangular';
+  size?: 'sm' | 'md' | 'segment';
 }) {
   return (
     <div className={cn('flex flex-wrap items-center gap-2', className)}>
       {prefix ? <span className="text-xs font-medium text-[#8b8b90]">{prefix}</span> : null}
-      <div className={studentPillTrackClass}>
-        {options.map((opt) => (
-          <button
-            key={opt.value}
-            type="button"
-            onClick={() => onChange(opt.value)}
-            className={value === opt.value ? studentPillActiveClass : studentPillInactiveClass}
-          >
-            {opt.label}
-          </button>
-        ))}
-      </div>
+      <StudentAnimatedPillSwitcher
+        options={options}
+        value={value}
+        onChange={onChange}
+        shape={shape}
+        size={size}
+      />
     </div>
   );
 }
@@ -95,21 +95,13 @@ export function StudentSegmentedControl<T extends string>({
   className?: string;
 }) {
   return (
-    <div className={cn(studentPillTrackClass, className)}>
-      {options.map((opt) => (
-        <button
-          key={opt.value}
-          type="button"
-          onClick={() => onChange(opt.value)}
-          className={cn(
-            'h-8 rounded-full px-3 text-sm font-medium transition-colors',
-            value === opt.value ? studentPillActiveClass : studentPillInactiveClass,
-          )}
-        >
-          {opt.label}
-        </button>
-      ))}
-    </div>
+    <StudentAnimatedPillSwitcher
+      options={options}
+      value={value}
+      onChange={onChange}
+      size="segment"
+      className={className}
+    />
   );
 }
 

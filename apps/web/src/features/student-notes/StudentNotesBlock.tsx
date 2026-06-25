@@ -28,22 +28,24 @@ function NoteCard({
 }) {
   if (variant === 'dashboard') {
     return (
-      <div className="relative border-t border-dashed border-[rgba(14,14,16,0.07)] py-4 first:border-t-0 first:pt-0">
-        <span
-          className="absolute left-0 top-5 h-2 w-2 rounded bg-[#1010a3]"
-          aria-hidden
-        />
-        <div className="flex flex-col gap-3 pl-4 sm:flex-row sm:items-start sm:justify-between">
-          <p className="min-w-0 flex-1 text-[0.8125rem] leading-relaxed text-[#1010a3]">
-            {note.content}
-          </p>
-          <button
-            type="button"
-            onClick={() => onDelete(note.id)}
-            className="shrink-0 rounded-full bg-[#b4e288] px-4 py-2 text-[0.8125rem] font-semibold text-[#146e23] hover:bg-[#a3d97a]"
-          >
-            Done
-          </button>
+      <div className="border-t border-dashed border-[rgba(14,14,16,0.07)] py-4 first:border-t-0 first:pt-0">
+        <div className="flex items-start gap-2.5">
+          <span
+            className="mt-[0.375rem] h-2 w-2 shrink-0 rounded-sm bg-[#1010a3]"
+            aria-hidden
+          />
+          <div className="flex min-w-0 flex-1 flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <p className="min-w-0 flex-1 text-[0.8125rem] leading-[1.25rem] text-[#1010a3]">
+              {note.content}
+            </p>
+            <button
+              type="button"
+              onClick={() => onDelete(note.id)}
+              className="shrink-0 rounded-full bg-[#b4e288] px-4 py-2 text-[0.8125rem] font-semibold leading-none text-[#146e23] hover:bg-[#a3d97a]"
+            >
+              Done
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -94,14 +96,14 @@ export function StudentNotesBlock({ variant = 'default', levelLabel }: StudentNo
 
   if (variant === 'dashboard') {
     return (
-      <section className="rounded-3xl border border-[rgba(14,14,16,0.07)] bg-[#fff8ca] p-5 sm:p-6 lg:p-8">
-        <header className="mb-5">
+      <section className="flex h-full min-h-0 flex-col rounded-3xl border border-[rgba(14,14,16,0.07)] bg-[#fff8ca] p-5 sm:p-6">
+        <header className="mb-5 shrink-0">
           <h2 className="text-base font-semibold text-[#5e2d00]">{t('title')}</h2>
           <p className="mt-1 text-xs text-[#8b8b90]">
             {levelLabel ? t('pinned', { level: levelLabel }) : t('pinnedDefault')}
           </p>
         </header>
-        <div className="mb-5 flex flex-col gap-2 sm:flex-row">
+        <div className="mb-5 flex shrink-0 flex-col gap-2 sm:flex-row">
           <input
             type="text"
             value={draft}
@@ -129,7 +131,7 @@ export function StudentNotesBlock({ variant = 'default', levelLabel }: StudentNo
         ) : notes.length === 0 ? (
           <p className="text-sm text-[#8b8b90]">{t('empty')}</p>
         ) : (
-          <div className="max-h-[15rem] overflow-y-auto pr-1">
+          <div className="min-h-0 flex-1 overflow-y-auto pr-1">
             {notes.map((note, idx) => (
               <NoteCard
                 key={note.id}
