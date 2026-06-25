@@ -168,11 +168,17 @@ export function AnalyticsTimeFilterBar({
       <div
         className={cn(
           'flex flex-wrap items-center gap-3 text-sm',
+          isStudent && 'w-full sm:w-auto',
           usesGroupAccent ? 'text-[#3b3b40]' : 'text-slate-600',
         )}
       >
         {mode === 'day' && (
-          <label className="flex items-center gap-2">
+          <label
+            className={cn(
+              'flex items-center gap-2',
+              isStudent && 'w-full justify-end sm:w-auto sm:justify-start',
+            )}
+          >
             <span
               className={cn(
                 'whitespace-nowrap',
@@ -193,7 +199,12 @@ export function AnalyticsTimeFilterBar({
           </label>
         )}
         {mode === 'week' && (
-          <label className="flex items-center gap-2">
+          <label
+            className={cn(
+              'flex items-center gap-2',
+              isStudent && 'w-full justify-end sm:w-auto sm:justify-start',
+            )}
+          >
             <span
               className={cn(
                 'whitespace-nowrap',
