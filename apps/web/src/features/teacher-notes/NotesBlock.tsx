@@ -127,7 +127,12 @@ export function NotesBlock({ variant = 'default', fillHeight = false, className 
           {isLoading ? (
             <p className="text-sm text-[#8b8b90]">{t('loading')}</p>
           ) : notes.length === 0 ? (
-            <p className={cn('text-sm text-[#8b8b90]', fillHeight && 'flex flex-1 items-center')}>
+            <p
+              className={cn(
+                'text-sm text-[#8b8b90]',
+                fillHeight && 'flex flex-1 items-center justify-center py-10 text-center',
+              )}
+            >
               {t('empty')}
             </p>
           ) : (
