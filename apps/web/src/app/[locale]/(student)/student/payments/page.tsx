@@ -624,7 +624,7 @@ export default function StudentPaymentsPage() {
           aria-describedby={undefined}
         >
           <DialogHeader className="hidden lg:flex">
-            <DialogTitle className="text-[#1010a3]">{t('pay')}</DialogTitle>
+            <DialogTitle className="text-xl font-semibold text-[#1010a3]">{t('pay')}</DialogTitle>
             <DialogDescription className="sr-only">{t('paymentMethod')}</DialogDescription>
           </DialogHeader>
           {processModal && (
@@ -636,22 +636,24 @@ export default function StudentPaymentsPage() {
               ) : (
                 <>
                   <div className="mb-4 lg:hidden">
-                    <h2 className="text-lg font-semibold text-[#3b3b40]">{t('pay')}</h2>
+                    <h2 className="text-xl font-semibold text-[#1010a3]">{t('pay')}</h2>
                   </div>
-                  <p className="mb-3 lg:mb-4 text-sm text-[#8b8b90]">
-                    {(processModal.month ? new Date(processModal.month) : new Date(processModal.dueDate)).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })} — {formatCurrency(Number(processModal.amount))}
+                  <p className="mb-[50px] lg:mb-4 text-sm font-medium text-[#1010a3]">
+                    {(processModal.month ? new Date(processModal.month) : new Date(processModal.dueDate)).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })}
+                    {' — '}
+                    {formatCurrency(Number(processModal.amount))}
                   </p>
                   {!confirmStep ? (
                     <>
-                      <Label className="mb-2 block text-[#3b3b40]">{t('paymentMethod')}</Label>
-                      <div className="mb-3 lg:mb-4 grid grid-cols-3 gap-2 sm:grid-cols-3">
+                      <Label className="mb-4 block text-[#3b3b40]">{t('paymentMethod')}</Label>
+                      <div className="mb-3 lg:mb-4 grid grid-cols-3 gap-3 sm:grid-cols-3">
                         {(['cash', 'card', 'idram'] as const).map((method) => (
                           <button
                             key={method}
                             type="button"
                             onClick={() => setPaymentMethod(method)}
                             className={cn(
-                              'rounded-[0.875rem] border-2 px-1.5 py-2.5 text-xs font-medium transition-colors lg:px-3 lg:py-3 lg:text-sm',
+                              'min-h-12 rounded-[0.875rem] border-2 px-2 py-3.5 text-sm font-bold transition-colors lg:min-h-11 lg:px-4 lg:py-3 lg:text-base',
                               paymentMethod === method
                                 ? 'border-[#1010a3] bg-[#d9d9f4] text-[#1010a3]'
                                 : 'border-[rgba(14,14,16,0.07)] text-[#3b3b40] hover:bg-[#f6f6f7]',
@@ -665,11 +667,19 @@ export default function StudentPaymentsPage() {
                           </button>
                         ))}
                       </div>
-                      <DialogFooter className="max-lg:flex-row max-lg:justify-end max-lg:pt-4 gap-2 sm:gap-0">
-                        <StudentGhostButton type="button" onClick={() => setProcessModal(null)}>
+                      <DialogFooter className="max-lg:flex-row max-lg:justify-end max-lg:pt-4 gap-3 sm:gap-0">
+                        <StudentGhostButton
+                          type="button"
+                          onClick={() => setProcessModal(null)}
+                          className="min-h-12 px-6 text-base font-semibold lg:min-h-10 lg:px-4 lg:text-sm lg:font-medium"
+                        >
                           {tCommon('cancel')}
                         </StudentGhostButton>
-                        <StudentPrimaryButton type="button" onClick={() => setConfirmStep(true)}>
+                        <StudentPrimaryButton
+                          type="button"
+                          onClick={() => setConfirmStep(true)}
+                          className="min-h-12 px-6 text-base lg:min-h-10 lg:px-5 lg:text-sm"
+                        >
                           {tCommon('next')}
                         </StudentPrimaryButton>
                       </DialogFooter>
@@ -687,14 +697,19 @@ export default function StudentPaymentsPage() {
                                 : t('methodIdram'),
                         })}
                       </p>
-                      <DialogFooter className="max-lg:flex-row max-lg:justify-end max-lg:pt-4 gap-2 sm:gap-0">
-                        <StudentGhostButton type="button" onClick={() => setConfirmStep(false)}>
+                      <DialogFooter className="max-lg:flex-row max-lg:justify-end max-lg:pt-4 gap-3 sm:gap-0">
+                        <StudentGhostButton
+                          type="button"
+                          onClick={() => setConfirmStep(false)}
+                          className="min-h-12 px-6 text-base font-semibold lg:min-h-10 lg:px-4 lg:text-sm lg:font-medium"
+                        >
                           {tCommon('back')}
                         </StudentGhostButton>
                         <StudentPrimaryButton
                           type="button"
                           onClick={handleConfirmPayment}
                           disabled={processPaymentMutation.isPending}
+                          className="min-h-12 px-6 text-base lg:min-h-10 lg:px-5 lg:text-sm"
                         >
                           {processPaymentMutation.isPending ? tCommon('loading') : tCommon('confirm')}
                         </StudentPrimaryButton>
