@@ -180,7 +180,7 @@ export default function TeacherSalaryPage() {
     .reduce((sum, s) => sum + Number(s.netAmount ?? 0), 0);
 
   const selectedPresetIndex = PERIOD_PRESETS.indexOf(preset);
-  const presetSegmentShare = 100 / PERIOD_PRESETS.length;
+  const periodTrackInsetPx = PERIOD_TRACK_PADDING_PX * 2;
 
   return (
     <DashboardLayout
@@ -199,12 +199,13 @@ export default function TeacherSalaryPage() {
             {selectedPresetIndex >= 0 ? (
               <span
                 aria-hidden
-                className="pointer-events-none absolute z-0 rounded-md bg-[#1010a3] shadow-sm transition-[left,width] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]"
+                className="pointer-events-none absolute z-0 rounded-md bg-[#1010a3] shadow-sm transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]"
                 style={{
                   top: PERIOD_TRACK_PADDING_PX,
                   bottom: PERIOD_TRACK_PADDING_PX,
-                  left: `calc(${selectedPresetIndex * presetSegmentShare}% + ${PERIOD_TRACK_PADDING_PX}px)`,
-                  width: `calc(${presetSegmentShare}% - ${PERIOD_TRACK_PADDING_PX * 2}px)`,
+                  left: PERIOD_TRACK_PADDING_PX,
+                  width: `calc((100% - ${periodTrackInsetPx}px) / ${PERIOD_PRESETS.length})`,
+                  transform: `translateX(${selectedPresetIndex * 100}%)`,
                 }}
               />
             ) : null}
@@ -216,7 +217,7 @@ export default function TeacherSalaryPage() {
                   type="button"
                   onClick={() => setPreset(p)}
                   className={cn(
-                    'relative z-10 rounded-md px-3 py-2 text-sm font-semibold capitalize transition-colors duration-300 focus:outline-none',
+                    'relative z-10 flex w-full items-center justify-center rounded-md px-2 py-2 text-center text-sm font-semibold capitalize whitespace-nowrap transition-colors duration-300 focus:outline-none sm:px-3',
                     isSelected
                       ? 'text-white'
                       : 'text-[#3b3b40] hover:text-[#1010a3]',
@@ -234,7 +235,9 @@ export default function TeacherSalaryPage() {
                 <label className="shrink-0 text-sm font-medium text-[#8b8b90]">{tCommon('from')}</label>
                 <DatePickerInput
                   value={customFrom}
+                  max={customTo || undefined}
                   onValueChange={setCustomFrom}
+                  popoverExpanded
                   className="h-10 w-full rounded-lg border border-[rgba(14,14,16,0.07)] text-sm sm:w-[9.5rem]"
                 />
               </div>
@@ -242,7 +245,9 @@ export default function TeacherSalaryPage() {
                 <label className="shrink-0 text-sm font-medium text-[#8b8b90]">{tCommon('to')}</label>
                 <DatePickerInput
                   value={customTo}
+                  min={customFrom || undefined}
                   onValueChange={setCustomTo}
+                  popoverExpanded
                   className="h-10 w-full rounded-lg border border-[rgba(14,14,16,0.07)] text-sm sm:w-[9.5rem]"
                 />
               </div>
