@@ -161,7 +161,7 @@ export function DailyPlanListSection({
                   <div className="text-xs text-slate-500 uppercase tracking-wide">
                     {formatDate(plan.date)}
                   </div>
-                  <div className="font-semibold text-slate-800">
+                  <div className="font-semibold text-[#1010a3]">
                     {plan.group?.name ?? 'No group'}{' '}
                     {plan.group?.level && (
                       <span className="text-slate-500 font-normal">
@@ -217,14 +217,14 @@ export function DailyPlanListSection({
                     key={topic.id}
                     className="border border-slate-100 rounded-md px-3 py-2 bg-slate-50"
                   >
-                    <div className="font-medium text-slate-700 text-sm">
+                    <div className="text-sm font-medium text-[#1010a3]">
                       {topic.title}
                     </div>
                     {topic.resources.length > 0 && (
                       <ul className="mt-1 text-xs text-slate-600 space-y-0.5">
                         {topic.resources.map((resource) => (
                           <li key={resource.id} className="flex gap-1">
-                            <span className="text-slate-400 w-16 shrink-0">
+                            <span className="w-16 shrink-0 font-medium text-[#1010a3]">
                               {KIND_LABEL[resource.kind]}
                             </span>
                             <span className="truncate">
@@ -277,7 +277,7 @@ export function DailyPlanListSection({
                     <div className="text-xs text-slate-500 uppercase tracking-wide">
                       {formatDate(plan.date)}
                     </div>
-                    <div className="font-semibold text-slate-800">
+                    <div className="font-semibold text-[#1010a3]">
                       {plan.group?.name ?? 'No group'}{' '}
                       {plan.group?.level && (
                         <span className="text-slate-500 font-normal">
@@ -333,14 +333,14 @@ export function DailyPlanListSection({
                       key={topic.id}
                       className="border border-slate-100 rounded-md px-3 py-2 bg-slate-50"
                     >
-                      <div className="font-medium text-slate-700 text-sm">
+                      <div className="text-sm font-medium text-[#1010a3]">
                         {topic.title}
                       </div>
                       {topic.resources.length > 0 && (
                         <ul className="mt-1 text-xs text-slate-600 space-y-0.5">
                           {topic.resources.map((resource) => (
                             <li key={resource.id} className="flex gap-1">
-                              <span className="text-slate-400 w-16 shrink-0">
+                              <span className="w-16 shrink-0 font-medium text-[#1010a3]">
                                 {KIND_LABEL[resource.kind]}
                               </span>
                               <span className="truncate">

@@ -148,7 +148,7 @@ export function DailyPlanViewer({ plan, onClose }: DailyPlanViewerProps) {
 
           <header className="sticky top-0 flex items-center justify-between border-b border-slate-200 bg-white p-4">
             <div>
-              <h2 className="text-lg font-semibold text-slate-800">Daily Plan</h2>
+              <h2 className="text-lg font-semibold text-[#1010a3]">Daily Plan</h2>
               <p className="text-sm text-slate-600">
                 {plan.teacher.user.firstName} {plan.teacher.user.lastName}
               </p>
@@ -183,12 +183,12 @@ export function DailyPlanViewer({ plan, onClose }: DailyPlanViewerProps) {
                 key={topic.id}
                 className="space-y-2 rounded-lg border border-slate-200 bg-slate-50/40 p-4"
               >
-                <h3 className="font-semibold text-slate-800">{topic.title}</h3>
+                <h3 className="font-semibold text-[#1010a3]">{topic.title}</h3>
                 {topic.resources.length > 0 ? (
                   <ul className="space-y-1 text-sm text-slate-700">
                     {topic.resources.map((resource) => (
                       <li key={resource.id}>
-                        <span className="mr-2 text-slate-500">{KIND_LABEL[resource.kind]}:</span>
+                        <span className="mr-2 font-medium text-[#1010a3]">{KIND_LABEL[resource.kind]}:</span>
                         {resource.link ? (
                           <a
                             href={resource.link}
