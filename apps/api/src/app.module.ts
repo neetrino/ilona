@@ -1,12 +1,19 @@
-import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
+import { Module, NestModule, MiddlewareConsumer, Logger } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { CacheModule } from '@nestjs/cache-manager';
+import type { CacheModuleOptions } from '@nestjs/cache-manager';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 
 // Config
 import { appConfig } from './config/app.config';
 import { jwtConfig } from './config/jwt.config';
+import { redisConfig } from './config/redis.config';
+
+// Redis
+import { isUpstashConfigured } from './common/redis/upstash.client';
+import { createUpstashCacheStore } from './common/redis/upstash-cache.store';
+import { UpstashThrottlerStorage } from './common/redis/upstash-throttler.storage';
 
 // Common
 import { RequestContextModule } from './common/request-context/request-context.module';
@@ -51,24 +58,50 @@ import { AppController } from './app.controller';
     // Configuration
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [appConfig, jwtConfig],
+      load: [appConfig, jwtConfig, redisConfig],
       envFilePath: ['.env.local', '.env'],
     }),
 
-    // In-memory cache for hot reads (e.g. settings). TTL 2 minutes. isGlobal: true so SettingsModule and others can inject CACHE_MANAGER.
-    CacheModule.register({
+    CacheModule.registerAsync({
       isGlobal: true,
-      ttl: 2 * 60 * 1000, // 2 minutes in ms
+      useFactory: (): CacheModuleOptions => {
+        const ttl = 2 * 60 * 1000;
+
+        if (isUpstashConfigured()) {
+          Logger.log('Cache: Upstash Redis', 'AppModule');
+          return {
+            store: createUpstashCacheStore(),
+            ttl,
+          };
+        }
+
+        Logger.warn('Cache: in-memory (Upstash env not set)', 'AppModule');
+        return { ttl };
+      },
     }),
 
-    // Rate limiting (SQL Injection checklist §8): 100 requests per minute per IP by default
-    ThrottlerModule.forRoot([
-      {
-        name: 'default',
-        ttl: 60 * 1000, // 1 minute
-        limit: 100,
+    ThrottlerModule.forRootAsync({
+      useFactory: () => {
+        const throttlers = [
+          {
+            name: 'default',
+            ttl: 60 * 1000,
+            limit: 100,
+          },
+        ];
+
+        if (isUpstashConfigured()) {
+          Logger.log('Rate limit: Upstash Redis', 'AppModule');
+          return {
+            throttlers,
+            storage: new UpstashThrottlerStorage(),
+          };
+        }
+
+        Logger.warn('Rate limit: in-memory (Upstash env not set)', 'AppModule');
+        return throttlers;
       },
-    ]),
+    }),
 
     // Global modules (RequestContext must be before Prisma so middleware can use it)
     RequestContextModule,
