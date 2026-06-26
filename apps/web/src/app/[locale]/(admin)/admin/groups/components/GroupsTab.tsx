@@ -1040,11 +1040,6 @@ export function GroupsTab({
             }
           }}
           groupId={editGroupId}
-          onDelete={
-            viewMode === 'list'
-              ? () => handleDeleteClick(editGroupId)
-              : undefined
-          }
           onToggleActive={
             viewMode === 'list'
               ? () => {
