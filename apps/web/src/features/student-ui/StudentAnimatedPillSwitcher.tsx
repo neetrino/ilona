@@ -128,6 +128,7 @@ export function StudentAnimatedPillSwitcher<T extends string>({
             onClick={() => onChange(opt.value)}
             className={cn(
               'relative z-10 transition-colors duration-300 motion-reduce:transition-none',
+              'focus:outline-none focus-visible:outline-none focus-visible:ring-0',
               styles.button,
               isActive ? 'text-white' : 'text-[#3b3b40] hover:text-[#1010a3]',
             )}

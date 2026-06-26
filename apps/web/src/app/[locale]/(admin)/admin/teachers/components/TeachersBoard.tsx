@@ -172,7 +172,7 @@ export function TeachersBoard({
                 <div className="flex items-center gap-3">
                   <button
                     type="button"
-                    className={`inline-flex h-9 w-9 items-center justify-center rounded-full border transition-colors ${
+                    className={`inline-flex h-9 w-9 items-center justify-center rounded-full border transition-colors focus:outline-none focus-visible:outline-none focus-visible:ring-0 ${
                       safeMobileTeachersPage === 0
                         ? 'border-[#d9dde8] bg-[#f1f1f4] text-[#9aa3b5]'
                         : 'border-[rgba(14,14,16,0.12)] bg-white text-[#3b3b40] hover:bg-[#f6f6f7]'
@@ -190,7 +190,7 @@ export function TeachersBoard({
                   </span>
                   <button
                     type="button"
-                    className={`inline-flex h-9 w-9 items-center justify-center rounded-full border transition-colors ${
+                    className={`inline-flex h-9 w-9 items-center justify-center rounded-full border transition-colors focus:outline-none focus-visible:outline-none focus-visible:ring-0 ${
                       safeMobileTeachersPage >= totalMobileTeachersPages - 1
                         ? 'border-[#d9dde8] bg-[#f1f1f4] text-[#9aa3b5]'
                         : 'border-[rgba(14,14,16,0.12)] bg-white text-[#3b3b40] hover:bg-[#f6f6f7]'

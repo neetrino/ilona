@@ -482,7 +482,7 @@ export function EditTeacherForm({
                         key={center.id}
                         type="button"
                         onClick={() => toggleCenter(center.id)}
-                        className={`rounded-full border px-3 py-1 text-xs transition ${
+                        className={`rounded-full border px-3 py-1 text-xs transition focus:outline-none focus-visible:outline-none focus-visible:ring-0 ${
                           active
                             ? 'border-primary bg-primary text-white'
                             : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-50'

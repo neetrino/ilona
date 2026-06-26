@@ -94,8 +94,8 @@ export function TeacherShowcaseCard({
           : 'border-slate-200 shadow-sm',
         interactive &&
           (isStudent
-            ? 'cursor-pointer hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1010a3]/30'
-            : 'cursor-pointer hover:-translate-y-0.5 hover:shadow-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40'),
+            ? 'cursor-pointer hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus-visible:outline-none focus-visible:ring-0'
+            : 'cursor-pointer hover:-translate-y-0.5 hover:shadow-xl focus:outline-none focus-visible:outline-none focus-visible:ring-0'),
         isMuted && 'opacity-90',
       )}
     >
@@ -125,7 +125,7 @@ export function TeacherShowcaseCard({
         className={cn(
           'relative mb-4 flex w-full justify-center',
           photoOpensDetails &&
-            'cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 rounded-3xl',
+            'cursor-pointer rounded-3xl focus:outline-none focus-visible:outline-none focus-visible:ring-0',
         )}
         role={photoOpensDetails ? 'button' : undefined}
         tabIndex={photoOpensDetails ? 0 : undefined}
