@@ -100,7 +100,7 @@ export function GroupScheduleEditor({ value, onChange, disabled }: GroupSchedule
             type="button"
             onClick={() => removeEntry(i)}
             disabled={disabled}
-            className="col-span-2 inline-flex items-center justify-center rounded-md border border-slate-300 bg-white px-2 py-1 text-xs text-slate-600 hover:bg-slate-100"
+            className="col-span-2 inline-flex items-center justify-center rounded-md border border-red-200 bg-red-50 px-2 py-1 text-xs text-red-600 hover:bg-red-100 hover:border-red-300 disabled:opacity-50"
             aria-label={t('scheduleRemoveEntry')}
           >
             <Trash2 className="size-3.5" />
