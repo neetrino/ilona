@@ -34,6 +34,9 @@ export function useGroupsManagement(
 
   const activeCenterId = routeSelectedCenterId ?? boardTabCenterId ?? null;
 
+  const showBranchTabs = !routeSelectedCenterId;
+  const shouldLoadBranchTabs = showBranchTabs;
+
   const showBoardCenterPicker = viewMode === 'board' && !activeCenterId;
 
   const shouldFetchGroups =
@@ -80,7 +83,7 @@ export function useGroupsManagement(
       isActive: undefined,
       take: 100,
     },
-    viewMode === 'board'
+    viewMode === 'board' || shouldLoadBranchTabs
   );
 
   const {
@@ -96,7 +99,7 @@ export function useGroupsManagement(
   /** Board + branch tab: only show groups for the selected center (filter, not just API trust). */
   const displayGroups = useMemo(() => {
     let result = groups;
-    if (viewMode === 'board' && activeCenterId) {
+    if (activeCenterId && showBranchTabs) {
       result = groups.filter((g) => g.centerId === activeCenterId);
     }
     if (viewMode === 'board') {
@@ -106,7 +109,7 @@ export function useGroupsManagement(
       }));
     }
     return result;
-  }, [groups, viewMode, activeCenterId]);
+  }, [groups, viewMode, activeCenterId, showBranchTabs]);
 
   const statsSourceGroups = useMemo(
     () => (shouldFetchAll ? displayGroups : (statsGroupsData?.items ?? [])),
@@ -169,7 +172,7 @@ export function useGroupsManagement(
   ]);
 
   const isLoading =
-    (viewMode === 'board' && isLoadingBoardCenters) ||
+    (shouldLoadBranchTabs && isLoadingBoardCenters) ||
     (shouldFetchGroups && isLoadingGroups) ||
     (shouldFetchStats && isLoadingStatsGroups) ||
     (!!routeSelectedCenterId && isLoadingDrillDownCenter && !drillDownCenter);
@@ -296,7 +299,7 @@ export function useGroupsManagement(
     totalStudentsInGroups,
     averageGroupSize,
     isLoading,
-    isLoadingBranchTabs: viewMode === 'board' && isLoadingBoardCenters,
+    isLoadingBranchTabs: shouldLoadBranchTabs && isLoadingBoardCenters,
       deleteGroup,
     createGroupOpen,
     setCreateGroupOpen,
