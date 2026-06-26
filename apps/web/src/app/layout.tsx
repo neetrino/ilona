@@ -1,14 +1,33 @@
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
+import { getSiteUrl, siteConfig } from '@/config/site';
 import { DisableImageDrag } from '@/shared/components/DisableImageDrag';
 import { WarmupRequest } from '@/shared/components/WarmupRequest';
 
 const inter = Inter({ subsets: ['latin'], preload: false });
 
 export const metadata: Metadata = {
-  title: 'Ilona English Center',
-  description: 'English Learning Center Management Platform',
+  metadataBase: getSiteUrl(),
+  title: siteConfig.name,
+  description: siteConfig.description,
+  applicationName: siteConfig.name,
+  openGraph: {
+    type: 'website',
+    siteName: siteConfig.name,
+    title: siteConfig.name,
+    description: siteConfig.description,
+    locale: 'en_US',
+    alternateLocale: ['hy_AM'],
+  },
+  twitter: {
+    card: 'summary',
+    title: siteConfig.name,
+    description: siteConfig.description,
+  },
+  appleWebApp: {
+    title: siteConfig.name,
+  },
 };
 
 export default function RootLayout({
