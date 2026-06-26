@@ -38,7 +38,7 @@ export {
   GroupStatusConfirmationDialog,
 } from './components/GroupStatusConfirmationDialog';
 export type { GroupStatusDialogAction } from './components/GroupStatusConfirmationDialog';
-export { GroupCard } from './components/GroupCard';
+export { GroupCard, GroupCardOverflowMenu } from './components/GroupCard';
 export { GroupScheduleEditor } from './components/GroupScheduleEditor';
 export { getGroupOccupancyMeta } from './occupancy';
 export type { GroupOccupancyMeta, GroupOccupancyStatus } from './occupancy';

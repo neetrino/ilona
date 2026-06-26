@@ -735,6 +735,7 @@
     "searchBranchesPlaceholder": "Որոնել մասնաճյուղեր անունով...",
     "searchGroupsPlaceholder": "Որոնել խմբեր անունով...",
     "deleteAll": "Ջնջել բոլորը ({count})",
+    "deleteSelected": "Ջնջել ընտրվածները ({count})",
     "listView": "Ցուցակ",
     "boardView": "Տախտակ",
     "noBranchesCreateCenter": "Մասնաճյուղեր չեն գտնվել։ Նախ ստեղծեք կենտրոն։",

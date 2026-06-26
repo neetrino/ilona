@@ -68,13 +68,21 @@ interface GroupCardOverflowMenuProps {
   onToggleActive: () => void;
   onDelete: () => void;
   isStatusTogglePending?: boolean;
+  deactivateLabel?: string;
+  activateLabel?: string;
+  deleteLabel?: string;
+  menuAriaLabel?: string;
 }
 
-function GroupCardOverflowMenu({
+export function GroupCardOverflowMenu({
   isActive,
   onToggleActive,
   onDelete,
   isStatusTogglePending = false,
+  deactivateLabel = 'Deactivate group',
+  activateLabel = 'Activate group',
+  deleteLabel = 'Delete group',
+  menuAriaLabel = 'Group actions',
 }: GroupCardOverflowMenuProps) {
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -95,7 +103,7 @@ function GroupCardOverflowMenu({
     >
       <button
         type="button"
-        aria-label="Group actions"
+        aria-label={menuAriaLabel}
         aria-haspopup="menu"
         aria-expanded={open}
         onClick={() => setOpen((prev) => !prev)}
@@ -115,7 +123,7 @@ function GroupCardOverflowMenu({
             onClick={() => closeAndRun(onToggleActive)}
             className="w-full rounded-lg px-3 py-2 text-left text-sm text-[#3b3b40] transition-colors hover:bg-[#f6f6f7] disabled:cursor-not-allowed disabled:opacity-50"
           >
-            {isActive ? 'Deactivate group' : 'Activate group'}
+            {isActive ? deactivateLabel : activateLabel}
           </button>
           <button
             type="button"
@@ -123,7 +131,7 @@ function GroupCardOverflowMenu({
             onClick={() => closeAndRun(onDelete)}
             className="w-full rounded-lg px-3 py-2 text-left text-sm text-red-600 transition-colors hover:bg-red-50"
           >
-            Delete group
+            {deleteLabel}
           </button>
         </div>
       ) : null}

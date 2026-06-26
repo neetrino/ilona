@@ -4,11 +4,12 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
-import { StatCard, DataTable, Badge, Button, ActionButtons, ListBoardViewToggle } from '@/shared/components/ui';
+import { StatCard, DataTable, Badge, Button, ListBoardViewToggle } from '@/shared/components/ui';
 import { cn } from '@/shared/lib/utils';
 import { getContrastColor, lightenColor } from '@/shared/lib/utils';
 import {
   GroupCard,
+  GroupCardOverflowMenu,
   CreateGroupForm,
   EditGroupForm,
   DeleteConfirmationDialog,
@@ -507,7 +508,10 @@ export function GroupsTab({
             <div className="text-center">
               <button
                 type="button"
-                onClick={() => openStudentsModal(group.id)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  openStudentsModal(group.id);
+                }}
                 className="underline decoration-[#8b8b90] underline-offset-2 hover:decoration-[#1010a3] hover:text-[#1010a3] font-medium text-[#3b3b40] focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20 focus:ring-offset-1 rounded inline"
                 title={t('viewStudentsInGroup')}
               >
@@ -548,23 +552,18 @@ export function GroupsTab({
         key: 'actions',
         header: tCommon('actions'),
         render: (group: Group) => (
-          <ActionButtons
-            onEdit={() => handleEditGroupIdChange(group.id)}
-            onDisable={() => openGroupStatusDialog(group.id, group.isActive)}
-            onDelete={() => handleDeleteClick(group.id)}
-            isActive={group.isActive}
-            disableDisabled={isGroupStatusTogglePending}
-            ariaLabels={{
-              edit: t('editGroup'),
-              disable: group.isActive ? t('deactivateGroup') : t('activateGroup'),
-              delete: t('deleteGroup'),
-            }}
-            titles={{
-              edit: t('editGroup'),
-              disable: group.isActive ? t('deactivateGroup') : t('activateGroup'),
-              delete: t('deleteGroup'),
-            }}
-          />
+          <div className="flex justify-end" onClick={(e) => e.stopPropagation()} onKeyDown={(e) => e.stopPropagation()}>
+            <GroupCardOverflowMenu
+              isActive={group.isActive}
+              onToggleActive={() => openGroupStatusDialog(group.id, group.isActive)}
+              onDelete={() => handleDeleteClick(group.id)}
+              isStatusTogglePending={isGroupStatusTogglePending}
+              deactivateLabel={t('deactivateGroup')}
+              activateLabel={t('activateGroup')}
+              deleteLabel={t('deleteGroup')}
+              menuAriaLabel={tCommon('actions')}
+            />
+          </div>
         ),
       },
     ],
@@ -677,7 +676,9 @@ export function GroupsTab({
             onClick={handleBulkDeleteGroupsClick}
             disabled={deleteGroup.isPending || isLoading}
           >
-            {t('deleteAll', { count: selectedGroupIds.size })}
+            {allGroupsSelected && groups.length > 1
+              ? t('deleteAll', { count: selectedGroupIds.size })
+              : t('deleteSelected', { count: selectedGroupIds.size })}
           </Button>
         )}
         {isLg ? (
@@ -997,6 +998,7 @@ export function GroupsTab({
             keyExtractor={(group) => group.id}
             isLoading={isLoading}
             emptyMessage={searchQuery ? t('noGroupsMatch') : t('noGroupsFound')}
+            onRowClick={(group) => handleEditGroupIdChange(group.id)}
           />
 
           {/* Pagination */}
