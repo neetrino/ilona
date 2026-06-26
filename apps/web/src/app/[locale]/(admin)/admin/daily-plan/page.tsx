@@ -15,16 +15,6 @@ import type { DailyPlan } from '@/features/daily-plan/types';
 import { DailyPlanViewer } from '@/features/daily-plan/DailyPlanViewer';
 import { useIsIPad } from '@/shared/hooks/useIsIPad';
 
-function defaultDateRangeStrings(): { from: string; to: string } {
-  const from = new Date();
-  const to = new Date(from);
-  to.setDate(to.getDate() + 30);
-  const pad = (n: number) => String(n).padStart(2, '0');
-  const ymd = (d: Date) =>
-    `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-  return { from: ymd(from), to: ymd(to) };
-}
-
 function toStartIso(dateStr: string): string {
   return `${dateStr}T00:00:00.000Z`;
 }
@@ -87,9 +77,8 @@ export default function AdminDailyPlanPage() {
   const managerMissingCenter =
     user?.role === 'MANAGER' && !managerCenterId;
 
-  const initialRange = useMemo(() => defaultDateRangeStrings(), []);
-  const [dateFrom, setDateFrom] = useState(initialRange.from);
-  const [dateTo, setDateTo] = useState(initialRange.to);
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
   const [search, setSearch] = useState('');
   const [teacherId, setTeacherId] = useState('');
   const [viewing, setViewing] = useState<DailyPlan | null>(null);
