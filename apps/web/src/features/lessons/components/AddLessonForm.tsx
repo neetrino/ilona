@@ -416,6 +416,7 @@ export function AddLessonForm({ open, onOpenChange, defaultDate }: AddLessonForm
               error={errors.groupId?.message ?? null}
               searchable
               searchPlaceholder={tForm('searchGroups')}
+              placeholder={tForm('selectGroup')}
               wrapText
             />
             {errors.groupId && <p className="text-sm text-red-600">{errors.groupId.message}</p>}

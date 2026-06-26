@@ -124,11 +124,16 @@ export function SingleSelectDropdown({
   const resolvedNoSearchResultsMessage = noSearchResultsMessage ?? t('globalSearchEmpty');
 
   const filteredOptions = React.useMemo(() => {
-    if (!searchable || !searchQuery.trim()) return options;
+    const listOptions = searchable
+      ? options.filter((option) => option.id !== '')
+      : options;
+
+    if (!searchable || !searchQuery.trim()) {
+      return listOptions;
+    }
+
     const query = searchQuery.trim().toLowerCase();
-    return options.filter(
-      (option) => option.id !== '' && option.label.toLowerCase().includes(query),
-    );
+    return listOptions.filter((option) => option.label.toLowerCase().includes(query));
   }, [options, searchable, searchQuery]);
 
   const closeMenu = React.useCallback(() => {
@@ -420,9 +425,14 @@ export function SingleSelectDropdown({
               ) : options.length === 0 ? (
                 <div className="p-3 text-sm text-[#8b8b90]">{t('noOptionsAvailable')}</div>
               ) : (
-                <>
+                <div className="min-h-0 flex-1 space-y-1 overflow-y-auto p-1">
                   {searchable && (
-                    <div className="shrink-0 border-b border-[rgba(14,14,16,0.08)] p-2">
+                    <div
+                      className={cn(
+                        DROPDOWN_OPTION_BASE_CLASS,
+                        'cursor-text p-0 ring-2 ring-inset ring-[#1010a3]/10',
+                      )}
+                    >
                       <input
                         ref={searchInputRef}
                         type="text"
@@ -443,49 +453,52 @@ export function SingleSelectDropdown({
                             optionRefs.current[0]?.focus();
                           }
                         }}
-                        className="w-full rounded-md border border-[rgba(14,14,16,0.12)] px-3 py-1.5 text-sm focus:border-[#1010a3]/45 focus:outline-none focus:ring-4 focus:ring-[#1010a3]/10"
+                        className="h-full w-full rounded-lg border-0 bg-transparent px-3 py-2.5 text-sm text-[#3b3b40] placeholder:font-normal placeholder:text-slate-400 focus:outline-none"
                       />
                     </div>
                   )}
-                  <div className="min-h-0 flex-1 space-y-1 overflow-y-auto p-1">
-                    {searchable && searchQuery.trim() && filteredOptions.length === 0 ? (
-                      <div className="px-3 py-2 text-sm text-[#8b8b90]">{resolvedNoSearchResultsMessage}</div>
-                    ) : (
-                      filteredOptions.map((option, index) => {
-                        const isSelected = value === option.id;
-                        return (
-                          <button
-                            id={`${listboxId}-option-${option.id}`}
-                            key={option.id}
-                            ref={(node) => {
-                              optionRefs.current[index] = node;
-                            }}
-                            type="button"
-                            role="option"
-                            aria-selected={isSelected}
-                            title={option.label}
-                            onPointerDown={(event) => {
-                              event.preventDefault();
-                              event.stopPropagation();
-                              handleSelect(option.id);
-                            }}
-                            onMouseEnter={() => setActiveIndex(index)}
+                  {searchable && searchQuery.trim() && filteredOptions.length === 0 ? (
+                    <div className="px-3 py-2 text-sm text-[#8b8b90]">{resolvedNoSearchResultsMessage}</div>
+                  ) : (
+                    filteredOptions.map((option, index) => {
+                      const isSelected = value === option.id;
+                      return (
+                        <button
+                          id={`${listboxId}-option-${option.id}`}
+                          key={option.id}
+                          ref={(node) => {
+                            optionRefs.current[index] = node;
+                          }}
+                          type="button"
+                          role="option"
+                          aria-selected={isSelected}
+                          title={option.label}
+                          onPointerDown={(event) => {
+                            event.preventDefault();
+                            event.stopPropagation();
+                            handleSelect(option.id);
+                          }}
+                          onMouseEnter={() => setActiveIndex(index)}
+                          className={cn(
+                            DROPDOWN_OPTION_BASE_CLASS,
+                            DROPDOWN_OPTION_INTERACTIVE_CLASS,
+                            isSelected && DROPDOWN_OPTION_SELECTED_CLASS,
+                            activeIndex === index && 'bg-slate-50 text-[#1010a3]',
+                          )}
+                        >
+                          <span
                             className={cn(
-                              DROPDOWN_OPTION_BASE_CLASS,
-                              DROPDOWN_OPTION_INTERACTIVE_CLASS,
-                              isSelected && DROPDOWN_OPTION_SELECTED_CLASS,
-                              activeIndex === index && 'bg-slate-50 text-[#1010a3]'
+                              'block',
+                              wrapText ? 'whitespace-normal break-words text-left' : 'truncate',
                             )}
                           >
-                            <span className={cn('block', wrapText ? 'whitespace-normal break-words text-left' : 'truncate')}>
-                              {option.label}
-                            </span>
-                          </button>
-                        );
-                      })
-                    )}
-                  </div>
-                </>
+                            {option.label}
+                          </span>
+                        </button>
+                      );
+                    })
+                  )}
+                </div>
               )}
               </div>
             </>,
