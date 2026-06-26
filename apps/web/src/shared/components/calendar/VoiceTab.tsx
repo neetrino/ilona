@@ -6,6 +6,8 @@ import { useLesson } from '@/features/lessons';
 import { VoiceRecorder } from '@/features/chat/components/VoiceRecorder';
 import { fetchGroupChat, sendMessageHttp } from '@/features/chat/api/chat.api';
 import { buildPortalChatHref } from '@/features/chat/lib/navigate-to-portal-chat';
+import { useAddMessageToCache, chatKeys } from '@/features/chat/hooks';
+import { useChatStore } from '@/features/chat/store/chat.store';
 import { api } from '@/shared/lib/api';
 import { useQueryClient } from '@tanstack/react-query';
 import { lessonKeys } from '@/features/lessons/hooks/useLessons';
@@ -22,6 +24,9 @@ export function VoiceTab({ lessonId }: VoiceTabProps) {
   const pathname = usePathname();
   const queryClient = useQueryClient();
   const { user } = useAuthStore();
+  const addMessageToCache = useAddMessageToCache();
+  const setActiveChat = useChatStore((state) => state.setActiveChat);
+  const setMobileListVisible = useChatStore((state) => state.setMobileListVisible);
   const { data: lesson, isLoading } = useLesson(lessonId);
   const [isRecording, setIsRecording] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
@@ -61,7 +66,7 @@ export function VoiceTab({ lessonId }: VoiceTabProps) {
       const isLessonSubstitute =
         !!lesson.substituteTeacher?.user?.id && lesson.substituteTeacher.user.id === user?.id;
 
-      await sendMessageHttp(chat.id, '', 'VOICE', {
+      const message = await sendMessageHttp(chat.id, '', 'VOICE', {
         fileUrl,
         fileName,
         fileSize,
@@ -77,6 +82,15 @@ export function VoiceTab({ lessonId }: VoiceTabProps) {
             : {}),
         },
       });
+
+      addMessageToCache(chat.id, message);
+      queryClient.setQueryData(chatKeys.detail(chat.id), {
+        ...chat,
+        lastMessage: message,
+        lastMessageAt: message.createdAt,
+      });
+      setActiveChat(chat);
+      setMobileListVisible(false);
 
       // Mark voice as sent and invalidate both detail and list queries to ensure consistency
       await api.patch(`/lessons/${lesson.id}/voice-sent`);
