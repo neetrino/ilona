@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
-import { useTranslations } from 'next-intl';
+import { useTranslations, type useTranslations as UseTranslations } from 'next-intl';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import {
   Dialog,
@@ -85,7 +85,7 @@ function PaymentStatusBadge({
   className,
 }: {
   status: string;
-  t: (key: string) => string;
+  t: ReturnType<typeof UseTranslations<'finance'>>;
   className?: string;
 }) {
   const label =
@@ -136,8 +136,8 @@ function PaymentMobileCard({
   isProcessing,
 }: {
   payment: Payment;
-  t: (key: string) => string;
-  tCommon: (key: string) => string;
+  t: ReturnType<typeof UseTranslations<'finance'>>;
+  tCommon: ReturnType<typeof UseTranslations<'common'>>;
   onPay: (payment: Payment) => void;
   isProcessing: boolean;
 }) {
