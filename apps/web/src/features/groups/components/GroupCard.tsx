@@ -197,7 +197,6 @@ export function GroupCard({
   onStudentClick,
   isStatusTogglePending = false,
 }: GroupCardProps) {
-  const t = useTranslations('groups');
   const teacherName = group.teacher ? `${group.teacher.user.firstName} ${group.teacher.user.lastName}` : null;
   const secondTeacherName = group.secondTeacher
     ? `${group.secondTeacher.user.firstName} ${group.secondTeacher.user.lastName}`
