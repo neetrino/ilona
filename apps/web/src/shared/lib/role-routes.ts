@@ -44,6 +44,34 @@ export function isAdminPortalSubpage(path: string, role?: UserRole | null): bool
   return normalized !== getAdminPortalBasePath(role);
 }
 
+export function isTeacherPortalRootPath(path: string): boolean {
+  const normalized = stripLocaleFromPath(path);
+  return normalized === '/teacher';
+}
+
+export function isStudentPortalRootPath(path: string): boolean {
+  const normalized = stripLocaleFromPath(path);
+  return normalized === '/student';
+}
+
+export function isTeacherPortalSubpage(path: string): boolean {
+  const normalized = stripLocaleFromPath(path);
+  return normalized.startsWith('/teacher') && !isTeacherPortalRootPath(path);
+}
+
+export function isStudentPortalSubpage(path: string): boolean {
+  const normalized = stripLocaleFromPath(path);
+  return normalized.startsWith('/student') && !isStudentPortalRootPath(path);
+}
+
+export function getTeacherPortalHomePath(): string {
+  return '/teacher';
+}
+
+export function getStudentPortalHomePath(): string {
+  return '/student';
+}
+
 export function isPortalMobileViewport(): boolean {
   if (typeof window === 'undefined') return false;
   return !window.matchMedia(`(min-width: ${PORTAL_DESKTOP_MIN_WIDTH}px)`).matches;

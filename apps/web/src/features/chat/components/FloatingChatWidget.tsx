@@ -7,7 +7,12 @@ import { useAuthStore } from '@/features/auth/store/auth.store';
 import { useChats } from '@/features/chat/hooks';
 import { cn } from '@/shared/lib/utils';
 import { navigateToPortalChat } from '@/features/chat/lib/navigate-to-portal-chat';
-import { isAdminPortalPath, isAdminPortalSubpage } from '@/shared/lib/role-routes';
+import {
+  isAdminPortalPath,
+  isAdminPortalSubpage,
+  isStudentPortalSubpage,
+  isTeacherPortalSubpage,
+} from '@/shared/lib/role-routes';
 
 export function FloatingChatWidget() {
   const tChat = useTranslations('chat');
@@ -31,11 +36,14 @@ export function FloatingChatWidget() {
     return null;
   }
 
-  const isAdminRoute = isAdminPortalPath(pathname.replace(/^\/[a-z]{2}\//, '/'));
-  const isAdminMobileSubpage = isAdminRoute && isAdminPortalSubpage(
-    pathname.replace(/^\/[a-z]{2}\//, '/'),
-    user?.role,
-  );
+  const pathWithoutLocale = pathname.replace(/^\/[a-z]{2}\//, '/');
+  const isAdminRoute = isAdminPortalPath(pathWithoutLocale);
+  const isPortalMobileSubpage =
+    (user?.role === 'TEACHER' && isTeacherPortalSubpage(pathWithoutLocale)) ||
+    (user?.role === 'STUDENT' && isStudentPortalSubpage(pathWithoutLocale)) ||
+    ((user?.role === 'ADMIN' || user?.role === 'MANAGER') &&
+      isAdminRoute &&
+      isAdminPortalSubpage(pathWithoutLocale, user?.role));
   const isPortalShell =
     user?.role === 'STUDENT' ||
     user?.role === 'TEACHER' ||
@@ -67,7 +75,7 @@ export function FloatingChatWidget() {
         className={cn(
           'fixed z-50',
           'bottom-6 right-3 sm:right-6',
-          isAdminMobileSubpage ? 'hidden lg:flex' : 'flex',
+          isPortalMobileSubpage ? 'hidden lg:flex' : 'flex',
           'h-14 w-14 items-center justify-center sm:h-16 sm:w-16',
           'rounded-full text-white',
           fabBg,

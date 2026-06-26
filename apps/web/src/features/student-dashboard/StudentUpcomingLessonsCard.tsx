@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react';
 import { PublicAssetImage } from '@/shared/components/ui';
 import { useLocale, useTranslations } from 'next-intl';
+import { StudentAnimatedPillSwitcher } from '@/features/student-ui';
 import type { StudentUpcomingLesson } from '@/features/students';
 import { STUDENT_DASHBOARD_ASSETS } from './assets';
 
@@ -137,9 +138,9 @@ export function StudentUpcomingLessonsCard({
   ];
 
   return (
-    <section className="rounded-3xl border border-[rgba(14,14,16,0.07)] bg-white p-5 sm:p-6">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-        <div>
+    <section className="flex h-full min-h-0 flex-col rounded-3xl border border-[rgba(14,14,16,0.07)] bg-white p-5 sm:p-6">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0">
           <h3 className="text-base font-semibold tracking-tight text-[#1010a3]">
             {t('upcomingLessonsTitle')}
           </h3>
@@ -147,25 +148,17 @@ export function StudentUpcomingLessonsCard({
             {t('upcoming.scheduledCount', { count: weekCount })}
           </p>
         </div>
-        <div className="inline-flex h-[2.125rem] max-w-full flex-wrap items-center rounded-full border border-[rgba(14,14,16,0.07)] bg-[#f6f6f7] p-1">
-          {filters.map(({ key, label }) => (
-            <button
-              key={key}
-              type="button"
-              onClick={() => setFilter(key)}
-              className={`rounded-full px-3 py-1 text-[0.6875rem] font-medium transition-colors ${
-                filter === key
-                  ? 'bg-[#1010a3] text-white'
-                  : 'text-[#3b3b40] hover:text-[#1010a3]'
-              }`}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
+        <StudentAnimatedPillSwitcher
+          options={filters.map(({ key, label }) => ({ value: key, label }))}
+          value={filter}
+          onChange={setFilter}
+          shape="rectangular"
+          size="md"
+          className="w-full shrink-0 sm:w-auto"
+        />
       </div>
 
-      <div className="mt-5 space-y-3">
+      <div className="mt-5 min-h-0 flex-1 space-y-3">
         {isLoading ? (
           <div className="space-y-3">
             {[0, 1, 2].map((i) => (

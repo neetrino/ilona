@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useQuery } from '@tanstack/react-query';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
@@ -10,11 +10,14 @@ import {
   StudentGhostButton,
   StudentInput,
   StudentPageStack,
+  studentInputClass,
   studentTableHeadClass,
 } from '@/features/student-ui';
+import { DatePickerInput } from '@/shared/components/ui';
 import { cn } from '@/shared/lib/utils';
 import { VoiceMessagePlayer } from '@/features/chat/components/VoiceMessagePlayer';
 import { MultiSelectChipsDropdown } from '@/shared/components/ui/multi-select-chips-dropdown';
+import { useIsIPad } from '@/shared/hooks/useIsIPad';
 import {
   fetchTeacherStudentRecordings,
   type AdminStudentRecording,
@@ -50,6 +53,8 @@ function formatIsoDay(value: string): string {
 }
 
 const DIRECTORY_PAGE_SIZE = 100;
+const RECORDINGS_PAGE_SIZE = 5;
+const IPAD_RECORDINGS_PAGE_SIZE = 10;
 const FILTERS_STORAGE_KEY = 'teacher-recordings:filters-v1';
 
 function isFullStudent(item: TeacherAssignedItem): item is Student {
@@ -75,6 +80,8 @@ export default function TeacherRecordingsPage() {
   const tNav = useTranslations('nav');
   const t = useTranslations('recordings');
   const tCommon = useTranslations('common');
+  const isIPad = useIsIPad();
+  const recordingsPageSize = isIPad ? IPAD_RECORDINGS_PAGE_SIZE : RECORDINGS_PAGE_SIZE;
   const [selectedGroupIds, setSelectedGroupIds] = useState<Set<string>>(
     () => new Set(),
   );
@@ -84,11 +91,13 @@ export default function TeacherRecordingsPage() {
   const [search, setSearch] = useState('');
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
+  const [page, setPage] = useState(0);
   const [selectedRecordingIds, setSelectedRecordingIds] = useState<Set<string>>(
     () => new Set(),
   );
   const [activeRecordingId, setActiveRecordingId] = useState<string | null>(null);
   const [isHydrated, setIsHydrated] = useState(false);
+  const cardsListStartRef = useRef<HTMLDivElement | null>(null);
 
   const { data: myGroups = [], isLoading: isLoadingGroups } = useMyGroups();
 
@@ -244,6 +253,27 @@ export default function TeacherRecordingsPage() {
   }, [recordings, selectedGroupIds, selectedStudentUserIds, search, dateFrom, dateTo]);
 
   useEffect(() => {
+    setPage(0);
+  }, [selectedGroupIds, selectedStudentUserIds, search, dateFrom, dateTo]);
+
+  const totalPages = Math.max(1, Math.ceil(visibleRecordings.length / recordingsPageSize));
+  const safePage = Math.min(page, totalPages - 1);
+  const paginatedRecordings = useMemo(
+    () =>
+      visibleRecordings.slice(
+        safePage * recordingsPageSize,
+        safePage * recordingsPageSize + recordingsPageSize,
+      ),
+    [safePage, visibleRecordings, recordingsPageSize],
+  );
+  const rangeStart =
+    visibleRecordings.length === 0 ? 0 : safePage * recordingsPageSize + 1;
+  const rangeEnd = Math.min(
+    (safePage + 1) * recordingsPageSize,
+    visibleRecordings.length,
+  );
+
+  useEffect(() => {
     setSelectedRecordingIds((prev) => {
       if (prev.size === 0) return prev;
       const visibleIds = new Set(visibleRecordings.map((r) => r.id));
@@ -282,6 +312,54 @@ export default function TeacherRecordingsPage() {
     setDateTo('');
   };
 
+  const goToPage = (nextPage: number) => {
+    setPage(nextPage);
+    requestAnimationFrame(() => {
+      cardsListStartRef.current?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+      });
+    });
+  };
+
+  const renderRecordingPlayback = (recording: AdminStudentRecording) => {
+    const isActive = activeRecordingId === recording.id;
+    if (isActive) {
+      return (
+        <div className="w-full">
+          <VoiceMessagePlayer
+            fileUrl={recording.fileUrl}
+            duration={recording.duration}
+            fileName={recording.fileName}
+          />
+        </div>
+      );
+    }
+    return (
+      <button
+        type="button"
+        onClick={() => setActiveRecordingId(recording.id)}
+        className="inline-flex items-center gap-2 rounded-lg border border-[#1010a3]/20 px-3 py-1.5 text-sm font-medium text-[#1010a3] transition-colors hover:bg-[#1010a3]/5"
+      >
+        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"
+          />
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+          />
+        </svg>
+        {t('play')}
+      </button>
+    );
+  };
+
   return (
     <DashboardLayout
       title={tNav('recordings')}
@@ -289,8 +367,8 @@ export default function TeacherRecordingsPage() {
     >
       <StudentPageStack>
       <StudentCard>
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-6">
-        <div className="md:col-span-2">
+      <div className="grid w-full min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-[repeat(auto-fit,minmax(min(100%,11rem),1fr))]">
+        <div className="min-w-0 sm:col-span-2 lg:col-span-1">
           <MultiSelectChipsDropdown
             label={tCommon('group')}
             options={groupMultiOptions}
@@ -303,7 +381,7 @@ export default function TeacherRecordingsPage() {
             isLoading={isLoadingDirectory}
           />
         </div>
-        <div className="md:col-span-2">
+        <div className="min-w-0 sm:col-span-2 lg:col-span-1">
           <MultiSelectChipsDropdown
             label={tCommon('searchTypeStudent')}
             options={studentMultiOptions}
@@ -316,25 +394,27 @@ export default function TeacherRecordingsPage() {
             isLoading={isLoadingDirectory}
           />
         </div>
-        <div>
-          <StudentFieldLabel htmlFor="recordings-from">{tCommon('from')}</StudentFieldLabel>
-          <StudentInput
-            id="recordings-from"
-            type="date"
-            value={dateFrom}
-            max={dateTo || undefined}
-            onChange={(event) => setDateFrom(event.target.value)}
-          />
-        </div>
-        <div>
-          <StudentFieldLabel htmlFor="recordings-to">{tCommon('to')}</StudentFieldLabel>
-          <StudentInput
-            id="recordings-to"
-            type="date"
-            value={dateTo}
-            min={dateFrom || undefined}
-            onChange={(event) => setDateTo(event.target.value)}
-          />
+        <div className="grid min-w-0 grid-cols-2 gap-3 sm:contents">
+          <div className="min-w-0">
+            <StudentFieldLabel htmlFor="recordings-from">{tCommon('from')}</StudentFieldLabel>
+            <DatePickerInput
+              id="recordings-from"
+              value={dateFrom}
+              max={dateTo || undefined}
+              onValueChange={setDateFrom}
+              className={studentInputClass}
+            />
+          </div>
+          <div className="min-w-0">
+            <StudentFieldLabel htmlFor="recordings-to">{tCommon('to')}</StudentFieldLabel>
+            <DatePickerInput
+              id="recordings-to"
+              value={dateTo}
+              min={dateFrom || undefined}
+              onValueChange={setDateTo}
+              className={studentInputClass}
+            />
+          </div>
         </div>
       </div>
 
@@ -363,7 +443,74 @@ export default function TeacherRecordingsPage() {
         )}
       </div>
 
-      <StudentCard noPadding>
+      <div ref={cardsListStartRef} />
+      <div
+        className={cn(
+          isIPad ? 'grid grid-cols-2 gap-3' : 'space-y-3',
+          !isIPad && 'sm:hidden',
+        )}
+      >
+        {isLoading || isLoadingDirectory ? (
+          Array.from({ length: 4 }).map((_, idx) => (
+            <div
+              key={`mobile-skeleton-${idx}`}
+              className="rounded-2xl border border-[rgba(14,14,16,0.08)] bg-white p-4"
+            >
+              <div className="h-5 w-32 animate-pulse rounded bg-[#f6f6f7]" />
+              <div className="mt-2 h-4 w-40 animate-pulse rounded bg-[#f6f6f7]" />
+              <div className="mt-3 h-4 w-28 animate-pulse rounded bg-[#f6f6f7]" />
+              <div className="mt-4 h-9 w-32 animate-pulse rounded-lg bg-[#f6f6f7]" />
+            </div>
+          ))
+        ) : visibleRecordings.length === 0 ? (
+          <div className="rounded-2xl border border-[rgba(14,14,16,0.08)] bg-white px-4 py-10 text-center text-sm text-[#8b8b90]">
+            {t('noRecordingsForFilters')}
+          </div>
+        ) : (
+          paginatedRecordings.map((recording) => (
+            <article
+              key={`mobile-${recording.id}`}
+              className="rounded-2xl border border-[rgba(14,14,16,0.08)] bg-white px-4 py-3.5 shadow-[0_1px_2px_rgba(14,14,16,0.03)]"
+            >
+              <div className="min-w-0">
+                <p className="truncate text-[1.35rem] font-semibold leading-tight tracking-[-0.01em] text-[#1f2937]">
+                  {recording.group.name}
+                </p>
+                <p className="mt-1 truncate text-[1rem] text-[#3b3b40]">
+                  {getStudentFullName(recording)}
+                </p>
+                <div className="mt-2 flex items-start gap-2 text-[#8b8b90]">
+                  <svg
+                    className="mt-[2px] h-4 w-4 shrink-0"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    aria-hidden
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M8 7V3m8 4V3m-9 8h10m-11 9h12a2 2 0 002-2V7a2 2 0 00-2-2H6a2 2 0 00-2 2v11a2 2 0 002 2z"
+                    />
+                  </svg>
+                  <div className="text-[1.05rem] leading-snug">
+                    <p>{t('dateTime')}</p>
+                    <p className="text-[#3b3b40]">
+                      {formatDateTime(recording.createdAt)}
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div className="mt-3 flex justify-end">
+                {renderRecordingPlayback(recording)}
+              </div>
+            </article>
+          ))
+        )}
+      </div>
+
+      <StudentCard noPadding className={cn('hidden', !isIPad && 'sm:block')}>
         <div className="min-w-0 overflow-x-auto">
           <table className="w-full min-w-[48rem] text-sm">
             <thead className={cn(studentTableHeadClass, 'border-b border-[rgba(14,14,16,0.07)]')}>
@@ -410,7 +557,7 @@ export default function TeacherRecordingsPage() {
                   </td>
                 </tr>
               ) : (
-                visibleRecordings.map((recording) => {
+                paginatedRecordings.map((recording) => {
                   const isActive = activeRecordingId === recording.id;
                   return (
                     <tr key={recording.id} className="hover:bg-[#fafafa]/60 transition-colors">
@@ -458,6 +605,56 @@ export default function TeacherRecordingsPage() {
           </table>
         </div>
       </StudentCard>
+
+      {visibleRecordings.length > 0 && (
+        <div
+          className={cn(
+            'mt-4 flex items-center text-sm text-[#8b8b90]',
+            isIPad ? 'justify-start gap-4' : 'justify-between sm:justify-start sm:gap-4',
+          )}
+        >
+          <span>
+            Showing {rangeStart}-{rangeEnd} of {visibleRecordings.length}
+          </span>
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              className={cn(
+                'inline-flex h-10 w-10 items-center justify-center rounded-full border transition-colors',
+                safePage === 0
+                  ? 'border-[#d9dde8] bg-[#f1f1f4] text-[#9aa3b5]'
+                  : 'border-[rgba(14,14,16,0.12)] bg-white text-[#3b3b40] hover:bg-[#f6f6f7]',
+              )}
+              disabled={safePage === 0}
+              onClick={() => goToPage(Math.max(0, safePage - 1))}
+              aria-label="Previous page"
+            >
+              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+            <span className="inline-flex h-10 min-w-10 items-center justify-center rounded-full bg-[#1010a3] px-3 text-sm font-semibold text-white">
+              {safePage + 1}
+            </span>
+            <button
+              type="button"
+              className={cn(
+                'inline-flex h-10 w-10 items-center justify-center rounded-full border transition-colors',
+                safePage >= totalPages - 1
+                  ? 'border-[#d9dde8] bg-[#f1f1f4] text-[#9aa3b5]'
+                  : 'border-[rgba(14,14,16,0.12)] bg-white text-[#3b3b40] hover:bg-[#f6f6f7]',
+              )}
+              disabled={safePage >= totalPages - 1}
+              onClick={() => goToPage(Math.min(totalPages - 1, safePage + 1))}
+              aria-label="Next page"
+            >
+              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      )}
       </StudentPageStack>
     </DashboardLayout>
   );

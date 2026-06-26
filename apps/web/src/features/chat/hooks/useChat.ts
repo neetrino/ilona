@@ -1,8 +1,16 @@
 'use client';
 
 import React from 'react';
-import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from '@tanstack/react-query';
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+  useInfiniteQuery,
+  type QueryClient,
+} from '@tanstack/react-query';
 import { useAuthStore } from '@/features/auth/store/auth.store';
+import { sortChatListItems, type ChatListSortable } from '../utils/chat-utils';
+import type { Chat, Message, MessageType } from '../types';
 import {
   fetchChats,
   fetchChat,
@@ -20,7 +28,12 @@ import {
   fetchTeacherStudents,
   fetchTeacherAdmin,
   fetchStudentAdmin,
+  type TeacherGroup,
+  type TeacherStudent,
+  type TeacherAdmin,
+  type StudentAdmin,
 } from '../api/chat.api';
+import { useChatStore } from '../store/chat.store';
 
 // Query keys
 export const chatKeys = {
@@ -43,6 +56,161 @@ export const chatKeys = {
   // Student chat lists
   studentAdmin: () => [...chatKeys.all, 'student', 'admin'] as const,
 };
+
+type MessagesInfiniteData = {
+  pages: { items: Message[]; hasMore?: boolean; nextCursor?: string | null }[];
+};
+
+export const PENDING_MESSAGE_ID_PREFIX = 'pending-';
+
+export function isPendingMessageId(messageId: string): boolean {
+  return messageId.startsWith(PENDING_MESSAGE_ID_PREFIX);
+}
+
+export function createOptimisticTextMessage(params: {
+  clientId: string;
+  chatId: string;
+  content: string;
+  type: MessageType;
+  senderId: string;
+  sender?: Message['sender'];
+}): Message {
+  const now = new Date().toISOString();
+
+  return {
+    id: params.clientId,
+    chatId: params.chatId,
+    senderId: params.senderId,
+    sender: params.sender,
+    type: params.type,
+    content: params.content,
+    isEdited: false,
+    createdAt: now,
+    updatedAt: now,
+    metadata: { pending: true },
+  };
+}
+
+function updateChatListForMessage(
+  queryClient: QueryClient,
+  chatId: string,
+  message: Message,
+) {
+  queryClient.setQueryData(chatKeys.list(), (oldData: Chat[] | undefined) => {
+    if (!oldData) return oldData;
+
+    const now = new Date().toISOString();
+    const lastMessageAt = message.createdAt || now;
+    const { user } = useAuthStore.getState();
+    const isFromOtherUser = message.senderId !== user?.id;
+
+    return sortChatListItems(
+      oldData.map((chat) => {
+        if (chat.id !== chatId) return chat;
+
+        return {
+          ...chat,
+          lastMessage: message,
+          lastMessageAt,
+          updatedAt: now,
+          unreadCount: isFromOtherUser ? (chat.unreadCount || 0) + 1 : chat.unreadCount,
+        };
+      }),
+      (chat) => ({
+        lastMessage: chat.lastMessage as ChatListSortable['lastMessage'],
+        lastMessageAt: chat.lastMessageAt,
+        updatedAt: chat.updatedAt,
+        unreadCount: chat.unreadCount,
+      }),
+    );
+  });
+}
+
+function appendMessageToMessagesCache(
+  pages: MessagesInfiniteData['pages'],
+  message: Message,
+  removeMatchingPending = false,
+): MessagesInfiniteData['pages'] {
+  const withoutPending = removeMatchingPending
+    ? pages.map((page) => ({
+        ...page,
+        items: page.items.filter(
+          (item) =>
+            !isPendingMessageId(item.id) ||
+            item.senderId !== message.senderId ||
+            item.content !== message.content,
+        ),
+      }))
+    : pages;
+
+  const exists = withoutPending.some((page) =>
+    page.items.some((item) => item.id === message.id),
+  );
+  if (exists) return withoutPending;
+
+  return withoutPending.map((page, index) =>
+    index === 0 ? { ...page, items: [...page.items, message] } : page,
+  );
+}
+
+export function pushMessageToCache(
+  queryClient: QueryClient,
+  chatId: string,
+  message: Message,
+) {
+  queryClient.setQueryData(
+    chatKeys.messages(chatId),
+    (oldData: MessagesInfiniteData | undefined) => {
+      if (!oldData) return oldData;
+
+      return {
+        ...oldData,
+        pages: appendMessageToMessagesCache(oldData.pages, message),
+      };
+    },
+  );
+  updateChatListForMessage(queryClient, chatId, message);
+}
+
+export function upsertIncomingMessageInCache(
+  queryClient: QueryClient,
+  chatId: string,
+  message: Message,
+) {
+  queryClient.setQueryData(
+    chatKeys.messages(chatId),
+    (oldData: MessagesInfiniteData | undefined) => {
+      if (!oldData) return oldData;
+
+      return {
+        ...oldData,
+        pages: appendMessageToMessagesCache(oldData.pages, message, true),
+      };
+    },
+  );
+  updateChatListForMessage(queryClient, chatId, message);
+}
+
+export function removeMessageFromMessagesCache(
+  queryClient: QueryClient,
+  chatId: string,
+  messageId: string,
+) {
+  queryClient.setQueryData(
+    chatKeys.messages(chatId),
+    (oldData: MessagesInfiniteData | undefined) => {
+      if (!oldData) return oldData;
+
+      return {
+        ...oldData,
+        pages: oldData.pages.map((page) => ({
+          ...page,
+          items: page.items.filter((item) => item.id !== messageId),
+        })),
+      };
+    },
+  );
+}
 
 /**
  * Hook to fetch all chats
@@ -104,76 +272,7 @@ export function useAddMessageToCache() {
   const queryClient = useQueryClient();
 
   return (chatId: string, message: unknown) => {
-    const msg = message as { id?: string };
-    // Update messages cache (idempotent: skip if already present, e.g. already added via socket)
-    queryClient.setQueryData(
-      chatKeys.messages(chatId),
-      (oldData: { pages: { items: unknown[] }[] } | undefined) => {
-        if (!oldData) return oldData;
-        const exists = msg.id && oldData.pages.some((page) =>
-          page.items.some((m) => (m as { id?: string }).id === msg.id)
-        );
-        if (exists) return oldData;
-
-        return {
-          ...oldData,
-          pages: oldData.pages.map((page, index) => {
-            if (index === 0) {
-              return {
-                ...page,
-                items: [...page.items, message],
-              };
-            }
-            return page;
-          }),
-        };
-      }
-    );
-
-    // Update chat list cache with new lastMessage and lastMessageAt
-    // This prevents unnecessary refetches and keeps the conversation at the top
-    queryClient.setQueryData(
-      chatKeys.list(),
-      (oldData: Array<{ id: string; lastMessage?: unknown; lastMessageAt?: string; unreadCount?: number; updatedAt: string }> | undefined) => {
-        if (!oldData) return oldData;
-
-        const messageWithDate = message as { createdAt: string; senderId?: string };
-        const now = new Date().toISOString();
-        const lastMessageAt = messageWithDate?.createdAt || now;
-
-        // Get current user to check if message is from another user
-        const { user } = useAuthStore.getState();
-        const isFromOtherUser = messageWithDate?.senderId && messageWithDate.senderId !== user?.id;
-
-        return oldData.map((chat) => {
-          if (chat.id === chatId) {
-            // Update lastMessage, lastMessageAt, and updatedAt
-            // Also increment unreadCount if message is from another user
-            const newUnreadCount = isFromOtherUser 
-              ? (chat.unreadCount || 0) + 1 
-              : chat.unreadCount;
-
-            return {
-              ...chat,
-              lastMessage: message,
-              lastMessageAt,
-              updatedAt: now,
-              unreadCount: newUnreadCount,
-            };
-          }
-          return chat;
-        }).sort((a, b) => {
-          // Re-sort by lastMessageAt (newest first)
-          const aTime = a.lastMessageAt 
-            ? new Date(a.lastMessageAt).getTime()
-            : (a.lastMessage && typeof a.lastMessage === 'object' && 'createdAt' in a.lastMessage ? new Date((a.lastMessage as { createdAt: string }).createdAt).getTime() : new Date(a.updatedAt).getTime());
-          const bTime = b.lastMessageAt 
-            ? new Date(b.lastMessageAt).getTime()
-            : (b.lastMessage && typeof b.lastMessage === 'object' && 'createdAt' in b.lastMessage ? new Date((b.lastMessage as { createdAt: string }).createdAt).getTime() : new Date(b.updatedAt).getTime());
-          return bTime - aTime; // DESC order
-        });
-      }
-    );
+    upsertIncomingMessageInCache(queryClient, chatId, message as Message);
   };
 }
 
@@ -210,21 +309,61 @@ export function useRemoveMessageFromCache() {
   const queryClient = useQueryClient();
 
   return (chatId: string, messageId: string) => {
-    queryClient.setQueryData(
-      chatKeys.messages(chatId),
-      (oldData: { pages: { items: { id: string }[] }[] } | undefined) => {
-        if (!oldData) return oldData;
-
-        return {
-          ...oldData,
-          pages: oldData.pages.map((page) => ({
-            ...page,
-            items: page.items.filter((msg) => msg.id !== messageId),
-          })),
-        };
-      }
-    );
+    removeMessageFromMessagesCache(queryClient, chatId, messageId);
   };
+}
+
+/**
+ * Clear unread badge for a chat across all React Query caches (main list, teacher
+ * groups/students/admin, student admin). Call when the user opens a conversation.
+ */
+export function clearChatUnreadInCache(queryClient: QueryClient, chatId: string): void {
+  queryClient.setQueryData(chatKeys.list(), (oldData: Chat[] | undefined) => {
+    if (!oldData) return oldData;
+    return oldData.map((chat) =>
+      chat.id === chatId ? { ...chat, unreadCount: 0 } : chat
+    );
+  });
+
+  queryClient.setQueryData(chatKeys.detail(chatId), (oldData: Chat | undefined) => {
+    if (!oldData) return oldData;
+    return { ...oldData, unreadCount: 0 };
+  });
+
+  queryClient.setQueriesData<TeacherGroup[]>(
+    { queryKey: [...chatKeys.all, 'teacher', 'groups'] },
+    (oldData) => {
+      if (!oldData) return oldData;
+      return oldData.map((group) =>
+        group.chatId === chatId ? { ...group, unreadCount: 0 } : group
+      );
+    }
+  );
+
+  queryClient.setQueriesData<TeacherStudent[]>(
+    { queryKey: [...chatKeys.all, 'teacher', 'students'] },
+    (oldData) => {
+      if (!oldData) return oldData;
+      return oldData.map((student) =>
+        student.chatId === chatId ? { ...student, unreadCount: 0 } : student
+      );
+    }
+  );
+
+  queryClient.setQueryData(chatKeys.teacherAdmin(), (oldData: TeacherAdmin | null | undefined) => {
+    if (!oldData || oldData.chatId !== chatId) return oldData;
+    return { ...oldData, unreadCount: 0 };
+  });
+
+  queryClient.setQueryData(chatKeys.studentAdmin(), (oldData: StudentAdmin | null | undefined) => {
+    if (!oldData || oldData.chatId !== chatId) return oldData;
+    return { ...oldData, unreadCount: 0 };
+  });
+
+  const { activeChat, setActiveChat } = useChatStore.getState();
+  if (activeChat?.id === chatId) {
+    setActiveChat({ ...activeChat, unreadCount: 0 });
+  }
 }
 
 /**
@@ -235,7 +374,11 @@ export function useUpdateChatUnreadCount() {
   const queryClient = useQueryClient();
 
   return (chatId: string, unreadCount: number) => {
-    // Update the chat list cache
+    if (unreadCount === 0) {
+      clearChatUnreadInCache(queryClient, chatId);
+      return;
+    }
+
     queryClient.setQueryData(
       chatKeys.list(),
       (oldData: Array<{ id: string; unreadCount?: number }> | undefined) => {

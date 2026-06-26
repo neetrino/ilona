@@ -105,8 +105,8 @@ export function TeacherDashboardStatCards({
         }
         caption={t('teacherStats.pendingCaption')}
         progress={pendingPct}
-        iconSrc={STUDENT_DASHBOARD_ASSETS.calendarIcon}
-        iconBg="bg-[#ffe1e1]"
+        iconSrc={STUDENT_DASHBOARD_ASSETS.iconPending}
+        iconBg="bg-[#fff0d6]"
       />
       <PortalDashboardStatCard
         label={t('teacherStats.vocabulary')}
@@ -115,7 +115,7 @@ export function TeacherDashboardStatCards({
             <span className="text-[2.375rem] font-bold leading-none tracking-[-0.03em] text-[#1010a3]">
               {vocabularySent}
             </span>
-            <span className="pb-1 text-sm font-medium text-[#8b8b90]">/ {todayLessonsCount}</span>
+            <span className="text-sm font-medium text-[#8b8b90]">/ {todayLessonsCount}</span>
           </>
         }
         badge={

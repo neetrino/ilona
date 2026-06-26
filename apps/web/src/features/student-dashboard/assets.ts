@@ -8,5 +8,6 @@ export const STUDENT_DASHBOARD_ASSETS = {
   iconAttendance: '/student-dashboard/icon-attendance.svg',
   iconBook: '/student-dashboard/icon-book.svg',
   iconCard: '/student-dashboard/icon-card.svg',
+  iconPending: '/student-dashboard/icon-pending.svg',
   fireIcon: '/student-dashboard/fire-icon.svg',
 } as const;

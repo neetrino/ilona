@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { useTeacherGroups, useTeacherStudents, useTeacherAdmin, useSocket, useCreateDirectChat, useTeacherUnreadCounts, useCustomGroupChats, useChats } from '../hooks';
@@ -10,7 +10,7 @@ import type { Chat } from '../types';
 import { cn } from '@/shared/lib/utils';
 import { ApiError } from '@/shared/lib/api';
 import { formatMessagePreview } from '../utils';
-import { formatChatListTime } from '../utils/chat-utils';
+import { formatChatListTime, sortChatListItems, type ChatListSortable } from '../utils/chat-utils';
 import { Badge } from '@/shared/components/ui/badge';
 import Image from 'next/image';
 import { formatDisplayName, getInitialsFromParts } from '@/shared/components/ui/avatar';
@@ -62,10 +62,86 @@ export function TeacherChatList({ onSelectChat }: TeacherChatListProps) {
   const createDirectChat = useCreateDirectChat();
 
   // Socket for online status
-  const { isConnected, isUserOnline } = useSocket();
+  const { isUserOnline } = useSocket();
 
   const formatTime = (dateStr?: string) =>
     formatChatListTime(dateStr, locale, tChat('yesterday'));
+
+  const getChatSortMeta = useCallback((chatId: string | null | undefined): ChatListSortable => {
+    if (!chatId) {
+      return { unreadCount: 0 };
+    }
+    const chat = allChats.find((item) => item.id === chatId);
+    if (!chat) {
+      return { unreadCount: 0 };
+    }
+    return {
+      lastMessage: chat.lastMessage,
+      lastMessageAt: chat.lastMessageAt,
+      updatedAt: chat.updatedAt,
+      unreadCount: chat.unreadCount,
+    };
+  }, [allChats]);
+
+  const sortedGroupItems = useMemo(() => {
+    const query = searchQuery.toLowerCase();
+    type GroupItem =
+      | { kind: 'custom'; chat: (typeof customGroupChats)[number] }
+      | { kind: 'class'; group: (typeof groups)[number] };
+
+    const items: Array<{ entry: GroupItem; sort: ChatListSortable }> = [];
+
+    for (const chat of customGroupChats) {
+      if (query && !(chat.name || '').toLowerCase().includes(query)) continue;
+      const chatMeta = getChatSortMeta(chat.id);
+      items.push({
+        entry: { kind: 'custom', chat },
+        sort: {
+          ...chatMeta,
+          lastMessage: chatMeta.lastMessage ?? chat.lastMessage ?? null,
+          updatedAt: chat.updatedAt,
+        },
+      });
+    }
+
+    for (const group of groups) {
+      if (
+        query &&
+        !group.name.toLowerCase().includes(query) &&
+        !group.level?.toLowerCase().includes(query)
+      ) {
+        continue;
+      }
+      const chatMeta = group.chatId ? getChatSortMeta(group.chatId) : { unreadCount: 0 };
+      items.push({
+        entry: { kind: 'class', group },
+        sort: {
+          lastMessage: chatMeta.lastMessage ?? group.lastMessage ?? null,
+          lastMessageAt: chatMeta.lastMessageAt,
+          updatedAt: chatMeta.updatedAt ?? group.updatedAt,
+          unreadCount: chatMeta.unreadCount ?? group.unreadCount ?? 0,
+        },
+      });
+    }
+
+    return sortChatListItems(items, (item) => item.sort).map((item) => item.entry);
+  }, [customGroupChats, groups, searchQuery, getChatSortMeta]);
+
+  const sortedStudents = useMemo(
+    () =>
+      sortChatListItems(students, (student) => {
+        const chatMeta = student.chatId
+          ? getChatSortMeta(student.chatId)
+          : { unreadCount: 0 };
+        return {
+          lastMessage: chatMeta.lastMessage ?? student.lastMessage ?? null,
+          lastMessageAt: chatMeta.lastMessageAt,
+          updatedAt: chatMeta.updatedAt ?? student.updatedAt,
+          unreadCount: chatMeta.unreadCount ?? student.unreadCount ?? 0,
+        };
+      }),
+    [students, getChatSortMeta],
+  );
 
   // Handle group click - fetch group chat
   const handleGroupClick = async (groupId: string, chatId: string | null) => {
@@ -132,134 +208,110 @@ export function TeacherChatList({ onSelectChat }: TeacherChatListProps) {
   const hasData = activeTab === 'admin' ? hasAdmin :
                   activeTab === 'groups' ? (groups.length > 0 || customGroupChats.length > 0) : students.length > 0;
 
+  const tabButtonClass = (tab: 'admin' | 'groups' | 'students') =>
+    cn(
+      'flex w-full min-w-0 items-center justify-center gap-1.5 rounded-full px-3 py-2.5 text-sm font-medium transition-colors',
+      'sm:relative sm:gap-0 sm:px-1.5 sm:py-2.5 sm:text-center sm:text-xs lg:text-sm',
+      activeTab === tab
+        ? 'bg-[#e8eaf6] text-[#1010a3]'
+        : 'bg-[#f6f6f7] text-[#8b8b90] hover:bg-[#ececec]',
+    );
+
+  const tabUnreadBadgeClass =
+    'flex h-4 min-w-[18px] shrink-0 items-center justify-center px-1 text-xs sm:absolute sm:-right-0.5 sm:-top-0.5 sm:min-w-[16px] sm:px-0.5 sm:text-[10px] sm:leading-none';
+
+  const renderTabBar = () => (
+    <div className="mx-auto grid w-full max-w-full grid-cols-3 gap-2 sm:gap-1.5">
+      <button
+        type="button"
+        onClick={() => {
+          setActiveTab('groups');
+          setSearchQuery('');
+        }}
+        className={tabButtonClass('groups')}
+      >
+        <span className="sm:px-0.5">{tChat('groups')}</span>
+        {unreadCounts.groups > 0 && (
+          <Badge variant="error" className={tabUnreadBadgeClass}>
+            {unreadCounts.groups}
+          </Badge>
+        )}
+      </button>
+      <button
+        type="button"
+        onClick={() => {
+          setActiveTab('students');
+          setSearchQuery('');
+        }}
+        className={tabButtonClass('students')}
+      >
+        <span className="sm:px-0.5">{tChat('students')}</span>
+        {unreadCounts.students > 0 && (
+          <Badge variant="error" className={tabUnreadBadgeClass}>
+            {unreadCounts.students}
+          </Badge>
+        )}
+      </button>
+      <button
+        type="button"
+        onClick={() => {
+          setActiveTab('admin');
+          setSearchQuery('');
+        }}
+        className={tabButtonClass('admin')}
+      >
+        <span className="sm:px-0.5">{tChat('admin')}</span>
+        {unreadCounts.admin > 0 && (
+          <Badge variant="error" className={tabUnreadBadgeClass}>
+            {unreadCounts.admin}
+          </Badge>
+        )}
+      </button>
+    </div>
+  );
+
   return (
-    <div className="flex flex-col h-full">
-      {/* Header */}
-      <div className="p-4 border-b border-slate-200">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-slate-800">{tChat('messages')}</h2>
-          {/* Connection status */}
-          <div
-            className={cn(
-              'flex items-center gap-1.5 px-2 py-1 rounded-full text-xs',
-              isConnected 
-                ? 'bg-green-100 text-green-700' 
-                : 'bg-red-100 text-red-700'
-            )}
-            title={isConnected ? tChat('connected') : tChat('disconnected')}
-          >
-            <div
-              className={cn(
-                'w-2 h-2 rounded-full',
-                isConnected ? 'bg-green-500' : 'bg-red-500'
-              )}
-            />
-            {isConnected ? tChat('online') : tChat('offline')}
+    <div className="flex min-h-0 flex-1 flex-col overflow-hidden bg-white">
+      <div className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain [touch-action:pan-y] [-webkit-overflow-scrolling:touch]">
+        <div className="sticky top-0 z-20 bg-white">
+          <div className="overflow-x-hidden border-b border-[rgba(14,14,16,0.07)] px-3 py-3">
+            {renderTabBar()}
+          </div>
+          <div className="border-b border-[rgba(14,14,16,0.07)] px-3 pb-3 pt-2">
+            <div className="relative">
+              <svg
+                className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#8b8b90]"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                aria-hidden
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                />
+              </svg>
+              <input
+                type="search"
+                placeholder={
+                  activeTab === 'admin'
+                    ? tChat('searchAdmin')
+                    : activeTab === 'groups'
+                      ? tChat('searchGroups')
+                      : tChat('searchStudents')
+                }
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full rounded-[0.875rem] border border-[rgba(14,14,16,0.07)] bg-white py-2 pl-9 pr-4 text-[16px] text-[#3b3b40] placeholder:text-[#8b8b90] focus:border-[#1010a3] focus:outline-none focus:ring-2 focus:ring-[#1010a3]/15 lg:text-sm"
+              />
+            </div>
           </div>
         </div>
 
-        {/* Tabs */}
-        <div className="flex gap-2 mb-4">
-          <button
-            onClick={() => {
-              setActiveTab('groups');
-              setSearchQuery(''); // Clear search when switching tabs
-            }}
-            className={cn(
-              'px-3 py-1.5 text-sm font-medium rounded-lg transition-colors flex items-center gap-2',
-              activeTab === 'groups'
-                ? 'bg-primary/20 text-primary'
-                : 'text-slate-600 hover:bg-slate-100'
-            )}
-          >
-            {tChat('groups')}
-            {unreadCounts.groups > 0 && (
-              <Badge 
-                variant="error" 
-                className={cn(
-                  "min-w-[20px] h-5 flex items-center justify-center px-1.5",
-                  activeTab === 'groups' && "bg-red-500 text-white"
-                )}
-              >
-                {unreadCounts.groups}
-              </Badge>
-            )}
-          </button>
-          <button
-            onClick={() => {
-              setActiveTab('students');
-              setSearchQuery(''); // Clear search when switching tabs
-            }}
-            className={cn(
-              'px-3 py-1.5 text-sm font-medium rounded-lg transition-colors flex items-center gap-2',
-              activeTab === 'students'
-                ? 'bg-primary/20 text-primary'
-                : 'text-slate-600 hover:bg-slate-100'
-            )}
-          >
-            {tChat('students')}
-            {unreadCounts.students > 0 && (
-              <Badge 
-                variant="error" 
-                className={cn(
-                  "min-w-[20px] h-5 flex items-center justify-center px-1.5",
-                  activeTab === 'students' && "bg-red-500 text-white"
-                )}
-              >
-                {unreadCounts.students}
-              </Badge>
-            )}
-          </button>
-          <button
-            onClick={() => {
-              setActiveTab('admin');
-              setSearchQuery(''); // Clear search when switching tabs
-            }}
-            className={cn(
-              'px-3 py-1.5 text-sm font-medium rounded-lg transition-colors flex items-center gap-2',
-              activeTab === 'admin'
-                ? 'bg-primary/20 text-primary'
-                : 'text-slate-600 hover:bg-slate-100'
-            )}
-          >
-            {tChat('admin')}
-            {unreadCounts.admin > 0 && (
-              <Badge 
-                variant="error" 
-                className={cn(
-                  "min-w-[20px] h-5 flex items-center justify-center px-1.5",
-                  activeTab === 'admin' && "bg-red-500 text-white"
-                )}
-              >
-                {unreadCounts.admin}
-              </Badge>
-            )}
-          </button>
-        </div>
-
-        {/* Search */}
-        <div className="relative">
-          <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
-          <input
-            type="search"
-            placeholder={
-              activeTab === 'admin'
-                ? tChat('searchAdmin')
-                : activeTab === 'groups'
-                  ? tChat('searchGroups')
-                  : tChat('searchStudents')
-            }
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 bg-slate-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
-          />
-        </div>
-      </div>
-
-      {/* Content */}
-      <div className="flex-1 overflow-y-auto">
+        {/* Content */}
+        <div>
         {isLoading ? (
           <div className="p-4 space-y-3">
             {[1, 2, 3].map((i) => (
@@ -382,61 +434,66 @@ export function TeacherChatList({ onSelectChat }: TeacherChatListProps) {
             </div>
           ) : null
         ) : activeTab === 'groups' ? (
-          // Groups list: custom group chats first, then assigned class groups
-          <>
-            {customGroupChats
-              .filter((c) => !searchQuery || (c.name || '').toLowerCase().includes(searchQuery.toLowerCase()))
-              .map((chat) => {
-                const fullChat = allChats.find((c) => c.id === chat.id);
-                const unread = fullChat?.unreadCount ?? 0;
-                const lastMsg = fullChat?.lastMessage ?? chat.lastMessage;
-                const isActive = activeChat?.type === 'GROUP' && !activeChat?.groupId && activeChat?.id === chat.id;
-                return (
-                  <button
-                    key={chat.id}
-                    onClick={() => onSelectChat(fullChat || chat)}
-                    className={cn(
-                      'w-full p-4 flex items-start gap-3 hover:bg-slate-50 transition-colors text-left',
-                      isActive && 'bg-primary/10 hover:bg-primary/10'
-                    )}
-                  >
-                    <div className="relative">
-                      <div className="w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold bg-gradient-to-br from-purple-500 to-purple-600">
-                        {(chat.name || 'Group')[0]}
-                      </div>
+          sortedGroupItems.map((item) => {
+            if (item.kind === 'custom') {
+              const chat = item.chat;
+              const fullChat = allChats.find((c) => c.id === chat.id);
+              const unread = fullChat?.unreadCount ?? 0;
+              const lastMsg = fullChat?.lastMessage ?? chat.lastMessage;
+              const isActive =
+                activeChat?.type === 'GROUP' &&
+                !activeChat?.groupId &&
+                activeChat?.id === chat.id;
+              return (
+                <button
+                  key={chat.id}
+                  onClick={() => onSelectChat(fullChat || chat)}
+                  className={cn(
+                    'w-full p-4 flex items-start gap-3 hover:bg-slate-50 transition-colors text-left',
+                    isActive && 'bg-primary/10 hover:bg-primary/10',
+                  )}
+                >
+                  <div className="relative">
+                    <div className="w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold bg-gradient-to-br from-purple-500 to-purple-600">
+                      {(chat.name || 'Group')[0]}
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between mb-1">
-                        <h3 className={cn('font-medium truncate', unread > 0 ? 'text-slate-900' : 'text-slate-700')}>
-                          {chat.name || tChat('groupChatLabel')}
-                        </h3>
-                        <span className="text-xs text-slate-500 flex-shrink-0">
-                          {formatTime(lastMsg?.createdAt || chat.updatedAt)}
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <p className={cn('text-sm truncate', unread > 0 ? 'text-slate-700 font-medium' : 'text-slate-500')}>
-                          {formatMessagePreview(lastMsg, messagePreviewLabels)}
-                        </p>
-                        {unread > 0 && (
-                          <span className="ml-2 px-2 py-0.5 bg-primary text-primary-foreground text-xs rounded-full flex-shrink-0">
-                            {unread}
-                          </span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between mb-1">
+                      <h3
+                        className={cn(
+                          'font-medium truncate',
+                          unread > 0 ? 'text-slate-900' : 'text-slate-700',
                         )}
-                      </div>
-                      <p className="text-xs text-slate-400 mt-1">{tChat('groupChatLabel')}</p>
+                      >
+                        {chat.name || tChat('groupChatLabel')}
+                      </h3>
+                      <span className="text-xs text-slate-500 flex-shrink-0">
+                        {formatTime(lastMsg?.createdAt || chat.updatedAt)}
+                      </span>
                     </div>
-                  </button>
-                );
-              })}
-            {groups
-              .filter(
-                (g) =>
-                  !searchQuery ||
-                  g.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                  g.level?.toLowerCase().includes(searchQuery.toLowerCase())
-              )
-              .map((group) => {
+                    <div className="flex items-center justify-between">
+                      <p
+                        className={cn(
+                          'text-sm truncate',
+                          unread > 0 ? 'text-slate-700 font-medium' : 'text-slate-500',
+                        )}
+                      >
+                        {formatMessagePreview(lastMsg, messagePreviewLabels)}
+                      </p>
+                      {unread > 0 && (
+                        <span className="ml-2 px-2 py-0.5 bg-primary text-primary-foreground text-xs rounded-full flex-shrink-0">
+                          {unread}
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs text-slate-400 mt-1">{tChat('groupChatLabel')}</p>
+                  </div>
+                </button>
+              );
+            }
+
+            const group = item.group;
             const isActive = activeChat?.groupId === group.id;
             const unread = Math.max(0, Number(group.unreadCount) || 0);
             const total = Math.max(0, Number(group.messageCount) || 0);
@@ -451,27 +508,30 @@ export function TeacherChatList({ onSelectChat }: TeacherChatListProps) {
                 onClick={() => handleGroupClick(group.id, group.chatId)}
                 className={cn(
                   'w-full p-4 flex items-start gap-3 hover:bg-slate-50 transition-colors text-left',
-                  isActive && 'bg-primary/10 hover:bg-primary/10'
+                  isActive && 'bg-primary/10 hover:bg-primary/10',
                 )}
               >
-                {/* Avatar */}
                 <div className="relative flex-shrink-0">
                   <div className="w-12 h-12 rounded-full flex items-center justify-center text-white font-semibold bg-gradient-to-br from-purple-500 to-purple-600">
                     {GroupListIcon ? (
-                      <GroupListIcon className="text-white" size={24} strokeWidth={1.75} aria-hidden />
+                      <GroupListIcon
+                        className="text-white"
+                        size={24}
+                        strokeWidth={1.75}
+                        aria-hidden
+                      />
                     ) : (
                       group.name[0]
                     )}
                   </div>
                 </div>
 
-                {/* Content: group name as primary, last message + count badge */}
                 <div className="flex-1 min-w-0 flex flex-col gap-0.5">
                   <div className="flex items-center gap-2 min-w-0">
                     <h3
                       className={cn(
                         'font-medium truncate flex-1 min-w-0',
-                        hasUnread ? 'text-slate-900' : 'text-slate-700'
+                        hasUnread ? 'text-slate-900' : 'text-slate-700',
                       )}
                       title={group.name}
                     >
@@ -485,7 +545,7 @@ export function TeacherChatList({ onSelectChat }: TeacherChatListProps) {
                     <p
                       className={cn(
                         'text-sm truncate flex-1 min-w-0',
-                        hasUnread ? 'text-slate-700 font-medium' : 'text-slate-500'
+                        hasUnread ? 'text-slate-700 font-medium' : 'text-slate-500',
                       )}
                     >
                       {formatMessagePreview(group.lastMessage, messagePreviewLabels)}
@@ -500,16 +560,17 @@ export function TeacherChatList({ onSelectChat }: TeacherChatListProps) {
                     )}
                   </div>
                   <p className="text-xs text-slate-400 mt-0.5">
-                    {group.level ? tChat('classGroupWithLevel', { level: group.level }) : tChat('classGroup')}
+                    {group.level
+                      ? tChat('classGroupWithLevel', { level: group.level })
+                      : tChat('classGroup')}
                   </p>
                 </div>
               </button>
             );
-          })}
-          </>
+          })
         ) : (
           // Students list
-          students.map((student) => {
+          sortedStudents.map((student) => {
             const isActive = activeChat?.id === student.chatId;
             const hasUnread = (student.unreadCount || 0) > 0;
             const isOnline = student.chatId
@@ -593,6 +654,7 @@ export function TeacherChatList({ onSelectChat }: TeacherChatListProps) {
             );
           })
         )}
+        </div>
       </div>
     </div>
   );

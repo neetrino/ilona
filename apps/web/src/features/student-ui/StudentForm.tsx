@@ -1,9 +1,11 @@
 'use client';
 
-import type { ReactNode, SelectHTMLAttributes, InputHTMLAttributes } from 'react';
+import type { ReactNode, InputHTMLAttributes } from 'react';
 import { cn } from '@/shared/lib/utils';
-import { studentLabelClass, studentInputClass, studentSelectClass } from './tokens';
+import { studentLabelClass, studentInputClass } from './tokens';
 import { DatePickerInput } from '@/shared/components/ui';
+import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
+import type { DatePickerInputProps } from '@/shared/components/ui/date-picker-input';
 
 export function StudentFieldLabel({
   htmlFor,
@@ -27,20 +29,64 @@ export function StudentInput({
   ...props
 }: InputHTMLAttributes<HTMLInputElement>) {
   if (type === 'date') {
-    return <DatePickerInput className={cn(studentInputClass, className)} {...props} />;
+    return <StudentDatePicker className={className} {...props} />;
   }
   return <input className={cn(studentInputClass, className)} {...props} />;
 }
 
-export function StudentSelect({
+export function StudentDatePicker({
   className,
-  children,
   ...props
-}: SelectHTMLAttributes<HTMLSelectElement>) {
+}: Omit<DatePickerInputProps, 'popoverExpanded'>) {
   return (
-    <select className={cn('unified-native-select', studentSelectClass, className)} {...props}>
-      {children}
-    </select>
+    <DatePickerInput
+      popoverExpanded
+      className={cn(studentInputClass, className)}
+      {...props}
+    />
+  );
+}
+
+export type StudentSelectOption = {
+  value: string;
+  label: string;
+};
+
+export type StudentSelectProps = {
+  id?: string;
+  value: string;
+  onChange: (value: string) => void;
+  options: StudentSelectOption[];
+  placeholder?: string;
+  disabled?: boolean;
+  className?: string;
+  allowClear?: boolean;
+  isLoading?: boolean;
+};
+
+export function StudentSelect({
+  id,
+  value,
+  onChange,
+  options,
+  placeholder = 'Select...',
+  disabled = false,
+  className,
+  allowClear = false,
+  isLoading = false,
+}: StudentSelectProps) {
+  return (
+    <SingleSelectDropdown
+      id={id}
+      options={options.map((option) => ({ id: option.value, label: option.label }))}
+      value={value || null}
+      onValueChange={(next) => onChange(next ?? '')}
+      placeholder={placeholder}
+      disabled={disabled}
+      isLoading={isLoading}
+      allowDeselect={allowClear}
+      className={className}
+    />
   );
 }
 

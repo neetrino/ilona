@@ -18,7 +18,7 @@ export function PortalSidebarCollapseToggle({
       type="button"
       onClick={onToggle}
       className={cn(
-        'shrink-0 rounded-lg p-1.5 text-[#8b8b90] transition-colors hover:bg-[#f6f6f7] hover:text-[#242427]',
+        'shrink-0 rounded-lg p-1.5 text-[#8b8b90] transition-[color,background-color,transform] duration-300 ease-in-out hover:bg-[#f6f6f7] hover:text-[#242427] motion-reduce:transition-none',
         className,
       )}
       aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}

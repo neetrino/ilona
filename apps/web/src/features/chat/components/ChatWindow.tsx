@@ -9,6 +9,7 @@ import {
   useAddMessageToCache,
   useCreateDirectChat,
   useChatMessageNavigation,
+  isPendingMessageId,
 } from '../hooks';
 import { useChatStore } from '../store/chat.store';
 import type { Chat } from '../types';
@@ -237,25 +238,14 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
   markAsReadRef.current = markAsRead;
 
   useEffect(() => {
-    // Mark as read if:
-    // 1. chat.id exists
-    // 2. conversationId changed (not the same conversation)
-    // 3. Messages query has finished loading (either loaded messages or confirmed empty)
-    // 4. We haven't already marked this conversation as read
-    // Note: markAsRead will use HTTP fallback if socket is not connected
-    if (
-      chat.id &&
-      chat.id !== lastMarkedConversationIdRef.current &&
-      !isLoading // Wait for messages to finish loading (even if empty)
-    ) {
-      lastMarkedConversationIdRef.current = chat.id;
-      markAsReadRef.current(chat.id).catch((error) => {
-        console.error('[ChatWindow] Failed to mark as read:', error);
-        // Don't reset ref on error - only reset if chat actually changes
-        // This prevents infinite retry loops
-      });
-    }
-  }, [chat.id, isLoading]);
+    // Mark as read when the conversation is opened (user has entered the chat).
+    if (!chat.id || chat.id === lastMarkedConversationIdRef.current) return;
+
+    lastMarkedConversationIdRef.current = chat.id;
+    markAsReadRef.current(chat.id).catch((error) => {
+      console.error('[ChatWindow] Failed to mark as read:', error);
+    });
+  }, [chat.id]);
 
   // Reset input value when chat changes - only load user's own draft, never from messages
   useEffect(() => {
@@ -521,19 +511,20 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
   };
 
   // Handle send
-  const handleSend = useCallback(async () => {
+  const handleSend = useCallback(() => {
     const content = inputValue.trim();
-    if (!content) return; // Allow sending even if socket is not connected (will use HTTP fallback)
+    if (!content) return;
 
     setInputValue('');
     clearDraft(chat.id);
     stopTyping(chat.id);
 
-    const result = await sendMessage(chat.id, content);
-    if (!result.success) {
-      console.error('Failed to send message:', result.error);
-      setInputValue(content); // Restore on failure
-    }
+    void sendMessage(chat.id, content).then((result) => {
+      if (!result.success) {
+        console.error('Failed to send message:', result.error);
+        setInputValue(content);
+      }
+    });
   }, [inputValue, chat.id, sendMessage, clearDraft, stopTyping]);
 
   // Handle key press
@@ -560,6 +551,8 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
   const onlineStatus = getOnlineStatus();
   const isMobileConversation = Boolean(onBack);
   const isAdminPortalChat = user?.role === 'ADMIN' || user?.role === 'MANAGER';
+  const needsMobileBottomNavComposerOffset =
+    isMobileConversation && (isAdminPortalChat || isPortalChatRole(user?.role));
 
   return (
     <div className="flex h-full min-h-0 flex-1 flex-col overflow-hidden">
@@ -718,6 +711,7 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
         ) : (
             filteredMessages.map((message, index) => {
               const isOwn = message.senderId === user?.id;
+              const isPending = isPendingMessageId(message.id);
               const senderDisplay = getMessageSenderDisplay(message, senderLabels);
               const prevMessage = filteredMessages[index - 1];
               const showDateSeparator = shouldShowDateSeparator(message, prevMessage);
@@ -804,7 +798,7 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
                     onClick={isOwn ? (event) => handleOwnMessageTap(message.id, event) : undefined}
                   >
                     {/* Delete button (only for own messages) */}
-                    {isOwn && (
+                    {isOwn && !isPending && (
                       <button
                         type="button"
                         onClick={(event) => {
@@ -849,6 +843,7 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
                     <div
                       className={cn(
                         'px-4 py-2 rounded-2xl',
+                        isPending && 'opacity-70',
                         isVocabulary
                           ? 'bg-gradient-to-br from-purple-500 to-purple-600 text-white rounded-lg border-2 border-purple-300'
                           : isOwn
@@ -908,11 +903,10 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
         className={cn(
           'shrink-0 border-t p-4',
           isMobileConversation && 'max-lg:sticky max-lg:bottom-0 max-lg:z-20',
-          isMobileConversation &&
-            isAdminPortalChat &&
+          needsMobileBottomNavComposerOffset &&
             'max-lg:pb-[calc(6rem+env(safe-area-inset-bottom))]',
           isMobileConversation &&
-            !isAdminPortalChat &&
+            !needsMobileBottomNavComposerOffset &&
             'max-lg:pb-[env(safe-area-inset-bottom)]',
           ui.border,
           ui.headerBg,

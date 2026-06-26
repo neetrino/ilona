@@ -6,6 +6,7 @@ import { StudentLogoutControl } from '@/shared/components/layout/StudentLogoutCo
 import { PortalHeaderSearch } from '@/features/search/components/PortalHeaderSearch';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { isAdminPortalSubpage } from '@/shared/lib/role-routes';
+import { PORTAL_MOBILE_HEADER_ID } from '@/shared/lib/portal-mobile-layout';
 
 type AdminDashboardHeaderProps = {
   pageTitle?: string;
@@ -37,7 +38,7 @@ export function AdminDashboardHeader({
   const shouldShowSecondaryRowOnMobile = !isAdminMobileSubpage || Boolean(headerContent);
   return (
     <header
-      id="admin-portal-mobile-header"
+      id={PORTAL_MOBILE_HEADER_ID}
       className="shrink-0 bg-transparent px-[clamp(0.75rem,2vw,2rem)] py-[clamp(0.35rem,0.8vw,0.6rem)]"
     >
       <div className="w-full min-w-0 rounded-full border border-[rgba(14,14,16,0.07)] bg-white px-[clamp(0.75rem,1.5vw,1.25rem)] py-[clamp(0.55rem,1vw,0.9rem)] lg:rounded-[4rem]">

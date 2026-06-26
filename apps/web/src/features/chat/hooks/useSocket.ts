@@ -3,7 +3,6 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '@/features/auth/store/auth.store';
-import { useChatStore } from '../store/chat.store';
 import {
   initSocket,
   disconnectSocket,
@@ -20,8 +19,16 @@ import {
   emitSendVocabulary,
 } from '../lib/socket';
 import { markChatAsRead, sendMessageHttp } from '../api/chat.api';
-import { chatKeys } from './useChat';
-import type { Message, Chat } from '../types';
+import {
+  chatKeys,
+  clearChatUnreadInCache,
+  createOptimisticTextMessage,
+  PENDING_MESSAGE_ID_PREFIX,
+  pushMessageToCache,
+  removeMessageFromMessagesCache,
+  upsertIncomingMessageInCache,
+} from './useChat';
+import type { Message } from '../types';
 
 interface UseSocketOptions {
   onNewMessage?: (message: Message) => void;
@@ -118,93 +125,7 @@ export function useSocket(options: UseSocketOptions = {}) {
     // New message
     unsubscribers.push(
       onSocketEvent('message:new', (message) => {
-        // Update messages cache
-        queryClient.setQueryData(
-          chatKeys.messages(message.chatId),
-          (oldData: { pages: { items: Message[] }[] } | undefined) => {
-            if (!oldData) return oldData;
-
-            // Check if message already exists
-            const exists = oldData.pages.some((page) =>
-              page.items.some((m) => m.id === message.id)
-            );
-            if (exists) return oldData;
-
-            // Add to first page (newest messages) to match addMessageToCache and API order (createdAt desc)
-            return {
-              ...oldData,
-              pages: oldData.pages.map((page, index) => {
-                if (index === 0) {
-                  return {
-                    ...page,
-                    items: [...page.items, message],
-                  };
-                }
-                return page;
-              }),
-            };
-          }
-        );
-
-        // Update chat list with new message, lastMessageAt, and unreadCount
-        // Optimize: Only re-sort if the updated chat is not already first
-        queryClient.setQueryData(
-          chatKeys.list(),
-          (oldData: Chat[] | undefined) => {
-            if (!oldData) return oldData;
-
-            const { user } = useAuthStore.getState();
-            const isFromOtherUser = message.senderId !== user?.id;
-            const messageTime = new Date(message.createdAt).getTime();
-
-            // Find the chat index
-            const chatIndex = oldData.findIndex((chat) => chat.id === message.chatId);
-            if (chatIndex === -1) return oldData;
-
-            // Update the chat
-            const updatedChat = {
-              ...oldData[chatIndex],
-              lastMessage: message,
-              lastMessageAt: message.createdAt,
-              updatedAt: message.createdAt,
-              unreadCount: isFromOtherUser 
-                ? (oldData[chatIndex].unreadCount || 0) + 1 
-                : oldData[chatIndex].unreadCount,
-            };
-
-            // If chat is already first, just update it without sorting
-            if (chatIndex === 0) {
-              const newData = [...oldData];
-              newData[0] = updatedChat;
-              return newData;
-            }
-
-            // Check if updated chat should be first (has newer message than current first)
-            const firstChat = oldData[0];
-            const firstChatTime = firstChat.lastMessageAt 
-              ? new Date(firstChat.lastMessageAt).getTime()
-              : (firstChat.lastMessage?.createdAt ? new Date(firstChat.lastMessage.createdAt).getTime() : new Date(firstChat.updatedAt).getTime());
-
-            // If new message is older than first chat, just update in place
-            if (messageTime <= firstChatTime) {
-              const newData = [...oldData];
-              newData[chatIndex] = updatedChat;
-              return newData;
-            }
-
-            // New message is newest - move chat to top and re-sort only if needed
-            const newData = [...oldData];
-            newData[chatIndex] = updatedChat;
-            
-            // Move to front
-            newData.splice(chatIndex, 1);
-            newData.unshift(updatedChat);
-            
-            // Only sort if there are other chats that might have newer messages
-            // (In practice, this is rare, so we can skip full sort)
-            return newData;
-          }
-        );
+        upsertIncomingMessageInCache(queryClient, message.chatId, message);
 
         optionsRef.current.onNewMessage?.(message);
       })
@@ -314,24 +235,63 @@ export function useSocket(options: UseSocketOptions = {}) {
   // Send message
   const sendMessage = useCallback(
     async (chatId: string, content: string, type = 'TEXT') => {
-      if (!content.trim()) return { success: false, error: 'Empty message' };
-      
+      const trimmedContent = content.trim();
+      if (!trimmedContent) return { success: false, error: 'Empty message' };
+
+      const { user } = useAuthStore.getState();
+      if (!user) return { success: false, error: 'Not authenticated' };
+
+      const clientId = `${PENDING_MESSAGE_ID_PREFIX}${crypto.randomUUID()}`;
+      const optimisticMessage = createOptimisticTextMessage({
+        clientId,
+        chatId,
+        content: trimmedContent,
+        type: type as Message['type'],
+        senderId: user.id,
+        sender: {
+          id: user.id,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          avatarUrl: user.avatarUrl,
+          role: user.role,
+        },
+      });
+
+      pushMessageToCache(queryClient, chatId, optimisticMessage);
+
+      const confirmMessage = (message: Message) => {
+        upsertIncomingMessageInCache(queryClient, chatId, message);
+      };
+
+      const revertOptimisticMessage = () => {
+        removeMessageFromMessagesCache(queryClient, chatId, clientId);
+        void queryClient.invalidateQueries({ queryKey: chatKeys.list() });
+      };
+
       // Try socket first
-      const socketResult = await emitSendMessage(chatId, content.trim(), type);
+      const socketResult = await emitSendMessage(chatId, trimmedContent, type);
       if (socketResult.success) {
+        if (socketResult.message) {
+          confirmMessage(socketResult.message as Message);
+        }
         return socketResult;
       }
-      
+
       // Fallback to HTTP if socket is not connected
       try {
-        const message = await sendMessageHttp(chatId, content.trim(), type);
+        const message = await sendMessageHttp(chatId, trimmedContent, type);
+        confirmMessage(message);
         return { success: true, message };
       } catch (error) {
+        revertOptimisticMessage();
         console.error('[useSocket] Failed to send message via HTTP:', error);
-        return { success: false, error: error instanceof Error ? error.message : 'Failed to send message' };
+        return {
+          success: false,
+          error: error instanceof Error ? error.message : 'Failed to send message',
+        };
       }
     },
-    []
+    [queryClient],
   );
 
   // Edit message
@@ -358,9 +318,11 @@ export function useSocket(options: UseSocketOptions = {}) {
 
   // Mark as read
   const markAsRead = useCallback(async (chatId: string) => {
+    clearChatUnreadInCache(queryClient, chatId);
+
     // Try socket first, fallback to HTTP if socket not connected
     let result = await emitMarkAsRead(chatId);
-    
+
     // If socket failed (not connected), try HTTP API as fallback
     if (!result.success) {
       try {
@@ -370,37 +332,11 @@ export function useSocket(options: UseSocketOptions = {}) {
         return { success: false };
       }
     }
-    
-    // Update cache after marking as read (set unreadCount to 0 for this chat)
-    // This prevents infinite loops by updating cache directly instead of invalidating
-    // Preserve all chat properties including groupId, type, participants, etc.
+
     if (result.success) {
-      queryClient.setQueryData(
-        chatKeys.list(),
-        (oldData: Chat[] | undefined) => {
-          if (!oldData) return oldData;
-          return oldData.map((chat) =>
-            chat.id === chatId ? { ...chat, unreadCount: 0 } : chat
-          );
-        }
-      );
-      
-      // Also update the chat detail cache if it exists
-      queryClient.setQueryData(
-        chatKeys.detail(chatId),
-        (oldData: Chat | undefined) => {
-          if (!oldData) return oldData;
-          return { ...oldData, unreadCount: 0 };
-        }
-      );
-      
-      // Update activeChat in store if it matches the chatId
-      const { activeChat, setActiveChat } = useChatStore.getState();
-      if (activeChat && activeChat.id === chatId) {
-        setActiveChat({ ...activeChat, unreadCount: 0 });
-      }
+      clearChatUnreadInCache(queryClient, chatId);
     }
-    
+
     return result;
   }, [queryClient]);
 

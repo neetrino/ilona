@@ -33,7 +33,7 @@ export function SidebarVisibilityConfirmDialog({
 }: SidebarVisibilityConfirmDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md rounded-[15px]">
+      <DialogContent className="lg:max-w-md lg:rounded-[15px]">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>

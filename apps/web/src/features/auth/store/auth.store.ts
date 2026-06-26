@@ -181,6 +181,18 @@ export function getPortalEntryPath(role: UserRole): string {
     }
     return getDashboardPath(role);
   }
+  if (role === 'TEACHER') {
+    if (isPortalMobileViewport()) {
+      return '/teacher';
+    }
+    return getDashboardPath(role);
+  }
+  if (role === 'STUDENT') {
+    if (isPortalMobileViewport()) {
+      return '/student';
+    }
+    return getDashboardPath(role);
+  }
   return getDashboardPath(role);
 }
 
