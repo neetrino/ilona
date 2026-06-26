@@ -5,15 +5,22 @@ import { cn } from '@/shared/lib/utils';
 
 type LandingNavbarLanguageToggleProps = {
   isCanvasActive?: boolean;
+  className?: string;
 };
 
 export function LandingNavbarLanguageToggle({
   isCanvasActive = false,
+  className,
 }: LandingNavbarLanguageToggleProps) {
   const { locale, switchLocale } = useSwitchLocale();
 
   return (
-    <div className="inline-flex items-center rounded-full border border-[rgba(14,14,16,0.07)] bg-[#f3f3f4] p-[3px]">
+    <div
+      className={cn(
+        'inline-flex items-center rounded-full border border-[rgba(14,14,16,0.07)] bg-[#f3f3f4] p-[3px]',
+        className,
+      )}
+    >
       <button
         type="button"
         onClick={() => switchLocale('hy')}
