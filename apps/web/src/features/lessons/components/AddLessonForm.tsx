@@ -21,8 +21,38 @@ import { cn } from '@/shared/lib/utils';
 import { X } from 'lucide-react';
 
 const TIME_RE = /^([0-1][0-9]|2[0-3]):[0-5][0-9]$/;
+const ADD_LESSON_SCHEDULE_MODE_KEY = 'ilona-add-lesson-schedule-mode';
+const ADD_LESSON_MODAL_ACTIVE_KEY = 'ilona-add-lesson-modal-active';
 
 type ScheduleMode = 'single' | 'recurring';
+
+function readStoredScheduleMode(): ScheduleMode {
+  if (typeof window === 'undefined') return 'recurring';
+  const stored = window.localStorage.getItem(ADD_LESSON_SCHEDULE_MODE_KEY);
+  if (stored === 'single' || stored === 'recurring') return stored;
+  return 'recurring';
+}
+
+function persistScheduleMode(mode: ScheduleMode): void {
+  if (typeof window === 'undefined') return;
+  window.localStorage.setItem(ADD_LESSON_SCHEDULE_MODE_KEY, mode);
+}
+
+function markAddLessonModalActive(): void {
+  if (typeof window === 'undefined') return;
+  window.sessionStorage.setItem(ADD_LESSON_MODAL_ACTIVE_KEY, '1');
+}
+
+function clearAddLessonModalActive(): void {
+  if (typeof window === 'undefined') return;
+  window.sessionStorage.removeItem(ADD_LESSON_MODAL_ACTIVE_KEY);
+}
+
+function resolveScheduleModeOnOpen(): ScheduleMode {
+  if (typeof window === 'undefined') return 'recurring';
+  const resumed = window.sessionStorage.getItem(ADD_LESSON_MODAL_ACTIVE_KEY) === '1';
+  return resumed ? readStoredScheduleMode() : 'recurring';
+}
 
 type AddLessonFormData = {
   scheduleMode: ScheduleMode;
@@ -219,7 +249,7 @@ export function AddLessonForm({ open, onOpenChange, defaultDate, defaultTime }: 
   } = useForm<AddLessonFormData>({
     resolver,
     defaultValues: {
-      scheduleMode: 'single',
+      scheduleMode: 'recurring',
       groupId: '',
       teacherId: '',
       scheduledAt: getDefaultScheduledAt(),
@@ -272,8 +302,11 @@ export function AddLessonForm({ open, onOpenChange, defaultDate, defaultTime }: 
   useEffect(() => {
     if (open) {
       const rec = getDefaultRecurring();
+      const scheduleMode = resolveScheduleModeOnOpen();
+      markAddLessonModalActive();
+      persistScheduleMode(scheduleMode);
       reset({
-        scheduleMode: 'single',
+        scheduleMode,
         groupId: '',
         teacherId: '',
         scheduledAt: getDefaultScheduledAt(),
@@ -290,6 +323,8 @@ export function AddLessonForm({ open, onOpenChange, defaultDate, defaultTime }: 
       setDragOffsetY(0);
       setIsDragging(false);
       setIsSettling(false);
+    } else {
+      clearAddLessonModalActive();
     }
   }, [open, reset, defaultDate, defaultTime, getDefaultRecurring, getDefaultScheduledAt]);
 
@@ -417,6 +452,7 @@ export function AddLessonForm({ open, onOpenChange, defaultDate, defaultTime }: 
   };
 
   const onModeChange = (next: ScheduleMode) => {
+    persistScheduleMode(next);
     setValue('scheduleMode', next, { shouldValidate: true });
     if (next === 'recurring') {
       const r = getDefaultRecurring();
@@ -498,8 +534,8 @@ export function AddLessonForm({ open, onOpenChange, defaultDate, defaultTime }: 
             <Label>{tForm('schedule')}</Label>
             <SegmentedControl
               options={[
-                { id: 'single', label: tForm('singleSession') },
                 { id: 'recurring', label: tForm('recurringSessions') },
+                { id: 'single', label: tForm('singleSession') },
               ]}
               value={scheduleMode}
               onChange={(value) => onModeChange(value as ScheduleMode)}
