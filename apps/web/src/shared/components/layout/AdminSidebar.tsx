@@ -15,7 +15,11 @@ import { getFullApiUrl } from '@/shared/lib/api';
 import { type AdminNavEntry, type AdminNavIcon } from '@/shared/lib/admin-nav-entries';
 import { useAdminNavEntries } from '@/shared/hooks/useAdminNavEntries';
 import { STUDENT_SIDEBAR_ASSETS } from '@/features/student-dashboard/studentSidebarAssets';
-import { PORTAL_SIDEBAR_NAV_LABEL_HY_CLASS, PORTAL_SIDEBAR_WIDTH_CLASS } from './student-layout';
+import {
+  PORTAL_SIDEBAR_NAV_LABEL_HY_CLASS,
+  PORTAL_SIDEBAR_SHELL_TRANSITION_CLASS,
+  PORTAL_SIDEBAR_WIDTH_CLASS,
+} from './student-layout';
 
 const ADMIN_SIDEBAR_NAV_ITEM_GAP_CLASS = 'gap-[8px]';
 
@@ -200,6 +204,7 @@ export function AdminSidebar({
     <div
       className={cn(
         'flex h-full shrink-0 flex-col bg-[#ececec]',
+        !isDrawer && PORTAL_SIDEBAR_SHELL_TRANSITION_CLASS,
         isDrawer
           ? 'w-full py-2 pl-2 pr-2'
           : cn(
