@@ -19,6 +19,8 @@ const DEFAULT_ENTRY: GroupScheduleEntry = {
   endTime: '10:00',
 };
 
+const MAX_SCHEDULE_SLOTS = DAY_VALUES.length;
+
 export function GroupScheduleEditor({ value, onChange, disabled }: GroupScheduleEditorProps) {
   const t = useTranslations('groups');
   const tTeachers = useTranslations('teachers');
@@ -48,9 +50,12 @@ export function GroupScheduleEditor({ value, onChange, disabled }: GroupSchedule
   };
 
   const addEntry = () => {
-    const nextDay = DAY_VALUES[value.length % DAY_VALUES.length];
+    if (value.length >= MAX_SCHEDULE_SLOTS) return;
+    const nextDay = DAY_VALUES[value.length];
     onChange([...value, { ...DEFAULT_ENTRY, dayOfWeek: nextDay }]);
   };
+
+  const canAddSlot = value.length < MAX_SCHEDULE_SLOTS;
 
   return (
     <div className="space-y-2">
@@ -102,14 +107,16 @@ export function GroupScheduleEditor({ value, onChange, disabled }: GroupSchedule
           </button>
         </div>
       ))}
-      <button
-        type="button"
-        onClick={addEntry}
-        disabled={disabled}
-        className="inline-flex items-center gap-1 rounded-md border border-dashed border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 hover:border-slate-400 hover:bg-slate-50"
-      >
-        <Plus className="size-3.5" /> {t('scheduleAddSlot')}
-      </button>
+      {canAddSlot && (
+        <button
+          type="button"
+          onClick={addEntry}
+          disabled={disabled}
+          className="inline-flex items-center gap-1 rounded-md border border-dashed border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 hover:border-slate-400 hover:bg-slate-50"
+        >
+          <Plus className="size-3.5" /> {t('scheduleAddSlot')}
+        </button>
+      )}
     </div>
   );
 }
