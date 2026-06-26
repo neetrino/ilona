@@ -52,6 +52,13 @@ type DialogContentProps = React.ComponentPropsWithoutRef<typeof DialogPrimitive.
   hideCloseButton?: boolean;
 };
 
+function preventCloseOnPortaledDropdown(event: Event) {
+  const target = event.target;
+  if (target instanceof Element && target.closest('[data-single-select-dropdown-menu]')) {
+    event.preventDefault();
+  }
+}
+
 const DialogContent = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Content>,
   DialogContentProps
