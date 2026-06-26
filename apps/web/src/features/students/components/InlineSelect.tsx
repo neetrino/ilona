@@ -227,65 +227,66 @@ export function InlineSelect({
     createPortal(
       <div
         ref={menuRef}
-        className={cn(DROPDOWN_MENU_PORTAL_SURFACE_CLASS, 'max-h-60')}
+        className={cn(
+          DROPDOWN_MENU_PORTAL_SURFACE_CLASS,
+          'flex max-h-60 flex-col overflow-hidden',
+        )}
         style={{
           top: `${position.top}px`,
           left: `${position.left}px`,
           width: `${position.width}px`,
         }}
       >
-        <div className="flex max-h-60 flex-col overflow-hidden">
-          {searchable && (
-            <div className="border-b border-[rgba(14,14,16,0.08)] p-2">
-              <input
-                ref={searchInputRef}
-                type="text"
-                value={searchQuery}
-                placeholder={searchPlaceholder}
-                onChange={(event) => setSearchQuery(event.target.value)}
-                onClick={(event) => event.stopPropagation()}
-                onPointerDown={(event) => event.stopPropagation()}
-                onKeyDown={(event) => {
-                  event.stopPropagation();
-                  if (event.key === 'Escape') {
-                    closeDropdown();
-                  }
-                }}
-                className="w-full rounded border border-[rgba(14,14,16,0.12)] px-2 py-1.5 text-sm focus:border-[#1010a3] focus:outline-none focus:ring-1 focus:ring-[#1010a3]"
-              />
-            </div>
-          )}
-          <div className="space-y-1 overflow-y-auto px-1 py-1">
-            <button
-              type="button"
-              onClick={() => handleSelect(null)}
-              className={cn(
-                DROPDOWN_OPTION_BASE_CLASS,
-                DROPDOWN_OPTION_INTERACTIVE_CLASS,
-                !localValue && DROPDOWN_OPTION_SELECTED_CLASS
-              )}
-            >
-              {emptyActionLabel}
-            </button>
-            {searchable && searchQuery.trim() && filteredOptions.length === 0 ? (
-              <div className="px-3 py-2 text-sm text-[#8b8b90]">{emptySearchMessage}</div>
-            ) : (
-              filteredOptions.map((option) => (
-                <button
-                  key={option.id}
-                  type="button"
-                  onClick={() => handleSelect(option.id)}
-                  className={cn(
-                    DROPDOWN_OPTION_BASE_CLASS,
-                    DROPDOWN_OPTION_INTERACTIVE_CLASS,
-                    localValue === option.id && DROPDOWN_OPTION_SELECTED_CLASS
-                  )}
-                >
-                  {option.label}
-                </button>
-              ))
-            )}
+        {searchable && (
+          <div className="shrink-0 border-b border-[rgba(14,14,16,0.08)] p-2">
+            <input
+              ref={searchInputRef}
+              type="text"
+              value={searchQuery}
+              placeholder={searchPlaceholder}
+              onChange={(event) => setSearchQuery(event.target.value)}
+              onClick={(event) => event.stopPropagation()}
+              onPointerDown={(event) => event.stopPropagation()}
+              onKeyDown={(event) => {
+                event.stopPropagation();
+                if (event.key === 'Escape') {
+                  closeDropdown();
+                }
+              }}
+              className="w-full rounded border border-[rgba(14,14,16,0.12)] px-2 py-1.5 text-sm focus:border-[#1010a3] focus:outline-none focus:ring-1 focus:ring-[#1010a3]"
+            />
           </div>
+        )}
+        <div className="min-h-0 flex-1 space-y-1 overflow-y-auto px-1 py-1">
+          <button
+            type="button"
+            onClick={() => handleSelect(null)}
+            className={cn(
+              DROPDOWN_OPTION_BASE_CLASS,
+              DROPDOWN_OPTION_INTERACTIVE_CLASS,
+              !localValue && DROPDOWN_OPTION_SELECTED_CLASS
+            )}
+          >
+            {emptyActionLabel}
+          </button>
+          {searchable && searchQuery.trim() && filteredOptions.length === 0 ? (
+            <div className="px-3 py-2 text-sm text-[#8b8b90]">{emptySearchMessage}</div>
+          ) : (
+            filteredOptions.map((option) => (
+              <button
+                key={option.id}
+                type="button"
+                onClick={() => handleSelect(option.id)}
+                className={cn(
+                  DROPDOWN_OPTION_BASE_CLASS,
+                  DROPDOWN_OPTION_INTERACTIVE_CLASS,
+                  localValue === option.id && DROPDOWN_OPTION_SELECTED_CLASS
+                )}
+              >
+                {option.label}
+              </button>
+            ))
+          )}
         </div>
       </div>,
       document.body
