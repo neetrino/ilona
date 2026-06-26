@@ -20,7 +20,7 @@ import {
 } from '@/features/groups/group-schedule-utils';
 import type { GroupScheduleEntry } from '@/features/groups/types';
 import { GroupCalendarScheduleSection } from '@/features/groups/components/GroupCalendarScheduleSection';
-import { useGroups } from '@/features/groups';
+import { useGroups, getGroupTeachersForDisplay, GroupTeachersAlignedDisplay } from '@/features/groups';
 import type { Group } from '@/features/groups/types';
 import { useState, useEffect, useCallback, useMemo, useRef, type TouchEvent } from 'react';
 import { useTranslations } from 'next-intl';
@@ -74,12 +74,6 @@ function groupSlotsForRecurring(
 
 function getGroupTeacherId(group: Group): string | null {
   return group.teacherId ?? group.teacher?.id ?? null;
-}
-
-function getGroupTeacherLabel(group: Group): string {
-  const user = group.teacher?.user;
-  if (!user) return '';
-  return `${user.firstName} ${user.lastName}`.trim();
 }
 
 interface AddLessonFormProps {
@@ -147,6 +141,11 @@ export function AddLessonForm({ open, onOpenChange, defaultDate }: AddLessonForm
   const selectedGroup = useMemo(
     () => groups.find((group) => group.id === groupIdW) ?? null,
     [groups, groupIdW],
+  );
+
+  const selectedGroupTeachers = useMemo(
+    () => (selectedGroup ? getGroupTeachersForDisplay(selectedGroup) : []),
+    [selectedGroup],
   );
 
   const handleGroupChange = useCallback(
@@ -329,16 +328,9 @@ export function AddLessonForm({ open, onOpenChange, defaultDate }: AddLessonForm
   const isBusy = isSubmitting || createRecurring.isPending;
   const hasGroup = groupIdW.length > 0;
   const hasTeacher = teacherIdW.length > 0;
-  const selectedGroupHasNoTeacher = hasGroup && !hasTeacher;
+  const selectedGroupHasNoTeacher = hasGroup && selectedGroupTeachers.length === 0;
   const noGroupsAvailable = !isLoadingGroups && groups.length === 0;
   const scheduleValid = validateSchedule() === null;
-
-  const teacherOptions = useMemo(() => {
-    if (!selectedGroup || !hasTeacher) {
-      return [{ id: '', label: tForm('selectGroupFirst') }];
-    }
-    return [{ id: teacherIdW, label: getGroupTeacherLabel(selectedGroup) || tForm('selectTeacher') }];
-  }, [selectedGroup, hasTeacher, teacherIdW, tForm]);
 
   return (
     <DialogPrimitive.Root open={isDialogOpen} onOpenChange={(nextOpen) => !nextOpen && requestClose()}>
@@ -433,15 +425,26 @@ export function AddLessonForm({ open, onOpenChange, defaultDate }: AddLessonForm
             <Label htmlFor="teacherId">
               {tCommon('teacher')} <span className="text-red-500">*</span>
             </Label>
-            <SingleSelectDropdown
+            <input type="hidden" {...register('teacherId')} />
+            <div
               id="teacherId"
-              options={teacherOptions}
-              value={teacherIdW}
-              onValueChange={() => undefined}
-              disabled
-            />
+              className={cn(
+                'min-h-11 rounded-xl border border-[rgba(14,14,16,0.08)] bg-slate-50 px-3 py-2.5',
+                !hasGroup && 'flex items-center',
+              )}
+            >
+              {!hasGroup ? (
+                <span className="text-sm text-slate-400">{tForm('selectGroupFirst')}</span>
+              ) : (
+                <GroupTeachersAlignedDisplay
+                  teachers={selectedGroupTeachers}
+                  emptyLabel={tCommon('notAssigned')}
+                  variant="list"
+                />
+              )}
+            </div>
             {errors.teacherId && <p className="text-sm text-red-600">{errors.teacherId.message}</p>}
-            {hasGroup && hasTeacher && (
+            {hasGroup && selectedGroupTeachers.length > 0 && (
               <p className="text-sm text-slate-500">{tForm('teacherAutoFromGroup')}</p>
             )}
           </div>
