@@ -37,6 +37,17 @@ const FOOTER_ICON_LABEL_KEYS: Record<FooterIconKey, 'footerIconLinksInstagram' |
   viber: 'footerIconLinksViber',
 };
 
+const FOOTER_ICON_PLACEHOLDER_KEYS: Record<
+  FooterIconKey,
+  'footerIconLinksInstagramPlaceholder' | 'footerIconLinksFacebookPlaceholder' | 'footerIconLinksTelegramPlaceholder' | 'footerIconLinksWhatsappPlaceholder' | 'footerIconLinksViberPlaceholder'
+> = {
+  instagram: 'footerIconLinksInstagramPlaceholder',
+  facebook: 'footerIconLinksFacebookPlaceholder',
+  telegram: 'footerIconLinksTelegramPlaceholder',
+  whatsapp: 'footerIconLinksWhatsappPlaceholder',
+  viber: 'footerIconLinksViberPlaceholder',
+};
+
 export function FooterIconLinksTab() {
   const t = useTranslations('settings');
   const { data: savedLinks, isLoading } = useFooterIconLinks();
@@ -131,7 +142,7 @@ export function FooterIconLinksTab() {
             <input
               type="url"
               value={form[key]}
-              placeholder={t('footerIconLinksPlaceholder')}
+              placeholder={t(FOOTER_ICON_PLACEHOLDER_KEYS[key])}
               disabled={isLoading || updateMutation.isPending}
               onChange={(event) => handleFieldChange(key, event.target.value)}
               className={inputClassName}

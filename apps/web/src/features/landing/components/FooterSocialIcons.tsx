@@ -5,6 +5,13 @@ import { LANDING_ASSETS } from '@/features/landing/landingAssets';
 import { useFooterIconLinks } from '@/features/settings/hooks/useFooterIconLinks';
 import type { FooterIconKey } from '@ilona/types';
 
+const iconShellClassName =
+  'flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#f2f5fb]';
+
+const clickableIconClassName = `${iconShellClassName} cursor-pointer transition-transform duration-200 ease-out hover:scale-110 hover:brightness-95 active:scale-95`;
+
+const staticIconClassName = `${iconShellClassName} cursor-default`;
+
 const FOOTER_ICON_CONFIG: Array<{
   key: FooterIconKey;
   src: string;
@@ -51,7 +58,7 @@ export function FooterSocialIcons({ containerClassName, getAriaLabel }: FooterSo
           return (
             <span
               key={key}
-              className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#f2f5fb]"
+              className={staticIconClassName}
               aria-label={getAriaLabel(key)}
             >
               {iconContent}
@@ -65,7 +72,7 @@ export function FooterSocialIcons({ containerClassName, getAriaLabel }: FooterSo
           <a
             key={key}
             href={href}
-            className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#f2f5fb]"
+            className={clickableIconClassName}
             aria-label={getAriaLabel(key)}
             {...(external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
           >
