@@ -130,7 +130,7 @@ export function VoiceLeadModal({ open, onClose, onCreated, centerId }: VoiceLead
     } finally {
       setIsSaving(false);
     }
-  }, [onCreated, onClose, previewUrl, centerId]);
+  }, [onCreated, onClose, previewUrl, centerId, t]);
 
   const handleCancel = useCallback(() => {
     if (mediaRecorderRef.current && isRecording) {

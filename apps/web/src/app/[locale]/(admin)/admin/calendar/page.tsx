@@ -13,7 +13,6 @@ import {
   useDeleteLessonsBulk,
   AddLessonForm,
   type Lesson,
-  type LessonStatus,
 } from '@/features/lessons';
 import { BulkDeleteConfirmationDialog } from '@/features/lessons/components/BulkDeleteConfirmationDialog';
 import { getErrorMessage } from '@/shared/lib/api';

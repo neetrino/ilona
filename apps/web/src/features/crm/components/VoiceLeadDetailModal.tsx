@@ -91,8 +91,14 @@ export function VoiceLeadDetailModal({
     enabled: open && groupsProp === undefined,
   });
 
-  const centers = centersProp ?? centersData?.items ?? [];
-  const teachers = teachersProp ?? teachersData?.items ?? [];
+  const centers = useMemo(
+    () => centersProp ?? centersData?.items ?? [],
+    [centersProp, centersData?.items],
+  );
+  const teachers = useMemo(
+    () => teachersProp ?? teachersData?.items ?? [],
+    [teachersProp, teachersData?.items],
+  );
   const groups = useMemo(() => groupsProp ?? groupsData?.items ?? [], [groupsProp, groupsData?.items]);
   const selectedTeacherId = form.teacherId ?? '';
   const groupsForSelectedTeacher = useMemo(

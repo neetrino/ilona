@@ -139,7 +139,7 @@ export default function TeacherProfilePage() {
       }
     }
     router.push(path);
-  }, [hasUnsavedChanges, isEditMode, router]);
+  }, [hasUnsavedChanges, isEditMode, router, tAttendance, tCommon]);
 
   if (!teacherId) {
     return (

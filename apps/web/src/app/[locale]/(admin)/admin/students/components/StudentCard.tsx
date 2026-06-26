@@ -61,7 +61,6 @@ interface StudentCardProps {
 export function StudentCard({ student, onEdit, onDelete, onDeactivate, onCardClick }: StudentCardProps) {
   const t = useTranslations('students');
   const tAnalytics = useTranslations('analytics');
-  const tCommon = useTranslations('common');
   const firstName = student.user?.firstName || '';
   const lastName = student.user?.lastName || '';
   const fullName = `${firstName} ${lastName}`.trim();

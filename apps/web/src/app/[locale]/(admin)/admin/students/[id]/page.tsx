@@ -162,7 +162,7 @@ export default function StudentProfilePage() {
       }
     }
     router.push(path);
-  }, [hasUnsavedChanges, isEditMode, router]);
+  }, [hasUnsavedChanges, isEditMode, router, tAttendance, tCommon]);
 
   const onSubmit = async (data: UpdateStudentFormData) => {
     setErrorMessage(null);

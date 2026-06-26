@@ -52,7 +52,7 @@ export function CreateLeadModal({
     queryFn: () => fetchTeachers({ take: 200 }),
     enabled: open,
   });
-  const teachers = teachersData?.items ?? [];
+  const teachers = useMemo(() => teachersData?.items ?? [], [teachersData?.items]);
   const { data: groupsData } = useQuery({
     queryKey: ['groups', groupsQueryCenterId ?? 'all'],
     queryFn: () =>
@@ -73,7 +73,7 @@ export function CreateLeadModal({
       setForm((prev) => ({ ...prev, centerId: defaultCenterId }));
     }
   }, [open, defaultCenterId]);
-  const groups = groupsData?.items ?? [];
+  const groups = useMemo(() => groupsData?.items ?? [], [groupsData?.items]);
 
   const levelOptions = useMemo(
     () => [

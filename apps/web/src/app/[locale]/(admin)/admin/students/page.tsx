@@ -66,7 +66,6 @@ export default function StudentsPage() {
     updateStudent,
     
     // Options
-    teachers,
     groups,
     centerOptions,
     teacherFilterOptions,
