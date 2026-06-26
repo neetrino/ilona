@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import { Input, Label, Button } from '@/shared/components/ui';
 import { cn } from '@/shared/lib/utils';
 
@@ -32,6 +33,7 @@ const DAYS: { key: DayOfWeek; label: string }[] = [
 ];
 
 export function WeeklySchedule({ value, onChange, error }: WeeklyScheduleProps) {
+  const t = useTranslations('teachers');
   const [schedule, setSchedule] = useState<WeeklySchedule>(value || {});
   const [dayErrors, setDayErrors] = useState<Record<string, string>>({});
 
@@ -141,7 +143,7 @@ export function WeeklySchedule({ value, onChange, error }: WeeklyScheduleProps) 
   return (
     <div className="space-y-4">
       <div>
-        <Label className="text-base font-semibold">Working Hours Schedule</Label>
+        <Label className="text-base font-semibold">{t('workingHoursSchedule')}</Label>
         <p className="text-sm text-slate-500 mt-1">
           Select the days the teacher works and set their working hours for each day.
         </p>
@@ -256,7 +258,7 @@ export function WeeklySchedule({ value, onChange, error }: WeeklyScheduleProps) 
                     );
                   })}
                   {ranges.length === 0 && (
-                    <p className="text-xs text-slate-400 italic">No time ranges set for this day</p>
+                    <p className="text-xs text-slate-400 italic">{t('noTimeRangesForDay')}</p>
                   )}
                 </div>
               )}

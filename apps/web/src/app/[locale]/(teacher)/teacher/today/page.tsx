@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo, useEffect, useCallback } from 'react';
+import { useTranslations } from 'next-intl';
 import { readUrlSearchParam } from '@/shared/lib/url-search-params';
 import { useAppSearchUrl } from '@/shared/hooks/useAppSearchUrl';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
@@ -55,6 +56,7 @@ function LessonCard({
   isCompleting: boolean;
   isSendingVocabulary: boolean;
 }) {
+  const tCalendar = useTranslations('calendar');
   const time = new Date(lesson.scheduledAt).toLocaleTimeString('en-US', {
     hour: '2-digit',
     minute: '2-digit',
@@ -103,7 +105,7 @@ function LessonCard({
       {/* Checklist for completed lessons */}
       {lesson.status === 'COMPLETED' && (
         <div className="mb-3 p-3 bg-[#fafafa] rounded-lg">
-          <p className="text-xs font-medium text-[#8b8b90] mb-2">Lesson Checklist</p>
+          <p className="text-xs font-medium text-[#8b8b90] mb-2">{tCalendar('lessonChecklist')}</p>
           <div className="space-y-1">
             <div className="flex items-center gap-2 text-sm">
               {lesson._count?.attendances ? (
@@ -172,6 +174,8 @@ function LessonCard({
 }
 
 export default function TeacherDailyPlanPage() {
+  const tNav = useTranslations('nav');
+  const tCalendar = useTranslations('calendar');
   const { searchParams, urlRevision, replaceParams } = useAppSearchUrl();
 
   const readViewModeFromUrl = useCallback((): ViewMode => {
@@ -266,7 +270,7 @@ export default function TeacherDailyPlanPage() {
 
   return (
     <DashboardLayout
-      title="Daily Plan"
+      title={tNav('dailyPlan')}
       subtitle="Manage your lessons, mark attendance, and send vocabulary."
     >
       {/* View Toggle & Stats */}
@@ -337,7 +341,7 @@ export default function TeacherDailyPlanPage() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
-          <h3 className="text-lg font-semibold text-[#1010a3] mb-2">Failed to load lessons</h3>
+          <h3 className="text-lg font-semibold text-[#1010a3] mb-2">{tCalendar('failedToLoadLessons')}</h3>
           <p className="text-sm text-[#8b8b90] mb-4">
             {error instanceof Error ? error.message : 'An error occurred while loading your lessons.'}
           </p>

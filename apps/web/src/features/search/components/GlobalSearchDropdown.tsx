@@ -1,6 +1,7 @@
 'use client';
 
 import type { ReactNode } from 'react';
+import { useTranslations } from 'next-intl';
 import type { GlobalSearchResult, GlobalSearchResultType } from '../types/search.types';
 import {
   Briefcase,
@@ -93,6 +94,7 @@ export function GlobalSearchDropdown({
   placement = 'below',
   maxHeightPx,
 }: GlobalSearchDropdownProps) {
+  const tCommon = useTranslations('common');
   const trimmed = normalizeSearchQuery(query);
 
   // Do not show an empty dropdown panel before user starts typing.
@@ -113,7 +115,7 @@ export function GlobalSearchDropdown({
       )}
       style={maxHeightPx ? { maxHeight: `${maxHeightPx}px` } : undefined}
       role="listbox"
-      aria-label="Search results"
+      aria-label={tCommon('searchResults')}
     >
       {trimmed.length > 0 && trimmed.length < 2 ? (
         <p className="px-3 py-2 text-xs text-slate-500">{minCharsHint}</p>

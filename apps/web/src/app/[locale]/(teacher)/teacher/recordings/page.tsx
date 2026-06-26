@@ -627,7 +627,7 @@ export default function TeacherRecordingsPage() {
               )}
               disabled={safePage === 0}
               onClick={() => goToPage(Math.max(0, safePage - 1))}
-              aria-label="Previous page"
+              aria-label={tCommon('previousPage')}
             >
               <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -646,7 +646,7 @@ export default function TeacherRecordingsPage() {
               )}
               disabled={safePage >= totalPages - 1}
               onClick={() => goToPage(Math.min(totalPages - 1, safePage + 1))}
-              aria-label="Next page"
+              aria-label={tCommon('nextPage')}
             >
               <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />

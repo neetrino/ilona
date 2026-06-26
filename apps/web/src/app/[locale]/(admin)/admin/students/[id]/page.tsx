@@ -265,7 +265,7 @@ export default function StudentProfilePage() {
               </svg>
             </div>
             <div className="flex-1">
-              <h3 className="font-semibold text-[#3b3b40] mb-2">Student Not Found</h3>
+              <h3 className="font-semibold text-[#3b3b40] mb-2">{t('studentNotFound')}</h3>
               <p className="text-sm text-[#8b8b90] mb-4">
                 {error 
                   ? 'Failed to load student information. Please try again later.'

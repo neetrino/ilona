@@ -281,9 +281,9 @@ export function TeacherDetailsModal({
 
                 {showInternalStats && (
                   <section className="rounded-[15px] border border-[rgba(14,14,16,0.07)] bg-white p-4">
-                    <h3 className="mb-2 text-sm font-semibold text-[#1010a3]">Groups</h3>
+                    <h3 className="mb-2 text-sm font-semibold text-[#1010a3]">{t('groups')}</h3>
                     {allGroups.length === 0 ? (
-                      <p className="text-sm text-[#8b8b90]">No groups assigned.</p>
+                      <p className="text-sm text-[#8b8b90]">{t('noGroupsAssigned')}</p>
                     ) : (
                       <ul className="space-y-2">
                         {allGroups.map((group) => (

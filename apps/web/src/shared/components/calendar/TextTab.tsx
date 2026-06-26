@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { useLesson } from '@/features/lessons';
 import { fetchGroupChat, sendMessageHttp } from '@/features/chat/api/chat.api';
 import { api } from '@/shared/lib/api';
@@ -13,6 +14,7 @@ interface TextTabProps {
 }
 
 export function TextTab({ lessonId }: TextTabProps) {
+  const tChat = useTranslations('chat');
   const queryClient = useQueryClient();
   const { data: lesson, isLoading } = useLesson(lessonId);
   const [text, setText] = useState('');
@@ -93,7 +95,7 @@ export function TextTab({ lessonId }: TextTabProps) {
           onChange={(e) => setText(e.target.value)}
           rows={8}
           className="w-full rounded-lg border border-slate-300 px-4 py-3 focus:border-[#1010a3]/45 focus:outline-none focus:ring-4 focus:ring-[#1010a3]/10"
-          placeholder="Enter your message here..."
+          placeholder={tChat('enterMessagePlaceholder')}
         />
 
         <div className="flex justify-end">

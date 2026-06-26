@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { type Locale } from '@/config/i18n';
 import { studentPillTrackClass } from '@/features/student-ui/tokens';
 import { useSwitchLocale } from '@/shared/hooks/useSwitchLocale';
@@ -66,6 +67,7 @@ function UkFlag({ size }: { size: { width: number; height: number } }) {
 }
 
 export function LanguageSwitcher({ variant = 'default', className }: LanguageSwitcherProps) {
+  const t = useTranslations('language');
   const isCompact = variant === 'compact';
   const isCircle = variant === 'circle';
   const { locale, switchLocale } = useSwitchLocale();
@@ -115,7 +117,7 @@ export function LanguageSwitcher({ variant = 'default', className }: LanguageSwi
         type="button"
         onClick={() => switchLocale(nextLocale)}
         onKeyDown={(e) => handleKeyDown(e, nextLocale)}
-        aria-label={locale === 'en' ? 'Switch to Armenian' : 'Switch to English'}
+        aria-label={locale === 'en' ? t('switchToArmenian') : t('switchToEnglish')}
         className={cn(
           'inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full',
           'bg-white text-xs font-bold tracking-wide text-[#1010a3]',
@@ -139,7 +141,7 @@ export function LanguageSwitcher({ variant = 'default', className }: LanguageSwi
     <div
       ref={trackRef}
       role="group"
-      aria-label="Select language"
+      aria-label={t('selectLanguage')}
       className={cn(
         isCompact
           ? 'inline-flex h-11 shrink-0 items-center gap-0.5 rounded-full border border-[rgba(14,14,16,0.07)] bg-[#f3f3f4] p-0.5 sm:h-12'
@@ -167,7 +169,7 @@ export function LanguageSwitcher({ variant = 'default', className }: LanguageSwi
         }}
         onClick={() => switchLocale('hy')}
         onKeyDown={(e) => handleKeyDown(e, 'hy')}
-        aria-label="Switch to Armenian"
+        aria-label={t('switchToArmenian')}
         aria-pressed={locale === 'hy'}
         className={cn(
           buttonClass,
@@ -184,7 +186,7 @@ export function LanguageSwitcher({ variant = 'default', className }: LanguageSwi
         }}
         onClick={() => switchLocale('en')}
         onKeyDown={(e) => handleKeyDown(e, 'en')}
-        aria-label="Switch to English"
+        aria-label={t('switchToEnglish')}
         aria-pressed={locale === 'en'}
         className={cn(
           buttonClass,

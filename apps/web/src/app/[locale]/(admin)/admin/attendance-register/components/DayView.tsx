@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { AttendanceGrid } from '@/shared/components/attendance';
 import { AttendanceContextHeader } from './AttendanceContextHeader';
 import { AttendanceLoadingState } from './AttendanceLoadingState';
@@ -64,6 +65,7 @@ export function DayView({
   onUnsavedChangesChange,
   isCurrentDateToday,
 }: DayViewProps) {
+  const tCommon = useTranslations('common');
   // Group lessons and students by groupId
   const lessonsByGroup = filteredLessons.reduce((acc, lesson) => {
     const groupId = lesson.groupId;
@@ -266,7 +268,7 @@ export function DayView({
               onClick={() =>
                 goToMobileCardsPage(Math.max(0, safeMobileCardPage - 1))
               }
-              aria-label="Previous cards page"
+              aria-label={tCommon('previousCardsPage')}
             >
               <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -288,7 +290,7 @@ export function DayView({
                   Math.min(totalMobileCardPages - 1, safeMobileCardPage + 1),
                 )
               }
-              aria-label="Next cards page"
+              aria-label={tCommon('nextCardsPage')}
             >
               <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -367,7 +369,7 @@ export function DayView({
               onClick={() =>
                 goToDesktopCardsPage(Math.max(0, safeDesktopCardPage - 1))
               }
-              aria-label="Previous cards page"
+              aria-label={tCommon('previousCardsPage')}
             >
               <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -389,7 +391,7 @@ export function DayView({
                   Math.min(totalDesktopCardPages - 1, safeDesktopCardPage + 1),
                 )
               }
-              aria-label="Next cards page"
+              aria-label={tCommon('nextCardsPage')}
             >
               <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />

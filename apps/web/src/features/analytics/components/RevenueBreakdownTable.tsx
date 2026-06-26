@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { useLocale } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { cn, formatCurrency } from '@/shared/lib/utils';
 import type { RevenueData } from '../api/analytics.api';
 import { analyticsTableScrollClass } from '../analytics-table-scroll';
@@ -117,15 +117,17 @@ function RevenueTableBody({
 }
 
 function RevenueTableHeader({ periodColumnLabel }: { periodColumnLabel: string }) {
+  const tFinance = useTranslations('finance');
+  const tDashboard = useTranslations('dashboard');
   return (
     <thead className="border-b border-[rgba(14,14,16,0.07)] bg-[#fafafa]">
       <tr>
         <th className="min-w-[5.25rem] whitespace-nowrap px-3 py-3 text-left text-sm font-medium text-[#3b3b40] sm:min-w-0 sm:px-4">
           {periodColumnLabel}
         </th>
-        <th className="px-4 py-3 text-center text-sm font-medium text-[#3b3b40]">Income</th>
-        <th className="px-4 py-3 text-center text-sm font-medium text-[#3b3b40]">Expenses</th>
-        <th className="px-4 py-3 text-center text-sm font-medium text-[#3b3b40]">Profit</th>
+        <th className="px-4 py-3 text-center text-sm font-medium text-[#3b3b40]">{tFinance('income')}</th>
+        <th className="px-4 py-3 text-center text-sm font-medium text-[#3b3b40]">{tFinance('expenses')}</th>
+        <th className="px-4 py-3 text-center text-sm font-medium text-[#3b3b40]">{tDashboard('profit')}</th>
         <th className="px-4 py-3 text-center text-sm font-medium text-[#3b3b40]"># Payments</th>
       </tr>
     </thead>

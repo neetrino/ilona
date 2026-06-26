@@ -43,6 +43,7 @@ function SelectAllCheckbox({
   onChange: () => void;
   disabled?: boolean;
 }) {
+  const tCommon = useTranslations('common');
   const checkboxRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -60,7 +61,7 @@ function SelectAllCheckbox({
       onChange={onChange}
       onClick={(e) => e.stopPropagation()}
       disabled={disabled}
-      aria-label="Select all"
+      aria-label={tCommon('selectAll')}
     />
   );
 }
@@ -448,7 +449,7 @@ export function SalaryBreakdownModal({
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Exclude Lessons from Salary</DialogTitle>
+            <DialogTitle>{t('excludeLessonsTitle')}</DialogTitle>
             <DialogDescription>
               Are you sure you want to exclude {selectedLessonIds.size} lesson{selectedLessonIds.size > 1 ? 's' : ''} from salary calculation? 
               This will change the lesson status to CANCELLED and remove {selectedLessonIds.size > 1 ? 'them' : 'it'} from the salary breakdown. 

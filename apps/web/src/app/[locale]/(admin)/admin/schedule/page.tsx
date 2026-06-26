@@ -34,6 +34,7 @@ function areSetsEqual(a: Set<string>, b: Set<string>): boolean {
 
 export default function AdminSchedulePage() {
   const t = useTranslations('nav');
+  const tAttendance = useTranslations('attendance');
   const { user } = useAuthStore();
   const managerCenterId =
     user?.role === 'MANAGER' ? user.managerCenterId : undefined;
@@ -196,7 +197,7 @@ export default function AdminSchedulePage() {
         options={centerOptions}
         selectedIds={draftSelectedCenterIds}
         onSelectionChange={setDraftSelectedCenterIds}
-        placeholder="All centers"
+        placeholder={tAttendance('allCenters')}
         searchPlaceholder="Search centers..."
         emptyOptionsHint="No centers available"
         noResultsHint="No centers found"

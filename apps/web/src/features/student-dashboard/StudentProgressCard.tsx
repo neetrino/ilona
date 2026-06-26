@@ -12,6 +12,7 @@ type StudentProgressCardProps = {
 };
 
 function ProgressRing({ value }: { value: number }) {
+  const tCommon = useTranslations('common');
   const clamped = Math.max(0, Math.min(100, Math.round(value)));
   const radius = 52;
   const circumference = 2 * Math.PI * radius;
@@ -38,7 +39,7 @@ function ProgressRing({ value }: { value: number }) {
           {clamped}
           <span className="text-sm font-medium text-[#8b8b90]">%</span>
         </p>
-        <p className="mt-1 text-[0.65625rem] uppercase tracking-wider text-[#8b8b90]">Overall</p>
+        <p className="mt-1 text-[0.65625rem] uppercase tracking-wider text-[#8b8b90]">{tCommon('overall')}</p>
       </div>
     </div>
   );

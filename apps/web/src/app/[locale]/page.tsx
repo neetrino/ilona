@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-import { useLocale } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Paytone_One } from 'next/font/google';
@@ -152,6 +152,7 @@ const paytoneOne = Paytone_One({ weight: '400', subsets: ['latin'], preload: fal
 
 export default function HomePage() {
   const locale = useLocale();
+  const tCommon = useTranslations('common');
   const isHy = locale === 'hy';
   const tr = (en: string, hy: string) => (isHy ? hy : en);
   const router = useRouter();
@@ -1540,7 +1541,7 @@ export default function HomePage() {
           <div className="flex items-center justify-center gap-5">
             <button
               type="button"
-              aria-label="Previous branch"
+              aria-label={tCommon('previousBranch')}
               className={cn(
                 'inline-flex size-[56px] items-center justify-center',
                 BUTTON_HOVER_CLASS,
@@ -1551,7 +1552,7 @@ export default function HomePage() {
             </button>
             <button
               type="button"
-              aria-label="Next branch"
+              aria-label={tCommon('nextBranch')}
               className={cn(
                 'inline-flex size-[56px] items-center justify-center',
                 BUTTON_HOVER_CLASS,
@@ -1658,7 +1659,7 @@ export default function HomePage() {
           </div>
           <button
             type="button"
-            aria-label="Previous branch"
+            aria-label={tCommon('previousBranch')}
             className={cn(
               'absolute left-[40px] top-[444px] inline-flex h-[56px] w-[56px] items-center justify-center',
               BUTTON_HOVER_CLASS,
@@ -1669,7 +1670,7 @@ export default function HomePage() {
           </button>
           <button
             type="button"
-            aria-label="Next branch"
+            aria-label={tCommon('nextBranch')}
             className={cn(
               'absolute right-[40px] top-[444px] inline-flex h-[56px] w-[56px] items-center justify-center',
               BUTTON_HOVER_CLASS,

@@ -93,6 +93,7 @@ function RiskSummaryMobile({
 
 function StudentRiskMobileCard({ student }: { student: StudentRisk }) {
   const t = useTranslations('analytics');
+  const tNav = useTranslations('nav');
   const attendanceRate = Math.max(0, Math.min(100, student.attendanceRate));
 
   return (
@@ -117,7 +118,7 @@ function StudentRiskMobileCard({ student }: { student: StudentRisk }) {
 
       <div className="grid grid-cols-4 divide-x divide-[rgba(14,14,16,0.08)] border-t border-[rgba(14,14,16,0.08)]">
         <div className="px-2 py-3 text-center">
-          <p className="text-xs text-[#8b8b90]">Attendance</p>
+          <p className="text-xs text-[#8b8b90]">{tNav('attendance')}</p>
           <p className="mt-1 text-[1.05rem] font-semibold text-[#1f2654]">
             {student.present}/{student.totalLessons}
           </p>
@@ -133,7 +134,7 @@ function StudentRiskMobileCard({ student }: { student: StudentRisk }) {
           <p className="mt-1 text-[1.05rem] font-semibold text-[#1f2654]">{attendanceRate}%</p>
         </div>
         <div className="px-2 py-3 text-center">
-          <p className="text-xs text-[#8b8b90]">Unjustified</p>
+          <p className="text-xs text-[#8b8b90]">{t('unjustifiedShort')}</p>
           <p className={cn('mt-1 text-[1.05rem] font-semibold', student.absentUnjustified > 0 ? 'text-red-600' : 'text-green-600')}>
             {student.absentUnjustified}
           </p>
@@ -229,6 +230,7 @@ function StudentRiskRow({ student }: { student: StudentRisk }) {
 
 export default function AdminAnalyticsPage() {
   const tCommon = useTranslations('common');
+  const tNav = useTranslations('nav');
   const t = useTranslations('analytics');
   const tFinance = useTranslations('finance');
   const analyticsUrl = useAdminAnalyticsUrl();
@@ -275,7 +277,7 @@ export default function AdminAnalyticsPage() {
   const lowRisk = students.filter((s) => s.riskLevel === 'LOW').length;
 
   const tabs: { id: AdminAnalyticsTab; label: string }[] = [
-    { id: 'attendance', label: 'Attendance' },
+    { id: 'attendance', label: tNav('attendance') },
     { id: 'payments', label: 'Payments' },
     { id: 'recordings', label: 'Recordings' },
     { id: 'feedback', label: 'Feedback' },
@@ -568,13 +570,13 @@ export default function AdminAnalyticsPage() {
                     Group
                   </th>
                   <th className="px-4 py-3 text-center text-sm font-medium text-[#3b3b40]">
-                    Attendance
+                    {tNav('attendance')}
                   </th>
                   <th className="px-4 py-3 text-left text-sm font-medium text-[#3b3b40]">
-                    Rate
+                    {tCommon('rate')}
                   </th>
                   <th className="px-4 py-3 text-center text-sm font-medium text-[#3b3b40]">
-                    Unjustified
+                    {t('unjustifiedShort')}
                   </th>
                   <th className="px-4 py-3 text-center text-sm font-medium text-[#3b3b40]">
                     Risk Level

@@ -244,7 +244,7 @@ export function TeachersBoard({
                     }`}
                     disabled={safeMobileTeachersPage === 0}
                     onClick={() => goToMobileTeachersPage(Math.max(0, safeMobileTeachersPage - 1))}
-                    aria-label="Previous cards page"
+                    aria-label={tc('previousCardsPage')}
                   >
                     <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -266,7 +266,7 @@ export function TeachersBoard({
                         Math.min(totalMobileTeachersPages - 1, safeMobileTeachersPage + 1),
                       )
                     }
-                    aria-label="Next cards page"
+                    aria-label={tc('nextCardsPage')}
                   >
                     <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />

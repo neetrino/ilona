@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { readUrlSearchParam } from '@/shared/lib/url-search-params';
 import { useAppSearchUrl } from '@/shared/hooks/useAppSearchUrl';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -31,6 +32,11 @@ function getLevelDisplay(level?: string): string {
 
 export default function TeacherStudentsPage() {
   const params = useParams();
+  const tNav = useTranslations('nav');
+  const tTeacherStudents = useTranslations('teacherStudents');
+  const tStudents = useTranslations('students');
+  const tCrm = useTranslations('crm');
+  const tCommon = useTranslations('common');
   const { searchParams, urlRevision, replaceParams } = useAppSearchUrl();
   const locale = params.locale as string;
   const [searchQuery, setSearchQuery] = useState('');
@@ -113,8 +119,8 @@ export default function TeacherStudentsPage() {
 
   return (
     <DashboardLayout
-      title="My Students"
-      subtitle="View students in your groups and provide feedback."
+      title={tNav('myStudents')}
+      subtitle={tTeacherStudents('subtitle')}
     >
       <div className="space-y-4">
         {/* Group tabs */}
@@ -130,7 +136,7 @@ export default function TeacherStudentsPage() {
             </div>
           ) : groupsList.length === 0 ? (
             <div className="p-6 text-center text-sm text-[#8b8b90]">
-              No groups assigned yet. Groups assigned to you will appear here.
+              {tTeacherStudents('noGroupsAssignedHint')}
             </div>
           ) : (
             <div className="flex flex-wrap gap-2">
@@ -160,8 +166,8 @@ export default function TeacherStudentsPage() {
                       </span>
                     </div>
                     <div className="mt-0.5 text-xs text-[#8b8b90]">
-                      {group.level ? getLevelDisplay(group.level) : 'No level'} ·{' '}
-                      {studentCount} student{studentCount !== 1 ? 's' : ''}
+                      {group.level ? getLevelDisplay(group.level) : tTeacherStudents('noLevel')} ·{' '}
+                      {tTeacherStudents('studentCount', { count: studentCount })}
                     </div>
                   </button>
                 );
@@ -178,8 +184,8 @@ export default function TeacherStudentsPage() {
                 <h3 className="font-semibold text-[#1010a3]">{selectedGroup.name}</h3>
               </div>
               <p className="mt-1 text-sm text-[#8b8b90]">
-                {selectedGroup.level ? getLevelDisplay(selectedGroup.level) : 'No level'} ·{' '}
-                {items.length} student{items.length !== 1 ? 's' : ''}
+                {selectedGroup.level ? getLevelDisplay(selectedGroup.level) : tTeacherStudents('noLevel')} ·{' '}
+                {tTeacherStudents('studentCount', { count: items.length })}
               </p>
             </div>
           ) : null}
@@ -201,7 +207,7 @@ export default function TeacherStudentsPage() {
               </svg>
               <input
                 type="search"
-                placeholder="Search students..."
+                placeholder={tStudents('searchStudents')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full rounded-lg bg-[#f6f6f7] py-2 pl-9 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
@@ -225,14 +231,14 @@ export default function TeacherStudentsPage() {
             ) : items.length === 0 ? (
               <div className="p-12 text-center text-sm text-[#8b8b90]">
                 {searchQuery
-                  ? 'No students found. Try adjusting your search.'
-                  : 'No students in this group yet.'}
+                  ? tTeacherStudents('noStudentsSearch')
+                  : tTeacherStudents('noStudentsInGroup')}
               </div>
             ) : (
               items.map((item) => {
                 if (isOnboardingItem(item)) {
                   const name =
-                    [item.firstName, item.lastName].filter(Boolean).join(' ') || 'No name';
+                    [item.firstName, item.lastName].filter(Boolean).join(' ') || tTeacherStudents('noName');
                   const initials =
                     (item.firstName?.[0] ?? '') + (item.lastName?.[0] ?? '') || '?';
                   const canApproveTransfer =
@@ -253,7 +259,7 @@ export default function TeacherStudentsPage() {
                             <p className="font-medium text-[#1010a3]">
                               {name}
                               <span className="ml-2 rounded bg-amber-100 px-1.5 py-0.5 text-xs font-normal text-amber-700">
-                                Onboarding
+                                {tCommon('onboarding')}
                               </span>
                             </p>
                           </div>
@@ -262,14 +268,14 @@ export default function TeacherStudentsPage() {
                           {item.teacherApprovedAt ? (
                             <span
                               className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-green-100 text-green-700"
-                              title="Approved"
-                              aria-label="Approved"
+                              title={tCrm('approved')}
+                              aria-label={tCrm('approved')}
                             >
                               ✓
                             </span>
                           ) : item.transferFlag ? (
                             <span className="rounded bg-amber-100 px-2 py-1 text-xs font-medium text-amber-800">
-                              Transfer requested
+                              {tTeacherStudents('transferRequested')}
                             </span>
                           ) : canApproveTransfer ? (
                             <>
@@ -279,7 +285,7 @@ export default function TeacherStudentsPage() {
                                 disabled={approveMutation.isPending}
                                 className="rounded-lg bg-green-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50"
                               >
-                                Approve
+                                {tTeacherStudents('approve')}
                               </button>
                               <button
                                 type="button"
@@ -287,12 +293,12 @@ export default function TeacherStudentsPage() {
                                 disabled={transferMutation.isPending}
                                 className="rounded-lg border border-amber-500 px-3 py-1.5 text-sm font-medium text-amber-700 hover:bg-amber-50"
                               >
-                                Transfer
+                                {tCrm('transfer')}
                               </button>
                             </>
                           ) : (
                             <span className="text-xs text-[#8b8b90]">
-                              First lesson pending
+                              {tTeacherStudents('firstLessonPending')}
                             </span>
                           )}
                         </div>
@@ -340,8 +346,8 @@ export default function TeacherStudentsPage() {
                         <button
                           type="button"
                           onClick={() => setFeedbackStudent(student)}
-                          title="View feedback history"
-                          aria-label="View feedback history"
+                          title={tTeacherStudents('viewFeedbackHistory')}
+                          aria-label={tTeacherStudents('viewFeedbackHistory')}
                           className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-[#8b8b90] transition-colors hover:bg-primary/10 hover:text-primary"
                         >
                           <svg
@@ -362,7 +368,7 @@ export default function TeacherStudentsPage() {
                           href={`/${locale}/teacher/students/${student.id}?${searchParams.toString()}`}
                           className="rounded-lg px-3 py-1.5 text-sm text-primary transition-colors hover:bg-primary/10"
                         >
-                          View Profile
+                          {tTeacherStudents('viewProfile')}
                         </Link>
                       </div>
                     </div>
@@ -387,14 +393,14 @@ export default function TeacherStudentsPage() {
       {transferLeadId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
-            <h3 className="mb-2 text-lg font-semibold text-[#1010a3]">Request transfer</h3>
+            <h3 className="mb-2 text-lg font-semibold text-[#1010a3]">{tTeacherStudents('transferTitle')}</h3>
             <p className="mb-4 text-sm text-[#8b8b90]">
-              Include where to transfer the student and why (min 10 characters).
+              {tTeacherStudents('transferDescription')}
             </p>
             <textarea
               value={transferComment}
               onChange={(e) => setTransferComment(e.target.value)}
-              placeholder="e.g. Move to Group B2 – level is higher than A2"
+              placeholder={tTeacherStudents('transferPlaceholder')}
               rows={4}
               className="mb-4 w-full rounded-lg border border-[rgba(14,14,16,0.07)] px-3 py-2 text-sm"
             />
@@ -407,7 +413,7 @@ export default function TeacherStudentsPage() {
                 }}
                 className="rounded-lg border border-[rgba(14,14,16,0.07)] px-4 py-2 text-sm font-medium text-[#3b3b40]"
               >
-                Cancel
+                {tCommon('cancel')}
               </button>
               <button
                 type="button"
@@ -422,7 +428,7 @@ export default function TeacherStudentsPage() {
                 }
                 className="rounded-lg bg-amber-600 px-4 py-2 text-sm font-medium text-white hover:bg-amber-700 disabled:opacity-50"
               >
-                Submit
+                {tCommon('submit')}
               </button>
             </div>
           </div>

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import { useTranslations } from 'next-intl';
 
 interface SelectAllCheckboxProps {
   checked: boolean;
@@ -15,6 +16,7 @@ export function SelectAllCheckbox({
   onChange,
   disabled,
 }: SelectAllCheckboxProps) {
+  const tCommon = useTranslations('common');
   const checkboxRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -32,7 +34,7 @@ export function SelectAllCheckbox({
       onChange={onChange}
       onClick={(e) => e.stopPropagation()}
       disabled={disabled}
-      aria-label="Select all"
+      aria-label={tCommon('selectAll')}
     />
   );
 }

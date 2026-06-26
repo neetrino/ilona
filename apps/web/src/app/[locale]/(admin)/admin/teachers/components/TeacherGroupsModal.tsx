@@ -1,3 +1,6 @@
+'use client';
+
+import { useTranslations } from 'next-intl';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/shared/components/ui';
 import { useTeacher, type Teacher } from '@/features/teachers';
 
@@ -30,6 +33,7 @@ export function TeacherGroupsModal({
   teacher,
   initialTab,
 }: TeacherGroupsModalProps) {
+  const t = useTranslations('teachers');
   const teacherId = teacher?.id ?? '';
   const { data: teacherDetails, isLoading, isError } = useTeacher(teacherId, open && !!teacherId);
   if (!teacher) return null;
@@ -56,7 +60,7 @@ export function TeacherGroupsModal({
           </DialogDescription>
         </DialogHeader>
         {showLoading ? (
-          <p className="rounded-lg bg-[#fafafa] p-3 text-sm text-[#8b8b90]">Loading groups...</p>
+          <p className="rounded-lg bg-[#fafafa] p-3 text-sm text-[#8b8b90]">{t('loadingGroups')}</p>
         ) : showError ? (
           <p className="rounded-lg bg-red-50 p-3 text-sm text-red-600">
             Could not load latest groups. Showing available data.

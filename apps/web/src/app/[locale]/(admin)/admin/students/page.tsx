@@ -316,7 +316,7 @@ export default function StudentsPage() {
         studentName={selectedStudentIds.size > 0 ? `${selectedStudentIds.size} ${selectedStudentIds.size === 1 ? 'student' : 'students'}` : undefined}
         isLoading={deleteStudent.isPending}
         error={bulkDeleteError || undefined}
-        title="Delete Students"
+        title={t('deleteStudentsTitle')}
       />
 
       {/* Student feedback modal (message icon) */}

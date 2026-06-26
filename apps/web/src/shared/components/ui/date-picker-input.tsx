@@ -444,7 +444,7 @@ export const DatePickerInput = React.forwardRef<HTMLInputElement, DatePickerInpu
                 setMonthDate((prev) => addMonths(prev, -1));
               }}
               className="flex h-9 w-9 shrink-0 touch-manipulation items-center justify-center rounded-full border border-slate-200 text-slate-600 hover:bg-slate-50 min-[1367px]:h-8 min-[1367px]:w-8"
-              aria-label="Previous month"
+              aria-label={tCommon('previousMonth')}
             >
               <ChevronLeft className="h-4 w-4" />
             </button>
@@ -481,7 +481,7 @@ export const DatePickerInput = React.forwardRef<HTMLInputElement, DatePickerInpu
                 setMonthDate((prev) => addMonths(prev, 1));
               }}
               className="flex h-9 w-9 shrink-0 touch-manipulation items-center justify-center rounded-full border border-slate-200 text-slate-600 hover:bg-slate-50 min-[1367px]:h-8 min-[1367px]:w-8"
-              aria-label="Next month"
+              aria-label={tCommon('nextMonth')}
             >
               <ChevronRight className="h-4 w-4" />
             </button>

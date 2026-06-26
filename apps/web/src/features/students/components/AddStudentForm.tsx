@@ -31,6 +31,8 @@ interface AddStudentFormProps {
 }
 
 export function AddStudentForm({ open, onOpenChange }: AddStudentFormProps) {
+  const t = useTranslations('students');
+  const tCommon = useTranslations('common');
   const tForm = useTranslations('students.form');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -290,16 +292,16 @@ export function AddStudentForm({ open, onOpenChange }: AddStudentFormProps) {
             />
             <div className="h-1.5 w-14 rounded-full bg-slate-400" />
           </div>
-          <DialogPrimitive.Title className="sr-only">Add New Student</DialogPrimitive.Title>
+          <DialogPrimitive.Title className="sr-only">{t('addNewStudent')}</DialogPrimitive.Title>
           <DialogPrimitive.Close
             className="absolute right-4 top-4 hidden h-8 w-8 items-center justify-center rounded-full text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 min-[1367px]:inline-flex"
-            aria-label="Close"
+            aria-label={tCommon('close')}
           >
             <X className="h-4 w-4" />
           </DialogPrimitive.Close>
           <div className="min-h-0 overflow-y-auto overscroll-y-contain [touch-action:pan-y] [-webkit-overflow-scrolling:touch] px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-4 min-[1367px]:p-6">
             <div className="mb-4">
-              <h2 className="text-lg font-semibold text-[#3b3b40]">Add New Student</h2>
+              <h2 className="text-lg font-semibold text-[#3b3b40]">{t('addNewStudent')}</h2>
               <p className="mt-1 text-sm text-[#8b8b90]">{tForm('createDescription')}</p>
             </div>
 

@@ -40,6 +40,7 @@ export function LeadCardVoiceInline({
   showLabel = false,
 }: LeadCardVoiceInlineProps) {
   const t = useTranslations('crm');
+  const tChat = useTranslations('chat');
   const src = useMemo(() => getRecordingPlayUrl(r2Key), [r2Key]);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const trackRef = useRef<HTMLDivElement | null>(null);
@@ -220,7 +221,7 @@ export function LeadCardVoiceInline({
             'shrink-0 rounded-lg bg-[#f7edc6] px-2 py-0.5 text-xs font-semibold text-[#7a4724] transition-colors hover:bg-[#f3e3ab]',
             'focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:ring-offset-1 focus-visible:ring-offset-[#2329b8]',
           )}
-          aria-label="Playback speed"
+          aria-label={tChat('playbackSpeed')}
         >
           {playbackSpeed === 1 ? '1x' : `${playbackSpeed}x`}
         </button>

@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 import { useState, useRef, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import { createPortal } from 'react-dom';
 import { cn } from '@/shared/lib/utils';
 import {
@@ -91,6 +92,7 @@ export function SingleSelectDropdown({
   disabled = false,
   wrapText = false,
 }: SingleSelectDropdownProps) {
+  const t = useTranslations('common');
   const [isOpen, setIsOpen] = useState(false);
   const [openUpward, setOpenUpward] = useState(false);
   const [menuPosition, setMenuPosition] = useState<MenuPosition | null>(null);
@@ -383,7 +385,7 @@ export function SingleSelectDropdown({
               {error ? (
                 <div className="p-3 text-sm text-red-600">{error}</div>
               ) : options.length === 0 ? (
-                <div className="p-3 text-sm text-[#8b8b90]">No options available</div>
+                <div className="p-3 text-sm text-[#8b8b90]">{t('noOptionsAvailable')}</div>
               ) : (
                 <div className="space-y-1">
                   {options.map((option, index) => {

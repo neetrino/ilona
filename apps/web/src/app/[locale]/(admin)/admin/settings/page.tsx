@@ -19,6 +19,7 @@ import { useIsIPad } from '@/shared/hooks/useIsIPad';
 
 export default function SettingsPage() {
   const t = useTranslations('settings');
+  const tAuth = useTranslations('auth');
   const { user } = useAuthStore();
   const isIPad = useIsIPad();
   const isManager = user?.role === 'MANAGER';
@@ -88,7 +89,7 @@ export default function SettingsPage() {
           />
           <div className="min-w-0 flex-1 space-y-6">
             <div className="rounded-3xl border border-[rgba(14,14,16,0.07)] bg-white p-6">
-              <h2 className="text-lg font-semibold text-[#3b3b40] mb-6">Login</h2>
+              <h2 className="text-lg font-semibold text-[#3b3b40] mb-6">{tAuth('login')}</h2>
               <form onSubmit={handleUpdateLogin} className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-[#3b3b40] mb-2">

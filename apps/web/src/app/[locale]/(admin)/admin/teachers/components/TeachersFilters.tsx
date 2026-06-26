@@ -34,9 +34,10 @@ export function TeachersFilters({
   isDeleting,
 }: TeachersFiltersProps) {
   const locale = useLocale();
+  const tCommon = useTranslationsRuntime('common');
   const tGroups = useTranslationsRuntime('groups');
   const statusOptions = [
-    { id: '', label: 'All statuses' },
+    { id: '', label: t('allStatuses') },
     { id: 'ACTIVE', label: tStatus('active') },
     { id: 'INACTIVE', label: tStatus('inactive') },
     { id: 'SUSPENDED', label: tStatus('suspended') },
@@ -57,7 +58,7 @@ export function TeachersFilters({
       {/* Search by Keywords */}
       <div className="min-w-0">
         <label className="block text-sm font-medium text-[#8b8b90] mb-1.5">
-          Search by Keywords
+          {tCommon('search')}
         </label>
         <div className="relative">
           <svg
@@ -75,7 +76,7 @@ export function TeachersFilters({
           </svg>
           <input
             type="search"
-            placeholder="Search teachers by name, email or group..."
+            placeholder={t('searchPlaceholder')}
             value={searchQuery}
             onChange={onSearchChange}
             className="w-full h-12 pl-10 pr-4 py-3 bg-white border border-[rgba(14,14,16,0.07)] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20 focus:border-[#1010a3]"
@@ -87,7 +88,7 @@ export function TeachersFilters({
       <div className="min-w-0">
         <SingleSelectDropdown
           id="teachers-status-filter"
-          label="Status"
+          label={tCommon('status')}
           options={statusOptions}
           value={selectedStatus}
           onValueChange={(nextValue) => {

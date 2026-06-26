@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { Input } from '@/shared/components/ui';
 import { formatCurrency } from '@/shared/lib/utils';
 import type { StudentStatistics } from '@/features/students';
@@ -23,11 +24,12 @@ export function StudentStats({
   errors,
   register,
 }: StudentStatsProps) {
+  const t = useTranslations('students');
   return (
     <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
       <div className="bg-white rounded-xl border border-[rgba(14,14,16,0.07)] p-6">
         <div className="flex items-center justify-between mb-2">
-          <span className="text-sm text-[#8b8b90]">Monthly Fee</span>
+          <span className="text-sm text-[#8b8b90]">{t('monthlyFeeLabelStat')}</span>
           <svg className="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
@@ -51,7 +53,7 @@ export function StudentStats({
         <>
           <div className="bg-white rounded-xl border border-[rgba(14,14,16,0.07)] p-6">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm text-[#8b8b90]">Attendance Rate</span>
+              <span className="text-sm text-[#8b8b90]">{t('attendanceRateLabel')}</span>
               <svg className="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
@@ -60,12 +62,12 @@ export function StudentStats({
               {statistics.attendance.rate.toFixed(1)}%
             </p>
             <p className="text-xs text-[#8b8b90] mt-1">
-              {statistics.attendance.present} / {statistics.attendance.total} lessons
+              {statistics.attendance.present} / {statistics.attendance.total} {t('lessonsShort')}
             </p>
           </div>
           <div className="bg-white rounded-xl border border-[rgba(14,14,16,0.07)] p-6">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm text-[#8b8b90]">Pending Payments</span>
+              <span className="text-sm text-[#8b8b90]">{t('pendingPaymentsLabel')}</span>
               <svg className="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
@@ -73,20 +75,20 @@ export function StudentStats({
             <p className="text-3xl font-bold text-[#3b3b40]">{statistics.payments.pending}</p>
             {statistics.payments.overdue > 0 && (
               <p className="text-xs text-red-600 mt-1">
-                {statistics.payments.overdue} overdue
+                {t('overdueCountShort', { count: statistics.payments.overdue })}
               </p>
             )}
           </div>
           <div className="bg-white rounded-xl border border-[rgba(14,14,16,0.07)] p-6">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm text-[#8b8b90]">Current Streak</span>
+              <span className="text-sm text-[#8b8b90]">{t('currentStreakLabel')}</span>
               <svg className="w-5 h-5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3c0 3.5-2 5.5-2 8a4 4 0 008 0c0-2.5-2-4.5-2-8M8 14a4 4 0 108 0" />
               </svg>
             </div>
             <p className="text-3xl font-bold text-[#3b3b40]">{statistics.attendance.currentStreak}</p>
             <p className="text-xs text-[#8b8b90] mt-1">
-              consecutive present lessons
+              {t('consecutivePresentLessons')}
             </p>
           </div>
         </>

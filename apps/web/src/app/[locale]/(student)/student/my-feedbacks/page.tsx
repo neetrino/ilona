@@ -19,6 +19,7 @@ import {
 export default function StudentMyFeedbacksPage() {
   const tNav = useTranslations('nav');
   const tCommon = useTranslations('common');
+  const tStudents = useTranslations('students');
   const locale = useLocale();
   const { data: myProfile, isLoading: isLoadingProfile, error: profileError } = useMyProfile();
   const studentId = myProfile?.id ?? '';
@@ -56,7 +57,7 @@ export default function StudentMyFeedbacksPage() {
 
         {!isLoading && hasError && (
           <StudentErrorState
-            title="Could not load feedback"
+            title={tStudents('couldNotLoadFeedback')}
             message="Failed to load feedbacks. Please try again later."
           />
         )}

@@ -80,6 +80,8 @@ type NotesBlockProps = {
 
 export function NotesBlock({ variant = 'default', fillHeight = false, className }: NotesBlockProps) {
   const t = useTranslations('dashboard.notes');
+  const tCommon = useTranslations('common');
+  const tTeacherNotes = useTranslations('teacherNotes');
   const [draft, setDraft] = useState('');
   const { data: notes = [], isLoading } = useMyTeacherNotes();
   const create = useCreateTeacherNote();
@@ -166,7 +168,7 @@ export function NotesBlock({ variant = 'default', fillHeight = false, className 
 
   return (
     <StudentCard>
-      <StudentSectionHeader title="Notes" subtitle='Click "Done" to remove a note' />
+      <StudentSectionHeader title={tCommon('notes')} subtitle='Click "Done" to remove a note' />
       <div className="mb-4 flex flex-col gap-2 sm:flex-row">
         <StudentInput
           type="text"
@@ -178,7 +180,7 @@ export function NotesBlock({ variant = 'default', fillHeight = false, className 
               void handleAdd();
             }
           }}
-          placeholder="Jot down a quick reminder…"
+          placeholder={tTeacherNotes('quickReminderPlaceholder')}
           className="flex-1"
         />
         <StudentPrimaryButton

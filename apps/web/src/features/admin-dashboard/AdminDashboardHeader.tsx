@@ -23,6 +23,7 @@ export function AdminDashboardHeader({
 }: AdminDashboardHeaderProps) {
   const t = useTranslations('dashboard');
   const tNav = useTranslations('nav');
+  const tCommon = useTranslations('common');
   const pathname = usePathname();
   const { user } = useAuthStore();
   const firstName = user?.firstName ?? tNav('user');
@@ -49,7 +50,7 @@ export function AdminDashboardHeader({
                 type="button"
                 onClick={onMenuClick}
                 className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-[#1010a3] hover:bg-[#f6f6f7] lg:hidden"
-                aria-label="Open navigation menu"
+                aria-label={tCommon('openNavigationMenu')}
               >
                 <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
                   <path

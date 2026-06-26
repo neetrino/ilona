@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { CheckCircle2, XCircle, X } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
 
@@ -19,6 +20,7 @@ export function AutoDismissToast({
   durationMs = 3500,
   onDismiss,
 }: AutoDismissToastProps) {
+  const t = useTranslations('common');
   const [leaving, setLeaving] = useState(false);
 
   useEffect(() => {
@@ -59,7 +61,7 @@ export function AutoDismissToast({
         type="button"
         onClick={dismiss}
         className="shrink-0 rounded-md p-0.5 text-current/50 transition-colors hover:text-current"
-        aria-label="Dismiss notification"
+        aria-label={t('dismissNotification')}
       >
         <X className="h-4 w-4" aria-hidden />
       </button>

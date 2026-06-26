@@ -16,6 +16,7 @@ import {
   type GroupAssignmentOption,
 } from '@/features/students/lib/group-center-assignment';
 import type { Group } from '@/features/groups';
+import { useTranslations } from 'next-intl';
 
 const NEW_STUDENT_BADGE_DAYS = 30;
 
@@ -146,6 +147,7 @@ function RegisterDateCell({
   onSave: (studentId: string, date: string | null) => Promise<void>;
   disabled: boolean;
 }) {
+  const tCommon = useTranslations('common');
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -225,7 +227,7 @@ function RegisterDateCell({
           ref={inputRef}
           type="text"
           value={localValue}
-          placeholder="DD/MM/YYYY"
+          placeholder={tCommon('dateFormatPlaceholder')}
           onChange={(e) => setLocalValue(formatDmyInputValue(e.target.value, localValue))}
           onBlur={handleBlur}
           onKeyDown={handleKeyDown}
@@ -398,8 +400,8 @@ export function createStudentsTableColumns({
               onChange={async (centerId) => {
                 await onCenterChange(row.id, centerId);
               }}
-              placeholder="Not assigned"
-              clearLabel="Not assigned"
+              placeholder={tCommon('notAssigned')}
+              clearLabel={tCommon('notAssigned')}
               disabled={isUpdating}
               searchable
               searchPlaceholder="Search center..."
@@ -421,7 +423,7 @@ export function createStudentsTableColumns({
           row.groupId || null,
           groups,
         );
-        const groupPlaceholder = !manualCenterId ? 'Select a center first' : 'Select group';
+        const groupPlaceholder = !manualCenterId ? t('form.selectCenterFirst') : t('selectGroup');
         return (
           <div className="min-w-0 w-full" onClick={(e) => e.stopPropagation()}>
             <InlineSelect
@@ -432,7 +434,7 @@ export function createStudentsTableColumns({
                 await onGroupChange(row.id, groupId);
               }}
               placeholder={groupPlaceholder}
-              clearLabel="Not assigned"
+              clearLabel={tCommon('notAssigned')}
               disabled={isUpdating || !manualCenterId}
               searchable
               searchPlaceholder="Search group..."
@@ -506,7 +508,7 @@ export function createStudentsTableColumns({
       render: (row: TeacherAssignedItem) => {
         if (isOnboardingItem(row)) {
           return (
-            <span className="text-[#8b8b90] text-xs" onClick={(e) => e.stopPropagation()}>Onboarding</span>
+            <span className="text-[#8b8b90] text-xs" onClick={(e) => e.stopPropagation()}>{tCommon('onboarding')}</span>
           );
         }
         const student = row;
