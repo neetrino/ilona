@@ -1657,6 +1657,7 @@
     "lastName": "Ազգանուն",
     "emailAddress": "Էլ. փոստի հասցե",
     "phoneNumber": "Հեռախոսահամար",
+    "age": "Տարիք",
     "role": "Դեր",
     "assignedBySystem": "Նշանակված է համակարգի կողմից",
     "contactAdminToChangeEmail": "Էլ. փոստը փոխելու համար կապվեք ադմինիստրատորի հետ",

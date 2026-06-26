@@ -51,12 +51,13 @@ type DialogContentProps = React.ComponentPropsWithoutRef<typeof DialogPrimitive.
   variant?: 'default' | 'portal';
   /** Hide the top-right close control on mobile (sheet closed via drag handle). */
   hideCloseButton?: boolean;
+  closeButtonClassName?: string;
 };
 
 const DialogContent = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Content>,
   DialogContentProps
->(({ className, overlayClassName, children, sheet = true, variant = 'default', hideCloseButton = false, ...props }, ref) => {
+>(({ className, overlayClassName, children, sheet = true, variant = 'default', hideCloseButton = false, closeButtonClassName, ...props }, ref) => {
   const isPortalSheet = variant === 'portal';
   const useSheet = sheet || isPortalSheet;
   const closeRef = React.useRef<HTMLButtonElement>(null);
@@ -90,6 +91,11 @@ const DialogContent = React.forwardRef<
       }
     },
     [ref],
+  );
+
+  const closeButtonClasses = cn(
+    'absolute right-4 top-4 rounded-sm border-0 opacity-70 outline-none ring-0 ring-offset-0 transition-opacity hover:opacity-100 focus:outline-none focus:ring-0 focus:ring-offset-0 focus-visible:outline-none focus-visible:ring-0 disabled:pointer-events-none data-[state=open]:bg-transparent data-[state=open]:text-muted-foreground',
+    closeButtonClassName,
   );
 
   return (
@@ -135,7 +141,8 @@ const DialogContent = React.forwardRef<
         {!isPortalSheet && hideCloseButton ? (
           <DialogPrimitive.Close
             className={cn(
-              'absolute right-4 top-4 hidden rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground lg:inline-flex lg:items-center lg:justify-center',
+              closeButtonClasses,
+              'hidden lg:inline-flex lg:items-center lg:justify-center',
               useSheet && 'top-3 lg:top-4',
             )}
           >
@@ -145,19 +152,14 @@ const DialogContent = React.forwardRef<
         ) : null}
         {isPortalSheet ? (
           <DialogPrimitive.Close
-            className="absolute right-4 top-4 hidden rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground lg:inline-flex lg:items-center lg:justify-center lg:top-4"
+            className={cn(closeButtonClasses, 'hidden lg:inline-flex lg:items-center lg:justify-center lg:top-4')}
           >
             <X className="h-4 w-4" />
             <span className="sr-only">Close</span>
           </DialogPrimitive.Close>
         ) : null}
         {!isPortalSheet && !hideCloseButton ? (
-          <DialogPrimitive.Close
-            className={cn(
-              'absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground',
-              useSheet && 'top-3 lg:top-4',
-            )}
-          >
+          <DialogPrimitive.Close className={cn(closeButtonClasses, useSheet && 'top-3 lg:top-4')}>
             <X className="h-4 w-4" />
             <span className="sr-only">Close</span>
           </DialogPrimitive.Close>

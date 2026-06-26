@@ -1656,6 +1656,7 @@
     "lastName": "Last Name",
     "emailAddress": "Email Address",
     "phoneNumber": "Phone Number",
+    "age": "Age",
     "role": "Role",
     "assignedBySystem": "Assigned by system",
     "contactAdminToChangeEmail": "Contact admin to change email",
