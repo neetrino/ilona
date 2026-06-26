@@ -29,6 +29,7 @@ const PAGE_SIZE = 10;
 const NEW_STUDENT_BADGE_DAYS = 30;
 const MODAL_PARAM = 'modal';
 const ADD_STUDENT_MODAL = 'add-student';
+const EDIT_STUDENT_PARAM = 'editStudent';
 
 function isWithinNewStudentWindow(student: Student): boolean {
   if (student.isRecentlyPaidFromCrm !== undefined) {
@@ -101,6 +102,7 @@ export function useStudentsPage() {
   const [isBulkDeleteDialogOpen, setIsBulkDeleteDialogOpen] = useState(false);
   const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
   const isFeedbackClosingRef = useRef(false);
+  const isEditClosingRef = useRef(false);
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [selectedStudentForFeedback, setSelectedStudentForFeedback] = useState<Student | null>(null);
 
@@ -181,6 +183,18 @@ export function useStudentsPage() {
       setIsFeedbackModalOpen(false);
     }
   }, [feedbackStudentIdFromUrl, urlRevision]);
+
+  const editStudentIdFromUrl = readUrlSearchParam(EDIT_STUDENT_PARAM, searchParams, urlRevision);
+  useEffect(() => {
+    if (isEditClosingRef.current) {
+      return;
+    }
+    if (editStudentIdFromUrl) {
+      setIsEditStudentOpen(true);
+    } else {
+      setIsEditStudentOpen(false);
+    }
+  }, [editStudentIdFromUrl, urlRevision]);
 
   // Debounce search query (300ms). Use debounced value for API to avoid request on every keystroke.
   useEffect(() => {
@@ -423,10 +437,27 @@ export function useStudentsPage() {
     }
   };
 
-  // Handle edit button click
+  // Handle edit button click — update URL so refresh keeps modal open
   const handleEditClick = (student: Student) => {
+    isEditClosingRef.current = false;
     setSelectedStudent(student);
     setIsEditStudentOpen(true);
+    setParams({ [EDIT_STUDENT_PARAM]: student.id }, { mode: 'push' });
+  };
+
+  const handleEditModalOpenChange = (open: boolean) => {
+    if (open) {
+      isEditClosingRef.current = false;
+      setIsEditStudentOpen(true);
+      return;
+    }
+    isEditClosingRef.current = true;
+    setIsEditStudentOpen(false);
+    setSelectedStudent(null);
+    removeParams([EDIT_STUDENT_PARAM], { mode: 'replace' });
+    setTimeout(() => {
+      isEditClosingRef.current = false;
+    }, 100);
   };
 
   // Handle message/feedback icon click — update URL so refresh keeps modal open
@@ -644,6 +675,7 @@ export function useStudentsPage() {
     selectedYear,
     isAddStudentOpen,
     isEditStudentOpen,
+    editStudentIdFromUrl,
     isDeleteDialogOpen,
     isBulkDeleteDialogOpen,
     isFeedbackModalOpen,
@@ -692,6 +724,7 @@ export function useStudentsPage() {
     handleDeleteClick,
     handleDeleteConfirm,
     handleEditClick,
+    handleEditModalOpenChange,
     handleDeactivateClick,
     handleShowFeedback,
     handleFeedbackModalOpenChange,

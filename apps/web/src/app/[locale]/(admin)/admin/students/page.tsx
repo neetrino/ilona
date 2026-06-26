@@ -45,6 +45,7 @@ export default function StudentsPage() {
     selectedYear,
     isAddStudentOpen,
     isEditStudentOpen,
+    editStudentIdFromUrl,
     isDeleteDialogOpen,
     isBulkDeleteDialogOpen,
     isFeedbackModalOpen,
@@ -90,6 +91,7 @@ export default function StudentsPage() {
     handleDeleteClick,
     handleDeleteConfirm,
     handleEditClick,
+    handleEditModalOpenChange,
     handleDeactivateClick,
     handleShowFeedback,
     handleFeedbackModalOpenChange,
@@ -107,7 +109,6 @@ export default function StudentsPage() {
     setSelectedYear,
     handleFilterChange,
     setIsAddStudentOpen,
-    setIsEditStudentOpen,
     setIsDeleteDialogOpen,
     setIsBulkDeleteDialogOpen,
     setSelectedStudent,
@@ -280,16 +281,11 @@ export default function StudentsPage() {
       />
 
       {/* Edit Student Modal */}
-      {selectedStudent && (
+      {(selectedStudent || editStudentIdFromUrl) && (
         <EditStudentForm
-          open={isEditStudentOpen}
-          onOpenChange={(open) => {
-            setIsEditStudentOpen(open);
-            if (!open) {
-              setSelectedStudent(null);
-            }
-          }}
-          studentId={selectedStudent.id}
+          open={isEditStudentOpen || !!editStudentIdFromUrl}
+          onOpenChange={handleEditModalOpenChange}
+          studentId={selectedStudent?.id ?? editStudentIdFromUrl!}
         />
       )}
 

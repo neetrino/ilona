@@ -41,7 +41,6 @@ type UpdateStudentFormData = {
   parentPassportInfo?: string;
   monthlyFee: number;
   notes?: string;
-  receiveReports?: boolean;
   registerDate?: string;
 };
 
@@ -83,7 +82,6 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
         parentPassportInfo: z.string().max(100, tVal('passportMax')).optional().or(z.literal('')),
         monthlyFee: z.number().min(0, tVal('monthlyFeeMin')),
         notes: z.string().max(500, tVal('notesMax')).optional().or(z.literal('')),
-        receiveReports: z.boolean().optional(),
         registerDate: z.string().optional().or(z.literal('')),
       }),
     [tVal],
@@ -128,7 +126,6 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
       parentPassportInfo: '',
       monthlyFee: 0,
       notes: '',
-      receiveReports: false,
       registerDate: '',
     },
   });
@@ -246,7 +243,6 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
       setValue('parentPassportInfo', student.parentPassportInfo || '');
       setValue('monthlyFee', typeof student.monthlyFee === 'string' ? parseFloat(student.monthlyFee) || 0 : Number(student.monthlyFee || 0));
       setValue('notes', student.notes || '');
-      setValue('receiveReports', student.receiveReports ?? true);
       setValue('registerDate', student.registerDate ? new Date(student.registerDate).toISOString().split('T')[0] : '');
       setErrorMessage(null);
       setSuccessMessage(null);
@@ -362,7 +358,6 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
       if (dirtyFields.parentPassportInfo) payload.parentPassportInfo = data.parentPassportInfo || undefined;
       if (dirtyFields.monthlyFee) payload.monthlyFee = data.monthlyFee;
       if (dirtyFields.notes) payload.notes = data.notes || undefined;
-      if (dirtyFields.receiveReports) payload.receiveReports = data.receiveReports;
       if (dirtyFields.registerDate) payload.registerDate = data.registerDate?.trim() ? data.registerDate.trim() : null;
 
       // Nothing changed: just close without a redundant API call.
@@ -756,18 +751,6 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
               {errors.notes && (
                 <p className="text-sm text-red-600">{errors.notes.message}</p>
               )}
-            </div>
-
-            <div className="flex items-center space-x-2">
-              <input
-                type="checkbox"
-                id="receiveReports"
-                {...register('receiveReports')}
-                className="h-4 w-4 rounded border-slate-300 accent-[#1010a3] focus:ring-[#1010a3]/30"
-              />
-              <Label htmlFor="receiveReports" className="text-sm font-normal cursor-pointer">
-                {t('receiveReportsOn')}
-              </Label>
             </div>
 
             <div className="flex flex-col-reverse gap-2 pt-2 min-[1367px]:flex-row min-[1367px]:justify-end">

@@ -177,9 +177,18 @@ export function isoToDmy(value?: string | null): string {
   if (!value?.trim()) return '';
   const trimmed = value.trim();
   if (DMY_DATE_RE.test(trimmed)) return trimmed;
-  if (!ISO_DATE_RE.test(trimmed)) return trimmed;
-  const [year, month, day] = trimmed.split('-');
-  return `${day}/${month}/${year}`;
+  if (ISO_DATE_RE.test(trimmed)) {
+    const [year, month, day] = trimmed.split('-');
+    return `${day}/${month}/${year}`;
+  }
+  const date = new Date(trimmed);
+  if (!Number.isNaN(date.getTime())) {
+    const day = String(date.getUTCDate()).padStart(2, '0');
+    const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+    const year = date.getUTCFullYear();
+    return `${day}/${month}/${year}`;
+  }
+  return trimmed;
 }
 
 export function formatIsoDateAsDmy(iso?: string | null): string {
