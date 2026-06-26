@@ -6,7 +6,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { FloatingChatWidget } from '@/features/chat';
 import { AdminPortalNavCard } from '@/features/admin-dashboard/AdminPortalNavCard';
 import { AdminPortalNavbar } from '@/features/admin-dashboard/AdminPortalNavbar';
-import { useAuthStore, getDashboardPath } from '@/features/auth/store/auth.store';
+import { getDashboardPath } from '@/features/auth/store/auth.store';
 import { useIsLgViewport } from '@/shared/hooks/useIsLgViewport';
 import { PORTAL_SHELL_BG } from '@/shared/components/layout/student-layout';
 import {

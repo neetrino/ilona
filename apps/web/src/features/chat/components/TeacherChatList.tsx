@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { useTeacherGroups, useTeacherStudents, useTeacherAdmin, useSocket, useCreateDirectChat, useTeacherUnreadCounts, useCustomGroupChats, useChats } from '../hooks';
@@ -67,7 +67,7 @@ export function TeacherChatList({ onSelectChat }: TeacherChatListProps) {
   const formatTime = (dateStr?: string) =>
     formatChatListTime(dateStr, locale, tChat('yesterday'));
 
-  const getChatSortMeta = (chatId: string | null | undefined): ChatListSortable => {
+  const getChatSortMeta = useCallback((chatId: string | null | undefined): ChatListSortable => {
     if (!chatId) {
       return { unreadCount: 0 };
     }
@@ -81,7 +81,7 @@ export function TeacherChatList({ onSelectChat }: TeacherChatListProps) {
       updatedAt: chat.updatedAt,
       unreadCount: chat.unreadCount,
     };
-  };
+  }, [allChats]);
 
   const sortedGroupItems = useMemo(() => {
     const query = searchQuery.toLowerCase();
@@ -125,7 +125,7 @@ export function TeacherChatList({ onSelectChat }: TeacherChatListProps) {
     }
 
     return sortChatListItems(items, (item) => item.sort).map((item) => item.entry);
-  }, [customGroupChats, groups, searchQuery, allChats]);
+  }, [customGroupChats, groups, searchQuery, getChatSortMeta]);
 
   const sortedStudents = useMemo(
     () =>
@@ -140,7 +140,7 @@ export function TeacherChatList({ onSelectChat }: TeacherChatListProps) {
           unreadCount: chatMeta.unreadCount ?? student.unreadCount ?? 0,
         };
       }),
-    [students, allChats],
+    [students, getChatSortMeta],
   );
 
   // Handle group click - fetch group chat

@@ -9,7 +9,7 @@ import type { Chat } from '../types';
 import { cn } from '@/shared/lib/utils';
 import { formatDisplayName, getInitialsFromParts } from '@/shared/components/ui/avatar';
 import { formatMessagePreview } from '../utils';
-import { formatChatListTime, sortChatListItems, type ChatListSortable } from '../utils/chat-utils';
+import { formatChatListTime, sortChatListItems } from '../utils/chat-utils';
 import Image from 'next/image';
 import { OnlineStatusDot } from './OnlineStatusDot';
 

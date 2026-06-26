@@ -11,7 +11,7 @@ import type { AssignedTeacher } from '@/features/students/api/students.api';
 import { cn } from '@/shared/lib/utils';
 import { getChatTheme } from '../lib/chat-theme';
 import { formatMessagePreview } from '../utils';
-import { formatChatListTime, sortChatListItems, type ChatListSortable } from '../utils/chat-utils';
+import { formatChatListTime, sortChatListItems } from '../utils/chat-utils';
 import Image from 'next/image';
 import { formatDisplayName, getInitials, getInitialsFromParts } from '@/shared/components/ui/avatar';
 import { OnlineStatusDot } from './OnlineStatusDot';

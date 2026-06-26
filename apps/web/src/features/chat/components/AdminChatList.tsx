@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { useAdminStudents, useAdminTeachers, useAdminGroups, useAdminUnreadCounts, useChats, useCustomGroupChats } from '../hooks';
@@ -88,7 +88,7 @@ export function AdminChatList({ activeTab, onTabChange, onSelectChat }: AdminCha
     return chat?.unreadCount || 0;
   };
 
-  const getDirectChatSortMeta = (userId: string): ChatListSortable => {
+  const getDirectChatSortMeta = useCallback((userId: string): ChatListSortable => {
     const chat = chats.find(
       (c) => c.type === 'DIRECT' && c.participants.some((p) => p.userId === userId),
     );
@@ -99,16 +99,16 @@ export function AdminChatList({ activeTab, onTabChange, onSelectChat }: AdminCha
       updatedAt: chat.updatedAt,
       unreadCount: chat.unreadCount,
     };
-  };
+  }, [chats]);
 
   const sortedStudents = useMemo(
     () => sortChatListItems(students, (student) => getDirectChatSortMeta(student.id)),
-    [students, chats],
+    [students, getDirectChatSortMeta],
   );
 
   const sortedTeachers = useMemo(
     () => sortChatListItems(teachers, (teacher) => getDirectChatSortMeta(teacher.id)),
-    [teachers, chats],
+    [teachers, getDirectChatSortMeta],
   );
 
   const sortedGroupItems = useMemo(() => {
