@@ -18,6 +18,24 @@ import type { Group } from '@/features/groups';
 
 const NEW_STUDENT_BADGE_DAYS = 30;
 
+/** Equal header rhythm: same horizontal padding + equal share after the checkbox column. */
+const HEADER_CELL_X = '!px-4';
+const DATA_COL_SHARE = '!w-[calc((100%-2.5rem)/7)]';
+
+const COL = {
+  checkbox: `!w-10 !min-w-10 !max-w-10 shrink-0 ${HEADER_CELL_X} align-middle`,
+  student: `${DATA_COL_SHARE} !min-w-[10rem] ${HEADER_CELL_X} align-middle`,
+  center: `${DATA_COL_SHARE} !min-w-[9rem] ${HEADER_CELL_X} align-middle`,
+  group: `${DATA_COL_SHARE} !min-w-[9rem] ${HEADER_CELL_X} align-middle`,
+  register: `${DATA_COL_SHARE} !min-w-[5.75rem] ${HEADER_CELL_X} align-middle text-center`,
+  monthlyFee: `${DATA_COL_SHARE} !min-w-[6.25rem] ${HEADER_CELL_X} align-middle text-center`,
+  absence: `${DATA_COL_SHARE} !min-w-[4.5rem] ${HEADER_CELL_X} align-middle text-center`,
+  actions: `${DATA_COL_SHARE} !min-w-[7.5rem] shrink-0 ${HEADER_CELL_X} align-middle text-center`,
+} as const;
+
+const INLINE_SELECT_TABLE_CLASS =
+  '[&_button]:min-h-9 [&_button]:py-1.5 [&_button]:text-[13px] [&_button]:leading-snug';
+
 type SelectOption = { id: string; label: string; searchText?: string };
 
 function buildGroupSearchText(group: Group): string {
@@ -223,7 +241,7 @@ function RegisterDateCell({
   const displayText = formatRegisterDate(value) || '—';
   return (
     <div
-      className="relative flex min-h-8 min-w-0 items-center"
+      className="relative flex min-h-9 min-w-0 items-center justify-center"
       onClick={(e) => e.stopPropagation()}
     >
       <button
@@ -231,7 +249,7 @@ function RegisterDateCell({
         onClick={() => !disabled && setEditing(true)}
         disabled={disabled || saving}
         className={cn(
-          'h-8 whitespace-nowrap rounded px-1 text-left text-sm transition-colors',
+          'h-9 whitespace-nowrap rounded px-1.5 text-sm transition-colors',
           displayText === '—'
             ? 'text-[#8b8b90] hover:text-[#3b3b40]'
             : 'text-[#3b3b40] hover:text-[#1010a3]',
@@ -314,13 +332,13 @@ export function createStudentsTableColumns({
           />
         );
       },
-      className: '!w-9 !min-w-9 shrink-0 !pl-2 !pr-1',
+      className: COL.checkbox,
     },
     {
       key: 'student',
       header: 'STUDENT',
       sortable: true,
-      className: '!w-[18%] !min-w-[12rem] !pl-0 !pr-2 align-top',
+      className: COL.student,
       render: (row: TeacherAssignedItem) => {
         const firstName = isOnboardingItem(row) ? (row.firstName ?? '') : (row.user?.firstName ?? '');
         const lastName = isOnboardingItem(row) ? (row.lastName ?? '') : (row.user?.lastName ?? '');
@@ -334,7 +352,7 @@ export function createStudentsTableColumns({
         const showNewBadge = !isOnboardingItem(row) ? isNewPaidStudent(row) : false;
         const riskBadge = getRiskBadge(derivedRisk);
         return (
-          <div className="flex items-start gap-2">
+          <div className="flex items-center gap-2.5">
             <div className="relative shrink-0">
               <Avatar src={avatarUrl} name={fullName} size="md" />
               {showNewBadge && (
@@ -343,11 +361,11 @@ export function createStudentsTableColumns({
                 </span>
               )}
             </div>
-            <div className="min-w-0">
-              <p className="font-semibold text-[#3b3b40] leading-tight break-words">
+            <div className="min-w-0 flex-1">
+              <p className="truncate font-semibold text-[#3b3b40] text-sm leading-snug">
                 {firstName} {lastName}
               </p>
-              <div className="flex flex-wrap items-center gap-1.5 mt-0.5">
+              <div className="mt-0.5 flex flex-wrap items-center gap-1.5">
                 {riskBadge && (
                   <span
                     className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wide border ${riskBadge.className}`}
@@ -355,7 +373,7 @@ export function createStudentsTableColumns({
                     {riskBadge.label}
                   </span>
                 )}
-                <span className="text-sm text-[#8b8b90]">{phone}</span>
+                <span className="truncate text-xs text-[#8b8b90]">{phone}</span>
               </div>
             </div>
           </div>
@@ -365,7 +383,7 @@ export function createStudentsTableColumns({
     {
       key: 'center',
       header: 'CENTER',
-      className: '!w-[13%] !min-w-[8.75rem] align-top',
+      className: COL.center,
       render: (row: TeacherAssignedItem) => {
         if (isOnboardingItem(row)) return <span className="text-[#8b8b90]">—</span>;
         // Center column = manual `student.centerId` only; never mirror group.center (avoids "auto-select" when group changes).
@@ -373,6 +391,7 @@ export function createStudentsTableColumns({
         return (
           <div className="min-w-0 w-full" onClick={(e) => e.stopPropagation()}>
             <InlineSelect
+              className={INLINE_SELECT_TABLE_CLASS}
               value={manualCenterId}
               options={centerOptions}
               onChange={async (centerId) => {
@@ -381,6 +400,9 @@ export function createStudentsTableColumns({
               placeholder="Not assigned"
               clearLabel="Not assigned"
               disabled={isUpdating}
+              searchable
+              searchPlaceholder="Search center..."
+              emptySearchMessage="No centers found"
             />
           </div>
         );
@@ -389,7 +411,7 @@ export function createStudentsTableColumns({
     {
       key: 'group',
       header: 'GROUP',
-      className: '!w-[13%] !min-w-[8.75rem] align-top',
+      className: COL.group,
       render: (row: TeacherAssignedItem) => {
         if (isOnboardingItem(row)) return <span className="text-[#8b8b90]">—</span>;
         const manualCenterId = row.centerId ?? null;
@@ -402,6 +424,7 @@ export function createStudentsTableColumns({
         return (
           <div className="min-w-0 w-full" onClick={(e) => e.stopPropagation()}>
             <InlineSelect
+              className={INLINE_SELECT_TABLE_CLASS}
               value={row.groupId || null}
               options={groupOptionsForRow}
               onChange={async (groupId) => {
@@ -422,7 +445,7 @@ export function createStudentsTableColumns({
       key: 'register',
       header: 'REGISTER',
       sortable: true,
-      className: '!w-[10%] !min-w-[8.25rem] whitespace-nowrap text-left align-top',
+      className: COL.register,
       render: (row: TeacherAssignedItem) => {
         if (isOnboardingItem(row)) return <span className="text-[#8b8b90]">—</span>;
         return (
@@ -439,13 +462,15 @@ export function createStudentsTableColumns({
       key: 'monthlyFee',
       header: 'MONTHLY FEE',
       sortable: true,
-      className: '!w-[11%] !min-w-[6.5rem] whitespace-nowrap text-center align-top',
+      className: COL.monthlyFee,
       render: (row: TeacherAssignedItem) => {
         if (isOnboardingItem(row)) return <span className="text-[#8b8b90]">—</span>;
         const fee = typeof row.monthlyFee === 'string' ? parseFloat(row.monthlyFee) : Number(row.monthlyFee || 0);
         return (
-          <div className="w-full flex justify-center" onClick={(e) => e.stopPropagation()}>
-            <span className="text-[#3b3b40] font-medium whitespace-nowrap">{formatCurrency(fee)}</span>
+          <div className="flex w-full justify-center" onClick={(e) => e.stopPropagation()}>
+            <span className="whitespace-nowrap text-sm font-medium tabular-nums text-[#3b3b40]">
+              {formatCurrency(fee)}
+            </span>
           </div>
         );
       },
@@ -454,7 +479,7 @@ export function createStudentsTableColumns({
       key: 'absence',
       header: 'ABSENCE',
       sortable: true,
-      className: '!w-[8%] !min-w-[5rem] whitespace-nowrap text-center align-top',
+      className: COL.absence,
       render: (row: TeacherAssignedItem) => {
         if (isOnboardingItem(row)) {
           return (
@@ -465,8 +490,10 @@ export function createStudentsTableColumns({
         }
         const absencesThisMonth = row.attendanceSummary?.absences ?? 0;
         return (
-          <div className="w-full flex justify-center" onClick={(e) => e.stopPropagation()}>
-            <span className="text-[#3b3b40] font-medium">{absencesThisMonth}</span>
+          <div className="flex w-full justify-center" onClick={(e) => e.stopPropagation()}>
+            <span className="inline-flex min-w-[1.25rem] justify-center text-sm font-medium tabular-nums text-[#3b3b40]">
+              {absencesThisMonth}
+            </span>
           </div>
         );
       },
@@ -474,7 +501,7 @@ export function createStudentsTableColumns({
     {
       key: 'actions',
       header: 'ACTIONS',
-      className: '!w-[11%] !min-w-[9.5rem] shrink-0 !px-2 !py-3 text-center align-top',
+      className: COL.actions,
       render: (row: TeacherAssignedItem) => {
         if (isOnboardingItem(row)) {
           return (
@@ -484,11 +511,11 @@ export function createStudentsTableColumns({
         const student = row;
         const isActive = student.user?.status === 'ACTIVE';
         const btnClass =
-          'p-1.5 text-[#1010a3] hover:text-[#3b3b40] hover:bg-[#fafafa] rounded-lg transition-colors duration-150 ease-out focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20 focus:ring-offset-1 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed';
+          'p-1 text-[#1010a3] hover:text-[#3b3b40] hover:bg-[#fafafa] rounded-lg transition-colors duration-150 ease-out focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20 focus:ring-offset-1 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed';
 
         return (
           <div
-            className="w-full flex items-center justify-center gap-0.5"
+            className="flex w-full items-center justify-center gap-0.5"
             onClick={(e) => e.stopPropagation()}
           >
             <button

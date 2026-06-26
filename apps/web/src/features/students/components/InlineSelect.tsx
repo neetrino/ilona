@@ -315,7 +315,7 @@ export function InlineSelect({
           error && 'border-red-300 bg-red-50',
           isLoading && 'opacity-50 cursor-wait'
         )}
-        title={error || undefined}
+        title={error || (displayText !== placeholder ? displayText : undefined)}
       >
         <div className="flex items-center justify-between gap-2">
           <span className="truncate">
