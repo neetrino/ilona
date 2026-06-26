@@ -471,42 +471,36 @@ export function GroupsTab({
       {
         key: 'level',
         header: tCommon('level'),
-        className: 'align-top',
         render: (group: Group) => (
-          <div className="pt-0.5">
-            {group.level ? (
-              <Badge variant="info">{group.level}</Badge>
-            ) : (
-              <span className="text-[#8b8b90]">—</span>
-            )}
-          </div>
+          group.level ? (
+            <Badge variant="info">{group.level}</Badge>
+          ) : (
+            <span className="text-[#8b8b90]">—</span>
+          )
         ),
       },
       {
         key: 'teacher',
         header: tCommon('teacher'),
-        className: 'align-middle h-px',
         render: (group: Group) => {
           const teachersForDisplay = getGroupTeachersForDisplay(group);
           return (
-            <div className="flex h-full min-h-[3rem] items-center py-1">
-              <GroupTeachersAlignedDisplay
-                teachers={teachersForDisplay}
-                variant="list"
-                emptyLabel={tCommon('notAssigned')}
-              />
-            </div>
+            <GroupTeachersAlignedDisplay
+              teachers={teachersForDisplay}
+              variant="list"
+              emptyLabel={tCommon('notAssigned')}
+            />
           );
         },
       },
       {
         key: 'students',
         header: t('studentsCount'),
-        className: 'align-bottom text-center h-px',
+        className: 'text-center',
         render: (group: Group) => {
           const count = group._count?.students || 0;
           return (
-            <div className="flex h-full min-h-[3rem] items-end justify-center pb-0.5">
+            <div className="text-center">
               <button
                 type="button"
                 onClick={(e) => {
