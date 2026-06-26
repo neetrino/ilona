@@ -191,7 +191,7 @@ export function LessonDetailTabs({ lesson, activeTab: initialTab, onTabChange, c
                 className={cn(
                   'flex flex-col items-stretch rounded-xl border p-2.5 text-left transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 sm:p-3',
                   isActive
-                    ? 'border-blue-300 bg-blue-50/90 shadow-sm ring-1 ring-blue-200/80'
+                    ? 'border-2 border-blue-300 bg-blue-50/90 shadow-sm'
                     : 'border-slate-200/90 bg-white hover:border-slate-300 hover:bg-slate-50/80',
                   action.state === 'done' && !isActive && 'border-emerald-200/70 bg-emerald-50/30',
                   action.state === 'pending' && !isActive && 'border-amber-200/80 bg-amber-50/20',

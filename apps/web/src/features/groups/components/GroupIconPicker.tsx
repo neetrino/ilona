@@ -57,10 +57,10 @@ export function GroupIconPicker({
         disabled={disabled}
         onClick={handleDefaultClick}
         className={cn(
-          'flex aspect-square items-center justify-center rounded-lg border text-xs font-medium transition-colors',
+          'flex aspect-square items-center justify-center rounded-lg border text-xs font-medium transition-colors focus:outline-none',
           isDefaultSelected
-            ? 'border-primary bg-primary/10 text-primary ring-2 ring-primary/40 ring-offset-2 ring-offset-white'
-            : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50',
+            ? 'border-2 border-primary bg-primary/10 text-primary'
+            : 'border border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50',
           disabled && 'cursor-not-allowed opacity-50',
         )}
       >
@@ -80,10 +80,10 @@ export function GroupIconPicker({
             disabled={disabled || !Icon}
             onClick={() => onChange(def.key)}
             className={cn(
-              'flex aspect-square items-center justify-center rounded-lg border transition-colors',
+              'flex aspect-square items-center justify-center rounded-lg border transition-colors focus:outline-none',
               selected
-                ? 'border-primary bg-primary/10 ring-2 ring-primary/40 ring-offset-2 ring-offset-white'
-                : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50',
+                ? 'border-2 border-primary bg-primary/10'
+                : 'border border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50',
               disabled && 'cursor-not-allowed opacity-50',
             )}
           >

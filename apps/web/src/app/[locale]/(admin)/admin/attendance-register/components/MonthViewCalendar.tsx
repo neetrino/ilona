@@ -94,7 +94,7 @@ export function MonthViewCalendar({
               className={cn(
                 'rounded-[14px] border border-[rgba(14,14,16,0.08)] px-2 py-3 text-center transition-all min-h-[92px]',
                 !isInCurrentMonth && 'text-[#b5bbd5]',
-                isSelected && 'border-[#99a3ff] bg-[#f6f7ff] ring-1 ring-[#99a3ff]',
+                isSelected && 'border-2 border-[#99a3ff] bg-[#f6f7ff]',
                 !isSelected && hasLessons && 'bg-white',
                 !hasLessons && 'bg-[#fcfcfe]',
               )}
@@ -141,7 +141,7 @@ export function MonthViewCalendar({
               className={cn(
                 'p-3 border-2 rounded-lg text-center transition-all min-h-[80px]',
                 !isInCurrentMonth && 'opacity-40',
-                isSelected && 'border-[#1010a3] bg-[#f0f0fc] ring-2 ring-[#1010a3]',
+                isSelected && 'border-[#1010a3] bg-[#f0f0fc]',
                 !isSelected && hasLessons && 'border-[rgba(14,14,16,0.12)] hover:border-[#1010a3]/40 hover:bg-[#f0f0fc]',
                 !hasLessons && 'border-[rgba(14,14,16,0.07)] bg-[#fafafa] cursor-not-allowed',
                 isTodayDate && !isSelected && 'border-[#1010a3]/30 bg-[#f0f0fc]'
