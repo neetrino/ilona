@@ -34,9 +34,10 @@ interface StudentsListProps {
   isDeleting: boolean;
   isUpdating: boolean;
   searchQuery: string;
-  t: (key: string) => string;
+  t: (key: string, values?: Record<string, string | number>) => string;
   tCommon: (key: string) => string;
   tTeachers: (key: string) => string;
+  tAnalytics: (key: string) => string;
 }
 
 export function StudentsList({
@@ -71,11 +72,13 @@ export function StudentsList({
   t,
   tCommon,
   tTeachers,
+  tAnalytics,
 }: StudentsListProps) {
   const studentColumns = createStudentsTableColumns({
     t,
     tCommon,
     tTeachers,
+    tAnalytics,
     allSelected,
     someSelected,
     selectedStudentIds,

@@ -80,16 +80,17 @@ function buildGroupOptionsForRow(
 
 function getRiskBadge(
   derivedRisk: Student['derivedRiskLabel'] | undefined,
+  labels: { highRisk: string; risk: string },
 ): { label: string; className: string } | null {
   if (derivedRisk === 'HIGH_RISK') {
     return {
-      label: 'High Risk',
+      label: labels.highRisk,
       className: 'bg-rose-900 text-rose-50 border-rose-900/90',
     };
   }
   if (derivedRisk === 'RISK') {
     return {
-      label: 'Risk',
+      label: labels.risk,
       className: 'bg-amber-100 text-amber-800 border-amber-200',
     };
   }
@@ -147,6 +148,7 @@ function RegisterDateCell({
   onSave: (studentId: string, date: string | null) => Promise<void>;
   disabled: boolean;
 }) {
+  const t = useTranslations('students');
   const tCommon = useTranslations('common');
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -257,7 +259,7 @@ function RegisterDateCell({
             ? 'text-[#8b8b90] hover:text-[#3b3b40]'
             : 'text-[#3b3b40] hover:text-[#1010a3]',
         )}
-        title={displayText === '—' ? 'Set register date' : 'Edit register date'}
+        title={displayText === '—' ? t('setRegisterDate') : t('editRegisterDate')}
       >
         {displayText}
       </button>
@@ -266,9 +268,10 @@ function RegisterDateCell({
 }
 
 interface StudentsTableColumnsProps {
-  t: (key: string) => string;
+  t: (key: string, values?: Record<string, string | number>) => string;
   tCommon: (key: string) => string;
   tTeachers: (key: string) => string;
+  tAnalytics: (key: string) => string;
   allSelected: boolean;
   someSelected: boolean;
   selectedStudentIds: Set<string>;
@@ -292,6 +295,7 @@ export function createStudentsTableColumns({
   t,
   tCommon,
   tTeachers,
+  tAnalytics,
   allSelected,
   someSelected,
   selectedStudentIds,
@@ -331,7 +335,7 @@ export function createStudentsTableColumns({
             onChange={() => onToggleSelect(getItemId(row))}
             onClick={(e) => e.stopPropagation()}
             disabled={isDeleting || isLoading}
-            aria-label={`Select ${name || 'item'}`}
+            aria-label={t('selectItem', { name: name || tCommon('onboarding') })}
           />
         );
       },
@@ -339,28 +343,31 @@ export function createStudentsTableColumns({
     },
     {
       key: 'student',
-      header: 'STUDENT',
+      header: tCommon('name').toUpperCase(),
       sortable: true,
       className: COL.student,
       render: (row: TeacherAssignedItem) => {
         const firstName = isOnboardingItem(row) ? (row.firstName ?? '') : (row.user?.firstName ?? '');
         const lastName = isOnboardingItem(row) ? (row.lastName ?? '') : (row.user?.lastName ?? '');
         const phoneRaw = isOnboardingItem(row) ? row.phone : row.user?.phone;
-        const phone = formatPhoneForDisplay(phoneRaw, 'No phone');
+        const phone = formatPhoneForDisplay(phoneRaw, t('noPhone'));
         const fullName = `${firstName} ${lastName}`.trim() || '?';
         const avatarUrl = isOnboardingItem(row) ? undefined : row.user?.avatarUrl;
         // Lifecycle/risk badges – computed from persisted status + server-derived risk.
         const derivedRisk =
           !isOnboardingItem(row) ? (row.derivedRiskLabel ?? row.riskLabel) : undefined;
         const showNewBadge = !isOnboardingItem(row) ? isNewPaidStudent(row) : false;
-        const riskBadge = getRiskBadge(derivedRisk);
+        const riskBadge = getRiskBadge(derivedRisk, {
+          highRisk: tAnalytics('highRisk'),
+          risk: tAnalytics('riskBadge'),
+        });
         return (
           <div className="flex items-center gap-2.5">
             <div className="relative shrink-0">
               <Avatar src={avatarUrl} name={fullName} size="md" />
               {showNewBadge && (
                 <span className="absolute -left-3 top-[14%] -translate-y-1/2 -rotate-12 inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-extrabold uppercase tracking-[0.08em] bg-emerald-500 text-white shadow-sm pointer-events-none">
-                  NEW
+                  {t('newBadge').toUpperCase()}
                 </span>
               )}
             </div>
@@ -385,7 +392,7 @@ export function createStudentsTableColumns({
     },
     {
       key: 'center',
-      header: 'CENTER',
+      header: tCommon('center').toUpperCase(),
       className: COL.center,
       render: (row: TeacherAssignedItem) => {
         if (isOnboardingItem(row)) return <span className="text-[#8b8b90]">—</span>;
@@ -413,7 +420,7 @@ export function createStudentsTableColumns({
     },
     {
       key: 'group',
-      header: 'GROUP',
+      header: t('group').toUpperCase(),
       className: COL.group,
       render: (row: TeacherAssignedItem) => {
         if (isOnboardingItem(row)) return <span className="text-[#8b8b90]">—</span>;
@@ -446,7 +453,7 @@ export function createStudentsTableColumns({
     },
     {
       key: 'register',
-      header: 'REGISTER',
+      header: t('registerDateLabel').toUpperCase(),
       sortable: true,
       className: COL.register,
       render: (row: TeacherAssignedItem) => {
@@ -463,7 +470,7 @@ export function createStudentsTableColumns({
     },
     {
       key: 'monthlyFee',
-      header: 'MONTHLY FEE',
+      header: t('monthlyFeeLabel').toUpperCase(),
       sortable: true,
       className: COL.monthlyFee,
       render: (row: TeacherAssignedItem) => {
@@ -480,7 +487,7 @@ export function createStudentsTableColumns({
     },
     {
       key: 'absence',
-      header: 'ABSENCE',
+      header: t('attendance').toUpperCase(),
       sortable: true,
       className: COL.absence,
       render: (row: TeacherAssignedItem) => {
@@ -503,7 +510,7 @@ export function createStudentsTableColumns({
     },
     {
       key: 'actions',
-      header: 'ACTIONS',
+      header: tCommon('actions').toUpperCase(),
       className: COL.actions,
       render: (row: TeacherAssignedItem) => {
         if (isOnboardingItem(row)) {

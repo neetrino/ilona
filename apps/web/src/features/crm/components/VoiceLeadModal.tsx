@@ -104,7 +104,7 @@ export function VoiceLeadModal({ open, onClose, onCreated, centerId }: VoiceLead
 
   const handleSave = useCallback(async () => {
     if (chunksRef.current.length === 0) {
-      setError('No recording to save');
+      setError(t('noRecordingToSave'));
       return;
     }
     setError(null);
@@ -126,7 +126,7 @@ export function VoiceLeadModal({ open, onClose, onCreated, centerId }: VoiceLead
       onCreated(createdLead);
       onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to save recording');
+      setError(err instanceof Error ? err.message : t('failedSaveRecording'));
     } finally {
       setIsSaving(false);
     }

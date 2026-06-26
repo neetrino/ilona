@@ -11,6 +11,7 @@ import { DailyPlanViewer } from '@/features/daily-plan/DailyPlanViewer';
 
 export default function TeacherDailyPlanPage() {
   const t = useTranslations('nav');
+  const tDaily = useTranslations('dailyPlanPage');
   const [search, setSearch] = useState('');
   const [editing, setEditing] = useState<DailyPlan | null>(null);
   const [creating, setCreating] = useState(false);
@@ -29,7 +30,7 @@ export default function TeacherDailyPlanPage() {
   return (
     <DashboardLayout
       title={t('dailyPlan')}
-      subtitle="View daily plans from all teachers and manage your own"
+      subtitle={tDaily('teacherSubtitle')}
     >
       <DailyPlanListSection
         search={search}

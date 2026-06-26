@@ -15,15 +15,9 @@ import { cn } from '@/shared/lib/utils';
 import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
 
 // Display order: Mon–Sun (values 0–6 stay as JS Date.getDay())
-const WEEKDAYS = [
-  { value: 1, label: 'Mon', fullLabel: 'Monday' },
-  { value: 2, label: 'Tue', fullLabel: 'Tuesday' },
-  { value: 3, label: 'Wed', fullLabel: 'Wednesday' },
-  { value: 4, label: 'Thu', fullLabel: 'Thursday' },
-  { value: 5, label: 'Fri', fullLabel: 'Friday' },
-  { value: 6, label: 'Sat', fullLabel: 'Saturday' },
-  { value: 0, label: 'Sun', fullLabel: 'Sunday' },
-];
+const WEEKDAY_VALUES = [1, 2, 3, 4, 5, 6, 0] as const;
+
+const WEEKDAY_I18N_KEYS = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'] as const;
 
 const createCourseSchema = z.object({
   groupId: z.string().min(1, 'Please select a group'),
@@ -73,6 +67,16 @@ function useMyTeacherProfile() {
 export function AddCourseForm({ open, onOpenChange }: AddCourseFormProps) {
   const t = useTranslations('calendar');
   const tCommon = useTranslations('common');
+  const tLessons = useTranslations('lessons');
+  const weekdayOptions = useMemo(
+    () =>
+      WEEKDAY_VALUES.map((value, index) => ({
+        value,
+        label: tLessons(`weekdays.${WEEKDAY_I18N_KEYS[index]}`),
+        fullLabel: tLessons(`weekdaysFull.${WEEKDAY_I18N_KEYS[index]}`),
+      })),
+    [tLessons],
+  );
   const queryClient = useQueryClient();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -262,7 +266,7 @@ export function AddCourseForm({ open, onOpenChange }: AddCourseFormProps) {
               {t('weekdays') || 'Weekdays'} <span className="text-red-500">*</span>
             </Label>
             <div className="flex flex-wrap gap-2">
-              {WEEKDAYS.map((day) => {
+              {weekdayOptions.map((day) => {
                 const isSelected = weekdays?.includes(day.value);
                 return (
                   <button

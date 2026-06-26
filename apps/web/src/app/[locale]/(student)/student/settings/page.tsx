@@ -248,8 +248,8 @@ export default function StudentSettingsPage() {
                     },
                     {
                       id: 'vocabulary',
-                      label: 'Vocabulary Practice',
-                      desc: 'Reminders to practice new vocabulary',
+                      label: t('vocabularyPractice'),
+                      desc: t('vocabularyPracticeReminders'),
                       checked: vocabularyReminders,
                       onChange: setVocabularyReminders,
                     },

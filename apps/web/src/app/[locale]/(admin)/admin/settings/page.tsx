@@ -44,9 +44,9 @@ export default function SettingsPage() {
 
     try {
       await updateProfile.mutateAsync({ email: normalizedEmail });
-      alert('Login updated successfully');
+      alert(t('loginUpdatedSuccess'));
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to update login';
+      const message = error instanceof Error ? error.message : t('failedToSaveSettings');
       alert(message);
     }
   };

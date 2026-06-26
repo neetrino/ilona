@@ -25,7 +25,8 @@ import {
 
 export default function StudentProfilePage() {
   const t = useTranslations('students');
-  const _tCommon = useTranslations('common');
+  const tCommon = useTranslations('common');
+  const tAttendance = useTranslations('attendanceRegister');
   const params = useParams();
   const router = useRouter();
   const studentId = params.id as string;
@@ -156,7 +157,7 @@ export default function StudentProfilePage() {
   // Handle navigation with unsaved changes warning
   const handleNavigation = useCallback((path: string) => {
     if (hasUnsavedChanges && isEditMode) {
-      if (!window.confirm('You have unsaved changes. Are you sure you want to leave? Your changes will be lost.')) {
+      if (!window.confirm(tAttendance('unsavedChangesWarning', { action: tCommon('confirmLeave') }))) {
         return;
       }
     }
@@ -227,7 +228,7 @@ export default function StudentProfilePage() {
 
   const handleCancel = () => {
     if (hasUnsavedChanges) {
-      if (!window.confirm('You have unsaved changes. Are you sure you want to cancel? Your changes will be lost.')) {
+      if (!window.confirm(tAttendance('unsavedChangesWarning', { action: tCommon('confirmCancel') }))) {
         return;
       }
     }
@@ -241,7 +242,7 @@ export default function StudentProfilePage() {
     return (
       <DashboardLayout 
         title={t('studentProfile') || 'Student Profile'} 
-        subtitle="Loading student information..."
+        subtitle={t('teacherView.loadingSubtitle')}
       >
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#1010a3]"></div>
@@ -255,7 +256,7 @@ export default function StudentProfilePage() {
     return (
       <DashboardLayout 
         title={t('studentProfile') || 'Student Profile'} 
-        subtitle="Error loading student information"
+        subtitle={t('teacherView.errorSubtitle')}
       >
         <div className="bg-white rounded-xl border border-red-200 p-6">
           <div className="flex items-center gap-4">
@@ -294,7 +295,7 @@ export default function StudentProfilePage() {
   return (
     <DashboardLayout 
       title={t('studentProfile') || 'Student Profile'} 
-      subtitle={`Viewing profile for ${firstName} ${lastName}`}
+      subtitle={t('teacherView.viewingProfileFor', { name: `${firstName} ${lastName}`.trim() })}
     >
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         {/* Back Button & Edit Mode Toggle */}

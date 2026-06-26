@@ -19,7 +19,8 @@ import { getAdminPortalBasePath } from '@/shared/lib/role-routes';
 
 export default function TeacherProfilePage() {
   const t = useTranslations('teachers');
-  const _tCommon = useTranslations('common');
+  const tCommon = useTranslations('common');
+  const tAttendance = useTranslations('attendanceRegister');
   const params = useParams();
   const router = useRouter();
   const teacherId = params.id as string;
@@ -133,7 +134,7 @@ export default function TeacherProfilePage() {
 
   const handleNavigation = useCallback((path: string) => {
     if (hasUnsavedChanges && isEditMode) {
-      if (!window.confirm('You have unsaved changes. Are you sure you want to leave? Your changes will be lost.')) {
+      if (!window.confirm(tAttendance('unsavedChangesWarning', { action: tCommon('confirmLeave') }))) {
         return;
       }
     }
@@ -212,7 +213,7 @@ export default function TeacherProfilePage() {
 
   const handleCancel = () => {
     if (hasUnsavedChanges) {
-      if (!window.confirm('You have unsaved changes. Are you sure you want to cancel? Your changes will be lost.')) {
+      if (!window.confirm(tAttendance('unsavedChangesWarning', { action: tCommon('confirmCancel') }))) {
         return;
       }
     }
@@ -279,7 +280,7 @@ export default function TeacherProfilePage() {
   return (
     <DashboardLayout 
       title={t('teacherProfile')} 
-      subtitle={`Viewing profile for ${firstName} ${lastName}`}
+      subtitle={t('viewingProfileFor', { name: `${firstName} ${lastName}`.trim() })}
     >
       <form key={teacherId} onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         {/* Back Button & Edit Mode Toggle */}

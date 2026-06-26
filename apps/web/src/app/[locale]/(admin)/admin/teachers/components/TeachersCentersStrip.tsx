@@ -37,7 +37,7 @@ export function TeachersCentersStrip({
 
         {hasCenterTabs ? (
           <div className="min-w-0 flex-1 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-            <nav className="flex min-w-max items-center gap-2.5" role="tablist" aria-label="Centers">
+            <nav className="flex min-w-max items-center gap-2.5" role="tablist" aria-label={t('centers')}>
               {centers.map((center) => {
                 const count = teachersByCenter[center.id]?.length || 0;
                 const isActive = activeCenterTabId === center.id;

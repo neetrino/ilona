@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import { Input, Label, Button } from '@/shared/components/ui';
 import { cn } from '@/shared/lib/utils';
@@ -22,18 +22,29 @@ interface WeeklyScheduleProps {
   error?: string;
 }
 
-const DAYS: { key: DayOfWeek; label: string }[] = [
-  { key: 'MON', label: 'Monday' },
-  { key: 'TUE', label: 'Tuesday' },
-  { key: 'WED', label: 'Wednesday' },
-  { key: 'THU', label: 'Thursday' },
-  { key: 'FRI', label: 'Friday' },
-  { key: 'SAT', label: 'Saturday' },
-  { key: 'SUN', label: 'Sunday' },
-];
+const DAY_KEYS: DayOfWeek[] = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
+
+const DAY_I18N_KEYS: Record<DayOfWeek, 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat' | 'sun'> = {
+  MON: 'mon',
+  TUE: 'tue',
+  WED: 'wed',
+  THU: 'thu',
+  FRI: 'fri',
+  SAT: 'sat',
+  SUN: 'sun',
+};
 
 export function WeeklySchedule({ value, onChange, error }: WeeklyScheduleProps) {
   const t = useTranslations('teachers');
+  const tLessons = useTranslations('lessons');
+  const days = useMemo(
+    () =>
+      DAY_KEYS.map((key) => ({
+        key,
+        label: tLessons(`weekdaysFull.${DAY_I18N_KEYS[key]}`),
+      })),
+    [tLessons],
+  );
   const [schedule, setSchedule] = useState<WeeklySchedule>(value || {});
   const [dayErrors, setDayErrors] = useState<Record<string, string>>({});
 
@@ -156,7 +167,7 @@ export function WeeklySchedule({ value, onChange, error }: WeeklyScheduleProps) 
       )}
 
       <div className="space-y-3">
-        {DAYS.map(({ key, label }) => {
+        {days.map(({ key, label }) => {
           const isActive = !!schedule[key];
           const ranges = schedule[key] || [];
           const dayHasErrors = Object.keys(dayErrors).some((k) => k.startsWith(key));

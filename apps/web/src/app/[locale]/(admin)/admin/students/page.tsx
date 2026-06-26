@@ -121,6 +121,7 @@ export default function StudentsPage() {
     t,
     tCommon,
     tTeachers,
+    tAnalytics,
     locale,
     
     // Constants
@@ -245,6 +246,7 @@ export default function StudentsPage() {
             t={t}
             tCommon={tCommon}
             tTeachers={tTeachers}
+            tAnalytics={tAnalytics}
           />
         ) : (
           <StudentsBoard

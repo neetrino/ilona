@@ -124,7 +124,7 @@ export default function TeacherSchedulePage() {
   return (
     <DashboardLayout
       title={t('schedule')}
-      subtitle="Weekly and monthly schedule for upcoming lessons"
+      subtitle={t('scheduleSubtitle')}
     >
       <ScheduleBoard
         variant="student"

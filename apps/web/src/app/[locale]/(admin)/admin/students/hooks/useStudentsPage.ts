@@ -61,6 +61,7 @@ export function useStudentsPage() {
   const t = useTranslations('students');
   const tCommon = useTranslations('common');
   const tTeachers = useTranslations('teachers');
+  const tAnalytics = useTranslations('analytics');
   const tStatus = useTranslations('status');
   const { user } = useAuthStore();
   const managerCenterId = user?.role === 'MANAGER' ? user.managerCenterId : undefined;
@@ -583,12 +584,12 @@ export function useStudentsPage() {
   // Distinct from User.status: covers NEW intake, UNGROUPED, and risk states.
   const lifecycleFilterOptions = useMemo(
     () => [
-      { id: 'NEW', label: 'New' },
-      { id: 'UNGROUPED', label: 'Ungrouped' },
-      { id: 'RISK', label: 'Risk' },
-      { id: 'HIGH_RISK', label: 'High Risk' },
+      { id: 'NEW', label: t('lifecycleNew') },
+      { id: 'UNGROUPED', label: t('lifecycleUngrouped') },
+      { id: 'RISK', label: tAnalytics('riskBadge') },
+      { id: 'HIGH_RISK', label: tAnalytics('highRisk') },
     ],
-    [],
+    [t, tAnalytics],
   );
 
   // Group filter options (scoped by manager center if applicable).
@@ -743,6 +744,7 @@ export function useStudentsPage() {
     t,
     tCommon,
     tTeachers,
+    tAnalytics,
     tStatus,
     locale,
     

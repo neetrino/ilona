@@ -278,10 +278,10 @@ export default function AdminAnalyticsPage() {
 
   const tabs: { id: AdminAnalyticsTab; label: string }[] = [
     { id: 'attendance', label: tNav('attendance') },
-    { id: 'payments', label: 'Payments' },
-    { id: 'recordings', label: 'Recordings' },
-    { id: 'feedback', label: 'Feedback' },
-    { id: 'risk', label: 'Risk Distribution' },
+    { id: 'payments', label: t('tabPayments') },
+    { id: 'recordings', label: t('tabRecordings') },
+    { id: 'feedback', label: t('tabFeedback') },
+    { id: 'risk', label: t('tabRiskDistribution') },
   ];
   const tabsTrackRef = useRef<HTMLDivElement | null>(null);
   const riskPageStartRef = useRef<HTMLDivElement | null>(null);
