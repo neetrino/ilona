@@ -734,7 +734,7 @@
     "searchBranchesPlaceholder": "Search branches by name...",
     "searchGroupsPlaceholder": "Search groups by name...",
     "deleteAll": "Delete All ({count})",
-    "deleteSelected": "Delete selected ({count})",
+    "deleteSelected": "Delete ({count})",
     "listView": "List",
     "boardView": "Board",
     "noBranchesCreateCenter": "No branches found. Create a center first.",

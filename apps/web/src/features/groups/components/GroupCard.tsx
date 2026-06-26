@@ -21,45 +21,86 @@ function formatScheduleSummary(entries: GroupScheduleEntry[] | null | undefined)
     .map((e) => `${DAY_LABELS[e.dayOfWeek] ?? 'Unknown day'}: ${e.startTime} - ${e.endTime}`);
 }
 
+const MAX_CARD_STUDENTS = 8;
+const CARD_STUDENTS_LEFT_COLUMN_SIZE = 4;
+
 interface GroupCardStudentListProps {
   students: NonNullable<Group['students']>;
   onStudentClick?: (studentId: string) => void;
   className?: string;
+  itemClassName?: string;
 }
 
-function GroupCardStudentList({ students, onStudentClick, className }: GroupCardStudentListProps) {
+function GroupCardStudentItem({
+  student,
+  index,
+  onStudentClick,
+  itemClassName,
+}: {
+  student: NonNullable<Group['students']>[number];
+  index: number;
+  onStudentClick?: (studentId: string) => void;
+  itemClassName?: string;
+}) {
+  const fullName = `${student.user.firstName} ${student.user.lastName}`;
+
+  return (
+    <li
+      className={cn('flex min-w-0 items-baseline gap-1.5 leading-snug', itemClassName)}
+      title={fullName}
+    >
+      <span className="shrink-0 tabular-nums font-semibold text-slate-500">{index + 1}.</span>
+      {onStudentClick ? (
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            onStudentClick(student.id);
+          }}
+          className="min-w-0 max-w-full w-fit truncate rounded text-left font-medium text-primary underline decoration-primary/30 underline-offset-2 hover:text-primary/90 hover:decoration-primary focus:outline-none focus:ring-2 focus:ring-primary/20 focus:ring-offset-1"
+        >
+          {fullName}
+        </button>
+      ) : (
+        <span className="min-w-0 truncate font-medium">{fullName}</span>
+      )}
+    </li>
+  );
+}
+
+function GroupCardStudentList({
+  students,
+  onStudentClick,
+  className,
+  itemClassName,
+}: GroupCardStudentListProps) {
   if (students.length === 0) {
     return null;
   }
 
-  return (
-    <ul className={className ?? 'space-y-1.5 pl-0 text-sm text-slate-700'}>
-      {students.map((s, index) => (
-        <li
-          key={s.id}
-          className="flex items-baseline gap-2 leading-snug"
-          title={`${s.user.firstName} ${s.user.lastName}`}
-        >
-          <span className="shrink-0 tabular-nums font-semibold text-slate-500">{index + 1}.</span>
-          {onStudentClick ? (
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                onStudentClick(s.id);
-              }}
-              className="min-w-0 max-w-full w-fit truncate rounded text-left font-medium text-primary underline decoration-primary/30 underline-offset-2 hover:text-primary/90 hover:decoration-primary focus:outline-none focus:ring-2 focus:ring-primary/20 focus:ring-offset-1"
-            >
-              {s.user.firstName} {s.user.lastName}
-            </button>
-          ) : (
-            <span className="min-w-0 flex-1 truncate font-medium">
-              {s.user.firstName} {s.user.lastName}
-            </span>
-          )}
-        </li>
+  const visibleStudents = students.slice(0, MAX_CARD_STUDENTS);
+  const leftStudents = visibleStudents.slice(0, CARD_STUDENTS_LEFT_COLUMN_SIZE);
+  const rightStudents = visibleStudents.slice(CARD_STUDENTS_LEFT_COLUMN_SIZE);
+
+  const renderColumn = (columnStudents: typeof visibleStudents, startIndex: number) => (
+    <ul className="min-w-0 list-none space-y-1.5 p-0">
+      {columnStudents.map((student, columnIndex) => (
+        <GroupCardStudentItem
+          key={student.id}
+          student={student}
+          index={startIndex + columnIndex}
+          onStudentClick={onStudentClick}
+          itemClassName={itemClassName}
+        />
       ))}
     </ul>
+  );
+
+  return (
+    <div className={cn('grid min-w-0 grid-cols-2 gap-x-3', className)}>
+      {renderColumn(leftStudents, 0)}
+      {renderColumn(rightStudents, CARD_STUDENTS_LEFT_COLUMN_SIZE)}
+    </div>
   );
 }
 
@@ -173,8 +214,7 @@ export function GroupCard({
       : occupancy.status === 'filling'
         ? 'bg-yellow-500'
         : 'bg-red-500';
-  const studentListBlockClass =
-    'h-[12rem] overflow-y-auto overflow-x-hidden pr-1 [scrollbar-gutter:stable]';
+  const studentListBlockClass = 'min-w-0 overflow-x-hidden text-sm text-slate-700';
   const students = group.students;
 
   const handleCardActivate = () => {
@@ -199,7 +239,7 @@ export function GroupCard({
         onClick={handleCardActivate}
         onKeyDown={handleCardKeyDown}
         className={cn(
-          'flex min-h-[22rem] flex-col overflow-hidden rounded-2xl border border-slate-100 bg-white sm:hidden',
+          'flex flex-col overflow-hidden rounded-2xl border border-slate-100 bg-white sm:hidden',
           cardInteractiveClass,
         )}
       >
@@ -245,15 +285,15 @@ export function GroupCard({
         <div className="mx-4 border-t border-[rgba(14,14,16,0.07)]" />
 
         {students !== undefined ? (
-          <div className={`mx-4 mb-2 flex-1 px-0 text-slate-600 ${studentListBlockClass}`}>
+          <div className={`mx-4 mb-2 px-0 text-slate-600 ${studentListBlockClass}`}>
             <GroupCardStudentList
               students={students}
               onStudentClick={onStudentClick}
-              className="space-y-2 pl-0 text-[1rem] text-slate-700"
+              className="text-[1rem]"
             />
           </div>
         ) : (
-          <div className="min-h-[10rem] flex-1" aria-hidden />
+          <div className="min-h-[4rem] flex-1" aria-hidden />
         )}
 
         <div className="border-t border-[rgba(14,14,16,0.07)] px-4 py-3">
@@ -338,14 +378,12 @@ export function GroupCard({
           )}
         </div>
 
-        <div className="flex min-h-0 flex-1 flex-col gap-2 text-xs">
+        <div className="flex min-h-0 flex-col gap-2 text-xs">
           {students !== undefined && (
-            <div className={`shrink-0 text-slate-600 ${studentListBlockClass}`}>
+            <div className={studentListBlockClass}>
               <GroupCardStudentList students={students} onStudentClick={onStudentClick} />
             </div>
           )}
-
-          {students !== undefined && <div className="min-h-0 flex-1" aria-hidden />}
 
           <div className="flex shrink-0 items-center gap-2 text-slate-600">
             <span className={`inline-flex h-2.5 w-2.5 rounded-full ${dotColorClass}`} aria-hidden="true" />
