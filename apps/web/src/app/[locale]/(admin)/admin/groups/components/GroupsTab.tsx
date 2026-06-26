@@ -9,7 +9,6 @@ import { cn } from '@/shared/lib/utils';
 import { getContrastColor, lightenColor } from '@/shared/lib/utils';
 import {
   GroupCard,
-  GroupCardOverflowMenu,
   CreateGroupForm,
   EditGroupForm,
   DeleteConfirmationDialog,
@@ -17,6 +16,8 @@ import {
   useGroup,
   getGroupOccupancyMeta,
   GroupIconDisplay,
+  getGroupTeachersForDisplay,
+  GroupTeachersAlignedDisplay,
   type Group,
 } from '@/features/groups';
 import { getErrorMessage } from '@/shared/lib/api';
@@ -470,30 +471,30 @@ export function GroupsTab({
       {
         key: 'level',
         header: tCommon('level'),
+        className: 'align-top',
         render: (group: Group) => (
-          group.level ? (
-            <Badge variant="info">{group.level}</Badge>
-          ) : (
-            <span className="text-[#8b8b90]">—</span>
-          )
+          <div className="pt-0.5">
+            {group.level ? (
+              <Badge variant="info">{group.level}</Badge>
+            ) : (
+              <span className="text-[#8b8b90]">—</span>
+            )}
+          </div>
         ),
       },
       {
         key: 'teacher',
         header: tCommon('teacher'),
+        className: 'align-middle h-px',
         render: (group: Group) => {
-          if (!group.teacher) {
-            return <span className="text-amber-600 text-sm">{tCommon('notAssigned')}</span>;
-          }
-          const firstName = group.teacher.user?.firstName || '';
-          const lastName = group.teacher.user?.lastName || '';
-          const initials = `${firstName[0] || ''}${lastName[0] || ''}` || '?';
+          const teachersForDisplay = getGroupTeachersForDisplay(group);
           return (
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-[#f1f1f2] flex items-center justify-center text-[#3b3b40] text-sm font-medium">
-                {initials}
-              </div>
-              <span className="text-[#3b3b40]">{firstName} {lastName}</span>
+            <div className="flex h-full min-h-[3rem] items-center py-1">
+              <GroupTeachersAlignedDisplay
+                teachers={teachersForDisplay}
+                variant="list"
+                emptyLabel={tCommon('notAssigned')}
+              />
             </div>
           );
         },
@@ -501,11 +502,11 @@ export function GroupsTab({
       {
         key: 'students',
         header: t('studentsCount'),
-        className: 'text-center',
+        className: 'align-bottom text-center h-px',
         render: (group: Group) => {
           const count = group._count?.students || 0;
           return (
-            <div className="text-center">
+            <div className="flex h-full min-h-[3rem] items-end justify-center pb-0.5">
               <button
                 type="button"
                 onClick={(e) => {
@@ -548,24 +549,6 @@ export function GroupsTab({
           );
         },
       },
-      {
-        key: 'actions',
-        header: tCommon('actions'),
-        render: (group: Group) => (
-          <div className="flex justify-end" onClick={(e) => e.stopPropagation()} onKeyDown={(e) => e.stopPropagation()}>
-            <GroupCardOverflowMenu
-              isActive={group.isActive}
-              onToggleActive={() => openGroupStatusDialog(group.id, group.isActive)}
-              onDelete={() => handleDeleteClick(group.id)}
-              isStatusTogglePending={isGroupStatusTogglePending}
-              deactivateLabel={t('deactivateGroup')}
-              activateLabel={t('activateGroup')}
-              deleteLabel={t('deleteGroup')}
-              menuAriaLabel={tCommon('actions')}
-            />
-          </div>
-        ),
-      },
     ],
     [
       allGroupsSelected,
@@ -578,10 +561,6 @@ export function GroupsTab({
       t,
       tCommon,
       openStudentsModal,
-      handleEditGroupIdChange,
-      openGroupStatusDialog,
-      handleDeleteClick,
-      isGroupStatusTogglePending,
     ]
   );
 
@@ -1059,14 +1038,28 @@ export function GroupsTab({
         onOpenChange={handleCreateGroupOpenChange}
       />
       {editGroupId && (
-        <EditGroupForm 
-          open={!!editGroupId} 
+        <EditGroupForm
+          open={!!editGroupId}
           onOpenChange={(open) => {
             if (!open) {
               handleEditGroupIdChange(null);
             }
-          }} 
+          }}
           groupId={editGroupId}
+          onDelete={
+            viewMode === 'list'
+              ? () => handleDeleteClick(editGroupId)
+              : undefined
+          }
+          onToggleActive={
+            viewMode === 'list'
+              ? () => {
+                  const editingGroup = groups.find((group) => group.id === editGroupId);
+                  openGroupStatusDialog(editGroupId, editingGroup?.isActive ?? true);
+                }
+              : undefined
+          }
+          isStatusTogglePending={isGroupStatusTogglePending}
         />
       )}
       <GroupStatusConfirmationDialog

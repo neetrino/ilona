@@ -53,10 +53,21 @@ interface EditGroupFormProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   groupId: string;
+  onDelete?: () => void;
+  onToggleActive?: () => void;
+  isStatusTogglePending?: boolean;
 }
 
-export function EditGroupForm({ open, onOpenChange, groupId }: EditGroupFormProps) {
+export function EditGroupForm({
+  open,
+  onOpenChange,
+  groupId,
+  onDelete,
+  onToggleActive,
+  isStatusTogglePending = false,
+}: EditGroupFormProps) {
   const tForm = useTranslations('groups.form');
+  const tGroups = useTranslations('groups');
   const tVal = useTranslations('groups.validation');
   const tCommon = useTranslations('common');
 
@@ -127,6 +138,10 @@ export function EditGroupForm({ open, onOpenChange, groupId }: EditGroupFormProp
       secondTeacherId: '',
     },
   });
+
+  const showManagementActions = Boolean(onDelete || onToggleActive);
+  const isGroupActive = group?.isActive ?? true;
+  const isFormBusy = isSubmitting || updateGroup.isPending || isStatusTogglePending;
   const watchedTeacherId = watch('teacherId');
   const watchedCenterId = watch('centerId');
   const watchedSecondTeacherId = watch('secondTeacherId');
@@ -618,28 +633,59 @@ export function EditGroupForm({ open, onOpenChange, groupId }: EditGroupFormProp
             disabled={isSubmitting || updateGroup.isPending}
           />
 
-          <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end">
-            <Button
-              type="button"
-              variant="ghost"
-              onClick={requestClose}
-              disabled={isSubmitting || updateGroup.isPending}
-            >
-              {tCommon('cancel')}
-            </Button>
-            <Button
-              type="submit"
-              disabled={
-                isSubmitting ||
-                updateGroup.isPending ||
-                isLoadingCenters ||
-                isLoadingTeachers ||
-                centers.length === 0
-              }
-              className="bg-primary hover:bg-primary/90 text-primary-foreground"
-            >
-              {isSubmitting || updateGroup.isPending ? tForm('saving') : tForm('saveChanges')}
-            </Button>
+          <div
+            className={cn(
+              'flex flex-col gap-3 pt-2',
+              showManagementActions ? 'sm:flex-row sm:items-center sm:justify-between' : 'sm:flex-row sm:justify-end',
+            )}
+          >
+            {showManagementActions ? (
+              <div className="flex flex-wrap gap-2">
+                {onToggleActive ? (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={onToggleActive}
+                    disabled={isFormBusy}
+                  >
+                    {isGroupActive ? tGroups('deactivateGroup') : tGroups('activateGroup')}
+                  </Button>
+                ) : null}
+                {onDelete ? (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={onDelete}
+                    disabled={isFormBusy}
+                    className="border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
+                  >
+                    {tGroups('deleteGroup')}
+                  </Button>
+                ) : null}
+              </div>
+            ) : null}
+            <div className="flex flex-col-reverse gap-2 sm:flex-row">
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={requestClose}
+                disabled={isFormBusy}
+              >
+                {tCommon('cancel')}
+              </Button>
+              <Button
+                type="submit"
+                disabled={
+                  isFormBusy ||
+                  isLoadingCenters ||
+                  isLoadingTeachers ||
+                  centers.length === 0
+                }
+                className="bg-primary hover:bg-primary/90 text-primary-foreground"
+              >
+                {isSubmitting || updateGroup.isPending ? tForm('saving') : tForm('saveChanges')}
+              </Button>
+            </div>
           </div>
         </form>
           </div>

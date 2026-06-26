@@ -185,6 +185,7 @@ export function useGroupsManagement(
     try {
       await deleteGroup.mutateAsync(deleteGroupId);
       setDeleteGroupId(null);
+      setEditGroupId(null);
       setDeleteGroupError(null);
     } catch (err: unknown) {
       const message = getErrorMessage(err, t('failedDeleteGroupRetry'));
