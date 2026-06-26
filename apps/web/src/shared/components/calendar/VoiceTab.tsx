@@ -1,10 +1,11 @@
 'use client';
 
 import { useRef, useState } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
+import { useRouter, usePathname } from '@/config/navigation';
 import { useLesson } from '@/features/lessons';
 import { VoiceRecorder } from '@/features/chat/components/VoiceRecorder';
 import { fetchGroupChat, sendMessageHttp } from '@/features/chat/api/chat.api';
+import { buildPortalChatHref } from '@/features/chat/lib/navigate-to-portal-chat';
 import { api } from '@/shared/lib/api';
 import { useQueryClient } from '@tanstack/react-query';
 import { lessonKeys } from '@/features/lessons/hooks/useLessons';
@@ -60,7 +61,7 @@ export function VoiceTab({ lessonId }: VoiceTabProps) {
       const isLessonSubstitute =
         !!lesson.substituteTeacher?.user?.id && lesson.substituteTeacher.user.id === user?.id;
 
-      const messageResponse = await sendMessageHttp(chat.id, '', 'VOICE', {
+      await sendMessageHttp(chat.id, '', 'VOICE', {
         fileUrl,
         fileName,
         fileSize,
@@ -89,12 +90,14 @@ export function VoiceTab({ lessonId }: VoiceTabProps) {
         variant: 'success',
       });
 
-      if (messageResponse.navigation?.conversationId) {
-        const localeMatch = pathname.match(/^\/([^/]+)/);
-        const locale = localeMatch ? localeMatch[1] : 'en';
-        const role = user?.role?.toLowerCase() || 'admin';
-        const chatRoute = `/${locale}/${role}/chat?conversationId=${messageResponse.navigation.conversationId}`;
-        router.push(chatRoute);
+      if (user?.role) {
+        router.push(
+          buildPortalChatHref(user.role, {
+            conversationId: chat.id,
+            returnTo: pathname,
+            tab: user.role === 'ADMIN' || user.role === 'MANAGER' ? 'groups' : undefined,
+          }),
+        );
       }
     } catch (error) {
       console.error('Failed to send voice message:', error);
