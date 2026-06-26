@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useCallback, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import { createLeadFromVoice } from '@/features/crm/api/crm.api';
 import type { CrmLead } from '@/features/crm/types';
 import { cn } from '@/shared/lib/utils';
@@ -23,6 +24,7 @@ interface VoiceLeadModalProps {
 }
 
 export function VoiceLeadModal({ open, onClose, onCreated, centerId }: VoiceLeadModalProps) {
+  const t = useTranslations('crm');
   const [isRecording, setIsRecording] = useState(false);
   const [hasRecording, setHasRecording] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -102,7 +104,7 @@ export function VoiceLeadModal({ open, onClose, onCreated, centerId }: VoiceLead
 
   const handleSave = useCallback(async () => {
     if (chunksRef.current.length === 0) {
-      setError('No recording to save');
+      setError(t('noRecordingToSave'));
       return;
     }
     setError(null);
@@ -124,11 +126,11 @@ export function VoiceLeadModal({ open, onClose, onCreated, centerId }: VoiceLead
       onCreated(createdLead);
       onClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to save recording');
+      setError(err instanceof Error ? err.message : t('failedSaveRecording'));
     } finally {
       setIsSaving(false);
     }
-  }, [onCreated, onClose, previewUrl, centerId]);
+  }, [onCreated, onClose, previewUrl, centerId, t]);
 
   const handleCancel = useCallback(() => {
     if (mediaRecorderRef.current && isRecording) {
@@ -154,8 +156,8 @@ export function VoiceLeadModal({ open, onClose, onCreated, centerId }: VoiceLead
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
       <div className="w-full max-w-sm rounded-xl bg-white shadow-xl">
         <div className="border-b border-slate-200 px-6 py-4">
-          <h2 className="text-lg font-semibold text-slate-900">New lead from voice</h2>
-          <p className="text-sm text-slate-500 mt-0.5">Record a voice message to create a lead in NEW.</p>
+          <h2 className="text-lg font-semibold text-slate-900">{t('newLeadFromVoice')}</h2>
+          <p className="text-sm text-slate-500 mt-0.5">{t('recordVoiceToCreateLead')}</p>
         </div>
         <div className="p-6 space-y-4">
           {error && (
@@ -185,7 +187,7 @@ export function VoiceLeadModal({ open, onClose, onCreated, centerId }: VoiceLead
           </div>
           {hasRecording && !isRecording && previewUrl && (
             <div className="space-y-2">
-              <p className="text-sm font-medium text-slate-700">Listen, then send</p>
+              <p className="text-sm font-medium text-slate-700">{t('listenThenSend')}</p>
               <audio
                 src={previewUrl}
                 controls

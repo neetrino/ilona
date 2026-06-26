@@ -7,9 +7,11 @@ import { useDailyPlans, useDeleteDailyPlan } from '@/features/daily-plan';
 import type { DailyPlan } from '@/features/daily-plan/types';
 import { DailyPlanEditor } from '@/features/daily-plan/DailyPlanEditor';
 import { DailyPlanListSection } from '@/features/daily-plan/DailyPlanListSection';
+import { DailyPlanViewer } from '@/features/daily-plan/DailyPlanViewer';
 
 export default function TeacherDailyPlanPage() {
   const t = useTranslations('nav');
+  const tDaily = useTranslations('dailyPlanPage');
   const [search, setSearch] = useState('');
   const [editing, setEditing] = useState<DailyPlan | null>(null);
   const [creating, setCreating] = useState(false);
@@ -28,7 +30,7 @@ export default function TeacherDailyPlanPage() {
   return (
     <DashboardLayout
       title={t('dailyPlan')}
-      subtitle="Plan topics, skills and resources for each lesson"
+      subtitle={tDaily('teacherSubtitle')}
     >
       <DailyPlanListSection
         search={search}
@@ -40,7 +42,11 @@ export default function TeacherDailyPlanPage() {
         emptyDefaultMessage="No daily plans yet. Create one to get started."
         emptySearchMessage={(query) => `No daily plans match "${query}".`}
         onView={setViewing}
-        onEdit={setEditing}
+        onEdit={(plan) => {
+          if (plan.canEdit) {
+            setEditing(plan);
+          }
+        }}
         deletingPlanId={deletingPlanId}
         deleteError={deleteError}
         onDelete={async (plan) => {
@@ -79,15 +85,7 @@ export default function TeacherDailyPlanPage() {
       )}
 
       {viewing && (
-        <DailyPlanEditor
-          mode="edit"
-          plan={viewing}
-          readOnly
-          onClose={() => setViewing(null)}
-          onSaved={() => {
-            setViewing(null);
-          }}
-        />
+        <DailyPlanViewer plan={viewing} onClose={() => setViewing(null)} />
       )}
     </DashboardLayout>
   );

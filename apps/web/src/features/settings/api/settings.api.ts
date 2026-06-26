@@ -222,6 +222,39 @@ export async function updateDashboardBannerText(
   throw new Error('Failed to update dashboard banner text: Invalid response from server');
 }
 
+export type FooterIconLinks = {
+  instagram: string | null;
+  facebook: string | null;
+  telegram: string | null;
+  whatsapp: string | null;
+  viber: string | null;
+};
+
+/**
+ * Get footer social icon links (public - all roles)
+ */
+export async function fetchFooterIconLinks(): Promise<FooterIconLinks> {
+  return api.get<FooterIconLinks>('/settings/footer-icon-links');
+}
+
+/**
+ * Update footer social icon links (Admin only)
+ */
+export async function updateFooterIconLinks(
+  payload: Partial<FooterIconLinks>,
+): Promise<FooterIconLinks> {
+  const response = await api.put<{
+    success: boolean;
+    data: FooterIconLinks;
+  }>('/settings/footer-icon-links', payload);
+
+  if (response.success && response.data) {
+    return response.data;
+  }
+
+  throw new Error('Failed to update footer icon links: Invalid response from server');
+}
+
 /**
  * Get action percent settings (Admin only)
  */

@@ -35,7 +35,7 @@ export default function StudentSettingsPage() {
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
     if (newPassword !== confirmPassword) {
-      alert('Passwords do not match');
+      alert(t('passwordsDoNotMatch'));
       return;
     }
     setIsSaving(true);
@@ -44,7 +44,7 @@ export default function StudentSettingsPage() {
     setCurrentPassword('');
     setNewPassword('');
     setConfirmPassword('');
-    alert('Password changed successfully!');
+    alert(t('passwordChangedSuccess'));
   };
 
   const tabs: { id: SettingsTab; label: string; icon: React.ReactNode }[] = [
@@ -169,10 +169,10 @@ export default function StudentSettingsPage() {
           <div className="min-w-0 flex-1">
             {activeTab === 'security' && (
               <StudentCard>
-                <StudentSectionHeader title="Change Password" />
+                <StudentSectionHeader title={t('changePassword')} />
                 <form onSubmit={handleChangePassword} className="space-y-5">
                   <div>
-                    <StudentFieldLabel>Current Password</StudentFieldLabel>
+                    <StudentFieldLabel>{t('currentPassword')}</StudentFieldLabel>
                     <StudentInput
                       type="password"
                       autoComplete="current-password"
@@ -181,17 +181,17 @@ export default function StudentSettingsPage() {
                     />
                   </div>
                   <div>
-                    <StudentFieldLabel>New Password</StudentFieldLabel>
+                    <StudentFieldLabel>{t('newPassword')}</StudentFieldLabel>
                     <StudentInput
                       type="password"
                       autoComplete="new-password"
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
                     />
-                    <p className="mt-1 text-xs text-[#8b8b90]">Minimum 8 characters</p>
+                    <p className="mt-1 text-xs text-[#8b8b90]">{t('minimum8Characters')}</p>
                   </div>
                   <div>
-                    <StudentFieldLabel>Confirm New Password</StudentFieldLabel>
+                    <StudentFieldLabel>{t('confirmNewPassword')}</StudentFieldLabel>
                     <StudentInput
                       type="password"
                       autoComplete="new-password"
@@ -201,7 +201,7 @@ export default function StudentSettingsPage() {
                   </div>
                   <div className="flex justify-stretch pt-2 sm:justify-end">
                     <StudentPrimaryButton type="submit" disabled={isSaving}>
-                      {isSaving ? 'Updating...' : 'Update Password'}
+                      {isSaving ? t('updating') : t('updatePassword')}
                     </StudentPrimaryButton>
                   </div>
                 </form>
@@ -222,34 +222,34 @@ export default function StudentSettingsPage() {
 
             {activeTab === 'notifications' && (
               <StudentCard>
-                <StudentSectionHeader title="Notification Preferences" />
+                <StudentSectionHeader title={t('notificationPreferences')} />
                 <div className="space-y-1">
                   {[
                     {
                       id: 'email',
-                      label: 'Email Notifications',
-                      desc: 'Receive important updates via email',
+                      label: t('emailNotifications'),
+                      desc: t('receiveImportantUpdates'),
                       checked: emailNotifications,
                       onChange: setEmailNotifications,
                     },
                     {
                       id: 'lessons',
-                      label: 'Lesson Reminders',
-                      desc: 'Get notified before scheduled lessons',
+                      label: t('lessonReminders'),
+                      desc: t('getNotifiedBeforeScheduledLessons'),
                       checked: lessonReminders,
                       onChange: setLessonReminders,
                     },
                     {
                       id: 'payments',
-                      label: 'Payment Reminders',
-                      desc: 'Alerts about upcoming and overdue payments',
+                      label: t('paymentReminders'),
+                      desc: t('receiveAlertsAboutPayments'),
                       checked: paymentReminders,
                       onChange: setPaymentReminders,
                     },
                     {
                       id: 'vocabulary',
-                      label: 'Vocabulary Practice',
-                      desc: 'Reminders to practice new vocabulary',
+                      label: t('vocabularyPractice'),
+                      desc: t('vocabularyPracticeReminders'),
                       checked: vocabularyReminders,
                       onChange: setVocabularyReminders,
                     },
@@ -278,7 +278,7 @@ export default function StudentSettingsPage() {
                   ))}
                 </div>
                 <div className="flex justify-stretch pt-4 sm:justify-end">
-                  <StudentPrimaryButton type="button">Save Preferences</StudentPrimaryButton>
+                  <StudentPrimaryButton type="button">{t('savePreferences')}</StudentPrimaryButton>
                 </div>
               </StudentCard>
             )}

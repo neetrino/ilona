@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
+import { useTranslations } from 'next-intl';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { X } from 'lucide-react';
 import {
@@ -24,13 +25,6 @@ const RESOURCE_KINDS: DailyPlanResourceKind[] = [
   'WRITING',
   'SPEAKING',
 ];
-
-const KIND_LABEL: Record<DailyPlanResourceKind, string> = {
-  READING: 'Reading',
-  LISTENING: 'Listening',
-  WRITING: 'Writing',
-  SPEAKING: 'Speaking',
-};
 
 interface DailyPlanEditorProps {
   mode: 'create' | 'edit';
@@ -159,6 +153,19 @@ export function DailyPlanEditor({
   onClose,
   onSaved,
 }: DailyPlanEditorProps) {
+  const t = useTranslations('dailyPlanPage');
+  const tCommon = useTranslations('common');
+  const tCalendar = useTranslations('calendar');
+  const kindLabel = useMemo(
+    (): Record<DailyPlanResourceKind, string> => ({
+      READING: t('resourceKinds.READING'),
+      LISTENING: t('resourceKinds.LISTENING'),
+      WRITING: t('resourceKinds.WRITING'),
+      SPEAKING: t('resourceKinds.SPEAKING'),
+    }),
+    [t],
+  );
+  const modalTitle = mode === 'create' ? t('newTitle') : t('editTitle');
   const [date, setDate] = useState('');
   const [groupId, setGroupId] = useState('');
   const [topics, setTopics] = useState<DraftTopic[]>([]);
@@ -231,11 +238,11 @@ export function DailyPlanEditor({
       .filter((t) => t.title.length > 0);
 
     if (cleanTopics.length === 0) {
-      setError('Add at least one topic with a title.');
+      setError(t('addTopicRequired'));
       return;
     }
     if (!groupId) {
-      setError('Select a group for this daily plan.');
+      setError(t('selectGroupRequired'));
       return;
     }
 
@@ -255,7 +262,7 @@ export function DailyPlanEditor({
       }
       onSaved();
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to save';
+      const message = err instanceof Error ? err.message : t('saveFailed');
       setError(message);
     }
   };
@@ -264,7 +271,7 @@ export function DailyPlanEditor({
   const selectedGroupName =
     myGroups.find((group) => group.id === groupId)?.name ??
     plan?.group?.name ??
-    'Selected group';
+    t('selectedGroup');
 
   const modalContent = (
     <>
@@ -275,13 +282,13 @@ export function DailyPlanEditor({
 
       <header className="flex shrink-0 items-center justify-between bg-white p-4">
         <h2 className="text-lg font-semibold text-[#1010a3]">
-          {mode === 'create' ? 'New Daily Plan' : 'Edit Daily Plan'}
+          {modalTitle}
         </h2>
         <button
           type="button"
           onClick={onClose}
           className="hidden rounded-lg p-2 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900 min-[1367px]:inline-flex"
-          aria-label="Close"
+          aria-label={tCommon('close')}
         >
           <X className="size-5" />
         </button>
@@ -295,7 +302,7 @@ export function DailyPlanEditor({
                 htmlFor="dp-date"
                 className="mb-1.5 block text-sm font-medium text-[#1010a3]"
               >
-                Date
+                {tCommon('date')}
               </label>
               <DatePickerInput
                 id="dp-date"
@@ -310,7 +317,7 @@ export function DailyPlanEditor({
                 htmlFor="dp-group"
                 className="mb-1.5 block text-sm font-medium text-[#1010a3]"
               >
-                Group
+                {tCommon('group')}
               </label>
               {isGroupLocked ? (
                 <div
@@ -325,7 +332,7 @@ export function DailyPlanEditor({
                   options={myGroups.map((group) => ({ id: group.id, label: group.name }))}
                   value={groupId || null}
                   onValueChange={(next) => setGroupId(next ?? '')}
-                  placeholder="Select group"
+                  placeholder={tCalendar('selectGroup')}
                   disabled={isLoadingGroups || readOnly}
                   isLoading={isLoadingGroups}
                 />
@@ -353,7 +360,7 @@ export function DailyPlanEditor({
                         updateTopic(idx, { title: e.target.value })
                       }
                       disabled={readOnly}
-                      placeholder={`Topic ${idx + 1} title`}
+                      placeholder={t('topicTitlePlaceholder', { number: idx + 1 })}
                       className="flex-1 h-10 px-3 bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                     />
                     {!readOnly && topics.length > 1 && (
@@ -374,7 +381,7 @@ export function DailyPlanEditor({
                         className="space-y-2"
                       >
                         <div className="text-xs font-semibold uppercase tracking-wide text-[#1010a3]">
-                          {KIND_LABEL[res.kind]}
+                          {kindLabel[res.kind]}
                         </div>
                         <input
                           type="text"
@@ -385,7 +392,7 @@ export function DailyPlanEditor({
                             })
                           }
                           disabled={readOnly}
-                          placeholder="Title"
+                          placeholder={tCommon('title')}
                           className="w-full h-9 px-2 text-sm border border-slate-200 rounded focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                         />
                         <input
@@ -397,7 +404,7 @@ export function DailyPlanEditor({
                             })
                           }
                           disabled={readOnly}
-                          placeholder="https://… (optional)"
+                          placeholder={t('linkOptionalPlaceholder')}
                           className="w-full h-9 px-2 text-sm border border-slate-200 rounded focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                         />
                         <AutoResizeTextarea
@@ -406,7 +413,7 @@ export function DailyPlanEditor({
                             updateResource(idx, res.kind, { description })
                           }
                           disabled={readOnly}
-                          placeholder="Description (optional)"
+                          placeholder={t('descriptionOptional')}
                           resizeStorageKey={`${mode}-${plan?.id ?? 'draft'}-${idx}-${res.kind}`}
                         />
                       </div>
@@ -422,7 +429,7 @@ export function DailyPlanEditor({
               onClick={addTopic}
               className="h-11 shrink-0 rounded-lg border-2 border-dashed border-slate-300 text-slate-600 hover:bg-slate-50 active:scale-100"
             >
-              + Add another topic
+              {t('addAnotherTopic')}
             </button>
           )}
 
@@ -432,7 +439,7 @@ export function DailyPlanEditor({
               onClick={onClose}
               className="h-10 rounded-lg border border-slate-200 px-4 text-slate-700 hover:bg-slate-50"
             >
-              Cancel
+              {tCommon('cancel')}
             </button>
             {!readOnly && (
               <button
@@ -441,7 +448,7 @@ export function DailyPlanEditor({
                 disabled={isSaving}
                 className="h-10 rounded-lg bg-primary px-4 font-medium text-white hover:bg-primary/90 disabled:opacity-60"
               >
-                {isSaving ? 'Saving…' : 'Save'}
+                {isSaving ? tCommon('saving') : tCommon('save')}
               </button>
             )}
           </div>
@@ -471,7 +478,7 @@ export function DailyPlanEditor({
           aria-describedby={undefined}
         >
           <DialogPrimitive.Title className="sr-only">
-            {mode === 'create' ? 'New Daily Plan' : 'Edit Daily Plan'}
+            {modalTitle}
           </DialogPrimitive.Title>
           {modalContent}
         </DialogPrimitive.Content>

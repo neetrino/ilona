@@ -12,7 +12,6 @@ import {
   isOnboardingItem,
   type Student,
   type StudentLifecycleStatus,
-  type UpdateStudentDto,
 } from '@/features/students';
 import { useTeachers } from '@/features/teachers';
 import { useGroups } from '@/features/groups';
@@ -20,6 +19,7 @@ import { useCenters } from '@/features/centers';
 import { getErrorMessage } from '@/shared/lib/api';
 import { readUrlSearchParam } from '@/shared/lib/url-search-params';
 import { useAppSearchUrl } from '@/shared/hooks/useAppSearchUrl';
+import { resolveTeacherIdFromGroup } from '@/features/students/lib/group-center-assignment';
 import { groupStudentsByCenter } from '../utils';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 
@@ -29,6 +29,7 @@ const PAGE_SIZE = 10;
 const NEW_STUDENT_BADGE_DAYS = 30;
 const MODAL_PARAM = 'modal';
 const ADD_STUDENT_MODAL = 'add-student';
+const EDIT_STUDENT_PARAM = 'editStudent';
 
 function isWithinNewStudentWindow(student: Student): boolean {
   if (student.isRecentlyPaidFromCrm !== undefined) {
@@ -60,6 +61,7 @@ export function useStudentsPage() {
   const t = useTranslations('students');
   const tCommon = useTranslations('common');
   const tTeachers = useTranslations('teachers');
+  const tAnalytics = useTranslations('analytics');
   const tStatus = useTranslations('status');
   const { user } = useAuthStore();
   const managerCenterId = user?.role === 'MANAGER' ? user.managerCenterId : undefined;
@@ -101,6 +103,7 @@ export function useStudentsPage() {
   const [isBulkDeleteDialogOpen, setIsBulkDeleteDialogOpen] = useState(false);
   const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
   const isFeedbackClosingRef = useRef(false);
+  const isEditClosingRef = useRef(false);
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [selectedStudentForFeedback, setSelectedStudentForFeedback] = useState<Student | null>(null);
 
@@ -181,6 +184,18 @@ export function useStudentsPage() {
       setIsFeedbackModalOpen(false);
     }
   }, [feedbackStudentIdFromUrl, urlRevision]);
+
+  const editStudentIdFromUrl = readUrlSearchParam(EDIT_STUDENT_PARAM, searchParams, urlRevision);
+  useEffect(() => {
+    if (isEditClosingRef.current) {
+      return;
+    }
+    if (editStudentIdFromUrl) {
+      setIsEditStudentOpen(true);
+    } else {
+      setIsEditStudentOpen(false);
+    }
+  }, [editStudentIdFromUrl, urlRevision]);
 
   // Debounce search query (300ms). Use debounced value for API to avoid request on every keystroke.
   useEffect(() => {
@@ -423,10 +438,27 @@ export function useStudentsPage() {
     }
   };
 
-  // Handle edit button click
+  // Handle edit button click — update URL so refresh keeps modal open
   const handleEditClick = (student: Student) => {
+    isEditClosingRef.current = false;
     setSelectedStudent(student);
     setIsEditStudentOpen(true);
+    setParams({ [EDIT_STUDENT_PARAM]: student.id }, { mode: 'push' });
+  };
+
+  const handleEditModalOpenChange = (open: boolean) => {
+    if (open) {
+      isEditClosingRef.current = false;
+      setIsEditStudentOpen(true);
+      return;
+    }
+    isEditClosingRef.current = true;
+    setIsEditStudentOpen(false);
+    setSelectedStudent(null);
+    removeParams([EDIT_STUDENT_PARAM], { mode: 'replace' });
+    setTimeout(() => {
+      isEditClosingRef.current = false;
+    }, 100);
   };
 
   // Handle message/feedback icon click — update URL so refresh keeps modal open
@@ -478,32 +510,17 @@ export function useStudentsPage() {
   };
 
   // Handle inline updates
-  const handleTeacherChange = async (studentId: string, teacherId: string | null) => {
-    const row = students.find((s): s is Student => !isOnboardingItem(s) && s.id === studentId);
-    const groupId = row?.groupId ?? null;
-    const allGroups = groupsData?.items ?? [];
-    const currentGroup = groupId ? allGroups.find((g) => g.id === groupId) : undefined;
-    const nextTeacherId = teacherId || null;
-    const rowCenterId = row?.centerId ?? null;
-    const groupMatchesTeacherAndCenter =
-      !currentGroup ||
-      !nextTeacherId ||
-      (currentGroup.teacherId === nextTeacherId &&
-        (!rowCenterId || currentGroup.centerId === rowCenterId));
-    const payload: UpdateStudentDto = { teacherId: teacherId || undefined };
-    if (!groupMatchesTeacherAndCenter) {
-      payload.groupId = null;
-    }
-    await updateStudent.mutateAsync({
-      id: studentId,
-      data: payload,
-    });
-  };
-
   const handleGroupChange = async (studentId: string, groupId: string | null) => {
+    const allGroups = groupsData?.items ?? [];
+    const group = groupId ? allGroups.find((g) => g.id === groupId) : undefined;
+    const teacherId = groupId ? resolveTeacherIdFromGroup(group) : undefined;
+
     await updateStudent.mutateAsync({
       id: studentId,
-      data: { groupId: groupId === null ? null : groupId },
+      data: {
+        groupId: groupId === null ? null : groupId,
+        teacherId: groupId === null ? null : teacherId,
+      },
     });
   };
 
@@ -530,7 +547,7 @@ export function useStudentsPage() {
 
   const teachers = useMemo(() => teachersData?.items ?? [], [teachersData?.items]);
 
-  // Full groups list with teacherId for per-row filtering (group options are filtered by selected teacher in table)
+  // Full groups list with teacherId for per-row filtering (group options are filtered by selected center in table)
   const groups = useMemo(() => groupsData?.items ?? [], [groupsData]);
 
   const centerOptions = useMemo(() => 
@@ -567,12 +584,12 @@ export function useStudentsPage() {
   // Distinct from User.status: covers NEW intake, UNGROUPED, and risk states.
   const lifecycleFilterOptions = useMemo(
     () => [
-      { id: 'NEW', label: 'New' },
-      { id: 'UNGROUPED', label: 'Ungrouped' },
-      { id: 'RISK', label: 'Risk' },
-      { id: 'HIGH_RISK', label: 'High Risk' },
+      { id: 'NEW', label: t('lifecycleNew') },
+      { id: 'UNGROUPED', label: t('lifecycleUngrouped') },
+      { id: 'RISK', label: tAnalytics('riskBadge') },
+      { id: 'HIGH_RISK', label: tAnalytics('highRisk') },
     ],
-    [],
+    [t, tAnalytics],
   );
 
   // Group filter options (scoped by manager center if applicable).
@@ -644,6 +661,7 @@ export function useStudentsPage() {
     selectedYear,
     isAddStudentOpen,
     isEditStudentOpen,
+    editStudentIdFromUrl,
     isDeleteDialogOpen,
     isBulkDeleteDialogOpen,
     isFeedbackModalOpen,
@@ -692,10 +710,10 @@ export function useStudentsPage() {
     handleDeleteClick,
     handleDeleteConfirm,
     handleEditClick,
+    handleEditModalOpenChange,
     handleDeactivateClick,
     handleShowFeedback,
     handleFeedbackModalOpenChange,
-    handleTeacherChange,
     handleGroupChange,
     handleCenterChange,
     handleRegisterDateChange,
@@ -726,6 +744,7 @@ export function useStudentsPage() {
     t,
     tCommon,
     tTeachers,
+    tAnalytics,
     tStatus,
     locale,
     

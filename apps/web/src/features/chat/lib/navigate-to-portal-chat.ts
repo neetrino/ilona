@@ -10,9 +10,37 @@ type NavigateToPortalChatParams = {
   searchParams: ReadonlyURLSearchParams;
 };
 
+export function getPortalChatPath(role: UserRole): string {
+  switch (role) {
+    case 'ADMIN':
+    case 'MANAGER':
+      return `${getAdminPortalBasePath(role)}/chat`;
+    case 'TEACHER':
+      return '/teacher/chat';
+    case 'STUDENT':
+      return '/student/chat';
+    default:
+      return '/admin/chat';
+  }
+}
+
+export function buildPortalChatHref(
+  role: UserRole,
+  params: { conversationId: string; returnTo?: string; tab?: string },
+): string {
+  const search = new URLSearchParams();
+  search.set('conversationId', params.conversationId);
+  if (params.tab) {
+    search.set('tab', params.tab);
+  }
+  if (params.returnTo) {
+    search.set('returnTo', params.returnTo);
+  }
+  return `${getPortalChatPath(role)}?${search.toString()}`;
+}
+
 export function navigateToPortalChat({
   router,
-  locale,
   role,
   pathname,
   searchParams,
@@ -22,10 +50,5 @@ export function navigateToPortalChat({
     : pathname;
   const returnTo = encodeURIComponent(currentPath);
 
-  const roleSegment =
-    role === 'ADMIN' || role === 'MANAGER'
-      ? getAdminPortalBasePath(role).slice(1)
-      : role.toLowerCase();
-
-  router.push(`/${locale}/${roleSegment}/chat?returnTo=${returnTo}`);
+  router.push(`${getPortalChatPath(role)}?returnTo=${returnTo}`);
 }

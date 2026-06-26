@@ -321,7 +321,7 @@ export function StudentAbsenceCalendar({
             onClick={handlePreviousMonth}
             disabled={isLoading}
             type="button"
-            aria-label="Previous month"
+            aria-label={tCommon('previousMonth')}
             className="h-11 w-11 rounded-[0.875rem]"
           >
             <ChevronLeft className="h-5 w-5" />
@@ -333,7 +333,7 @@ export function StudentAbsenceCalendar({
             onClick={handleNextMonth}
             disabled={isLoading}
             type="button"
-            aria-label="Next month"
+            aria-label={tCommon('nextMonth')}
             className="h-11 w-11 rounded-[0.875rem]"
           >
             <ChevronRight className="h-5 w-5" />

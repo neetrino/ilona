@@ -4,47 +4,62 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { LoginForm } from '@/features/auth/components/LoginForm';
 import { useAuthStore, getPortalEntryPath } from '@/features/auth/store/auth.store';
+import { useLogo } from '@/features/settings/hooks/useSettings';
+import { getFullApiUrl } from '@/shared/lib/api';
+import { LandingNavbar } from '@/shared/components/layout/LandingNavbar';
+
+function LoginPageShell({ children }: { children: React.ReactNode }) {
+  const { data: logoData } = useLogo();
+  const logoUrl = getFullApiUrl(logoData?.logoUrl) || '/logo.webp';
+
+  return (
+    <>
+      <LandingNavbar logoUrl={logoUrl} profileHref="/login" logoHref="/" />
+      <div className="relative min-h-screen bg-gradient-to-br from-slate-50 via-background to-slate-100 px-4 pb-6 pt-24 sm:px-6 sm:pt-28">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,hsl(var(--border))_1px,transparent_0)] [background-size:24px_24px] opacity-30" />
+        {children}
+      </div>
+    </>
+  );
+}
 
 export default function LoginPage() {
   const router = useRouter();
   const { isAuthenticated, isHydrated, user } = useAuthStore();
 
   useEffect(() => {
-    // Wait for hydration before checking auth
     if (!isHydrated) return;
 
-    // If already authenticated, redirect to dashboard
     if (isAuthenticated && user) {
       router.replace(getPortalEntryPath(user.role));
     }
   }, [isAuthenticated, isHydrated, user, router]);
 
-  // Show loading while hydrating
   if (!isHydrated) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-background to-slate-100">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-      </div>
+      <LoginPageShell>
+        <div className="relative z-10 flex min-h-[calc(100vh-7rem)] items-center justify-center">
+          <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-primary" />
+        </div>
+      </LoginPageShell>
     );
   }
 
-  // If authenticated, show loading while redirecting
   if (isAuthenticated && user) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-background to-slate-100">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-      </div>
+      <LoginPageShell>
+        <div className="relative z-10 flex min-h-[calc(100vh-7rem)] items-center justify-center">
+          <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-primary" />
+        </div>
+      </LoginPageShell>
     );
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-background to-slate-100 p-4 sm:p-6">
-      {/* Subtle background pattern */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,hsl(var(--border))_1px,transparent_0)] [background-size:24px_24px] opacity-30" />
-      
-      <div className="relative z-10 w-full max-w-[480px] animate-in fade-in duration-500">
+    <LoginPageShell>
+      <div className="relative z-10 mx-auto flex min-h-[calc(100vh-7rem)] w-full max-w-[480px] items-center animate-in fade-in duration-500">
         <LoginForm />
       </div>
-    </div>
+    </LoginPageShell>
   );
 }

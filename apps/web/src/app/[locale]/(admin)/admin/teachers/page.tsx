@@ -269,7 +269,7 @@ export default function TeachersPage() {
         teacherName={selectedTeacherIds.size > 0 ? `${selectedTeacherIds.size} ${selectedTeacherIds.size === 1 ? 'teacher' : 'teachers'}` : undefined}
         isLoading={deleteTeachers.isPending}
         error={bulkDeleteError}
-        title="Delete Teachers"
+        title={t('deleteTeachersTitle')}
       />
 
       {/* Teacher Details Modal (CRM-style) */}

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import { getProxiedFileUrl } from '@/shared/lib/api';
 import { cn } from '@/shared/lib/utils';
 import { useAuthStore } from '@/features/auth/store/auth.store';
@@ -62,6 +63,8 @@ export function VoiceMessagePlayer({
   duration: durationProp,
   fileName: _fileName,
 }: VoiceMessagePlayerProps) {
+  const tChat = useTranslations('chat');
+  const tCommon = useTranslations('common');
   const { user } = useAuthStore();
   const ui = getChatThemeForRole(user?.role);
   const userId = user?.id ?? null;
@@ -363,15 +366,15 @@ export function VoiceMessagePlayer({
           </svg>
         </div>
         <div className="flex-1">
-          <p className="text-xs text-red-700 font-medium">Unable to play audio</p>
-          <p className="text-xs text-red-600">File may be missing or inaccessible</p>
+          <p className="text-xs text-red-700 font-medium">{tChat('unableToPlayAudio')}</p>
+          <p className="text-xs text-red-600">{tChat('fileMissingOrInaccessible')}</p>
         </div>
         <button
           onClick={handleRetry}
           className="px-2 py-1 text-xs bg-red-100 text-red-700 rounded hover:bg-red-200 transition-colors"
-          title="Retry loading audio"
+          title={tChat('retryLoadingAudio')}
         >
-          Retry
+          {tCommon('retry')}
         </button>
         {durationProp != null && (
           <span className="text-xs text-red-600 flex-shrink-0">
@@ -415,8 +418,8 @@ export function VoiceMessagePlayer({
               'flex h-10 w-10 flex-shrink-0 touch-manipulation items-center justify-center transition-opacity hover:opacity-90 disabled:opacity-50',
               ui.voicePlayCircle,
             )}
-            title={isPlaying ? 'Pause' : 'Play'}
-            aria-label={isPlaying ? 'Pause' : 'Play'}
+            title={isPlaying ? tCommon('pause') : tCommon('play')}
+            aria-label={isPlaying ? tCommon('pause') : tCommon('play')}
           >
             {isPlaying ? (
               <svg
@@ -444,7 +447,7 @@ export function VoiceMessagePlayer({
               aria-valuenow={Math.round(progress)}
               aria-valuemin={0}
               aria-valuemax={100}
-              aria-label="Playback position; drag or use arrow keys to seek"
+              aria-label={tChat('playbackPosition')}
               className="relative py-2 -my-1 cursor-pointer touch-manipulation group"
               onPointerDown={handleProgressPointerDown}
               onPointerMove={handleProgressPointerMove}

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import { useQuery } from '@tanstack/react-query';
 import {
   Dialog,
@@ -25,6 +26,7 @@ export function ObligationDetailsModal({
   teacherId,
   teacherName,
 }: ObligationDetailsModalProps) {
+  const t = useTranslations('teachers');
   const {
     data: obligationData,
     isLoading,
@@ -65,7 +67,7 @@ export function ObligationDetailsModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Obligation Details</DialogTitle>
+          <DialogTitle>{t('obligationDetailsModalTitle')}</DialogTitle>
           <DialogDescription>
             {teacherName ? `Required actions for ${teacherName}` : 'Required actions completion status'}
           </DialogDescription>
@@ -75,14 +77,14 @@ export function ObligationDetailsModal({
           <div className="flex items-center justify-center py-12">
             <div className="flex flex-col items-center gap-3">
               <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-              <p className="text-sm text-slate-500">Loading obligation details...</p>
+              <p className="text-sm text-slate-500">{t('loadingObligationDetails')}</p>
             </div>
           </div>
         )}
 
         {error && (
           <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-            <p className="text-sm text-red-600 font-medium">Failed to load obligation details</p>
+            <p className="text-sm text-red-600 font-medium">{t('failedLoadObligationDetails')}</p>
             <p className="text-xs text-red-500 mt-1">
               {error instanceof Error ? error.message : 'An unexpected error occurred'}
             </p>
@@ -95,7 +97,7 @@ export function ObligationDetailsModal({
             <div className="bg-slate-50 rounded-lg p-4 border border-slate-200">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-slate-600">Completion Status</p>
+                  <p className="text-sm font-medium text-slate-600">{t('completionStatus')}</p>
                   <p className="text-2xl font-bold text-slate-800 mt-1">
                     {obligationData.completed}/{obligationData.total}
                   </p>

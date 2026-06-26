@@ -43,7 +43,7 @@ export class DailyPlanController {
     @Body() dto: CreateDailyPlanDto,
     @CurrentUser() user: JwtPayload,
   ) {
-    return this.service.create(dto, user.sub, user.role);
+    return this.service.create(dto, user);
   }
 
   @Patch(':id')

@@ -515,6 +515,55 @@ export class SettingsController {
   }
 
   /**
+   * Get footer social icon links (public - accessible to all)
+   */
+  @Get('footer-icon-links')
+  @Public()
+  @ApiOperation({ summary: 'Get footer social icon links (public - all roles)' })
+  async getFooterIconLinks() {
+    try {
+      return await this.settingsService.getFooterIconLinks();
+    } catch (error) {
+      this.logger.error(
+        `Failed to get footer icon links: ${error instanceof Error ? error.message : String(error)}`,
+        error instanceof Error ? error.stack : undefined,
+      );
+      throw new InternalServerErrorException(
+        'Failed to retrieve footer icon links. Please try again later.',
+      );
+    }
+  }
+
+  /**
+   * Update footer social icon links (Admin only)
+   */
+  @Put('footer-icon-links')
+  @Roles(UserRole.ADMIN)
+  @ApiOperation({ summary: 'Update footer social icon links (Admin only)' })
+  async updateFooterIconLinks(
+    @Body() body: Partial<Record<string, string | null>>,
+  ) {
+    try {
+      const result = await this.settingsService.updateFooterIconLinks(body);
+      return {
+        success: true,
+        data: result,
+      };
+    } catch (error) {
+      if (error instanceof BadRequestException) {
+        throw error;
+      }
+
+      this.logger.error(
+        `Failed to update footer icon links: ${error instanceof Error ? error.message : String(error)}`,
+      );
+      throw new InternalServerErrorException(
+        'Failed to update footer icon links. Please try again later.',
+      );
+    }
+  }
+
+  /**
    * Get action percent settings (Admin only)
    */
   @Get('action-percents')

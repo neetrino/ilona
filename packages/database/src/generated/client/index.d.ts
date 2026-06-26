@@ -27048,6 +27048,7 @@ export namespace Prisma {
     penaltyVoiceAmd: number
     penaltyTextAmd: number
     penaltyDailyPlanAmd: number
+    footerIconLinks: number
     updatedAt: number
     _all: number
   }
@@ -27153,6 +27154,7 @@ export namespace Prisma {
     penaltyVoiceAmd?: true
     penaltyTextAmd?: true
     penaltyDailyPlanAmd?: true
+    footerIconLinks?: true
     updatedAt?: true
     _all?: true
   }
@@ -27263,6 +27265,7 @@ export namespace Prisma {
     penaltyVoiceAmd: Decimal
     penaltyTextAmd: Decimal
     penaltyDailyPlanAmd: Decimal
+    footerIconLinks: JsonValue | null
     updatedAt: Date
     _count: SystemSettingsCountAggregateOutputType | null
     _avg: SystemSettingsAvgAggregateOutputType | null
@@ -27305,6 +27308,7 @@ export namespace Prisma {
     penaltyVoiceAmd?: boolean
     penaltyTextAmd?: boolean
     penaltyDailyPlanAmd?: boolean
+    footerIconLinks?: boolean
     updatedAt?: boolean
   }, ExtArgs["result"]["systemSettings"]>
 
@@ -27328,6 +27332,7 @@ export namespace Prisma {
     penaltyVoiceAmd?: boolean
     penaltyTextAmd?: boolean
     penaltyDailyPlanAmd?: boolean
+    footerIconLinks?: boolean
     updatedAt?: boolean
   }, ExtArgs["result"]["systemSettings"]>
 
@@ -27351,6 +27356,7 @@ export namespace Prisma {
     penaltyVoiceAmd?: boolean
     penaltyTextAmd?: boolean
     penaltyDailyPlanAmd?: boolean
+    footerIconLinks?: boolean
     updatedAt?: boolean
   }
 
@@ -27378,6 +27384,7 @@ export namespace Prisma {
       penaltyVoiceAmd: Prisma.Decimal
       penaltyTextAmd: Prisma.Decimal
       penaltyDailyPlanAmd: Prisma.Decimal
+      footerIconLinks: Prisma.JsonValue | null
       updatedAt: Date
     }, ExtArgs["result"]["systemSettings"]>
     composites: {}
@@ -27791,6 +27798,7 @@ export namespace Prisma {
     readonly penaltyVoiceAmd: FieldRef<"SystemSettings", 'Decimal'>
     readonly penaltyTextAmd: FieldRef<"SystemSettings", 'Decimal'>
     readonly penaltyDailyPlanAmd: FieldRef<"SystemSettings", 'Decimal'>
+    readonly footerIconLinks: FieldRef<"SystemSettings", 'Json'>
     readonly updatedAt: FieldRef<"SystemSettings", 'DateTime'>
   }
     
@@ -36772,6 +36780,7 @@ export namespace Prisma {
     penaltyVoiceAmd: 'penaltyVoiceAmd',
     penaltyTextAmd: 'penaltyTextAmd',
     penaltyDailyPlanAmd: 'penaltyDailyPlanAmd',
+    footerIconLinks: 'footerIconLinks',
     updatedAt: 'updatedAt'
   };
 
@@ -39284,6 +39293,7 @@ export namespace Prisma {
     penaltyVoiceAmd?: DecimalFilter<"SystemSettings"> | Decimal | DecimalJsLike | number | string
     penaltyTextAmd?: DecimalFilter<"SystemSettings"> | Decimal | DecimalJsLike | number | string
     penaltyDailyPlanAmd?: DecimalFilter<"SystemSettings"> | Decimal | DecimalJsLike | number | string
+    footerIconLinks?: JsonNullableFilter<"SystemSettings">
     updatedAt?: DateTimeFilter<"SystemSettings"> | Date | string
   }
 
@@ -39307,6 +39317,7 @@ export namespace Prisma {
     penaltyVoiceAmd?: SortOrder
     penaltyTextAmd?: SortOrder
     penaltyDailyPlanAmd?: SortOrder
+    footerIconLinks?: SortOrderInput | SortOrder
     updatedAt?: SortOrder
   }
 
@@ -39333,6 +39344,7 @@ export namespace Prisma {
     penaltyVoiceAmd?: DecimalFilter<"SystemSettings"> | Decimal | DecimalJsLike | number | string
     penaltyTextAmd?: DecimalFilter<"SystemSettings"> | Decimal | DecimalJsLike | number | string
     penaltyDailyPlanAmd?: DecimalFilter<"SystemSettings"> | Decimal | DecimalJsLike | number | string
+    footerIconLinks?: JsonNullableFilter<"SystemSettings">
     updatedAt?: DateTimeFilter<"SystemSettings"> | Date | string
   }, "id">
 
@@ -39356,6 +39368,7 @@ export namespace Prisma {
     penaltyVoiceAmd?: SortOrder
     penaltyTextAmd?: SortOrder
     penaltyDailyPlanAmd?: SortOrder
+    footerIconLinks?: SortOrderInput | SortOrder
     updatedAt?: SortOrder
     _count?: SystemSettingsCountOrderByAggregateInput
     _avg?: SystemSettingsAvgOrderByAggregateInput
@@ -39387,6 +39400,7 @@ export namespace Prisma {
     penaltyVoiceAmd?: DecimalWithAggregatesFilter<"SystemSettings"> | Decimal | DecimalJsLike | number | string
     penaltyTextAmd?: DecimalWithAggregatesFilter<"SystemSettings"> | Decimal | DecimalJsLike | number | string
     penaltyDailyPlanAmd?: DecimalWithAggregatesFilter<"SystemSettings"> | Decimal | DecimalJsLike | number | string
+    footerIconLinks?: JsonNullableWithAggregatesFilter<"SystemSettings">
     updatedAt?: DateTimeWithAggregatesFilter<"SystemSettings"> | Date | string
   }
 
@@ -42291,6 +42305,7 @@ export namespace Prisma {
     penaltyVoiceAmd?: Decimal | DecimalJsLike | number | string
     penaltyTextAmd?: Decimal | DecimalJsLike | number | string
     penaltyDailyPlanAmd?: Decimal | DecimalJsLike | number | string
+    footerIconLinks?: NullableJsonNullValueInput | InputJsonValue
     updatedAt?: Date | string
   }
 
@@ -42314,6 +42329,7 @@ export namespace Prisma {
     penaltyVoiceAmd?: Decimal | DecimalJsLike | number | string
     penaltyTextAmd?: Decimal | DecimalJsLike | number | string
     penaltyDailyPlanAmd?: Decimal | DecimalJsLike | number | string
+    footerIconLinks?: NullableJsonNullValueInput | InputJsonValue
     updatedAt?: Date | string
   }
 
@@ -42337,6 +42353,7 @@ export namespace Prisma {
     penaltyVoiceAmd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     penaltyTextAmd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     penaltyDailyPlanAmd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    footerIconLinks?: NullableJsonNullValueInput | InputJsonValue
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -42360,6 +42377,7 @@ export namespace Prisma {
     penaltyVoiceAmd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     penaltyTextAmd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     penaltyDailyPlanAmd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    footerIconLinks?: NullableJsonNullValueInput | InputJsonValue
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -42383,6 +42401,7 @@ export namespace Prisma {
     penaltyVoiceAmd?: Decimal | DecimalJsLike | number | string
     penaltyTextAmd?: Decimal | DecimalJsLike | number | string
     penaltyDailyPlanAmd?: Decimal | DecimalJsLike | number | string
+    footerIconLinks?: NullableJsonNullValueInput | InputJsonValue
     updatedAt?: Date | string
   }
 
@@ -42406,6 +42425,7 @@ export namespace Prisma {
     penaltyVoiceAmd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     penaltyTextAmd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     penaltyDailyPlanAmd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    footerIconLinks?: NullableJsonNullValueInput | InputJsonValue
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -42429,6 +42449,7 @@ export namespace Prisma {
     penaltyVoiceAmd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     penaltyTextAmd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
     penaltyDailyPlanAmd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    footerIconLinks?: NullableJsonNullValueInput | InputJsonValue
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -44977,6 +44998,7 @@ export namespace Prisma {
     penaltyVoiceAmd?: SortOrder
     penaltyTextAmd?: SortOrder
     penaltyDailyPlanAmd?: SortOrder
+    footerIconLinks?: SortOrder
     updatedAt?: SortOrder
   }
 

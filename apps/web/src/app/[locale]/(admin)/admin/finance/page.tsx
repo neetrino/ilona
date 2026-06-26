@@ -423,7 +423,7 @@ export default function FinancePage() {
             className="w-[calc(100%-1.5rem)] max-w-sm rounded-[15px] p-5 duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] sm:w-full"
           >
             <DialogHeader>
-              <DialogTitle>Delete Salary Records</DialogTitle>
+              <DialogTitle>{t('deleteSalaryRecords')}</DialogTitle>
               <DialogDescription>
                 Are you sure you want to delete {selectedSalaryIds.size} salary record{selectedSalaryIds.size > 1 ? 's' : ''}? This action cannot be undone and will permanently remove the selected record{selectedSalaryIds.size > 1 ? 's' : ''}.
               </DialogDescription>
@@ -466,7 +466,7 @@ export default function FinancePage() {
             className="w-[calc(100%-1.5rem)] max-w-sm rounded-[15px] p-5 duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] sm:w-full"
           >
             <DialogHeader>
-              <DialogTitle>Delete Payments</DialogTitle>
+              <DialogTitle>{t('deletePayments')}</DialogTitle>
               <DialogDescription>
                 Are you sure you want to delete {selectedPaymentIds.size} payment{selectedPaymentIds.size > 1 ? 's' : ''}? This action cannot be undone and will permanently remove the selected record{selectedPaymentIds.size > 1 ? 's' : ''}.
               </DialogDescription>

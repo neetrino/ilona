@@ -12,6 +12,7 @@ import { PenaltyTab } from './components/PenaltyTab';
 import { ManagerTab } from '@/app/[locale]/(admin)/admin/settings/components/ManagerTab';
 import { DashboardBannerTab } from './components/DashboardBannerTab';
 import { SidebarVisibilityTab } from './components/SidebarVisibilityTab';
+import { FooterIconLinksTab } from './components/FooterIconLinksTab';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { useChangePassword, useUpdateProfile } from '@/features/settings';
 import { Button } from '@/shared/components/ui';
@@ -19,6 +20,7 @@ import { useIsIPad } from '@/shared/hooks/useIsIPad';
 
 export default function SettingsPage() {
   const t = useTranslations('settings');
+  const tAuth = useTranslations('auth');
   const { user } = useAuthStore();
   const isIPad = useIsIPad();
   const isManager = user?.role === 'MANAGER';
@@ -43,9 +45,9 @@ export default function SettingsPage() {
 
     try {
       await updateProfile.mutateAsync({ email: normalizedEmail });
-      alert('Login updated successfully');
+      alert(t('loginUpdatedSuccess'));
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to update login';
+      const message = error instanceof Error ? error.message : t('failedToSaveSettings');
       alert(message);
     }
   };
@@ -88,7 +90,7 @@ export default function SettingsPage() {
           />
           <div className="min-w-0 flex-1 space-y-6">
             <div className="rounded-3xl border border-[rgba(14,14,16,0.07)] bg-white p-6">
-              <h2 className="text-lg font-semibold text-[#3b3b40] mb-6">Login</h2>
+              <h2 className="text-lg font-semibold text-[#3b3b40] mb-6">{tAuth('login')}</h2>
               <form onSubmit={handleUpdateLogin} className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-[#3b3b40] mb-2">
@@ -211,6 +213,10 @@ export default function SettingsPage() {
 
           {activeTab === 'sidebar-visibility' && (
             <SidebarVisibilityTab />
+          )}
+
+          {activeTab === 'footer-icon-links' && (
+            <FooterIconLinksTab />
           )}
         </div>
       </div>

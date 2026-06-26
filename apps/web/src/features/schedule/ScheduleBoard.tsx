@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import type { Lesson } from '@/features/lessons';
 import { WeekLessonGrid, MonthLessonGrid } from '@/features/schedule/ScheduleLessonViews';
 import { scheduleDateKeyFromIso, type ScheduleViewMode } from '@/features/schedule/schedule-dates';
@@ -62,6 +63,7 @@ export function ScheduleBoard({
   hideMonthOnMobile = false,
   rectangularViewToggle = false,
 }: ScheduleBoardProps) {
+  const tCommon = useTranslations('common');
   const isStudent = variant === 'student';
   const useRectangularToggle = rectangularViewToggle && isStudent;
   const isIPad = useIsIPad();
@@ -132,7 +134,7 @@ export function ScheduleBoard({
                   ? 'flex h-9 w-9 items-center justify-center rounded-[0.875rem] border border-[rgba(14,14,16,0.07)] text-[#3b3b40] hover:bg-[#f6f6f7]'
                   : 'h-9 w-9 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50'
               }
-              aria-label="Previous period"
+              aria-label={tCommon('previousPeriod')}
             >
               ←
             </button>
@@ -153,7 +155,7 @@ export function ScheduleBoard({
                   ? 'flex h-9 w-9 items-center justify-center rounded-[0.875rem] border border-[rgba(14,14,16,0.07)] text-[#3b3b40] hover:bg-[#f6f6f7]'
                   : 'h-9 w-9 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50'
               }
-              aria-label="Next period"
+              aria-label={tCommon('nextPeriod')}
             >
               →
             </button>

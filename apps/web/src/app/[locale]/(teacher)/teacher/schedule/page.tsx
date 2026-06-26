@@ -32,6 +32,8 @@ function uniqueCentersFromGroups(groups: Group[]): { id: string; name: string }[
 
 export default function TeacherSchedulePage() {
   const t = useTranslations('nav');
+  const tCommon = useTranslations('common');
+  const tAttendance = useTranslations('attendance');
   const { isHydrated, isAuthenticated, tokens } = useAuthStore();
   const isAuthReady = isHydrated && isAuthenticated && !!tokens?.accessToken;
   const { data: myGroups, isLoading: isGroupsLoading } = useMyGroups();
@@ -122,7 +124,7 @@ export default function TeacherSchedulePage() {
   return (
     <DashboardLayout
       title={t('schedule')}
-      subtitle="Weekly and monthly schedule for upcoming lessons"
+      subtitle={t('scheduleSubtitle')}
     >
       <ScheduleBoard
         variant="student"
@@ -133,12 +135,12 @@ export default function TeacherSchedulePage() {
         topBar={(
           <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-end">
             <div className="w-full md:max-w-xs">
-              <StudentFieldLabel htmlFor="schedule-center-teacher">Center</StudentFieldLabel>
+              <StudentFieldLabel htmlFor="schedule-center-teacher">{tCommon('center')}</StudentFieldLabel>
               <StudentSelect
                 id="schedule-center-teacher"
                 value={centerId}
                 onChange={setCenterId}
-                placeholder="All centers"
+                placeholder={tAttendance('allCenters')}
                 allowClear
                 options={visibleCenters.map((c) => ({
                   value: c.id,

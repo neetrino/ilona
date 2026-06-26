@@ -19,7 +19,7 @@ export function SecurityTab({ isSaving, onSave }: SecurityTabProps) {
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
     if (newPassword !== confirmPassword) {
-      alert('Passwords do not match');
+      alert(t('passwordsDoNotMatch'));
       return;
     }
     onSave(true);
@@ -29,7 +29,7 @@ export function SecurityTab({ isSaving, onSave }: SecurityTabProps) {
     setCurrentPassword('');
     setNewPassword('');
     setConfirmPassword('');
-    alert('Password changed successfully!');
+    alert(t('passwordChangedSuccess'));
   };
 
   return (

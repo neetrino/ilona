@@ -1,14 +1,17 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import { useLessonAttendance, useMarkBulkAttendance } from '@/features/attendance';
 import { useLesson } from '@/features/lessons';
 import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/input';
+import { AutoDismissToast } from '@/shared/components/ui';
 import { markAbsenceComplete } from '@/features/lessons/api/obligations.api';
 import { useQueryClient } from '@tanstack/react-query';
 import { lessonKeys } from '@/features/lessons/hooks/useLessons';
 import type { AbsenceType } from '@/features/attendance';
+import type { AutoDismissToastVariant } from '@/shared/components/ui';
 
 interface AbsenceTabProps {
   lessonId: string;
@@ -16,7 +19,15 @@ interface AbsenceTabProps {
 
 type AttendanceStatus = 'present' | 'absent_justified' | 'absent_unjustified' | 'not_marked';
 
+type ToastState = {
+  key: number;
+  message: string;
+  variant: AutoDismissToastVariant;
+};
+
 export function AbsenceTab({ lessonId }: AbsenceTabProps) {
+  const t = useTranslations('attendance');
+  const tCalendar = useTranslations('calendar');
   const queryClient = useQueryClient();
   const { data: lesson } = useLesson(lessonId);
   const { data: attendanceData, isLoading } = useLessonAttendance(lessonId);
@@ -25,6 +36,11 @@ export function AbsenceTab({ lessonId }: AbsenceTabProps) {
     Record<string, { isPresent: boolean; absenceType?: AbsenceType; note?: string }>
   >({});
   const [hasChanges, setHasChanges] = useState(false);
+  const [toast, setToast] = useState<ToastState | null>(null);
+
+  const showToast = (message: string, variant: AutoDismissToastVariant) => {
+    setToast({ key: Date.now(), message, variant });
+  };
 
   // Declare students before useEffect that uses it
   // Get students from attendanceData instead of lesson.group (which doesn't have students in the type)
@@ -105,7 +121,7 @@ export function AbsenceTab({ lessonId }: AbsenceTabProps) {
         (att) => att.absenceType === 'JUSTIFIED' && !att.note?.trim()
       );
       if (hasMissingJustification) {
-        alert('Please add a justification comment for all justified absences.');
+        showToast(t('justificationBeforeSave'), 'error');
         return;
       }
 
@@ -125,10 +141,10 @@ export function AbsenceTab({ lessonId }: AbsenceTabProps) {
       queryClient.invalidateQueries({ queryKey: ['finance', 'salaries', 'breakdown'] });
 
       setHasChanges(false);
-      alert('Attendance saved successfully!');
+      showToast(t('attendanceSaved'), 'success');
     } catch (err: unknown) {
       console.error('Failed to save attendance:', err);
-      alert('Failed to save attendance. Please try again.');
+      showToast(t('failedToSaveAttendanceDefault'), 'error');
     }
   };
 
@@ -161,7 +177,7 @@ export function AbsenceTab({ lessonId }: AbsenceTabProps) {
     return (
       <div className="flex flex-col items-center justify-center p-12">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-        <p className="mt-4 text-sm text-slate-500">Loading attendance data...</p>
+        <p className="mt-4 text-sm text-slate-500">{t('loadingAttendanceData')}</p>
       </div>
     );
   }
@@ -169,16 +185,24 @@ export function AbsenceTab({ lessonId }: AbsenceTabProps) {
   if (attendanceData && students.length === 0) {
     return (
       <div className="p-6 text-center text-slate-500">
-        <p>No students in this lesson's group</p>
+        <p>{tCalendar('feedback.noStudentsInLesson')}</p>
       </div>
     );
   }
 
   return (
     <div className="p-6">
+      {toast ? (
+        <AutoDismissToast
+          key={toast.key}
+          message={toast.message}
+          variant={toast.variant}
+          onDismiss={() => setToast(null)}
+        />
+      ) : null}
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h3 className="text-lg font-semibold text-slate-800">Edit Attendance</h3>
+          <h3 className="text-lg font-semibold text-slate-800">{t('editAttendance')}</h3>
           <p className="text-sm text-slate-500 mt-1">
             {attendanceData?.summary && attendanceData.summary.notMarked < attendanceData.summary.total
               ? 'Update attendance marks for students in this lesson'
@@ -250,7 +274,7 @@ export function AbsenceTab({ lessonId }: AbsenceTabProps) {
               {status === 'absent_justified' && (
                 <div className="mt-3">
                   <Input
-                    placeholder="Justification comment (required)"
+                    placeholder={t('justificationCommentRequired')}
                     value={attendance[student.id]?.note || ''}
                     onChange={(e) => handleNoteChange(student.id, e.target.value)}
                     maxLength={500}

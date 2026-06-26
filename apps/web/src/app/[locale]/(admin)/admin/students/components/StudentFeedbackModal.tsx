@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import {
   Dialog,
   DialogContent,
@@ -46,6 +47,8 @@ export function StudentFeedbackModal({
   student: studentProp,
   studentId: studentIdFromUrl,
 }: StudentFeedbackModalProps) {
+  const t = useTranslations('students');
+  const tCommon = useTranslations('common');
   const shouldFetchStudent = open && !!studentIdFromUrl && !studentProp;
   const { data: studentFromApi } = useStudent(studentIdFromUrl ?? '', shouldFetchStudent);
   const student = studentProp ?? studentFromApi ?? null;
@@ -60,7 +63,7 @@ export function StudentFeedbackModal({
   );
 
   const studentName = student
-    ? `${student.user?.firstName ?? ''} ${student.user?.lastName ?? ''}`.trim() || 'Student'
+    ? `${student.user?.firstName ?? ''} ${student.user?.lastName ?? ''}`.trim() || tCommon('searchTypeStudent')
     : '';
   const teacherName =
     feedbacks?.[0]?.teacher?.user?.firstName != null
@@ -76,29 +79,29 @@ export function StudentFeedbackModal({
         aria-describedby={undefined}
       >
         <DialogHeader>
-          <DialogTitle className="text-xl">Teacher feedback</DialogTitle>
+          <DialogTitle className="text-xl">{t('teacherFeedback')}</DialogTitle>
         </DialogHeader>
 
         {!student ? (
           open && studentIdFromUrl ? (
             <div className="flex items-center justify-center py-12">
               <div className="animate-spin rounded-full h-10 w-10 border-2 border-[rgba(14,14,16,0.07)] border-t-[#1010a3]" />
-              <span className="sr-only">Loading student…</span>
+              <span className="sr-only">{t('loadingStudent')}</span>
             </div>
           ) : (
-            <p className="text-[#8b8b90] text-sm py-4">No student selected.</p>
+            <p className="text-[#8b8b90] text-sm py-4">{t('noStudentSelected')}</p>
           )
         ) : (
           <div className="flex flex-col gap-4 overflow-y-auto pr-1 -mr-1">
             <div className="grid grid-cols-2 gap-2 text-sm">
               <div>
-                <span className="font-medium text-[#8b8b90]">Student</span>
+                <span className="font-medium text-[#8b8b90]">{tCommon('searchTypeStudent')}</span>
                 <p className="text-[#1010a3] font-medium">{studentName}</p>
               </div>
               <div>
-                <span className="font-medium text-[#8b8b90]">Teacher</span>
+                <span className="font-medium text-[#8b8b90]">{tCommon('searchTypeTeacher')}</span>
                 <p className="text-[#1010a3] font-medium">
-                  {teacherName ?? (student.teacherId ? 'Assigned (no feedback yet)' : 'Not assigned')}
+                  {teacherName ?? (student.teacherId ? t('assignedNoFeedbackYet') : tCommon('notAssigned'))}
                 </p>
               </div>
             </div>
@@ -106,25 +109,25 @@ export function StudentFeedbackModal({
             {isLoading && (
               <div className="flex items-center justify-center py-12">
                 <div className="animate-spin rounded-full h-10 w-10 border-2 border-[rgba(14,14,16,0.07)] border-t-[#1010a3]" />
-                <span className="sr-only">Loading feedback…</span>
+                <span className="sr-only">{t('loadingFeedback')}</span>
               </div>
             )}
 
             {error && (
               <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-                Failed to load feedback, please try again later.
+                {t('failedLoadFeedback')}
               </div>
             )}
 
             {!isLoading && !error && (!feedbacks || feedbacks.length === 0) && (
               <div className="rounded-lg border border-[rgba(14,14,16,0.07)] bg-[#fafafa] px-4 py-6 text-center text-[#3b3b40] text-sm">
-                No feedback provided yet.
+                {t('noFeedbackProvidedYet')}
               </div>
             )}
 
             {!isLoading && !error && feedbacks && feedbacks.length > 0 && (
               <div className="space-y-4">
-                <p className="text-sm font-medium text-[#3b3b40]">Feedback by lesson</p>
+                <p className="text-sm font-medium text-[#3b3b40]">{t('feedbackByLesson')}</p>
                 {feedbacks.map((feedback) => (
                   <FeedbackCard key={feedback.id} feedback={feedback} />
                 ))}
@@ -138,6 +141,7 @@ export function StudentFeedbackModal({
 }
 
 function FeedbackCard({ feedback }: { feedback: Feedback }) {
+  const t = useTranslations('students');
   const lesson = feedback.lesson;
   const scheduledAt = lesson?.scheduledAt
     ? formatDate(lesson.scheduledAt)
@@ -148,7 +152,7 @@ function FeedbackCard({ feedback }: { feedback: Feedback }) {
     <div className="rounded-lg border border-[rgba(14,14,16,0.07)] bg-[#fafafa]/50 p-4 space-y-3">
       <div className="flex flex-wrap items-center gap-2">
         <span className="text-xs font-semibold text-[#8b8b90] uppercase tracking-wide">
-          Lesson: {scheduledAt}
+          {t('lessonLabel', { date: scheduledAt })}
         </span>
         {groupName && (
           <span className="text-xs text-[#8b8b90]">· {groupName}</span>
@@ -157,15 +161,15 @@ function FeedbackCard({ feedback }: { feedback: Feedback }) {
 
       {feedback.content ? (
         <div className="pt-2 border-t border-[rgba(14,14,16,0.07)]">
-          <p className="text-xs font-medium text-[#8b8b90] mb-1">Feedback content</p>
+          <p className="text-xs font-medium text-[#8b8b90] mb-1">{t('feedbackContent')}</p>
           <p className="text-sm text-[#3b3b40] whitespace-pre-wrap">{feedback.content}</p>
           <p className="text-xs text-[#8b8b90] mt-2">
-            Given {formatDateTime(feedback.createdAt)}
+            {t('feedbackGivenAt', { date: formatDateTime(feedback.createdAt) })}
           </p>
         </div>
       ) : (
         <div className="pt-2 border-t border-[rgba(14,14,16,0.07)]">
-          <p className="text-sm text-[#8b8b90] italic">No feedback text for this lesson.</p>
+          <p className="text-sm text-[#8b8b90] italic">{t('noFeedbackForLesson')}</p>
           <p className="text-xs text-[#8b8b90] mt-2">
             {formatDateTime(feedback.createdAt)}
           </p>

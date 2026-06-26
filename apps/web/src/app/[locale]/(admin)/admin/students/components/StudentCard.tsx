@@ -3,21 +3,23 @@
 import { Badge, ActionButtons, Avatar } from '@/shared/components/ui';
 import { cn, formatCurrency, formatPhoneForDisplay } from '@/shared/lib/utils';
 import type { Student } from '@/features/students';
+import { useTranslations } from 'next-intl';
 
 const NEW_STUDENT_BADGE_DAYS = 30;
 
 function getRiskBadge(
   derivedRisk: Student['derivedRiskLabel'] | undefined,
+  labels: { highRisk: string; risk: string },
 ): { label: string; className: string } | null {
   if (derivedRisk === 'HIGH_RISK') {
     return {
-      label: 'High Risk',
+      label: labels.highRisk,
       className: 'bg-rose-900 text-rose-50 border-rose-900/90',
     };
   }
   if (derivedRisk === 'RISK') {
     return {
-      label: 'Risk',
+      label: labels.risk,
       className: 'bg-amber-100 text-amber-800 border-amber-200',
     };
   }
@@ -57,10 +59,12 @@ interface StudentCardProps {
 }
 
 export function StudentCard({ student, onEdit, onDelete, onDeactivate, onCardClick }: StudentCardProps) {
+  const t = useTranslations('students');
+  const tAnalytics = useTranslations('analytics');
   const firstName = student.user?.firstName || '';
   const lastName = student.user?.lastName || '';
   const fullName = `${firstName} ${lastName}`.trim();
-  const phone = formatPhoneForDisplay(student.user?.phone, 'No phone');
+  const phone = formatPhoneForDisplay(student.user?.phone, t('noPhone'));
   const teacherName = student.teacher
     ? `${student.teacher.user.firstName} ${student.teacher.user.lastName}`
     : null;
@@ -68,7 +72,10 @@ export function StudentCard({ student, onEdit, onDelete, onDeactivate, onCardCli
   const attendance = student.attendanceSummary;
   const isActive = student.user?.status === 'ACTIVE';
   const showNewBadge = isNewPaidStudent(student);
-  const riskBadge = getRiskBadge(student.derivedRiskLabel ?? student.riskLabel);
+  const riskBadge = getRiskBadge(student.derivedRiskLabel ?? student.riskLabel, {
+    highRisk: tAnalytics('highRisk'),
+    risk: tAnalytics('riskBadge'),
+  });
 
   return (
     <div
@@ -125,14 +132,14 @@ export function StudentCard({ student, onEdit, onDelete, onDeactivate, onCardCli
               isActive={isActive}
               size="sm"
               ariaLabels={{
-                edit: 'Edit student',
-                disable: isActive ? 'Deactivate student' : 'Activate student',
-                delete: 'Delete student',
+                edit: t('editStudentAria'),
+                disable: isActive ? t('deactivateStudentAria') : t('activateStudentAria'),
+                delete: t('deleteStudentAria'),
               }}
               titles={{
-                edit: 'Edit student',
-                disable: isActive ? 'Deactivate student' : 'Activate student',
-                delete: 'Delete student',
+                edit: t('editStudentAria'),
+                disable: isActive ? t('deactivateStudentAria') : t('activateStudentAria'),
+                delete: t('deleteStudentAria'),
               }}
             />
           </div>

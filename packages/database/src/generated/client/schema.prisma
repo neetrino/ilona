@@ -513,6 +513,7 @@ model SystemSettings {
   penaltyVoiceAmd          Decimal  @default(1000) @db.Decimal(10, 2)
   penaltyTextAmd           Decimal  @default(1000) @db.Decimal(10, 2)
   penaltyDailyPlanAmd      Decimal  @default(1000) @db.Decimal(10, 2)
+  footerIconLinks          Json?
   updatedAt                DateTime @updatedAt
 
   @@map("system_settings")

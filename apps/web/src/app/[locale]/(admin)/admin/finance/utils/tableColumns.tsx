@@ -5,6 +5,7 @@ import { Eye, FileText } from 'lucide-react';
 import { SelectAllCheckbox } from '../components/SelectAllCheckbox';
 import type { Payment, SalaryRecord, PaymentStatus, SalaryStatus } from '@/features/finance';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { useAppSearchUrl } from '@/shared/hooks/useAppSearchUrl';
 import { formatCurrency } from '@/shared/lib/utils';
 
@@ -19,6 +20,7 @@ function getMonthString(salary: SalaryRecord): string {
 
 // Component for the action cell that can use hooks
 function SalaryActionCell({ salary, locale }: { salary: SalaryRecord; locale: string }) {
+  const t = useTranslations('finance');
   const { readParam } = useAppSearchUrl();
 
   const firstName = salary.teacher?.user?.firstName || '';
@@ -47,7 +49,7 @@ function SalaryActionCell({ salary, locale }: { salary: SalaryRecord; locale: st
         href={href}
         onClick={(e) => e.stopPropagation()}
         className="p-2 hover:bg-[#f6f6f7] rounded-lg transition-colors"
-        aria-label="View breakdown"
+        aria-label={t('viewBreakdown')}
       >
         <Eye className="w-5 h-5 text-[#3b3b40]" />
       </Link>
@@ -425,7 +427,7 @@ export function getSalaryColumns({
                 onOpenSalaryDetail(salary.id);
               }}
               className="p-2 hover:bg-[#f6f6f7] rounded-lg transition-colors"
-              aria-label="View salary details"
+              aria-label={t('viewSalaryDetails')}
             >
               <FileText className="w-5 h-5 text-[#3b3b40]" />
             </button>

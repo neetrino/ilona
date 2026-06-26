@@ -710,7 +710,8 @@ export class StudentCrudService {
         ? String(dto.centerId).trim()
         : undefined;
 
-    let resolvedTeacherId: string | undefined = dto.teacherId;
+    let resolvedTeacherId: string | undefined;
+
     if (dto.groupId) {
       const group = await this.prisma.group.findUnique({
         where: { id: dto.groupId },
@@ -729,13 +730,27 @@ export class StudentCrudService {
         throw new ForbiddenException('You can only create students inside your assigned center');
       }
 
+      if (resolvedStudentCenterId && group.centerId !== resolvedStudentCenterId) {
+        throw new BadRequestException('Selected group does not belong to the selected center');
+      }
+
       if (group._count.students >= FIXED_GROUP_MAX_STUDENTS) {
         throw new BadRequestException(GROUP_CAPACITY_EXCEEDED_MESSAGE);
       }
 
-      if (!resolvedTeacherId && group.teacherId) {
-        resolvedTeacherId = group.teacherId;
+      if (!group.teacherId) {
+        throw new BadRequestException('Selected group has no primary teacher assigned');
       }
+
+      if (dto.teacherId && dto.teacherId !== group.teacherId) {
+        throw new BadRequestException(
+          'Teacher must match the selected group\'s primary teacher',
+        );
+      }
+
+      resolvedTeacherId = group.teacherId;
+    } else if (dto.teacherId) {
+      resolvedTeacherId = dto.teacherId;
     }
 
     if (resolvedTeacherId) {
@@ -971,14 +986,8 @@ export class StudentCrudService {
     const student = await this.findById(id, user?.sub, user?.role);
     const managerCenterId = getManagerCenterIdOrThrow(user);
 
-    if (dto.teacherId) {
-      const teacher = await this.prisma.teacher.findUnique({
-        where: { id: dto.teacherId },
-      });
-
-      if (!teacher) {
-        throw new BadRequestException(`Teacher with ID ${dto.teacherId} not found`);
-      }
+    if (dto.teacherId !== undefined && dto.groupId === undefined) {
+      throw new BadRequestException('Teacher cannot be set directly; select a group instead');
     }
     
     // Update user fields if provided
@@ -1057,23 +1066,18 @@ export class StudentCrudService {
         if (managerCenterId && group.centerId !== managerCenterId) {
           throw new ForbiddenException('You can only move students to groups in your center');
         }
-        // If teacherId is also provided, ensure the group belongs to that teacher
-        if (dto.teacherId !== undefined && dto.teacherId !== null && dto.teacherId !== '') {
-          if (group.teacherId !== dto.teacherId) {
-            throw new BadRequestException(
-              'The selected group does not belong to the selected teacher. Please choose a group assigned to this teacher.',
-            );
-          }
+        const effectiveCenterId =
+          updateData.centerId !== undefined ? updateData.centerId : student.centerId;
+        if (effectiveCenterId && group.centerId !== effectiveCenterId) {
+          throw new BadRequestException('Selected group does not belong to the selected center');
         }
-        if (group.teacherId) {
-          updateData.teacherId = group.teacherId;
+        if (!group.teacherId) {
+          throw new BadRequestException('Selected group has no primary teacher assigned');
         }
+        updateData.teacherId = group.teacherId;
       } else {
         updateData.teacherId = null;
       }
-    }
-    if (dto.teacherId !== undefined) {
-      updateData.teacherId = dto.teacherId;
     }
     if (dto.registerDate !== undefined) {
       updateData.registerDate = dto.registerDate

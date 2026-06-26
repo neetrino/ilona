@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import { createPortal } from 'react-dom';
 import { ChevronDown } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
@@ -39,6 +40,7 @@ export function CrmBranchSelector({
   className,
   id,
 }: CrmBranchSelectorProps) {
+  const t = useTranslations('crm');
   const [open, setOpen] = useState(false);
   const [position, setPosition] = useState<DropdownPosition | null>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -121,8 +123,8 @@ export function CrmBranchSelector({
           open && '!border-[#1010a3]/55 !bg-white shadow-[0_10px_24px_rgba(16,16,163,0.16)]',
           disabled && 'opacity-60 pointer-events-none'
         )}
-        title="Change branch"
-        aria-label="Change branch"
+        title={t('changeBranch')}
+        aria-label={t('changeBranch')}
         aria-expanded={open}
       >
         <span className="truncate">{displayValue}</span>

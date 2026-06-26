@@ -1,4 +1,7 @@
+'use client';
+
 import Image from 'next/image';
+import { useTranslations } from 'next-intl';
 import { Clock, Pencil, Trash2 } from 'lucide-react';
 import { Badge, ActionButtons } from '@/shared/components/ui';
 import type { Group, GroupScheduleEntry } from '../types';
@@ -75,6 +78,7 @@ export function GroupCard({
   onStudentClick,
   isStatusTogglePending = false,
 }: GroupCardProps) {
+  const t = useTranslations('groups');
   const teacherName = group.teacher ? `${group.teacher.user.firstName} ${group.teacher.user.lastName}` : null;
   const secondTeacherName = group.secondTeacher
     ? `${group.secondTeacher.user.firstName} ${group.secondTeacher.user.lastName}`
@@ -135,7 +139,7 @@ export function GroupCard({
               type="button"
               onClick={onEdit}
               className="inline-flex h-8 w-8 items-center justify-center rounded-full text-[#3b3b40] hover:bg-[#f3f3f4]"
-              aria-label="Edit group"
+              aria-label={t('editGroup')}
             >
               <Pencil className="h-4 w-4" />
             </button>
@@ -143,7 +147,7 @@ export function GroupCard({
               type="button"
               onClick={onDelete}
               className="inline-flex h-8 w-8 items-center justify-center rounded-full text-[#3b3b40] hover:bg-[#f3f3f4]"
-              aria-label="Delete group"
+              aria-label={t('deleteGroup')}
             >
               <Trash2 className="h-4 w-4" />
             </button>

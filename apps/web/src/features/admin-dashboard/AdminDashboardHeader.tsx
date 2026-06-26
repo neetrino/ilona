@@ -2,6 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 import { usePathname } from 'next/navigation';
+import { LandingNavbarLanguageToggle } from '@/shared/components/layout/LandingNavbarLanguageToggle';
 import { StudentLogoutControl } from '@/shared/components/layout/StudentLogoutControl';
 import { PortalHeaderSearch } from '@/features/search/components/PortalHeaderSearch';
 import { useAuthStore } from '@/features/auth/store/auth.store';
@@ -23,6 +24,7 @@ export function AdminDashboardHeader({
 }: AdminDashboardHeaderProps) {
   const t = useTranslations('dashboard');
   const tNav = useTranslations('nav');
+  const tCommon = useTranslations('common');
   const pathname = usePathname();
   const { user } = useAuthStore();
   const firstName = user?.firstName ?? tNav('user');
@@ -49,7 +51,7 @@ export function AdminDashboardHeader({
                 type="button"
                 onClick={onMenuClick}
                 className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-[#1010a3] hover:bg-[#f6f6f7] lg:hidden"
-                aria-label="Open navigation menu"
+                aria-label={tCommon('openNavigationMenu')}
               >
                 <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
                   <path
@@ -97,6 +99,11 @@ export function AdminDashboardHeader({
                 </>
               )}
             </div>
+            {isAdminMobileSubpage ? (
+              <div className="shrink-0 lg:hidden">
+                <LandingNavbarLanguageToggle />
+              </div>
+            ) : null}
             {onMenuClick ? <div className="h-11 w-11 shrink-0 lg:hidden" aria-hidden /> : null}
           </div>
 
@@ -112,6 +119,9 @@ export function AdminDashboardHeader({
             <div className="flex shrink-0 flex-wrap items-center justify-end gap-1.5 sm:gap-2">
               {headerContent}
 
+              <LandingNavbarLanguageToggle
+                className={isAdminMobileSubpage ? 'hidden lg:inline-flex' : undefined}
+              />
               <StudentLogoutControl variant="header" className="hidden lg:inline-flex" />
             </div>
           </div>

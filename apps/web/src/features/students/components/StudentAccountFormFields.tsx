@@ -1,9 +1,11 @@
 'use client';
 
+import { useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import type { FieldErrors, UseFormRegister, UseFormSetValue, UseFormWatch } from 'react-hook-form';
 import { Input, Label, PasswordInput } from '@/shared/components/ui';
 import { DmyDateInput } from '@/shared/components/ui/dmy-date-input';
+import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
 import { formatPhoneForDisplay } from '@/shared/lib/utils';
 import type { CreateStudentFormData } from '../student-account-form.schema';
 
@@ -47,7 +49,7 @@ export interface StudentAccountFormFieldsProps {
 const dmyInputClassName =
   'flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50';
 
-const selectClassName = `unified-native-select ${dmyInputClassName}`;
+const textareaClassName = `${dmyInputClassName} min-h-[6rem] resize-y`;
 
 const LEVEL_FILTER_OPTIONS = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'] as const;
 
@@ -76,6 +78,8 @@ export function StudentAccountFormFields({
   const p = (id: string) => (idPrefix ? `${idPrefix}-${id}` : id);
   const watchedTeacherId = watch('teacherId') || '';
   const watchedGroupId = watch('groupId') || '';
+  const watchedLevelId = watch('levelId') || '';
+  const watchedCenterId = watch('centerId') || '';
   const watchedDateOfBirth = watch('dateOfBirth') ?? '';
   const watchedFirstLessonDate = watch('firstLessonDate') ?? '';
   const selectedTeacher = teachers.find((te) => te.id === watchedTeacherId);
@@ -89,6 +93,47 @@ export function StudentAccountFormFields({
   ];
   const teacherCentersLabel = [...new Set([...centerNamesFromTeacher, ...centerNamesFromGroups])].join(
     ', ',
+  );
+
+  const levelOptions = useMemo(
+    () => [
+      { id: '', label: tForm('anyLevel') },
+      ...LEVEL_FILTER_OPTIONS.map((level) => ({ id: level, label: level })),
+    ],
+    [tForm],
+  );
+
+  const teacherOptions = useMemo(
+    () => [
+      { id: '', label: t('selectTeacher') },
+      ...teachers.map((teacher) => ({
+        id: teacher.id,
+        label: `${teacher.user?.firstName ?? ''} ${teacher.user?.lastName ?? ''}${
+          teacher.user?.phone ? ` - ${formatPhoneForDisplay(teacher.user.phone)}` : ''
+        }`.trim(),
+      })),
+    ],
+    [teachers, t],
+  );
+
+  const groupPlaceholder = watchedTeacherId ? tCommon('notAssigned') : t('selectTeacherFirst');
+  const groupOptions = useMemo(
+    () => [
+      { id: '', label: groupPlaceholder },
+      ...groupsForTeacher.map((group) => ({
+        id: group.id,
+        label: `${group.name}${group.level ? ` (${group.level})` : ''}`.trim(),
+      })),
+    ],
+    [groupPlaceholder, groupsForTeacher],
+  );
+
+  const centerOptions = useMemo(
+    () => [
+      { id: '', label: tCommon('notAssigned') },
+      ...centers.map((center) => ({ id: center.id, label: center.name })),
+    ],
+    [centers, tCommon],
   );
 
   return (
@@ -207,38 +252,33 @@ export function StudentAccountFormFields({
 
       <div className="space-y-2">
         <Label htmlFor={p('levelId')}>{tForm('levelOptional')}</Label>
-        <select
+        <input type="hidden" {...register('levelId')} />
+        <SingleSelectDropdown
           id={p('levelId')}
-          {...register('levelId')}
-          className={selectClassName}
+          options={levelOptions}
+          value={watchedLevelId}
+          onValueChange={(nextValue) =>
+            setValue('levelId', nextValue ?? '', { shouldDirty: true, shouldValidate: true })
+          }
           disabled={isSubmitting}
-        >
-          <option value="">{tForm('anyLevel')}</option>
-          {LEVEL_FILTER_OPTIONS.map((l) => (
-            <option key={l} value={l}>
-              {l}
-            </option>
-          ))}
-        </select>
+        />
       </div>
 
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor={p('teacherId')}>{t('teacher')}</Label>
-          <select
+          <input type="hidden" {...register('teacherId')} />
+          <SingleSelectDropdown
             id={p('teacherId')}
-            {...register('teacherId')}
-            className={selectClassName}
+            options={teacherOptions}
+            value={watchedTeacherId}
+            onValueChange={(nextValue) =>
+              setValue('teacherId', nextValue ?? '', { shouldDirty: true, shouldValidate: true })
+            }
+            isLoading={isLoadingTeachers}
             disabled={isLoadingTeachers || isSubmitting}
-          >
-            <option value="">{t('selectTeacher')}</option>
-            {teachers.map((teacher) => (
-              <option key={teacher.id} value={teacher.id}>
-                {teacher.user?.firstName ?? ''} {teacher.user?.lastName ?? ''}
-                {teacher.user?.phone ? ` - ${formatPhoneForDisplay(teacher.user.phone)}` : ''}
-              </option>
-            ))}
-          </select>
+            error={errors.teacherId?.message ?? null}
+          />
           {errors.teacherId && <p className="text-sm text-red-600">{errors.teacherId.message}</p>}
           {isLoadingTeachers && <p className="text-sm text-slate-500">{t('loadingTeachers')}</p>}
           {watchedTeacherId && teacherCentersLabel ? (
@@ -250,21 +290,18 @@ export function StudentAccountFormFields({
 
         <div className="space-y-2">
           <Label htmlFor={p('groupId')}>{t('group')}</Label>
-          <select
+          <input type="hidden" {...register('groupId')} />
+          <SingleSelectDropdown
             id={p('groupId')}
-            {...register('groupId')}
-            className={selectClassName}
-            disabled={isLoadingGroups || !watchedTeacherId}
-          >
-            <option value="">
-              {watchedTeacherId ? tCommon('notAssigned') : t('selectTeacherFirst')}
-            </option>
-            {groupsForTeacher.map((group) => (
-              <option key={group.id} value={group.id}>
-                {group.name} {group.level ? `(${group.level})` : ''}
-              </option>
-            ))}
-          </select>
+            options={groupOptions}
+            value={watchedGroupId}
+            onValueChange={(nextValue) =>
+              setValue('groupId', nextValue ?? '', { shouldDirty: true, shouldValidate: true })
+            }
+            isLoading={isLoadingGroups}
+            disabled={isLoadingGroups || !watchedTeacherId || isSubmitting}
+            error={errors.groupId?.message ?? null}
+          />
           {errors.groupId && <p className="text-sm text-red-600">{errors.groupId.message}</p>}
           {watchedGroupId ? (
             <p className="text-xs text-slate-500">
@@ -278,19 +315,18 @@ export function StudentAccountFormFields({
       {showCenterSelect ? (
         <div className="space-y-2">
           <Label htmlFor={p('centerId')}>{tCommon('center')}</Label>
-          <select
+          <input type="hidden" {...register('centerId')} />
+          <SingleSelectDropdown
             id={p('centerId')}
-            {...register('centerId')}
-            className={selectClassName}
+            options={centerOptions}
+            value={watchedCenterId}
+            onValueChange={(nextValue) =>
+              setValue('centerId', nextValue ?? '', { shouldDirty: true, shouldValidate: true })
+            }
+            isLoading={isLoadingCenters}
             disabled={isLoadingCenters || isSubmitting}
-          >
-            <option value="">{tCommon('notAssigned')}</option>
-            {centers.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
-            ))}
-          </select>
+            error={errors.centerId?.message ?? null}
+          />
           {errors.centerId && <p className="text-sm text-red-600">{errors.centerId.message}</p>}
         </div>
       ) : assignedCenterDisplay ? (
@@ -396,7 +432,7 @@ export function StudentAccountFormFields({
           id={p('notes')}
           {...register('notes')}
           rows={4}
-          className={selectClassName}
+          className={textareaClassName}
           placeholder={t('notes')}
         />
         {errors.notes && <p className="text-sm text-red-600">{errors.notes.message}</p>}

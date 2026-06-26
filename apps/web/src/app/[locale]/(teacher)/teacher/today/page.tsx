@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo, useEffect, useCallback } from 'react';
+import { useLocale, useTranslations } from 'next-intl';
 import { readUrlSearchParam } from '@/shared/lib/url-search-params';
 import { useAppSearchUrl } from '@/shared/hooks/useAppSearchUrl';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
@@ -20,12 +21,13 @@ type LessonStatus = 'SCHEDULED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED' | 'M
 
 // Status badge component
 function StatusBadge({ status }: { status: LessonStatus }) {
+  const tCalendar = useTranslations('calendar');
   const styles: Record<LessonStatus, { bg: string; text: string; label: string }> = {
-    SCHEDULED: { bg: 'bg-primary/20', text: 'text-primary', label: 'Scheduled' },
-    IN_PROGRESS: { bg: 'bg-yellow-100', text: 'text-yellow-700', label: 'In Progress' },
-    COMPLETED: { bg: 'bg-green-100', text: 'text-green-700', label: 'Completed' },
-    CANCELLED: { bg: 'bg-red-100', text: 'text-red-700', label: 'Cancelled' },
-    MISSED: { bg: 'bg-[#f6f6f7]', text: 'text-[#3b3b40]', label: 'Missed' },
+    SCHEDULED: { bg: 'bg-primary/20', text: 'text-primary', label: tCalendar('scheduled') },
+    IN_PROGRESS: { bg: 'bg-yellow-100', text: 'text-yellow-700', label: tCalendar('inProgress') },
+    COMPLETED: { bg: 'bg-green-100', text: 'text-green-700', label: tCalendar('completed') },
+    CANCELLED: { bg: 'bg-red-100', text: 'text-red-700', label: tCalendar('cancelled') },
+    MISSED: { bg: 'bg-[#f6f6f7]', text: 'text-[#3b3b40]', label: tCalendar('missed') },
   };
 
   const style = styles[status] || styles.SCHEDULED;
@@ -55,6 +57,11 @@ function LessonCard({
   isCompleting: boolean;
   isSendingVocabulary: boolean;
 }) {
+  const tCalendar = useTranslations('calendar');
+  const tTeacherToday = useTranslations('teacherToday');
+  const tLessons = useTranslations('lessons');
+  const tStudents = useTranslations('students');
+  const tChat = useTranslations('chat');
   const time = new Date(lesson.scheduledAt).toLocaleTimeString('en-US', {
     hour: '2-digit',
     minute: '2-digit',
@@ -79,23 +86,23 @@ function LessonCard({
           </div>
           <div>
             <p className="font-semibold text-[#1010a3]">{time}</p>
-            <p className="text-sm text-[#8b8b90]">{lesson.duration} min</p>
+            <p className="text-sm text-[#8b8b90]">{tTeacherToday('durationMin', { count: lesson.duration })}</p>
           </div>
         </div>
         <StatusBadge status={lesson.status} />
       </div>
 
       <div className="mb-3">
-        <h3 className="font-semibold text-[#1010a3] mb-1">{lesson.group?.name || 'Unknown Group'}</h3>
+        <h3 className="font-semibold text-[#1010a3] mb-1">{lesson.group?.name || tCalendar('unknownGroup')}</h3>
         <div className="flex items-center gap-2 text-sm text-[#8b8b90]">
           <span className="px-2 py-0.5 bg-[#f6f6f7] rounded text-[#8b8b90]">
-            {lesson.group?.level || 'N/A'}
+            {lesson.group?.level || tStudents('notAvailable')}
           </span>
-          <span>{lesson.group?._count?.students || 0} students</span>
+          <span>{tTeacherToday('studentsCount', { count: lesson.group?._count?.students || 0 })}</span>
         </div>
         {lesson.topic && (
           <p className="text-sm text-[#8b8b90] mt-2">
-            <span className="font-medium">Topic:</span> {lesson.topic}
+            <span className="font-medium">{tLessons('topic')}:</span> {lesson.topic}
           </p>
         )}
       </div>
@@ -103,7 +110,7 @@ function LessonCard({
       {/* Checklist for completed lessons */}
       {lesson.status === 'COMPLETED' && (
         <div className="mb-3 p-3 bg-[#fafafa] rounded-lg">
-          <p className="text-xs font-medium text-[#8b8b90] mb-2">Lesson Checklist</p>
+          <p className="text-xs font-medium text-[#8b8b90] mb-2">{tCalendar('lessonChecklist')}</p>
           <div className="space-y-1">
             <div className="flex items-center gap-2 text-sm">
               {lesson._count?.attendances ? (
@@ -112,7 +119,7 @@ function LessonCard({
                 <span className="text-red-500">✗</span>
               )}
               <span className={lesson._count?.attendances ? 'text-[#3b3b40]' : 'text-red-600'}>
-                Attendance marked
+                {tTeacherToday('attendanceMarked')}
               </span>
             </div>
             <div className="flex items-center gap-2 text-sm">
@@ -122,7 +129,7 @@ function LessonCard({
                 <span className="text-red-500">✗</span>
               )}
               <span className={lesson.vocabularySent ? 'text-[#3b3b40]' : 'text-red-600'}>
-                Vocabulary sent
+                {tTeacherToday('vocabularySentCheck')}
               </span>
             </div>
           </div>
@@ -137,7 +144,7 @@ function LessonCard({
             disabled={isStarting}
             className="flex-1 px-4 py-2 bg-primary text-primary-foreground text-sm font-medium rounded-lg hover:bg-primary/90 disabled:opacity-50"
           >
-            {isStarting ? 'Starting...' : 'Start Lesson'}
+            {isStarting ? tTeacherToday('starting') : tTeacherToday('startLessonAction')}
           </button>
         )}
 
@@ -147,7 +154,7 @@ function LessonCard({
             disabled={isCompleting}
             className="flex-1 px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 disabled:opacity-50"
           >
-            {isCompleting ? 'Completing...' : 'Complete Lesson'}
+            {isCompleting ? tTeacherToday('completing') : tLessons('completeLesson')}
           </button>
         )}
 
@@ -157,13 +164,13 @@ function LessonCard({
             disabled={isSendingVocabulary}
             className="flex-1 px-4 py-2 bg-purple-600 text-white text-sm font-medium rounded-lg hover:bg-purple-700 disabled:opacity-50"
           >
-            {isSendingVocabulary ? 'Sending...' : 'Send Vocabulary'}
+            {isSendingVocabulary ? tChat('sending') : tLessons('sendVocabulary')}
           </button>
         )}
 
         {lesson.status === 'COMPLETED' && lesson.vocabularySent && (
           <div className="flex-1 px-4 py-2 bg-green-100 text-green-700 text-sm font-medium rounded-lg text-center">
-            ✓ All Done
+            {tTeacherToday('allDoneCheck')}
           </div>
         )}
       </div>
@@ -172,6 +179,12 @@ function LessonCard({
 }
 
 export default function TeacherDailyPlanPage() {
+  const locale = useLocale();
+  const tNav = useTranslations('nav');
+  const tCalendar = useTranslations('calendar');
+  const tTeacherToday = useTranslations('teacherToday');
+  const tCommon = useTranslations('common');
+  const dateLocale = locale === 'hy' ? 'hy-AM' : 'en-GB';
   const { searchParams, urlRevision, replaceParams } = useAppSearchUrl();
 
   const readViewModeFromUrl = useCallback((): ViewMode => {
@@ -245,7 +258,7 @@ export default function TeacherDailyPlanPage() {
 
   // Group by date for week view
   const lessonsByDate = sortedLessons.reduce((acc, lesson) => {
-    const date = new Date(lesson.scheduledAt).toLocaleDateString('en-GB', {
+    const date = new Date(lesson.scheduledAt).toLocaleDateString(dateLocale, {
       weekday: 'long',
       month: 'short',
       day: 'numeric',
@@ -266,8 +279,8 @@ export default function TeacherDailyPlanPage() {
 
   return (
     <DashboardLayout
-      title="Daily Plan"
-      subtitle="Manage your lessons, mark attendance, and send vocabulary."
+      title={tNav('dailyPlan')}
+      subtitle={tTeacherToday('subtitle')}
     >
       {/* View Toggle & Stats */}
       <div className="mb-6">
@@ -283,7 +296,7 @@ export default function TeacherDailyPlanPage() {
                   : 'text-[#8b8b90] hover:text-[#1010a3]'
               )}
             >
-              Today
+              {tTeacherToday('todayTab')}
             </button>
             <button
               onClick={() => updateViewModeInUrl('week')}
@@ -294,7 +307,7 @@ export default function TeacherDailyPlanPage() {
                   : 'text-[#8b8b90] hover:text-[#1010a3]'
               )}
             >
-              This Week
+              {tTeacherToday('thisWeekTab')}
             </button>
           </div>
 
@@ -302,20 +315,20 @@ export default function TeacherDailyPlanPage() {
           <div className="flex items-center gap-4 text-sm">
             <div className="flex items-center gap-1.5">
               <div className="w-2 h-2 rounded-full bg-primary" />
-              <span className="text-[#8b8b90]">{stats.scheduled} scheduled</span>
+              <span className="text-[#8b8b90]">{tTeacherToday('scheduledCount', { count: stats.scheduled })}</span>
             </div>
             <div className="flex items-center gap-1.5">
               <div className="w-2 h-2 rounded-full bg-yellow-500" />
-              <span className="text-[#8b8b90]">{stats.inProgress} in progress</span>
+              <span className="text-[#8b8b90]">{tTeacherToday('inProgressCount', { count: stats.inProgress })}</span>
             </div>
             <div className="flex items-center gap-1.5">
               <div className="w-2 h-2 rounded-full bg-green-500" />
-              <span className="text-[#8b8b90]">{stats.completed} completed</span>
+              <span className="text-[#8b8b90]">{tTeacherToday('completedCount', { count: stats.completed })}</span>
             </div>
             {stats.vocabularyPending > 0 && (
               <div className="flex items-center gap-1.5 px-2 py-1 bg-red-100 rounded-full">
                 <div className="w-2 h-2 rounded-full bg-red-500" />
-                <span className="text-red-700 font-medium">{stats.vocabularyPending} need vocabulary</span>
+                <span className="text-red-700 font-medium">{tTeacherToday('vocabularyPendingCount', { count: stats.vocabularyPending })}</span>
               </div>
             )}
           </div>
@@ -324,7 +337,7 @@ export default function TeacherDailyPlanPage() {
         {/* Date Display */}
         <p className="text-[#8b8b90]">
           {viewMode === 'today'
-            ? displayDate.toLocaleDateString('en-GB', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
+            ? displayDate.toLocaleDateString(dateLocale, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
             : formatWeekRange(currentDate)}
         </p>
       </div>
@@ -337,9 +350,9 @@ export default function TeacherDailyPlanPage() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
-          <h3 className="text-lg font-semibold text-[#1010a3] mb-2">Failed to load lessons</h3>
+          <h3 className="text-lg font-semibold text-[#1010a3] mb-2">{tCalendar('failedToLoadLessons')}</h3>
           <p className="text-sm text-[#8b8b90] mb-4">
-            {error instanceof Error ? error.message : 'An error occurred while loading your lessons.'}
+            {error instanceof Error ? error.message : tTeacherToday('loadLessonsError')}
           </p>
           <button
             onClick={() => {
@@ -351,7 +364,7 @@ export default function TeacherDailyPlanPage() {
             }}
             className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90"
           >
-            Retry
+            {tCommon('retry')}
           </button>
         </div>
       ) : isLoading ? (
@@ -377,8 +390,10 @@ export default function TeacherDailyPlanPage() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
             </svg>
           </div>
-          <h3 className="text-lg font-semibold text-[#1010a3] mb-1">No lessons {viewMode === 'today' ? 'today' : 'this week'}</h3>
-          <p className="text-sm text-[#8b8b90]">Enjoy your free time!</p>
+          <h3 className="text-lg font-semibold text-[#1010a3] mb-1">
+            {viewMode === 'today' ? tTeacherToday('noLessonsToday') : tTeacherToday('noLessonsThisWeek')}
+          </h3>
+          <p className="text-sm text-[#8b8b90]">{tTeacherToday('enjoyFreeTime')}</p>
         </div>
       ) : viewMode === 'today' ? (
         <div className="space-y-4">

@@ -156,7 +156,7 @@ export function createTeachersTableColumns({
                 onOpenGroupsModal(teacher, 'groups');
               }}
               className="inline-flex items-center justify-center rounded-md bg-blue-50 px-2 py-0.5 text-sm font-semibold text-blue-700"
-              title="View all groups"
+              title={t('viewAllGroups')}
             >
               {count}
             </button>
@@ -183,7 +183,7 @@ export function createTeachersTableColumns({
                 onOpenGroupsModal(teacher, 'subgroups');
               }}
               className="inline-flex items-center justify-center rounded-md bg-amber-50 px-2 py-0.5 text-sm font-semibold text-amber-700"
-              title="View groups as second rotation teacher"
+              title={t('viewSecondRotationGroups')}
             >
               {count}
             </button>

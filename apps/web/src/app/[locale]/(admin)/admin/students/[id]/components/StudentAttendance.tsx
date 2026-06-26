@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { Badge } from '@/shared/components/ui';
 import type { Student } from '@/features/students';
 
@@ -28,13 +29,14 @@ interface StudentAttendanceProps {
 }
 
 export function StudentAttendance({ student }: StudentAttendanceProps) {
+  const t = useTranslations('students');
   if (!student.attendances || student.attendances.length === 0) {
     return null;
   }
 
   return (
     <div className="bg-white rounded-xl border border-[rgba(14,14,16,0.07)] p-6">
-      <h3 className="text-lg font-semibold text-[#3b3b40] mb-4">Recent Attendance</h3>
+      <h3 className="text-lg font-semibold text-[#3b3b40] mb-4">{t('recentAttendance')}</h3>
       <div className="space-y-3">
         {student.attendances.slice(0, 5).map((attendance) => (
           <div key={attendance.id} className="flex items-center justify-between p-3 bg-[#fafafa] rounded-lg">

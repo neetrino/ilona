@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback } from 'react';
+import { useTranslations } from 'next-intl';
 import { Label } from '@/shared/components/ui';
 import { DatePickerInput } from '@/shared/components/ui/date-picker-input';
 import type { GroupScheduleEntry } from '../types';
@@ -26,6 +27,8 @@ export function GroupCalendarScheduleSection({
   onDateToChange,
   disabled,
 }: GroupCalendarScheduleSectionProps) {
+  const t = useTranslations('groups');
+  const tCalendar = useTranslations('calendar');
   const slotError = schedule.length > 0 ? scheduleSlotsValidationError(schedule) : null;
 
   const handleDateFromChange = useCallback(
@@ -41,16 +44,15 @@ export function GroupCalendarScheduleSection({
   return (
     <div className="space-y-4 rounded-lg border border-slate-200 bg-slate-50/40 p-3">
       <div className="space-y-2">
-        <Label className="text-sm font-medium">Calendar schedule</Label>
+        <Label className="text-sm font-medium">{t('calendarSchedule')}</Label>
         <p className="text-xs text-slate-500">
-          When the group has weekly time slots, lessons are generated in the admin calendar for the date range below.
-          Manually deleted generated slots stay skipped until you confirm replacing the schedule.
+          {t('scheduleHelperText')}
         </p>
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2">
         <div className="space-y-1">
-          <Label htmlFor="schedule-date-from">Start date</Label>
+          <Label htmlFor="schedule-date-from">{tCalendar('startDate')}</Label>
           <DatePickerInput
             id="schedule-date-from"
             value={dateFrom}
@@ -60,7 +62,7 @@ export function GroupCalendarScheduleSection({
           />
         </div>
         <div className="space-y-1">
-          <Label htmlFor="schedule-date-to">End date</Label>
+          <Label htmlFor="schedule-date-to">{tCalendar('endDate')}</Label>
           <DatePickerInput
             id="schedule-date-to"
             value={dateTo}
@@ -72,7 +74,7 @@ export function GroupCalendarScheduleSection({
       </div>
 
       <div className="space-y-2">
-        <Label>Weekly time slots</Label>
+        <Label>{t('weeklyTimeSlots')}</Label>
         <GroupScheduleEditor value={schedule} onChange={onScheduleChange} disabled={disabled} />
         {slotError && <p className="text-xs text-red-600">{slotError}</p>}
       </div>

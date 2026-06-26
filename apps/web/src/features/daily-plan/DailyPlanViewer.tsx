@@ -1,8 +1,9 @@
 'use client';
 
 import * as DialogPrimitive from '@radix-ui/react-dialog';
+import { useTranslations } from 'next-intl';
 import { X } from 'lucide-react';
-import { useCallback, useEffect, useRef, useState, type TouchEvent } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type TouchEvent } from 'react';
 import { cn } from '@/shared/lib/utils';
 import type { DailyPlan, DailyPlanResourceKind } from './types';
 
@@ -10,13 +11,6 @@ interface DailyPlanViewerProps {
   plan: DailyPlan;
   onClose: () => void;
 }
-
-const KIND_LABEL: Record<DailyPlanResourceKind, string> = {
-  READING: 'Reading',
-  LISTENING: 'Listening',
-  WRITING: 'Writing',
-  SPEAKING: 'Speaking',
-};
 
 function formatDate(value: string) {
   const d = new Date(value);
@@ -43,6 +37,18 @@ function formatDateTime(value: string) {
 }
 
 export function DailyPlanViewer({ plan, onClose }: DailyPlanViewerProps) {
+  const t = useTranslations('dailyPlanPage');
+  const tCommon = useTranslations('common');
+  const tNav = useTranslations('nav');
+  const kindLabel = useMemo(
+    (): Record<DailyPlanResourceKind, string> => ({
+      READING: t('resourceKinds.READING'),
+      LISTENING: t('resourceKinds.LISTENING'),
+      WRITING: t('resourceKinds.WRITING'),
+      SPEAKING: t('resourceKinds.SPEAKING'),
+    }),
+    [t],
+  );
   const [dragOffsetY, setDragOffsetY] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const [isSettling, setIsSettling] = useState(false);
@@ -126,6 +132,7 @@ export function DailyPlanViewer({ plan, onClose }: DailyPlanViewerProps) {
         <DialogPrimitive.Content
           onOpenAutoFocus={(event) => event.preventDefault()}
           style={dragStyle}
+          aria-describedby={undefined}
           className={cn(
             'fixed inset-x-0 bottom-[7px] top-auto z-50 grid w-full translate-y-0 lg:bottom-0 [@media(min-width:1024px)_and_(max-width:1366px)_and_(min-height:1000px)]:bottom-0',
             'duration-700 ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out min-[1367px]:duration-350 min-[1367px]:ease-[cubic-bezier(0.22,1,0.36,1)]',
@@ -145,16 +152,16 @@ export function DailyPlanViewer({ plan, onClose }: DailyPlanViewerProps) {
             />
             <div className="h-1.5 w-14 rounded-full bg-slate-400" />
           </div>
-          <DialogPrimitive.Title className="sr-only">Daily plan details</DialogPrimitive.Title>
+          <DialogPrimitive.Title className="sr-only">{t('detailsTitle')}</DialogPrimitive.Title>
 
           <header className="sticky top-0 flex items-center justify-between border-b border-slate-200 bg-white p-4">
             <div>
-              <h2 className="text-lg font-semibold text-[#1010a3]">Daily Plan</h2>
+              <h2 className="text-lg font-semibold text-[#1010a3]">{tNav('dailyPlan')}</h2>
               <p className="text-sm text-slate-600">
                 {plan.teacher.user.firstName} {plan.teacher.user.lastName}
               </p>
               <p className="text-sm text-slate-500">
-                {formatDate(plan.date)} · {plan.group?.name ?? plan.lesson?.group?.name ?? 'No group'}
+                {formatDate(plan.date)} · {plan.group?.name ?? plan.lesson?.group?.name ?? tCommon('noGroup')}
                 {(plan.group?.center?.name ?? plan.lesson?.group?.center?.name) && (
                   <>
                     {' '}
@@ -164,7 +171,7 @@ export function DailyPlanViewer({ plan, onClose }: DailyPlanViewerProps) {
               </p>
               {plan.lesson?.scheduledAt && (
                 <p className="mt-1 text-xs text-slate-500">
-                  Lesson: {formatDateTime(plan.lesson.scheduledAt)}
+                  {t('lessonPrefix')}: {formatDateTime(plan.lesson.scheduledAt)}
                 </p>
               )}
             </div>
@@ -172,7 +179,7 @@ export function DailyPlanViewer({ plan, onClose }: DailyPlanViewerProps) {
               type="button"
               onClick={onClose}
               className="hidden rounded-lg p-2 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900 min-[1367px]:inline-flex"
-              aria-label="Close"
+              aria-label={tCommon('close')}
             >
               <X className="size-5" />
             </button>
@@ -189,7 +196,7 @@ export function DailyPlanViewer({ plan, onClose }: DailyPlanViewerProps) {
                   <ul className="space-y-1 text-sm text-slate-700">
                     {topic.resources.map((resource) => (
                       <li key={resource.id}>
-                        <span className="mr-2 font-medium text-[#1010a3]">{KIND_LABEL[resource.kind]}:</span>
+                        <span className="mr-2 font-medium text-[#1010a3]">{kindLabel[resource.kind]}:</span>
                         {resource.link ? (
                           <a
                             href={resource.link}
@@ -207,7 +214,7 @@ export function DailyPlanViewer({ plan, onClose }: DailyPlanViewerProps) {
                     ))}
                   </ul>
                 ) : (
-                  <p className="text-sm text-slate-500">No resources</p>
+                  <p className="text-sm text-slate-500">{t('noResources')}</p>
                 )}
               </div>
             ))}

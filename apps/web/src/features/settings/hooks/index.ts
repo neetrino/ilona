@@ -16,3 +16,8 @@ export {
   useDeleteDashboardBanner,
   useUpdateDashboardBannerText,
 } from './useDashboardBanner';
+
+export {
+  useFooterIconLinks,
+  useUpdateFooterIconLinks,
+} from './useFooterIconLinks';
