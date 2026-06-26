@@ -13,7 +13,6 @@ import {
   useDeleteLessonsBulk,
   AddLessonForm,
   type Lesson,
-  type LessonStatus,
 } from '@/features/lessons';
 import { BulkDeleteConfirmationDialog } from '@/features/lessons/components/BulkDeleteConfirmationDialog';
 import { getErrorMessage } from '@/shared/lib/api';
@@ -44,15 +43,6 @@ function formatTime(dateStr: string): string {
   const date = new Date(dateStr);
   return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
 }
-
-// Status badge config
-const _statusConfig: Record<LessonStatus, { label: string; variant: 'success' | 'warning' | 'error' | 'info' | 'default' }> = {
-  SCHEDULED: { label: 'Scheduled', variant: 'info' },
-  IN_PROGRESS: { label: 'In Progress', variant: 'warning' },
-  COMPLETED: { label: 'Completed', variant: 'success' },
-  CANCELLED: { label: 'Cancelled', variant: 'default' },
-  MISSED: { label: 'Missed', variant: 'error' },
-};
 
 const CALENDAR_MODAL_QUERY_KEY = 'modal';
 const ADD_LESSON_MODAL_QUERY_VALUE = 'add-lesson';

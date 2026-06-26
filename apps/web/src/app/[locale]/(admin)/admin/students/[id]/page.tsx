@@ -9,7 +9,6 @@ import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { Button } from '@/shared/components/ui';
 import { useStudent, useStudentStatistics, useUpdateStudent, type UpdateStudentDto } from '@/features/students';
 import { useGroups } from '@/features/groups';
-import { useTeachers } from '@/features/teachers';
 import { StudentProfileHeader } from './components/StudentProfileHeader';
 import { StudentStats } from './components/StudentStats';
 import { StudentDetails } from './components/StudentDetails';
@@ -19,10 +18,15 @@ import { updateStudentSchema, type UpdateStudentFormData } from './schemas';
 import type { UserStatus } from '@/types';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { getAdminPortalBasePath } from '@/shared/lib/role-routes';
+import {
+  ensureCurrentGroupInList,
+  filterAssignableGroupsByCenter,
+} from '@/features/students/lib/group-center-assignment';
 
 export default function StudentProfilePage() {
   const t = useTranslations('students');
-  const _tCommon = useTranslations('common');
+  const tCommon = useTranslations('common');
+  const tAttendance = useTranslations('attendanceRegister');
   const params = useParams();
   const router = useRouter();
   const studentId = params.id as string;
@@ -37,10 +41,7 @@ export default function StudentProfilePage() {
   const { data: student, isLoading, error, refetch } = useStudent(studentId);
   const { data: statistics, isLoading: _isLoadingStats } = useStudentStatistics(studentId, !!student);
   const { data: groupsData, isLoading: isLoadingGroups } = useGroups({ take: 100, isActive: true });
-  const { data: teachersData, isLoading: isLoadingTeachers } = useTeachers({ status: 'ACTIVE', take: 100 });
   const updateStudent = useUpdateStudent();
-
-  const teachers = teachersData?.items || [];
 
   const {
     register,
@@ -94,13 +95,27 @@ export default function StudentProfilePage() {
     }
   }, [student, isEditMode, reset]);
 
-  const watchedTeacherId = watch('teacherId') || '';
   const watchedGroupId = watch('groupId') || '';
   const watchedStatus = watch('status') || 'ACTIVE';
-  const groupsForTeacher = useMemo(() => {
-    const allGroups = groupsData?.items ?? [];
-    return watchedTeacherId ? allGroups.filter((g) => g.teacherId === watchedTeacherId) : [];
-  }, [groupsData?.items, watchedTeacherId]);
+  const effectiveCenterId =
+    student?.centerId ?? student?.group?.center?.id ?? student?.center?.id ?? '';
+  const allGroups = useMemo(() => groupsData?.items ?? [], [groupsData?.items]);
+  const groupsForCenter = useMemo(() => {
+    const filtered = filterAssignableGroupsByCenter(allGroups, effectiveCenterId || undefined);
+    return ensureCurrentGroupInList(filtered, watchedGroupId, allGroups);
+  }, [allGroups, effectiveCenterId, watchedGroupId]);
+
+  useEffect(() => {
+    if (!isEditMode) return;
+    if (!watchedGroupId) {
+      setValue('teacherId', '');
+      return;
+    }
+    const group = allGroups.find((g) => g.id === watchedGroupId);
+    if (group?.teacherId) {
+      setValue('teacherId', group.teacherId, { shouldDirty: true });
+    }
+  }, [watchedGroupId, allGroups, setValue, isEditMode]);
 
   // Track unsaved changes
   useEffect(() => {
@@ -142,12 +157,12 @@ export default function StudentProfilePage() {
   // Handle navigation with unsaved changes warning
   const handleNavigation = useCallback((path: string) => {
     if (hasUnsavedChanges && isEditMode) {
-      if (!window.confirm('You have unsaved changes. Are you sure you want to leave? Your changes will be lost.')) {
+      if (!window.confirm(tAttendance('unsavedChangesWarning', { action: tCommon('confirmLeave') }))) {
         return;
       }
     }
     router.push(path);
-  }, [hasUnsavedChanges, isEditMode, router]);
+  }, [hasUnsavedChanges, isEditMode, router, tAttendance, tCommon]);
 
   const onSubmit = async (data: UpdateStudentFormData) => {
     setErrorMessage(null);
@@ -160,7 +175,6 @@ export default function StudentProfilePage() {
         phone: data.phone || undefined,
         status: data.status,
         groupId: data.groupId || undefined,
-        teacherId: data.teacherId || undefined,
         parentName: data.parentName || undefined,
         parentPhone: data.parentPhone || undefined,
         parentEmail: data.parentEmail || undefined,
@@ -214,7 +228,7 @@ export default function StudentProfilePage() {
 
   const handleCancel = () => {
     if (hasUnsavedChanges) {
-      if (!window.confirm('You have unsaved changes. Are you sure you want to cancel? Your changes will be lost.')) {
+      if (!window.confirm(tAttendance('unsavedChangesWarning', { action: tCommon('confirmCancel') }))) {
         return;
       }
     }
@@ -228,7 +242,7 @@ export default function StudentProfilePage() {
     return (
       <DashboardLayout 
         title={t('studentProfile') || 'Student Profile'} 
-        subtitle="Loading student information..."
+        subtitle={t('teacherView.loadingSubtitle')}
       >
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#1010a3]"></div>
@@ -242,7 +256,7 @@ export default function StudentProfilePage() {
     return (
       <DashboardLayout 
         title={t('studentProfile') || 'Student Profile'} 
-        subtitle="Error loading student information"
+        subtitle={t('teacherView.errorSubtitle')}
       >
         <div className="bg-white rounded-xl border border-red-200 p-6">
           <div className="flex items-center gap-4">
@@ -252,7 +266,7 @@ export default function StudentProfilePage() {
               </svg>
             </div>
             <div className="flex-1">
-              <h3 className="font-semibold text-[#3b3b40] mb-2">Student Not Found</h3>
+              <h3 className="font-semibold text-[#3b3b40] mb-2">{t('studentNotFound')}</h3>
               <p className="text-sm text-[#8b8b90] mb-4">
                 {error 
                   ? 'Failed to load student information. Please try again later.'
@@ -281,7 +295,7 @@ export default function StudentProfilePage() {
   return (
     <DashboardLayout 
       title={t('studentProfile') || 'Student Profile'} 
-      subtitle={`Viewing profile for ${firstName} ${lastName}`}
+      subtitle={t('teacherView.viewingProfileFor', { name: `${firstName} ${lastName}`.trim() })}
     >
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         {/* Back Button & Edit Mode Toggle */}
@@ -348,15 +362,12 @@ export default function StudentProfilePage() {
         <StudentDetails
           student={student}
           isEditMode={isEditMode}
-          groups={groupsForTeacher}
-          groupSelectDisabled={!watchedTeacherId}
-          teachers={teachers}
+          groups={groupsForCenter}
+          groupSelectDisabled={!effectiveCenterId}
           isLoadingGroups={isLoadingGroups}
-          isLoadingTeachers={isLoadingTeachers}
           errors={errors}
           register={register}
           setValue={setValue}
-          teacherIdValue={watchedTeacherId}
           groupIdValue={watchedGroupId}
         />
 

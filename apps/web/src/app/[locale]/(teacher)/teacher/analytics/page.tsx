@@ -266,7 +266,7 @@ export default function TeacherAnalyticsPage() {
             />
           </div>
           <StudentCard>
-            <StudentSectionHeader title="Attendance performance" />
+            <StudentSectionHeader title={t('attendancePerformance')} />
             <div className="space-y-4">
               <ProgressBar value={completionRate} label="Lesson completion" />
               <ProgressBar value={absenceRate} label="Absence marked" />
@@ -303,7 +303,7 @@ export default function TeacherAnalyticsPage() {
             />
           </div>
           <StudentCard>
-            <StudentSectionHeader title="Feedback trends" />
+            <StudentSectionHeader title={t('feedbackTrendsSection')} />
             <div className="space-y-4">
               <ProgressBar value={feedbackRate} label="Feedback completion" />
               <ProgressBar value={voiceRate} label="Voice delivery" />
@@ -342,7 +342,7 @@ export default function TeacherAnalyticsPage() {
             />
           </div>
           <StudentCard>
-            <StudentSectionHeader title="Delivery rates" />
+            <StudentSectionHeader title={t('deliveryRates')} />
             <div className="space-y-4">
               <ProgressBar value={completionRate} label="Lesson completion" />
               <ProgressBar value={vocabularyRate} label="Vocabulary" />
@@ -403,7 +403,7 @@ export default function TeacherAnalyticsPage() {
           {periodDeductionsList.length > 0 && (
             <StudentCard noPadding>
               <div className="border-b border-[rgba(14,14,16,0.07)] px-5 py-4 sm:px-6">
-                <StudentSectionHeader title="Recent deductions" className="mb-0" />
+                <StudentSectionHeader title={t('recentDeductions')} className="mb-0" />
               </div>
               <div className="divide-y divide-[rgba(14,14,16,0.07)]">
                 {periodDeductionsList.slice(0, 5).map((deduction) => (

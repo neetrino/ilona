@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { cn } from '@/shared/lib/utils';
 import { ActionButtons } from '@/shared/components/ui/action-buttons';
 import { Eye, Check } from 'lucide-react';
@@ -33,6 +34,7 @@ export function CalendarLessonsTable({
   onSelectionChange,
   isLoading = false,
 }: CalendarLessonsTableProps) {
+  const tCommon = useTranslations('common');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   const handleSelectAll = (checked: boolean) => {
@@ -97,7 +99,7 @@ export function CalendarLessonsTable({
                 }}
                 onChange={(e) => handleSelectAll(e.target.checked)}
                 className="w-4 h-4 text-primary border-slate-300 rounded focus:ring-primary"
-                aria-label="Select all lessons"
+                aria-label={tCommon('selectAllLessons')}
               />
             </th>
             {/* Lesson Name */}
@@ -245,7 +247,7 @@ export function CalendarLessonsTable({
                           onClick={() => onView(lesson.id)}
                           className="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
                           aria-label={`View lesson ${lesson.lessonName}`}
-                          title="View"
+                          title={tCommon('view')}
                         >
                           <Eye className="w-4 h-4" />
                         </button>

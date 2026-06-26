@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useMemo, useCallback } from 'react';
+import { useTranslations } from 'next-intl';
 import { X } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
 import { Checkbox } from './checkbox';
@@ -56,6 +57,7 @@ export function MultiSelectChipsDropdown({
   showSelectedChipsOnlyWhenOpen = false,
   hideSelectedLabelsInTrigger = false,
 }: MultiSelectChipsDropdownProps) {
+  const t = useTranslations('common');
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -165,7 +167,7 @@ export function MultiSelectChipsDropdown({
             )}
           >
             {isLoading ? (
-              <span className={cn('px-1 py-0.5 text-sm', DROPDOWN_PLACEHOLDER_TEXT_CLASS)}>Loading…</span>
+              <span className={cn('px-1 py-0.5 text-sm', DROPDOWN_PLACEHOLDER_TEXT_CLASS)}>{t('loading')}</span>
             ) : selectedChips.length === 0 ? (
               <span className={cn('px-1 py-1 text-sm', DROPDOWN_PLACEHOLDER_TEXT_CLASS)}>{placeholder}</span>
             ) : !shouldShowChipsInTrigger ? (

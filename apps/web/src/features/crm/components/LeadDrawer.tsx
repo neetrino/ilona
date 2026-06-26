@@ -11,6 +11,7 @@ import { fetchTeachers } from '@/features/teachers/api/teachers.api';
 import { fetchGroups } from '@/features/groups/api/groups.api';
 import { useQuery } from '@tanstack/react-query';
 import { useAuthStore } from '@/features/auth/store/auth.store';
+import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
 
 interface LeadDrawerProps {
   leadId: string | null;
@@ -46,7 +47,7 @@ export function LeadDrawer({ leadId, onClose, onUpdated }: LeadDrawerProps) {
     queryFn: () => fetchTeachers({ take: 200 }),
     enabled: !!leadId,
   });
-  const teachers = teachersData?.items ?? [];
+  const teachers = useMemo(() => teachersData?.items ?? [], [teachersData?.items]);
   const { data: groupsData } = useQuery({
     queryKey: ['groups'],
     queryFn: () => fetchGroups({ take: 500 }),
@@ -58,6 +59,38 @@ export function LeadDrawer({ leadId, onClose, onUpdated }: LeadDrawerProps) {
   const groupsForSelectedTeacher = useMemo(
     () => (selectedTeacherId ? groups.filter((group) => group.teacherId === selectedTeacherId) : []),
     [groups, selectedTeacherId],
+  );
+
+  const levelOptions = useMemo(
+    () => [
+      { id: '', label: '—' },
+      ...LEVEL_OPTIONS.map((level) => ({ id: level, label: level })),
+    ],
+    [],
+  );
+  const centerOptions = useMemo(
+    () => [
+      { id: '', label: '—' },
+      ...centers.map((center) => ({ id: center.id, label: center.name })),
+    ],
+    [centers],
+  );
+  const teacherOptions = useMemo(
+    () => [
+      { id: '', label: '—' },
+      ...teachers.map((teacher) => ({
+        id: teacher.id,
+        label: `${teacher.user?.firstName ?? ''} ${teacher.user?.lastName ?? ''}`.trim(),
+      })),
+    ],
+    [teachers],
+  );
+  const groupOptions = useMemo(
+    () => [
+      { id: '', label: selectedTeacherId ? '—' : t('selectTeacherFirst') },
+      ...groupsForSelectedTeacher.map((group) => ({ id: group.id, label: group.name })),
+    ],
+    [groupsForSelectedTeacher, selectedTeacherId, t],
   );
 
   useEffect(() => {
@@ -92,21 +125,36 @@ export function LeadDrawer({ leadId, onClose, onUpdated }: LeadDrawerProps) {
     }
   }, [selectedTeacherId, form.groupId, groupsForSelectedTeacher]);
 
+  const buildLeadUpdatePayload = (next: Partial<CrmLead>) => ({
+    firstName: next.firstName ?? undefined,
+    lastName: next.lastName ?? undefined,
+    phone: next.phone ?? undefined,
+    age: next.age ?? undefined,
+    levelId: next.levelId ?? undefined,
+    teacherId: next.teacherId ?? undefined,
+    groupId: next.groupId ?? undefined,
+    centerId: next.centerId ?? undefined,
+    source: next.source ?? undefined,
+    notes: next.notes ?? undefined,
+  });
+
+  const patchAndSave = async (patch: Partial<CrmLead>) => {
+    if (!leadId) return;
+    const next = { ...form, ...patch };
+    setForm(next);
+    try {
+      await updateLead(leadId, buildLeadUpdatePayload(next));
+      await refetch();
+      onUpdated();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   const handleSaveFields = async () => {
     if (!leadId || !form) return;
     try {
-      await updateLead(leadId, {
-        firstName: form.firstName ?? undefined,
-        lastName: form.lastName ?? undefined,
-        phone: form.phone ?? undefined,
-        age: form.age ?? undefined,
-        levelId: form.levelId ?? undefined,
-        teacherId: form.teacherId ?? undefined,
-        groupId: form.groupId ?? undefined,
-        centerId: form.centerId ?? undefined,
-        source: form.source ?? undefined,
-        notes: form.notes ?? undefined,
-      });
+      await updateLead(leadId, buildLeadUpdatePayload(form));
       await refetch();
       onUpdated();
     } catch (err) {
@@ -244,65 +292,49 @@ export function LeadDrawer({ leadId, onClose, onUpdated }: LeadDrawerProps) {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-1">{t('level')}</label>
-                    <select
+                    <SingleSelectDropdown
+                      id="lead-drawer-level"
+                      options={levelOptions}
                       value={form.levelId ?? ''}
-                      onChange={(e) => setForm((f) => ({ ...f, levelId: e.target.value }))}
-                      onBlur={handleSaveFields}
-                      className="unified-native-select w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-                    >
-                      <option value="">—</option>
-                      {LEVEL_OPTIONS.map((l) => (
-                        <option key={l} value={l}>{l}</option>
-                      ))}
-                    </select>
+                      onValueChange={(nextValue) => {
+                        void patchAndSave({ levelId: nextValue ?? '' });
+                      }}
+                    />
                   </div>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">{t('center')}</label>
-                  <select
+                  <SingleSelectDropdown
+                    id="lead-drawer-center"
+                    options={centerOptions}
                     value={form.centerId ?? ''}
-                    onChange={(e) => setForm((f) => ({ ...f, centerId: e.target.value }))}
-                    onBlur={handleSaveFields}
-                    className="unified-native-select w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-                  >
-                    <option value="">—</option>
-                    {centers.map((c) => (
-                      <option key={c.id} value={c.id}>{c.name}</option>
-                    ))}
-                  </select>
+                    onValueChange={(nextValue) => {
+                      void patchAndSave({ centerId: nextValue ?? '' });
+                    }}
+                  />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">{t('teacher')}</label>
-                  <select
+                  <SingleSelectDropdown
+                    id="lead-drawer-teacher"
+                    options={teacherOptions}
                     value={form.teacherId ?? ''}
-                    onChange={(e) => setForm((f) => ({ ...f, teacherId: e.target.value, groupId: '' }))}
-                    onBlur={handleSaveFields}
-                    className="unified-native-select w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-                  >
-                    <option value="">—</option>
-                    {teachers.map((teacher) => (
-                      <option key={teacher.id} value={teacher.id}>
-                        {teacher.user?.firstName} {teacher.user?.lastName}
-                      </option>
-                    ))}
-                  </select>
+                    onValueChange={(nextValue) => {
+                      void patchAndSave({ teacherId: nextValue ?? '', groupId: '' });
+                    }}
+                  />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">{t('group')}</label>
-                  <select
+                  <SingleSelectDropdown
+                    id="lead-drawer-group"
+                    options={groupOptions}
                     value={form.groupId ?? ''}
-                    onChange={(e) => setForm((f) => ({ ...f, groupId: e.target.value }))}
+                    onValueChange={(nextValue) => {
+                      void patchAndSave({ groupId: nextValue ?? '' });
+                    }}
                     disabled={!selectedTeacherId}
-                    onBlur={handleSaveFields}
-                    className="unified-native-select w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-                  >
-                    <option value="">
-                      {selectedTeacherId ? '—' : t('selectTeacherFirst')}
-                    </option>
-                    {groupsForSelectedTeacher.map((g) => (
-                      <option key={g.id} value={g.id}>{g.name}</option>
-                    ))}
-                  </select>
+                  />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">{tc('notes')}</label>

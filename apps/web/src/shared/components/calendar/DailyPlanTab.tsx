@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react';
 import { DailyPlanEditor, useDailyPlans, useDeleteDailyPlan } from '@/features/daily-plan';
 import { DailyPlanListSection } from '@/features/daily-plan/DailyPlanListSection';
+import { DailyPlanViewer } from '@/features/daily-plan/DailyPlanViewer';
 
 interface DailyPlanTabProps {
   lessonId: string;
@@ -46,7 +47,11 @@ export function DailyPlanTab({ lessonId, groupId }: DailyPlanTabProps) {
           `No daily plans for this lesson match "${query}".`
         }
         onView={(plan) => setViewingId(plan.id)}
-        onEdit={(plan) => setEditingId(plan.id)}
+        onEdit={(plan) => {
+          if (plan.canEdit) {
+            setEditingId(plan.id);
+          }
+        }}
         deletingPlanId={deletingPlanId}
         deleteError={deleteError}
         onDelete={async (plan) => {
@@ -87,14 +92,9 @@ export function DailyPlanTab({ lessonId, groupId }: DailyPlanTabProps) {
       )}
 
       {viewingPlan && (
-        <DailyPlanEditor
-          mode="edit"
+        <DailyPlanViewer
           plan={viewingPlan}
-          readOnly
           onClose={() => setViewingId(null)}
-          onSaved={() => {
-            setViewingId(null);
-          }}
         />
       )}
     </div>

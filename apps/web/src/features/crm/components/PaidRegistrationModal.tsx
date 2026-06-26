@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo, useRef, useId } from 'react';
+import { useTranslations } from 'next-intl';
 import { createPortal } from 'react-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -35,6 +36,7 @@ export function PaidRegistrationModal({
   onSuccess,
   formPrefill,
 }: PaidRegistrationModalProps) {
+  const t = useTranslations('crm');
   const modalContainerRef = useRef<HTMLDivElement>(null);
   const fieldIdPrefix = useId().replace(/:/g, '');
   const { onOverlayMouseDown, onOverlayClick } = useModalClose({
@@ -216,7 +218,7 @@ export function PaidRegistrationModal({
           <div className="border-b border-slate-200 px-4 py-4 sm:px-6">
             <div className="flex items-start justify-between gap-2">
               <div>
-                <h2 className="text-lg font-semibold text-slate-900">Student registration</h2>
+                <h2 className="text-lg font-semibold text-slate-900">{t('studentRegistration')}</h2>
                 <p className="mt-1 text-sm text-slate-600">
                   Same details as Add New Student. Save to mark this lead Paid and create the account. Cancel leaves
                   the lead status unchanged.
@@ -226,7 +228,7 @@ export function PaidRegistrationModal({
                 type="button"
                 onClick={onClose}
                 className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-700"
-                aria-label="Close registration"
+                aria-label={t('closeRegistration')}
               >
                 <X className="h-5 w-5" />
               </button>

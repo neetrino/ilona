@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { cn } from '@/shared/lib/utils';
 import type { TeacherPerformance } from '../api/analytics.api';
 import { analyticsTableScrollClass } from '../analytics-table-scroll';
@@ -117,6 +118,7 @@ export function TeacherRatioTable({
   mobilePercentOnly = false,
   mobilePageSize,
 }: TeacherRatioTableProps) {
+  const tCommon = useTranslations('common');
   const pageStartRef = useRef<HTMLDivElement | null>(null);
   const [page, setPage] = useState(1);
 
@@ -166,7 +168,7 @@ export function TeacherRatioTable({
   const tableHeader = (
     <thead className="bg-slate-50 border-b border-slate-200">
       <tr>
-        <th className="px-4 py-3 text-left text-sm font-medium text-slate-600">Teacher</th>
+        <th className="px-4 py-3 text-left text-sm font-medium text-slate-600">{tCommon('teacher')}</th>
         <th className="px-4 py-3 text-left text-sm font-medium text-slate-600 w-[40%]">{metricLabel}</th>
         <th className="px-4 py-3 text-center text-sm font-medium text-slate-600">{trailingHeader}</th>
       </tr>

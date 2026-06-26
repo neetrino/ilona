@@ -29,6 +29,7 @@ export const settingsKeys = {
   profile: () => [...settingsKeys.all, 'profile'] as const,
   logo: () => [...settingsKeys.all, 'logo'] as const,
   dashboardBanner: () => [...settingsKeys.all, 'dashboard-banner'] as const,
+  footerIconLinks: () => [...settingsKeys.all, 'footer-icon-links'] as const,
   public: () => [...settingsKeys.all, 'public'] as const,
   actionPercents: () => [...settingsKeys.all, 'action-percents'] as const,
   penalties: () => [...settingsKeys.all, 'penalties'] as const,

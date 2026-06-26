@@ -97,7 +97,7 @@ export function TeacherDetailsDrawer({
         )}
         role="dialog"
         aria-modal="true"
-        aria-label="Teacher details"
+        aria-label={t('teacherDetails')}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -111,7 +111,7 @@ export function TeacherDetailsDrawer({
               'transition-colors',
               'focus:outline-none focus:ring-2 focus:ring-white/50'
             )}
-            aria-label="Close"
+            aria-label={tCommon('close')}
           >
             <svg
               className="w-5 h-5"
@@ -198,7 +198,7 @@ export function TeacherDetailsDrawer({
                     const experienceLabel = getExperienceLabelFromHireDate(teacher.hireDate);
                     return experienceLabel ? (
                       <div>
-                        <label className="text-sm font-medium text-slate-600">Experience</label>
+                        <label className="text-sm font-medium text-slate-600">{tCommon('experience')}</label>
                         <p className="text-slate-800 mt-1">{experienceLabel}</p>
                       </div>
                     ) : null;

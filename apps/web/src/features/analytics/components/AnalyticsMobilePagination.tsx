@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { cn } from '@/shared/lib/utils';
 
 export interface AnalyticsMobilePaginationProps {
@@ -21,6 +22,7 @@ export function AnalyticsMobilePagination({
   onPrevious,
   onNext,
 }: AnalyticsMobilePaginationProps) {
+  const tCommon = useTranslations('common');
   return (
     <div className="flex items-center justify-start gap-3 border-t border-slate-200 px-4 py-3 text-sm text-[#8b8b90]">
       <span>
@@ -37,7 +39,7 @@ export function AnalyticsMobilePagination({
           )}
           disabled={page <= 1}
           onClick={onPrevious}
-          aria-label="Previous page"
+          aria-label={tCommon('previousPage')}
         >
           <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -56,7 +58,7 @@ export function AnalyticsMobilePagination({
           )}
           disabled={page >= totalPages}
           onClick={onNext}
-          aria-label="Next page"
+          aria-label={tCommon('nextPage')}
         >
           <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />

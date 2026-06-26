@@ -4,17 +4,15 @@ import { useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import type { FieldErrors, UseFormRegister, UseFormSetValue, UseFormWatch } from 'react-hook-form';
 import { PasswordInput } from '@/shared/components/ui';
+import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
 import { formatDmyInputValue } from '../student-dob-date';
-import type { Group } from '@/features/groups';
 import type { CreateStudentWithConfirmFormData } from '../student-account-form.schema';
-import { teacherBelongsToCenter } from '../lib/center-scoped-assignment';
-import type { StudentAccountGroupOption, StudentAccountTeacherOption } from './StudentAccountFormFields';
+import type { GroupAssignmentOption } from '../lib/group-center-assignment';
 
 const LEVEL_OPTIONS = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'] as const;
 
 const inputClass =
   'w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1';
-const selectClass = `unified-native-select ${inputClass}`;
 
 const sectionTitle = 'text-xs font-semibold uppercase tracking-wide text-slate-500';
 
@@ -25,17 +23,14 @@ export interface StudentAccountFormFieldsCrmLeadLayoutProps {
   watch: UseFormWatch<CreateStudentWithConfirmFormData>;
   computedAge: number | undefined;
   showParentSection: boolean;
-  groupsForTeacher: StudentAccountGroupOption[];
-  teachers: StudentAccountTeacherOption[];
+  groupsForCenter: GroupAssignmentOption[];
   centers: Array<{ id: string; name: string }>;
   isLoadingGroups: boolean;
-  isLoadingTeachers: boolean;
   isLoadingCenters?: boolean;
   isSubmitting: boolean;
   showCenterSelect?: boolean;
   assignedCenterDisplay?: string | null;
   lockedCenterId?: string | null;
-  groupsForAssignmentFilter?: Pick<Group, 'teacherId' | 'centerId'>[];
   idPrefix?: string;
 }
 
@@ -46,17 +41,14 @@ export function StudentAccountFormFieldsCrmLeadLayout({
   watch,
   computedAge,
   showParentSection,
-  groupsForTeacher,
-  teachers,
+  groupsForCenter,
   centers,
   isLoadingGroups,
-  isLoadingTeachers,
   isLoadingCenters = false,
   isSubmitting,
   showCenterSelect = true,
   assignedCenterDisplay = null,
   lockedCenterId = null,
-  groupsForAssignmentFilter = [],
   idPrefix = '',
 }: StudentAccountFormFieldsCrmLeadLayoutProps) {
   const t = useTranslations('students');
@@ -68,40 +60,44 @@ export function StudentAccountFormFieldsCrmLeadLayout({
   const watchedCenterId = watch('centerId') || '';
   const effectiveCenterId = lockedCenterId || watchedCenterId || '';
   const hasCenterScope = Boolean(effectiveCenterId);
-  const watchedTeacherId = watch('teacherId') || '';
+  const watchedLevelId = watch('levelId') || '';
   const watchedGroupId = watch('groupId') || '';
   const phoneDigits = (watch('phone') ?? '').replace(/\D/g, '');
   const parentPhoneDigits = (watch('parentPhone') ?? '').replace(/\D/g, '');
   const watchedDateOfBirth = watch('dateOfBirth') ?? '';
   const watchedFirstLessonDate = watch('firstLessonDate') ?? '';
-  const selectedTeacher = teachers.find((te) => te.id === watchedTeacherId);
-  const centerNamesFromTeacher = [
-    ...new Set((selectedTeacher?.centerLinks ?? []).map((l) => l.center.name).filter(Boolean)),
-  ];
-  const centerNamesFromGroups = [
-    ...new Set(groupsForTeacher.map((g) => g.center?.name).filter(Boolean) as string[]),
-  ];
-  const teacherCentersLabel = [...new Set([...centerNamesFromTeacher, ...centerNamesFromGroups])].join(', ');
 
-  const teachersScoped = useMemo(() => {
-    if (!hasCenterScope) return [];
-    let list = teachers.filter((te) =>
-      teacherBelongsToCenter(te.id, effectiveCenterId, te.centerLinks, groupsForAssignmentFilter),
-    );
-    if (watchedTeacherId && !list.some((te) => te.id === watchedTeacherId)) {
-      const current = teachers.find((te) => te.id === watchedTeacherId);
-      if (current) list = [current, ...list];
-    }
-    return list;
-  }, [
-    effectiveCenterId,
-    hasCenterScope,
-    teachers,
-    groupsForAssignmentFilter,
-    watchedTeacherId,
-  ]);
+  const groupPlaceholder = !hasCenterScope
+    ? tForm('selectCenterFirst')
+    : isLoadingGroups
+      ? tCommon('loading')
+      : groupsForCenter.length === 0
+        ? tForm('noGroupsForCenter')
+        : t('selectGroup');
 
-  const { onChange: onCenterFieldChange, ...centerIdRegisterRest } = register('centerId');
+  const levelOptions = useMemo(
+    () => [
+      { id: '', label: '—' },
+      ...LEVEL_OPTIONS.map((level) => ({ id: level, label: level })),
+    ],
+    [],
+  );
+
+  const centerOptions = useMemo(
+    () => [
+      { id: '', label: '—' },
+      ...centers.map((center) => ({ id: center.id, label: center.name })),
+    ],
+    [centers],
+  );
+
+  const groupOptions = useMemo(
+    () => [
+      { id: '', label: groupPlaceholder },
+      ...groupsForCenter.map((group) => ({ id: group.id, label: group.name })),
+    ],
+    [groupPlaceholder, groupsForCenter],
+  );
 
   return (
     <div className="space-y-6">
@@ -352,38 +348,36 @@ export function StudentAccountFormFieldsCrmLeadLayout({
             <label htmlFor={p('levelId')} className="mb-1 block text-sm font-medium text-slate-700">
               {tCommon('level')}
             </label>
-            <select id={p('levelId')} {...register('levelId')} className={selectClass} disabled={isSubmitting}>
-              <option value="">—</option>
-              {LEVEL_OPTIONS.map((l) => (
-                <option key={l} value={l}>
-                  {l}
-                </option>
-              ))}
-            </select>
+            <input type="hidden" {...register('levelId')} />
+            <SingleSelectDropdown
+              id={p('levelId')}
+              options={levelOptions}
+              value={watchedLevelId}
+              onValueChange={(nextValue) =>
+                setValue('levelId', nextValue ?? '', { shouldDirty: true, shouldValidate: true })
+              }
+              disabled={isSubmitting}
+            />
           </div>
           {showCenterSelect ? (
             <div>
               <label htmlFor={p('centerId')} className="mb-1 block text-sm font-medium text-slate-700">
                 {tCommon('center')}
               </label>
-              <select
+              <input type="hidden" {...register('centerId')} />
+              <SingleSelectDropdown
                 id={p('centerId')}
-                {...centerIdRegisterRest}
-                className={selectClass}
-                disabled={isLoadingCenters || isSubmitting}
-                onChange={(e) => {
-                  onCenterFieldChange(e);
+                options={centerOptions}
+                value={watchedCenterId}
+                onValueChange={(nextValue) => {
+                  setValue('centerId', nextValue ?? '', { shouldDirty: true, shouldValidate: true });
                   setValue('teacherId', '', { shouldDirty: true });
                   setValue('groupId', '', { shouldDirty: true });
                 }}
-              >
-                <option value="">—</option>
-                {centers.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name}
-                  </option>
-                ))}
-              </select>
+                isLoading={isLoadingCenters}
+                disabled={isLoadingCenters || isSubmitting}
+                error={errors.centerId?.message ?? null}
+              />
               {errors.centerId && <p className="mt-1 text-sm text-red-600">{errors.centerId.message}</p>}
             </div>
           ) : assignedCenterDisplay ? (
@@ -395,56 +389,30 @@ export function StudentAccountFormFieldsCrmLeadLayout({
             </div>
           ) : null}
           <div>
-            <label htmlFor={p('teacherId')} className="mb-1 block text-sm font-medium text-slate-700">
-              {tCommon('teacher')}
-            </label>
-            <select
-              id={p('teacherId')}
-              {...register('teacherId')}
-              className={selectClass}
-              disabled={isLoadingTeachers || isSubmitting || !hasCenterScope}
-            >
-              <option value="">
-                {hasCenterScope ? t('selectTeacher') : tForm('selectCenterFirst')}
-              </option>
-              {teachersScoped.map((te) => (
-                <option key={te.id} value={te.id}>
-                  {te.user?.firstName} {te.user?.lastName}
-                </option>
-              ))}
-            </select>
-            {errors.teacherId && <p className="mt-1 text-sm text-red-600">{errors.teacherId.message}</p>}
-            {isLoadingTeachers && <p className="mt-1 text-xs text-slate-500">{t('loadingTeachers')}</p>}
-            {watchedTeacherId && teacherCentersLabel ? (
-              <p className="mt-1 text-xs text-slate-500">
-                {tForm('teacherCenters')}: {teacherCentersLabel}
-              </p>
-            ) : null}
-          </div>
-          <div>
+            <input type="hidden" {...register('teacherId')} />
             <label htmlFor={p('groupId')} className="mb-1 block text-sm font-medium text-slate-700">
               {tCommon('group')}
             </label>
-            <select
+            <input type="hidden" {...register('groupId')} />
+            <SingleSelectDropdown
               id={p('groupId')}
-              {...register('groupId')}
-              className={selectClass}
-              disabled={isLoadingGroups || isSubmitting || !watchedTeacherId}
-            >
-              <option value="">
-                {watchedTeacherId ? t('selectGroup') : t('selectTeacherFirst')}
-              </option>
-              {groupsForTeacher.map((g) => (
-                <option key={g.id} value={g.id}>
-                  {g.name}
-                </option>
-              ))}
-            </select>
+              options={groupOptions}
+              value={watchedGroupId}
+              onValueChange={(nextValue) =>
+                setValue('groupId', nextValue ?? '', { shouldDirty: true, shouldValidate: true })
+              }
+              isLoading={isLoadingGroups}
+              disabled={isLoadingGroups || isSubmitting || !hasCenterScope}
+              error={errors.groupId?.message ?? null}
+            />
             {errors.groupId && <p className="mt-1 text-sm text-red-600">{errors.groupId.message}</p>}
+            {hasCenterScope && !isLoadingGroups && groupsForCenter.length === 0 ? (
+              <p className="mt-1 text-xs text-slate-500">{tForm('noGroupsForCenter')}</p>
+            ) : null}
             {watchedGroupId ? (
               <p className="mt-1 text-xs text-slate-500">
                 {tForm('groupLocation', {
-                  name: groupsForTeacher.find((g) => g.id === watchedGroupId)?.center?.name ?? '—',
+                  name: groupsForCenter.find((g) => g.id === watchedGroupId)?.center?.name ?? '—',
                 })}
               </p>
             ) : null}

@@ -1,14 +1,18 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
+import { useRef, useState } from 'react';
+import { useRouter, usePathname } from '@/config/navigation';
 import { useLesson } from '@/features/lessons';
 import { VoiceRecorder } from '@/features/chat/components/VoiceRecorder';
 import { fetchGroupChat, sendMessageHttp } from '@/features/chat/api/chat.api';
+import { buildPortalChatHref } from '@/features/chat/lib/navigate-to-portal-chat';
+import { useAddMessageToCache, chatKeys } from '@/features/chat/hooks';
+import { useChatStore } from '@/features/chat/store/chat.store';
 import { api } from '@/shared/lib/api';
 import { useQueryClient } from '@tanstack/react-query';
 import { lessonKeys } from '@/features/lessons/hooks/useLessons';
 import { Button } from '@/shared/components/ui/button';
+import { AutoDismissToast } from '@/shared/components/ui';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 
 interface VoiceTabProps {
@@ -20,16 +24,23 @@ export function VoiceTab({ lessonId }: VoiceTabProps) {
   const pathname = usePathname();
   const queryClient = useQueryClient();
   const { user } = useAuthStore();
+  const addMessageToCache = useAddMessageToCache();
+  const setActiveChat = useChatStore((state) => state.setActiveChat);
+  const setMobileListVisible = useChatStore((state) => state.setMobileListVisible);
   const { data: lesson, isLoading } = useLesson(lessonId);
   const [isRecording, setIsRecording] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [toast, setToast] = useState<{ key: number; message: string; variant: 'success' | 'error' } | null>(null);
+  const sendInFlightRef = useRef(false);
 
   const handleRecorded = async (file: File, durationSec: number, _mimeType: string) => {
+    if (sendInFlightRef.current) return;
+
     if (!lesson || !lesson.group) {
-      alert('Lesson or group not found');
-      return;
+      throw new Error('Lesson or group not found');
     }
 
+    sendInFlightRef.current = true;
     setIsUploading(true);
 
     try {
@@ -55,7 +66,7 @@ export function VoiceTab({ lessonId }: VoiceTabProps) {
       const isLessonSubstitute =
         !!lesson.substituteTeacher?.user?.id && lesson.substituteTeacher.user.id === user?.id;
 
-      const messageResponse = await sendMessageHttp(chat.id, '', 'VOICE', {
+      const message = await sendMessageHttp(chat.id, '', 'VOICE', {
         fileUrl,
         fileName,
         fileSize,
@@ -72,38 +83,63 @@ export function VoiceTab({ lessonId }: VoiceTabProps) {
         },
       });
 
+      addMessageToCache(chat.id, message);
+      queryClient.setQueryData(chatKeys.detail(chat.id), {
+        ...chat,
+        lastMessage: message,
+        lastMessageAt: message.createdAt,
+      });
+      setActiveChat(chat);
+      setMobileListVisible(false);
+
       // Mark voice as sent and invalidate both detail and list queries to ensure consistency
       await api.patch(`/lessons/${lesson.id}/voice-sent`);
       queryClient.invalidateQueries({ queryKey: lessonKeys.details() });
       queryClient.invalidateQueries({ queryKey: lessonKeys.lists() });
 
-      // Navigate to chat if navigation metadata is available
-      if (messageResponse.navigation?.conversationId) {
-        // Extract locale from pathname (e.g., /en/admin/calendar -> en)
-        const localeMatch = pathname.match(/^\/([^/]+)/);
-        const locale = localeMatch ? localeMatch[1] : 'en';
-        
-        // Determine chat route based on user role
-        const role = user?.role?.toLowerCase() || 'admin';
-        const chatRoute = `/${locale}/${role}/chat?conversationId=${messageResponse.navigation.conversationId}`;
-        
-        router.push(chatRoute);
-      } else {
-        // Fallback: show success message if navigation metadata is not available
-        alert('Voice message sent successfully!');
-        setIsRecording(false);
+      setIsRecording(false);
+      setToast({
+        key: Date.now(),
+        message: 'Voice message has been sent to the group chat',
+        variant: 'success',
+      });
+
+      if (user?.role) {
+        router.push(
+          buildPortalChatHref(user.role, {
+            conversationId: chat.id,
+            returnTo: pathname,
+            tab: user.role === 'ADMIN' || user.role === 'MANAGER' ? 'groups' : undefined,
+          }),
+        );
       }
     } catch (error) {
       console.error('Failed to send voice message:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Failed to send voice message. Please try again.';
-      
-      // Check if it's a permission error
-      if (errorMessage.includes('403') || errorMessage.includes('Forbidden') || errorMessage.includes('not authorized')) {
-        alert('Voice message sent, but we couldn\'t open chat automatically. Please open chat manually.');
-      } else {
-        alert(errorMessage);
+      const errorMessage =
+        error instanceof Error ? error.message : 'Failed to send voice message. Please try again.';
+
+      if (
+        errorMessage.includes('403') ||
+        errorMessage.includes('Forbidden') ||
+        errorMessage.includes('not authorized')
+      ) {
+        setToast({
+          key: Date.now(),
+          message: 'Voice message sent, but we could not open chat automatically.',
+          variant: 'success',
+        });
+        setIsRecording(false);
+        return;
       }
+
+      setToast({
+        key: Date.now(),
+        message: errorMessage,
+        variant: 'error',
+      });
+      throw error;
     } finally {
+      sendInFlightRef.current = false;
       setIsUploading(false);
     }
   };
@@ -130,6 +166,14 @@ export function VoiceTab({ lessonId }: VoiceTabProps) {
 
   return (
     <div className="p-6">
+      {toast ? (
+        <AutoDismissToast
+          key={toast.key}
+          message={toast.message}
+          variant={toast.variant}
+          onDismiss={() => setToast(null)}
+        />
+      ) : null}
       <div className="mb-6">
         <h3 className="text-lg font-semibold text-slate-800">
           {lesson.voiceSent ? 'Edit Voice Message' : 'Record Voice Message'}

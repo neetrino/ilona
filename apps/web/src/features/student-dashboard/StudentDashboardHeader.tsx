@@ -3,6 +3,7 @@
 import { PublicAssetImage } from '@/shared/components/ui';
 import { useTranslations } from 'next-intl';
 import { usePathname } from 'next/navigation';
+import { LandingNavbarLanguageToggle } from '@/shared/components/layout/LandingNavbarLanguageToggle';
 import { StudentLogoutControl } from '@/shared/components/layout/StudentLogoutControl';
 import { PortalHeaderSearch } from '@/features/search/components/PortalHeaderSearch';
 import { useAuthStore } from '@/features/auth/store/auth.store';
@@ -85,6 +86,11 @@ export function StudentDashboardHeader({
                 </>
               )}
             </div>
+            {isStudentMobileSubpage ? (
+              <div className="shrink-0 lg:hidden">
+                <LandingNavbarLanguageToggle />
+              </div>
+            ) : null}
           </div>
 
           <div
@@ -97,6 +103,9 @@ export function StudentDashboardHeader({
             </div>
 
             <div className="flex shrink-0 flex-wrap items-center justify-end gap-1.5 sm:gap-2">
+              <LandingNavbarLanguageToggle
+                className={isStudentMobileSubpage ? 'hidden lg:inline-flex' : undefined}
+              />
               <div className="inline-flex h-11 shrink-0 items-center gap-1 rounded-full bg-[#ffeb8c] px-2.5 text-xs sm:h-12 sm:gap-1.5 sm:px-3.5 sm:text-sm">
                 <PublicAssetImage
                   src={STUDENT_DASHBOARD_ASSETS.fireIcon}

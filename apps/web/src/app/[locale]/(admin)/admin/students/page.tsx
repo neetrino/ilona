@@ -45,6 +45,7 @@ export default function StudentsPage() {
     selectedYear,
     isAddStudentOpen,
     isEditStudentOpen,
+    editStudentIdFromUrl,
     isDeleteDialogOpen,
     isBulkDeleteDialogOpen,
     isFeedbackModalOpen,
@@ -65,7 +66,6 @@ export default function StudentsPage() {
     updateStudent,
     
     // Options
-    teachers,
     groups,
     centerOptions,
     teacherFilterOptions,
@@ -90,10 +90,10 @@ export default function StudentsPage() {
     handleDeleteClick,
     handleDeleteConfirm,
     handleEditClick,
+    handleEditModalOpenChange,
     handleDeactivateClick,
     handleShowFeedback,
     handleFeedbackModalOpenChange,
-    handleTeacherChange,
     handleGroupChange,
     handleCenterChange,
     handleRegisterDateChange,
@@ -107,7 +107,6 @@ export default function StudentsPage() {
     setSelectedYear,
     handleFilterChange,
     setIsAddStudentOpen,
-    setIsEditStudentOpen,
     setIsDeleteDialogOpen,
     setIsBulkDeleteDialogOpen,
     setSelectedStudent,
@@ -121,6 +120,7 @@ export default function StudentsPage() {
     t,
     tCommon,
     tTeachers,
+    tAnalytics,
     locale,
     
     // Constants
@@ -233,11 +233,9 @@ export default function StudentsPage() {
             onDeactivate={handleDeactivateClick}
             onShowFeedback={handleShowFeedback}
             onView={handleStudentDetailsOpen}
-            onTeacherChange={handleTeacherChange}
             onGroupChange={handleGroupChange}
             onCenterChange={handleCenterChange}
             onRegisterDateChange={handleRegisterDateChange}
-            teachers={teachers}
             groups={groups}
             centerOptions={centerOptions}
             isLoading={isLoading}
@@ -247,6 +245,7 @@ export default function StudentsPage() {
             t={t}
             tCommon={tCommon}
             tTeachers={tTeachers}
+            tAnalytics={tAnalytics}
           />
         ) : (
           <StudentsBoard
@@ -280,16 +279,11 @@ export default function StudentsPage() {
       />
 
       {/* Edit Student Modal */}
-      {selectedStudent && (
+      {(selectedStudent || editStudentIdFromUrl) && (
         <EditStudentForm
-          open={isEditStudentOpen}
-          onOpenChange={(open) => {
-            setIsEditStudentOpen(open);
-            if (!open) {
-              setSelectedStudent(null);
-            }
-          }}
-          studentId={selectedStudent.id}
+          open={isEditStudentOpen || !!editStudentIdFromUrl}
+          onOpenChange={handleEditModalOpenChange}
+          studentId={selectedStudent?.id ?? editStudentIdFromUrl!}
         />
       )}
 
@@ -323,7 +317,7 @@ export default function StudentsPage() {
         studentName={selectedStudentIds.size > 0 ? `${selectedStudentIds.size} ${selectedStudentIds.size === 1 ? 'student' : 'students'}` : undefined}
         isLoading={deleteStudent.isPending}
         error={bulkDeleteError || undefined}
-        title="Delete Students"
+        title={t('deleteStudentsTitle')}
       />
 
       {/* Student feedback modal (message icon) */}

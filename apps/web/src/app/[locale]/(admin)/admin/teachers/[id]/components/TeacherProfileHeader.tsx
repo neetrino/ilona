@@ -7,6 +7,7 @@ import { formatPhoneForDisplay } from '@/shared/lib/utils';
 import type { UseFormRegister, UseFormSetValue } from 'react-hook-form';
 import type { UpdateTeacherFormData } from '../schemas';
 import type { UserStatus } from '@/types';
+import { useTranslations } from 'next-intl';
 
 interface TeacherProfileHeaderProps {
   teacher: Teacher;
@@ -35,7 +36,10 @@ export function TeacherProfileHeader({
   setValue,
   statusValue,
 }: TeacherProfileHeaderProps) {
-  const fullName = `${firstName} ${lastName}`.trim() || 'Teacher';
+  const tCommon = useTranslations('common');
+  const tStatus = useTranslations('status');
+  const tTeachers = useTranslations('teachers');
+  const fullName = `${firstName} ${lastName}`.trim() || tTeachers('teacherProfile');
   const avatarUrl = teacher.user?.avatarUrl;
 
   return (
@@ -54,7 +58,7 @@ export function TeacherProfileHeader({
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="firstName">
-                    First Name <span className="text-red-500">*</span>
+                    {tCommon('firstName')} <span className="text-red-500">*</span>
                   </Label>
                   <Input
                     id="firstName"
@@ -64,7 +68,7 @@ export function TeacherProfileHeader({
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="lastName">
-                    Last Name <span className="text-red-500">*</span>
+                    {tCommon('lastName')} <span className="text-red-500">*</span>
                   </Label>
                   <Input
                     id="lastName"
@@ -74,13 +78,13 @@ export function TeacherProfileHeader({
                 </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="status">Status <span className="text-red-500">*</span></Label>
+                <Label htmlFor="status">{tCommon('status')} <span className="text-red-500">*</span></Label>
                 <SingleSelectDropdown
                   id="status"
                   options={[
-                    { id: 'ACTIVE', label: 'Active' },
-                    { id: 'INACTIVE', label: 'Inactive' },
-                    { id: 'SUSPENDED', label: 'Suspended' },
+                    { id: 'ACTIVE', label: tStatus('active') },
+                    { id: 'INACTIVE', label: tStatus('inactive') },
+                    { id: 'SUSPENDED', label: tStatus('suspended') },
                   ]}
                   value={statusValue}
                   onValueChange={(nextValue) =>

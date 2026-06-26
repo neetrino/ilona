@@ -1,8 +1,9 @@
 'use client';
 
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { useEffect, useState, type MouseEvent } from 'react';
+import { useEffect, useState, type MouseEvent as ReactMouseEvent } from 'react';
 import { LandingMobileNavbarPill } from '@/shared/components/layout/LandingMobileNavbarPill';
 import { useLandingCanvasScale } from '@/shared/hooks/useLandingCanvasScale';
 import {
@@ -16,6 +17,7 @@ import { cn } from '@/shared/lib/utils';
 type LandingNavbarProps = {
   logoUrl: string;
   profileHref: string;
+  logoHref?: string;
 };
 
 type NavItem = {
@@ -53,12 +55,18 @@ function ProfileIcon({ className }: { className?: string }) {
   );
 }
 
-export function LandingNavbar({ logoUrl, profileHref }: LandingNavbarProps) {
+export function LandingNavbar({ logoUrl, profileHref, logoHref = '#home' }: LandingNavbarProps) {
   const t = useTranslations('home.nav');
   const tHome = useTranslations('home');
   const tCommon = useTranslations('common');
+  const pathname = usePathname();
   const { isCanvasActive, scale } = useLandingCanvasScale();
   const [menuOpen, setMenuOpen] = useState(false);
+  const isOnLoginPage = pathname.endsWith('/login');
+  const isOnHomePage = pathname === '/';
+  const isHomeAnchorLogo = logoHref.startsWith('#');
+
+  const getNavHref = (href: string) => (isOnHomePage ? href : `/${href}`);
 
   useEffect(() => {
     if (!menuOpen) {
@@ -100,7 +108,12 @@ export function LandingNavbar({ logoUrl, profileHref }: LandingNavbarProps) {
     return () => mediaQuery.removeEventListener('change', closeOnDesktop);
   }, [menuOpen]);
 
-  const handleLogoClick = (event: MouseEvent<HTMLAnchorElement>) => {
+  const handleLogoClick = (event: ReactMouseEvent<HTMLAnchorElement>) => {
+    if (!isHomeAnchorLogo) {
+      setMenuOpen(false);
+      return;
+    }
+
     event.preventDefault();
     setMenuOpen(false);
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -109,6 +122,13 @@ export function LandingNavbar({ logoUrl, profileHref }: LandingNavbarProps) {
   const handleNavClick = () => {
     setMenuOpen(false);
   };
+
+  const profileLinkClassName = cn(
+    'relative hidden shrink-0 items-center justify-center overflow-hidden rounded-full navDesktop:inline-flex',
+    isCanvasActive
+      ? 'h-[37px] w-[37px]'
+      : 'h-[32px] w-[32px] sm:h-[34px] sm:w-[34px] tablet:h-[37px] tablet:w-[37px]',
+  );
 
   const scaledMenuTop = `calc(0.75rem + ${LANDING_NAVBAR_HEIGHT * scale}px + 0.5rem)`;
 
@@ -120,82 +140,79 @@ export function LandingNavbar({ logoUrl, profileHref }: LandingNavbarProps) {
           isCanvasActive ? 'top-3' : cn('top-2 sm:top-3', LANDING_MOBILE_HORIZONTAL_PADDING),
         )}
       >
-          <div
-            className={cn(isCanvasActive && 'w-full')}
-            style={
-              isCanvasActive
-                ? {
-                    width: LANDING_DESIGN_WIDTH,
-                    transform: `scale(${scale})`,
-                    transformOrigin: 'top left',
-                  }
-                : undefined
-            }
-          >
-            <LandingMobileNavbarPill
-              logoUrl={logoUrl}
-              brandLabel={t('brand')}
-              logoHref="#home"
-              onLogoClick={handleLogoClick}
-              isCanvasActive={isCanvasActive}
-              center={
-                <>
-                  {NAV_ITEMS.map((item) => (
-                    <Link
-                      key={item.id}
-                      href={item.href}
-                      className={cn(
-                        'whitespace-nowrap font-normal tracking-[-0.3px] transition-opacity hover:opacity-80',
-                        isCanvasActive ? 'text-base' : 'text-sm navDesktop:text-[15px] xl:text-base',
-                      )}
-                    >
-                      {t(item.id)}
-                    </Link>
-                  ))}
-                </>
-              }
-              trailing={
-                <>
-                  <button
-                    type="button"
-                    onClick={() => setMenuOpen((open) => !open)}
+        <div
+          className={cn(isCanvasActive && 'w-full')}
+          style={
+            isCanvasActive
+              ? {
+                  width: LANDING_DESIGN_WIDTH,
+                  transform: `scale(${scale})`,
+                  transformOrigin: 'top left',
+                }
+              : undefined
+          }
+        >
+          <LandingMobileNavbarPill
+            logoUrl={logoUrl}
+            brandLabel={t('brand')}
+            logoHref={logoHref}
+            onLogoClick={handleLogoClick}
+            isCanvasActive={isCanvasActive}
+            center={
+              <>
+                {NAV_ITEMS.map((item) => (
+                  <Link
+                    key={item.id}
+                    href={getNavHref(item.href)}
                     className={cn(
-                      'relative inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full text-white transition-colors hover:bg-white/10 navDesktop:hidden',
-                      isCanvasActive
-                        ? 'h-[37px] w-[37px]'
-                        : 'h-[32px] w-[32px] sm:h-[34px] sm:w-[34px] tablet:h-[37px] tablet:w-[37px]',
+                      'whitespace-nowrap font-normal tracking-[-0.3px] transition-opacity hover:opacity-80',
+                      isCanvasActive ? 'text-base' : 'text-sm navDesktop:text-[15px] xl:text-base',
                     )}
-                    aria-expanded={menuOpen}
-                    aria-controls="landing-mobile-menu"
-                    aria-label={menuOpen ? tCommon('close') : t('openMenu')}
                   >
-                    {menuOpen ? (
-                      <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                    ) : (
-                      <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                      </svg>
-                    )}
-                  </button>
+                    {t(item.id)}
+                  </Link>
+                ))}
+              </>
+            }
+            trailing={
+              <>
+                <button
+                  type="button"
+                  onClick={() => setMenuOpen((open) => !open)}
+                  className={cn(
+                    'relative inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full text-white transition-colors hover:bg-white/10 navDesktop:hidden',
+                    isCanvasActive
+                      ? 'h-[37px] w-[37px]'
+                      : 'h-[32px] w-[32px] sm:h-[34px] sm:w-[34px] tablet:h-[37px] tablet:w-[37px]',
+                  )}
+                  aria-expanded={menuOpen}
+                  aria-controls="landing-mobile-menu"
+                  aria-label={menuOpen ? tCommon('close') : t('openMenu')}
+                >
+                  {menuOpen ? (
+                    <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  ) : (
+                    <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                  )}
+                </button>
 
+                {!isOnLoginPage ? (
                   <Link
                     href={profileHref}
                     aria-label={tHome('login')}
-                    className={cn(
-                      'relative hidden shrink-0 items-center justify-center overflow-hidden rounded-full navDesktop:inline-flex',
-                      isCanvasActive
-                        ? 'h-[37px] w-[37px]'
-                        : 'h-[32px] w-[32px] sm:h-[34px] sm:w-[34px] tablet:h-[37px] tablet:w-[37px]',
-                    )}
+                    className={profileLinkClassName}
                   >
                     <ProfileIcon className="h-full w-full" />
                   </Link>
-                </>
-              }
-            />
-          </div>
+                ) : null}
+              </>
+            }
+          />
+        </div>
       </header>
 
       {menuOpen ? (
@@ -220,7 +237,7 @@ export function LandingNavbar({ logoUrl, profileHref }: LandingNavbarProps) {
               {NAV_ITEMS.map((item) => (
                 <li key={item.id}>
                   <Link
-                    href={item.href}
+                    href={getNavHref(item.href)}
                     onClick={handleNavClick}
                     className="block rounded-2xl px-4 py-3 text-base font-medium tracking-[-0.2px] text-white transition-colors hover:bg-white/10"
                   >
@@ -228,18 +245,20 @@ export function LandingNavbar({ logoUrl, profileHref }: LandingNavbarProps) {
                   </Link>
                 </li>
               ))}
-              <li className="mt-1 border-t border-white/15 pt-1">
-                <Link
-                  href={profileHref}
-                  onClick={handleNavClick}
-                  className="flex items-center gap-3 rounded-2xl px-4 py-3 text-base font-medium tracking-[-0.2px] text-white transition-colors hover:bg-white/10"
-                >
-                  <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center">
-                    <ProfileIcon className="h-full w-full" />
-                  </span>
-                  {tHome('login')}
-                </Link>
-              </li>
+              {!isOnLoginPage ? (
+                <li className="mt-1 border-t border-white/15 pt-1">
+                  <Link
+                    href={profileHref}
+                    onClick={handleNavClick}
+                    className="flex items-center gap-3 rounded-2xl px-4 py-3 text-base font-medium tracking-[-0.2px] text-white transition-colors hover:bg-white/10"
+                  >
+                    <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center">
+                      <ProfileIcon className="h-full w-full" />
+                    </span>
+                    {tHome('login')}
+                  </Link>
+                </li>
+              ) : null}
             </ul>
           </nav>
         </>

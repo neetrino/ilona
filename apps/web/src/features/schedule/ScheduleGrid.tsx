@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { Building2, CalendarDays } from 'lucide-react';
 import type { Group, GroupScheduleEntry } from '@/features/groups/types';
 import { GroupIconDisplay } from '@/features/groups';
@@ -57,6 +58,7 @@ export function ScheduleGrid({
   fixedSlots,
   fitToContainer = false,
 }: ScheduleGridProps) {
+  const t = useTranslations('schedule');
   const [selectedDay, setSelectedDay] = useState(() => toMondayIndex(new Date().getDay()));
   const { slots, cells } = useMemo(() => {
     const buckets = new Map<string, ScheduleCellEntry[]>();
@@ -148,7 +150,7 @@ export function ScheduleGrid({
               <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-[#eef1ff] text-[#4f5fd8]">
                 <CalendarDays className="size-5" />
               </div>
-              <p className="text-base font-medium text-slate-500">No classes scheduled</p>
+              <p className="text-base font-medium text-slate-500">{t('noClassesScheduled')}</p>
             </div>
           ) : (
             <div className="space-y-2.5">

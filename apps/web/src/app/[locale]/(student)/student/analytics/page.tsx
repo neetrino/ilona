@@ -75,6 +75,7 @@ function paymentStatusLabel(status: string, t: (key: string) => string): string 
 
 export default function StudentAnalyticsPage() {
   const t = useTranslations('analytics');
+  const tCommon = useTranslations('common');
   const tFinance = useTranslations('finance');
   const defPay = useMemo(() => defaultCustomRangeLast30Days(), []);
   const [timeMode, setTimeMode] = useState<TimeFilterMode>('date');
@@ -201,7 +202,7 @@ export default function StudentAnalyticsPage() {
                     <p className="mt-1 text-2xl font-bold text-[#8b4a00]">
                       {outstandingInRange.length}
                     </p>
-                    <p className="mt-1 text-xs text-[#8b8b90]">Unpaid in range</p>
+                    <p className="mt-1 text-xs text-[#8b8b90]">{t('unpaidInRange')}</p>
                   </div>
                 </div>
                 {payPeriodList.length > 0 && (
@@ -213,9 +214,9 @@ export default function StudentAnalyticsPage() {
                     </colgroup>
                     <StudentTableHead>
                       <tr>
-                        <StudentTh className="!text-left">Period</StudentTh>
-                        <StudentTh className="!text-center">Status</StudentTh>
-                        <StudentTh className="!text-right">Amount</StudentTh>
+                        <StudentTh className="!text-left">{tCommon('period')}</StudentTh>
+                        <StudentTh className="!text-center">{tCommon('status')}</StudentTh>
+                        <StudentTh className="!text-right">{tCommon('amount')}</StudentTh>
                       </tr>
                     </StudentTableHead>
                     <StudentTableBody>

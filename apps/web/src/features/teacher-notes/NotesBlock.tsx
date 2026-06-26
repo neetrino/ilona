@@ -26,6 +26,7 @@ interface NoteCardProps {
 }
 
 function NoteCard({ note, index, onDelete, isDeleting, variant }: NoteCardProps) {
+  const tTeacherNotes = useTranslations('teacherNotes');
   if (variant === 'dashboard') {
     return (
       <div className="border-t border-dashed border-[rgba(14,14,16,0.07)] py-4 first:border-t-0 first:pt-0">
@@ -44,7 +45,7 @@ function NoteCard({ note, index, onDelete, isDeleting, variant }: NoteCardProps)
               disabled={isDeleting}
               className="ml-auto inline-flex h-10 w-fit shrink-0 items-center justify-center rounded-full bg-[#b4e288] px-6 text-[0.8125rem] font-semibold text-[#146e23] hover:bg-[#a3d97a] disabled:opacity-50 max-sm:h-11 max-sm:px-4 max-sm:text-sm"
             >
-              Done
+              {tTeacherNotes('done')}
             </button>
           </div>
         </div>
@@ -65,7 +66,7 @@ function NoteCard({ note, index, onDelete, isDeleting, variant }: NoteCardProps)
           disabled={isDeleting}
           className="rounded-md bg-[#1010a3] px-2 py-0.5 font-medium text-white hover:opacity-90 disabled:opacity-50"
         >
-          Done
+          {tTeacherNotes('done')}
         </button>
       </div>
     </div>
@@ -80,6 +81,8 @@ type NotesBlockProps = {
 
 export function NotesBlock({ variant = 'default', fillHeight = false, className }: NotesBlockProps) {
   const t = useTranslations('dashboard.notes');
+  const tCommon = useTranslations('common');
+  const tTeacherNotes = useTranslations('teacherNotes');
   const [draft, setDraft] = useState('');
   const { data: notes = [], isLoading } = useMyTeacherNotes();
   const create = useCreateTeacherNote();
@@ -166,7 +169,7 @@ export function NotesBlock({ variant = 'default', fillHeight = false, className 
 
   return (
     <StudentCard>
-      <StudentSectionHeader title="Notes" subtitle='Click "Done" to remove a note' />
+      <StudentSectionHeader title={tCommon('notes')} subtitle={tTeacherNotes('clickDoneToRemove')} />
       <div className="mb-4 flex flex-col gap-2 sm:flex-row">
         <StudentInput
           type="text"
@@ -178,7 +181,7 @@ export function NotesBlock({ variant = 'default', fillHeight = false, className 
               void handleAdd();
             }
           }}
-          placeholder="Jot down a quick reminder…"
+          placeholder={tTeacherNotes('quickReminderPlaceholder')}
           className="flex-1"
         />
         <StudentPrimaryButton
@@ -187,14 +190,14 @@ export function NotesBlock({ variant = 'default', fillHeight = false, className 
           disabled={!draft.trim() || create.isPending}
           className="shrink-0"
         >
-          Add
+          {create.isPending ? t('saving') : t('add')}
         </StudentPrimaryButton>
       </div>
       {isLoading ? (
-        <p className="text-sm text-[#8b8b90]">Loading…</p>
+        <p className="text-sm text-[#8b8b90]">{t('loading')}</p>
       ) : notes.length === 0 ? (
         <p className="text-sm text-[#8b8b90]">
-          No notes yet. Add one above to keep it on your dashboard.
+          {t('emptyLegacy')}
         </p>
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">

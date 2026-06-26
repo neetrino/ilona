@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { usePathname } from 'next/navigation';
 import { Sidebar } from './Sidebar';
 import { StudentSidebar } from './StudentSidebar';
@@ -64,6 +65,7 @@ export function DashboardLayout({
   contentScrollClassName,
   mobileFullBleed = false,
 }: DashboardLayoutProps) {
+  const t = useTranslations('common');
   const pathname = usePathname();
   const { user } = useAuthStore();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(getInitialSidebarCollapsedState);
@@ -165,7 +167,7 @@ export function DashboardLayout({
               type="button"
               className="fixed inset-0 z-[55] bg-black/40 lg:hidden"
               onClick={() => setMobileNavOpen(false)}
-              aria-label="Close navigation menu"
+              aria-label={t('closeNavigationMenu')}
             />
             <div
               className="fixed inset-y-0 left-0 z-[60] flex lg:hidden"

@@ -7,7 +7,7 @@ import { getChatTheme, type ChatUiVariant } from '../lib/chat-theme';
 
 interface VoiceRecorderProps {
   variant?: ChatUiVariant;
-  onRecorded: (file: File, durationSec: number, mimeType: string) => void;
+  onRecorded: (file: File, durationSec: number, mimeType: string) => void | Promise<void>;
   onCancel: () => void;
   conversationId: string;
 }
@@ -28,6 +28,7 @@ export function VoiceRecorder({
   const [recordedMimeType, setRecordedMimeType] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
   const [canSend, setCanSend] = useState(false);
+  const [isSending, setIsSending] = useState(false);
   const [micLevel, setMicLevel] = useState(0); // 0-100
   const [micWarning, setMicWarning] = useState<string | null>(null);
 
@@ -378,17 +379,29 @@ export function VoiceRecorder({
   }, [getSupportedMimeType, cleanup, isRecording, stopRecording, tChat]);
 
   // Handle send
-  const handleSend = useCallback(() => {
-    if (!recordedBlob || !canSend) return;
+  const handleSend = useCallback(async () => {
+    if (!recordedBlob || !canSend || isSending) return;
 
-    // Create File with correct extension
     const ext = getExtensionFromMimeType(recordedMimeType);
     const fileName = `voice-${Date.now()}.${ext}`;
     const file = new File([recordedBlob], fileName, { type: recordedMimeType });
 
-    onRecorded(file, durationSec, recordedMimeType);
-    cleanup();
-  }, [recordedBlob, canSend, durationSec, recordedMimeType, onRecorded, cleanup]);
+    setIsSending(true);
+    setCanSend(false);
+
+    try {
+      await Promise.resolve(onRecorded(file, durationSec, recordedMimeType));
+      setRecordedBlob(null);
+      setRecordedMimeType('');
+      setDurationSec(0);
+      cleanup();
+    } catch (err) {
+      setCanSend(true);
+      setError(err instanceof Error ? err.message : tChat('sendVoiceFailed'));
+    } finally {
+      setIsSending(false);
+    }
+  }, [recordedBlob, canSend, isSending, durationSec, recordedMimeType, onRecorded, cleanup, tChat]);
 
   // Format duration
   const formatDuration = (seconds: number): string => {
@@ -478,19 +491,26 @@ export function VoiceRecorder({
             <div className="flex items-center gap-2">
               <button
                 onClick={onCancel}
-                className={cn('rounded-lg px-4 py-2 text-sm transition-colors', ui.ghostBtn)}
+                disabled={isSending}
+                className={cn(
+                  'rounded-lg px-4 py-2 text-sm transition-colors disabled:cursor-not-allowed disabled:opacity-50',
+                  ui.ghostBtn,
+                )}
               >
                 {tCommon('cancel')}
               </button>
               <button
-                onClick={handleSend}
-                disabled={!canSend}
+                onClick={() => {
+                  void handleSend();
+                }}
+                disabled={!canSend || isSending}
                 className={cn(
-                  'px-4 py-2 rounded-lg text-sm font-medium transition-colors',
-                  canSend ? ui.primaryBtn : ui.primaryBtnDisabled
+                  'rounded-lg px-4 py-2 text-sm font-medium transition-all',
+                  isSending && 'cursor-wait opacity-90',
+                  canSend && !isSending ? ui.primaryBtn : ui.primaryBtnDisabled,
                 )}
               >
-                {tChat('send')}
+                {isSending ? tChat('sending') : tChat('send')}
               </button>
             </div>
           </>

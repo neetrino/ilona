@@ -9,6 +9,8 @@ export {
   useUploadDashboardBanner,
   useDeleteDashboardBanner,
   useUpdateDashboardBannerText,
+  useFooterIconLinks,
+  useUpdateFooterIconLinks,
   useManagers,
   useCreateManager,
   useUpdateManager,

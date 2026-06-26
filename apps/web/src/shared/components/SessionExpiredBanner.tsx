@@ -1,6 +1,7 @@
 'use client';
 
 import { useAuthStore } from '@/features/auth/store/auth.store';
+import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 
@@ -10,6 +11,7 @@ import { useEffect } from 'react';
  * User can dismiss it or navigate to login
  */
 export function SessionExpiredBanner() {
+  const t = useTranslations('sessionExpired');
   const { sessionExpired, clearSessionExpired } = useAuthStore();
   const router = useRouter();
 
@@ -55,29 +57,29 @@ export function SessionExpiredBanner() {
             </svg>
           </div>
           <div className="flex-1">
-            <h4 className="font-semibold text-amber-800 mb-1">Session Expired</h4>
+            <h4 className="font-semibold text-amber-800 mb-1">{t('title')}</h4>
             <p className="text-sm text-amber-700 mb-3">
-              Your session has expired. Please log in again to continue.
+              {t('message')}
             </p>
             <div className="flex items-center gap-3">
               <button
                 onClick={handleLogin}
                 className="px-4 py-2 bg-amber-600 text-white text-sm font-medium rounded-md hover:bg-amber-700 transition-colors"
               >
-                Log In
+                {t('login')}
               </button>
               <button
                 onClick={handleDismiss}
                 className="px-4 py-2 bg-amber-100 text-amber-800 text-sm font-medium rounded-md hover:bg-amber-200 transition-colors"
               >
-                Dismiss
+                {t('dismiss')}
               </button>
             </div>
           </div>
           <button
             onClick={handleDismiss}
             className="flex-shrink-0 text-amber-600 hover:text-amber-800 transition-colors"
-            aria-label="Dismiss"
+            aria-label={t('dismiss')}
           >
             <svg
               className="h-5 w-5"

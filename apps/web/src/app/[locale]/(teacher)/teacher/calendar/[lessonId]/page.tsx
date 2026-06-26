@@ -3,6 +3,7 @@
 
 
 import { use, useEffect, useState, useCallback } from 'react';
+import { useTranslations } from 'next-intl';
 
 import { useRouter } from '@/config/navigation';
 
@@ -61,7 +62,8 @@ function parseLessonTab(value: string | null): LessonTab {
 
 
 export default function TeacherLessonDetailPage({ params }: { params: Promise<{ lessonId: string }> }) {
-
+  const tCommon = useTranslations('common');
+  const tCalendar = useTranslations('calendar');
   const resolvedParams = use(params);
 
   const router = useRouter();
@@ -122,7 +124,7 @@ export default function TeacherLessonDetailPage({ params }: { params: Promise<{ 
 
     return (
 
-      <DashboardLayout title="Loading..." subtitle="Loading lesson details...">
+      <DashboardLayout title={tCommon('loading')} subtitle={tCommon('loading')}>
 
         <div className="flex items-center justify-center p-12">
 
@@ -142,11 +144,11 @@ export default function TeacherLessonDetailPage({ params }: { params: Promise<{ 
 
     return (
 
-      <DashboardLayout title="Lesson Not Found" subtitle="The lesson you're looking for doesn't exist.">
+      <DashboardLayout title={tCalendar('lessonNotFoundTitle')} subtitle={tCalendar('lessonNotFoundSubtitle')}>
 
         <div className="text-center p-12">
 
-          <Button onClick={() => router.back()}>Go Back</Button>
+          <Button onClick={() => router.back()}>{tCommon('goBack')}</Button>
 
         </div>
 

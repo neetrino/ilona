@@ -2,7 +2,7 @@
 
 import { useLocale, useTranslations } from 'next-intl';
 import { useRouter, usePathname } from 'next/navigation';
-import { LanguageSwitcher } from '@/shared/components/LanguageSwitcher';
+import { LandingNavbarLanguageToggle } from '@/shared/components/layout/LandingNavbarLanguageToggle';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import Image from 'next/image';
 import { useLogout } from '@/features/auth/hooks/useLogout';
@@ -57,7 +57,7 @@ export function Header({ title, subtitle, headerContent }: HeaderProps) {
         {headerContent}
 
         {/* Language Switcher */}
-        <LanguageSwitcher />
+        <LandingNavbarLanguageToggle />
 
         {/* Notifications */}
         <button className="relative p-2 rounded-lg hover:bg-slate-100 text-slate-500 transition-colors">

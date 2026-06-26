@@ -35,6 +35,7 @@ function centersFromStudentProfile(profile: Student): { id: string; name: string
 
 export default function StudentSchedulePage() {
   const t = useTranslations('nav');
+  const tAttendance = useTranslations('attendance');
   const { isHydrated, isAuthenticated, tokens } = useAuthStore();
   const isAuthReady = isHydrated && isAuthenticated && !!tokens?.accessToken;
   const { data: profile, isLoading: isProfileLoading } = useMyProfile(isAuthReady);
@@ -123,7 +124,7 @@ export default function StudentSchedulePage() {
   return (
     <DashboardLayout
       title={t('schedule')}
-      subtitle="Weekly and monthly schedule for upcoming lessons"
+      subtitle={t('scheduleSubtitle')}
     >
       <StudentPageStack>
         <ScheduleBoard
@@ -144,7 +145,7 @@ export default function StudentSchedulePage() {
                       id="schedule-center-student"
                       value={centerId}
                       onChange={setCenterId}
-                      placeholder="All centers"
+                      placeholder={tAttendance('allCenters')}
                       allowClear
                       options={profileCenters.map((c) => ({
                         value: c.id,

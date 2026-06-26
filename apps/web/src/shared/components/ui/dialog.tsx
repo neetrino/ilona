@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+import { useTranslations } from 'next-intl';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { X } from 'lucide-react';
 import { usePortalSheetDrag } from '@/shared/hooks/usePortalSheetDrag';
@@ -147,7 +148,7 @@ const DialogContent = React.forwardRef<
             )}
           >
             <X className="h-4 w-4" />
-            <span className="sr-only">Close</span>
+            <span className="sr-only">{t('close')}</span>
           </DialogPrimitive.Close>
         ) : null}
         {isPortalSheet ? (
@@ -155,13 +156,13 @@ const DialogContent = React.forwardRef<
             className={cn(closeButtonClasses, 'hidden lg:inline-flex lg:items-center lg:justify-center lg:top-4')}
           >
             <X className="h-4 w-4" />
-            <span className="sr-only">Close</span>
+            <span className="sr-only">{t('close')}</span>
           </DialogPrimitive.Close>
         ) : null}
         {!isPortalSheet && !hideCloseButton ? (
           <DialogPrimitive.Close className={cn(closeButtonClasses, useSheet && 'top-3 lg:top-4')}>
             <X className="h-4 w-4" />
-            <span className="sr-only">Close</span>
+            <span className="sr-only">{t('close')}</span>
           </DialogPrimitive.Close>
         ) : null}
       </DialogPrimitive.Content>

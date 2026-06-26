@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import {
   Dialog,
   DialogContent,
@@ -27,11 +28,12 @@ export function CompleteLessonDialog({
   isLoading = false,
   error,
 }: CompleteLessonDialogProps) {
+  const t = useTranslations('lessons');
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>Mark Lesson as Completed</DialogTitle>
+          <DialogTitle>{t('markLessonCompleted')}</DialogTitle>
           <DialogDescription>
             {lessonName
               ? `Are you sure you want to mark "${lessonName}" as completed? This action will update the lesson status.`

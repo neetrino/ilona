@@ -1,16 +1,10 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { Pencil, Trash2 } from 'lucide-react';
 import type { DailyPlan, DailyPlanResourceKind } from './types';
 import { useIsIPad } from '@/shared/hooks/useIsIPad';
-
-const KIND_LABEL: Record<DailyPlanResourceKind, string> = {
-  READING: 'Reading',
-  LISTENING: 'Listening',
-  WRITING: 'Writing',
-  SPEAKING: 'Speaking',
-};
 
 function formatDate(value: string): string {
   const date = new Date(value);
@@ -21,6 +15,14 @@ function formatDate(value: string): string {
         month: 'short',
         day: '2-digit',
       });
+}
+
+function teacherName(plan: DailyPlan): string {
+  return `${plan.teacher.user.firstName} ${plan.teacher.user.lastName}`;
+}
+
+function centerName(plan: DailyPlan): string | null {
+  return plan.group?.center?.name ?? plan.lesson?.group?.center?.name ?? null;
 }
 
 interface DailyPlanListSectionProps {
@@ -37,6 +39,7 @@ interface DailyPlanListSectionProps {
   onDelete?: (plan: DailyPlan) => Promise<void>;
   deletingPlanId?: string | null;
   deleteError?: string | null;
+  showCreate?: boolean;
 }
 
 const MOBILE_PAGE_SIZE = 5;
@@ -56,7 +59,19 @@ export function DailyPlanListSection({
   onDelete,
   deletingPlanId = null,
   deleteError = null,
+  showCreate = true,
 }: DailyPlanListSectionProps) {
+  const t = useTranslations('dailyPlanPage');
+  const tCommon = useTranslations('common');
+  const kindLabel = useMemo(
+    (): Record<DailyPlanResourceKind, string> => ({
+      READING: t('resourceKinds.READING'),
+      LISTENING: t('resourceKinds.LISTENING'),
+      WRITING: t('resourceKinds.WRITING'),
+      SPEAKING: t('resourceKinds.SPEAKING'),
+    }),
+    [t],
+  );
   const trimmedSearch = search.trim();
   const isDeletePending = deletingPlanId !== null;
   const isIPad = useIsIPad();
@@ -96,7 +111,7 @@ export function DailyPlanListSection({
             type="text"
             value={search}
             onChange={(event) => onSearchChange(event.target.value)}
-            placeholder="Search topics, titles, descriptions..."
+            placeholder={t('searchPlaceholder')}
             className="w-full h-11 pl-10 pr-3 bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
           />
           <svg
@@ -114,6 +129,7 @@ export function DailyPlanListSection({
             />
           </svg>
         </div>
+        {showCreate && (
         <button
           type="button"
           onClick={onCreate}
@@ -121,6 +137,7 @@ export function DailyPlanListSection({
         >
           {createLabel}
         </button>
+        )}
       </div>
       {deleteError && (
         <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-md px-3 py-2">
@@ -162,19 +179,30 @@ export function DailyPlanListSection({
                     {formatDate(plan.date)}
                   </div>
                   <div className="font-semibold text-[#1010a3]">
-                    {plan.group?.name ?? 'No group'}{' '}
+                    {teacherName(plan)}
+                  </div>
+                  <div className="text-sm text-slate-600 mt-0.5">
+                    {plan.group?.name ?? tCommon('noGroup')}{' '}
                     {plan.group?.level && (
                       <span className="text-slate-500 font-normal">
                         · {plan.group.level}
                       </span>
                     )}
                   </div>
+                  {centerName(plan) && (
+                    <div className="text-xs text-slate-500 mt-0.5">
+                      {centerName(plan)}
+                    </div>
+                  )}
                   {plan.lesson && (
                     <div className="text-xs text-slate-500 mt-0.5">
-                      Linked to lesson · {formatDate(plan.lesson.scheduledAt)}
+                      {t('linkedToLesson', {
+                        date: formatDate(plan.lesson.scheduledAt),
+                      })}
                     </div>
                   )}
                 </div>
+                {plan.canEdit && (
                 <div className="flex items-start gap-1">
                   <button
                     type="button"
@@ -183,8 +211,8 @@ export function DailyPlanListSection({
                       onEdit(plan);
                     }}
                     className="inline-flex h-8 w-8 items-center justify-center rounded-md text-primary hover:bg-primary/10 disabled:opacity-60"
-                    aria-label="Edit daily plan"
-                    title="Edit"
+                    aria-label={t('editDailyPlan')}
+                    title={tCommon('edit')}
                     disabled={isDeletePending}
                   >
                     <Pencil className="h-5 w-5" />
@@ -197,19 +225,20 @@ export function DailyPlanListSection({
                         if (isDeletePending) {
                           return;
                         }
-                        if (confirm('Delete this daily plan? This cannot be undone.')) {
+                        if (confirm(t('deleteConfirm'))) {
                           await onDelete(plan);
                         }
                       }}
                       className="inline-flex h-8 w-8 items-center justify-center rounded-md text-red-600 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
-                      aria-label="Delete daily plan"
-                      title="Delete"
+                      aria-label={t('deleteDailyPlan')}
+                      title={tCommon('delete')}
                       disabled={isDeletePending}
                     >
                       <Trash2 className="h-5 w-5" />
                     </button>
                   )}
                 </div>
+                )}
               </header>
               <ul className="space-y-2">
                 {plan.topics.map((topic) => (
@@ -225,7 +254,7 @@ export function DailyPlanListSection({
                         {topic.resources.map((resource) => (
                           <li key={resource.id} className="flex gap-1">
                             <span className="w-16 shrink-0 font-medium text-[#1010a3]">
-                              {KIND_LABEL[resource.kind]}
+                              {kindLabel[resource.kind]}
                             </span>
                             <span className="truncate">
                               {resource.link ? (
@@ -278,19 +307,30 @@ export function DailyPlanListSection({
                       {formatDate(plan.date)}
                     </div>
                     <div className="font-semibold text-[#1010a3]">
-                      {plan.group?.name ?? 'No group'}{' '}
+                      {teacherName(plan)}
+                    </div>
+                    <div className="text-sm text-slate-600 mt-0.5">
+                      {plan.group?.name ?? tCommon('noGroup')}{' '}
                       {plan.group?.level && (
                         <span className="text-slate-500 font-normal">
                           · {plan.group.level}
                         </span>
                       )}
                     </div>
+                    {centerName(plan) && (
+                      <div className="text-xs text-slate-500 mt-0.5">
+                        {centerName(plan)}
+                      </div>
+                    )}
                     {plan.lesson && (
                       <div className="text-xs text-slate-500 mt-0.5">
-                        Linked to lesson · {formatDate(plan.lesson.scheduledAt)}
+                        {t('linkedToLesson', {
+                        date: formatDate(plan.lesson.scheduledAt),
+                      })}
                       </div>
                     )}
                   </div>
+                  {plan.canEdit && (
                   <div className="flex items-start gap-1">
                     <button
                       type="button"
@@ -299,8 +339,8 @@ export function DailyPlanListSection({
                         onEdit(plan);
                       }}
                       className="inline-flex h-8 w-8 items-center justify-center rounded-md text-primary hover:bg-primary/10 disabled:opacity-60"
-                      aria-label="Edit daily plan"
-                      title="Edit"
+                      aria-label={t('editDailyPlan')}
+                      title={tCommon('edit')}
                       disabled={isDeletePending}
                     >
                       <Pencil className="h-5 w-5" />
@@ -313,19 +353,20 @@ export function DailyPlanListSection({
                           if (isDeletePending) {
                             return;
                           }
-                          if (confirm('Delete this daily plan? This cannot be undone.')) {
+                          if (confirm(t('deleteConfirm'))) {
                             await onDelete(plan);
                           }
                         }}
                         className="inline-flex h-8 w-8 items-center justify-center rounded-md text-red-600 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
-                        aria-label="Delete daily plan"
-                        title="Delete"
+                        aria-label={t('deleteDailyPlan')}
+                        title={tCommon('delete')}
                         disabled={isDeletePending}
                       >
                         <Trash2 className="h-5 w-5" />
                       </button>
                     )}
                   </div>
+                  )}
                 </header>
                 <ul className="space-y-2">
                   {plan.topics.map((topic) => (
@@ -341,7 +382,7 @@ export function DailyPlanListSection({
                           {topic.resources.map((resource) => (
                             <li key={resource.id} className="flex gap-1">
                               <span className="w-16 shrink-0 font-medium text-[#1010a3]">
-                                {KIND_LABEL[resource.kind]}
+                                {kindLabel[resource.kind]}
                               </span>
                               <span className="truncate">
                                 {resource.link ? (
@@ -389,7 +430,7 @@ export function DailyPlanListSection({
                   }`}
                   disabled={safePage === 0}
                   onClick={() => goToMobilePage(Math.max(0, safePage - 1))}
-                  aria-label="Previous page"
+                  aria-label={tCommon('previousPage')}
                 >
                   <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -407,7 +448,7 @@ export function DailyPlanListSection({
                   }`}
                   disabled={safePage >= totalPages - 1}
                   onClick={() => goToMobilePage(Math.min(totalPages - 1, safePage + 1))}
-                  aria-label="Next page"
+                  aria-label={tCommon('nextPage')}
                 >
                   <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />

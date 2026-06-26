@@ -1,7 +1,6 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { LanguageSwitcher } from '@/shared/components/LanguageSwitcher';
 import { LandingMobileNavbarPill } from '@/shared/components/layout/LandingMobileNavbarPill';
 import { StudentLogoutControl } from '@/shared/components/layout/StudentLogoutControl';
 import { useLogo } from '@/features/settings/hooks/useSettings';
@@ -21,22 +20,13 @@ export function AdminPortalNavbar() {
       <LandingMobileNavbarPill
         logoUrl={brandLogo}
         brandLabel={t('brand')}
-        showLanguageToggle={false}
         enlargeLogoInner
         logoOnError={(event) => {
           const target = event.target as HTMLImageElement;
           if (target.src.includes('student-sidebar')) return;
           target.src = STUDENT_SIDEBAR_ASSETS.brandLogo;
         }}
-        trailing={
-          <>
-            <LanguageSwitcher
-              variant="circle"
-              className="h-9 w-9 bg-white text-[11px] font-bold text-[#1010a3] hover:bg-[#f3f3f4]"
-            />
-            <StudentLogoutControl variant="circle" />
-          </>
-        }
+        trailing={<StudentLogoutControl variant="circle" />}
       />
     </header>
   );

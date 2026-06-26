@@ -37,14 +37,17 @@ export function getInitialsFromParts(firstName?: string | null, lastName?: strin
   return initials || '?';
 }
 
+const CHAT_TIME_FORMAT: Intl.DateTimeFormatOptions = {
+  hour: '2-digit',
+  minute: '2-digit',
+  hour12: false,
+};
+
 /**
- * Format time for message display
+ * Format time for message display (24-hour, e.g. 14:18)
  */
 export function formatTime(dateStr: string, locale: string): string {
-  return new Date(dateStr).toLocaleTimeString(locale, {
-    hour: '2-digit',
-    minute: '2-digit',
-  });
+  return new Date(dateStr).toLocaleTimeString(locale, CHAT_TIME_FORMAT);
 }
 
 type DateSeparatorLabels = {
@@ -88,7 +91,7 @@ export function formatChatListTime(
   const diff = now.getTime() - date.getTime();
 
   if (diff < 24 * 60 * 60 * 1000 && date.getDate() === now.getDate()) {
-    return date.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' });
+    return date.toLocaleTimeString(locale, CHAT_TIME_FORMAT);
   }
 
   const yesterday = new Date(now);

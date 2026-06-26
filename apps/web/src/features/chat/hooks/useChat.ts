@@ -6,11 +6,12 @@ import {
   useMutation,
   useQueryClient,
   useInfiniteQuery,
+  type InfiniteData,
   type QueryClient,
 } from '@tanstack/react-query';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { sortChatListItems, type ChatListSortable } from '../utils/chat-utils';
-import type { Chat, Message, MessageType } from '../types';
+import type { Chat, Message, MessageType, MessagesResponse } from '../types';
 import {
   fetchChats,
   fetchChat,
@@ -57,9 +58,14 @@ export const chatKeys = {
   studentAdmin: () => [...chatKeys.all, 'student', 'admin'] as const,
 };
 
-type MessagesInfiniteData = {
-  pages: { items: Message[]; hasMore?: boolean; nextCursor?: string | null }[];
-};
+type MessagesInfiniteData = InfiniteData<MessagesResponse>;
+
+function createMessagesCacheSeed(message: Message): MessagesInfiniteData {
+  return {
+    pages: [{ items: [message], hasMore: false, nextCursor: null }],
+    pageParams: [undefined],
+  };
+}
 
 export const PENDING_MESSAGE_ID_PREFIX = 'pending-';
 
@@ -161,7 +167,9 @@ export function pushMessageToCache(
   queryClient.setQueryData(
     chatKeys.messages(chatId),
     (oldData: MessagesInfiniteData | undefined) => {
-      if (!oldData) return oldData;
+      if (!oldData) {
+        return createMessagesCacheSeed(message);
+      }
 
       return {
         ...oldData,
@@ -180,7 +188,9 @@ export function upsertIncomingMessageInCache(
   queryClient.setQueryData(
     chatKeys.messages(chatId),
     (oldData: MessagesInfiniteData | undefined) => {
-      if (!oldData) return oldData;
+      if (!oldData) {
+        return createMessagesCacheSeed(message);
+      }
 
       return {
         ...oldData,

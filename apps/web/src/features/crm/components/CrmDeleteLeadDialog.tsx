@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import {
   Dialog,
   DialogContent,
@@ -25,11 +26,12 @@ export function CrmDeleteLeadDialog({
   isLoading = false,
   error,
 }: CrmDeleteLeadDialogProps) {
+  const t = useTranslations('crm');
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>Delete lead</DialogTitle>
+          <DialogTitle>{t('deleteLead')}</DialogTitle>
           <DialogDescription>Are you sure you want to delete this lead?</DialogDescription>
         </DialogHeader>
         {error ? (

@@ -34,6 +34,7 @@ function areSetsEqual(a: Set<string>, b: Set<string>): boolean {
 
 export default function AdminSchedulePage() {
   const t = useTranslations('nav');
+  const tAttendance = useTranslations('attendance');
   const { user } = useAuthStore();
   const managerCenterId =
     user?.role === 'MANAGER' ? user.managerCenterId : undefined;
@@ -196,7 +197,7 @@ export default function AdminSchedulePage() {
         options={centerOptions}
         selectedIds={draftSelectedCenterIds}
         onSelectionChange={setDraftSelectedCenterIds}
-        placeholder="All centers"
+        placeholder={tAttendance('allCenters')}
         searchPlaceholder="Search centers..."
         emptyOptionsHint="No centers available"
         noResultsHint="No centers found"
@@ -211,7 +212,7 @@ export default function AdminSchedulePage() {
   return (
     <DashboardLayout
       title={t('schedule')}
-      subtitle="Weekly and monthly schedule for upcoming lessons"
+      subtitle={t('scheduleSubtitle')}
     >
       <div className="w-full min-w-0">
       <ScheduleBoard

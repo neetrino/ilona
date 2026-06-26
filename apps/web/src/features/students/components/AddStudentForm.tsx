@@ -8,8 +8,8 @@ import {
 } from '@/shared/components/ui';
 import { useCreateStudent } from '../hooks/useStudents';
 import { useGroups } from '@/features/groups';
-import { useTeachers } from '@/features/teachers';
 import { useCenters } from '@/features/centers';
+import { filterAssignableGroupsByCenter } from '../lib/group-center-assignment';
 import { useState, useEffect, useMemo, useCallback, useRef, type TouchEvent } from 'react';
 import { getErrorMessage } from '@/shared/lib/api';
 import {
@@ -23,6 +23,7 @@ import { useAuthStore } from '@/features/auth/store/auth.store';
 import { useTranslations } from 'next-intl';
 import { cn } from '@/shared/lib/utils';
 import { X } from 'lucide-react';
+import { portaledDropdownDialogHandlers } from '@/shared/components/ui/single-select-dropdown';
 
 interface AddStudentFormProps {
   open: boolean;
@@ -30,6 +31,8 @@ interface AddStudentFormProps {
 }
 
 export function AddStudentForm({ open, onOpenChange }: AddStudentFormProps) {
+  const t = useTranslations('students');
+  const tCommon = useTranslations('common');
   const tForm = useTranslations('students.form');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -45,10 +48,9 @@ export function AddStudentForm({ open, onOpenChange }: AddStudentFormProps) {
   const isManager = user?.role === 'MANAGER';
 
   const { data: groupsData, isLoading: isLoadingGroups } = useGroups({ isActive: true });
-  const { data: teachersData, isLoading: isLoadingTeachers } = useTeachers({ status: 'ACTIVE' });
   const { data: centersData, isLoading: isLoadingCenters } = useCenters({ isActive: true });
-  const teachers = teachersData?.items ?? [];
   const centers = useMemo(() => centersData?.items ?? [], [centersData?.items]);
+  const allGroups = useMemo(() => groupsData?.items ?? [], [groupsData?.items]);
   const managerCenterLabel = useMemo(() => {
     if (!isManager || !user?.managerCenterId) return null;
     const name = centers.find((c) => c.id === user.managerCenterId)?.name;
@@ -94,7 +96,6 @@ export function AddStudentForm({ open, onOpenChange }: AddStudentFormProps) {
     () => (isManager && user?.managerCenterId ? user.managerCenterId : watchedCenterId) || '',
     [isManager, user?.managerCenterId, watchedCenterId],
   );
-  const watchedTeacherId = watch('teacherId') || '';
   const watchedGroupId = watch('groupId') || '';
   const watchedLevelId = watch('levelId') || '';
   const watchedDob = watch('dateOfBirth');
@@ -104,29 +105,43 @@ export function AddStudentForm({ open, onOpenChange }: AddStudentFormProps) {
     [watchedDob, watchedManualAge],
   );
 
-  const assignmentGroups = useMemo(() => groupsData?.items ?? [], [groupsData?.items]);
-
-  const groupsForTeacher = useMemo(() => {
-    const allGroups = groupsData?.items ?? [];
-    let byTeacher = watchedTeacherId ? allGroups.filter((g) => g.teacherId === watchedTeacherId) : [];
-    if (effectiveCenterId) {
-      byTeacher = byTeacher.filter((g) => g.centerId === effectiveCenterId);
-    }
-    if (!watchedLevelId) return byTeacher;
-    return byTeacher.filter((g) => (g.level ?? '') === watchedLevelId);
-  }, [groupsData?.items, watchedTeacherId, watchedLevelId, effectiveCenterId]);
+  const groupsForCenter = useMemo(
+    () =>
+      filterAssignableGroupsByCenter(
+        allGroups,
+        effectiveCenterId || undefined,
+        watchedLevelId || undefined,
+      ),
+    [allGroups, effectiveCenterId, watchedLevelId],
+  );
 
   useEffect(() => {
-    if (!watchedTeacherId) {
+    if (!effectiveCenterId) {
       setValue('groupId', '');
+      setValue('teacherId', '');
       return;
     }
     if (!watchedGroupId) return;
-    const g = groupsData?.items?.find((x) => x.id === watchedGroupId);
-    if (g && (g.teacherId !== watchedTeacherId || (watchedLevelId && (g.level ?? '') !== watchedLevelId))) {
+    const group = allGroups.find((g) => g.id === watchedGroupId);
+    if (!group || group.centerId !== effectiveCenterId) {
       setValue('groupId', '');
+      setValue('teacherId', '');
     }
-  }, [watchedTeacherId, watchedGroupId, watchedLevelId, groupsData?.items, setValue]);
+  }, [effectiveCenterId, watchedGroupId, allGroups, setValue]);
+
+  useEffect(() => {
+    if (!watchedGroupId) {
+      setValue('teacherId', '');
+      return;
+    }
+    const group = allGroups.find((g) => g.id === watchedGroupId);
+    if (group?.teacherId) {
+      setValue('teacherId', group.teacherId);
+      return;
+    }
+    setValue('groupId', '');
+    setValue('teacherId', '');
+  }, [watchedGroupId, allGroups, setValue]);
 
   const showParentSection = computedAge !== undefined && computedAge < 18;
 
@@ -256,6 +271,7 @@ export function AddStudentForm({ open, onOpenChange }: AddStudentFormProps) {
         <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/60 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
         <DialogPrimitive.Content
           style={dragStyle}
+          {...portaledDropdownDialogHandlers}
           className={cn(
             'fixed inset-x-0 bottom-[7px] top-auto z-50 grid w-full translate-y-0 lg:bottom-0 [@media(min-width:1024px)_and_(max-width:1366px)_and_(min-height:1000px)]:bottom-0',
             'duration-700 ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out min-[1367px]:duration-350 min-[1367px]:ease-[cubic-bezier(0.22,1,0.36,1)]',
@@ -276,16 +292,16 @@ export function AddStudentForm({ open, onOpenChange }: AddStudentFormProps) {
             />
             <div className="h-1.5 w-14 rounded-full bg-slate-400" />
           </div>
-          <DialogPrimitive.Title className="sr-only">Add New Student</DialogPrimitive.Title>
+          <DialogPrimitive.Title className="sr-only">{t('addNewStudent')}</DialogPrimitive.Title>
           <DialogPrimitive.Close
             className="absolute right-4 top-4 hidden h-8 w-8 items-center justify-center rounded-full text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 min-[1367px]:inline-flex"
-            aria-label="Close"
+            aria-label={tCommon('close')}
           >
             <X className="h-4 w-4" />
           </DialogPrimitive.Close>
           <div className="min-h-0 overflow-y-auto overscroll-y-contain [touch-action:pan-y] [-webkit-overflow-scrolling:touch] px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-4 min-[1367px]:p-6">
             <div className="mb-4">
-              <h2 className="text-lg font-semibold text-[#3b3b40]">Add New Student</h2>
+              <h2 className="text-lg font-semibold text-[#3b3b40]">{t('addNewStudent')}</h2>
               <p className="mt-1 text-sm text-[#8b8b90]">{tForm('createDescription')}</p>
             </div>
 
@@ -308,17 +324,14 @@ export function AddStudentForm({ open, onOpenChange }: AddStudentFormProps) {
             watch={watch}
             computedAge={computedAge}
             showParentSection={showParentSection}
-            groupsForTeacher={groupsForTeacher}
-            teachers={teachers}
+            groupsForCenter={groupsForCenter}
             centers={centers}
             isLoadingGroups={isLoadingGroups}
-            isLoadingTeachers={isLoadingTeachers}
             isLoadingCenters={isLoadingCenters}
             isSubmitting={isSubmitting}
             showCenterSelect={!isManager}
             assignedCenterDisplay={isManager ? managerCenterLabel : null}
             lockedCenterId={isManager ? user?.managerCenterId ?? null : null}
-            groupsForAssignmentFilter={assignmentGroups}
           />
 
           <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end">
