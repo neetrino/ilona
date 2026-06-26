@@ -291,7 +291,8 @@ function Header({
           <h2 className="truncate text-2xl font-semibold text-slate-900 sm:text-lg">
             {center?.name ?? '—'}
           </h2>
-          {center?.address && (
+          {center?.address &&
+            center.address.trim().toLowerCase() !== center.name.trim().toLowerCase() && (
             <p className="flex items-center gap-1 truncate text-sm text-slate-500 sm:text-xs">
               <MapPin className="size-3" /> {center.address}
             </p>

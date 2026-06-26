@@ -1,6 +1,6 @@
 'use client';
 
-import { Building2, MapPin, Phone, Mail, Users } from 'lucide-react';
+import { Building2, Phone, Mail, Users } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import type { CenterWithCount } from '../types';
 import { cn, formatPhoneForDisplay, getContrastColor } from '@/shared/lib/utils';
@@ -10,13 +10,11 @@ import { usePortalSidebarCollapsed } from '@/shared/context/portal-shell-context
 interface CenterCardProps {
   center: CenterWithCount;
   onEdit: () => void;
-  onDelete: () => void;
-  onToggleActive: () => void;
   /** Optional handler for opening the detailed view popup. */
   onOpenDetails?: () => void;
 }
 
-export function CenterCard({ center, onEdit, onDelete, onToggleActive, onOpenDetails }: CenterCardProps) {
+export function CenterCard({ center, onEdit, onOpenDetails }: CenterCardProps) {
   const t = useTranslations('centers');
   const locale = useLocale();
   const sidebarCollapsed = usePortalSidebarCollapsed();
@@ -43,7 +41,7 @@ export function CenterCard({ center, onEdit, onDelete, onToggleActive, onOpenDet
       tabIndex={onOpenDetails ? 0 : undefined}
       onClick={onOpenDetails ? handleCardActivate : undefined}
       onKeyDown={onOpenDetails ? handleKeyDown : undefined}
-      className={`relative flex h-full min-h-[300px] flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm ${onOpenDetails ? 'cursor-pointer' : ''}`}
+      className={`relative flex h-full min-h-[260px] w-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm ${onOpenDetails ? 'cursor-pointer' : ''}`}
     >
       <div
         className="h-2 w-full"
@@ -80,20 +78,9 @@ export function CenterCard({ center, onEdit, onDelete, onToggleActive, onOpenDet
             <div onClick={(e) => e.stopPropagation()}>
               <ActionButtons
                 onEdit={onEdit}
-                onDelete={onDelete}
-                onDisable={onToggleActive}
-                isActive={center.isActive}
                 size="sm"
-                ariaLabels={{
-                  edit: t('editCenter'),
-                  delete: t('deleteCenter'),
-                  disable: center.isActive ? t('deactivateCenter') : t('activateCenter'),
-                }}
-                titles={{
-                  edit: t('editCenter'),
-                  delete: t('deleteCenter'),
-                  disable: center.isActive ? t('deactivateCenter') : t('activateCenter'),
-                }}
+                ariaLabels={{ edit: t('editCenter') }}
+                titles={{ edit: t('editCenter') }}
               />
             </div>
           </div>
@@ -110,15 +97,6 @@ export function CenterCard({ center, onEdit, onDelete, onToggleActive, onOpenDet
             </h4>
           </div>
         </div>
-
-        {center.address && (
-          <div className="mt-4 flex items-start gap-2 rounded-xl border border-slate-200/80 bg-slate-50 p-3 text-xs text-slate-600">
-            <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0 text-slate-400" />
-            <p className="line-clamp-2" title={center.address}>
-              {center.address}
-            </p>
-          </div>
-        )}
 
         <div className="mt-auto space-y-2.5 rounded-xl border border-slate-100 bg-gradient-to-b from-white to-slate-50/70 p-3 text-xs">
           {center.phone && (

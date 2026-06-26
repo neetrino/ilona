@@ -10,7 +10,7 @@ import { useUpdateCenter, useCenter, type UpdateCenterDto } from '@/features/cen
 import { useState, useEffect, useMemo, useCallback, useRef, type TouchEvent } from 'react';
 import { getErrorMessage } from '@/shared/lib/api';
 import { cn } from '@/shared/lib/utils';
-import { X } from 'lucide-react';
+import { X, Trash2 } from 'lucide-react';
 
 type UpdateCenterFormData = {
   name?: string;
@@ -26,10 +26,21 @@ interface EditCenterFormProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   centerId: string;
+  onToggleActive?: () => void;
+  onDelete?: () => void;
+  isStatusTogglePending?: boolean;
 }
 
-export function EditCenterForm({ open, onOpenChange, centerId }: EditCenterFormProps) {
+export function EditCenterForm({
+  open,
+  onOpenChange,
+  centerId,
+  onToggleActive,
+  onDelete,
+  isStatusTogglePending = false,
+}: EditCenterFormProps) {
   const tForm = useTranslations('centers.form');
+  const tCenters = useTranslations('centers');
   const tVal = useTranslations('centers.validation');
   const tCommon = useTranslations('common');
 
@@ -202,7 +213,7 @@ export function EditCenterForm({ open, onOpenChange, centerId }: EditCenterFormP
         email: data.email || undefined,
         description: data.description || undefined,
         colorHex: data.colorHex && data.colorHex.trim() !== '' ? data.colorHex : undefined,
-        isActive: data.isActive,
+        isActive: center?.isActive,
       };
 
       await updateCenter.mutateAsync({ id: centerId, data: payload });
@@ -224,7 +235,56 @@ export function EditCenterForm({ open, onOpenChange, centerId }: EditCenterFormP
     }
   };
 
-  const isActive = watch('isActive');
+  const isCenterActive = center?.isActive ?? true;
+  const isFormBusy = isSubmitting || updateCenter.isPending || isStatusTogglePending;
+  const headerTitle = center?.name ?? tForm('editTitle');
+
+  const dialogGridRows =
+    'h-[calc(94dvh+7px)] [@media(min-width:1024px)_and_(max-width:1366px)_and_(min-height:1000px)]:h-[56dvh] grid-rows-[auto_auto_1fr] gap-0 overflow-hidden rounded-t-[22px] border border-slate-200 bg-[#f8f9fb] shadow-xl';
+
+  const renderHeaderActions = () => (
+    <div className="flex shrink-0 items-center gap-3">
+      {onDelete ? (
+        <button
+          type="button"
+          aria-label={tCenters('deleteCenter')}
+          title={tCenters('deleteCenter')}
+          disabled={isFormBusy}
+          onClick={onDelete}
+          className="inline-flex h-8 w-8 items-center justify-center rounded-full text-slate-500 transition hover:bg-red-50 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          <Trash2 className="h-4 w-4" aria-hidden="true" />
+        </button>
+      ) : null}
+      {onToggleActive ? (
+        <button
+          type="button"
+          role="switch"
+          aria-checked={isCenterActive}
+          aria-label={isCenterActive ? tCenters('deactivateCenter') : tCenters('activateCenter')}
+          disabled={isFormBusy}
+          onClick={onToggleActive}
+          className={cn(
+            'relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full transition-colors focus:outline-none focus:ring-4 focus:ring-green-500/20 disabled:cursor-not-allowed disabled:opacity-50',
+            isCenterActive ? 'bg-green-500' : 'bg-[#f1f1f2]',
+          )}
+        >
+          <span
+            className={cn(
+              'pointer-events-none inline-block h-5 w-5 rounded-full border border-gray-300 bg-white transition-transform',
+              isCenterActive ? 'translate-x-5 border-white' : 'translate-x-0.5',
+            )}
+          />
+        </button>
+      ) : null}
+      <DialogPrimitive.Close
+        className="hidden h-8 w-8 items-center justify-center rounded-full text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 min-[1367px]:inline-flex"
+        aria-label={tCommon('close')}
+      >
+        <X className="h-4 w-4" />
+      </DialogPrimitive.Close>
+    </div>
+  );
 
   if (isLoading) {
     return (
@@ -237,7 +297,7 @@ export function EditCenterForm({ open, onOpenChange, centerId }: EditCenterFormP
               'fixed inset-x-0 bottom-[7px] top-auto z-50 grid w-full translate-y-0 lg:bottom-0 [@media(min-width:1024px)_and_(max-width:1366px)_and_(min-height:1000px)]:bottom-0',
               'duration-700 ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out min-[1367px]:duration-350 min-[1367px]:ease-[cubic-bezier(0.22,1,0.36,1)]',
               'data-[state=open]:slide-in-from-bottom-full data-[state=closed]:slide-out-to-bottom-full',
-              'h-[calc(94dvh+7px)] [@media(min-width:1024px)_and_(max-width:1366px)_and_(min-height:1000px)]:h-[56dvh] grid-rows-[auto_1fr] gap-0 overflow-hidden rounded-t-[22px] border border-slate-200 bg-[#f8f9fb] shadow-xl',
+              'h-[calc(94dvh+7px)] [@media(min-width:1024px)_and_(max-width:1366px)_and_(min-height:1000px)]:h-[56dvh] grid-rows-[auto_auto_1fr] gap-0 overflow-hidden rounded-t-[22px] border border-slate-200 bg-[#f8f9fb] shadow-xl',
               'min-[1367px]:inset-0 min-[1367px]:m-auto min-[1367px]:w-[95vw] min-[1367px]:max-w-2xl min-[1367px]:h-auto min-[1367px]:max-h-[90vh] min-[1367px]:translate-x-0 min-[1367px]:translate-y-0 min-[1367px]:rounded-2xl',
               'min-[1367px]:data-[state=open]:fade-in-0 min-[1367px]:data-[state=closed]:fade-out-0 min-[1367px]:data-[state=open]:slide-in-from-bottom-0 min-[1367px]:data-[state=closed]:slide-out-to-bottom-0',
             )}
@@ -253,16 +313,17 @@ export function EditCenterForm({ open, onOpenChange, centerId }: EditCenterFormP
               />
               <div className="h-1.5 w-14 rounded-full bg-slate-400" />
             </div>
-            <DialogPrimitive.Title className="sr-only">{tForm('editTitle')}</DialogPrimitive.Title>
-            <DialogPrimitive.Close
-              className="absolute right-4 top-4 hidden h-8 w-8 items-center justify-center rounded-full text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 min-[1367px]:inline-flex"
-              aria-label={tCommon('close')}
-            >
-              <X className="h-4 w-4" />
-            </DialogPrimitive.Close>
-            <div className="min-h-0 overflow-y-auto overscroll-y-contain [touch-action:pan-y] [-webkit-overflow-scrolling:touch] px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-4 min-[1367px]:p-6">
-              <h2 className="text-lg font-semibold text-[#3b3b40]">{tForm('editTitle')}</h2>
-              <p className="mt-1 text-sm text-[#8b8b90]">{tForm('loadingCenter')}</p>
+            <DialogPrimitive.Title className="sr-only">{headerTitle}</DialogPrimitive.Title>
+            <div className="shrink-0 bg-[#f8f9fb] px-4 pb-4 pt-3 min-[1367px]:px-6 min-[1367px]:pb-5 min-[1367px]:pt-6">
+              <div className="flex items-start justify-between gap-4">
+                <div className="min-w-0 flex-1">
+                  <h2 className="truncate text-lg font-semibold text-[#3b3b40]">{headerTitle}</h2>
+                  <p className="mt-1 text-sm text-[#8b8b90]">{tForm('loadingCenter')}</p>
+                </div>
+                {renderHeaderActions()}
+              </div>
+            </div>
+            <div className="min-h-0 overflow-y-auto overscroll-y-contain [touch-action:pan-y] [-webkit-overflow-scrolling:touch] px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] min-[1367px]:px-6 min-[1367px]:pb-6">
               <div className="flex items-center justify-center py-8">
                 <div className="text-slate-500">{tCommon('loading')}</div>
               </div>
@@ -283,7 +344,7 @@ export function EditCenterForm({ open, onOpenChange, centerId }: EditCenterFormP
             'fixed inset-x-0 bottom-[7px] top-auto z-50 grid w-full translate-y-0 lg:bottom-0 [@media(min-width:1024px)_and_(max-width:1366px)_and_(min-height:1000px)]:bottom-0',
             'duration-700 ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out min-[1367px]:duration-350 min-[1367px]:ease-[cubic-bezier(0.22,1,0.36,1)]',
             'data-[state=open]:slide-in-from-bottom-full data-[state=closed]:slide-out-to-bottom-full',
-            'h-[calc(94dvh+7px)] [@media(min-width:1024px)_and_(max-width:1366px)_and_(min-height:1000px)]:h-[56dvh] grid-rows-[auto_1fr] gap-0 overflow-hidden rounded-t-[22px] border border-slate-200 bg-[#f8f9fb] shadow-xl',
+            dialogGridRows,
             'min-[1367px]:inset-0 min-[1367px]:m-auto min-[1367px]:w-[95vw] min-[1367px]:max-w-2xl min-[1367px]:h-auto min-[1367px]:max-h-[90vh] min-[1367px]:translate-x-0 min-[1367px]:translate-y-0 min-[1367px]:rounded-2xl',
             'min-[1367px]:data-[state=open]:fade-in-0 min-[1367px]:data-[state=closed]:fade-out-0 min-[1367px]:data-[state=open]:slide-in-from-bottom-0 min-[1367px]:data-[state=closed]:slide-out-to-bottom-0',
           )}
@@ -299,19 +360,16 @@ export function EditCenterForm({ open, onOpenChange, centerId }: EditCenterFormP
             />
             <div className="h-1.5 w-14 rounded-full bg-slate-400" />
           </div>
-          <DialogPrimitive.Title className="sr-only">{tForm('editTitle')}</DialogPrimitive.Title>
-          <DialogPrimitive.Close
-            className="absolute right-4 top-4 hidden h-8 w-8 items-center justify-center rounded-full text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 min-[1367px]:inline-flex"
-            aria-label={tCommon('close')}
-          >
-            <X className="h-4 w-4" />
-          </DialogPrimitive.Close>
-          <div className="min-h-0 overflow-y-auto overscroll-y-contain [touch-action:pan-y] [-webkit-overflow-scrolling:touch] px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-4 min-[1367px]:p-6">
-            <div className="mb-4">
-              <h2 className="text-lg font-semibold text-[#3b3b40]">{tForm('editTitle')}</h2>
-              <p className="mt-1 text-sm text-[#8b8b90]">{tForm('editDescription')}</p>
+          <DialogPrimitive.Title className="sr-only">{headerTitle}</DialogPrimitive.Title>
+          <div className="shrink-0 bg-[#f8f9fb] px-4 pb-4 pt-3 min-[1367px]:px-6 min-[1367px]:pb-5 min-[1367px]:pt-6">
+            <div className="flex items-start justify-between gap-4">
+              <div className="min-w-0 flex-1">
+                <h2 className="truncate text-lg font-semibold text-[#3b3b40]">{headerTitle}</h2>
+              </div>
+              {renderHeaderActions()}
             </div>
-            
+          </div>
+          <div className="min-h-0 overflow-y-auto overscroll-y-contain [touch-action:pan-y] [-webkit-overflow-scrolling:touch] px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] min-[1367px]:px-6 min-[1367px]:pb-6">
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               {successMessage && (
                 <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
@@ -436,23 +494,6 @@ export function EditCenterForm({ open, onOpenChange, centerId }: EditCenterFormP
                   )}
                 </div>
                 <p className="text-sm text-slate-500">{tForm('colorHint')}</p>
-              </div>
-              
-              <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    id="isActive"
-                    {...register('isActive')}
-                    className="w-4 h-4 text-primary border-slate-300 rounded focus:ring-primary"
-                  />
-                  <Label htmlFor="isActive" className="cursor-pointer">
-                    {tForm('activeCenter')}
-                  </Label>
-                </div>
-                <p className="text-sm text-slate-500">
-                  {isActive ? tForm('activeCenterHint') : tForm('inactiveCenterHint')}
-                </p>
               </div>
               
               <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end">
