@@ -11,12 +11,13 @@ function lessonAt(ymd: string, hour = 10): Date {
   return d;
 }
 
-function resolveTeacher(ymd: string, hour = 10): string {
+function resolveTeacher(ymd: string, hour = 10, secondTeacherStartsFirstWeek = false): string {
   return resolveRotatingTeacherId({
     lessonDate: lessonAt(ymd, hour),
     teacherId: TEACHER_1,
     secondTeacherId: TEACHER_2,
     scheduleStartDateYmd: SCHEDULE_START,
+    secondTeacherStartsFirstWeek,
   });
 }
 
@@ -46,5 +47,15 @@ describe('group-teacher-rotation', () => {
   it('assigns the same teacher to every slot within one ISO week', () => {
     expect(resolveTeacher('2026-06-25', 9)).toBe(resolveTeacher('2026-06-25', 18));
     expect(resolveTeacher('2026-06-30', 9)).toBe(resolveTeacher('2026-07-02', 18));
+  });
+
+  it('assigns Teacher 2 to the first ISO week when secondTeacherStartsFirstWeek is true', () => {
+    expect(resolveTeacher('2026-06-25', 10, true)).toBe(TEACHER_2);
+    expect(resolveTeacher('2026-06-28', 10, true)).toBe(TEACHER_2);
+  });
+
+  it('assigns Teacher 1 to the second ISO week when secondTeacherStartsFirstWeek is true', () => {
+    expect(resolveTeacher('2026-06-29', 10, true)).toBe(TEACHER_1);
+    expect(resolveTeacher('2026-07-05', 10, true)).toBe(TEACHER_1);
   });
 });

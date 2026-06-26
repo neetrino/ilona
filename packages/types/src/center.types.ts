@@ -31,6 +31,7 @@ export interface Group {
   centerId: string;
   teacherId?: string | null;
   secondTeacherId?: string | null;
+  secondTeacherStartsFirstWeek?: boolean;
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -92,6 +93,7 @@ export interface CreateGroupDto {
   centerId: string;
   teacherId: string;
   secondTeacherId: string;
+  secondTeacherStartsFirstWeek?: boolean;
 }
 
 export interface UpdateGroupDto {
@@ -100,6 +102,7 @@ export interface UpdateGroupDto {
   description?: string;
   teacherId?: string;
   secondTeacherId?: string | null;
+  secondTeacherStartsFirstWeek?: boolean;
   isActive?: boolean;
 }
 
