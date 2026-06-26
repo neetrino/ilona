@@ -31,14 +31,12 @@ import { X } from 'lucide-react';
 type AddLessonFormData = {
   groupId: string;
   teacherId: string;
-  description?: string;
 };
 
 function createAddLessonFormSchema(tVal: (key: string) => string) {
   return z.object({
     groupId: z.string().min(1, tVal('selectGroup')),
     teacherId: z.string().min(1, tVal('selectTeacher')),
-    description: z.string().max(1000, tVal('descriptionMax')).optional().or(z.literal('')),
   });
 }
 
@@ -128,7 +126,6 @@ export function AddLessonForm({ open, onOpenChange, defaultDate }: AddLessonForm
     defaultValues: {
       groupId: '',
       teacherId: '',
-      description: '',
     },
   });
 
@@ -152,7 +149,6 @@ export function AddLessonForm({ open, onOpenChange, defaultDate }: AddLessonForm
       reset({
         groupId: '',
         teacherId: '',
-        description: '',
       });
       setSchedule([]);
       setDateFrom(range.from);
@@ -283,7 +279,6 @@ export function AddLessonForm({ open, onOpenChange, defaultDate }: AddLessonForm
           endTime: slot.endTime,
           startDate: dateFrom,
           endDate: dateTo,
-          description: data.description || undefined,
         };
         const res = await createRecurring.mutateAsync(recurringData);
         totalCreated += res.items.length;
@@ -321,8 +316,8 @@ export function AddLessonForm({ open, onOpenChange, defaultDate }: AddLessonForm
             'fixed inset-x-0 bottom-[7px] top-auto z-50 grid w-full translate-y-0 lg:bottom-0 [@media(min-width:1024px)_and_(max-width:1366px)_and_(min-height:1000px)]:bottom-0',
             'duration-700 ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out min-[1367px]:duration-350 min-[1367px]:ease-[cubic-bezier(0.22,1,0.36,1)]',
             'data-[state=open]:slide-in-from-bottom-full data-[state=closed]:slide-out-to-bottom-full',
-            'h-[calc(94dvh+7px)] [@media(min-width:1024px)_and_(max-width:1366px)_and_(min-height:1000px)]:h-[56dvh] grid-rows-[auto_1fr] gap-0 overflow-hidden rounded-t-[22px] border border-slate-200 bg-[#f8f9fb] shadow-xl',
-            'min-[1367px]:inset-0 min-[1367px]:m-auto min-[1367px]:w-[95vw] min-[1367px]:max-w-2xl min-[1367px]:h-auto min-[1367px]:max-h-[90vh] min-[1367px]:translate-x-0 min-[1367px]:translate-y-0 min-[1367px]:rounded-2xl',
+            'h-auto max-h-[calc(82dvh+7px)] [@media(min-width:1024px)_and_(max-width:1366px)_and_(min-height:1000px)]:max-h-[50dvh] grid-rows-[auto_auto] gap-0 overflow-hidden rounded-t-[22px] border border-slate-200 bg-[#f8f9fb] shadow-xl',
+            'min-[1367px]:inset-0 min-[1367px]:m-auto min-[1367px]:w-[95vw] min-[1367px]:max-w-2xl min-[1367px]:h-auto min-[1367px]:max-h-[80vh] min-[1367px]:translate-x-0 min-[1367px]:translate-y-0 min-[1367px]:rounded-2xl',
             'min-[1367px]:data-[state=open]:fade-in-0 min-[1367px]:data-[state=closed]:fade-out-0 min-[1367px]:data-[state=open]:slide-in-from-bottom-0 min-[1367px]:data-[state=closed]:slide-out-to-bottom-0'
           )}
           aria-describedby={undefined}
@@ -345,7 +340,7 @@ export function AddLessonForm({ open, onOpenChange, defaultDate }: AddLessonForm
             <X className="h-4 w-4" />
           </DialogPrimitive.Close>
 
-          <div className="min-h-0 overflow-y-auto overscroll-y-contain [touch-action:pan-y] [-webkit-overflow-scrolling:touch] px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-4 min-[1367px]:p-6">
+          <div className="max-h-[calc(82dvh-2.25rem)] overflow-y-auto overscroll-y-contain [touch-action:pan-y] [-webkit-overflow-scrolling:touch] px-4 pb-[calc(1.5rem+env(safe-area-inset-bottom))] pt-4 min-[1367px]:max-h-[calc(80vh-3rem)] min-[1367px]:p-6">
             <div className="mb-4">
               <h2 className="text-lg font-semibold text-[#3b3b40]">{tForm('addTitle')}</h2>
               <p className="mt-1 text-sm text-[#8b8b90]">{tForm('addDescription')}</p>
@@ -440,24 +435,6 @@ export function AddLessonForm({ open, onOpenChange, defaultDate }: AddLessonForm
             onDateToChange={setDateTo}
             disabled={isBusy}
           />
-
-          <div className="space-y-2">
-            <Label htmlFor="description">{tCommon('description')}</Label>
-            <textarea
-              id="description"
-              {...register('description')}
-              rows={3}
-              className={cn(
-                'w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-4 focus:ring-[#1010a3]/10 focus:border-[#1010a3]/45 text-sm resize-none',
-                errors.description ? 'border-red-300' : 'border-slate-300',
-                isBusy && 'bg-slate-100 cursor-not-allowed',
-                !isBusy && 'bg-white'
-              )}
-              placeholder={tForm('descriptionPlaceholder')}
-              disabled={isBusy}
-            />
-            {errors.description && <p className="text-sm text-red-600">{errors.description.message}</p>}
-          </div>
 
           <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end">
             <Button
