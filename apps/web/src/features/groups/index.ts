@@ -38,7 +38,9 @@ export {
   GroupStatusConfirmationDialog,
 } from './components/GroupStatusConfirmationDialog';
 export type { GroupStatusDialogAction } from './components/GroupStatusConfirmationDialog';
-export { GroupCard } from './components/GroupCard';
+export { getGroupTeacherName, getGroupTeachersForDisplay } from './lib/group-teachers-display';
+export { GroupCard, GroupCardOverflowMenu } from './components/GroupCard';
+export { GroupTeachersAlignedDisplay } from './components/GroupTeachersAlignedDisplay';
 export { GroupScheduleEditor } from './components/GroupScheduleEditor';
 export { getGroupOccupancyMeta } from './occupancy';
 export type { GroupOccupancyMeta, GroupOccupancyStatus } from './occupancy';

@@ -164,8 +164,6 @@ export default function TeachersPage() {
             onToggleSelect={handleToggleSelect}
             onView={handleRowClick}
             onEdit={handleEditClick}
-            onDelete={handleDeleteClick}
-            onDeactivate={handleDeactivateClick}
             onCenterChange={handleCenterChange}
             onOpenGroupsModal={(teacher, tab) => {
               setGroupsModalTeacher(teacher);
@@ -198,8 +196,6 @@ export default function TeachersPage() {
             isLoading={isLoading}
             searchQuery={searchQuery}
             onEdit={handleEditClick}
-            onDelete={handleDeleteClick}
-            onDeactivate={handleDeactivateClick}
             onCardClick={handleRowClick}
             t={t}
           />
@@ -235,6 +231,8 @@ export default function TeachersPage() {
             }
           }}
           teacherId={selectedTeacherIdForEdit}
+          onDelete={handleDeleteClick}
+          onDeactivate={handleDeactivateClick}
         />
       ) : null}
 

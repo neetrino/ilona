@@ -74,6 +74,7 @@ interface SingleSelectDropdownProps {
   isLoading?: boolean;
   error?: string | null;
   className?: string;
+  triggerClassName?: string;
   disabled?: boolean;
   wrapText?: boolean;
 }
@@ -89,6 +90,7 @@ export function SingleSelectDropdown({
   isLoading = false,
   error = null,
   className,
+  triggerClassName,
   disabled = false,
   wrapText = false,
 }: SingleSelectDropdownProps) {
@@ -311,7 +313,8 @@ export function SingleSelectDropdown({
             DROPDOWN_TRIGGER_DISABLED_CLASS,
             hasSelection && !isOpen && DROPDOWN_TRIGGER_SELECTED_CLASS,
             isOpen && DROPDOWN_TRIGGER_OPEN_CLASS,
-            error && 'border-red-500'
+            error && 'border-red-500',
+            triggerClassName
           )}
         >
           <div className="flex min-w-0 items-center justify-between gap-2">

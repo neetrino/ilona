@@ -76,7 +76,7 @@ function LessonCard({
     <div
       className={cn(
         'p-4 bg-white rounded-xl border transition-all',
-        isActive ? 'border-yellow-300 ring-2 ring-yellow-100' : 'border-[rgba(14,14,16,0.07)] hover:border-[rgba(14,14,16,0.07)]'
+        isActive ? 'border-2 border-yellow-300' : 'border border-[rgba(14,14,16,0.07)] hover:border-[rgba(14,14,16,0.07)]'
       )}
     >
       <div className="flex items-start justify-between mb-3">

@@ -10,7 +10,10 @@ import { getExperienceLabelFromHireDate } from '../utils/experience';
 
 export type TeacherShowcaseCardProps = {
   teacher: Teacher;
+  /** Click on card body (excluding photo and header actions). */
   onCardClick?: () => void;
+  /** Click on photo only — when set with onCardClick, photo opens details and body opens edit. */
+  onPhotoClick?: () => void;
   /** Admin actions — shown in a toolbar above the photo (not on the image) */
   headerActions?: ReactNode;
   /** Rendered below the experience pill (admin-only metadata, etc.) */
@@ -29,6 +32,7 @@ function getTeacherName(teacher: Teacher): string {
 export function TeacherShowcaseCard({
   teacher,
   onCardClick,
+  onPhotoClick,
   headerActions,
   afterExperience,
   isMuted = false,
@@ -37,7 +41,11 @@ export function TeacherShowcaseCard({
   const isStudent = variant === 'student';
   const fullName = getTeacherName(teacher);
   const experienceLabel = getExperienceLabelFromHireDate(teacher.hireDate);
-  const interactive = Boolean(onCardClick);
+  const hasCardAction = Boolean(onCardClick);
+  const hasPhotoAction = Boolean(onPhotoClick);
+  const interactive = hasCardAction || hasPhotoAction;
+  const photoOpensDetails = hasPhotoAction;
+  const articleIsButton = hasCardAction && !hasPhotoAction;
   const isIPad = useIsIPad();
   const [isIPadPro, setIsIPadPro] = useState(false);
 
@@ -58,19 +66,27 @@ export function TeacherShowcaseCard({
   }, [isIPad]);
 
   const handleKeyDown = (event: KeyboardEvent<HTMLElement>) => {
-    if (!interactive) return;
+    if (!hasCardAction) return;
     if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault();
       onCardClick?.();
     }
   };
 
+  const handlePhotoKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+    if (!hasPhotoAction) return;
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      onPhotoClick?.();
+    }
+  };
+
   return (
     <article
-      role={interactive ? 'button' : undefined}
-      tabIndex={interactive ? 0 : undefined}
-      onClick={interactive ? onCardClick : undefined}
-      onKeyDown={interactive ? handleKeyDown : undefined}
+      role={articleIsButton ? 'button' : undefined}
+      tabIndex={articleIsButton ? 0 : undefined}
+      onClick={hasCardAction ? onCardClick : undefined}
+      onKeyDown={articleIsButton ? handleKeyDown : undefined}
       className={cn(
         'group overflow-hidden rounded-[1.75rem] border bg-white p-4 transition-all duration-300 md:rounded-3xl md:p-5',
         isStudent
@@ -78,8 +94,8 @@ export function TeacherShowcaseCard({
           : 'border-slate-200 shadow-sm',
         interactive &&
           (isStudent
-            ? 'cursor-pointer hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1010a3]/30'
-            : 'cursor-pointer hover:-translate-y-0.5 hover:shadow-xl focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40'),
+            ? 'cursor-pointer hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus-visible:outline-none focus-visible:ring-0'
+            : 'cursor-pointer hover:-translate-y-0.5 hover:shadow-xl focus:outline-none focus-visible:outline-none focus-visible:ring-0'),
         isMuted && 'opacity-90',
       )}
     >
@@ -105,16 +121,34 @@ export function TeacherShowcaseCard({
         </div>
       ) : null}
 
-      <div className="relative mb-4 flex w-full justify-center">
+      <div
+        className={cn(
+          'relative mb-4 flex w-full justify-center',
+          photoOpensDetails &&
+            'cursor-pointer rounded-3xl focus:outline-none focus-visible:outline-none focus-visible:ring-0',
+        )}
+        role={photoOpensDetails ? 'button' : undefined}
+        tabIndex={photoOpensDetails ? 0 : undefined}
+        onClick={
+          photoOpensDetails
+            ? (event) => {
+                event.stopPropagation();
+                onPhotoClick?.();
+              }
+            : undefined
+        }
+        onKeyDown={photoOpensDetails ? handlePhotoKeyDown : undefined}
+      >
         <Avatar
           src={teacher.user.avatarUrl}
           name={fullName}
           size="xl"
           className={cn(
-            'z-10 h-48 w-48 rounded-full border ring-2 ring-white shadow-sm transition-transform duration-300 lg:h-80',
+            'z-10 h-48 w-48 rounded-full border ring-2 ring-white shadow-sm transition-transform duration-300 lg:h-64',
             (!isIPad || isIPadPro) && 'sheet:h-64 sheet:w-full sheet:rounded-3xl',
             isStudent ? 'border-[rgba(14,14,16,0.07)] bg-[#fafafa]' : 'border-slate-100 bg-slate-50',
             interactive && 'group-hover:scale-[1.01]',
+            photoOpensDetails && 'hover:scale-[1.01]',
             isMuted && 'opacity-90',
           )}
           alt={fullName}

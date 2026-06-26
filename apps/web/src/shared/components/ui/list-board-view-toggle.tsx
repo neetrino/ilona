@@ -34,7 +34,7 @@ export function ListBoardViewToggle({
         onClick={() => onChange('list')}
         className={cn(
           'relative z-10 px-4 py-2 text-sm font-semibold rounded-md transition-colors flex items-center gap-2',
-          'focus:outline-none',
+          'focus:outline-none focus-visible:outline-none focus-visible:ring-0',
           value === 'list' ? 'text-white' : 'text-[#3b3b40] hover:bg-[#f6f6f7]'
         )}
         aria-pressed={value === 'list'}
@@ -47,7 +47,7 @@ export function ListBoardViewToggle({
         onClick={() => onChange('board')}
         className={cn(
           'relative z-10 px-4 py-2 text-sm font-semibold rounded-md transition-colors flex items-center gap-2',
-          'focus:outline-none',
+          'focus:outline-none focus-visible:outline-none focus-visible:ring-0',
           value === 'board' ? 'text-white' : 'text-[#3b3b40] hover:bg-[#f6f6f7]'
         )}
         aria-pressed={value === 'board'}

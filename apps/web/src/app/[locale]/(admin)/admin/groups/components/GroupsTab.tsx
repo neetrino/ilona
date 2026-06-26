@@ -4,9 +4,8 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
-import { StatCard, DataTable, Badge, Button, ActionButtons, ListBoardViewToggle } from '@/shared/components/ui';
+import { StatCard, DataTable, Badge, Button, ListBoardViewToggle } from '@/shared/components/ui';
 import { cn } from '@/shared/lib/utils';
-import { getContrastColor, lightenColor } from '@/shared/lib/utils';
 import {
   GroupCard,
   CreateGroupForm,
@@ -16,6 +15,8 @@ import {
   useGroup,
   getGroupOccupancyMeta,
   GroupIconDisplay,
+  getGroupTeachersForDisplay,
+  GroupTeachersAlignedDisplay,
   type Group,
 } from '@/features/groups';
 import { getErrorMessage } from '@/shared/lib/api';
@@ -23,7 +24,7 @@ import { useGroupsManagement } from '../hooks/useGroupsManagement';
 import { readUrlSearchParam, getLiveSearchParams } from '../utils/url';
 import { GroupStudentsModal } from './GroupStudentsModal';
 import { StudentDetailsModal } from './StudentDetailsModal';
-import { GroupsUniqueTotalStat } from './GroupsUniqueTotalStat';
+import { GroupsBranchTabsStrip } from './GroupsBranchTabsStrip';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { getAdminPortalBasePath } from '@/shared/lib/role-routes';
 import { useIsLgViewport } from '@/shared/hooks/useIsLgViewport';
@@ -205,7 +206,7 @@ export function GroupsTab({
   const isGroupStatusTogglePending = toggleGroupActive.isPending;
 
   useEffect(() => {
-    if (viewMode !== 'board' || selectedCenterId || isLoadingBranchTabs) {
+    if (selectedCenterId || isLoadingBranchTabs) {
       return;
     }
 
@@ -221,13 +222,13 @@ export function GroupsTab({
     setBoardTabCenterId(firstCenterId);
     updateUrl({ branch: firstCenterId });
   }, [
-    viewMode,
     selectedCenterId,
     isLoadingBranchTabs,
     searchParams,
     boardTabCenterId,
     allCenters,
     updateUrl,
+    urlRevision,
   ]);
 
   const activeBranchTabId = selectedCenterId ?? boardTabCenterId;
@@ -481,19 +482,13 @@ export function GroupsTab({
         key: 'teacher',
         header: tCommon('teacher'),
         render: (group: Group) => {
-          if (!group.teacher) {
-            return <span className="text-amber-600 text-sm">{tCommon('notAssigned')}</span>;
-          }
-          const firstName = group.teacher.user?.firstName || '';
-          const lastName = group.teacher.user?.lastName || '';
-          const initials = `${firstName[0] || ''}${lastName[0] || ''}` || '?';
+          const teachersForDisplay = getGroupTeachersForDisplay(group);
           return (
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-[#f1f1f2] flex items-center justify-center text-[#3b3b40] text-sm font-medium">
-                {initials}
-              </div>
-              <span className="text-[#3b3b40]">{firstName} {lastName}</span>
-            </div>
+            <GroupTeachersAlignedDisplay
+              teachers={teachersForDisplay}
+              variant="list"
+              emptyLabel={tCommon('notAssigned')}
+            />
           );
         },
       },
@@ -507,7 +502,10 @@ export function GroupsTab({
             <div className="text-center">
               <button
                 type="button"
-                onClick={() => openStudentsModal(group.id)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  openStudentsModal(group.id);
+                }}
                 className="underline decoration-[#8b8b90] underline-offset-2 hover:decoration-[#1010a3] hover:text-[#1010a3] font-medium text-[#3b3b40] focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20 focus:ring-offset-1 rounded inline"
                 title={t('viewStudentsInGroup')}
               >
@@ -544,29 +542,6 @@ export function GroupsTab({
           );
         },
       },
-      {
-        key: 'actions',
-        header: tCommon('actions'),
-        render: (group: Group) => (
-          <ActionButtons
-            onEdit={() => handleEditGroupIdChange(group.id)}
-            onDisable={() => openGroupStatusDialog(group.id, group.isActive)}
-            onDelete={() => handleDeleteClick(group.id)}
-            isActive={group.isActive}
-            disableDisabled={isGroupStatusTogglePending}
-            ariaLabels={{
-              edit: t('editGroup'),
-              disable: group.isActive ? t('deactivateGroup') : t('activateGroup'),
-              delete: t('deleteGroup'),
-            }}
-            titles={{
-              edit: t('editGroup'),
-              disable: group.isActive ? t('deactivateGroup') : t('activateGroup'),
-              delete: t('deleteGroup'),
-            }}
-          />
-        ),
-      },
     ],
     [
       allGroupsSelected,
@@ -579,10 +554,6 @@ export function GroupsTab({
       t,
       tCommon,
       openStudentsModal,
-      handleEditGroupIdChange,
-      openGroupStatusDialog,
-      handleDeleteClick,
-      isGroupStatusTogglePending,
     ]
   );
 
@@ -677,7 +648,9 @@ export function GroupsTab({
             onClick={handleBulkDeleteGroupsClick}
             disabled={deleteGroup.isPending || isLoading}
           >
-            {t('deleteAll', { count: selectedGroupIds.size })}
+            {allGroupsSelected && groups.length > 1
+              ? t('deleteAll', { count: selectedGroupIds.size })
+              : t('deleteSelected', { count: selectedGroupIds.size })}
           </Button>
         )}
         {isLg ? (
@@ -737,94 +710,16 @@ export function GroupsTab({
       {viewMode === 'board' && (
         <div className="mb-6 overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm animate-in fade-in-0 duration-150">
           <div className="border-b border-[rgba(14,14,16,0.07)] bg-gradient-to-b from-[#fafafa] to-white px-3 pt-3">
-            {isLoadingBranchTabs ? (
-              <div className="py-4 text-sm text-[#8b8b90]">{t('loadingBranches')}</div>
-            ) : allCenters.length === 0 ? (
-              <div className="py-4 text-sm text-[#8b8b90]">{t('noBranchesCreateCenter')}</div>
-            ) : (
-              <div className="flex flex-col gap-3 pb-3 sm:flex-row sm:items-center sm:gap-3">
-                <GroupsUniqueTotalStat
-                  count={totalGroupsAcrossCenters}
-                  isLoading={isLoadingBranchTabs}
-                  t={t}
-                />
-                <div className="min-w-0 flex-1 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                <nav
-                  className="flex min-w-max items-center gap-2.5"
-                  role="tablist"
-                  aria-label={t('branches')}
-                >
-                  {centersForBranchTabs.map((center) => {
-                    const count = center._count?.groups ?? 0;
-                    const isActive = activeBranchTabId === center.id;
-                    const primaryColor = center.colorHex || '#253046';
-                    const softColor = lightenColor(primaryColor, 0.65);
-                    const chipColor = lightenColor(primaryColor, 0.45);
-                    const softBorderColor = lightenColor(primaryColor, 0.35);
-                    const activeTextColor = getContrastColor(primaryColor) === 'white' ? '#ffffff' : '#0f172a';
-                    return (
-                      <button
-                        type="button"
-                        key={center.id}
-                        role="tab"
-                        aria-selected={isActive}
-                        id={`branch-tab-${center.id}`}
-                        onClick={() => handleBranchTabClick(center.id)}
-                        className={cn(
-                          'group inline-flex items-center gap-2 rounded-2xl border px-4 py-2.5 text-sm transition-all duration-200',
-                          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1010a3]/60 focus-visible:ring-offset-2',
-                          'active:scale-[0.985]',
-                          isActive
-                            ? ''
-                            : 'border-[rgba(14,14,16,0.07)] bg-white text-[#3b3b40] hover:-translate-y-px hover:border-[rgba(14,14,16,0.12)] hover:bg-[#fafafa] hover:text-[#3b3b40] hover:shadow-sm'
-                        )}
-                        style={
-                          isActive
-                            ? {
-                                backgroundColor: primaryColor,
-                                color: activeTextColor,
-                                borderColor: primaryColor,
-                              }
-                            : {
-                                backgroundColor: softColor,
-                                color: '#334155',
-                                borderColor: softBorderColor,
-                              }
-                        }
-                      >
-                        <span className="max-w-[12rem] truncate font-semibold tracking-[0.01em] sm:max-w-[14rem]">
-                          {center.name}
-                        </span>
-                        <span
-                          className={cn(
-                            'inline-flex min-w-[1.6rem] items-center justify-center rounded-full px-2 py-0.5 text-xs font-semibold tabular-nums',
-                            isActive
-                              ? ''
-                              : 'group-hover:bg-[#f6f6f7] group-hover:text-[#3b3b40]'
-                          )}
-                          style={
-                            isActive
-                              ? {
-                                  backgroundColor: lightenColor(primaryColor, 0.22),
-                                  color: activeTextColor,
-                                }
-                              : {
-                                  backgroundColor: chipColor,
-                                  color: '#1e293b',
-                                }
-                          }
-                        >
-                          {count}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </nav>
-                </div>
-              </div>
-            )}
+            <GroupsBranchTabsStrip
+              centers={centersForBranchTabs}
+              activeCenterId={activeBranchTabId}
+              totalGroupsAcrossCenters={totalGroupsAcrossCenters}
+              isLoading={isLoadingBranchTabs}
+              onCenterSelect={handleBranchTabClick}
+              t={t}
+            />
             {centersForBranchTabs.length === 0 && !isLoadingBranchTabs && allCenters.length > 0 && (
-              <p className="py-4 text-sm text-[#8b8b90]">{t('noBranchesMatch')}</p>
+              <p className="pb-3 text-sm text-[#8b8b90]">{t('noBranchesMatch')}</p>
             )}
           </div>
 
@@ -985,22 +880,40 @@ export function GroupsTab({
 
       {/* Groups View */}
       {viewMode === 'list' ? (
-        <div className="animate-in fade-in-0 duration-150">
-          {/* Groups Table */}
-          <DataTable
-            columns={
-              activeCenterId
-                ? groupColumns.filter((col) => col.key !== 'center')
-                : groupColumns
-            }
-            data={groups}
-            keyExtractor={(group) => group.id}
-            isLoading={isLoading}
-            emptyMessage={searchQuery ? t('noGroupsMatch') : t('noGroupsFound')}
-          />
+        <div className="animate-in fade-in-0 duration-150 overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm">
+          {!selectedCenterId ? (
+            <div className="border-b border-[rgba(14,14,16,0.07)] bg-gradient-to-b from-[#fafafa] to-white px-3 pt-3">
+              <GroupsBranchTabsStrip
+                centers={centersForBranchTabs}
+                activeCenterId={activeBranchTabId}
+                totalGroupsAcrossCenters={totalGroupsAcrossCenters}
+                isLoading={isLoadingBranchTabs}
+                onCenterSelect={handleBranchTabClick}
+                t={t}
+                tabIdPrefix="list-branch-tab"
+              />
+              {centersForBranchTabs.length === 0 && !isLoadingBranchTabs && allCenters.length > 0 && (
+                <p className="pb-3 text-sm text-[#8b8b90]">{t('noBranchesMatch')}</p>
+              )}
+            </div>
+          ) : null}
 
-          {/* Pagination */}
-          <div className="mt-4 flex items-center justify-between text-sm text-[#8b8b90] lg:justify-start lg:gap-4">
+          <div className="p-4 sm:p-5">
+            <DataTable
+              columns={
+                activeCenterId
+                  ? groupColumns.filter((col) => col.key !== 'center')
+                  : groupColumns
+              }
+              data={groups}
+              keyExtractor={(group) => group.id}
+              isLoading={isLoading}
+              emptyMessage={searchQuery ? t('noGroupsMatch') : t('noGroupsFound')}
+              onRowClick={(group) => handleEditGroupIdChange(group.id)}
+              embedInParentCard
+            />
+
+            <div className="mt-4 flex items-center justify-between text-sm text-[#8b8b90] lg:justify-start lg:gap-4">
             <span>
               {t('showingGroups', {
                 start: Math.min(page * pageSize + 1, totalGroups),
@@ -1048,6 +961,7 @@ export function GroupsTab({
               </button>
             </div>
           </div>
+          </div>
         </div>
       ) : null}
 
@@ -1057,14 +971,23 @@ export function GroupsTab({
         onOpenChange={handleCreateGroupOpenChange}
       />
       {editGroupId && (
-        <EditGroupForm 
-          open={!!editGroupId} 
+        <EditGroupForm
+          open={!!editGroupId}
           onOpenChange={(open) => {
             if (!open) {
               handleEditGroupIdChange(null);
             }
-          }} 
+          }}
           groupId={editGroupId}
+          onToggleActive={
+            viewMode === 'list'
+              ? () => {
+                  const editingGroup = groups.find((group) => group.id === editGroupId);
+                  openGroupStatusDialog(editGroupId, editingGroup?.isActive ?? true);
+                }
+              : undefined
+          }
+          isStatusTogglePending={isGroupStatusTogglePending}
         />
       )}
       <GroupStatusConfirmationDialog

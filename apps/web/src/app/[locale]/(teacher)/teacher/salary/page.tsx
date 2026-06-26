@@ -217,7 +217,7 @@ export default function TeacherSalaryPage() {
                   type="button"
                   onClick={() => setPreset(p)}
                   className={cn(
-                    'relative z-10 flex w-full items-center justify-center rounded-md px-2 py-2 text-center text-sm font-semibold capitalize whitespace-nowrap transition-colors duration-300 focus:outline-none sm:px-3',
+                    'relative z-10 flex w-full items-center justify-center rounded-md px-2 py-2 text-center text-sm font-semibold capitalize whitespace-nowrap transition-colors duration-300 focus:outline-none focus-visible:outline-none focus-visible:ring-0 sm:px-3',
                     isSelected
                       ? 'text-white'
                       : 'text-[#3b3b40] hover:text-[#1010a3]',

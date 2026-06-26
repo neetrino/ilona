@@ -6,7 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useTranslations } from 'next-intl';
 import { Button, Input, Label } from '@/shared/components/ui';
-import { useUpdateTeacher, useTeacher, type UpdateTeacherDto } from '@/features/teachers';
+import { useUpdateTeacher, useTeacher, type Teacher, type UpdateTeacherDto } from '@/features/teachers';
 import { useState, useEffect, useMemo, useCallback, useRef, type TouchEvent } from 'react';
 import { getErrorMessage } from '@/shared/lib/api';
 import { useCenters } from '@/features/centers';
@@ -17,7 +17,7 @@ import {
 } from '@/features/teachers/utils/experience';
 import { cn } from '@/shared/lib/utils';
 import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
-import { X } from 'lucide-react';
+import { Trash2, X } from 'lucide-react';
 
 type UpdateTeacherFormData = {
   firstName: string;
@@ -35,9 +35,17 @@ interface EditTeacherFormProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   teacherId: string;
+  onDelete?: (teacher: Teacher) => void;
+  onDeactivate?: (teacher: Teacher) => void;
 }
 
-export function EditTeacherForm({ open, onOpenChange, teacherId }: EditTeacherFormProps) {
+export function EditTeacherForm({
+  open,
+  onOpenChange,
+  teacherId,
+  onDelete,
+  onDeactivate,
+}: EditTeacherFormProps) {
   const t = useTranslations('teachers');
   const tForm = useTranslations('teachers.form');
   const tVal = useTranslations('teachers.validation');
@@ -105,6 +113,8 @@ export function EditTeacherForm({ open, onOpenChange, teacherId }: EditTeacherFo
 
   const selectedCenterIds = watch('centerIds') ?? [];
   const watchedStatus = watch('status') ?? 'ACTIVE';
+  const isTeacherActive = teacher?.user?.status === 'ACTIVE';
+  const isFormBusy = isSubmitting || updateTeacher.isPending || isLoadingTeacher;
 
   const toggleCenter = (centerId: string) => {
     const next = selectedCenterIds.includes(centerId)
@@ -254,6 +264,50 @@ export function EditTeacherForm({ open, onOpenChange, teacherId }: EditTeacherFo
     }
   };
 
+  const renderHeaderActions = () => (
+    <div className="flex shrink-0 items-center gap-3">
+      {onDelete && teacher ? (
+        <button
+          type="button"
+          aria-label={tCommon('delete')}
+          title={tCommon('delete')}
+          disabled={isFormBusy}
+          onClick={() => onDelete(teacher)}
+          className="inline-flex h-8 w-8 items-center justify-center rounded-full text-slate-500 transition hover:bg-red-50 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          <Trash2 className="h-4 w-4" aria-hidden="true" />
+        </button>
+      ) : null}
+      {onDeactivate && teacher ? (
+        <button
+          type="button"
+          role="switch"
+          aria-checked={isTeacherActive}
+          aria-label={isTeacherActive ? t('deactivate') : t('activate')}
+          disabled={isFormBusy}
+          onClick={() => onDeactivate(teacher)}
+          className={cn(
+            'relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full transition-colors focus:outline-none focus:ring-4 focus:ring-green-500/20 disabled:cursor-not-allowed disabled:opacity-50',
+            isTeacherActive ? 'bg-green-500' : 'bg-[#f1f1f2]',
+          )}
+        >
+          <span
+            className={cn(
+              'pointer-events-none inline-block h-5 w-5 rounded-full border border-gray-300 bg-white transition-transform',
+              isTeacherActive ? 'translate-x-5 border-white' : 'translate-x-0.5',
+            )}
+          />
+        </button>
+      ) : null}
+      <DialogPrimitive.Close
+        className="hidden h-8 w-8 items-center justify-center rounded-full text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 min-[1367px]:inline-flex"
+        aria-label={tCommon('close')}
+      >
+        <X className="h-4 w-4" />
+      </DialogPrimitive.Close>
+    </div>
+  );
+
   return (
     <DialogPrimitive.Root open={isDialogOpen} onOpenChange={(nextOpen) => !nextOpen && requestClose()}>
       <DialogPrimitive.Portal>
@@ -264,8 +318,8 @@ export function EditTeacherForm({ open, onOpenChange, teacherId }: EditTeacherFo
             'fixed inset-x-0 bottom-[7px] top-auto z-50 grid w-full translate-y-0 lg:bottom-0 [@media(min-width:1024px)_and_(max-width:1366px)_and_(min-height:1000px)]:bottom-0',
             'duration-700 ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out min-[1367px]:duration-350 min-[1367px]:ease-[cubic-bezier(0.22,1,0.36,1)]',
             'data-[state=open]:slide-in-from-bottom-full data-[state=closed]:slide-out-to-bottom-full',
-            'h-[calc(94dvh+7px)] [@media(min-width:1024px)_and_(max-width:1366px)_and_(min-height:1000px)]:h-[56dvh] grid-rows-[auto_1fr] gap-0 overflow-hidden rounded-t-[22px] border border-slate-200 bg-[#f8f9fb] shadow-xl',
-            'min-[1367px]:inset-0 min-[1367px]:m-auto min-[1367px]:w-[95vw] min-[1367px]:max-w-2xl min-[1367px]:h-auto min-[1367px]:max-h-[90vh] min-[1367px]:translate-x-0 min-[1367px]:translate-y-0 min-[1367px]:rounded-2xl',
+            'h-[calc(94dvh+7px)] [@media(min-width:1024px)_and_(max-width:1366px)_and_(min-height:1000px)]:h-[56dvh] grid-rows-[auto_auto_1fr] gap-0 overflow-hidden rounded-t-[22px] border border-slate-200 bg-[#f8f9fb] shadow-xl',
+            'min-[1367px]:inset-0 min-[1367px]:m-auto min-[1367px]:w-[95vw] min-[1367px]:max-w-2xl min-[1367px]:h-fit min-[1367px]:max-h-[90vh] min-[1367px]:grid-rows-[auto_auto] min-[1367px]:translate-x-0 min-[1367px]:translate-y-0 min-[1367px]:rounded-2xl',
             'min-[1367px]:data-[state=open]:fade-in-0 min-[1367px]:data-[state=closed]:fade-out-0 min-[1367px]:data-[state=open]:slide-in-from-bottom-0 min-[1367px]:data-[state=closed]:slide-out-to-bottom-0'
           )}
           aria-describedby={undefined}
@@ -281,17 +335,15 @@ export function EditTeacherForm({ open, onOpenChange, teacherId }: EditTeacherFo
             <div className="h-1.5 w-14 rounded-full bg-slate-400" />
           </div>
           <DialogPrimitive.Title className="sr-only">{tForm('editTitle')}</DialogPrimitive.Title>
-          <DialogPrimitive.Close
-            className="absolute right-4 top-4 hidden h-8 w-8 items-center justify-center rounded-full text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 min-[1367px]:inline-flex"
-            aria-label={tCommon('close')}
-          >
-            <X className="h-4 w-4" />
-          </DialogPrimitive.Close>
-          <div className="min-h-0 overflow-y-auto overscroll-y-contain [touch-action:pan-y] [-webkit-overflow-scrolling:touch] px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-4 min-[1367px]:p-6">
-            <div className="mb-4">
-              <h2 className="text-lg font-semibold text-[#3b3b40]">{tForm('editTitle')}</h2>
-              <p className="mt-1 text-sm text-[#8b8b90]">{tForm('editDescription')}</p>
+          <div className="shrink-0 bg-[#f8f9fb] px-4 pb-4 pt-3 min-[1367px]:px-6 min-[1367px]:pb-5 min-[1367px]:pt-6">
+            <div className="flex items-start justify-between gap-4">
+              <div className="min-w-0 flex-1">
+                <h2 className="text-lg font-semibold text-[#3b3b40]">{tForm('editTitle')}</h2>
+              </div>
+              {renderHeaderActions()}
             </div>
+          </div>
+          <div className="min-h-0 overflow-y-auto overscroll-y-contain [touch-action:pan-y] [-webkit-overflow-scrolling:touch] px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-0 min-[1367px]:px-6 min-[1367px]:pb-5">
 
         {isLoadingTeacher ? (
           <div className="flex items-center justify-center py-8">
@@ -336,70 +388,76 @@ export function EditTeacherForm({ open, onOpenChange, teacherId }: EditTeacherFo
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="phone">{tCommon('phone')}</Label>
-              <Input
-                id="phone"
-                type="tel"
-                {...register('phone')}
-                error={errors.phone?.message}
-                placeholder={tForm('phonePlaceholder')}
-              />
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="phone">{tCommon('phone')}</Label>
+                <Input
+                  id="phone"
+                  type="tel"
+                  {...register('phone')}
+                  error={errors.phone?.message}
+                  placeholder={tForm('phonePlaceholder')}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="status">{tCommon('status')}</Label>
+                <input type="hidden" {...register('status')} />
+                <SingleSelectDropdown
+                  id="status"
+                  className="w-full"
+                  triggerClassName="h-10 rounded-md border-input bg-background py-2 shadow-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                  options={[
+                    { id: 'ACTIVE', label: tStatus('active') },
+                    { id: 'INACTIVE', label: tStatus('inactive') },
+                    { id: 'SUSPENDED', label: tStatus('suspended') },
+                  ]}
+                  value={watchedStatus}
+                  onValueChange={(nextValue) =>
+                    setValue('status', (nextValue as 'ACTIVE' | 'INACTIVE' | 'SUSPENDED') ?? 'ACTIVE', {
+                      shouldDirty: true,
+                      shouldValidate: true,
+                    })
+                  }
+                />
+                {errors.status && (
+                  <p className="text-sm text-red-600">{errors.status.message}</p>
+                )}
+              </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="status">{tCommon('status')}</Label>
-              <input type="hidden" {...register('status')} />
-              <SingleSelectDropdown
-                id="status"
-                options={[
-                  { id: 'ACTIVE', label: tStatus('active') },
-                  { id: 'INACTIVE', label: tStatus('inactive') },
-                  { id: 'SUSPENDED', label: tStatus('suspended') },
-                ]}
-                value={watchedStatus}
-                onValueChange={(nextValue) =>
-                  setValue('status', (nextValue as 'ACTIVE' | 'INACTIVE' | 'SUSPENDED') ?? 'ACTIVE', {
-                    shouldDirty: true,
-                    shouldValidate: true,
-                  })
-                }
-              />
-              {errors.status && (
-                <p className="text-sm text-red-600">{errors.status.message}</p>
-              )}
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="hourlyRate">
+                  {tForm('perLessonRate')} <span className="text-red-500">*</span>
+                </Label>
+                <Input
+                  id="hourlyRate"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  {...register('hourlyRate', { valueAsNumber: true })}
+                  error={errors.hourlyRate?.message}
+                  placeholder={tForm('hourlyRatePlaceholder')}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="experienceYears">{t('experienceYears')}</Label>
+                <Input
+                  id="experienceYears"
+                  type="number"
+                  min="0"
+                  max="80"
+                  step="1"
+                  {...register('experienceYears', experienceYearsFieldRegisterOptions)}
+                  error={errors.experienceYears?.message}
+                  placeholder={tForm('experiencePlaceholder')}
+                />
+              </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="hourlyRate">
-                {tForm('perLessonRate')} <span className="text-red-500">*</span>
-              </Label>
-              <Input
-                id="hourlyRate"
-                type="number"
-                step="0.01"
-                min="0"
-                {...register('hourlyRate', { valueAsNumber: true })}
-                error={errors.hourlyRate?.message}
-                placeholder={tForm('hourlyRatePlaceholder')}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="experienceYears">{t('experienceYears')}</Label>
-              <Input
-                id="experienceYears"
-                type="number"
-                min="0"
-                max="80"
-                step="1"
-                {...register('experienceYears', experienceYearsFieldRegisterOptions)}
-                error={errors.experienceYears?.message}
-                placeholder={tForm('experiencePlaceholder')}
-              />
-            </div>
-
-            <div className="space-y-2">
+            <div className="mt-8 space-y-2">
               <Label htmlFor="videoUrl">{tForm('publicVideoUrl')}</Label>
               <Input
                 id="videoUrl"
@@ -424,7 +482,7 @@ export function EditTeacherForm({ open, onOpenChange, teacherId }: EditTeacherFo
                         key={center.id}
                         type="button"
                         onClick={() => toggleCenter(center.id)}
-                        className={`rounded-full border px-3 py-1 text-xs transition ${
+                        className={`rounded-full border px-3 py-1 text-xs transition focus:outline-none focus-visible:outline-none focus-visible:ring-0 ${
                           active
                             ? 'border-primary bg-primary text-white'
                             : 'border-slate-300 bg-white text-slate-700 hover:bg-slate-50'

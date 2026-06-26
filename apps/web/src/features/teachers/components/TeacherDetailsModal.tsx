@@ -174,12 +174,12 @@ export function TeacherDetailsModal({
         <DialogPrimitive.Content
           style={dragStyle}
           className={cn(
-            'fixed inset-x-0 bottom-[7px] top-auto z-50 grid w-full translate-y-0 lg:bottom-0 [@media(min-width:1024px)_and_(max-width:1366px)_and_(min-height:1000px)]:bottom-0',
+            'fixed inset-x-4 bottom-[7px] top-auto z-50 grid w-auto translate-y-0 lg:bottom-0 [@media(min-width:1024px)_and_(max-width:1366px)_and_(min-height:1000px)]:bottom-0',
             'duration-700 ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out min-[1367px]:duration-350 min-[1367px]:ease-[cubic-bezier(0.22,1,0.36,1)]',
             'data-[state=open]:slide-in-from-bottom-full data-[state=closed]:slide-out-to-bottom-full',
             'h-[calc(94dvh+7px)] [@media(min-width:1024px)_and_(max-width:1366px)_and_(min-height:1000px)]:h-[56dvh] grid-rows-[auto_1fr] gap-0 overflow-hidden rounded-t-[22px] border border-slate-200 bg-[#f8f9fb] shadow-xl',
             'min-[1367px]:grid-rows-[auto_1fr]',
-            'min-[1367px]:inset-0 min-[1367px]:m-auto min-[1367px]:w-[95vw] min-[1367px]:max-w-2xl min-[1367px]:h-auto min-[1367px]:max-h-[90vh] min-[1367px]:translate-x-0 min-[1367px]:translate-y-0 min-[1367px]:rounded-2xl',
+            'min-[1367px]:inset-0 min-[1367px]:m-auto min-[1367px]:w-[90vw] min-[1367px]:max-w-xl min-[1367px]:h-auto min-[1367px]:max-h-[90vh] min-[1367px]:translate-x-0 min-[1367px]:translate-y-0 min-[1367px]:rounded-2xl',
             'min-[1367px]:data-[state=open]:fade-in-0 min-[1367px]:data-[state=closed]:fade-out-0 min-[1367px]:data-[state=open]:slide-in-from-bottom-0 min-[1367px]:data-[state=closed]:slide-out-to-bottom-0'
           )}
           aria-describedby={undefined}
@@ -259,9 +259,12 @@ export function TeacherDetailsModal({
                     {centers.length === 0 ? (
                       <p className="text-sm text-[#8b8b90]">{t('noBranchAssigned')}</p>
                     ) : (
-                      <ul className="space-y-2">
+                      <ul className="flex flex-wrap gap-2">
                         {centers.map((center) => (
-                          <li key={center.id} className="rounded-[15px] border border-[rgba(14,14,16,0.07)] px-3 py-2 text-sm text-[#3b3b40]">
+                          <li
+                            key={center.id}
+                            className="w-fit rounded-[15px] border border-[rgba(14,14,16,0.07)] px-3 py-2 text-sm text-[#3b3b40]"
+                          >
                             {center.name}
                           </li>
                         ))}

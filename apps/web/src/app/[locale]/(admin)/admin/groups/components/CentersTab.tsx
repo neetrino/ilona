@@ -215,14 +215,12 @@ export function CentersTab({
         ) : (
           <>
             <div ref={desktopCentersStartRef} />
-            <div className="grid w-full min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-[repeat(auto-fill,minmax(min(100%,16rem),1fr))]">
+            <div className="grid w-full min-w-0 grid-cols-1 items-stretch gap-4 sm:grid-cols-2 lg:grid-cols-[repeat(auto-fill,minmax(min(100%,16rem),1fr))]">
             {visibleCenters.map((center) => (
               <CenterCard
                 key={center.id}
                 center={center}
                 onEdit={() => handleEditCenterIdChange(center.id)}
-                onDelete={() => handleDeleteCenterClick(center.id)}
-                onToggleActive={() => handleCenterActivationAction(center)}
                 onOpenDetails={() => setDetailsCenterId(center.id)}
               />
             ))}
@@ -287,14 +285,22 @@ export function CentersTab({
         onOpenChange={setCreateCenterOpen} 
       />
       {editCenterId && (
-        <EditCenterForm 
-          open={!!editCenterId} 
+        <EditCenterForm
+          open={!!editCenterId}
           onOpenChange={(open) => {
             if (!open) {
               handleEditCenterIdChange(null);
             }
-          }} 
+          }}
           centerId={editCenterId}
+          onToggleActive={() => {
+            const editingCenter = centers.find((center) => center.id === editCenterId);
+            if (editingCenter) {
+              handleCenterActivationAction(editingCenter);
+            }
+          }}
+          onDelete={() => handleDeleteCenterClick(editCenterId)}
+          isStatusTogglePending={toggleCenterActive.isPending}
         />
       )}
       <DeleteConfirmationDialog

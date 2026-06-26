@@ -446,7 +446,7 @@ export default function StudentPaymentsPage() {
                     <button
                       type="button"
                       className={cn(
-                        'inline-flex h-9 w-9 items-center justify-center rounded-full border transition-colors',
+                        'inline-flex h-9 w-9 items-center justify-center rounded-full border transition-colors focus:outline-none focus-visible:outline-none focus-visible:ring-0',
                         safeMobilePage === 0
                           ? 'border-[#d9dde8] bg-[#f1f1f4] text-[#9aa3b5]'
                           : 'border-[rgba(14,14,16,0.12)] bg-white text-[#3b3b40] hover:bg-[#f6f6f7]',
@@ -465,7 +465,7 @@ export default function StudentPaymentsPage() {
                     <button
                       type="button"
                       className={cn(
-                        'inline-flex h-9 w-9 items-center justify-center rounded-full border transition-colors',
+                        'inline-flex h-9 w-9 items-center justify-center rounded-full border transition-colors focus:outline-none focus-visible:outline-none focus-visible:ring-0',
                         safeMobilePage >= totalMobilePages - 1
                           ? 'border-[#d9dde8] bg-[#f1f1f4] text-[#9aa3b5]'
                           : 'border-[rgba(14,14,16,0.12)] bg-white text-[#3b3b40] hover:bg-[#f6f6f7]',

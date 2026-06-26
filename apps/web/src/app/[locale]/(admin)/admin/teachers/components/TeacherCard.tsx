@@ -2,7 +2,7 @@
 
 import type { ReactNode } from 'react';
 import { useTranslations } from 'next-intl';
-import { ActionButtons, Badge } from '@/shared/components/ui';
+import { Badge } from '@/shared/components/ui';
 import { formatCurrency } from '@/shared/lib/utils';
 import { TeacherShowcaseCard } from '@/features/teachers';
 import type { Teacher } from '@/features/teachers';
@@ -14,8 +14,6 @@ import { Building2, Mail, Users } from 'lucide-react';
 interface TeacherCardProps {
   teacher: Teacher;
   onEdit: () => void;
-  onDelete: () => void;
-  onDeactivate: () => void;
   onCardClick?: (teacher: Teacher) => void;
 }
 
@@ -74,8 +72,6 @@ function MobileInfoRow({
 export function TeacherCard({
   teacher,
   onEdit,
-  onDelete,
-  onDeactivate,
   onCardClick,
 }: TeacherCardProps) {
   const t = useTranslations('teachers');
@@ -112,27 +108,9 @@ export function TeacherCard({
   return (
     <TeacherShowcaseCard
       teacher={teacher}
-      onCardClick={onCardClick ? () => onCardClick(teacher) : undefined}
+      onPhotoClick={onCardClick ? () => onCardClick(teacher) : undefined}
+      onCardClick={onEdit}
       isMuted={!isActive}
-      headerActions={
-        <ActionButtons
-          onEdit={onEdit}
-          onDisable={onDeactivate}
-          onDelete={onDelete}
-          isActive={isActive}
-          size="md"
-          ariaLabels={{
-            edit: 'Edit teacher',
-            disable: isActive ? 'Deactivate teacher' : 'Activate teacher',
-            delete: 'Delete teacher',
-          }}
-          titles={{
-            edit: 'Edit teacher',
-            disable: isActive ? 'Deactivate teacher' : 'Activate teacher',
-            delete: 'Delete teacher',
-          }}
-        />
-      }
       afterExperience={
         <>
           <div className="space-y-3 sm:hidden">

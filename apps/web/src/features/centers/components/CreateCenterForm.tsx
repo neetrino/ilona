@@ -257,26 +257,28 @@ export function CreateCenterForm({ open, onOpenChange }: CreateCenterFormProps) 
             </div>
           )}
 
-          <div className="space-y-2">
-            <Label htmlFor="name">
-              {tForm('centerName')} <span className="text-red-500">*</span>
-            </Label>
-            <Input
-              id="name"
-              {...register('name')}
-              error={errors.name?.message}
-              placeholder={tForm('namePlaceholder')}
-            />
-          </div>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="min-w-0 space-y-2">
+              <Label htmlFor="name">
+                {tForm('centerName')} <span className="text-red-500">*</span>
+              </Label>
+              <Input
+                id="name"
+                {...register('name')}
+                error={errors.name?.message}
+                placeholder={tForm('namePlaceholder')}
+              />
+            </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="address">{tForm('address')}</Label>
-            <Input
-              id="address"
-              {...register('address')}
-              error={errors.address?.message}
-              placeholder={tForm('addressPlaceholder')}
-            />
+            <div className="min-w-0 space-y-2">
+              <Label htmlFor="address">{tForm('address')}</Label>
+              <Input
+                id="address"
+                {...register('address')}
+                error={errors.address?.message}
+                placeholder={tForm('addressPlaceholder')}
+              />
+            </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -319,7 +321,12 @@ export function CreateCenterForm({ open, onOpenChange }: CreateCenterFormProps) 
           <div className="space-y-2">
             <Label htmlFor="colorHex">{tForm('centerColorOptional')}</Label>
             <div className="flex items-center gap-3">
-              <div className="relative">
+              <div className="group relative h-11 w-11 shrink-0">
+                <span
+                  className="pointer-events-none block h-full w-full rounded-full shadow-[0_2px_10px_rgba(15,23,42,0.18)] transition-transform group-hover:scale-105"
+                  style={{ backgroundColor: watch('colorHex') || '#253046' }}
+                  aria-hidden
+                />
                 <input
                   type="color"
                   id="colorHex"
@@ -328,7 +335,8 @@ export function CreateCenterForm({ open, onOpenChange }: CreateCenterFormProps) 
                     const newValue = e.target.value;
                     setValue('colorHex', newValue, { shouldValidate: true });
                   }}
-                  className="w-16 h-10 rounded-lg border border-slate-300 cursor-pointer"
+                  className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+                  aria-label={tForm('centerColorOptional')}
                 />
               </div>
               <div className="flex-1">
