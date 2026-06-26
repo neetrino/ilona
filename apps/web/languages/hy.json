@@ -268,7 +268,9 @@
     "needsImprovement": "Պահանջում է բարելավում",
     "attendedCount": "{count} ներկա",
     "totalLessons": "Ընդամենը դասեր",
-    "upcoming": "Առաջիկա",
+    "upcoming": {
+      "scheduledCount": "Այս շաբաթ {count} դաս է պլանավորված"
+    },
     "lessonsScheduled": "դասեր պլանավորված",
     "nextPayment": "Հաջորդ վճարում",
     "none": "Չկա",
@@ -355,9 +357,6 @@
       "today": "Այսօր",
       "week": "Շաբաթ",
       "month": "Ամիս"
-    },
-    "upcoming": {
-      "scheduledCount": "Այս շաբաթ {count} դաս է պլանավորված"
     },
     "progress": {
       "track": "{level} մակարդակ",
@@ -1082,7 +1081,7 @@
     "completeLesson": "Ավարտել դասը",
     "form": {
       "addTitle": "Ավելացնել նոր դաս",
-      "addDescription": "Ավելացրեք մեկ նիստ կամ բազմակի կրկնվող նիստեր։ * նշված դաշտերը պարտադիր են։",
+      "addDescription": "Ընտրեք ուսուցիչ և խումբ, ապա սահմանեք օրացույցի ժամանակացույցը։ * նշված դաշտերը պարտադիր են։",
       "editTitle": "Խմբագրել դասը",
       "editDescription": "Թարմացրեք դասի տվյալները ստորև։ Բոլոր փոփոխությունները կպահպանվեն անմիջապես։",
       "loadingLessonData": "Դասի տվյալները բեռնվում են...",
@@ -1831,6 +1830,18 @@
     "dashboardBannerSaveFailed": "Չհաջողվեց թարմացնել վահանակի բանների պատկերը։ Խնդրում ենք կրկին փորձել։",
     "dashboardBannerResetSuccess": "Վահանակի բանների պատկերը վերադարձվեց լռելյայնին։",
     "dashboardBannerResetFailed": "Չհաջողվեց վերակայել վահանակի բանների պատկերը։ Խնդրում ենք կրկին փորձել։",
+    "dashboardBannerTextTitle": "Վահանակի բանների տեքստ",
+    "dashboardBannerTextDescription": "Փոխեք Admin Dashboard-ի կապույտ բաններում ցուցադրվող վերնագիրը և ենթագիրը։",
+    "dashboardBannerTextHeadingLabel": "Վերնագիր",
+    "dashboardBannerTextHeadingHint": "Առավելագույնը {max} նիշ։",
+    "dashboardBannerTextSubtitleLabel": "Ենթագիր",
+    "dashboardBannerTextSubtitleHint": "Առավելագույնը {max} նիշ։",
+    "dashboardBannerTextPreviewLabel": "Նախադիտում",
+    "dashboardBannerTextResetDefault": "Վերադարձնել լռելյայնը",
+    "dashboardBannerTextSavedSuccess": "Վահանակի բանների տեքստը հաջողությամբ թարմացվեց։",
+    "dashboardBannerTextSaveFailed": "Չհաջողվեց թարմացնել վահանակի բանների տեքստը։ Խնդրում ենք կրկին փորձել։",
+    "dashboardBannerTextResetSuccess": "Վահանակի բանների տեքստը վերադարձվեց լռելյայնին։",
+    "dashboardBannerTextResetFailed": "Չհաջողվեց վերակայել վահանակի բանների տեքստը։ Խնդրում ենք կրկին փորձել։",
     "sidebarVisibilityTab": "Sidebar-ի տեսանելիություն",
     "sidebarVisibilityTitle": "Sidebar-ի տեսանելիություն",
     "sidebarVisibilityDescription": "Ընտրեք, թե որ բաժինները երևան admin sidebar-ում։ Settings-ը միշտ տեսանելի է։",
@@ -2226,7 +2237,6 @@
     "substituteByGroupDay": "Փոխարինող ըստ խմբի և օրվա",
     "substituteByGroupDayHint": "Կիրառվում է ընտրված խմբի բոլոր չչեղարկված դասերի համար այդ օրացույցային օրվա (UTC) համար։",
     "loadingGroups": "Խմբերը բեռնվում են…",
-    "selectGroup": "Ընտրել խումբ",
     "apply": "Կիրառել",
     "removeSubstitute": "Հեռացնել փոխարինողը",
     "loadingLesson": "Դասը բեռնվում է…",
