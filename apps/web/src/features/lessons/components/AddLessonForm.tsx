@@ -20,8 +20,8 @@ import {
 } from '@/features/groups/group-schedule-utils';
 import type { GroupScheduleEntry } from '@/features/groups/types';
 import { GroupCalendarScheduleSection } from '@/features/groups/components/GroupCalendarScheduleSection';
-import { useGroups, getGroupTeachersForDisplay, GroupTeachersAlignedDisplay } from '@/features/groups';
-import type { Group } from '@/features/groups/types';
+import { useGroups, getGroupTeachersForDisplay, getGroupTeacherName } from '@/features/groups';
+import type { Group, GroupTeacherRef } from '@/features/groups/types';
 import { useState, useEffect, useCallback, useMemo, useRef, type TouchEvent } from 'react';
 import { useTranslations } from 'next-intl';
 import { getErrorMessage } from '@/shared/lib/api';
@@ -74,6 +74,24 @@ function groupSlotsForRecurring(
 
 function getGroupTeacherId(group: Group): string | null {
   return group.teacherId ?? group.teacher?.id ?? null;
+}
+
+function GroupTeacherReadonlyRow({ teacher }: { teacher: GroupTeacherRef }) {
+  const name = getGroupTeacherName(teacher) ?? '';
+  const firstName = teacher.user?.firstName || '';
+  const lastName = teacher.user?.lastName || '';
+  const initials = `${firstName[0] || ''}${lastName[0] || ''}` || '?';
+
+  return (
+    <div className="grid min-w-0 grid-cols-[auto_1fr] items-center gap-x-2">
+      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#f1f1f2] text-sm font-medium text-[#3b3b40]">
+        {initials}
+      </div>
+      <span className="min-w-0 truncate text-sm text-[#3b3b40]" title={name}>
+        {name}
+      </span>
+    </div>
+  );
 }
 
 interface AddLessonFormProps {
@@ -421,32 +439,37 @@ export function AddLessonForm({ open, onOpenChange, defaultDate }: AddLessonForm
             )}
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="teacherId">
-              {tCommon('teacher')} <span className="text-red-500">*</span>
-            </Label>
+          <div className="space-y-4">
             <input type="hidden" {...register('teacherId')} />
-            <div
-              id="teacherId"
-              className={cn(
-                'min-h-11 rounded-xl border border-[rgba(14,14,16,0.08)] bg-slate-50 px-3 py-2.5',
-                !hasGroup && 'flex items-center',
-              )}
-            >
-              {!hasGroup ? (
-                <span className="text-sm text-slate-400">{tForm('selectGroupFirst')}</span>
-              ) : (
-                <GroupTeachersAlignedDisplay
-                  teachers={selectedGroupTeachers}
-                  emptyLabel={tCommon('notAssigned')}
-                  variant="list"
-                />
-              )}
-            </div>
-            {errors.teacherId && <p className="text-sm text-red-600">{errors.teacherId.message}</p>}
-            {hasGroup && selectedGroupTeachers.length > 0 && (
-              <p className="text-sm text-slate-500">{tForm('teacherAutoFromGroup')}</p>
+            {!hasGroup ? (
+              <div className="space-y-2">
+                <Label htmlFor="teacherId">
+                  {tCommon('teacher')} <span className="text-red-500">*</span>
+                </Label>
+                <div
+                  id="teacherId"
+                  className="flex min-h-11 items-center rounded-xl border border-[rgba(14,14,16,0.08)] bg-slate-50 px-3 py-2.5"
+                >
+                  <span className="text-sm text-slate-400">{tForm('selectGroupFirst')}</span>
+                </div>
+              </div>
+            ) : (
+              selectedGroupTeachers.map((teacher, index) => (
+                <div key={teacher.id} className="space-y-2">
+                  <Label htmlFor={`teacherId-${teacher.id}`}>
+                    {index === 0 ? tGroupsForm('teacher1Main') : tGroupsForm('teacher2')}{' '}
+                    <span className="text-red-500">*</span>
+                  </Label>
+                  <div
+                    id={index === 0 ? 'teacherId' : `teacherId-${teacher.id}`}
+                    className="flex min-h-11 items-center rounded-xl border border-[rgba(14,14,16,0.08)] bg-slate-50 px-3 py-2.5"
+                  >
+                    <GroupTeacherReadonlyRow teacher={teacher} />
+                  </div>
+                </div>
+              ))
             )}
+            {errors.teacherId && <p className="text-sm text-red-600">{errors.teacherId.message}</p>}
           </div>
 
           <GroupCalendarScheduleSection
