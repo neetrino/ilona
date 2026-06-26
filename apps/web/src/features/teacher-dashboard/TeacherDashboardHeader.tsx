@@ -2,6 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 import { usePathname } from 'next/navigation';
+import { LandingNavbarLanguageToggle } from '@/shared/components/layout/LandingNavbarLanguageToggle';
 import { StudentLogoutControl } from '@/shared/components/layout/StudentLogoutControl';
 import { PortalHeaderSearch } from '@/features/search/components/PortalHeaderSearch';
 import { useAuthStore } from '@/features/auth/store/auth.store';
@@ -79,6 +80,11 @@ export function TeacherDashboardHeader({
                 </>
               )}
             </div>
+            {isTeacherMobileSubpage ? (
+              <div className="shrink-0 lg:hidden">
+                <LandingNavbarLanguageToggle />
+              </div>
+            ) : null}
           </div>
 
           <div
@@ -91,6 +97,9 @@ export function TeacherDashboardHeader({
             </div>
 
             <div className="flex shrink-0 flex-wrap items-center justify-end gap-1.5 sm:gap-2">
+              <LandingNavbarLanguageToggle
+                className={isTeacherMobileSubpage ? 'hidden lg:inline-flex' : undefined}
+              />
               <StudentLogoutControl variant="header" className="hidden lg:inline-flex" />
             </div>
           </div>
