@@ -202,9 +202,6 @@ export default function AdminDailyPlanPage() {
             )}
             {contentSummary(plan, t)}
           </p>
-          <span className="mt-4 text-xs font-medium text-[#1010a3]">
-            {t('viewDetails')}
-          </span>
         </button>
       </li>
     );

@@ -281,7 +281,7 @@ export class DailyPlanService {
     const [items, total] = await this.prisma.$transaction([
       this.prisma.dailyPlan.findMany({
         where,
-        orderBy: [{ date: 'desc' }, { createdAt: 'desc' }],
+        orderBy: [{ updatedAt: 'desc' }, { createdAt: 'desc' }],
         include: dailyPlanInclude,
         take,
         skip,
