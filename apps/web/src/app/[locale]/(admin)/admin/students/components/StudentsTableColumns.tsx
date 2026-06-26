@@ -13,6 +13,7 @@ import { getItemId, isOnboardingItem } from '@/features/students';
 import {
   ensureCurrentGroupInList,
   filterAssignableGroupsByCenter,
+  type GroupAssignmentOption,
 } from '@/features/students/lib/group-center-assignment';
 import type { Group } from '@/features/groups';
 
@@ -38,11 +39,11 @@ const INLINE_SELECT_TABLE_CLASS =
 
 type SelectOption = { id: string; label: string; searchText?: string };
 
-function buildGroupSearchText(group: Group): string {
+function buildGroupSearchText(group: GroupAssignmentOption): string {
   return [group.name, group.level, group.center?.name].filter(Boolean).join(' ');
 }
 
-function mapGroupToOption(group: Group): SelectOption {
+function mapGroupToOption(group: GroupAssignmentOption): SelectOption {
   return {
     id: group.id,
     label: `${group.name}${group.level ? ` (${group.level})` : ''}`,
@@ -65,7 +66,7 @@ function getHorizontalScrollContainer(node: HTMLElement | null): HTMLElement | n
 function buildGroupOptionsForRow(
   centerId: string | null,
   currentGroupId: string | null,
-  groups: Group[],
+  groups: GroupAssignmentOption[],
 ): SelectOption[] {
   const scoped = filterAssignableGroupsByCenter(groups, centerId ?? undefined);
   const withCurrent = ensureCurrentGroupInList(

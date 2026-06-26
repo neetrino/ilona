@@ -23,6 +23,14 @@ function formatDate(value: string): string {
       });
 }
 
+function teacherName(plan: DailyPlan): string {
+  return `${plan.teacher.user.firstName} ${plan.teacher.user.lastName}`;
+}
+
+function centerName(plan: DailyPlan): string | null {
+  return plan.group?.center?.name ?? plan.lesson?.group?.center?.name ?? null;
+}
+
 interface DailyPlanListSectionProps {
   search: string;
   onSearchChange: (value: string) => void;
@@ -162,6 +170,9 @@ export function DailyPlanListSection({
                     {formatDate(plan.date)}
                   </div>
                   <div className="font-semibold text-[#1010a3]">
+                    {teacherName(plan)}
+                  </div>
+                  <div className="text-sm text-slate-600 mt-0.5">
                     {plan.group?.name ?? 'No group'}{' '}
                     {plan.group?.level && (
                       <span className="text-slate-500 font-normal">
@@ -169,12 +180,18 @@ export function DailyPlanListSection({
                       </span>
                     )}
                   </div>
+                  {centerName(plan) && (
+                    <div className="text-xs text-slate-500 mt-0.5">
+                      {centerName(plan)}
+                    </div>
+                  )}
                   {plan.lesson && (
                     <div className="text-xs text-slate-500 mt-0.5">
                       Linked to lesson · {formatDate(plan.lesson.scheduledAt)}
                     </div>
                   )}
                 </div>
+                {plan.canEdit && (
                 <div className="flex items-start gap-1">
                   <button
                     type="button"
@@ -210,6 +227,7 @@ export function DailyPlanListSection({
                     </button>
                   )}
                 </div>
+                )}
               </header>
               <ul className="space-y-2">
                 {plan.topics.map((topic) => (
@@ -278,6 +296,9 @@ export function DailyPlanListSection({
                       {formatDate(plan.date)}
                     </div>
                     <div className="font-semibold text-[#1010a3]">
+                      {teacherName(plan)}
+                    </div>
+                    <div className="text-sm text-slate-600 mt-0.5">
                       {plan.group?.name ?? 'No group'}{' '}
                       {plan.group?.level && (
                         <span className="text-slate-500 font-normal">
@@ -285,12 +306,18 @@ export function DailyPlanListSection({
                         </span>
                       )}
                     </div>
+                    {centerName(plan) && (
+                      <div className="text-xs text-slate-500 mt-0.5">
+                        {centerName(plan)}
+                      </div>
+                    )}
                     {plan.lesson && (
                       <div className="text-xs text-slate-500 mt-0.5">
                         Linked to lesson · {formatDate(plan.lesson.scheduledAt)}
                       </div>
                     )}
                   </div>
+                  {plan.canEdit && (
                   <div className="flex items-start gap-1">
                     <button
                       type="button"
@@ -326,6 +353,7 @@ export function DailyPlanListSection({
                       </button>
                     )}
                   </div>
+                  )}
                 </header>
                 <ul className="space-y-2">
                   {plan.topics.map((topic) => (

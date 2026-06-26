@@ -61,6 +61,10 @@ const dailyPlanInclude = {
   },
 } satisfies Prisma.DailyPlanInclude;
 
+type DailyPlanWithRelations = Prisma.DailyPlanGetPayload<{
+  include: typeof dailyPlanInclude;
+}>;
+
 function normalizeTopics(topics: DailyPlanTopicInputDto[]): {
   title: string;
   order: number;
@@ -138,6 +142,55 @@ export class DailyPlanService {
     };
   }
 
+  private canUserEditPlan(plan: DailyPlanWithRelations, user: JwtPayload): boolean {
+    return plan.teacher.user.id === user.sub;
+  }
+
+  private serializePlan(plan: DailyPlanWithRelations, user: JwtPayload) {
+    return {
+      ...plan,
+      canEdit: this.canUserEditPlan(plan, user),
+    };
+  }
+
+  private async assertPlanViewAccess(
+    plan: DailyPlanWithRelations,
+    user: JwtPayload,
+  ): Promise<void> {
+    if (user.role !== UserRole.MANAGER) {
+      return;
+    }
+
+    const managerCenterId = user.managerCenterId ?? null;
+    if (!managerCenterId) {
+      throw new ForbiddenException('Manager account is not assigned to a center');
+    }
+
+    const teacherInCenter = await this.prisma.teacher.findFirst({
+      where: {
+        id: plan.teacherId,
+        ...this.managerTeacherAtCenterScope(managerCenterId),
+      },
+      select: { id: true },
+    });
+    if (!teacherInCenter) {
+      throw new ForbiddenException('Access denied');
+    }
+
+    const inCenter =
+      plan.group?.centerId === managerCenterId ||
+      plan.lesson?.group?.centerId === managerCenterId;
+    if (!inCenter) {
+      throw new ForbiddenException('Access denied');
+    }
+  }
+
+  private assertPlanEditAccess(plan: DailyPlanWithRelations, user: JwtPayload): void {
+    if (!this.canUserEditPlan(plan, user)) {
+      throw new ForbiddenException('You can only edit your own daily plans');
+    }
+  }
+
   async findAll(query: QueryDailyPlanDto, user: JwtPayload) {
     const userRole = user.role;
     const take = Math.min(Math.max(query.take ?? 50, 1), 200);
@@ -149,9 +202,7 @@ export class DailyPlanService {
 
     const whereParts: Prisma.DailyPlanWhereInput[] = [];
 
-    if (userRole === UserRole.TEACHER) {
-      whereParts.push({ teacherId: await this.resolveTeacherId(user.sub) });
-    } else if (query.teacherId) {
+    if (query.teacherId) {
       if (userRole === UserRole.MANAGER) {
         const managerCenterId = user.managerCenterId;
         if (managerCenterId) {
@@ -238,7 +289,12 @@ export class DailyPlanService {
       this.prisma.dailyPlan.count({ where }),
     ]);
 
-    return { items, total, take, skip };
+    return {
+      items: items.map((plan) => this.serializePlan(plan, user)),
+      total,
+      take,
+      skip,
+    };
   }
 
   async findById(id: string, user: JwtPayload) {
@@ -249,37 +305,13 @@ export class DailyPlanService {
     if (!plan) {
       throw new NotFoundException(`Daily plan ${id} not found`);
     }
-    if (user.role === UserRole.TEACHER) {
-      const teacherId = await this.resolveTeacherId(user.sub);
-      if (plan.teacherId !== teacherId) {
-        throw new ForbiddenException('You can only view your own daily plans');
-      }
-    } else if (user.role === UserRole.MANAGER) {
-      const managerCenterId = user.managerCenterId ?? null;
-      if (!managerCenterId) {
-        throw new ForbiddenException('Manager account is not assigned to a center');
-      }
-      const teacherInCenter = await this.prisma.teacher.findFirst({
-        where: {
-          id: plan.teacherId,
-          ...this.managerTeacherAtCenterScope(managerCenterId),
-        },
-        select: { id: true },
-      });
-      if (!teacherInCenter) {
-        throw new ForbiddenException('Access denied');
-      }
-      const inCenter =
-        plan.group?.centerId === managerCenterId ||
-        plan.lesson?.group?.centerId === managerCenterId;
-      if (!inCenter) {
-        throw new ForbiddenException('Access denied');
-      }
-    }
-    return plan;
+    await this.assertPlanViewAccess(plan, user);
+    return this.serializePlan(plan, user);
   }
 
-  async create(dto: CreateDailyPlanDto, userId: string, userRole: UserRole) {
+  async create(dto: CreateDailyPlanDto, user: JwtPayload) {
+    const userId = user.sub;
+    const userRole = user.role;
     if (!dto.topics?.length) {
       throw new BadRequestException('At least one topic is required');
     }
@@ -358,7 +390,7 @@ export class DailyPlanService {
     });
 
     await this.triggerSalaryRecalculationForPlan(created);
-    return created;
+    return this.serializePlan(created, user);
   }
 
   async update(
@@ -366,9 +398,16 @@ export class DailyPlanService {
     dto: UpdateDailyPlanDto,
     user: JwtPayload,
   ) {
-    const existing = await this.findById(id, user);
+    const existing = await this.prisma.dailyPlan.findUnique({
+      where: { id },
+      include: dailyPlanInclude,
+    });
+    if (!existing) {
+      throw new NotFoundException(`Daily plan ${id} not found`);
+    }
+    this.assertPlanEditAccess(existing, user);
 
-    return this.prisma.$transaction(async (tx) => {
+    const updated = await this.prisma.$transaction(async (tx) => {
       if (dto.topics) {
         await tx.dailyPlanTopic.deleteMany({ where: { dailyPlanId: id } });
         await tx.dailyPlanTopic.createMany({
@@ -411,16 +450,20 @@ export class DailyPlanService {
         },
         include: dailyPlanInclude,
       });
-    }).then(() =>
-      this.prisma.dailyPlan.findUnique({
-        where: { id: existing.id },
-        include: dailyPlanInclude,
-      }),
-    );
+    });
+
+    return this.serializePlan(updated, user);
   }
 
   async remove(id: string, user: JwtPayload) {
-    const existing = await this.findById(id, user);
+    const existing = await this.prisma.dailyPlan.findUnique({
+      where: { id },
+      include: dailyPlanInclude,
+    });
+    if (!existing) {
+      throw new NotFoundException(`Daily plan ${id} not found`);
+    }
+    this.assertPlanEditAccess(existing, user);
     await this.prisma.dailyPlan.delete({ where: { id } });
     await this.triggerSalaryRecalculationForPlan(existing);
     return { ok: true } as const;

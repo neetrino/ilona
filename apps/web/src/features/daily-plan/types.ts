@@ -51,6 +51,7 @@ export interface DailyPlan {
   date: string;
   createdAt: string;
   updatedAt: string;
+  canEdit?: boolean;
   topics: DailyPlanTopic[];
   group: DailyPlanGroupRef | null;
   lesson: DailyPlanLessonRef | null;
