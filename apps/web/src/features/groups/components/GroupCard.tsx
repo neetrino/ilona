@@ -11,7 +11,7 @@ import { getGroupOccupancyMeta } from '../occupancy';
 import { GroupIconDisplay } from '../group-icon-registry';
 import { getGroupWeeklySlots } from '../group-schedule-utils';
 
-const DAY_LABELS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+const DAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 function formatScheduleSummary(entries: GroupScheduleEntry[] | null | undefined): string[] | null {
   if (!entries || entries.length === 0) return null;
@@ -245,7 +245,7 @@ export function GroupCard({
       >
         <div className="flex items-start justify-between gap-3 px-4 py-3">
           <div className="flex min-w-0 flex-1 gap-2">
-            <div className="grid min-w-0 flex-1 grid-cols-[auto_1fr] items-center gap-x-2 gap-y-1">
+            <div className="grid min-w-0 flex-1 grid-cols-[auto_1fr] items-center gap-x-2 gap-y-[5px]">
               <span className="shrink-0 self-start" aria-hidden>
                 <GroupIconDisplay iconKey={group.iconKey} size={18} />
               </span>
@@ -285,7 +285,7 @@ export function GroupCard({
         <div className="mx-4 border-t border-[rgba(14,14,16,0.07)]" />
 
         {students !== undefined ? (
-          <div className={`mx-4 mb-2 px-0 text-slate-600 ${studentListBlockClass}`}>
+          <div className={`mx-4 mb-1 px-0 text-slate-600 ${studentListBlockClass}`}>
             <GroupCardStudentList
               students={students}
               onStudentClick={onStudentClick}
@@ -296,7 +296,7 @@ export function GroupCard({
           <div className="min-h-[4rem] flex-1" aria-hidden />
         )}
 
-        <div className="border-t border-[rgba(14,14,16,0.07)] px-4 py-3">
+        <div className="mt-3 border-t border-[rgba(14,14,16,0.07)] px-4 py-3">
           <div className="flex items-center gap-2 text-slate-600">
             <span className={`inline-flex h-3 w-3 rounded-full ${dotColorClass}`} aria-hidden="true" />
             <span className="text-[1.125rem] font-medium text-slate-700">{occupancy.label}</span>
@@ -313,8 +313,8 @@ export function GroupCard({
       >
         <div className="mb-3 shrink-0">
           <div className="mb-1 flex min-w-0 items-start justify-between gap-2">
-            <div className="flex min-w-0 flex-1 items-start gap-2">
-              <div className="grid min-w-0 flex-1 grid-cols-[auto_1fr] items-center gap-x-2 gap-y-1">
+            <div className="flex min-w-0 flex-1 flex-col gap-[5px]">
+              <div className="grid min-w-0 grid-cols-[auto_1fr] items-center gap-x-2 gap-y-[5px]">
                 <span className="shrink-0 self-start" aria-hidden>
                   <GroupIconDisplay iconKey={group.iconKey} size={20} />
                 </span>
@@ -343,6 +343,24 @@ export function GroupCard({
                   </>
                 ) : null}
               </div>
+              {scheduleSummary ? (
+                <div className="flex min-w-0 items-center gap-2">
+                  <span className="flex h-5 w-5 shrink-0 items-center justify-center" aria-hidden="true">
+                    <Clock className="h-5 w-5 text-slate-400" />
+                  </span>
+                  <div className="flex min-w-0 flex-1 flex-nowrap items-center gap-1.5 overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+                    {scheduleSummary.map((slot) => (
+                      <span
+                        key={slot}
+                        className="inline-flex max-w-full shrink-0 items-center whitespace-nowrap rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-xs leading-snug text-slate-700"
+                        title={slot}
+                      >
+                        {slot}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
             </div>
             <GroupCardOverflowMenu
               isActive={group.isActive}
@@ -351,26 +369,6 @@ export function GroupCard({
               isStatusTogglePending={isStatusTogglePending}
             />
           </div>
-          {scheduleSummary && (
-            <div className="mt-2 flex flex-col items-start gap-1.5 text-xs text-slate-600">
-              {scheduleSummary && (
-                <div className="flex w-full min-w-0 items-start gap-1 text-slate-600">
-                  <Clock className="mt-0.5 h-3 w-3 shrink-0 text-slate-400" />
-                  <div className="flex min-w-0 flex-wrap gap-1.5">
-                    {scheduleSummary.map((slot) => (
-                      <span
-                        key={slot}
-                        className="inline-flex max-w-full items-center break-words rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 leading-snug text-slate-700"
-                        title={slot}
-                      >
-                        {slot}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
           {group.description && (
             <p className="mt-1 line-clamp-2 text-xs text-slate-500" title={group.description}>
               {group.description}
@@ -385,7 +383,7 @@ export function GroupCard({
             </div>
           )}
 
-          <div className="flex shrink-0 items-center gap-2 text-slate-600">
+          <div className="mt-3 flex shrink-0 items-center gap-2 text-slate-600">
             <span className={`inline-flex h-2.5 w-2.5 rounded-full ${dotColorClass}`} aria-hidden="true" />
             <span className="font-medium text-slate-700">{occupancy.label}</span>
           </div>
