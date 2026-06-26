@@ -5,6 +5,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { createPortal } from 'react-dom';
 import { cn } from '@/shared/lib/utils';
+import { DATE_PICKER_POPOVER_ATTR } from './date-picker-input';
 import {
   DROPDOWN_CHEVRON_CLASS,
   DROPDOWN_CHEVRON_SELECTED_CLASS,
@@ -51,7 +52,8 @@ export function preventDialogDismissOnPortaledDropdown(event: Event) {
   if (
     target instanceof Element &&
     (target.closest(`[${SINGLE_SELECT_DROPDOWN_MENU_ATTR}]`) ||
-      target.closest(`[${SINGLE_SELECT_DROPDOWN_BACKDROP_ATTR}]`))
+      target.closest(`[${SINGLE_SELECT_DROPDOWN_BACKDROP_ATTR}]`) ||
+      target.closest(`[${DATE_PICKER_POPOVER_ATTR}]`))
   ) {
     event.preventDefault();
   }
