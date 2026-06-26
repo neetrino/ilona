@@ -27,8 +27,6 @@ interface TeachersListProps {
   onToggleSelect: (teacherId: string) => void;
   onView: (teacher: Teacher) => void;
   onEdit: (teacher: Teacher) => void;
-  onDelete: (teacher: Teacher) => void;
-  onDeactivate: (teacher: Teacher) => void;
   onCenterChange: (teacherId: string, centerId: string | null) => Promise<void>;
   onOpenGroupsModal: (teacher: Teacher, tab: 'groups' | 'subgroups') => void;
   isLoading: boolean;
@@ -65,8 +63,6 @@ export function TeachersList({
   onToggleSelect,
   onView,
   onEdit,
-  onDelete,
-  onDeactivate,
   onCenterChange,
   onOpenGroupsModal,
   isLoading,
@@ -100,8 +96,6 @@ export function TeachersList({
     onToggleSelect,
     onView,
     onEdit,
-    onDelete,
-    onDeactivate,
     onCenterChange,
     onOpenGroupsModal,
     isDeleting: isDeleting || isUpdating,

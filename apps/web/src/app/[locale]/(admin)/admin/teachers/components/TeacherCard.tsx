@@ -14,8 +14,6 @@ import { Building2, Mail, Users } from 'lucide-react';
 interface TeacherCardProps {
   teacher: Teacher;
   onEdit: () => void;
-  onDelete: () => void;
-  onDeactivate: () => void;
   onCardClick?: (teacher: Teacher) => void;
 }
 
@@ -74,8 +72,6 @@ function MobileInfoRow({
 export function TeacherCard({
   teacher,
   onEdit,
-  onDelete,
-  onDeactivate,
   onCardClick,
 }: TeacherCardProps) {
   const t = useTranslations('teachers');
@@ -117,19 +113,12 @@ export function TeacherCard({
       headerActions={
         <ActionButtons
           onEdit={onEdit}
-          onDisable={onDeactivate}
-          onDelete={onDelete}
-          isActive={isActive}
           size="md"
           ariaLabels={{
             edit: 'Edit teacher',
-            disable: isActive ? 'Deactivate teacher' : 'Activate teacher',
-            delete: 'Delete teacher',
           }}
           titles={{
             edit: 'Edit teacher',
-            disable: isActive ? 'Deactivate teacher' : 'Activate teacher',
-            delete: 'Delete teacher',
           }}
         />
       }

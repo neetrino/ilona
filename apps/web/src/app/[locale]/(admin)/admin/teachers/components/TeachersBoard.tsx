@@ -76,8 +76,6 @@ interface TeachersBoardProps {
   isLoading: boolean;
   searchQuery: string;
   onEdit: (teacher: Teacher) => void;
-  onDelete: (teacher: Teacher) => void;
-  onDeactivate: (teacher: Teacher) => void;
   /** Opens teacher details in CRM-style modal */
   onCardClick?: (teacher: Teacher) => void;
   t: ReturnType<typeof useTranslationsType<'teachers'>>;
@@ -95,8 +93,6 @@ export function TeachersBoard({
   isLoading,
   searchQuery,
   onEdit,
-  onDelete,
-  onDeactivate,
   onCardClick,
   t,
 }: TeachersBoardProps) {
@@ -203,8 +199,6 @@ export function TeachersBoard({
                   key={teacher.id}
                   teacher={teacher}
                   onEdit={() => onEdit(teacher)}
-                  onDelete={() => onDelete(teacher)}
-                  onDeactivate={() => onDeactivate(teacher)}
                   onCardClick={onCardClick}
                 />
               ))}
@@ -222,8 +216,6 @@ export function TeachersBoard({
                   key={teacher.id}
                   teacher={teacher}
                   onEdit={() => onEdit(teacher)}
-                  onDelete={() => onDelete(teacher)}
-                  onDeactivate={() => onDeactivate(teacher)}
                   onCardClick={onCardClick}
                 />
               ))}

@@ -21,8 +21,6 @@ interface TeachersTableColumnsProps {
   onToggleSelect: (teacherId: string) => void;
   onView: (teacher: Teacher) => void;
   onEdit: (teacher: Teacher) => void;
-  onDelete: (teacher: Teacher) => void;
-  onDeactivate: (teacher: Teacher) => void;
   onCenterChange: (teacherId: string, centerId: string | null) => Promise<void>;
   onOpenGroupsModal: (teacher: Teacher, tab: 'groups' | 'subgroups') => void;
   centerOptions: Array<{ id: string; label: string }>;
@@ -42,8 +40,6 @@ export function createTeachersTableColumns({
   onToggleSelect,
   onView: _onView,
   onEdit,
-  onDelete,
-  onDeactivate,
   onCenterChange,
   onOpenGroupsModal,
   centerOptions,
@@ -219,25 +215,16 @@ export function createTeachersTableColumns({
       header: t('actions'),
       className: '!pl-4 !pr-4 !w-[170px] !min-w-[170px] !max-w-[170px]',
       render: (teacher: Teacher) => {
-        const isActive = teacher.user?.status === 'ACTIVE';
-        
         return (
           <div className="w-full" onClick={(e) => e.stopPropagation()}>
             <ActionButtons
               onEdit={() => onEdit(teacher)}
-              onDisable={() => onDeactivate(teacher)}
-              onDelete={() => onDelete(teacher)}
-              isActive={isActive}
               disabled={isUpdating || isDeleting}
               ariaLabels={{
                 edit: tCommon('edit'),
-                disable: isActive ? t('deactivate') : t('activate'),
-                delete: tCommon('delete'),
               }}
               titles={{
                 edit: tCommon('edit'),
-                disable: isActive ? t('deactivate') : t('activate'),
-                delete: tCommon('delete'),
               }}
               className="whitespace-nowrap"
             />
