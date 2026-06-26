@@ -136,7 +136,7 @@ export function AddLessonForm({ open, onOpenChange, defaultDate }: AddLessonForm
     { take: 100, isActive: true },
     open,
   );
-  const groups = groupsData?.items ?? [];
+  const groups = useMemo(() => groupsData?.items ?? [], [groupsData?.items]);
 
   const {
     register,
