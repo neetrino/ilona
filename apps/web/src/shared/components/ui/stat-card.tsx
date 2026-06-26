@@ -41,8 +41,8 @@ export function StatCard({
           </p>
           <div
             className={cn(
-              'flex min-w-0 flex-col gap-2 sm:gap-3',
-              stackChangeOnDesktop ? 'sm:flex-col sm:items-start' : 'sm:flex-row sm:items-baseline',
+              'flex min-w-0 gap-2 sm:gap-3',
+              stackChangeOnDesktop ? 'flex-col items-start' : 'flex-row flex-wrap items-center',
             )}
           >
             <p
@@ -56,7 +56,7 @@ export function StatCard({
             {change ? (
               <span
                 className={cn(
-                  'flex-shrink-0 self-start rounded-full px-2 py-0.5 text-xs font-semibold sm:self-auto',
+                  'shrink-0 rounded-full px-2 py-0.5 text-xs font-semibold',
                   wrapTitle ? 'whitespace-normal break-words sm:whitespace-nowrap' : 'whitespace-nowrap',
                   change.type === 'positive' && 'bg-[#d9f4e8] text-[#0d6b42]',
                   change.type === 'negative' && 'bg-[#ffe5e3] text-[#ff2e23]',
@@ -95,8 +95,8 @@ export function StatCard({
         </p>
         <div
           className={cn(
-            'flex min-w-0 flex-col gap-2 sm:gap-3',
-            stackChangeOnDesktop ? 'sm:flex-col sm:items-start' : 'sm:flex-row sm:items-baseline',
+            'flex min-w-0 gap-2 sm:gap-3',
+            stackChangeOnDesktop ? 'flex-col items-start' : 'flex-row flex-wrap items-center',
           )}
         >
           <p
@@ -110,7 +110,7 @@ export function StatCard({
           {change && (
             <span
               className={cn(
-                'flex-shrink-0 self-start rounded-full px-2 py-0.5 text-xs font-semibold sm:self-auto',
+                'shrink-0 rounded-full px-2 py-0.5 text-xs font-semibold',
                 wrapTitle ? 'whitespace-normal break-words sm:whitespace-nowrap' : 'whitespace-nowrap',
                 change.type === 'positive' && 'bg-emerald-50 text-emerald-600',
                 change.type === 'negative' && 'bg-red-50 text-red-500',
