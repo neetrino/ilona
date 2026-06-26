@@ -47,7 +47,10 @@ export function GroupScheduleEditor({ value, onChange, disabled }: GroupSchedule
     onChange(value.filter((_, i) => i !== index));
   };
 
-  const addEntry = () => onChange([...value, { ...DEFAULT_ENTRY }]);
+  const addEntry = () => {
+    const nextDay = DAY_VALUES[value.length % DAY_VALUES.length];
+    onChange([...value, { ...DEFAULT_ENTRY, dayOfWeek: nextDay }]);
+  };
 
   return (
     <div className="space-y-2">
