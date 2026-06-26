@@ -77,6 +77,9 @@ interface SingleSelectDropdownProps {
   triggerClassName?: string;
   disabled?: boolean;
   wrapText?: boolean;
+  searchable?: boolean;
+  searchPlaceholder?: string;
+  noSearchResultsMessage?: string;
 }
 
 export function SingleSelectDropdown({
@@ -93,9 +96,13 @@ export function SingleSelectDropdown({
   triggerClassName,
   disabled = false,
   wrapText = false,
+  searchable = false,
+  searchPlaceholder,
+  noSearchResultsMessage,
 }: SingleSelectDropdownProps) {
   const t = useTranslations('common');
   const [isOpen, setIsOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const [openUpward, setOpenUpward] = useState(false);
   const [menuPosition, setMenuPosition] = useState<MenuPosition | null>(null);
   const [portalContainer, setPortalContainer] = useState<HTMLElement | null>(null);
@@ -103,6 +110,7 @@ export function SingleSelectDropdown({
   const dropdownRef = useRef<HTMLDivElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
   const optionRefs = useRef<Array<HTMLButtonElement | null>>([]);
   const generatedId = React.useId();
   const triggerId = id ?? `single-select-${generatedId}`;
@@ -112,6 +120,21 @@ export function SingleSelectDropdown({
   const hasSelection = Boolean(value);
   const selectedOption = options.find((opt) => opt.id === value);
   const displayText = selectedOption ? selectedOption.label : placeholder;
+  const resolvedSearchPlaceholder = searchPlaceholder ?? `${t('search')}...`;
+  const resolvedNoSearchResultsMessage = noSearchResultsMessage ?? t('globalSearchEmpty');
+
+  const filteredOptions = React.useMemo(() => {
+    if (!searchable || !searchQuery.trim()) return options;
+    const query = searchQuery.trim().toLowerCase();
+    return options.filter(
+      (option) => option.id !== '' && option.label.toLowerCase().includes(query),
+    );
+  }, [options, searchable, searchQuery]);
+
+  const closeMenu = React.useCallback(() => {
+    setIsOpen(false);
+    setSearchQuery('');
+  }, []);
 
   const updateMenuPosition = React.useCallback(() => {
     const trigger = triggerRef.current;
@@ -126,11 +149,12 @@ export function SingleSelectDropdown({
     const viewportPadding = 12;
     const spaceBelow = window.innerHeight - rect.bottom - viewportPadding;
     const spaceAbove = rect.top - viewportPadding;
+    const searchInputHeight = searchable ? 52 : 0;
     const shouldOpenUpward = useDialogPortal
-      ? spaceBelow < 220 || (spaceAbove > spaceBelow && spaceBelow < 280)
-      : spaceBelow < 220 && spaceAbove > spaceBelow;
+      ? spaceBelow < 220 + searchInputHeight || (spaceAbove > spaceBelow && spaceBelow < 280)
+      : spaceBelow < 220 + searchInputHeight && spaceAbove > spaceBelow;
     const availableSpace = Math.max(120, shouldOpenUpward ? spaceAbove : spaceBelow);
-    const maxHeight = Math.min(320, Math.floor(availableSpace));
+    const maxHeight = Math.min(320 + searchInputHeight, Math.floor(availableSpace));
 
     setOpenUpward(shouldOpenUpward);
 
@@ -157,7 +181,7 @@ export function SingleSelectDropdown({
         ? { bottom: window.innerHeight - rect.top + 6 }
         : { top: rect.bottom + 6 }),
     });
-  }, []);
+  }, [searchable]);
 
   useEffect(() => {
     if (!isOpen) {
@@ -176,7 +200,7 @@ export function SingleSelectDropdown({
       ) {
         return;
       }
-      setIsOpen(false);
+      closeMenu();
     };
 
     const timeoutId = setTimeout(() => {
@@ -191,12 +215,18 @@ export function SingleSelectDropdown({
       window.removeEventListener('resize', updateMenuPosition);
       window.removeEventListener('scroll', updateMenuPosition, true);
     };
-  }, [isOpen, updateMenuPosition]);
+  }, [isOpen, updateMenuPosition, closeMenu]);
+
+  useEffect(() => {
+    if (!isOpen || !searchable) return;
+    const timeoutId = setTimeout(() => searchInputRef.current?.focus(), 0);
+    return () => clearTimeout(timeoutId);
+  }, [isOpen, searchable]);
 
   const handleSelect = (optionId: string) => {
     const nextValue = allowDeselect && optionId === value ? null : optionId;
     onValueChange(nextValue);
-    setIsOpen(false);
+    closeMenu();
     triggerRef.current?.focus();
   };
 
@@ -206,17 +236,17 @@ export function SingleSelectDropdown({
     if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
       event.preventDefault();
       if (!isOpen) {
-        const selectedIndex = Math.max(0, options.findIndex((option) => option.id === value));
+        const selectedIndex = Math.max(0, filteredOptions.findIndex((option) => option.id === value));
         setActiveIndex(selectedIndex);
         setIsOpen(true);
         return;
       }
 
       setActiveIndex((prev) => {
-        if (options.length === 0) return -1;
+        if (filteredOptions.length === 0) return -1;
         if (prev < 0) return 0;
         const step = event.key === 'ArrowDown' ? 1 : -1;
-        return (prev + step + options.length) % options.length;
+        return (prev + step + filteredOptions.length) % filteredOptions.length;
       });
     }
 
@@ -224,37 +254,37 @@ export function SingleSelectDropdown({
       event.preventDefault();
       setIsOpen((prev) => !prev);
       if (!isOpen) {
-        const selectedIndex = Math.max(0, options.findIndex((option) => option.id === value));
+        const selectedIndex = Math.max(0, filteredOptions.findIndex((option) => option.id === value));
         setActiveIndex(selectedIndex);
       }
     }
 
     if (event.key === 'Escape') {
-      setIsOpen(false);
+      closeMenu();
     }
   };
 
   const handleMenuKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
     if (event.key === 'Escape') {
       event.preventDefault();
-      setIsOpen(false);
+      closeMenu();
       triggerRef.current?.focus();
       return;
     }
 
     if (event.key === 'Tab') {
-      setIsOpen(false);
+      closeMenu();
       return;
     }
 
-    if (options.length === 0) return;
+    if (filteredOptions.length === 0) return;
 
     if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
       event.preventDefault();
       const step = event.key === 'ArrowDown' ? 1 : -1;
       setActiveIndex((prev) => {
         if (prev < 0) return 0;
-        return (prev + step + options.length) % options.length;
+        return (prev + step + filteredOptions.length) % filteredOptions.length;
       });
     }
 
@@ -265,20 +295,20 @@ export function SingleSelectDropdown({
 
     if (event.key === 'End') {
       event.preventDefault();
-      setActiveIndex(options.length - 1);
+      setActiveIndex(filteredOptions.length - 1);
     }
 
     if ((event.key === 'Enter' || event.key === ' ') && activeIndex >= 0) {
       event.preventDefault();
-      handleSelect(options[activeIndex].id);
+      handleSelect(filteredOptions[activeIndex].id);
     }
   };
 
   useEffect(() => {
     if (!isOpen) return;
-    const selectedIndex = options.findIndex((option) => option.id === value);
-    setActiveIndex(selectedIndex >= 0 ? selectedIndex : 0);
-  }, [isOpen, options, value]);
+    const selectedIndex = filteredOptions.findIndex((option) => option.id === value);
+    setActiveIndex(selectedIndex >= 0 ? selectedIndex : filteredOptions.length > 0 ? 0 : -1);
+  }, [isOpen, filteredOptions, value]);
 
   useEffect(() => {
     if (!isOpen || activeIndex < 0) return;
@@ -358,7 +388,7 @@ export function SingleSelectDropdown({
                 onPointerDown={(event) => {
                   event.preventDefault();
                   event.stopPropagation();
-                  setIsOpen(false);
+                  closeMenu();
                 }}
               />
               <div
@@ -380,7 +410,7 @@ export function SingleSelectDropdown({
                   ...(menuPosition.bottom !== undefined ? { bottom: `${menuPosition.bottom}px` } : {}),
                 }}
                 className={cn(
-                  'pointer-events-auto overflow-y-auto rounded-xl border border-[rgba(14,14,16,0.08)] bg-white p-1 shadow-[0_16px_40px_rgba(15,23,42,0.14)] ring-1 ring-black/5',
+                  'pointer-events-auto flex flex-col overflow-hidden rounded-xl border border-[rgba(14,14,16,0.08)] bg-white shadow-[0_16px_40px_rgba(15,23,42,0.14)] ring-1 ring-black/5',
                   'animate-in fade-in-0 zoom-in-95 duration-150',
                   openUpward ? 'origin-bottom' : 'origin-top',
                 )}
@@ -390,40 +420,72 @@ export function SingleSelectDropdown({
               ) : options.length === 0 ? (
                 <div className="p-3 text-sm text-[#8b8b90]">{t('noOptionsAvailable')}</div>
               ) : (
-                <div className="space-y-1">
-                  {options.map((option, index) => {
-                    const isSelected = value === option.id;
-                    return (
-                      <button
-                        id={`${listboxId}-option-${option.id}`}
-                        key={option.id}
-                        ref={(node) => {
-                          optionRefs.current[index] = node;
-                        }}
-                        type="button"
-                        role="option"
-                        aria-selected={isSelected}
-                        title={option.label}
-                        onPointerDown={(event) => {
-                          event.preventDefault();
+                <>
+                  {searchable && (
+                    <div className="shrink-0 border-b border-[rgba(14,14,16,0.08)] p-2">
+                      <input
+                        ref={searchInputRef}
+                        type="text"
+                        value={searchQuery}
+                        placeholder={resolvedSearchPlaceholder}
+                        onChange={(event) => setSearchQuery(event.target.value)}
+                        onClick={(event) => event.stopPropagation()}
+                        onPointerDown={(event) => event.stopPropagation()}
+                        onKeyDown={(event) => {
                           event.stopPropagation();
-                          handleSelect(option.id);
+                          if (event.key === 'Escape') {
+                            closeMenu();
+                            triggerRef.current?.focus();
+                          }
+                          if (event.key === 'ArrowDown' && filteredOptions.length > 0) {
+                            event.preventDefault();
+                            setActiveIndex(0);
+                            optionRefs.current[0]?.focus();
+                          }
                         }}
-                        onMouseEnter={() => setActiveIndex(index)}
-                        className={cn(
-                          DROPDOWN_OPTION_BASE_CLASS,
-                          DROPDOWN_OPTION_INTERACTIVE_CLASS,
-                          isSelected && DROPDOWN_OPTION_SELECTED_CLASS,
-                          activeIndex === index && 'bg-slate-50 text-[#1010a3]'
-                        )}
-                      >
-                        <span className={cn('block', wrapText ? 'whitespace-normal break-words text-left' : 'truncate')}>
-                          {option.label}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
+                        className="w-full rounded-md border border-[rgba(14,14,16,0.12)] px-3 py-1.5 text-sm focus:border-[#1010a3]/45 focus:outline-none focus:ring-4 focus:ring-[#1010a3]/10"
+                      />
+                    </div>
+                  )}
+                  <div className="min-h-0 flex-1 space-y-1 overflow-y-auto p-1">
+                    {searchable && searchQuery.trim() && filteredOptions.length === 0 ? (
+                      <div className="px-3 py-2 text-sm text-[#8b8b90]">{resolvedNoSearchResultsMessage}</div>
+                    ) : (
+                      filteredOptions.map((option, index) => {
+                        const isSelected = value === option.id;
+                        return (
+                          <button
+                            id={`${listboxId}-option-${option.id}`}
+                            key={option.id}
+                            ref={(node) => {
+                              optionRefs.current[index] = node;
+                            }}
+                            type="button"
+                            role="option"
+                            aria-selected={isSelected}
+                            title={option.label}
+                            onPointerDown={(event) => {
+                              event.preventDefault();
+                              event.stopPropagation();
+                              handleSelect(option.id);
+                            }}
+                            onMouseEnter={() => setActiveIndex(index)}
+                            className={cn(
+                              DROPDOWN_OPTION_BASE_CLASS,
+                              DROPDOWN_OPTION_INTERACTIVE_CLASS,
+                              isSelected && DROPDOWN_OPTION_SELECTED_CLASS,
+                              activeIndex === index && 'bg-slate-50 text-[#1010a3]'
+                            )}
+                          >
+                            <span className={cn('block', wrapText ? 'whitespace-normal break-words text-left' : 'truncate')}>
+                              {option.label}
+                            </span>
+                          </button>
+                        );
+                      })
+                    )}
+                  </div>
+                </>
               )}
               </div>
             </>,

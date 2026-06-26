@@ -8,7 +8,7 @@ import {
   Button,
   Label,
 } from '@/shared/components/ui';
-import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
+import { SingleSelectDropdown, portaledDropdownDialogHandlers } from '@/shared/components/ui/single-select-dropdown';
 import {
   useCreateRecurringLessons,
   type CreateRecurringLessonsDto,
@@ -21,7 +21,7 @@ import {
 import type { GroupScheduleEntry } from '@/features/groups/types';
 import { GroupCalendarScheduleSection } from '@/features/groups/components/GroupCalendarScheduleSection';
 import { useGroups } from '@/features/groups';
-import { useTeachers } from '@/features/teachers';
+import type { Group } from '@/features/groups/types';
 import { useState, useEffect, useCallback, useMemo, useRef, type TouchEvent } from 'react';
 import { useTranslations } from 'next-intl';
 import { getErrorMessage } from '@/shared/lib/api';
@@ -72,6 +72,16 @@ function groupSlotsForRecurring(
   return Array.from(map.values());
 }
 
+function getGroupTeacherId(group: Group): string | null {
+  return group.teacherId ?? group.teacher?.id ?? null;
+}
+
+function getGroupTeacherLabel(group: Group): string {
+  const user = group.teacher?.user;
+  if (!user) return '';
+  return `${user.firstName} ${user.lastName}`.trim();
+}
+
 interface AddLessonFormProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -110,9 +120,11 @@ export function AddLessonForm({ open, onOpenChange, defaultDate }: AddLessonForm
   const settleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const createRecurring = useCreateRecurringLessons();
 
-  const { data: teachersData, isLoading: isLoadingTeachers } = useTeachers({ take: 100 });
-
-  const teachers = teachersData?.items || [];
+  const { data: groupsData, isLoading: isLoadingGroups } = useGroups(
+    { take: 100, isActive: true },
+    open,
+  );
+  const groups = groupsData?.items ?? [];
 
   const {
     register,
@@ -132,12 +144,30 @@ export function AddLessonForm({ open, onOpenChange, defaultDate }: AddLessonForm
   const teacherIdW = useWatch({ control, name: 'teacherId' });
   const groupIdW = useWatch({ control, name: 'groupId' });
 
-  const groupsQueryEnabled = open && teacherIdW.length > 0;
-  const { data: groupsData, isLoading: isLoadingGroups } = useGroups(
-    { take: 100, isActive: true, ...(teacherIdW ? { teacherId: teacherIdW } : {}) },
-    groupsQueryEnabled
+  const selectedGroup = useMemo(
+    () => groups.find((group) => group.id === groupIdW) ?? null,
+    [groups, groupIdW],
   );
-  const groups = groupsData?.items ?? [];
+
+  const handleGroupChange = useCallback(
+    (nextValue: string | null) => {
+      const groupId = nextValue ?? '';
+      const group = groups.find((item) => item.id === groupId) ?? null;
+      const teacherId = group ? getGroupTeacherId(group) ?? '' : '';
+
+      setValue('groupId', groupId, {
+        shouldValidate: true,
+        shouldDirty: true,
+        shouldTouch: true,
+      });
+      setValue('teacherId', teacherId, {
+        shouldValidate: true,
+        shouldDirty: true,
+        shouldTouch: true,
+      });
+    },
+    [groups, setValue],
+  );
 
   useEffect(() => {
     setIsDialogOpen(open);
@@ -168,10 +198,6 @@ export function AddLessonForm({ open, onOpenChange, defaultDate }: AddLessonForm
       }
     };
   }, []);
-
-  useEffect(() => {
-    setValue('groupId', '', { shouldValidate: false, shouldDirty: false, shouldTouch: false });
-  }, [teacherIdW, setValue]);
 
   const requestClose = useCallback(() => {
     setIsDialogOpen(false);
@@ -301,10 +327,18 @@ export function AddLessonForm({ open, onOpenChange, defaultDate }: AddLessonForm
   };
 
   const isBusy = isSubmitting || createRecurring.isPending;
+  const hasGroup = groupIdW.length > 0;
   const hasTeacher = teacherIdW.length > 0;
-  const noGroupsForTeacher = hasTeacher && !isLoadingGroups && groups.length === 0;
-  const groupSelectDisabled = isBusy || !hasTeacher || isLoadingGroups || noGroupsForTeacher;
+  const selectedGroupHasNoTeacher = hasGroup && !hasTeacher;
+  const noGroupsAvailable = !isLoadingGroups && groups.length === 0;
   const scheduleValid = validateSchedule() === null;
+
+  const teacherOptions = useMemo(() => {
+    if (!selectedGroup || !hasTeacher) {
+      return [{ id: '', label: tForm('selectGroupFirst') }];
+    }
+    return [{ id: teacherIdW, label: getGroupTeacherLabel(selectedGroup) || tForm('selectTeacher') }];
+  }, [selectedGroup, hasTeacher, teacherIdW, tForm]);
 
   return (
     <DialogPrimitive.Root open={isDialogOpen} onOpenChange={(nextOpen) => !nextOpen && requestClose()}>
@@ -312,6 +346,7 @@ export function AddLessonForm({ open, onOpenChange, defaultDate }: AddLessonForm
         <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/60 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
         <DialogPrimitive.Content
           style={dragStyle}
+          {...portaledDropdownDialogHandlers}
           className={cn(
             'fixed inset-x-0 bottom-[7px] top-auto z-50 grid w-full translate-y-0 lg:bottom-0 [@media(min-width:1024px)_and_(max-width:1366px)_and_(min-height:1000px)]:bottom-0',
             'duration-700 ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out min-[1367px]:duration-350 min-[1367px]:ease-[cubic-bezier(0.22,1,0.36,1)]',
@@ -369,31 +404,27 @@ export function AddLessonForm({ open, onOpenChange, defaultDate }: AddLessonForm
             <SingleSelectDropdown
               id="groupId"
               options={[
-                {
-                  id: '',
-                  label: !hasTeacher ? tForm('selectTeacherFirst') : tForm('selectGroup'),
-                },
+                { id: '', label: tForm('selectGroup') },
                 ...groups.map((group) => ({
                   id: group.id,
                   label: `${group.name}${group.level ? ` (${group.level})` : ''}${group.center ? ` - ${group.center.name}` : ''}`,
                 })),
               ]}
               value={groupIdW || ''}
-              onValueChange={(nextValue) =>
-                setValue('groupId', nextValue ?? '', {
-                  shouldValidate: true,
-                  shouldDirty: true,
-                  shouldTouch: true,
-                })
-              }
-              disabled={groupSelectDisabled}
+              onValueChange={handleGroupChange}
+              disabled={isBusy || isLoadingGroups}
               error={errors.groupId?.message ?? null}
+              searchable
+              searchPlaceholder={tForm('searchGroups')}
+              wrapText
             />
             {errors.groupId && <p className="text-sm text-red-600">{errors.groupId.message}</p>}
-            {!hasTeacher && <p className="text-sm text-slate-500">{tForm('selectTeacherForGroups')}</p>}
-            {hasTeacher && isLoadingGroups && <p className="text-sm text-slate-500">{tForm('loadingGroups')}</p>}
-            {hasTeacher && !isLoadingGroups && noGroupsForTeacher && (
-              <p className="text-sm text-amber-600">{tForm('noGroupsForTeacher')}</p>
+            {isLoadingGroups && <p className="text-sm text-slate-500">{tForm('loadingGroups')}</p>}
+            {!isLoadingGroups && noGroupsAvailable && (
+              <p className="text-sm text-amber-600">{tForm('noGroupsAvailable')}</p>
+            )}
+            {selectedGroupHasNoTeacher && (
+              <p className="text-sm text-amber-600">{tForm('noTeacherOnGroup')}</p>
             )}
           </div>
 
@@ -403,26 +434,14 @@ export function AddLessonForm({ open, onOpenChange, defaultDate }: AddLessonForm
             </Label>
             <SingleSelectDropdown
               id="teacherId"
-              options={[
-                { id: '', label: tForm('selectTeacher') },
-                ...teachers.map((teacher) => ({
-                  id: teacher.id,
-                  label: `${teacher.user.firstName} ${teacher.user.lastName}`,
-                })),
-              ]}
+              options={teacherOptions}
               value={teacherIdW}
-              onValueChange={(nextValue) => {
-                setValue('teacherId', nextValue ?? '', {
-                  shouldValidate: true,
-                  shouldDirty: true,
-                  shouldTouch: true,
-                });
-              }}
+              onValueChange={() => undefined}
+              disabled
             />
             {errors.teacherId && <p className="text-sm text-red-600">{errors.teacherId.message}</p>}
-            {isLoadingTeachers && <p className="text-sm text-slate-500">{tForm('loadingTeachers')}</p>}
-            {!isLoadingTeachers && teachers.length === 0 && (
-              <p className="text-sm text-amber-600">{tForm('noTeachersAvailable')}</p>
+            {hasGroup && hasTeacher && (
+              <p className="text-sm text-slate-500">{tForm('teacherAutoFromGroup')}</p>
             )}
           </div>
 
@@ -454,11 +473,11 @@ export function AddLessonForm({ open, onOpenChange, defaultDate }: AddLessonForm
               type="submit"
               disabled={
                 isBusy ||
-                isLoadingTeachers ||
-                teachers.length === 0 ||
-                !hasTeacher ||
                 isLoadingGroups ||
                 groups.length === 0 ||
+                !hasGroup ||
+                !hasTeacher ||
+                selectedGroupHasNoTeacher ||
                 !scheduleValid
               }
             >
