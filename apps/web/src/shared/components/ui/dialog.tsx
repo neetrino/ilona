@@ -59,6 +59,7 @@ const DialogContent = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Content>,
   DialogContentProps
 >(({ className, overlayClassName, children, sheet = true, variant = 'default', hideCloseButton = false, closeButtonClassName, ...props }, ref) => {
+  const t = useTranslations('common');
   const isPortalSheet = variant === 'portal';
   const useSheet = sheet || isPortalSheet;
   const closeRef = React.useRef<HTMLButtonElement>(null);
