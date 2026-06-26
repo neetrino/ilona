@@ -19,6 +19,8 @@ const DEFAULT_ENTRY: GroupScheduleEntry = {
   endTime: '10:00',
 };
 
+const MAX_SCHEDULE_SLOTS = DAY_VALUES.length;
+
 export function GroupScheduleEditor({ value, onChange, disabled }: GroupScheduleEditorProps) {
   const t = useTranslations('groups');
   const tTeachers = useTranslations('teachers');
@@ -47,7 +49,13 @@ export function GroupScheduleEditor({ value, onChange, disabled }: GroupSchedule
     onChange(value.filter((_, i) => i !== index));
   };
 
-  const addEntry = () => onChange([...value, { ...DEFAULT_ENTRY }]);
+  const addEntry = () => {
+    if (value.length >= MAX_SCHEDULE_SLOTS) return;
+    const nextDay = DAY_VALUES[value.length];
+    onChange([...value, { ...DEFAULT_ENTRY, dayOfWeek: nextDay }]);
+  };
+
+  const canAddSlot = value.length < MAX_SCHEDULE_SLOTS;
 
   return (
     <div className="space-y-2">
@@ -92,21 +100,23 @@ export function GroupScheduleEditor({ value, onChange, disabled }: GroupSchedule
             type="button"
             onClick={() => removeEntry(i)}
             disabled={disabled}
-            className="col-span-2 inline-flex items-center justify-center rounded-md border border-slate-300 bg-white px-2 py-1 text-xs text-slate-600 hover:bg-slate-100"
+            className="col-span-2 inline-flex items-center justify-center rounded-md border border-red-200 bg-red-50 px-2 py-1 text-xs text-red-600 hover:bg-red-100 hover:border-red-300 disabled:opacity-50"
             aria-label={t('scheduleRemoveEntry')}
           >
             <Trash2 className="size-3.5" />
           </button>
         </div>
       ))}
-      <button
-        type="button"
-        onClick={addEntry}
-        disabled={disabled}
-        className="inline-flex items-center gap-1 rounded-md border border-dashed border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 hover:border-slate-400 hover:bg-slate-50"
-      >
-        <Plus className="size-3.5" /> {t('scheduleAddSlot')}
-      </button>
+      {canAddSlot && (
+        <button
+          type="button"
+          onClick={addEntry}
+          disabled={disabled}
+          className="inline-flex items-center gap-1 rounded-md border border-dashed border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-600 hover:border-slate-400 hover:bg-slate-50"
+        >
+          <Plus className="size-3.5" /> {t('scheduleAddSlot')}
+        </button>
+      )}
     </div>
   );
 }

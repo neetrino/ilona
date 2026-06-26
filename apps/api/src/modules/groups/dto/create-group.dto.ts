@@ -76,6 +76,10 @@ export class CreateGroupDto {
   @IsOptional()
   secondTeacherId?: string;
 
+  @IsBoolean()
+  @IsOptional()
+  secondTeacherStartsFirstWeek?: boolean;
+
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => GroupScheduleEntryDto)

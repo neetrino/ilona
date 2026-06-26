@@ -493,6 +493,7 @@ export class GroupsService {
         centerId: dto.centerId,
         teacherId: dto.teacherId,
         secondTeacherId: dto.secondTeacherId,
+        secondTeacherStartsFirstWeek: dto.secondTeacherStartsFirstWeek ?? false,
         schedule: scheduleForCreate ?? undefined,
         isActive: dto.isActive ?? true,
       },
@@ -508,11 +509,13 @@ export class GroupsService {
       groupId: group.id,
       teacherId: group.teacherId,
       secondTeacherId: group.secondTeacherId,
+      secondTeacherStartsFirstWeek: group.secondTeacherStartsFirstWeek,
       weeklySlots,
       calendar: nextCalendar,
       previousScheduleJson: null,
       previousTeacherId: null,
       previousSecondTeacherId: null,
+      previousSecondTeacherStartsFirstWeek: null,
       confirmReplaceGeneratedLessons: false,
     });
 
@@ -556,6 +559,11 @@ export class GroupsService {
       dto.secondTeacherId !== undefined
         ? dto.secondTeacherId || null
         : currentGroup.secondTeacherId;
+
+    const nextSecondTeacherStartsFirstWeek =
+      dto.secondTeacherStartsFirstWeek !== undefined
+        ? dto.secondTeacherStartsFirstWeek
+        : currentGroup.secondTeacherStartsFirstWeek;
 
     this.validateGroupTeachers({
       teacherId: nextTeacherId,
@@ -603,6 +611,7 @@ export class GroupsService {
       confirmReplaceGeneratedLessons,
       teacherId: _dtoTeacherId,
       secondTeacherId,
+      secondTeacherStartsFirstWeek: _dtoSecondTeacherStartsFirstWeek,
       ...rest
     } = dto;
 
@@ -644,11 +653,13 @@ export class GroupsService {
       groupId: id,
       teacherId: nextTeacherId,
       secondTeacherId: nextSecondTeacherId,
+      secondTeacherStartsFirstWeek: nextSecondTeacherStartsFirstWeek,
       weeklySlots: nextWeekly,
       calendar: nextCalendar,
       previousScheduleJson: currentGroup.schedule,
       previousTeacherId: currentGroup.teacherId,
       previousSecondTeacherId: currentGroup.secondTeacherId,
+      previousSecondTeacherStartsFirstWeek: currentGroup.secondTeacherStartsFirstWeek,
       confirmReplaceGeneratedLessons: confirmReplaceGeneratedLessons ?? false,
     });
     if (synced !== undefined) {
@@ -667,6 +678,9 @@ export class GroupsService {
       data: {
         ...rest,
         ...(secondTeacherId !== undefined ? { secondTeacherId: secondTeacherId || null } : {}),
+        ...(dto.secondTeacherStartsFirstWeek !== undefined
+          ? { secondTeacherStartsFirstWeek: dto.secondTeacherStartsFirstWeek }
+          : {}),
         teacherId: nextTeacherId,
         ...scheduleUpdate,
         maxStudents: FIXED_GROUP_MAX_STUDENTS,

@@ -32,6 +32,14 @@ const nextConfig = {
       },
     ],
   },
+  async rewrites() {
+    return [
+      {
+        source: '/favicon.ico',
+        destination: '/icon.png',
+      },
+    ];
+  },
   // Development optimizations
   ...(process.env.NODE_ENV === 'development' && {
     // Faster refresh in development

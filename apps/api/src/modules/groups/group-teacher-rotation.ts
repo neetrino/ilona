@@ -2,8 +2,8 @@
  * Weekly teacher rotation for groups with two assigned teachers.
  *
  * Anchor: ISO week (Mon–Sun) that contains the schedule start date (`dateFrom`).
- * - That week → Teacher 1 (`teacherId`)
- * - Next ISO week → Teacher 2 (`secondTeacherId`)
+ * - That week → Teacher 1 main (`teacherId`) unless `secondTeacherStartsFirstWeek`
+ * - Next ISO week → the other teacher
  * - Then alternates every ISO week
  */
 
@@ -36,9 +36,12 @@ export function resolveRotatingTeacherId(params: {
   teacherId: string;
   secondTeacherId: string;
   scheduleStartDateYmd: string;
+  secondTeacherStartsFirstWeek?: boolean;
 }): string {
   const weekIndex = weekIndexSinceScheduleStart(params.lessonDate, params.scheduleStartDateYmd);
-  return weekIndex % 2 === 0 ? params.teacherId : params.secondTeacherId;
+  const teacher1Week = weekIndex % 2 === 0;
+  const useTeacher1 = params.secondTeacherStartsFirstWeek ? !teacher1Week : teacher1Week;
+  return useTeacher1 ? params.teacherId : params.secondTeacherId;
 }
 
 /** @deprecated Use weekIndexSinceScheduleStart */

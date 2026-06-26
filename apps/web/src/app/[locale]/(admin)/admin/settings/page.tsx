@@ -7,7 +7,6 @@ import { useSettingsPage } from './hooks/useSettingsPage';
 import { SettingsSidebar } from './components/SettingsSidebar';
 import { SecurityTab } from './components/SecurityTab';
 import { NotificationsTab } from './components/NotificationsTab';
-import { SystemTab } from './components/SystemTab';
 import { PenaltyTab } from './components/PenaltyTab';
 import { ManagerTab } from '@/app/[locale]/(admin)/admin/settings/components/ManagerTab';
 import { DashboardBannerTab } from './components/DashboardBannerTab';
@@ -193,10 +192,6 @@ export default function SettingsPage() {
 
           {activeTab === 'notifications' && (
             <NotificationsTab />
-          )}
-
-          {activeTab === 'system' && (
-            <SystemTab />
           )}
 
           {activeTab === 'penalty' && (

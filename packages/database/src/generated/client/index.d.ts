@@ -7542,6 +7542,7 @@ export namespace Prisma {
     centerId: string | null
     teacherId: string | null
     secondTeacherId: string | null
+    secondTeacherStartsFirstWeek: boolean | null
     isActive: boolean | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -7557,6 +7558,7 @@ export namespace Prisma {
     centerId: string | null
     teacherId: string | null
     secondTeacherId: string | null
+    secondTeacherStartsFirstWeek: boolean | null
     isActive: boolean | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -7572,6 +7574,7 @@ export namespace Prisma {
     centerId: number
     teacherId: number
     secondTeacherId: number
+    secondTeacherStartsFirstWeek: number
     schedule: number
     isActive: number
     createdAt: number
@@ -7598,6 +7601,7 @@ export namespace Prisma {
     centerId?: true
     teacherId?: true
     secondTeacherId?: true
+    secondTeacherStartsFirstWeek?: true
     isActive?: true
     createdAt?: true
     updatedAt?: true
@@ -7613,6 +7617,7 @@ export namespace Prisma {
     centerId?: true
     teacherId?: true
     secondTeacherId?: true
+    secondTeacherStartsFirstWeek?: true
     isActive?: true
     createdAt?: true
     updatedAt?: true
@@ -7628,6 +7633,7 @@ export namespace Prisma {
     centerId?: true
     teacherId?: true
     secondTeacherId?: true
+    secondTeacherStartsFirstWeek?: true
     schedule?: true
     isActive?: true
     createdAt?: true
@@ -7731,6 +7737,7 @@ export namespace Prisma {
     centerId: string
     teacherId: string | null
     secondTeacherId: string | null
+    secondTeacherStartsFirstWeek: boolean
     schedule: JsonValue | null
     isActive: boolean
     createdAt: Date
@@ -7766,6 +7773,7 @@ export namespace Prisma {
     centerId?: boolean
     teacherId?: boolean
     secondTeacherId?: boolean
+    secondTeacherStartsFirstWeek?: boolean
     schedule?: boolean
     isActive?: boolean
     createdAt?: boolean
@@ -7793,6 +7801,7 @@ export namespace Prisma {
     centerId?: boolean
     teacherId?: boolean
     secondTeacherId?: boolean
+    secondTeacherStartsFirstWeek?: boolean
     schedule?: boolean
     isActive?: boolean
     createdAt?: boolean
@@ -7812,6 +7821,7 @@ export namespace Prisma {
     centerId?: boolean
     teacherId?: boolean
     secondTeacherId?: boolean
+    secondTeacherStartsFirstWeek?: boolean
     schedule?: boolean
     isActive?: boolean
     createdAt?: boolean
@@ -7864,6 +7874,10 @@ export namespace Prisma {
       centerId: string
       teacherId: string | null
       secondTeacherId: string | null
+      /**
+       * When true, Teacher 2 leads the first ISO week of the monthly rotation; otherwise Teacher 1 (main).
+       */
+      secondTeacherStartsFirstWeek: boolean
       schedule: Prisma.JsonValue | null
       isActive: boolean
       createdAt: Date
@@ -8280,6 +8294,7 @@ export namespace Prisma {
     readonly centerId: FieldRef<"Group", 'String'>
     readonly teacherId: FieldRef<"Group", 'String'>
     readonly secondTeacherId: FieldRef<"Group", 'String'>
+    readonly secondTeacherStartsFirstWeek: FieldRef<"Group", 'Boolean'>
     readonly schedule: FieldRef<"Group", 'Json'>
     readonly isActive: FieldRef<"Group", 'Boolean'>
     readonly createdAt: FieldRef<"Group", 'DateTime'>
@@ -36464,6 +36479,7 @@ export namespace Prisma {
     centerId: 'centerId',
     teacherId: 'teacherId',
     secondTeacherId: 'secondTeacherId',
+    secondTeacherStartsFirstWeek: 'secondTeacherStartsFirstWeek',
     schedule: 'schedule',
     isActive: 'isActive',
     createdAt: 'createdAt',
@@ -37584,6 +37600,7 @@ export namespace Prisma {
     centerId?: StringFilter<"Group"> | string
     teacherId?: StringNullableFilter<"Group"> | string | null
     secondTeacherId?: StringNullableFilter<"Group"> | string | null
+    secondTeacherStartsFirstWeek?: BoolFilter<"Group"> | boolean
     schedule?: JsonNullableFilter<"Group">
     isActive?: BoolFilter<"Group"> | boolean
     createdAt?: DateTimeFilter<"Group"> | Date | string
@@ -37610,6 +37627,7 @@ export namespace Prisma {
     centerId?: SortOrder
     teacherId?: SortOrderInput | SortOrder
     secondTeacherId?: SortOrderInput | SortOrder
+    secondTeacherStartsFirstWeek?: SortOrder
     schedule?: SortOrderInput | SortOrder
     isActive?: SortOrder
     createdAt?: SortOrder
@@ -37639,6 +37657,7 @@ export namespace Prisma {
     centerId?: StringFilter<"Group"> | string
     teacherId?: StringNullableFilter<"Group"> | string | null
     secondTeacherId?: StringNullableFilter<"Group"> | string | null
+    secondTeacherStartsFirstWeek?: BoolFilter<"Group"> | boolean
     schedule?: JsonNullableFilter<"Group">
     isActive?: BoolFilter<"Group"> | boolean
     createdAt?: DateTimeFilter<"Group"> | Date | string
@@ -37665,6 +37684,7 @@ export namespace Prisma {
     centerId?: SortOrder
     teacherId?: SortOrderInput | SortOrder
     secondTeacherId?: SortOrderInput | SortOrder
+    secondTeacherStartsFirstWeek?: SortOrder
     schedule?: SortOrderInput | SortOrder
     isActive?: SortOrder
     createdAt?: SortOrder
@@ -37689,6 +37709,7 @@ export namespace Prisma {
     centerId?: StringWithAggregatesFilter<"Group"> | string
     teacherId?: StringNullableWithAggregatesFilter<"Group"> | string | null
     secondTeacherId?: StringNullableWithAggregatesFilter<"Group"> | string | null
+    secondTeacherStartsFirstWeek?: BoolWithAggregatesFilter<"Group"> | boolean
     schedule?: JsonNullableWithAggregatesFilter<"Group">
     isActive?: BoolWithAggregatesFilter<"Group"> | boolean
     createdAt?: DateTimeWithAggregatesFilter<"Group"> | Date | string
@@ -40434,6 +40455,7 @@ export namespace Prisma {
     level?: string | null
     description?: string | null
     maxStudents?: number
+    secondTeacherStartsFirstWeek?: boolean
     schedule?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     createdAt?: Date | string
@@ -40460,6 +40482,7 @@ export namespace Prisma {
     centerId: string
     teacherId?: string | null
     secondTeacherId?: string | null
+    secondTeacherStartsFirstWeek?: boolean
     schedule?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     createdAt?: Date | string
@@ -40480,6 +40503,7 @@ export namespace Prisma {
     level?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
     maxStudents?: IntFieldUpdateOperationsInput | number
+    secondTeacherStartsFirstWeek?: BoolFieldUpdateOperationsInput | boolean
     schedule?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -40506,6 +40530,7 @@ export namespace Prisma {
     centerId?: StringFieldUpdateOperationsInput | string
     teacherId?: NullableStringFieldUpdateOperationsInput | string | null
     secondTeacherId?: NullableStringFieldUpdateOperationsInput | string | null
+    secondTeacherStartsFirstWeek?: BoolFieldUpdateOperationsInput | boolean
     schedule?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -40529,6 +40554,7 @@ export namespace Prisma {
     centerId: string
     teacherId?: string | null
     secondTeacherId?: string | null
+    secondTeacherStartsFirstWeek?: boolean
     schedule?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     createdAt?: Date | string
@@ -40542,6 +40568,7 @@ export namespace Prisma {
     level?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
     maxStudents?: IntFieldUpdateOperationsInput | number
+    secondTeacherStartsFirstWeek?: BoolFieldUpdateOperationsInput | boolean
     schedule?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -40558,6 +40585,7 @@ export namespace Prisma {
     centerId?: StringFieldUpdateOperationsInput | string
     teacherId?: NullableStringFieldUpdateOperationsInput | string | null
     secondTeacherId?: NullableStringFieldUpdateOperationsInput | string | null
+    secondTeacherStartsFirstWeek?: BoolFieldUpdateOperationsInput | boolean
     schedule?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -43684,6 +43712,7 @@ export namespace Prisma {
     centerId?: SortOrder
     teacherId?: SortOrder
     secondTeacherId?: SortOrder
+    secondTeacherStartsFirstWeek?: SortOrder
     schedule?: SortOrder
     isActive?: SortOrder
     createdAt?: SortOrder
@@ -43704,6 +43733,7 @@ export namespace Prisma {
     centerId?: SortOrder
     teacherId?: SortOrder
     secondTeacherId?: SortOrder
+    secondTeacherStartsFirstWeek?: SortOrder
     isActive?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -43719,6 +43749,7 @@ export namespace Prisma {
     centerId?: SortOrder
     teacherId?: SortOrder
     secondTeacherId?: SortOrder
+    secondTeacherStartsFirstWeek?: SortOrder
     isActive?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -49981,6 +50012,7 @@ export namespace Prisma {
     level?: string | null
     description?: string | null
     maxStudents?: number
+    secondTeacherStartsFirstWeek?: boolean
     schedule?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     createdAt?: Date | string
@@ -50005,6 +50037,7 @@ export namespace Prisma {
     maxStudents?: number
     teacherId?: string | null
     secondTeacherId?: string | null
+    secondTeacherStartsFirstWeek?: boolean
     schedule?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     createdAt?: Date | string
@@ -50201,6 +50234,7 @@ export namespace Prisma {
     centerId?: StringFilter<"Group"> | string
     teacherId?: StringNullableFilter<"Group"> | string | null
     secondTeacherId?: StringNullableFilter<"Group"> | string | null
+    secondTeacherStartsFirstWeek?: BoolFilter<"Group"> | boolean
     schedule?: JsonNullableFilter<"Group">
     isActive?: BoolFilter<"Group"> | boolean
     createdAt?: DateTimeFilter<"Group"> | Date | string
@@ -51518,6 +51552,7 @@ export namespace Prisma {
     level?: string | null
     description?: string | null
     maxStudents?: number
+    secondTeacherStartsFirstWeek?: boolean
     schedule?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     createdAt?: Date | string
@@ -51542,6 +51577,7 @@ export namespace Prisma {
     maxStudents?: number
     centerId: string
     secondTeacherId?: string | null
+    secondTeacherStartsFirstWeek?: boolean
     schedule?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     createdAt?: Date | string
@@ -51572,6 +51608,7 @@ export namespace Prisma {
     level?: string | null
     description?: string | null
     maxStudents?: number
+    secondTeacherStartsFirstWeek?: boolean
     schedule?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     createdAt?: Date | string
@@ -51596,6 +51633,7 @@ export namespace Prisma {
     maxStudents?: number
     centerId: string
     teacherId?: string | null
+    secondTeacherStartsFirstWeek?: boolean
     schedule?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     createdAt?: Date | string
@@ -52763,6 +52801,7 @@ export namespace Prisma {
     level?: string | null
     description?: string | null
     maxStudents?: number
+    secondTeacherStartsFirstWeek?: boolean
     schedule?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     createdAt?: Date | string
@@ -52788,6 +52827,7 @@ export namespace Prisma {
     centerId: string
     teacherId?: string | null
     secondTeacherId?: string | null
+    secondTeacherStartsFirstWeek?: boolean
     schedule?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     createdAt?: Date | string
@@ -53218,6 +53258,7 @@ export namespace Prisma {
     level?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
     maxStudents?: IntFieldUpdateOperationsInput | number
+    secondTeacherStartsFirstWeek?: BoolFieldUpdateOperationsInput | boolean
     schedule?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -53243,6 +53284,7 @@ export namespace Prisma {
     centerId?: StringFieldUpdateOperationsInput | string
     teacherId?: NullableStringFieldUpdateOperationsInput | string | null
     secondTeacherId?: NullableStringFieldUpdateOperationsInput | string | null
+    secondTeacherStartsFirstWeek?: BoolFieldUpdateOperationsInput | boolean
     schedule?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -53947,6 +53989,7 @@ export namespace Prisma {
     level?: string | null
     description?: string | null
     maxStudents?: number
+    secondTeacherStartsFirstWeek?: boolean
     schedule?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     createdAt?: Date | string
@@ -53972,6 +54015,7 @@ export namespace Prisma {
     centerId: string
     teacherId?: string | null
     secondTeacherId?: string | null
+    secondTeacherStartsFirstWeek?: boolean
     schedule?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     createdAt?: Date | string
@@ -54082,6 +54126,7 @@ export namespace Prisma {
     level?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
     maxStudents?: IntFieldUpdateOperationsInput | number
+    secondTeacherStartsFirstWeek?: BoolFieldUpdateOperationsInput | boolean
     schedule?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -54107,6 +54152,7 @@ export namespace Prisma {
     centerId?: StringFieldUpdateOperationsInput | string
     teacherId?: NullableStringFieldUpdateOperationsInput | string | null
     secondTeacherId?: NullableStringFieldUpdateOperationsInput | string | null
+    secondTeacherStartsFirstWeek?: BoolFieldUpdateOperationsInput | boolean
     schedule?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -54208,6 +54254,7 @@ export namespace Prisma {
     level?: string | null
     description?: string | null
     maxStudents?: number
+    secondTeacherStartsFirstWeek?: boolean
     schedule?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     createdAt?: Date | string
@@ -54233,6 +54280,7 @@ export namespace Prisma {
     centerId: string
     teacherId?: string | null
     secondTeacherId?: string | null
+    secondTeacherStartsFirstWeek?: boolean
     schedule?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     createdAt?: Date | string
@@ -54471,6 +54519,7 @@ export namespace Prisma {
     level?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
     maxStudents?: IntFieldUpdateOperationsInput | number
+    secondTeacherStartsFirstWeek?: BoolFieldUpdateOperationsInput | boolean
     schedule?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -54496,6 +54545,7 @@ export namespace Prisma {
     centerId?: StringFieldUpdateOperationsInput | string
     teacherId?: NullableStringFieldUpdateOperationsInput | string | null
     secondTeacherId?: NullableStringFieldUpdateOperationsInput | string | null
+    secondTeacherStartsFirstWeek?: BoolFieldUpdateOperationsInput | boolean
     schedule?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -55880,6 +55930,7 @@ export namespace Prisma {
     level?: string | null
     description?: string | null
     maxStudents?: number
+    secondTeacherStartsFirstWeek?: boolean
     schedule?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     createdAt?: Date | string
@@ -55905,6 +55956,7 @@ export namespace Prisma {
     centerId: string
     teacherId?: string | null
     secondTeacherId?: string | null
+    secondTeacherStartsFirstWeek?: boolean
     schedule?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     createdAt?: Date | string
@@ -56000,6 +56052,7 @@ export namespace Prisma {
     level?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
     maxStudents?: IntFieldUpdateOperationsInput | number
+    secondTeacherStartsFirstWeek?: BoolFieldUpdateOperationsInput | boolean
     schedule?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -56025,6 +56078,7 @@ export namespace Prisma {
     centerId?: StringFieldUpdateOperationsInput | string
     teacherId?: NullableStringFieldUpdateOperationsInput | string | null
     secondTeacherId?: NullableStringFieldUpdateOperationsInput | string | null
+    secondTeacherStartsFirstWeek?: BoolFieldUpdateOperationsInput | boolean
     schedule?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -56652,6 +56706,7 @@ export namespace Prisma {
     level?: string | null
     description?: string | null
     maxStudents?: number
+    secondTeacherStartsFirstWeek?: boolean
     schedule?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     createdAt?: Date | string
@@ -56677,6 +56732,7 @@ export namespace Prisma {
     centerId: string
     teacherId?: string | null
     secondTeacherId?: string | null
+    secondTeacherStartsFirstWeek?: boolean
     schedule?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     createdAt?: Date | string
@@ -56872,6 +56928,7 @@ export namespace Prisma {
     level?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
     maxStudents?: IntFieldUpdateOperationsInput | number
+    secondTeacherStartsFirstWeek?: BoolFieldUpdateOperationsInput | boolean
     schedule?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -56897,6 +56954,7 @@ export namespace Prisma {
     centerId?: StringFieldUpdateOperationsInput | string
     teacherId?: NullableStringFieldUpdateOperationsInput | string | null
     secondTeacherId?: NullableStringFieldUpdateOperationsInput | string | null
+    secondTeacherStartsFirstWeek?: BoolFieldUpdateOperationsInput | boolean
     schedule?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -57084,6 +57142,7 @@ export namespace Prisma {
     level?: string | null
     description?: string | null
     maxStudents?: number
+    secondTeacherStartsFirstWeek?: boolean
     schedule?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     createdAt?: Date | string
@@ -57109,6 +57168,7 @@ export namespace Prisma {
     centerId: string
     teacherId?: string | null
     secondTeacherId?: string | null
+    secondTeacherStartsFirstWeek?: boolean
     schedule?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     createdAt?: Date | string
@@ -57276,6 +57336,7 @@ export namespace Prisma {
     level?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
     maxStudents?: IntFieldUpdateOperationsInput | number
+    secondTeacherStartsFirstWeek?: BoolFieldUpdateOperationsInput | boolean
     schedule?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -57301,6 +57362,7 @@ export namespace Prisma {
     centerId?: StringFieldUpdateOperationsInput | string
     teacherId?: NullableStringFieldUpdateOperationsInput | string | null
     secondTeacherId?: NullableStringFieldUpdateOperationsInput | string | null
+    secondTeacherStartsFirstWeek?: BoolFieldUpdateOperationsInput | boolean
     schedule?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -57661,6 +57723,7 @@ export namespace Prisma {
     level?: string | null
     description?: string | null
     maxStudents?: number
+    secondTeacherStartsFirstWeek?: boolean
     schedule?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     createdAt?: Date | string
@@ -57686,6 +57749,7 @@ export namespace Prisma {
     centerId: string
     teacherId?: string | null
     secondTeacherId?: string | null
+    secondTeacherStartsFirstWeek?: boolean
     schedule?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     createdAt?: Date | string
@@ -58064,6 +58128,7 @@ export namespace Prisma {
     level?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
     maxStudents?: IntFieldUpdateOperationsInput | number
+    secondTeacherStartsFirstWeek?: BoolFieldUpdateOperationsInput | boolean
     schedule?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -58089,6 +58154,7 @@ export namespace Prisma {
     centerId?: StringFieldUpdateOperationsInput | string
     teacherId?: NullableStringFieldUpdateOperationsInput | string | null
     secondTeacherId?: NullableStringFieldUpdateOperationsInput | string | null
+    secondTeacherStartsFirstWeek?: BoolFieldUpdateOperationsInput | boolean
     schedule?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -59005,6 +59071,7 @@ export namespace Prisma {
     maxStudents?: number
     teacherId?: string | null
     secondTeacherId?: string | null
+    secondTeacherStartsFirstWeek?: boolean
     schedule?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     createdAt?: Date | string
@@ -59153,6 +59220,7 @@ export namespace Prisma {
     level?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
     maxStudents?: IntFieldUpdateOperationsInput | number
+    secondTeacherStartsFirstWeek?: BoolFieldUpdateOperationsInput | boolean
     schedule?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -59177,6 +59245,7 @@ export namespace Prisma {
     maxStudents?: IntFieldUpdateOperationsInput | number
     teacherId?: NullableStringFieldUpdateOperationsInput | string | null
     secondTeacherId?: NullableStringFieldUpdateOperationsInput | string | null
+    secondTeacherStartsFirstWeek?: BoolFieldUpdateOperationsInput | boolean
     schedule?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -59199,6 +59268,7 @@ export namespace Prisma {
     maxStudents?: IntFieldUpdateOperationsInput | number
     teacherId?: NullableStringFieldUpdateOperationsInput | string | null
     secondTeacherId?: NullableStringFieldUpdateOperationsInput | string | null
+    secondTeacherStartsFirstWeek?: BoolFieldUpdateOperationsInput | boolean
     schedule?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -59875,6 +59945,7 @@ export namespace Prisma {
     maxStudents?: number
     centerId: string
     secondTeacherId?: string | null
+    secondTeacherStartsFirstWeek?: boolean
     schedule?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     createdAt?: Date | string
@@ -59890,6 +59961,7 @@ export namespace Prisma {
     maxStudents?: number
     centerId: string
     teacherId?: string | null
+    secondTeacherStartsFirstWeek?: boolean
     schedule?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
     createdAt?: Date | string
@@ -60197,6 +60269,7 @@ export namespace Prisma {
     level?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
     maxStudents?: IntFieldUpdateOperationsInput | number
+    secondTeacherStartsFirstWeek?: BoolFieldUpdateOperationsInput | boolean
     schedule?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -60221,6 +60294,7 @@ export namespace Prisma {
     maxStudents?: IntFieldUpdateOperationsInput | number
     centerId?: StringFieldUpdateOperationsInput | string
     secondTeacherId?: NullableStringFieldUpdateOperationsInput | string | null
+    secondTeacherStartsFirstWeek?: BoolFieldUpdateOperationsInput | boolean
     schedule?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -60243,6 +60317,7 @@ export namespace Prisma {
     maxStudents?: IntFieldUpdateOperationsInput | number
     centerId?: StringFieldUpdateOperationsInput | string
     secondTeacherId?: NullableStringFieldUpdateOperationsInput | string | null
+    secondTeacherStartsFirstWeek?: BoolFieldUpdateOperationsInput | boolean
     schedule?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -60256,6 +60331,7 @@ export namespace Prisma {
     level?: NullableStringFieldUpdateOperationsInput | string | null
     description?: NullableStringFieldUpdateOperationsInput | string | null
     maxStudents?: IntFieldUpdateOperationsInput | number
+    secondTeacherStartsFirstWeek?: BoolFieldUpdateOperationsInput | boolean
     schedule?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -60280,6 +60356,7 @@ export namespace Prisma {
     maxStudents?: IntFieldUpdateOperationsInput | number
     centerId?: StringFieldUpdateOperationsInput | string
     teacherId?: NullableStringFieldUpdateOperationsInput | string | null
+    secondTeacherStartsFirstWeek?: BoolFieldUpdateOperationsInput | boolean
     schedule?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -60302,6 +60379,7 @@ export namespace Prisma {
     maxStudents?: IntFieldUpdateOperationsInput | number
     centerId?: StringFieldUpdateOperationsInput | string
     teacherId?: NullableStringFieldUpdateOperationsInput | string | null
+    secondTeacherStartsFirstWeek?: BoolFieldUpdateOperationsInput | boolean
     schedule?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string

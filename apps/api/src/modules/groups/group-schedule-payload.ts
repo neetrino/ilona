@@ -52,6 +52,7 @@ export function computeGenerationKey(
   weeklySlots: GroupWeeklySlot[],
   dateFrom: string,
   dateTo: string,
+  secondTeacherStartsFirstWeek = false,
 ): string {
   const normalized = [...weeklySlots]
     .map((s) => ({
@@ -66,7 +67,16 @@ export function computeGenerationKey(
         a.endTime.localeCompare(b.endTime),
     );
   return createHash('sha256')
-    .update(JSON.stringify({ teacherId, secondTeacherId, normalized, dateFrom, dateTo }))
+    .update(
+      JSON.stringify({
+        teacherId,
+        secondTeacherId,
+        secondTeacherStartsFirstWeek,
+        normalized,
+        dateFrom,
+        dateTo,
+      }),
+    )
     .digest('hex');
 }
 

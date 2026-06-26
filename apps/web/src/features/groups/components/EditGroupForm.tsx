@@ -5,7 +5,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useTranslations } from 'next-intl';
-import { Button, Input, Label, Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/shared/components/ui';
+import { Button, Input, Label, Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, Checkbox } from '@/shared/components/ui';
 import { useUpdateGroup, useGroup, type UpdateGroupDto } from '@/features/groups';
 import type { GroupScheduleEntry } from '../types';
 import { useCenters } from '@/features/centers';
@@ -103,6 +103,7 @@ export function EditGroupForm({
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
   const [regenerateDialogOpen, setRegenerateDialogOpen] = useState(false);
+  const [secondTeacherStartsFirstWeek, setSecondTeacherStartsFirstWeek] = useState(false);
   const [iconKey, setIconKey] = useState<GroupIconKey | null>(null);
   const updateGroup = useUpdateGroup();
   const { data: group, isLoading } = useGroup(groupId, open);
@@ -179,6 +180,7 @@ export function EditGroupForm({
         setDateTo(r.to);
       }
       setIconKey(isGroupIconKey(group.iconKey) ? group.iconKey : null);
+      setSecondTeacherStartsFirstWeek(group.secondTeacherStartsFirstWeek ?? false);
     }
   }, [group, reset]);
 
@@ -295,6 +297,7 @@ export function EditGroupForm({
       centerId: data.centerId && data.centerId.trim() !== '' ? data.centerId : undefined,
       teacherId: data.teacherId || undefined,
       secondTeacherId: data.secondTeacherId ? data.secondTeacherId : null,
+      secondTeacherStartsFirstWeek,
       schedule: schedule.length > 0 ? schedule : null,
       calendarPlan,
       ...(confirmReplaceGeneratedLessons ? { confirmReplaceGeneratedLessons: true } : {}),
@@ -591,7 +594,7 @@ export function EditGroupForm({
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="min-w-0 space-y-2">
               <Label htmlFor="teacherId">
-                {tForm('teacher1')} <span className="text-red-500">*</span>
+                {tForm('teacher1Main')} <span className="text-red-500">*</span>
               </Label>
               <input type="hidden" {...register('teacherId')} />
               <SingleSelectDropdown
@@ -646,6 +649,15 @@ export function EditGroupForm({
                 error={errors.secondTeacherId?.message ?? null}
                 disabled={teacherDropdownDisabled}
               />
+              <label className="flex cursor-pointer select-none items-start gap-2 pt-1">
+                <Checkbox
+                  checked={secondTeacherStartsFirstWeek}
+                  onCheckedChange={setSecondTeacherStartsFirstWeek}
+                  disabled={isFormBusy}
+                  className="mt-0.5"
+                />
+                <span className="text-sm text-slate-600">{tForm('teacher2StartsFirstWeek')}</span>
+              </label>
             </div>
           </div>
 

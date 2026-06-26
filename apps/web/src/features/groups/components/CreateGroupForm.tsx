@@ -5,7 +5,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useTranslations } from 'next-intl';
-import { Button, Input, Label } from '@/shared/components/ui';
+import { Button, Input, Label, Checkbox } from '@/shared/components/ui';
 import { useCreateGroup, type CreateGroupDto } from '@/features/groups';
 import type { GroupScheduleEntry } from '../types';
 import { useCenters } from '@/features/centers';
@@ -84,6 +84,7 @@ export function CreateGroupForm({ open, onOpenChange }: CreateGroupFormProps) {
   const [dateFrom, setDateFrom] = useState(() => defaultMonthDateRange().from);
   const [dateTo, setDateTo] = useState(() => defaultMonthDateRange().to);
   const [iconKey, setIconKey] = useState<GroupIconKey | null>(null);
+  const [secondTeacherStartsFirstWeek, setSecondTeacherStartsFirstWeek] = useState(false);
   const createGroup = useCreateGroup();
 
   // Fetch centers and teachers for dropdowns
@@ -143,6 +144,7 @@ export function CreateGroupForm({ open, onOpenChange }: CreateGroupFormProps) {
       });
       setSchedule([]);
       setIconKey(null);
+      setSecondTeacherStartsFirstWeek(false);
       setErrorMessage(null);
       setSuccessMessage(null);
       const r = defaultMonthDateRange();
@@ -268,6 +270,7 @@ export function CreateGroupForm({ open, onOpenChange }: CreateGroupFormProps) {
         centerId: data.centerId,
         teacherId: data.teacherId,
         secondTeacherId: data.secondTeacherId,
+        secondTeacherStartsFirstWeek,
         schedule: schedule.length > 0 ? schedule : undefined,
         calendarPlan: schedule.length > 0 ? { dateFrom, dateTo } : undefined,
         ...(iconKey ? { iconKey } : {}),
@@ -292,6 +295,7 @@ export function CreateGroupForm({ open, onOpenChange }: CreateGroupFormProps) {
       setDateFrom(r.from);
       setDateTo(r.to);
       setIconKey(null);
+      setSecondTeacherStartsFirstWeek(false);
       setTimeout(() => {
         onOpenChange(false);
         setSuccessMessage(null);
@@ -431,7 +435,7 @@ export function CreateGroupForm({ open, onOpenChange }: CreateGroupFormProps) {
 
           <div className="space-y-2">
             <Label htmlFor="teacherId">
-              {tForm('teacher1')} <span className="text-red-500">*</span>
+              {tForm('teacher1Main')} <span className="text-red-500">*</span>
             </Label>
             <input type="hidden" {...register('teacherId')} />
             <SingleSelectDropdown
@@ -489,6 +493,15 @@ export function CreateGroupForm({ open, onOpenChange }: CreateGroupFormProps) {
               error={errors.secondTeacherId?.message ?? null}
               disabled={teacherDropdownDisabled}
             />
+            <label className="flex cursor-pointer select-none items-start gap-2 pt-1">
+              <Checkbox
+                checked={secondTeacherStartsFirstWeek}
+                onCheckedChange={setSecondTeacherStartsFirstWeek}
+                disabled={isSubmitting || createGroup.isPending}
+                className="mt-0.5"
+              />
+              <span className="text-sm text-slate-600">{tForm('teacher2StartsFirstWeek')}</span>
+            </label>
           </div>
 
           <p className="text-xs text-slate-500">{tForm('teacherRotationHint')}</p>

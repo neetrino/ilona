@@ -117,11 +117,13 @@ export class GroupScheduleLessonsService {
     groupId: string;
     teacherId: string | null | undefined;
     secondTeacherId: string | null | undefined;
+    secondTeacherStartsFirstWeek: boolean;
     weeklySlots: GroupWeeklySlot[];
     calendar: GroupCalendarStored | null;
     previousScheduleJson: unknown;
     previousTeacherId: string | null;
     previousSecondTeacherId: string | null;
+    previousSecondTeacherStartsFirstWeek: boolean | null;
     confirmReplaceGeneratedLessons: boolean;
   }): Promise<Prisma.InputJsonValue | typeof Prisma.JsonNull | undefined> {
     const teacherId = params.teacherId ?? null;
@@ -153,6 +155,7 @@ export class GroupScheduleLessonsService {
       params.weeklySlots,
       dateFrom,
       dateTo,
+      params.secondTeacherStartsFirstWeek,
     );
     const oldKey = prev.calendar?.generationKey ?? null;
 
@@ -161,7 +164,9 @@ export class GroupScheduleLessonsService {
       params.previousTeacherId != null &&
       params.previousSecondTeacherId != null &&
       (teacherId !== params.previousTeacherId ||
-        secondTeacherId !== params.previousSecondTeacherId);
+        secondTeacherId !== params.previousSecondTeacherId ||
+        params.secondTeacherStartsFirstWeek !==
+          (params.previousSecondTeacherStartsFirstWeek ?? false));
 
     const needsReplace = oldKey !== null && (newKey !== oldKey || teachersChanged);
 
@@ -242,6 +247,7 @@ export class GroupScheduleLessonsService {
         teacherId,
         secondTeacherId,
         scheduleStartDateYmd: dateFrom,
+        secondTeacherStartsFirstWeek: params.secondTeacherStartsFirstWeek,
       });
 
       const endAt = new Date(at.getTime() + duration * 60_000);

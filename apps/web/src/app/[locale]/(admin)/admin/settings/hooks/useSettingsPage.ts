@@ -7,7 +7,6 @@ import { readUrlSearchParam } from '@/shared/lib/url-search-params';
 type SettingsTab =
   | 'security'
   | 'notifications'
-  | 'system'
   | 'penalty'
   | 'manager'
   | 'dashboard-banner'
@@ -17,7 +16,6 @@ type SettingsTab =
 const VALID_TABS: ReadonlySet<string> = new Set([
   'security',
   'notifications',
-  'system',
   'penalty',
   'manager',
   'dashboard-banner',

@@ -30,6 +30,7 @@ const MOBILE_CALENDAR_BACKDROP_Z_CLASS = 'z-[9998]';
 const MOBILE_CALENDAR_Z_CLASS = 'z-[9999]';
 const ESTIMATED_POPOVER_HEIGHT = 390;
 const VIEWPORT_PADDING = 8;
+const POPOVER_GAP = 6;
 
 interface PopoverPosition {
   left: number;
@@ -40,11 +41,7 @@ interface PopoverPosition {
   positionMode: 'fixed' | 'absolute';
 }
 
-function resolvePortalContainer(root: HTMLDivElement | null): HTMLElement {
-  if (!root) return document.body;
-  const dialog = root.closest('[role="dialog"]');
-  return (dialog as HTMLElement | null) ?? document.body;
-}
+export const DATE_PICKER_POPOVER_ATTR = 'data-date-picker-popover';
 
 export interface DatePickerInputProps
   extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'type' | 'onChange'> {
@@ -181,55 +178,31 @@ export const DatePickerInput = React.forwardRef<HTMLInputElement, DatePickerInpu
 
     const updatePopoverPosition = React.useCallback(() => {
       const root = rootRef.current;
-      const trigger = root?.querySelector<HTMLElement>('[data-role="date-trigger"]');
-      if (!root || !trigger) return;
+      if (!root) return;
 
-      const portalTarget = resolvePortalContainer(root);
-      const useDialogPortal = portalTarget !== document.body;
-      setPortalContainer(portalTarget);
+      const anchor =
+        root.querySelector<HTMLElement>('[data-date-anchor]') ??
+        root.querySelector<HTMLElement>('[data-role="date-trigger"]');
+      if (!anchor) return;
+
+      setPortalContainer(document.body);
 
       const isDesktop = isDesktopViewport();
-      const triggerRect = trigger.getBoundingClientRect();
-      const rootRect = root.getBoundingClientRect();
+      const anchorRect = anchor.getBoundingClientRect();
+      const popoverHeight = popoverRef.current?.offsetHeight ?? ESTIMATED_POPOVER_HEIGHT;
       const popoverWidth = popoverExpanded
         ? Math.min(EXPANDED_POPOVER_WIDTH, window.innerWidth - VIEWPORT_PADDING * 2)
         : isDesktop
-          ? root.offsetWidth
+          ? anchorRect.width
           : Math.min(MOBILE_POPOVER_WIDTH, window.innerWidth - VIEWPORT_PADDING * 2);
       const matchFormWidth = popoverExpanded ? false : isDesktop;
 
-      const anchorTop = isDesktop && !popoverExpanded ? rootRect.top : triggerRect.top;
-      const anchorBottom = isDesktop && !popoverExpanded ? rootRect.bottom : triggerRect.bottom;
-      const canOpenBelow =
-        anchorBottom + ESTIMATED_POPOVER_HEIGHT <= window.innerHeight - VIEWPORT_PADDING;
-      const placement: PopoverPosition['placement'] = canOpenBelow ? 'below' : 'above';
+      const spaceBelow = window.innerHeight - anchorRect.bottom - VIEWPORT_PADDING;
+      const spaceAbove = anchorRect.top - VIEWPORT_PADDING;
+      const openBelow = spaceBelow >= popoverHeight || spaceBelow >= spaceAbove;
+      const placement: PopoverPosition['placement'] = openBelow ? 'below' : 'above';
 
-      if (useDialogPortal) {
-        const dialogRect = portalTarget.getBoundingClientRect();
-        let left =
-          (isDesktop && !popoverExpanded ? rootRect.left : triggerRect.left) - dialogRect.left;
-        const maxLeft = portalTarget.clientWidth - popoverWidth - VIEWPORT_PADDING;
-        left = Math.max(VIEWPORT_PADDING, Math.min(left, maxLeft));
-
-        const top = canOpenBelow
-          ? anchorBottom - dialogRect.top + VIEWPORT_PADDING
-          : Math.max(
-              VIEWPORT_PADDING,
-              anchorTop - dialogRect.top - ESTIMATED_POPOVER_HEIGHT - VIEWPORT_PADDING
-            );
-
-        setPopoverPosition({
-          left,
-          top,
-          width: popoverWidth,
-          placement,
-          matchFormWidth,
-          positionMode: 'absolute',
-        });
-        return;
-      }
-
-      let left = isDesktop && !popoverExpanded ? rootRect.left : triggerRect.left;
+      let left = anchorRect.left;
       if (left + popoverWidth > window.innerWidth - VIEWPORT_PADDING) {
         left = Math.max(VIEWPORT_PADDING, window.innerWidth - popoverWidth - VIEWPORT_PADDING);
       }
@@ -237,9 +210,9 @@ export const DatePickerInput = React.forwardRef<HTMLInputElement, DatePickerInpu
         left = VIEWPORT_PADDING;
       }
 
-      const openBelowTop = anchorBottom + VIEWPORT_PADDING;
-      const openAboveTop = anchorTop - ESTIMATED_POPOVER_HEIGHT - VIEWPORT_PADDING;
-      const top = canOpenBelow ? openBelowTop : Math.max(VIEWPORT_PADDING, openAboveTop);
+      const top = openBelow
+        ? anchorRect.bottom + POPOVER_GAP
+        : Math.max(VIEWPORT_PADDING, anchorRect.top - popoverHeight - POPOVER_GAP);
 
       setPopoverPosition({
         left,
@@ -265,6 +238,11 @@ export const DatePickerInput = React.forwardRef<HTMLInputElement, DatePickerInpu
       },
       [updatePopoverPosition]
     );
+
+    React.useLayoutEffect(() => {
+      if (!open || !popoverRef.current) return;
+      updatePopoverPosition();
+    }, [open, updatePopoverPosition]);
 
     const { minYear, maxYear } = React.useMemo(() => getYearBounds(min, max), [max, min]);
     const yearOptions = React.useMemo(
@@ -419,6 +397,7 @@ export const DatePickerInput = React.forwardRef<HTMLInputElement, DatePickerInpu
         <div
           ref={popoverRef}
           id={`${triggerId}-dialog`}
+          {...{ [DATE_PICKER_POPOVER_ATTR]: '' }}
           role="dialog"
           aria-label={placeholder || tCommon('date')}
           onPointerDown={(event) => event.stopPropagation()}
@@ -432,7 +411,8 @@ export const DatePickerInput = React.forwardRef<HTMLInputElement, DatePickerInpu
           className={cn(
             MOBILE_CALENDAR_Z_CLASS,
             'relative overflow-visible max-w-[calc(100vw-1rem)] rounded-[1.25rem]',
-            'border border-slate-200 bg-white p-2.5 shadow-[0_20px_48px_rgba(15,23,42,0.16)]'
+            'border border-slate-200 bg-white p-2.5 shadow-[0_20px_48px_rgba(15,23,42,0.16)]',
+            popoverPosition.placement === 'below' ? 'origin-top' : 'origin-bottom',
           )}
         >
           <div className="relative mb-2 flex items-center justify-between gap-1">
@@ -583,7 +563,7 @@ export const DatePickerInput = React.forwardRef<HTMLInputElement, DatePickerInpu
           tabIndex={-1}
           aria-hidden
         />
-        <div className="relative w-full">
+        <div className="relative w-full" data-date-anchor>
           <input
             {...rest}
             ref={ref}
