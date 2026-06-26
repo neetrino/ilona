@@ -99,9 +99,23 @@ const _statusConfig: Record<LessonStatus, { label: string; variant: 'success' | 
 
 const CALENDAR_MODAL_QUERY_KEY = 'modal';
 const ADD_LESSON_MODAL_QUERY_VALUE = 'add-lesson';
+const SUBSTITUTE_LESSON_MODAL_QUERY_VALUE = 'substitute-lesson';
+const SUBSTITUTE_LESSON_ID_QUERY_KEY = 'substituteLessonId';
 
 function isAddLessonModalOpen(searchParams: URLSearchParams): boolean {
   return readUrlSearchParam(CALENDAR_MODAL_QUERY_KEY, searchParams) === ADD_LESSON_MODAL_QUERY_VALUE;
+}
+
+function readSubstituteLessonModalFromUrl(searchParams: URLSearchParams): {
+  open: boolean;
+  lessonId: string | null;
+} {
+  const modal = readUrlSearchParam(CALENDAR_MODAL_QUERY_KEY, searchParams);
+  const lessonId = readUrlSearchParam(SUBSTITUTE_LESSON_ID_QUERY_KEY, searchParams);
+  if (modal === SUBSTITUTE_LESSON_MODAL_QUERY_VALUE && lessonId) {
+    return { open: true, lessonId };
+  }
+  return { open: false, lessonId: null };
 }
 
 export default function CalendarPage() {
@@ -142,8 +156,10 @@ export default function CalendarPage() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [isAddLessonOpen, setIsAddLessonOpen] = useState(() => isAddLessonModalOpen(searchParams));
   const isAddLessonClosingRef = useRef(false);
-  const [substituteLessonId, setSubstituteLessonId] = useState<string | null>(null);
-  const [substituteLessonModalOpen, setSubstituteLessonModalOpen] = useState(false);
+  const initialSubstituteModal = readSubstituteLessonModalFromUrl(searchParams);
+  const [substituteLessonId, setSubstituteLessonId] = useState<string | null>(initialSubstituteModal.lessonId);
+  const [substituteLessonModalOpen, setSubstituteLessonModalOpen] = useState(initialSubstituteModal.open);
+  const isSubstituteLessonClosingRef = useRef(false);
 
   const [pendingBulkDeleteIds, setPendingBulkDeleteIds] = useState<string[]>([]);
   const [isBulkDeleteDialogOpen, setIsBulkDeleteDialogOpen] = useState(false);
@@ -195,6 +211,12 @@ export default function CalendarPage() {
     if (!isAddLessonClosingRef.current) {
       setIsAddLessonOpen(isAddLessonModalOpen(searchParams));
     }
+
+    if (!isSubstituteLessonClosingRef.current) {
+      const substituteFromUrl = readSubstituteLessonModalFromUrl(searchParams);
+      setSubstituteLessonModalOpen(substituteFromUrl.open);
+      setSubstituteLessonId(substituteFromUrl.lessonId);
+    }
   }, [searchParams, urlRevision]);
 
   const updateAddLessonModalInUrl = useCallback(
@@ -222,6 +244,45 @@ export default function CalendarPage() {
       }
     },
     [updateAddLessonModalInUrl],
+  );
+
+  const updateSubstituteLessonModalInUrl = useCallback(
+    (open: boolean, lessonId: string | null) => {
+      replaceParams({
+        [CALENDAR_MODAL_QUERY_KEY]: open ? SUBSTITUTE_LESSON_MODAL_QUERY_VALUE : null,
+        [SUBSTITUTE_LESSON_ID_QUERY_KEY]: open && lessonId ? lessonId : null,
+      });
+    },
+    [replaceParams],
+  );
+
+  const handleSubstituteLessonOpenChange = useCallback(
+    (open: boolean) => {
+      if (open) {
+        isSubstituteLessonClosingRef.current = false;
+        setSubstituteLessonModalOpen(true);
+        return;
+      }
+
+      isSubstituteLessonClosingRef.current = true;
+      setSubstituteLessonModalOpen(false);
+      setSubstituteLessonId(null);
+      updateSubstituteLessonModalInUrl(false, null);
+      setTimeout(() => {
+        isSubstituteLessonClosingRef.current = false;
+      }, 100);
+    },
+    [updateSubstituteLessonModalInUrl],
+  );
+
+  const handleAssignSubstitute = useCallback(
+    (lessonId: string) => {
+      isSubstituteLessonClosingRef.current = false;
+      setSubstituteLessonId(lessonId);
+      setSubstituteLessonModalOpen(true);
+      updateSubstituteLessonModalInUrl(true, lessonId);
+    },
+    [updateSubstituteLessonModalInUrl],
   );
   
   // Handle sort toggle
@@ -724,10 +785,7 @@ export default function CalendarPage() {
                   router.push(`/${locale}${portalBasePath}/calendar/${lessonId}?tab=${obligation}`);
                 }}
                 onDelete={handleSingleDeleteClick}
-                onAssignSubstitute={(lessonId) => {
-                  setSubstituteLessonId(lessonId);
-                  setSubstituteLessonModalOpen(true);
-                }}
+                onAssignSubstitute={handleAssignSubstitute}
               />
             )}
           </>
@@ -742,10 +800,7 @@ export default function CalendarPage() {
 
       <SubstituteLessonModal
         open={substituteLessonModalOpen}
-        onOpenChange={(open) => {
-          setSubstituteLessonModalOpen(open);
-          if (!open) setSubstituteLessonId(null);
-        }}
+        onOpenChange={handleSubstituteLessonOpenChange}
         lessonId={substituteLessonId}
         teacherOptions={teacherOptions}
       />

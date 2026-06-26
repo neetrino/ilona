@@ -2,12 +2,13 @@
 
 import * as React from 'react';
 import { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { cn } from '@/shared/lib/utils';
 import {
   DROPDOWN_CHEVRON_CLASS,
   DROPDOWN_CHEVRON_SELECTED_CLASS,
   DROPDOWN_LABEL_CLASS,
-  DROPDOWN_MENU_SURFACE_CLASS,
+  DROPDOWN_MENU_PORTAL_SURFACE_CLASS,
   DROPDOWN_OPTION_BASE_CLASS,
   DROPDOWN_OPTION_INTERACTIVE_CLASS,
   DROPDOWN_OPTION_SELECTED_CLASS,
@@ -19,7 +20,14 @@ import {
   DROPDOWN_TRIGGER_SELECTED_CLASS,
   DROPDOWN_VALUE_TEXT_CLASS,
 } from './dropdown-theme';
-import { useOutsidePress } from '@/shared/hooks/useOutsidePress';
+
+type MenuPosition = {
+  top?: number;
+  bottom?: number;
+  left: number;
+  width: number;
+  maxHeight: number;
+};
 
 export interface SingleSelectOption {
   id: string;
@@ -57,9 +65,10 @@ export function SingleSelectDropdown({
 }: SingleSelectDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [openUpward, setOpenUpward] = useState(false);
-  const [menuMaxHeight, setMenuMaxHeight] = useState(288);
+  const [menuPosition, setMenuPosition] = useState<MenuPosition | null>(null);
   const [activeIndex, setActiveIndex] = useState(-1);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const optionRefs = useRef<Array<HTMLButtonElement | null>>([]);
   const generatedId = React.useId();
@@ -81,19 +90,58 @@ export function SingleSelectDropdown({
     const spaceAbove = rect.top - viewportPadding;
     const shouldOpenUpward = spaceBelow < 220 && spaceAbove > spaceBelow;
     const availableSpace = Math.max(120, shouldOpenUpward ? spaceAbove : spaceBelow);
+    const maxHeight = Math.min(320, Math.floor(availableSpace));
 
     setOpenUpward(shouldOpenUpward);
-    setMenuMaxHeight(Math.min(320, Math.floor(availableSpace)));
+    setMenuPosition({
+      left: rect.left,
+      width: rect.width,
+      maxHeight,
+      ...(shouldOpenUpward
+        ? { bottom: window.innerHeight - rect.top + 6 }
+        : { top: rect.bottom + 6 }),
+    });
   }, []);
 
-  useOutsidePress(dropdownRef, () => setIsOpen(false), { enabled: isOpen });
-
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen) {
+      setMenuPosition(null);
+      return;
+    }
+
     updateMenuPosition();
+
+    const handleClickOutside = (event: Event) => {
+      const target = event.target as Node;
+      if (
+        dropdownRef.current?.contains(target) ||
+        menuRef.current?.contains(target)
+      ) {
+        return;
+      }
+      setIsOpen(false);
+    };
+
+    const supportsPointer = typeof window !== 'undefined' && 'PointerEvent' in window;
+    const timeoutId = setTimeout(() => {
+      if (supportsPointer) {
+        document.addEventListener('pointerdown', handleClickOutside);
+      } else {
+        document.addEventListener('mousedown', handleClickOutside);
+        document.addEventListener('touchstart', handleClickOutside);
+      }
+    }, 0);
+
     window.addEventListener('resize', updateMenuPosition);
     window.addEventListener('scroll', updateMenuPosition, true);
     return () => {
+      clearTimeout(timeoutId);
+      if (supportsPointer) {
+        document.removeEventListener('pointerdown', handleClickOutside);
+      } else {
+        document.removeEventListener('mousedown', handleClickOutside);
+        document.removeEventListener('touchstart', handleClickOutside);
+      }
       window.removeEventListener('resize', updateMenuPosition);
       window.removeEventListener('scroll', updateMenuPosition, true);
     };
@@ -247,58 +295,70 @@ export function SingleSelectDropdown({
           </div>
         </button>
 
-        {isOpen && (
-          <div
-            id={listboxId}
-            role="listbox"
-            aria-labelledby={labelId}
-            tabIndex={-1}
-            onKeyDown={handleMenuKeyDown}
-            style={{ maxHeight: `${menuMaxHeight}px` }}
-            className={cn(
-              DROPDOWN_MENU_SURFACE_CLASS,
-              'animate-in fade-in-0 zoom-in-95 duration-150',
-              openUpward ? 'bottom-full mb-1.5 origin-bottom' : 'top-full mt-1.5 origin-top'
-            )}
-          >
-            {error ? (
-              <div className="p-3 text-sm text-red-600">{error}</div>
-            ) : options.length === 0 ? (
-              <div className="p-3 text-sm text-[#8b8b90]">No options available</div>
-            ) : (
-              <div className="space-y-1">
-                {options.map((option, index) => {
-                  const isSelected = value === option.id;
-                  return (
-                    <button
-                      id={`${listboxId}-option-${option.id}`}
-                      key={option.id}
-                      ref={(node) => {
-                        optionRefs.current[index] = node;
-                      }}
-                      type="button"
-                      role="option"
-                      aria-selected={isSelected}
-                      title={option.label}
-                      onClick={() => handleSelect(option.id)}
-                      onMouseEnter={() => setActiveIndex(index)}
-                      className={cn(
-                        DROPDOWN_OPTION_BASE_CLASS,
-                        DROPDOWN_OPTION_INTERACTIVE_CLASS,
-                        isSelected && DROPDOWN_OPTION_SELECTED_CLASS,
-                        activeIndex === index && 'bg-slate-50 text-[#1010a3]'
-                      )}
-                    >
-                      <span className={cn('block', wrapText ? 'whitespace-normal break-words text-left' : 'truncate')}>
-                        {option.label}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        )}
+        {isOpen &&
+          menuPosition &&
+          typeof document !== 'undefined' &&
+          createPortal(
+            <div
+              ref={menuRef}
+              id={listboxId}
+              data-single-select-dropdown-menu=""
+              role="listbox"
+              aria-labelledby={labelId}
+              tabIndex={-1}
+              onKeyDown={handleMenuKeyDown}
+              style={{
+                left: `${menuPosition.left}px`,
+                width: `${menuPosition.width}px`,
+                maxHeight: `${menuPosition.maxHeight}px`,
+                ...(menuPosition.top !== undefined ? { top: `${menuPosition.top}px` } : {}),
+                ...(menuPosition.bottom !== undefined ? { bottom: `${menuPosition.bottom}px` } : {}),
+              }}
+              className={cn(
+                DROPDOWN_MENU_PORTAL_SURFACE_CLASS,
+                'animate-in fade-in-0 zoom-in-95 duration-150',
+                openUpward ? 'origin-bottom' : 'origin-top'
+              )}
+            >
+              {error ? (
+                <div className="p-3 text-sm text-red-600">{error}</div>
+              ) : options.length === 0 ? (
+                <div className="p-3 text-sm text-[#8b8b90]">No options available</div>
+              ) : (
+                <div className="space-y-1">
+                  {options.map((option, index) => {
+                    const isSelected = value === option.id;
+                    return (
+                      <button
+                        id={`${listboxId}-option-${option.id}`}
+                        key={option.id}
+                        ref={(node) => {
+                          optionRefs.current[index] = node;
+                        }}
+                        type="button"
+                        role="option"
+                        aria-selected={isSelected}
+                        title={option.label}
+                        onClick={() => handleSelect(option.id)}
+                        onMouseEnter={() => setActiveIndex(index)}
+                        className={cn(
+                          DROPDOWN_OPTION_BASE_CLASS,
+                          DROPDOWN_OPTION_INTERACTIVE_CLASS,
+                          isSelected && DROPDOWN_OPTION_SELECTED_CLASS,
+                          activeIndex === index && 'bg-slate-50 text-[#1010a3]'
+                        )}
+                      >
+                        <span className={cn('block', wrapText ? 'whitespace-normal break-words text-left' : 'truncate')}>
+                          {option.label}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>,
+            document.body
+          )}
       </div>
     </div>
   );
