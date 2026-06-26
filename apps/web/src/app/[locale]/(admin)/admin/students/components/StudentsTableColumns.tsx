@@ -16,6 +16,36 @@ import type { Teacher } from '@/features/teachers';
 
 const NEW_STUDENT_BADGE_DAYS = 30;
 
+type SelectOption = { id: string; label: string; searchText?: string };
+
+function buildTeacherSearchText(teacher: Teacher): string {
+  const firstName = teacher.user.firstName ?? '';
+  const lastName = teacher.user.lastName ?? '';
+  const fullName = `${firstName} ${lastName}`.trim();
+  const email = teacher.user.email ?? '';
+  return [firstName, lastName, fullName, email].filter(Boolean).join(' ');
+}
+
+function buildGroupSearchText(group: Group): string {
+  return [group.name, group.level, group.center?.name].filter(Boolean).join(' ');
+}
+
+function mapTeacherToOption(teacher: Teacher): SelectOption {
+  return {
+    id: teacher.id,
+    label: `${teacher.user.firstName} ${teacher.user.lastName}`.trim(),
+    searchText: buildTeacherSearchText(teacher),
+  };
+}
+
+function mapGroupToOption(group: Group): SelectOption {
+  return {
+    id: group.id,
+    label: `${group.name}${group.level ? ` (${group.level})` : ''}`,
+    searchText: buildGroupSearchText(group),
+  };
+}
+
 function getHorizontalScrollContainer(node: HTMLElement | null): HTMLElement | null {
   let current = node?.parentElement ?? null;
   while (current) {
@@ -33,24 +63,19 @@ function buildTeacherOptionsForRow(
   currentTeacherId: string | null,
   teachers: Teacher[],
   groups: Group[],
-): Array<{ id: string; label: string }> {
+): SelectOption[] {
   if (!centerId) {
     if (!currentTeacherId) return [];
     const t = teachers.find((x) => x.id === currentTeacherId);
-    return t
-      ? [{ id: t.id, label: `${t.user.firstName} ${t.user.lastName}`.trim() }]
-      : [];
+    return t ? [mapTeacherToOption(t)] : [];
   }
   const filtered = teachers
     .filter((t) => teacherBelongsToCenter(t.id, centerId, t.centerLinks, groups))
-    .map((t) => ({
-      id: t.id,
-      label: `${t.user.firstName} ${t.user.lastName}`.trim(),
-    }));
+    .map(mapTeacherToOption);
   if (currentTeacherId && !filtered.some((o) => o.id === currentTeacherId)) {
     const t = teachers.find((x) => x.id === currentTeacherId);
     if (t) {
-      return [{ id: t.id, label: `${t.user.firstName} ${t.user.lastName}`.trim() }, ...filtered];
+      return [mapTeacherToOption(t), ...filtered];
     }
   }
   return filtered;
@@ -61,21 +86,19 @@ function buildGroupOptionsForRow(
   teacherId: string | null,
   currentGroupId: string | null,
   groups: Group[],
-): Array<{ id: string; label: string }> {
+): SelectOption[] {
   if (!centerId || !teacherId) {
     if (!currentGroupId) return [];
     const g = groups.find((x) => x.id === currentGroupId);
-    return g
-      ? [{ id: g.id, label: `${g.name}${g.level ? ` (${g.level})` : ''}` }]
-      : [];
+    return g ? [mapGroupToOption(g)] : [];
   }
   const filtered = groups
     .filter((g) => g.teacherId === teacherId && g.centerId === centerId)
-    .map((g) => ({ id: g.id, label: `${g.name}${g.level ? ` (${g.level})` : ''}` }));
+    .map(mapGroupToOption);
   if (currentGroupId && !filtered.some((o) => o.id === currentGroupId)) {
     const g = groups.find((x) => x.id === currentGroupId);
     if (g) {
-      return [{ id: g.id, label: `${g.name}${g.level ? ` (${g.level})` : ''}` }, ...filtered];
+      return [mapGroupToOption(g), ...filtered];
     }
   }
   return filtered;
@@ -437,6 +460,9 @@ export function createStudentsTableColumns({
               placeholder={teacherPlaceholder}
               clearLabel="Not assigned"
               disabled={isUpdating || !manualCenterId}
+              searchable
+              searchPlaceholder="Search teacher..."
+              emptySearchMessage="No teachers found"
             />
           </div>
         );
@@ -468,6 +494,9 @@ export function createStudentsTableColumns({
               placeholder={groupPlaceholder}
               clearLabel="Not assigned"
               disabled={isUpdating || !teacherId}
+              searchable
+              searchPlaceholder="Search group..."
+              emptySearchMessage="No groups found"
             />
           </div>
         );

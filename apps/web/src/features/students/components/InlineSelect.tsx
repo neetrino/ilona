@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { cn } from '@/shared/lib/utils';
 import { getErrorMessage } from '@/shared/lib/api';
@@ -16,15 +16,30 @@ import {
   DROPDOWN_TRIGGER_INTERACTIVE_CLASS,
 } from '@/shared/components/ui/dropdown-theme';
 
+export interface InlineSelectOption {
+  id: string;
+  label: string;
+  /** Extra text used for client-side search (not shown in the menu). */
+  searchText?: string;
+}
+
 interface InlineSelectProps {
   value: string | null;
-  options: Array<{ id: string; label: string }>;
+  options: InlineSelectOption[];
   onChange: (value: string | null) => Promise<void>;
   placeholder?: string;
   /** First row in the open menu (clear value). Defaults to `placeholder`. */
   clearLabel?: string;
   disabled?: boolean;
   className?: string;
+  searchable?: boolean;
+  searchPlaceholder?: string;
+  emptySearchMessage?: string;
+}
+
+function matchesSearchQuery(option: InlineSelectOption, query: string): boolean {
+  const haystack = (option.searchText ?? option.label).toLowerCase();
+  return haystack.includes(query.toLowerCase());
 }
 
 export function InlineSelect({
@@ -35,20 +50,43 @@ export function InlineSelect({
   clearLabel,
   disabled = false,
   className,
+  searchable = false,
+  searchPlaceholder = 'Search...',
+  emptySearchMessage = 'No results found',
 }: InlineSelectProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [localValue, setLocalValue] = useState(value);
+  const [searchQuery, setSearchQuery] = useState('');
   const dropdownRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
   const [position, setPosition] = useState<{ top: number; left: number; width: number; placement: 'bottom' | 'top' } | null>(null);
+
+  const filteredOptions = useMemo(() => {
+    if (!searchable || !searchQuery.trim()) return options;
+    return options.filter((option) => matchesSearchQuery(option, searchQuery.trim()));
+  }, [options, searchable, searchQuery]);
+
+  const closeDropdown = () => {
+    setIsOpen(false);
+    setSearchQuery('');
+  };
 
   // Sync local value with prop
   useEffect(() => {
     setLocalValue(value);
   }, [value]);
+
+  useEffect(() => {
+    if (!isOpen || !searchable) return;
+    const timeoutId = setTimeout(() => {
+      searchInputRef.current?.focus();
+    }, 0);
+    return () => clearTimeout(timeoutId);
+  }, [isOpen, searchable]);
 
   // Calculate dropdown position and handle click outside
   useEffect(() => {
@@ -68,7 +106,10 @@ export function InlineSelect({
       
       // Estimate dropdown height (placeholder + options, each ~36px)
       const estimatedItemHeight = 36;
-      const estimatedDropdownHeight = (options.length + 1) * estimatedItemHeight + 8; // +1 for placeholder, +8 for padding
+      const searchInputHeight = searchable ? 44 : 0;
+      const visibleOptionCount = searchable ? filteredOptions.length : options.length;
+      const estimatedDropdownHeight =
+        (visibleOptionCount + 1) * estimatedItemHeight + searchInputHeight + 8;
       const maxDropdownHeight = 240; // max-h-60 = 240px
       const dropdownHeight = Math.min(estimatedDropdownHeight, maxDropdownHeight);
       
@@ -123,7 +164,7 @@ export function InlineSelect({
         menuRef.current &&
         !menuRef.current.contains(event.target as Node)
       ) {
-        setIsOpen(false);
+        closeDropdown();
       }
     }
 
@@ -150,13 +191,13 @@ export function InlineSelect({
         document.removeEventListener('touchstart', handleClickOutside);
       }
     };
-  }, [isOpen, options.length]);
+  }, [isOpen, options.length, searchable, filteredOptions.length]);
 
   const emptyActionLabel = clearLabel ?? placeholder;
 
   const handleSelect = async (newValue: string | null) => {
     if (newValue === localValue) {
-      setIsOpen(false);
+      closeDropdown();
       return;
     }
 
@@ -164,7 +205,7 @@ export function InlineSelect({
     setLocalValue(newValue);
     setIsLoading(true);
     setError(null);
-    setIsOpen(false);
+    closeDropdown();
 
     try {
       await onChange(newValue);
@@ -193,32 +234,58 @@ export function InlineSelect({
           width: `${position.width}px`,
         }}
       >
-        <div className="space-y-1 px-1 py-1">
-          <button
-            type="button"
-            onClick={() => handleSelect(null)}
-            className={cn(
-              DROPDOWN_OPTION_BASE_CLASS,
-              DROPDOWN_OPTION_INTERACTIVE_CLASS,
-              !localValue && DROPDOWN_OPTION_SELECTED_CLASS
-            )}
-          >
-            {emptyActionLabel}
-          </button>
-          {options.map((option) => (
+        <div className="flex max-h-60 flex-col overflow-hidden">
+          {searchable && (
+            <div className="border-b border-[rgba(14,14,16,0.08)] p-2">
+              <input
+                ref={searchInputRef}
+                type="text"
+                value={searchQuery}
+                placeholder={searchPlaceholder}
+                onChange={(event) => setSearchQuery(event.target.value)}
+                onClick={(event) => event.stopPropagation()}
+                onPointerDown={(event) => event.stopPropagation()}
+                onKeyDown={(event) => {
+                  event.stopPropagation();
+                  if (event.key === 'Escape') {
+                    closeDropdown();
+                  }
+                }}
+                className="w-full rounded border border-[rgba(14,14,16,0.12)] px-2 py-1.5 text-sm focus:border-[#1010a3] focus:outline-none focus:ring-1 focus:ring-[#1010a3]"
+              />
+            </div>
+          )}
+          <div className="space-y-1 overflow-y-auto px-1 py-1">
             <button
-              key={option.id}
               type="button"
-              onClick={() => handleSelect(option.id)}
+              onClick={() => handleSelect(null)}
               className={cn(
                 DROPDOWN_OPTION_BASE_CLASS,
                 DROPDOWN_OPTION_INTERACTIVE_CLASS,
-                localValue === option.id && DROPDOWN_OPTION_SELECTED_CLASS
+                !localValue && DROPDOWN_OPTION_SELECTED_CLASS
               )}
             >
-              {option.label}
+              {emptyActionLabel}
             </button>
-          ))}
+            {searchable && searchQuery.trim() && filteredOptions.length === 0 ? (
+              <div className="px-3 py-2 text-sm text-[#8b8b90]">{emptySearchMessage}</div>
+            ) : (
+              filteredOptions.map((option) => (
+                <button
+                  key={option.id}
+                  type="button"
+                  onClick={() => handleSelect(option.id)}
+                  className={cn(
+                    DROPDOWN_OPTION_BASE_CLASS,
+                    DROPDOWN_OPTION_INTERACTIVE_CLASS,
+                    localValue === option.id && DROPDOWN_OPTION_SELECTED_CLASS
+                  )}
+                >
+                  {option.label}
+                </button>
+              ))
+            )}
+          </div>
         </div>
       </div>,
       document.body
@@ -230,7 +297,14 @@ export function InlineSelect({
       <button
         ref={buttonRef}
         type="button"
-        onClick={() => !disabled && !isLoading && setIsOpen(!isOpen)}
+        onClick={() => {
+          if (disabled || isLoading) return;
+          if (isOpen) {
+            closeDropdown();
+            return;
+          }
+          setIsOpen(true);
+        }}
         disabled={disabled || isLoading}
         className={cn(
           'w-full min-h-11 py-2 text-left text-sm',
