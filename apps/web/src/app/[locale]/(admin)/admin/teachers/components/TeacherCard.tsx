@@ -2,7 +2,7 @@
 
 import type { ReactNode } from 'react';
 import { useTranslations } from 'next-intl';
-import { ActionButtons, Badge } from '@/shared/components/ui';
+import { Badge } from '@/shared/components/ui';
 import { formatCurrency } from '@/shared/lib/utils';
 import { TeacherShowcaseCard } from '@/features/teachers';
 import type { Teacher } from '@/features/teachers';
@@ -108,20 +108,9 @@ export function TeacherCard({
   return (
     <TeacherShowcaseCard
       teacher={teacher}
-      onCardClick={onCardClick ? () => onCardClick(teacher) : undefined}
+      onPhotoClick={onCardClick ? () => onCardClick(teacher) : undefined}
+      onCardClick={onEdit}
       isMuted={!isActive}
-      headerActions={
-        <ActionButtons
-          onEdit={onEdit}
-          size="md"
-          ariaLabels={{
-            edit: 'Edit teacher',
-          }}
-          titles={{
-            edit: 'Edit teacher',
-          }}
-        />
-      }
       afterExperience={
         <>
           <div className="space-y-3 sm:hidden">
