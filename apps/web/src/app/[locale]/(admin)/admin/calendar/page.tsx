@@ -257,11 +257,11 @@ export default function CalendarPage() {
   
   const weekDates = useMemo(() => getWeekDates(currentDate), [currentDate]);
   const monthDates = useMemo(() => getMonthDates(currentDate), [currentDate]);
-  const { rangeFrom, rangeTo } = useMemo(() => {
+  const { dateFrom: rangeFrom, dateTo: rangeTo } = useMemo(() => {
     if (viewMode === 'month') {
       const start = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
       const end = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1);
-      return { rangeFrom: formatScheduleDate(start), rangeTo: formatScheduleDate(end) };
+      return { dateFrom: formatScheduleDate(start), dateTo: formatScheduleDate(end) };
     }
     return getWeekDateRangeForApi(weekDates);
   }, [currentDate, viewMode, weekDates]);

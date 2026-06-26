@@ -372,6 +372,24 @@ export class GroupsService {
     }
   }
 
+  private async assertTeachersBelongToCenter(centerId: string, teacherIds: string[]) {
+    for (const teacherId of teacherIds) {
+      const hasCenterLink = await this.prisma.teacherCenter.findFirst({
+        where: { teacherId, centerId },
+      });
+      if (hasCenterLink) continue;
+
+      const teachesGroupAtCenter = await this.prisma.group.findFirst({
+        where: { centerId, teacherId },
+      });
+      if (teachesGroupAtCenter) continue;
+
+      throw new BadRequestException(
+        `Teacher with ID ${teacherId} is not assigned to the selected center`,
+      );
+    }
+  }
+
   private async syncGroupTeachersInChat(
     groupId: string,
     groupName: string,
@@ -422,7 +440,9 @@ export class GroupsService {
     });
 
     const teacherIdsToValidate = [dto.teacherId, dto.secondTeacherId].filter(Boolean) as string[];
-    await this.assertTeachersExist([...new Set(teacherIdsToValidate)]);
+    const uniqueTeacherIds = [...new Set(teacherIdsToValidate)];
+    await this.assertTeachersExist(uniqueTeacherIds);
+    await this.assertTeachersBelongToCenter(dto.centerId, uniqueTeacherIds);
 
     if (dto.calendarPlan) {
       if (!dto.schedule?.length) {
@@ -543,8 +563,13 @@ export class GroupsService {
       requireBoth: true,
     });
 
+    const nextCenterId =
+      dto.centerId !== undefined ? dto.centerId : currentGroup.centerId;
+
     const teacherIdsToValidate = [nextTeacherId, nextSecondTeacherId].filter(Boolean) as string[];
-    await this.assertTeachersExist([...new Set(teacherIdsToValidate)]);
+    const uniqueTeacherIds = [...new Set(teacherIdsToValidate)];
+    await this.assertTeachersExist(uniqueTeacherIds);
+    await this.assertTeachersBelongToCenter(nextCenterId, uniqueTeacherIds);
 
     // Sync chat participants when group teachers change
     const oldTeacherIds = [currentGroup.teacherId, currentGroup.secondTeacherId];

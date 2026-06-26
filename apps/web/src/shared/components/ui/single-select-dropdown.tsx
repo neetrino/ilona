@@ -8,7 +8,6 @@ import {
   DROPDOWN_CHEVRON_CLASS,
   DROPDOWN_CHEVRON_SELECTED_CLASS,
   DROPDOWN_LABEL_CLASS,
-  DROPDOWN_MENU_PORTAL_SURFACE_CLASS,
   DROPDOWN_OPTION_BASE_CLASS,
   DROPDOWN_OPTION_INTERACTIVE_CLASS,
   DROPDOWN_OPTION_SELECTED_CLASS,
@@ -27,12 +26,41 @@ type MenuPosition = {
   left: number;
   width: number;
   maxHeight: number;
+  positionMode: 'fixed' | 'absolute';
 };
+
+function resolvePortalContainer(root: HTMLElement | null): HTMLElement {
+  if (!root) return document.body;
+  const dialog = root.closest('[role="dialog"]');
+  return (dialog as HTMLElement | null) ?? document.body;
+}
+
+export const SINGLE_SELECT_DROPDOWN_BACKDROP_ATTR = 'data-single-select-dropdown-backdrop';
 
 export interface SingleSelectOption {
   id: string;
   label: string;
 }
+
+export const SINGLE_SELECT_DROPDOWN_MENU_ATTR = 'data-single-select-dropdown-menu';
+
+/** Spread onto Radix Dialog.Content when the dialog contains portaled SingleSelectDropdown menus. */
+export function preventDialogDismissOnPortaledDropdown(event: Event) {
+  const target = event.target;
+  if (
+    target instanceof Element &&
+    (target.closest(`[${SINGLE_SELECT_DROPDOWN_MENU_ATTR}]`) ||
+      target.closest(`[${SINGLE_SELECT_DROPDOWN_BACKDROP_ATTR}]`))
+  ) {
+    event.preventDefault();
+  }
+}
+
+export const portaledDropdownDialogHandlers = {
+  onPointerDownOutside: preventDialogDismissOnPortaledDropdown,
+  onInteractOutside: preventDialogDismissOnPortaledDropdown,
+  onFocusOutside: preventDialogDismissOnPortaledDropdown,
+};
 
 interface SingleSelectDropdownProps {
   id?: string;
@@ -66,6 +94,7 @@ export function SingleSelectDropdown({
   const [isOpen, setIsOpen] = useState(false);
   const [openUpward, setOpenUpward] = useState(false);
   const [menuPosition, setMenuPosition] = useState<MenuPosition | null>(null);
+  const [portalContainer, setPortalContainer] = useState<HTMLElement | null>(null);
   const [activeIndex, setActiveIndex] = useState(-1);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -82,18 +111,41 @@ export function SingleSelectDropdown({
 
   const updateMenuPosition = React.useCallback(() => {
     const trigger = triggerRef.current;
+    const root = dropdownRef.current;
     if (!trigger) return;
+
+    const portalTarget = resolvePortalContainer(root);
+    setPortalContainer(portalTarget);
+    const useDialogPortal = portalTarget !== document.body;
 
     const rect = trigger.getBoundingClientRect();
     const viewportPadding = 12;
     const spaceBelow = window.innerHeight - rect.bottom - viewportPadding;
     const spaceAbove = rect.top - viewportPadding;
-    const shouldOpenUpward = spaceBelow < 220 && spaceAbove > spaceBelow;
+    const shouldOpenUpward = useDialogPortal
+      ? spaceBelow < 220 || (spaceAbove > spaceBelow && spaceBelow < 280)
+      : spaceBelow < 220 && spaceAbove > spaceBelow;
     const availableSpace = Math.max(120, shouldOpenUpward ? spaceAbove : spaceBelow);
     const maxHeight = Math.min(320, Math.floor(availableSpace));
 
     setOpenUpward(shouldOpenUpward);
+
+    if (useDialogPortal) {
+      const dialogRect = portalTarget.getBoundingClientRect();
+      setMenuPosition({
+        positionMode: 'absolute',
+        left: rect.left - dialogRect.left,
+        width: rect.width,
+        maxHeight,
+        ...(shouldOpenUpward
+          ? { bottom: dialogRect.bottom - rect.top + 6 }
+          : { top: rect.bottom - dialogRect.top + 6 }),
+      });
+      return;
+    }
+
     setMenuPosition({
+      positionMode: 'fixed',
       left: rect.left,
       width: rect.width,
       maxHeight,
@@ -106,6 +158,7 @@ export function SingleSelectDropdown({
   useEffect(() => {
     if (!isOpen) {
       setMenuPosition(null);
+      setPortalContainer(null);
       return;
     }
 
@@ -122,26 +175,15 @@ export function SingleSelectDropdown({
       setIsOpen(false);
     };
 
-    const supportsPointer = typeof window !== 'undefined' && 'PointerEvent' in window;
     const timeoutId = setTimeout(() => {
-      if (supportsPointer) {
-        document.addEventListener('pointerdown', handleClickOutside);
-      } else {
-        document.addEventListener('mousedown', handleClickOutside);
-        document.addEventListener('touchstart', handleClickOutside);
-      }
+      document.addEventListener('click', handleClickOutside, true);
     }, 0);
 
     window.addEventListener('resize', updateMenuPosition);
     window.addEventListener('scroll', updateMenuPosition, true);
     return () => {
       clearTimeout(timeoutId);
-      if (supportsPointer) {
-        document.removeEventListener('pointerdown', handleClickOutside);
-      } else {
-        document.removeEventListener('mousedown', handleClickOutside);
-        document.removeEventListener('touchstart', handleClickOutside);
-      }
+      document.removeEventListener('click', handleClickOutside, true);
       window.removeEventListener('resize', updateMenuPosition);
       window.removeEventListener('scroll', updateMenuPosition, true);
     };
@@ -239,8 +281,11 @@ export function SingleSelectDropdown({
     optionRefs.current[activeIndex]?.focus();
   }, [isOpen, activeIndex]);
 
+  const useDialogPortal = portalContainer !== null && portalContainer !== document.body;
+  const backdropPositionClass = useDialogPortal ? 'absolute' : 'fixed';
+
   return (
-    <div className={cn('relative min-w-0', className)} ref={dropdownRef}>
+    <div className={cn('relative min-w-0', isOpen && 'z-[10001]', className)} ref={dropdownRef}>
       {label && (
         <label id={labelId} htmlFor={triggerId} className={DROPDOWN_LABEL_CLASS}>
           {label}
@@ -297,29 +342,44 @@ export function SingleSelectDropdown({
 
         {isOpen &&
           menuPosition &&
+          portalContainer &&
           typeof document !== 'undefined' &&
           createPortal(
-            <div
-              ref={menuRef}
-              id={listboxId}
-              data-single-select-dropdown-menu=""
-              role="listbox"
-              aria-labelledby={labelId}
-              tabIndex={-1}
-              onKeyDown={handleMenuKeyDown}
-              style={{
-                left: `${menuPosition.left}px`,
-                width: `${menuPosition.width}px`,
-                maxHeight: `${menuPosition.maxHeight}px`,
-                ...(menuPosition.top !== undefined ? { top: `${menuPosition.top}px` } : {}),
-                ...(menuPosition.bottom !== undefined ? { bottom: `${menuPosition.bottom}px` } : {}),
-              }}
-              className={cn(
-                DROPDOWN_MENU_PORTAL_SURFACE_CLASS,
-                'animate-in fade-in-0 zoom-in-95 duration-150',
-                openUpward ? 'origin-bottom' : 'origin-top'
-              )}
-            >
+            <>
+              <div
+                {...{ [SINGLE_SELECT_DROPDOWN_BACKDROP_ATTR]: '' }}
+                className={cn(backdropPositionClass, 'inset-0 z-[9998]')}
+                aria-hidden="true"
+                onPointerDown={(event) => {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  setIsOpen(false);
+                }}
+              />
+              <div
+                ref={menuRef}
+                id={listboxId}
+                {...{ [SINGLE_SELECT_DROPDOWN_MENU_ATTR]: '' }}
+                role="listbox"
+                aria-labelledby={labelId}
+                tabIndex={-1}
+                onKeyDown={handleMenuKeyDown}
+                onPointerDown={(event) => event.stopPropagation()}
+                style={{
+                  position: menuPosition.positionMode,
+                  zIndex: 9999,
+                  left: `${menuPosition.left}px`,
+                  width: `${menuPosition.width}px`,
+                  maxHeight: `${menuPosition.maxHeight}px`,
+                  ...(menuPosition.top !== undefined ? { top: `${menuPosition.top}px` } : {}),
+                  ...(menuPosition.bottom !== undefined ? { bottom: `${menuPosition.bottom}px` } : {}),
+                }}
+                className={cn(
+                  'pointer-events-auto overflow-y-auto rounded-xl border border-[rgba(14,14,16,0.08)] bg-white p-1 shadow-[0_16px_40px_rgba(15,23,42,0.14)] ring-1 ring-black/5',
+                  'animate-in fade-in-0 zoom-in-95 duration-150',
+                  openUpward ? 'origin-bottom' : 'origin-top',
+                )}
+              >
               {error ? (
                 <div className="p-3 text-sm text-red-600">{error}</div>
               ) : options.length === 0 ? (
@@ -339,7 +399,11 @@ export function SingleSelectDropdown({
                         role="option"
                         aria-selected={isSelected}
                         title={option.label}
-                        onClick={() => handleSelect(option.id)}
+                        onPointerDown={(event) => {
+                          event.preventDefault();
+                          event.stopPropagation();
+                          handleSelect(option.id);
+                        }}
                         onMouseEnter={() => setActiveIndex(index)}
                         className={cn(
                           DROPDOWN_OPTION_BASE_CLASS,
@@ -356,8 +420,9 @@ export function SingleSelectDropdown({
                   })}
                 </div>
               )}
-            </div>,
-            document.body
+              </div>
+            </>,
+            portalContainer,
           )}
       </div>
     </div>

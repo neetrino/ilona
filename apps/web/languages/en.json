@@ -820,6 +820,7 @@
       "description": "Description",
       "descriptionPlaceholder": "Group description...",
       "selectCenter": "Select a center",
+      "selectCenterFirst": "Select a center first",
       "teacher1": "Teacher 1",
       "teacher2": "Teacher 2",
       "teacherRotationHint": "Teacher 1 leads the calendar week that contains the schedule start date (Mon–Sun); Teacher 2 leads the next week; they then alternate weekly for generated lessons.",

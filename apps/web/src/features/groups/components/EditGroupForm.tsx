@@ -21,7 +21,11 @@ import {
   scheduleSlotsValidationError,
 } from '../group-schedule-utils';
 import { cn } from '@/shared/lib/utils';
-import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
+import { SingleSelectDropdown, portaledDropdownDialogHandlers } from '@/shared/components/ui/single-select-dropdown';
+import {
+  filterTeachersForCenter,
+  teacherOptionLabel,
+} from '../lib/center-scoped-teachers';
 import { X } from 'lucide-react';
 
 type UpdateGroupFormData = {
@@ -58,14 +62,19 @@ export function EditGroupForm({ open, onOpenChange, groupId }: EditGroupFormProp
 
   const updateGroupSchema = useMemo(
     () =>
-      z.object({
-        name: z.string().min(2, tVal('nameMin')).max(100, tVal('nameMax')).optional(),
-        level: z.string().max(50, tVal('levelMax')).optional().or(z.literal('')),
-        description: z.string().max(500, tVal('descriptionMax')).optional().or(z.literal('')),
-        centerId: z.string().min(1, tVal('centerRequired')).optional().or(z.literal('')),
-        teacherId: z.string().min(1, tForm('selectBothTeachers')),
-        secondTeacherId: z.string().min(1, tForm('selectBothTeachers')),
-      }),
+      z
+        .object({
+          name: z.string().min(2, tVal('nameMin')).max(100, tVal('nameMax')).optional(),
+          level: z.string().max(50, tVal('levelMax')).optional().or(z.literal('')),
+          description: z.string().max(500, tVal('descriptionMax')).optional().or(z.literal('')),
+          centerId: z.string().min(1, tVal('centerRequired')).optional().or(z.literal('')),
+          teacherId: z.string().min(1, tForm('selectBothTeachers')),
+          secondTeacherId: z.string().min(1, tForm('selectBothTeachers')),
+        })
+        .refine((data) => data.teacherId !== data.secondTeacherId, {
+          message: tForm('teachersMustDiffer'),
+          path: ['secondTeacherId'],
+        }),
     [tVal, tForm],
   );
 
@@ -97,7 +106,7 @@ export function EditGroupForm({ open, onOpenChange, groupId }: EditGroupFormProp
   const { data: teachersData, isLoading: isLoadingTeachers } = useTeachers({ status: 'ACTIVE' });
   
   const centers = centersData?.items || [];
-  const teachers = teachersData?.items || [];
+  const teachers = useMemo(() => teachersData?.items ?? [], [teachersData?.items]);
 
   const {
     register,
@@ -121,6 +130,19 @@ export function EditGroupForm({ open, onOpenChange, groupId }: EditGroupFormProp
   const watchedTeacherId = watch('teacherId');
   const watchedCenterId = watch('centerId');
   const watchedSecondTeacherId = watch('secondTeacherId');
+
+  const hasCenterSelected = Boolean(watchedCenterId);
+  const teachersForCenter = useMemo(
+    () =>
+      filterTeachersForCenter(teachers, watchedCenterId, [
+        watchedTeacherId ?? '',
+        watchedSecondTeacherId ?? '',
+      ]),
+    [teachers, watchedCenterId, watchedTeacherId, watchedSecondTeacherId],
+  );
+  const teacherDropdownDisabled =
+    isSubmitting || updateGroup.isPending || isLoadingTeachers || !hasCenterSelected;
+  const teacherPlaceholder = hasCenterSelected ? tForm('noTeacherAssigned') : tForm('selectCenterFirst');
 
   // Update form when group data loads
   useEffect(() => {
@@ -342,6 +364,7 @@ export function EditGroupForm({ open, onOpenChange, groupId }: EditGroupFormProp
           <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/60 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
           <DialogPrimitive.Content
             style={dragStyle}
+            {...portaledDropdownDialogHandlers}
             className={cn(
               'fixed inset-x-0 bottom-[7px] top-auto z-50 grid w-full translate-y-0 lg:bottom-0 [@media(min-width:1024px)_and_(max-width:1366px)_and_(min-height:1000px)]:bottom-0',
               'duration-700 ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out min-[1367px]:duration-350 min-[1367px]:ease-[cubic-bezier(0.22,1,0.36,1)]',
@@ -386,6 +409,7 @@ export function EditGroupForm({ open, onOpenChange, groupId }: EditGroupFormProp
         <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/60 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
         <DialogPrimitive.Content
           style={dragStyle}
+          {...portaledDropdownDialogHandlers}
           className={cn(
             'fixed inset-x-0 bottom-[7px] top-auto z-50 grid w-full translate-y-0 lg:bottom-0 [@media(min-width:1024px)_and_(max-width:1366px)_and_(min-height:1000px)]:bottom-0',
             'duration-700 ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out min-[1367px]:duration-350 min-[1367px]:ease-[cubic-bezier(0.22,1,0.36,1)]',
@@ -495,12 +519,18 @@ export function EditGroupForm({ open, onOpenChange, groupId }: EditGroupFormProp
                 label: center.name,
               }))}
               value={watchedCenterId || null}
-              onValueChange={(nextValue) =>
-                setValue('centerId', nextValue ?? '', {
+              onValueChange={(nextValue) => {
+                const nextCenterId = nextValue ?? '';
+                const prevCenterId = watchedCenterId;
+                setValue('centerId', nextCenterId, {
                   shouldDirty: true,
                   shouldValidate: true,
-                })
-              }
+                });
+                if (prevCenterId && prevCenterId !== nextCenterId) {
+                  setValue('teacherId', '', { shouldDirty: true, shouldValidate: true });
+                  setValue('secondTeacherId', '', { shouldDirty: true, shouldValidate: true });
+                }
+              }}
               placeholder={tForm('selectCenter')}
               isLoading={isLoadingCenters}
               error={errors.centerId?.message ?? null}
@@ -521,9 +551,9 @@ export function EditGroupForm({ open, onOpenChange, groupId }: EditGroupFormProp
             <input type="hidden" {...register('teacherId')} />
             <SingleSelectDropdown
               id="teacherId"
-              options={teachers.map((teacher) => ({
+              options={teachersForCenter.map((teacher) => ({
                 id: teacher.id,
-                label: `${teacher.user.firstName} ${teacher.user.lastName}`,
+                label: teacherOptionLabel(teacher),
               }))}
               value={watchedTeacherId || null}
               onValueChange={(nextValue) => {
@@ -539,10 +569,10 @@ export function EditGroupForm({ open, onOpenChange, groupId }: EditGroupFormProp
                   });
                 }
               }}
-              placeholder={tForm('noTeacherAssigned')}
+              placeholder={teacherPlaceholder}
               isLoading={isLoadingTeachers}
               error={errors.teacherId?.message ?? null}
-              disabled={isSubmitting || updateGroup.isPending || isLoadingTeachers}
+              disabled={teacherDropdownDisabled}
             />
             {isLoadingTeachers && (
               <p className="text-sm text-slate-500">{tForm('loadingTeachers')}</p>
@@ -556,11 +586,11 @@ export function EditGroupForm({ open, onOpenChange, groupId }: EditGroupFormProp
             <input type="hidden" {...register('secondTeacherId')} />
             <SingleSelectDropdown
               id="secondTeacherId"
-              options={teachers
+              options={teachersForCenter
                 .filter((teacher) => teacher.id !== watchedTeacherId)
                 .map((teacher) => ({
                   id: teacher.id,
-                  label: `${teacher.user.firstName} ${teacher.user.lastName}`,
+                  label: teacherOptionLabel(teacher),
                 }))}
               value={watchedSecondTeacherId || null}
               onValueChange={(nextValue) =>
@@ -569,10 +599,10 @@ export function EditGroupForm({ open, onOpenChange, groupId }: EditGroupFormProp
                   shouldValidate: true,
                 })
               }
-              placeholder={tForm('noTeacherAssigned')}
+              placeholder={teacherPlaceholder}
               isLoading={isLoadingTeachers}
               error={errors.secondTeacherId?.message ?? null}
-              disabled={isSubmitting || updateGroup.isPending || isLoadingTeachers}
+              disabled={teacherDropdownDisabled}
             />
           </div>
 
