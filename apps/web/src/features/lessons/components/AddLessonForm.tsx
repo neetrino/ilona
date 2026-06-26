@@ -362,35 +362,6 @@ export function AddLessonForm({ open, onOpenChange, defaultDate }: AddLessonForm
           )}
 
           <div className="space-y-2">
-            <Label htmlFor="teacherId">
-              {tCommon('teacher')} <span className="text-red-500">*</span>
-            </Label>
-            <SingleSelectDropdown
-              id="teacherId"
-              options={[
-                { id: '', label: tForm('selectTeacher') },
-                ...teachers.map((teacher) => ({
-                  id: teacher.id,
-                  label: `${teacher.user.firstName} ${teacher.user.lastName}`,
-                })),
-              ]}
-              value={teacherIdW}
-              onValueChange={(nextValue) => {
-                setValue('teacherId', nextValue ?? '', {
-                  shouldValidate: true,
-                  shouldDirty: true,
-                  shouldTouch: true,
-                });
-              }}
-            />
-            {errors.teacherId && <p className="text-sm text-red-600">{errors.teacherId.message}</p>}
-            {isLoadingTeachers && <p className="text-sm text-slate-500">{tForm('loadingTeachers')}</p>}
-            {!isLoadingTeachers && teachers.length === 0 && (
-              <p className="text-sm text-amber-600">{tForm('noTeachersAvailable')}</p>
-            )}
-          </div>
-
-          <div className="space-y-2">
             <Label htmlFor="groupId">
               {tCommon('group')} <span className="text-red-500">*</span>
             </Label>
@@ -423,6 +394,35 @@ export function AddLessonForm({ open, onOpenChange, defaultDate }: AddLessonForm
             {hasTeacher && isLoadingGroups && <p className="text-sm text-slate-500">{tForm('loadingGroups')}</p>}
             {hasTeacher && !isLoadingGroups && noGroupsForTeacher && (
               <p className="text-sm text-amber-600">{tForm('noGroupsForTeacher')}</p>
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="teacherId">
+              {tCommon('teacher')} <span className="text-red-500">*</span>
+            </Label>
+            <SingleSelectDropdown
+              id="teacherId"
+              options={[
+                { id: '', label: tForm('selectTeacher') },
+                ...teachers.map((teacher) => ({
+                  id: teacher.id,
+                  label: `${teacher.user.firstName} ${teacher.user.lastName}`,
+                })),
+              ]}
+              value={teacherIdW}
+              onValueChange={(nextValue) => {
+                setValue('teacherId', nextValue ?? '', {
+                  shouldValidate: true,
+                  shouldDirty: true,
+                  shouldTouch: true,
+                });
+              }}
+            />
+            {errors.teacherId && <p className="text-sm text-red-600">{errors.teacherId.message}</p>}
+            {isLoadingTeachers && <p className="text-sm text-slate-500">{tForm('loadingTeachers')}</p>}
+            {!isLoadingTeachers && teachers.length === 0 && (
+              <p className="text-sm text-amber-600">{tForm('noTeachersAvailable')}</p>
             )}
           </div>
 
