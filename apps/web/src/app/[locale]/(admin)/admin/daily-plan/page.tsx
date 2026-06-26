@@ -16,9 +16,9 @@ import { DailyPlanViewer } from '@/features/daily-plan/DailyPlanViewer';
 import { useIsIPad } from '@/shared/hooks/useIsIPad';
 
 function defaultDateRangeStrings(): { from: string; to: string } {
-  const to = new Date();
-  const from = new Date(to);
-  from.setDate(from.getDate() - 30);
+  const from = new Date();
+  const to = new Date(from);
+  to.setDate(to.getDate() + 30);
   const pad = (n: number) => String(n).padStart(2, '0');
   const ymd = (d: Date) =>
     `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
