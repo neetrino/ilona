@@ -1,6 +1,6 @@
 'use client';
 
-import { Building2, Phone, Mail, Users } from 'lucide-react';
+import { Building2, MapPin, Phone, Mail, Users } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import type { CenterWithCount } from '../types';
 import { cn, formatPhoneForDisplay, getContrastColor } from '@/shared/lib/utils';
@@ -22,6 +22,7 @@ export function CenterCard({ center, onEdit, onOpenDetails }: CenterCardProps) {
   const primaryColor = center.colorHex || '#253046';
   const titleColor = getContrastColor(primaryColor) === 'white' ? 'text-white' : 'text-slate-900';
   const groupCount = center._count?.groups || 0;
+  const cardAddress = center.address?.trim() || center.name.trim();
 
   const handleCardActivate = () => {
     if (onOpenDetails) onOpenDetails();
@@ -98,7 +99,18 @@ export function CenterCard({ center, onEdit, onOpenDetails }: CenterCardProps) {
           </div>
         </div>
 
-        <div className="mt-auto space-y-2.5 rounded-xl border border-slate-100 bg-gradient-to-b from-white to-slate-50/70 p-3 text-xs">
+        <div className="min-h-4 flex-1" aria-hidden />
+
+        <div className="space-y-2.5 rounded-xl border border-slate-100 bg-gradient-to-b from-white to-slate-50/70 p-3 text-xs">
+          <div className="flex items-start gap-2 text-slate-600">
+            <span className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-white shadow-sm ring-1 ring-slate-200/70">
+              <MapPin className="h-3.5 w-3.5 text-slate-400" />
+            </span>
+            <span className="line-clamp-2 min-w-0" title={cardAddress}>
+              {cardAddress}
+            </span>
+          </div>
+
           {center.phone && (
             <div className="flex items-center gap-2 text-slate-600">
               <span className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-white shadow-sm ring-1 ring-slate-200/70">
