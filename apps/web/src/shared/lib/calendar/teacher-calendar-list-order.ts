@@ -25,6 +25,39 @@ export function teacherCalendarRowSection(
   return 'completed';
 }
 
+export function filterLessonsByLocalDateRange(
+  lessons: Lesson[],
+  from: Date,
+  to: Date,
+): Lesson[] {
+  const fromKey = formatScheduleDate(from);
+  const toKey = formatScheduleDate(to);
+  return lessons.filter((lesson) => {
+    const key = scheduleDateKeyFromIso(lesson.scheduledAt);
+    return key !== null && key >= fromKey && key <= toKey;
+  });
+}
+
+/** Anchor for section labels when browsing a week that is not the current calendar week. */
+export function getCalendarListReferenceDate(weekDates: Date[], now: Date = new Date()): Date {
+  const todayKey = formatScheduleDate(now);
+  const weekStartKey = formatScheduleDate(weekDates[0]);
+  const weekEndKey = formatScheduleDate(weekDates[6]);
+
+  if (weekEndKey < todayKey) {
+    const afterWeek = new Date(weekDates[6]);
+    afterWeek.setDate(afterWeek.getDate() + 1);
+    afterWeek.setHours(0, 0, 0, 0);
+    return afterWeek;
+  }
+  if (weekStartKey > todayKey) {
+    const weekStart = new Date(weekDates[0]);
+    weekStart.setHours(0, 0, 0, 0);
+    return weekStart;
+  }
+  return now;
+}
+
 /**
  * Order lessons for the teacher calendar list: completed (earlier calendar days) first so they
  * appear on page 1, then next 2 global future, today's remaining rows, then later future dates.
