@@ -9,7 +9,6 @@ import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { Button } from '@/shared/components/ui';
 import { useStudent, useStudentStatistics, useUpdateStudent, type UpdateStudentDto } from '@/features/students';
 import { useGroups } from '@/features/groups';
-import { useTeachers } from '@/features/teachers';
 import { StudentProfileHeader } from './components/StudentProfileHeader';
 import { StudentStats } from './components/StudentStats';
 import { StudentDetails } from './components/StudentDetails';
@@ -19,6 +18,10 @@ import { updateStudentSchema, type UpdateStudentFormData } from './schemas';
 import type { UserStatus } from '@/types';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { getAdminPortalBasePath } from '@/shared/lib/role-routes';
+import {
+  ensureCurrentGroupInList,
+  filterAssignableGroupsByCenter,
+} from '@/features/students/lib/group-center-assignment';
 
 export default function StudentProfilePage() {
   const t = useTranslations('students');
@@ -37,10 +40,7 @@ export default function StudentProfilePage() {
   const { data: student, isLoading, error, refetch } = useStudent(studentId);
   const { data: statistics, isLoading: _isLoadingStats } = useStudentStatistics(studentId, !!student);
   const { data: groupsData, isLoading: isLoadingGroups } = useGroups({ take: 100, isActive: true });
-  const { data: teachersData, isLoading: isLoadingTeachers } = useTeachers({ status: 'ACTIVE', take: 100 });
   const updateStudent = useUpdateStudent();
-
-  const teachers = teachersData?.items || [];
 
   const {
     register,
@@ -94,13 +94,27 @@ export default function StudentProfilePage() {
     }
   }, [student, isEditMode, reset]);
 
-  const watchedTeacherId = watch('teacherId') || '';
   const watchedGroupId = watch('groupId') || '';
   const watchedStatus = watch('status') || 'ACTIVE';
-  const groupsForTeacher = useMemo(() => {
-    const allGroups = groupsData?.items ?? [];
-    return watchedTeacherId ? allGroups.filter((g) => g.teacherId === watchedTeacherId) : [];
-  }, [groupsData?.items, watchedTeacherId]);
+  const effectiveCenterId =
+    student?.centerId ?? student?.group?.center?.id ?? student?.center?.id ?? '';
+  const allGroups = useMemo(() => groupsData?.items ?? [], [groupsData?.items]);
+  const groupsForCenter = useMemo(() => {
+    const filtered = filterAssignableGroupsByCenter(allGroups, effectiveCenterId || undefined);
+    return ensureCurrentGroupInList(filtered, watchedGroupId, allGroups);
+  }, [allGroups, effectiveCenterId, watchedGroupId]);
+
+  useEffect(() => {
+    if (!isEditMode) return;
+    if (!watchedGroupId) {
+      setValue('teacherId', '');
+      return;
+    }
+    const group = allGroups.find((g) => g.id === watchedGroupId);
+    if (group?.teacherId) {
+      setValue('teacherId', group.teacherId, { shouldDirty: true });
+    }
+  }, [watchedGroupId, allGroups, setValue, isEditMode]);
 
   // Track unsaved changes
   useEffect(() => {
@@ -160,7 +174,6 @@ export default function StudentProfilePage() {
         phone: data.phone || undefined,
         status: data.status,
         groupId: data.groupId || undefined,
-        teacherId: data.teacherId || undefined,
         parentName: data.parentName || undefined,
         parentPhone: data.parentPhone || undefined,
         parentEmail: data.parentEmail || undefined,
@@ -348,15 +361,12 @@ export default function StudentProfilePage() {
         <StudentDetails
           student={student}
           isEditMode={isEditMode}
-          groups={groupsForTeacher}
-          groupSelectDisabled={!watchedTeacherId}
-          teachers={teachers}
+          groups={groupsForCenter}
+          groupSelectDisabled={!effectiveCenterId}
           isLoadingGroups={isLoadingGroups}
-          isLoadingTeachers={isLoadingTeachers}
           errors={errors}
           register={register}
           setValue={setValue}
-          teacherIdValue={watchedTeacherId}
           groupIdValue={watchedGroupId}
         />
 

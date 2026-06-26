@@ -650,6 +650,8 @@
       "phoneNumber": "Phone number",
       "effectiveAge": "Effective age: {age}",
       "selectCenterFirst": "Select a center first",
+      "noGroupsForCenter": "No groups found for this center",
+      "groupMissingTeacher": "This group has no primary teacher assigned",
       "groupLocation": "Group location: {name}",
       "notesPlaceholder": "Additional notes about the student…"
     },

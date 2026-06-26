@@ -8,14 +8,16 @@ import { useTranslations } from 'next-intl';
 import { Button, Input, Label } from '@/shared/components/ui';
 import { useUpdateStudent, useStudent, type UpdateStudentDto } from '@/features/students';
 import { useGroups } from '@/features/groups';
-import { useTeachers } from '@/features/teachers';
 import { useCenters } from '@/features/centers';
 import { useState, useEffect, useMemo, useRef, type TouchEvent } from 'react';
 import type { UserStatus } from '@/types';
 import { getErrorMessage } from '@/shared/lib/api';
-import { cn, formatPhoneForDisplay } from '@/shared/lib/utils';
+import { cn } from '@/shared/lib/utils';
 import { X } from 'lucide-react';
-import { teacherBelongsToCenter } from '../lib/center-scoped-assignment';
+import {
+  ensureCurrentGroupInList,
+  filterAssignableGroupsByCenter,
+} from '../lib/group-center-assignment';
 import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
 import { computeAgeFromDob } from '../student-account-form.schema';
 import { isoToDmy, resolveDmyOrIsoToIso } from '@/shared/lib/dmy-date';
@@ -131,7 +133,6 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
   });
 
   const watchedCenterId = watch('centerId') || '';
-  const watchedTeacherId = watch('teacherId') || '';
   const watchedGroupId = watch('groupId') || '';
   const watchedStatus = watch('status') || 'ACTIVE';
   const watchedDob = watch('dateOfBirth') ?? '';
@@ -147,73 +148,42 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
   const effectiveAge = computedAge ?? watchedAge;
   const showParentSection = effectiveAge !== undefined && effectiveAge < 18;
 
-  const { data: teachersData, isLoading: isLoadingTeachers } = useTeachers({ status: 'ACTIVE' });
   const { data: groupsData, isLoading: isLoadingGroups } = useGroups({ isActive: true });
   const { data: centersData, isLoading: isLoadingCenters } = useCenters({ isActive: true });
-  const teachers = useMemo(() => teachersData?.items ?? [], [teachersData?.items]);
   const centers = centersData?.items ?? [];
-  const assignmentGroups = useMemo(() => groupsData?.items ?? [], [groupsData?.items]);
-  const teachersForCenter = useMemo(() => {
-    if (!watchedCenterId) return [];
-    let list = teachers.filter((t) =>
-      teacherBelongsToCenter(t.id, watchedCenterId, t.centerLinks, assignmentGroups),
-    );
-    if (watchedTeacherId && !list.some((t) => t.id === watchedTeacherId)) {
-      const current = teachers.find((t) => t.id === watchedTeacherId);
-      if (current) list = [current, ...list];
-    }
-    return list;
-  }, [assignmentGroups, teachers, watchedCenterId, watchedTeacherId]);
-  const groupsForTeacher = useMemo(() => {
-    const all = groupsData?.items ?? [];
-    if (!watchedTeacherId) return [];
-    let list = all.filter((g) => g.teacherId === watchedTeacherId);
-    if (watchedCenterId) {
-      list = list.filter((g) => g.centerId === watchedCenterId);
-    }
-    if (watchedGroupId && !list.some((g) => g.id === watchedGroupId)) {
-      const current = all.find((g) => g.id === watchedGroupId);
-      if (current) list = [current, ...list];
-    }
-    return list;
-  }, [groupsData?.items, watchedTeacherId, watchedCenterId, watchedGroupId]);
+  const allGroups = useMemo(() => groupsData?.items ?? [], [groupsData?.items]);
+  const groupsForCenter = useMemo(() => {
+    const filtered = filterAssignableGroupsByCenter(allGroups, watchedCenterId || undefined);
+    return ensureCurrentGroupInList(filtered, watchedGroupId, allGroups);
+  }, [allGroups, watchedCenterId, watchedGroupId]);
 
   useEffect(() => {
-    if (!watchedTeacherId) {
+    if (!watchedCenterId) {
       setValue('groupId', '');
+      setValue('teacherId', '');
       return;
     }
     if (!watchedGroupId) return;
-    const g = groupsData?.items?.find((x) => x.id === watchedGroupId);
-    if (!g) return;
-    if (g.teacherId !== watchedTeacherId) {
+    const group = allGroups.find((g) => g.id === watchedGroupId);
+    if (!group || group.centerId !== watchedCenterId) {
       setValue('groupId', '');
+      setValue('teacherId', '');
+    }
+  }, [watchedCenterId, watchedGroupId, allGroups, setValue]);
+
+  useEffect(() => {
+    if (!watchedGroupId) {
+      setValue('teacherId', '');
       return;
     }
-    if (watchedCenterId && g.centerId !== watchedCenterId) {
-      setValue('groupId', '');
+    const group = allGroups.find((g) => g.id === watchedGroupId);
+    if (group?.teacherId) {
+      setValue('teacherId', group.teacherId, { shouldDirty: true, shouldValidate: true });
+      return;
     }
-  }, [
-    watchedTeacherId,
-    watchedGroupId,
-    watchedCenterId,
-    groupsData?.items,
-    setValue,
-  ]);
-
-  const selectedTeacher = useMemo(
-    () => teachers.find((t) => t.id === watchedTeacherId),
-    [teachers, watchedTeacherId],
-  );
-  const teacherCentersLabel = useMemo(() => {
-    const fromLinks = (selectedTeacher?.centerLinks ?? [])
-      .map((l) => l.center.name)
-      .filter(Boolean);
-    const fromGroups = [
-      ...new Set(groupsForTeacher.map((g) => g.center?.name).filter(Boolean)),
-    ];
-    return [...new Set([...fromLinks, ...fromGroups])].join(', ');
-  }, [selectedTeacher, groupsForTeacher]);
+    setValue('groupId', '');
+    setValue('teacherId', '');
+  }, [watchedGroupId, allGroups, setValue]);
 
   const statusOptions = useMemo(
     () => [
@@ -350,7 +320,6 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
       }
       if (dirtyFields.status) payload.status = data.status;
       if (dirtyFields.groupId) payload.groupId = data.groupId?.trim() ? data.groupId.trim() : null;
-      if (dirtyFields.teacherId) payload.teacherId = data.teacherId?.trim() ? data.teacherId.trim() : null;
       if (dirtyFields.centerId) payload.centerId = data.centerId?.trim() ? data.centerId.trim() : null;
       if (dirtyFields.parentName) payload.parentName = data.parentName || undefined;
       if (dirtyFields.parentPhone) payload.parentPhone = data.parentPhone || undefined;
@@ -568,8 +537,8 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
                   value={watchedCenterId}
                   onValueChange={(nextValue) => {
                     setValue('centerId', nextValue ?? '', { shouldDirty: true, shouldValidate: true });
-                    setValue('teacherId', '', { shouldDirty: true, shouldValidate: true });
                     setValue('groupId', '', { shouldDirty: true, shouldValidate: true });
+                    setValue('teacherId', '', { shouldDirty: true, shouldValidate: true });
                   }}
                   disabled={isLoadingCenters || isSubmitting}
                 />
@@ -579,81 +548,52 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
               </div>
             </div>
 
-            <div className="grid grid-cols-1 gap-4 min-[1367px]:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="teacherId">{t('teacher')}</Label>
-                <input type="hidden" {...register('teacherId')} />
-                <SingleSelectDropdown
-                  id="teacherId"
-                  options={[
-                    {
-                      id: '',
-                      label: watchedCenterId ? t('selectTeacher') : tForm('selectCenter'),
-                    },
-                    ...teachersForCenter.map((teacher) => ({
-                      id: teacher.id,
-                      label: `${teacher.user.firstName} ${teacher.user.lastName}${teacher.user.phone ? ` - ${formatPhoneForDisplay(teacher.user.phone)}` : ''}`,
-                    })),
-                  ]}
-                  value={watchedTeacherId}
-                  onValueChange={(nextValue) =>
-                    setValue('teacherId', nextValue ?? '', {
-                      shouldDirty: true,
-                      shouldValidate: true,
-                    })
-                  }
-                  disabled={isLoadingTeachers || isSubmitting || !watchedCenterId}
-                />
-                {errors.teacherId && (
-                  <p className="text-sm text-red-600">{errors.teacherId.message}</p>
-                )}
-                {isLoadingTeachers && (
-                  <p className="text-sm text-slate-500">{t('loadingTeachers')}</p>
-                )}
-                {watchedTeacherId && teacherCentersLabel ? (
-                  <p className="text-xs text-slate-500">
-                    {tForm('teacherCenters')}: {teacherCentersLabel}
-                  </p>
-                ) : null}
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="groupId">{t('group')}</Label>
-                <input type="hidden" {...register('groupId')} />
-                <SingleSelectDropdown
-                  id="groupId"
-                  options={[
-                    {
-                      id: '',
-                      label: watchedTeacherId ? t('selectGroup') : t('selectTeacherFirst'),
-                    },
-                    ...groupsForTeacher.map((group) => ({
-                      id: group.id,
-                      label: `${group.name}${group.level ? ` (${group.level})` : ''}`,
-                    })),
-                  ]}
-                  value={watchedGroupId}
-                  onValueChange={(nextValue) =>
-                    setValue('groupId', nextValue ?? '', {
-                      shouldDirty: true,
-                      shouldValidate: true,
-                    })
-                  }
-                  disabled={isLoadingGroups || isSubmitting || !watchedTeacherId}
-                />
-                {errors.groupId && (
-                  <p className="text-sm text-red-600">{errors.groupId.message}</p>
-                )}
-                {watchedTeacherId && isLoadingGroups && (
-                  <p className="text-sm text-slate-500">{tCommon('loading')}</p>
-                )}
-                {watchedGroupId ? (
-                  <p className="text-xs text-slate-500">
-                    {tCommon('center')}:{' '}
-                    {groupsForTeacher.find((g) => g.id === watchedGroupId)?.center?.name ?? t('notAvailable')}
-                  </p>
-                ) : null}
-              </div>
+            <div className="space-y-2">
+              <Label htmlFor="groupId">{t('group')}</Label>
+              <input type="hidden" {...register('teacherId')} />
+              <input type="hidden" {...register('groupId')} />
+              <SingleSelectDropdown
+                id="groupId"
+                options={[
+                  {
+                    id: '',
+                    label: watchedCenterId
+                      ? isLoadingGroups
+                        ? tCommon('loading')
+                        : groupsForCenter.length === 0
+                          ? tForm('noGroupsForCenter')
+                          : t('selectGroup')
+                      : tForm('selectCenterFirst'),
+                  },
+                  ...groupsForCenter.map((group) => ({
+                    id: group.id,
+                    label: `${group.name}${group.level ? ` (${group.level})` : ''}`,
+                  })),
+                ]}
+                value={watchedGroupId}
+                onValueChange={(nextValue) =>
+                  setValue('groupId', nextValue ?? '', {
+                    shouldDirty: true,
+                    shouldValidate: true,
+                  })
+                }
+                disabled={isLoadingGroups || isSubmitting || !watchedCenterId}
+              />
+              {errors.groupId && (
+                <p className="text-sm text-red-600">{errors.groupId.message}</p>
+              )}
+              {watchedCenterId && !isLoadingGroups && groupsForCenter.length === 0 && (
+                <p className="text-sm text-slate-500">{tForm('noGroupsForCenter')}</p>
+              )}
+              {watchedCenterId && isLoadingGroups && (
+                <p className="text-sm text-slate-500">{tCommon('loading')}</p>
+              )}
+              {watchedGroupId ? (
+                <p className="text-xs text-slate-500">
+                  {tCommon('center')}:{' '}
+                  {groupsForCenter.find((g) => g.id === watchedGroupId)?.center?.name ?? t('notAvailable')}
+                </p>
+              ) : null}
             </div>
 
             <div className="grid grid-cols-2 gap-4">

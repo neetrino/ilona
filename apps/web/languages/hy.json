@@ -651,6 +651,8 @@
       "phoneNumber": "Հեռախոսահամար",
       "effectiveAge": "Իրական տարիքը՝ {age}",
       "selectCenterFirst": "Նախ ընտրեք կենտրոն",
+      "noGroupsForCenter": "Այս կենտրոնում խմբեր չեն գտնվել",
+      "groupMissingTeacher": "Ընտրված խմբին հիմնական ուսուցիչ չունի",
       "groupLocation": "Խմբի տեղակայում՝ {name}",
       "notesPlaceholder": "Լրացուցիչ նշումներ աշակերտի մասին…"
     },

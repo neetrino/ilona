@@ -5,30 +5,25 @@ import { Badge, Input, Label } from '@/shared/components/ui';
 import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
 import { formatPhoneForDisplay } from '@/shared/lib/utils';
 import type { Student } from '@/features/students';
-import type { Group } from '@/features/groups';
-import type { Teacher } from '@/features/teachers';
+import type { GroupAssignmentOption } from '@/features/students/lib/group-center-assignment';
 import type { UseFormRegister, UseFormSetValue } from 'react-hook-form';
 import type { UpdateStudentFormData } from '../schemas';
 
 interface StudentDetailsProps {
   student: Student;
   isEditMode: boolean;
-  groups: Group[];
+  groups: GroupAssignmentOption[];
   groupSelectDisabled?: boolean;
-  teachers: Teacher[];
   isLoadingGroups: boolean;
-  isLoadingTeachers: boolean;
   errors?: {
     phone?: { message?: string };
     groupId?: { message?: string };
-    teacherId?: { message?: string };
     parentName?: { message?: string };
     parentPhone?: { message?: string };
     parentEmail?: { message?: string };
   };
   register: UseFormRegister<UpdateStudentFormData>;
   setValue?: UseFormSetValue<UpdateStudentFormData>;
-  teacherIdValue?: string;
   groupIdValue?: string;
 }
 
@@ -37,13 +32,10 @@ export function StudentDetails({
   isEditMode,
   groups,
   groupSelectDisabled = false,
-  teachers,
   isLoadingGroups,
-  isLoadingTeachers,
   errors,
   register,
   setValue,
-  teacherIdValue = '',
   groupIdValue = '',
 }: StudentDetailsProps) {
   const t = useTranslations('students');
@@ -108,54 +100,34 @@ export function StudentDetails({
         <div className="space-y-4">
           {isEditMode ? (
             <>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="teacherId">{t('teacher')}</Label>
-                  <SingleSelectDropdown
-                    id="teacherId"
-                    options={[
-                      { id: '', label: t('selectTeacher') },
-                      ...teachers.map((teacher) => ({
-                        id: teacher.id,
-                        label: `${teacher.user.firstName} ${teacher.user.lastName}${teacher.user.phone ? ` - ${formatPhoneForDisplay(teacher.user.phone)}` : ''}`,
-                      })),
-                    ]}
-                    value={teacherIdValue}
-                    onValueChange={(nextValue) => {
-                      setValue?.('teacherId', nextValue ?? '', { shouldDirty: true });
-                      setValue?.('groupId', '', { shouldDirty: true });
-                    }}
-                    disabled={isLoadingTeachers}
-                  />
-                  {errors?.teacherId && (
-                    <p className="text-sm text-red-600">{errors.teacherId.message}</p>
-                  )}
-                  {isLoadingTeachers && (
-                    <p className="text-sm text-[#8b8b90]">{t('loadingTeachers')}</p>
-                  )}
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="groupId">{t('group')}</Label>
-                  <SingleSelectDropdown
-                    id="groupId"
-                    options={[
-                      { id: '', label: groupSelectDisabled ? t('selectTeacherFirst') : tc('notAssigned') },
-                      ...groups.map((group) => ({
-                        id: group.id,
-                        label: `${group.name} ${group.level ? `(${group.level})` : ''}`.trim(),
-                      })),
-                    ]}
-                    value={groupIdValue}
-                    onValueChange={(nextValue) =>
-                      setValue?.('groupId', nextValue ?? '', { shouldDirty: true })
-                    }
-                    disabled={isLoadingGroups || groupSelectDisabled}
-                  />
-                  {errors?.groupId && (
-                    <p className="text-sm text-red-600">{errors.groupId.message}</p>
-                  )}
-                </div>
+              <input type="hidden" {...register('teacherId')} />
+              <div className="space-y-2">
+                <Label htmlFor="groupId">{t('group')}</Label>
+                <SingleSelectDropdown
+                  id="groupId"
+                  options={[
+                    {
+                      id: '',
+                      label: groupSelectDisabled
+                        ? t('form.selectCenterFirst')
+                        : groups.length === 0
+                          ? t('form.noGroupsForCenter')
+                          : tc('notAssigned'),
+                    },
+                    ...groups.map((group) => ({
+                      id: group.id,
+                      label: `${group.name} ${group.level ? `(${group.level})` : ''}`.trim(),
+                    })),
+                  ]}
+                  value={groupIdValue}
+                  onValueChange={(nextValue) =>
+                    setValue?.('groupId', nextValue ?? '', { shouldDirty: true })
+                  }
+                  disabled={isLoadingGroups || groupSelectDisabled}
+                />
+                {errors?.groupId && (
+                  <p className="text-sm text-red-600">{errors.groupId.message}</p>
+                )}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="parentName">{t('parentName')}</Label>

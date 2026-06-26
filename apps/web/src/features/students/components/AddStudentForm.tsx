@@ -8,8 +8,8 @@ import {
 } from '@/shared/components/ui';
 import { useCreateStudent } from '../hooks/useStudents';
 import { useGroups } from '@/features/groups';
-import { useTeachers } from '@/features/teachers';
 import { useCenters } from '@/features/centers';
+import { filterAssignableGroupsByCenter } from '../lib/group-center-assignment';
 import { useState, useEffect, useMemo, useCallback, useRef, type TouchEvent } from 'react';
 import { getErrorMessage } from '@/shared/lib/api';
 import {
@@ -23,6 +23,7 @@ import { useAuthStore } from '@/features/auth/store/auth.store';
 import { useTranslations } from 'next-intl';
 import { cn } from '@/shared/lib/utils';
 import { X } from 'lucide-react';
+import { portaledDropdownDialogHandlers } from '@/shared/components/ui/single-select-dropdown';
 
 interface AddStudentFormProps {
   open: boolean;
@@ -45,10 +46,9 @@ export function AddStudentForm({ open, onOpenChange }: AddStudentFormProps) {
   const isManager = user?.role === 'MANAGER';
 
   const { data: groupsData, isLoading: isLoadingGroups } = useGroups({ isActive: true });
-  const { data: teachersData, isLoading: isLoadingTeachers } = useTeachers({ status: 'ACTIVE' });
   const { data: centersData, isLoading: isLoadingCenters } = useCenters({ isActive: true });
-  const teachers = teachersData?.items ?? [];
   const centers = useMemo(() => centersData?.items ?? [], [centersData?.items]);
+  const allGroups = useMemo(() => groupsData?.items ?? [], [groupsData?.items]);
   const managerCenterLabel = useMemo(() => {
     if (!isManager || !user?.managerCenterId) return null;
     const name = centers.find((c) => c.id === user.managerCenterId)?.name;
@@ -94,7 +94,6 @@ export function AddStudentForm({ open, onOpenChange }: AddStudentFormProps) {
     () => (isManager && user?.managerCenterId ? user.managerCenterId : watchedCenterId) || '',
     [isManager, user?.managerCenterId, watchedCenterId],
   );
-  const watchedTeacherId = watch('teacherId') || '';
   const watchedGroupId = watch('groupId') || '';
   const watchedLevelId = watch('levelId') || '';
   const watchedDob = watch('dateOfBirth');
@@ -104,29 +103,43 @@ export function AddStudentForm({ open, onOpenChange }: AddStudentFormProps) {
     [watchedDob, watchedManualAge],
   );
 
-  const assignmentGroups = useMemo(() => groupsData?.items ?? [], [groupsData?.items]);
-
-  const groupsForTeacher = useMemo(() => {
-    const allGroups = groupsData?.items ?? [];
-    let byTeacher = watchedTeacherId ? allGroups.filter((g) => g.teacherId === watchedTeacherId) : [];
-    if (effectiveCenterId) {
-      byTeacher = byTeacher.filter((g) => g.centerId === effectiveCenterId);
-    }
-    if (!watchedLevelId) return byTeacher;
-    return byTeacher.filter((g) => (g.level ?? '') === watchedLevelId);
-  }, [groupsData?.items, watchedTeacherId, watchedLevelId, effectiveCenterId]);
+  const groupsForCenter = useMemo(
+    () =>
+      filterAssignableGroupsByCenter(
+        allGroups,
+        effectiveCenterId || undefined,
+        watchedLevelId || undefined,
+      ),
+    [allGroups, effectiveCenterId, watchedLevelId],
+  );
 
   useEffect(() => {
-    if (!watchedTeacherId) {
+    if (!effectiveCenterId) {
       setValue('groupId', '');
+      setValue('teacherId', '');
       return;
     }
     if (!watchedGroupId) return;
-    const g = groupsData?.items?.find((x) => x.id === watchedGroupId);
-    if (g && (g.teacherId !== watchedTeacherId || (watchedLevelId && (g.level ?? '') !== watchedLevelId))) {
+    const group = allGroups.find((g) => g.id === watchedGroupId);
+    if (!group || group.centerId !== effectiveCenterId) {
       setValue('groupId', '');
+      setValue('teacherId', '');
     }
-  }, [watchedTeacherId, watchedGroupId, watchedLevelId, groupsData?.items, setValue]);
+  }, [effectiveCenterId, watchedGroupId, allGroups, setValue]);
+
+  useEffect(() => {
+    if (!watchedGroupId) {
+      setValue('teacherId', '');
+      return;
+    }
+    const group = allGroups.find((g) => g.id === watchedGroupId);
+    if (group?.teacherId) {
+      setValue('teacherId', group.teacherId);
+      return;
+    }
+    setValue('groupId', '');
+    setValue('teacherId', '');
+  }, [watchedGroupId, allGroups, setValue]);
 
   const showParentSection = computedAge !== undefined && computedAge < 18;
 
@@ -256,6 +269,7 @@ export function AddStudentForm({ open, onOpenChange }: AddStudentFormProps) {
         <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/60 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
         <DialogPrimitive.Content
           style={dragStyle}
+          {...portaledDropdownDialogHandlers}
           className={cn(
             'fixed inset-x-0 bottom-[7px] top-auto z-50 grid w-full translate-y-0 lg:bottom-0 [@media(min-width:1024px)_and_(max-width:1366px)_and_(min-height:1000px)]:bottom-0',
             'duration-700 ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out min-[1367px]:duration-350 min-[1367px]:ease-[cubic-bezier(0.22,1,0.36,1)]',
@@ -308,17 +322,14 @@ export function AddStudentForm({ open, onOpenChange }: AddStudentFormProps) {
             watch={watch}
             computedAge={computedAge}
             showParentSection={showParentSection}
-            groupsForTeacher={groupsForTeacher}
-            teachers={teachers}
+            groupsForCenter={groupsForCenter}
             centers={centers}
             isLoadingGroups={isLoadingGroups}
-            isLoadingTeachers={isLoadingTeachers}
             isLoadingCenters={isLoadingCenters}
             isSubmitting={isSubmitting}
             showCenterSelect={!isManager}
             assignedCenterDisplay={isManager ? managerCenterLabel : null}
             lockedCenterId={isManager ? user?.managerCenterId ?? null : null}
-            groupsForAssignmentFilter={assignmentGroups}
           />
 
           <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end">
