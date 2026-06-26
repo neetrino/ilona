@@ -1,14 +1,17 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import { useLessonAttendance, useMarkBulkAttendance } from '@/features/attendance';
 import { useLesson } from '@/features/lessons';
 import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/input';
+import { AutoDismissToast } from '@/shared/components/ui';
 import { markAbsenceComplete } from '@/features/lessons/api/obligations.api';
 import { useQueryClient } from '@tanstack/react-query';
 import { lessonKeys } from '@/features/lessons/hooks/useLessons';
 import type { AbsenceType } from '@/features/attendance';
+import type { AutoDismissToastVariant } from '@/shared/components/ui';
 
 interface AbsenceTabProps {
   lessonId: string;
@@ -16,7 +19,14 @@ interface AbsenceTabProps {
 
 type AttendanceStatus = 'present' | 'absent_justified' | 'absent_unjustified' | 'not_marked';
 
+type ToastState = {
+  key: number;
+  message: string;
+  variant: AutoDismissToastVariant;
+};
+
 export function AbsenceTab({ lessonId }: AbsenceTabProps) {
+  const t = useTranslations('attendance');
   const queryClient = useQueryClient();
   const { data: lesson } = useLesson(lessonId);
   const { data: attendanceData, isLoading } = useLessonAttendance(lessonId);
@@ -25,6 +35,11 @@ export function AbsenceTab({ lessonId }: AbsenceTabProps) {
     Record<string, { isPresent: boolean; absenceType?: AbsenceType; note?: string }>
   >({});
   const [hasChanges, setHasChanges] = useState(false);
+  const [toast, setToast] = useState<ToastState | null>(null);
+
+  const showToast = (message: string, variant: AutoDismissToastVariant) => {
+    setToast({ key: Date.now(), message, variant });
+  };
 
   // Declare students before useEffect that uses it
   // Get students from attendanceData instead of lesson.group (which doesn't have students in the type)
@@ -105,7 +120,7 @@ export function AbsenceTab({ lessonId }: AbsenceTabProps) {
         (att) => att.absenceType === 'JUSTIFIED' && !att.note?.trim()
       );
       if (hasMissingJustification) {
-        alert('Please add a justification comment for all justified absences.');
+        showToast(t('justificationBeforeSave'), 'error');
         return;
       }
 
@@ -125,10 +140,10 @@ export function AbsenceTab({ lessonId }: AbsenceTabProps) {
       queryClient.invalidateQueries({ queryKey: ['finance', 'salaries', 'breakdown'] });
 
       setHasChanges(false);
-      alert('Attendance saved successfully!');
+      showToast(t('attendanceSaved'), 'success');
     } catch (err: unknown) {
       console.error('Failed to save attendance:', err);
-      alert('Failed to save attendance. Please try again.');
+      showToast(t('failedToSaveAttendanceDefault'), 'error');
     }
   };
 
@@ -176,6 +191,14 @@ export function AbsenceTab({ lessonId }: AbsenceTabProps) {
 
   return (
     <div className="p-6">
+      {toast ? (
+        <AutoDismissToast
+          key={toast.key}
+          message={toast.message}
+          variant={toast.variant}
+          onDismiss={() => setToast(null)}
+        />
+      ) : null}
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h3 className="text-lg font-semibold text-slate-800">Edit Attendance</h3>
