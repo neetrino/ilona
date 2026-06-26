@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import { createLead } from '@/features/crm/api/crm.api';
 import type { CreateLeadDto, CrmLead } from '@/features/crm/types';
@@ -9,6 +9,7 @@ import { fetchTeachers } from '@/features/teachers/api/teachers.api';
 import { fetchGroups } from '@/features/groups/api/groups.api';
 import { useQuery } from '@tanstack/react-query';
 import { cn } from '@/shared/lib/utils';
+import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
 
 interface CreateLeadModalProps {
   open: boolean;
@@ -73,6 +74,38 @@ export function CreateLeadModal({
     }
   }, [open, defaultCenterId]);
   const groups = groupsData?.items ?? [];
+
+  const levelOptions = useMemo(
+    () => [
+      { id: '', label: '—' },
+      ...LEVEL_OPTIONS.map((level) => ({ id: level, label: level })),
+    ],
+    [],
+  );
+  const centerOptions = useMemo(
+    () => [
+      { id: '', label: '—' },
+      ...centers.map((center) => ({ id: center.id, label: center.name })),
+    ],
+    [centers],
+  );
+  const teacherOptions = useMemo(
+    () => [
+      { id: '', label: '—' },
+      ...teachers.map((teacher) => ({
+        id: teacher.id,
+        label: `${teacher.user?.firstName ?? ''} ${teacher.user?.lastName ?? ''}`.trim(),
+      })),
+    ],
+    [teachers],
+  );
+  const groupOptions = useMemo(
+    () => [
+      { id: '', label: '—' },
+      ...groups.map((group) => ({ id: group.id, label: group.name })),
+    ],
+    [groups],
+  );
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -154,16 +187,14 @@ export function CreateLeadModal({
             </div>
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">{t('level')}</label>
-              <select
+              <SingleSelectDropdown
+                id="create-lead-level"
+                options={levelOptions}
                 value={form.levelId ?? ''}
-                onChange={(e) => setForm((f) => ({ ...f, levelId: e.target.value || undefined }))}
-                className="unified-native-select w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-              >
-                <option value="">—</option>
-                {LEVEL_OPTIONS.map((l) => (
-                  <option key={l} value={l}>{l}</option>
-                ))}
-              </select>
+                onValueChange={(nextValue) =>
+                  setForm((f) => ({ ...f, levelId: nextValue || undefined }))
+                }
+              />
             </div>
           </div>
           <div>
@@ -173,16 +204,14 @@ export function CreateLeadModal({
                 {defaultCenterName ?? t('yourCenter')}
               </p>
             ) : (
-              <select
+              <SingleSelectDropdown
+                id="create-lead-center"
+                options={centerOptions}
                 value={form.centerId ?? ''}
-                onChange={(e) => setForm((f) => ({ ...f, centerId: e.target.value || undefined }))}
-                className="unified-native-select w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-              >
-                <option value="">—</option>
-                {centers.map((c) => (
-                  <option key={c.id} value={c.id}>{c.name}</option>
-                ))}
-              </select>
+                onValueChange={(nextValue) =>
+                  setForm((f) => ({ ...f, centerId: nextValue || undefined }))
+                }
+              />
             )}
           </div>
           {(isUnder18 || isAdult) && (
@@ -241,31 +270,25 @@ export function CreateLeadModal({
           )}
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">{t('teacher')}</label>
-            <select
+            <SingleSelectDropdown
+              id="create-lead-teacher"
+              options={teacherOptions}
               value={form.teacherId ?? ''}
-              onChange={(e) => setForm((f) => ({ ...f, teacherId: e.target.value || undefined }))}
-              className="unified-native-select w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-            >
-              <option value="">—</option>
-              {teachers.map((teacher) => (
-                <option key={teacher.id} value={teacher.id}>
-                  {teacher.user?.firstName} {teacher.user?.lastName}
-                </option>
-              ))}
-            </select>
+              onValueChange={(nextValue) =>
+                setForm((f) => ({ ...f, teacherId: nextValue || undefined }))
+              }
+            />
           </div>
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">{t('group')}</label>
-            <select
+            <SingleSelectDropdown
+              id="create-lead-group"
+              options={groupOptions}
               value={form.groupId ?? ''}
-              onChange={(e) => setForm((f) => ({ ...f, groupId: e.target.value || undefined }))}
-              className="unified-native-select w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-            >
-              <option value="">—</option>
-              {groups.map((g) => (
-                <option key={g.id} value={g.id}>{g.name}</option>
-              ))}
-            </select>
+              onValueChange={(nextValue) =>
+                setForm((f) => ({ ...f, groupId: nextValue || undefined }))
+              }
+            />
           </div>
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1">{t('source')}</label>

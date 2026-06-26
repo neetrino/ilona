@@ -6,12 +6,13 @@ import { z } from 'zod';
 import { Button, Input, Label, Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/shared/components/ui';
 import { useCreateRecurringLessons, type CreateRecurringLessonsDto } from '@/features/lessons';
 import { useMyGroups } from '@/features/groups';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import { useQuery } from '@tanstack/react-query';
 import { api, getErrorMessage } from '@/shared/lib/api';
 import { useQueryClient } from '@tanstack/react-query';
 import { cn } from '@/shared/lib/utils';
+import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
 
 // Display order: Mon–Sun (values 0–6 stay as JS Date.getDay())
 const WEEKDAYS = [
@@ -115,6 +116,7 @@ export function AddCourseForm({ open, onOpenChange }: AddCourseFormProps) {
   });
 
   const weekdays = watch('weekdays');
+  const watchedGroupId = watch('groupId') || '';
   const startTime = watch('startTime');
   const endTime = watch('endTime');
 
@@ -192,6 +194,18 @@ export function AddCourseForm({ open, onOpenChange }: AddCourseFormProps) {
   };
 
   const isLoading = isLoadingGroups || isLoadingTeacher;
+  const groupOptions = useMemo(
+    () => [
+      { id: '', label: t('selectGroup') || 'Select a group' },
+      ...groups.map((group) => ({
+        id: group.id,
+        label: `${group.name}${group.level ? ` (${group.level})` : ''}${
+          group.center ? ` - ${group.center.name}` : ''
+        }`.trim(),
+      })),
+    ],
+    [groups, t],
+  );
   const canSubmit = !isSubmitting && !isLoading && groups.length > 0 && teacherProfile?.id && weekdays.length > 0;
 
   return (
@@ -220,23 +234,18 @@ export function AddCourseForm({ open, onOpenChange }: AddCourseFormProps) {
             <Label htmlFor="groupId">
               {t('group') || 'Group'} <span className="text-red-500">*</span>
             </Label>
-            <select
+            <input type="hidden" {...register('groupId')} />
+            <SingleSelectDropdown
               id="groupId"
-              {...register('groupId')}
+              options={groupOptions}
+              value={watchedGroupId}
+              onValueChange={(nextValue) =>
+                setValue('groupId', nextValue ?? '', { shouldDirty: true, shouldValidate: true })
+              }
+              isLoading={isLoadingGroups}
               disabled={isSubmitting || isLoading || groups.length === 0}
-              className={cn(
-                'unified-native-select w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-4 focus:ring-[#1010a3]/10 focus:border-[#1010a3]/45 text-sm',
-                errors.groupId ? 'border-red-300' : 'border-slate-300',
-                (isSubmitting || isLoading || groups.length === 0) && 'bg-slate-100 cursor-not-allowed'
-              )}
-            >
-              <option value="">{t('selectGroup') || 'Select a group'}</option>
-              {groups.map((group) => (
-                <option key={group.id} value={group.id}>
-                  {group.name} {group.level ? `(${group.level})` : ''} {group.center ? `- ${group.center.name}` : ''}
-                </option>
-              ))}
-            </select>
+              error={errors.groupId?.message ?? null}
+            />
             {errors.groupId && (
               <p className="text-sm text-red-600">{errors.groupId.message}</p>
             )}

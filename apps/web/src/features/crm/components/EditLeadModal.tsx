@@ -15,6 +15,7 @@ import { useAuthStore } from '@/features/auth/store/auth.store';
 import { CrmStatusSelector } from './CrmStatusSelector';
 import { PaidRegistrationModal } from './PaidRegistrationModal';
 import { RecordingPlayback } from './VoiceRecorder';
+import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
 
 const LEVEL_OPTIONS = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
 
@@ -96,6 +97,40 @@ export function EditLeadModal({
   const groupsForSelectedTeacher = useMemo(
     () => (selectedTeacherId ? groups.filter((group) => group.teacherId === selectedTeacherId) : []),
     [groups, selectedTeacherId],
+  );
+  const levelOptions = useMemo(
+    () => [
+      { id: '', label: '—' },
+      ...LEVEL_OPTIONS.map((level) => ({ id: level, label: level })),
+    ],
+    [],
+  );
+  const teacherOptions = useMemo(
+    () => [
+      { id: '', label: '—' },
+      ...teachers.map((teacher) => ({
+        id: teacher.id,
+        label: `${teacher.user?.firstName ?? ''} ${teacher.user?.lastName ?? ''}`.trim(),
+      })),
+    ],
+    [teachers],
+  );
+  const groupOptions = useMemo(
+    () => [
+      {
+        id: '',
+        label: selectedTeacherId ? '—' : t('selectTeacherFirst'),
+      },
+      ...groupsForSelectedTeacher.map((group) => ({ id: group.id, label: group.name })),
+    ],
+    [groupsForSelectedTeacher, selectedTeacherId, t],
+  );
+  const centerOptions = useMemo(
+    () => [
+      { id: '', label: '—' },
+      ...centers.map((center) => ({ id: center.id, label: center.name })),
+    ],
+    [centers],
   );
   const voiceAttachments = useMemo(
     () => lead?.attachments?.filter((attachment) => attachment.type === 'VOICE_RECORDING') ?? [],
@@ -423,58 +458,44 @@ export function EditLeadModal({
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
                   <label className="mb-1 block text-sm font-medium text-slate-700">{t('level')}</label>
-                  <select
+                  <SingleSelectDropdown
+                    id="edit-lead-level"
+                    options={levelOptions}
                     value={form.levelId ?? ''}
-                    onChange={(e) =>
-                      setForm((f) => ({ ...f, levelId: e.target.value || undefined }))
+                    onValueChange={(nextValue) =>
+                      setForm((f) => ({ ...f, levelId: nextValue || undefined }))
                     }
-                    className="unified-native-select w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-                  >
-                    <option value="">—</option>
-                    {LEVEL_OPTIONS.map((l) => (
-                      <option key={l} value={l}>
-                        {l}
-                      </option>
-                    ))}
-                  </select>
+                  />
                 </div>
                 <div>
                   <label className="mb-1 block text-sm font-medium text-slate-700">{t('teacher')}</label>
-                  <select
+                  <SingleSelectDropdown
+                    id="edit-lead-teacher"
+                    options={teacherOptions}
                     value={form.teacherId ?? ''}
-                    onChange={(e) =>
-                      setForm((f) => ({ ...f, teacherId: e.target.value || undefined, groupId: undefined }))
+                    onValueChange={(nextValue) =>
+                      setForm((f) => ({
+                        ...f,
+                        teacherId: nextValue || undefined,
+                        groupId: undefined,
+                      }))
                     }
-                    className="unified-native-select w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-                  >
-                    <option value="">—</option>
-                    {teachers.map((teacher) => (
-                      <option key={teacher.id} value={teacher.id}>
-                        {teacher.user?.firstName} {teacher.user?.lastName}
-                      </option>
-                    ))}
-                  </select>
+                  />
                   {isManager && teachers.length === 0 ? (
                     <p className="mt-1 text-xs text-slate-500">{t('noTeachersForCenter')}</p>
                   ) : null}
                 </div>
                 <div>
                   <label className="mb-1 block text-sm font-medium text-slate-700">{t('group')}</label>
-                  <select
+                  <SingleSelectDropdown
+                    id="edit-lead-group"
+                    options={groupOptions}
                     value={form.groupId ?? ''}
-                    onChange={(e) =>
-                      setForm((f) => ({ ...f, groupId: e.target.value || undefined }))
+                    onValueChange={(nextValue) =>
+                      setForm((f) => ({ ...f, groupId: nextValue || undefined }))
                     }
                     disabled={!selectedTeacherId}
-                    className="unified-native-select w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-                  >
-                    <option value="">{selectedTeacherId ? '—' : t('selectTeacherFirst')}</option>
-                    {groupsForSelectedTeacher.map((g) => (
-                      <option key={g.id} value={g.id}>
-                        {g.name}
-                      </option>
-                    ))}
-                  </select>
+                  />
                 </div>
                 {isManager ? (
                   managerCenterReadonlyLabel ? (
@@ -488,20 +509,14 @@ export function EditLeadModal({
                 ) : (
                   <div>
                     <label className="mb-1 block text-sm font-medium text-slate-700">{t('center')}</label>
-                    <select
+                    <SingleSelectDropdown
+                      id="edit-lead-center"
+                      options={centerOptions}
                       value={form.centerId ?? ''}
-                      onChange={(e) =>
-                        setForm((f) => ({ ...f, centerId: e.target.value || undefined }))
+                      onValueChange={(nextValue) =>
+                        setForm((f) => ({ ...f, centerId: nextValue || undefined }))
                       }
-                      className="unified-native-select w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-                    >
-                      <option value="">—</option>
-                      {centers.map((c) => (
-                        <option key={c.id} value={c.id}>
-                          {c.name}
-                        </option>
-                      ))}
-                    </select>
+                    />
                   </div>
                 )}
               </div>
