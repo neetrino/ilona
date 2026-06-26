@@ -14,6 +14,8 @@ import { cn } from '@/shared/lib/utils';
 import { LandingNavbar } from '@/shared/components/layout/LandingNavbar';
 import { CanvasScaler } from '@/shared/components/layout/CanvasScaler';
 import { LANDING_ASSETS } from '@/features/landing/landingAssets';
+import { FooterSocialIcons } from '@/features/landing/components/FooterSocialIcons';
+import type { FooterIconKey } from '@ilona/types';
 
 const HERO_PERSON_IMAGE = LANDING_ASSETS.heroPerson;
 const HERO_UK_BADGE_IMAGE = LANDING_ASSETS.heroUkBadge;
@@ -51,11 +53,6 @@ const NEWS_IMAGE_3_OVERLAY = LANDING_ASSETS.newsImage3Overlay;
 const NEWS_ARROW_ICON = LANDING_ASSETS.newsArrowIcon;
 const FAQ_DROPDOWN_ICON = LANDING_ASSETS.faqDropdownIcon;
 const FOOTER_LOGO_IMAGE = LANDING_ASSETS.footerLogo;
-const FOOTER_SOCIAL_INSTAGRAM = LANDING_ASSETS.footerSocialInstagram;
-const FOOTER_SOCIAL_FACEBOOK = LANDING_ASSETS.footerSocialFacebook;
-const FOOTER_SOCIAL_TELEGRAM = LANDING_ASSETS.footerSocialTelegram;
-const FOOTER_SOCIAL_WHATSAPP = LANDING_ASSETS.footerSocialWhatsapp;
-const FOOTER_SOCIAL_VIBER = LANDING_ASSETS.footerSocialViber;
 const FOOTER_FLAG_USA = LANDING_ASSETS.footerFlagUsa;
 const FOOTER_FLAG_UK = LANDING_ASSETS.footerFlagUk;
 const BUTTON_HOVER_CLASS =
@@ -2435,37 +2432,17 @@ export default function HomePage() {
             </span>
           </div>
 
-          <div className="flex items-center gap-3">
-            {[
-              FOOTER_SOCIAL_INSTAGRAM,
-              FOOTER_SOCIAL_FACEBOOK,
-              FOOTER_SOCIAL_TELEGRAM,
-              FOOTER_SOCIAL_WHATSAPP,
-            ].map((icon, index) => (
-              <a
-                key={index}
-                href="#"
-                className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#f2f5fb]"
-                aria-label={tr('Social link', 'Սոցիալական հղում')}
-              >
-                <Image src={icon} alt="" width={40} height={40} unoptimized className="size-10" />
-              </a>
-            ))}
-            <a
-              href="#"
-              className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[#f2f5fb]"
-              aria-label={tr('Viber', 'Viber')}
-            >
-              <Image
-                src={FOOTER_SOCIAL_VIBER}
-                alt=""
-                width={20}
-                height={20}
-                unoptimized
-                className="size-5"
-              />
-            </a>
-          </div>
+          <FooterSocialIcons
+            containerClassName="flex items-center gap-3"
+            getAriaLabel={(key: FooterIconKey) => {
+              if (key === 'viber') return tr('Viber', 'Viber');
+              if (key === 'instagram') return tr('Instagram', 'Instagram');
+              if (key === 'facebook') return tr('Facebook', 'Facebook');
+              if (key === 'telegram') return tr('Telegram', 'Telegram');
+              if (key === 'whatsapp') return tr('WhatsApp', 'WhatsApp');
+              return tr('Social link', 'Սոցիալական հղում');
+            }}
+          />
 
           <div className="grid grid-cols-2 gap-x-6 border-t border-white/20 pt-6">
             <div>
@@ -2587,37 +2564,17 @@ export default function HomePage() {
               </span>
             </div>
 
-            <div className="mt-[52px] flex items-center gap-6">
-              {[
-                FOOTER_SOCIAL_INSTAGRAM,
-                FOOTER_SOCIAL_FACEBOOK,
-                FOOTER_SOCIAL_TELEGRAM,
-                FOOTER_SOCIAL_WHATSAPP,
-              ].map((icon, index) => (
-                <a
-                  key={index}
-                  href="#"
-                  className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#f2f5fb]"
-                  aria-label={tr('Social link', 'Սոցիալական հղում')}
-                >
-                  <Image src={icon} alt="" width={40} height={40} unoptimized className="size-10" />
-                </a>
-              ))}
-              <a
-                href="#"
-                className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[#f2f5fb]"
-                aria-label={tr('Viber', 'Viber')}
-              >
-                <Image
-                  src={FOOTER_SOCIAL_VIBER}
-                  alt=""
-                  width={20}
-                  height={20}
-                  unoptimized
-                  className="size-5"
-                />
-              </a>
-            </div>
+            <FooterSocialIcons
+              containerClassName="mt-[52px] flex items-center gap-6"
+              getAriaLabel={(key: FooterIconKey) => {
+                if (key === 'viber') return tr('Viber', 'Viber');
+                if (key === 'instagram') return tr('Instagram', 'Instagram');
+                if (key === 'facebook') return tr('Facebook', 'Facebook');
+                if (key === 'telegram') return tr('Telegram', 'Telegram');
+                if (key === 'whatsapp') return tr('WhatsApp', 'WhatsApp');
+                return tr('Social link', 'Սոցիալական հղում');
+              }}
+            />
 
             <div className="mt-[18px] h-px w-[296px] bg-white/60" />
 

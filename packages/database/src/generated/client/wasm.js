@@ -434,6 +434,7 @@ exports.Prisma.SystemSettingsScalarFieldEnum = {
   penaltyVoiceAmd: 'penaltyVoiceAmd',
   penaltyTextAmd: 'penaltyTextAmd',
   penaltyDailyPlanAmd: 'penaltyDailyPlanAmd',
+  footerIconLinks: 'footerIconLinks',
   updatedAt: 'updatedAt'
 };
 
