@@ -1,9 +1,10 @@
 'use client';
 
 import Image from 'next/image';
+import { PublicAssetImage } from '@/shared/components/ui';
 import { StudentLogoutControl } from './StudentLogoutControl';
+import { PortalSidebarCollapseToggle } from './PortalSidebarCollapseToggle';
 import { StudentSidebarNavIcon } from './StudentSidebarNavIcon';
-import { PortalSidebarHeader } from './PortalSidebarHeader';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
@@ -14,8 +15,27 @@ import { getFullApiUrl } from '@/shared/lib/api';
 import { type AdminNavEntry, type AdminNavIcon } from '@/shared/lib/admin-nav-entries';
 import { useAdminNavEntries } from '@/shared/hooks/useAdminNavEntries';
 import { STUDENT_SIDEBAR_ASSETS } from '@/features/student-dashboard/studentSidebarAssets';
-import { PortalSidebarReveal } from './PortalSidebarReveal';
-import { PORTAL_SIDEBAR_NAV_ITEM_GAP_CLASS, PORTAL_SIDEBAR_NAV_LABEL_HY_CLASS, PORTAL_SIDEBAR_NAV_LINK_TRANSITION_CLASS, PORTAL_SIDEBAR_SHELL_TRANSITION_CLASS, getPortalSidebarWidthClass } from './student-layout';
+import { PORTAL_SIDEBAR_NAV_LABEL_HY_CLASS, PORTAL_SIDEBAR_WIDTH_CLASS } from './student-layout';
+
+const ADMIN_SIDEBAR_NAV_ITEM_GAP_CLASS = 'gap-[8px]';
+
+const ADMIN_SIDEBAR_WIDTH_CLASS = {
+  default: 'w-[clamp(14rem,16.5vw,20rem)]',
+  hy: 'w-[clamp(18rem,22vw,25rem)]',
+  hyIpad: 'w-[clamp(19rem,23vw,26.5rem)]',
+} as const;
+
+function getAdminSidebarWidthClass(
+  collapsed: boolean,
+  isArmenianLocale: boolean,
+  isIPad: boolean,
+): string {
+  if (collapsed) return PORTAL_SIDEBAR_WIDTH_CLASS.collapsed;
+  if (isArmenianLocale) {
+    return isIPad ? ADMIN_SIDEBAR_WIDTH_CLASS.hyIpad : ADMIN_SIDEBAR_WIDTH_CLASS.hy;
+  }
+  return ADMIN_SIDEBAR_WIDTH_CLASS.default;
+}
 
 const NAV_LIST_GAP_CLASS = 'gap-0.5';
 const NAV_ICON_COLUMN_CLASS = 'flex h-12 w-[2.375rem] shrink-0 items-center justify-center';
@@ -102,6 +122,7 @@ function NavLink({
   const labelClassName = cn(
     'min-w-0 flex-1 overflow-visible pr-0.5 text-sm italic leading-snug',
     isArmenianLocale && PORTAL_SIDEBAR_NAV_LABEL_HY_CLASS,
+    !isMobileSidebar && 'whitespace-nowrap',
     active ? 'font-semibold text-white' : 'font-medium text-[#787878]',
   );
 
@@ -111,12 +132,7 @@ function NavLink({
       if (isMobileSidebar) {
         return <span className={cn(labelClassName, 'whitespace-pre-line')}>{mobileLabel}</span>;
       }
-      return (
-        <>
-          <span className={cn(labelClassName, 'whitespace-pre-line xl:hidden')}>{mobileLabel}</span>
-          <span className={cn(labelClassName, 'hidden xl:inline')}>{label}</span>
-        </>
-      );
+      return <span className={labelClassName}>{label}</span>;
     }
 
     return <span className={labelClassName}>{label}</span>;
@@ -128,21 +144,18 @@ function NavLink({
       title={collapsed ? label : undefined}
       onClick={onNavigate}
       className={cn(
-        'flex min-h-12 w-full items-center',
-        PORTAL_SIDEBAR_NAV_LINK_TRANSITION_CLASS,
-        PORTAL_SIDEBAR_NAV_ITEM_GAP_CLASS,
+        'flex min-h-12 w-full items-center transition-colors',
+        ADMIN_SIDEBAR_NAV_ITEM_GAP_CLASS,
         active
           ? collapsed
-            ? 'rounded-[0.875rem] bg-transparent px-0 py-0'
+            ? 'rounded-[0.875rem] bg-transparent px-1.5 py-0'
             : 'rounded-[3.375rem] bg-[#1010a3] py-1 pl-1.5 pr-3'
           : 'rounded-[0.875rem] px-3 py-1 hover:bg-[#f6f6f7]',
-        collapsed && 'h-12 justify-center gap-0 px-0 py-0',
+        collapsed && 'h-12 justify-center px-1.5 py-0',
       )}
     >
       <AdminNavIconDisplay icon={item.icon} active={active} collapsed={collapsed} />
-      <PortalSidebarReveal open={!collapsed} className={cn('min-w-0', !collapsed && 'flex-1')}>
-        {renderLabel()}
-      </PortalSidebarReveal>
+      {!collapsed ? renderLabel() : null}
     </Link>
   );
 }
@@ -187,14 +200,13 @@ export function AdminSidebar({
     <div
       className={cn(
         'flex h-full shrink-0 flex-col bg-[#ececec]',
-        !isDrawer && PORTAL_SIDEBAR_SHELL_TRANSITION_CLASS,
         isDrawer
           ? 'w-full py-2 pl-2 pr-2'
           : cn(
               'h-screen py-3 pl-3 pr-2 sm:pl-4 sm:pr-3',
               collapsed
-                ? getPortalSidebarWidthClass(true, isArmenianLocale, isIPad)
-                : getPortalSidebarWidthClass(false, isArmenianLocale, isIPad),
+                ? getAdminSidebarWidthClass(true, isArmenianLocale, isIPad)
+                : getAdminSidebarWidthClass(false, isArmenianLocale, isIPad),
             ),
       )}
     >
@@ -204,22 +216,64 @@ export function AdminSidebar({
           !showLabels && '[scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden',
         )}
       >
-        <PortalSidebarHeader
-          brandLogo={brandLogo}
-          brandName={t('brandName')}
-          showLabels={showLabels}
-          collapsed={collapsed}
-          isDrawer={isDrawer}
-          onToggle={onToggle}
-          onNavigate={onNavigate}
-          closeLabel={tCommon('close')}
-        />
+        <div
+          className={cn(
+            'flex shrink-0 border-b border-transparent pb-2 pt-5',
+            showLabels
+              ? 'items-center gap-3 px-4'
+              : 'flex-col items-center gap-1.5 px-2 pt-3 pb-1',
+          )}
+        >
+          <div className="relative h-[3.25rem] w-[3.25rem] shrink-0 overflow-hidden rounded-full">
+            <PublicAssetImage
+              src={brandLogo}
+              alt={t('brandName')}
+              fill
+              className="object-cover"
+              onError={(e) => {
+                const target = e.currentTarget;
+                if (target.src.includes('student-sidebar')) return;
+                target.src = STUDENT_SIDEBAR_ASSETS.brandLogo;
+              }}
+            />
+          </div>
+          {showLabels ? (
+            <p className="min-w-0 flex-1 text-sm font-semibold leading-snug tracking-tight text-[#242427]">
+              {t('brandName')}
+            </p>
+          ) : null}
+          {isDrawer ? (
+            <button
+              type="button"
+              onClick={onNavigate}
+              className="ml-auto shrink-0 rounded-lg p-1.5 text-[#8b8b90] transition-colors hover:bg-[#f6f6f7] hover:text-[#242427]"
+              aria-label={tCommon('close')}
+            >
+              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+          ) : null}
+          {onToggle && !isDrawer ? (
+            <PortalSidebarCollapseToggle
+              collapsed={collapsed}
+              onToggle={onToggle}
+              className={showLabels ? 'ml-auto' : undefined}
+            />
+          ) : null}
+        </div>
 
         <nav
           className={cn(
-            'flex min-h-0 flex-1 flex-col overflow-x-visible overflow-y-auto py-4',
+            'flex min-h-0 flex-1 flex-col overflow-x-visible overflow-y-auto pr-3.5',
+            showLabels ? 'py-4' : 'pb-4 pt-2',
             showLabels
-              ? cn('pr-3.5', isArmenianLocale ? 'px-4' : 'px-3')
+              ? isArmenianLocale ? 'px-4' : 'px-3'
               : 'px-2',
             NAV_LIST_GAP_CLASS,
             !showLabels && '[scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden',
