@@ -4,7 +4,6 @@ import { DataTable } from '@/shared/components/ui';
 import { createStudentsTableColumns } from './StudentsTableColumns';
 import { getItemId, isOnboardingItem, type TeacherAssignedItem, type Student } from '@/features/students';
 import type { Group } from '@/features/groups';
-import type { Teacher } from '@/features/teachers';
 
 interface StudentsListProps {
   students: TeacherAssignedItem[];
@@ -26,11 +25,9 @@ interface StudentsListProps {
   onDeactivate: (student: Student) => void;
   onShowFeedback: (student: Student) => void;
   onView: (student: Student) => void;
-  onTeacherChange: (studentId: string, teacherId: string | null) => Promise<void>;
   onGroupChange: (studentId: string, groupId: string | null) => Promise<void>;
   onCenterChange: (studentId: string, centerId: string | null) => Promise<void>;
   onRegisterDateChange: (studentId: string, date: string | null) => Promise<void>;
-  teachers: Teacher[];
   groups: Group[];
   centerOptions: Array<{ id: string; label: string }>;
   isLoading: boolean;
@@ -62,11 +59,9 @@ export function StudentsList({
   onDeactivate,
   onShowFeedback,
   onView,
-  onTeacherChange,
   onGroupChange,
   onCenterChange,
   onRegisterDateChange,
-  teachers,
   groups,
   centerOptions,
   isLoading,
@@ -90,11 +85,9 @@ export function StudentsList({
     onDelete,
     onDeactivate,
     onShowFeedback,
-    onTeacherChange,
     onGroupChange,
     onCenterChange,
     onRegisterDateChange,
-    teachers,
     groups,
     centerOptions,
     isDeleting: isDeleting || isUpdating,
@@ -120,7 +113,7 @@ export function StudentsList({
         sortOrder={sortOrder}
         onSort={onSort}
         compact
-        tableClassName="table-fixed w-full min-w-[70rem]"
+        tableClassName="table-fixed w-full min-w-[58rem]"
       />
       </div>
 

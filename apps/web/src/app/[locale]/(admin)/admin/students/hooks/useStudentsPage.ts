@@ -12,7 +12,6 @@ import {
   isOnboardingItem,
   type Student,
   type StudentLifecycleStatus,
-  type UpdateStudentDto,
 } from '@/features/students';
 import { useTeachers } from '@/features/teachers';
 import { useGroups } from '@/features/groups';
@@ -20,6 +19,7 @@ import { useCenters } from '@/features/centers';
 import { getErrorMessage } from '@/shared/lib/api';
 import { readUrlSearchParam } from '@/shared/lib/url-search-params';
 import { useAppSearchUrl } from '@/shared/hooks/useAppSearchUrl';
+import { resolveTeacherIdFromGroup } from '@/features/students/lib/group-center-assignment';
 import { groupStudentsByCenter } from '../utils';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 
@@ -509,32 +509,17 @@ export function useStudentsPage() {
   };
 
   // Handle inline updates
-  const handleTeacherChange = async (studentId: string, teacherId: string | null) => {
-    const row = students.find((s): s is Student => !isOnboardingItem(s) && s.id === studentId);
-    const groupId = row?.groupId ?? null;
-    const allGroups = groupsData?.items ?? [];
-    const currentGroup = groupId ? allGroups.find((g) => g.id === groupId) : undefined;
-    const nextTeacherId = teacherId || null;
-    const rowCenterId = row?.centerId ?? null;
-    const groupMatchesTeacherAndCenter =
-      !currentGroup ||
-      !nextTeacherId ||
-      (currentGroup.teacherId === nextTeacherId &&
-        (!rowCenterId || currentGroup.centerId === rowCenterId));
-    const payload: UpdateStudentDto = { teacherId: teacherId || undefined };
-    if (!groupMatchesTeacherAndCenter) {
-      payload.groupId = null;
-    }
-    await updateStudent.mutateAsync({
-      id: studentId,
-      data: payload,
-    });
-  };
-
   const handleGroupChange = async (studentId: string, groupId: string | null) => {
+    const allGroups = groupsData?.items ?? [];
+    const group = groupId ? allGroups.find((g) => g.id === groupId) : undefined;
+    const teacherId = groupId ? resolveTeacherIdFromGroup(group) : undefined;
+
     await updateStudent.mutateAsync({
       id: studentId,
-      data: { groupId: groupId === null ? null : groupId },
+      data: {
+        groupId: groupId === null ? null : groupId,
+        teacherId: groupId === null ? null : teacherId,
+      },
     });
   };
 
@@ -561,7 +546,7 @@ export function useStudentsPage() {
 
   const teachers = useMemo(() => teachersData?.items ?? [], [teachersData?.items]);
 
-  // Full groups list with teacherId for per-row filtering (group options are filtered by selected teacher in table)
+  // Full groups list with teacherId for per-row filtering (group options are filtered by selected center in table)
   const groups = useMemo(() => groupsData?.items ?? [], [groupsData]);
 
   const centerOptions = useMemo(() => 
@@ -728,7 +713,6 @@ export function useStudentsPage() {
     handleDeactivateClick,
     handleShowFeedback,
     handleFeedbackModalOpenChange,
-    handleTeacherChange,
     handleGroupChange,
     handleCenterChange,
     handleRegisterDateChange,

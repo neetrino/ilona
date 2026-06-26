@@ -95,7 +95,6 @@ export default function StudentsPage() {
     handleDeactivateClick,
     handleShowFeedback,
     handleFeedbackModalOpenChange,
-    handleTeacherChange,
     handleGroupChange,
     handleCenterChange,
     handleRegisterDateChange,
@@ -234,11 +233,9 @@ export default function StudentsPage() {
             onDeactivate={handleDeactivateClick}
             onShowFeedback={handleShowFeedback}
             onView={handleStudentDetailsOpen}
-            onTeacherChange={handleTeacherChange}
             onGroupChange={handleGroupChange}
             onCenterChange={handleCenterChange}
             onRegisterDateChange={handleRegisterDateChange}
-            teachers={teachers}
             groups={groups}
             centerOptions={centerOptions}
             isLoading={isLoading}

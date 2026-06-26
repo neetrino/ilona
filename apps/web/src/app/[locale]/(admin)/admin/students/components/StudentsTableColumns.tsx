@@ -10,32 +10,18 @@ import { formatDmyInputValue, parseDmyToIso } from '@/shared/lib/dmy-date';
 import { getErrorMessage } from '@/shared/lib/api';
 import type { Student, TeacherAssignedItem } from '@/features/students';
 import { getItemId, isOnboardingItem } from '@/features/students';
-import { teacherBelongsToCenter } from '@/features/students/lib/center-scoped-assignment';
+import {
+  ensureCurrentGroupInList,
+  filterAssignableGroupsByCenter,
+} from '@/features/students/lib/group-center-assignment';
 import type { Group } from '@/features/groups';
-import type { Teacher } from '@/features/teachers';
 
 const NEW_STUDENT_BADGE_DAYS = 30;
 
 type SelectOption = { id: string; label: string; searchText?: string };
 
-function buildTeacherSearchText(teacher: Teacher): string {
-  const firstName = teacher.user.firstName ?? '';
-  const lastName = teacher.user.lastName ?? '';
-  const fullName = `${firstName} ${lastName}`.trim();
-  const email = teacher.user.email ?? '';
-  return [firstName, lastName, fullName, email].filter(Boolean).join(' ');
-}
-
 function buildGroupSearchText(group: Group): string {
   return [group.name, group.level, group.center?.name].filter(Boolean).join(' ');
-}
-
-function mapTeacherToOption(teacher: Teacher): SelectOption {
-  return {
-    id: teacher.id,
-    label: `${teacher.user.firstName} ${teacher.user.lastName}`.trim(),
-    searchText: buildTeacherSearchText(teacher),
-  };
 }
 
 function mapGroupToOption(group: Group): SelectOption {
@@ -58,50 +44,18 @@ function getHorizontalScrollContainer(node: HTMLElement | null): HTMLElement | n
   return null;
 }
 
-function buildTeacherOptionsForRow(
-  centerId: string | null,
-  currentTeacherId: string | null,
-  teachers: Teacher[],
-  groups: Group[],
-): SelectOption[] {
-  if (!centerId) {
-    if (!currentTeacherId) return [];
-    const t = teachers.find((x) => x.id === currentTeacherId);
-    return t ? [mapTeacherToOption(t)] : [];
-  }
-  const filtered = teachers
-    .filter((t) => teacherBelongsToCenter(t.id, centerId, t.centerLinks, groups))
-    .map(mapTeacherToOption);
-  if (currentTeacherId && !filtered.some((o) => o.id === currentTeacherId)) {
-    const t = teachers.find((x) => x.id === currentTeacherId);
-    if (t) {
-      return [mapTeacherToOption(t), ...filtered];
-    }
-  }
-  return filtered;
-}
-
 function buildGroupOptionsForRow(
   centerId: string | null,
-  teacherId: string | null,
   currentGroupId: string | null,
   groups: Group[],
 ): SelectOption[] {
-  if (!centerId || !teacherId) {
-    if (!currentGroupId) return [];
-    const g = groups.find((x) => x.id === currentGroupId);
-    return g ? [mapGroupToOption(g)] : [];
-  }
-  const filtered = groups
-    .filter((g) => g.teacherId === teacherId && g.centerId === centerId)
-    .map(mapGroupToOption);
-  if (currentGroupId && !filtered.some((o) => o.id === currentGroupId)) {
-    const g = groups.find((x) => x.id === currentGroupId);
-    if (g) {
-      return [mapGroupToOption(g), ...filtered];
-    }
-  }
-  return filtered;
+  const scoped = filterAssignableGroupsByCenter(groups, centerId ?? undefined);
+  const withCurrent = ensureCurrentGroupInList(
+    scoped,
+    currentGroupId ?? undefined,
+    groups,
+  );
+  return withCurrent.map(mapGroupToOption);
 }
 
 function getRiskBadge(
@@ -303,11 +257,9 @@ interface StudentsTableColumnsProps {
   onDelete: (student: Student) => void;
   onDeactivate: (student: Student) => void;
   onShowFeedback: (student: Student) => void;
-  onTeacherChange: (studentId: string, teacherId: string | null) => Promise<void>;
   onGroupChange: (studentId: string, groupId: string | null) => Promise<void>;
   onCenterChange: (studentId: string, centerId: string | null) => Promise<void>;
   onRegisterDateChange: (studentId: string, date: string | null) => Promise<void>;
-  teachers: Teacher[];
   groups: Group[];
   centerOptions: Array<{ id: string; label: string }>;
   isDeleting: boolean;
@@ -328,11 +280,9 @@ export function createStudentsTableColumns({
   onDelete,
   onDeactivate,
   onShowFeedback,
-  onTeacherChange,
   onGroupChange,
   onCenterChange,
   onRegisterDateChange,
-  teachers,
   groups,
   centerOptions,
   isDeleting,
@@ -437,53 +387,18 @@ export function createStudentsTableColumns({
       },
     },
     {
-      key: 'teacher',
-      header: 'TEACHER',
-      className: '!w-[13%] !min-w-[8.75rem] align-top',
-      render: (row: TeacherAssignedItem) => {
-        if (isOnboardingItem(row)) return <span className="text-[#8b8b90]">—</span>;
-        const manualCenterId = row.centerId ?? null;
-        const teacherOptionsForRow = buildTeacherOptionsForRow(
-          manualCenterId,
-          row.teacherId || null,
-          teachers,
-          groups,
-        );
-        const teacherPlaceholder = !manualCenterId ? 'Select a center first' : 'Select teacher';
-        return (
-          <div className="min-w-0 w-full" onClick={(e) => e.stopPropagation()}>
-            <InlineSelect
-              value={row.teacherId || null}
-              options={teacherOptionsForRow}
-              onChange={async (teacherId) => {
-                await onTeacherChange(row.id, teacherId);
-              }}
-              placeholder={teacherPlaceholder}
-              clearLabel="Not assigned"
-              disabled={isUpdating || !manualCenterId}
-              searchable
-              searchPlaceholder="Search teacher..."
-              emptySearchMessage="No teachers found"
-            />
-          </div>
-        );
-      },
-    },
-    {
       key: 'group',
       header: 'GROUP',
       className: '!w-[13%] !min-w-[8.75rem] align-top',
       render: (row: TeacherAssignedItem) => {
         if (isOnboardingItem(row)) return <span className="text-[#8b8b90]">—</span>;
         const manualCenterId = row.centerId ?? null;
-        const teacherId = row.teacherId || null;
         const groupOptionsForRow = buildGroupOptionsForRow(
           manualCenterId,
-          teacherId,
           row.groupId || null,
           groups,
         );
-        const groupPlaceholder = !teacherId ? 'Select a teacher first' : 'Select group';
+        const groupPlaceholder = !manualCenterId ? 'Select a center first' : 'Select group';
         return (
           <div className="min-w-0 w-full" onClick={(e) => e.stopPropagation()}>
             <InlineSelect
@@ -494,7 +409,7 @@ export function createStudentsTableColumns({
               }}
               placeholder={groupPlaceholder}
               clearLabel="Not assigned"
-              disabled={isUpdating || !teacherId}
+              disabled={isUpdating || !manualCenterId}
               searchable
               searchPlaceholder="Search group..."
               emptySearchMessage="No groups found"
