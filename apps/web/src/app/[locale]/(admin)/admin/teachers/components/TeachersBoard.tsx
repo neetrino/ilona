@@ -221,7 +221,12 @@ export function TeachersBoard({
               ))}
             </div>
             {selectedTeachers.length > teachersPageSize && (
-              <div className={`flex items-center justify-between text-sm text-[#8b8b90] ${isIPad ? '' : 'sm:hidden'}`}>
+              <div
+                className={cn(
+                  'flex items-center text-sm text-[#8b8b90]',
+                  isIPad ? 'justify-start gap-4' : 'justify-between sm:hidden',
+                )}
+              >
                 <span>
                   {safeMobileTeachersPage * teachersPageSize + 1}-
                   {Math.min((safeMobileTeachersPage + 1) * teachersPageSize, selectedTeachers.length)} / {selectedTeachers.length}
