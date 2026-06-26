@@ -130,59 +130,11 @@ export class DailyPlanService {
     return teacher.id;
   }
 
-  /** Same scope as TeacherCrudService for managers: group at center OR explicit teacher↔center link. */
-  private managerTeacherAtCenterScope(
-    managerCenterId: string,
-  ): Prisma.TeacherWhereInput {
-    return {
-      OR: [
-        { groups: { some: { centerId: managerCenterId } } },
-        { centerLinks: { some: { centerId: managerCenterId } } },
-      ],
-    };
-  }
-
-  private canUserEditPlan(plan: DailyPlanWithRelations, user: JwtPayload): boolean {
-    return plan.teacher.user.id === user.sub;
-  }
-
   private serializePlan(plan: DailyPlanWithRelations, user: JwtPayload) {
     return {
       ...plan,
       canEdit: this.canUserEditPlan(plan, user),
     };
-  }
-
-  private async assertPlanViewAccess(
-    plan: DailyPlanWithRelations,
-    user: JwtPayload,
-  ): Promise<void> {
-    if (user.role !== UserRole.MANAGER) {
-      return;
-    }
-
-    const managerCenterId = user.managerCenterId ?? null;
-    if (!managerCenterId) {
-      throw new ForbiddenException('Manager account is not assigned to a center');
-    }
-
-    const teacherInCenter = await this.prisma.teacher.findFirst({
-      where: {
-        id: plan.teacherId,
-        ...this.managerTeacherAtCenterScope(managerCenterId),
-      },
-      select: { id: true },
-    });
-    if (!teacherInCenter) {
-      throw new ForbiddenException('Access denied');
-    }
-
-    const inCenter =
-      plan.group?.centerId === managerCenterId ||
-      plan.lesson?.group?.centerId === managerCenterId;
-    if (!inCenter) {
-      throw new ForbiddenException('Access denied');
-    }
   }
 
   private assertPlanEditAccess(plan: DailyPlanWithRelations, user: JwtPayload): void {
@@ -191,33 +143,17 @@ export class DailyPlanService {
     }
   }
 
+  private canUserEditPlan(plan: DailyPlanWithRelations, user: JwtPayload): boolean {
+    return plan.teacher.user.id === user.sub;
+  }
+
   async findAll(query: QueryDailyPlanDto, user: JwtPayload) {
-    const userRole = user.role;
     const take = Math.min(Math.max(query.take ?? 50, 1), 200);
     const skip = Math.max(query.skip ?? 0, 0);
-
-    if (userRole === UserRole.MANAGER && !user.managerCenterId) {
-      return { items: [], total: 0, take, skip };
-    }
 
     const whereParts: Prisma.DailyPlanWhereInput[] = [];
 
     if (query.teacherId) {
-      if (userRole === UserRole.MANAGER) {
-        const managerCenterId = user.managerCenterId;
-        if (managerCenterId) {
-          const teacherInCenter = await this.prisma.teacher.findFirst({
-            where: {
-              id: query.teacherId,
-              ...this.managerTeacherAtCenterScope(managerCenterId),
-            },
-            select: { id: true },
-          });
-          if (!teacherInCenter) {
-            throw new ForbiddenException('Teacher is not assigned to your center');
-          }
-        }
-      }
       whereParts.push({ teacherId: query.teacherId });
     }
 
@@ -256,21 +192,6 @@ export class DailyPlanService {
       });
     }
 
-    if (userRole === UserRole.MANAGER) {
-      const managerCenterId = user.managerCenterId;
-      if (managerCenterId) {
-        whereParts.push({
-          teacher: this.managerTeacherAtCenterScope(managerCenterId),
-        });
-        whereParts.push({
-          OR: [
-            { group: { centerId: managerCenterId } },
-            { lesson: { group: { centerId: managerCenterId } } },
-          ],
-        });
-      }
-    }
-
     const where: Prisma.DailyPlanWhereInput =
       whereParts.length === 0
         ? {}
@@ -305,7 +226,6 @@ export class DailyPlanService {
     if (!plan) {
       throw new NotFoundException(`Daily plan ${id} not found`);
     }
-    await this.assertPlanViewAccess(plan, user);
     return this.serializePlan(plan, user);
   }
 

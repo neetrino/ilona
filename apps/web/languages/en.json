@@ -1552,6 +1552,9 @@
     "lessonPrefix": "Lesson",
     "viewDetails": "View details",
     "empty": "No daily plans match your filters.",
+    "emptyDefault": "No daily plans yet.",
+    "emptySearch": "No daily plans match \"{query}\".",
+    "deleteError": "Failed to delete daily plan.",
     "showingPartial": "Showing {shown} of {total} plans. Narrow the date range or use search to find more."
   },
   "analytics": {

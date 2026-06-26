@@ -45,6 +45,7 @@ interface DailyPlanListSectionProps {
   onDelete?: (plan: DailyPlan) => Promise<void>;
   deletingPlanId?: string | null;
   deleteError?: string | null;
+  showCreate?: boolean;
 }
 
 const MOBILE_PAGE_SIZE = 5;
@@ -64,6 +65,7 @@ export function DailyPlanListSection({
   onDelete,
   deletingPlanId = null,
   deleteError = null,
+  showCreate = true,
 }: DailyPlanListSectionProps) {
   const trimmedSearch = search.trim();
   const isDeletePending = deletingPlanId !== null;
@@ -122,6 +124,7 @@ export function DailyPlanListSection({
             />
           </svg>
         </div>
+        {showCreate && (
         <button
           type="button"
           onClick={onCreate}
@@ -129,6 +132,7 @@ export function DailyPlanListSection({
         >
           {createLabel}
         </button>
+        )}
       </div>
       {deleteError && (
         <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-md px-3 py-2">
