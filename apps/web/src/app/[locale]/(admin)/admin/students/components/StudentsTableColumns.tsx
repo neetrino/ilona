@@ -316,6 +316,7 @@ interface StudentsTableColumnsProps {
 }
 
 export function createStudentsTableColumns({
+  t,
   tCommon,
   tTeachers,
   allSelected,
@@ -577,8 +578,8 @@ export function createStudentsTableColumns({
           >
             <button
               type="button"
-              aria-label="Message"
-              title="Message"
+              aria-label={t('feedback')}
+              title={t('feedback')}
               className={btnClass}
               onClick={(e) => {
                 e.stopPropagation();
