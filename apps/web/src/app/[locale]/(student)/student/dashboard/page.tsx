@@ -27,7 +27,6 @@ export default function StudentDashboardPage() {
   const levelLabel = dashboard?.student?.group?.level;
 
   const nextPayment = pendingPayments[0];
-  const resumeTopic = upcomingLessons[0]?.topic?.trim();
 
   const paymentMeta = useMemo(() => {
     if (!nextPayment) return { amount: null as number | null, days: null as number | null };
@@ -40,11 +39,7 @@ export default function StudentDashboardPage() {
   return (
     <DashboardLayout title="" variant="student">
       <div className="flex w-full min-w-0 flex-col gap-5 lg:gap-6">
-        <StudentDashboardHero
-          streakDays={stats?.attendance?.currentStreak ?? 0}
-          levelLabel={levelLabel}
-          resumeTopic={resumeTopic}
-        />
+        <StudentDashboardHero />
 
         <StudentDashboardStatCards
           isLoading={isLoading}
@@ -58,21 +53,16 @@ export default function StudentDashboardPage() {
         />
 
         <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1.65fr)_minmax(0,1fr)] xl:gap-6">
-          <div className="flex flex-col gap-5 lg:gap-6">
-            <StudentUpcomingLessonsCard lessons={upcomingLessons} isLoading={isLoading} />
-            <StudentProgressCard
-              isLoading={isLoading}
-              overall={stats?.progress?.overall ?? 0}
-              attendanceRate={stats?.progress?.attendanceRate ?? stats?.attendance?.rate ?? 0}
-              studyProgress={stats?.progress?.recordingRate ?? 0}
-              levelLabel={levelLabel}
-            />
-          </div>
-
-          <div className="flex flex-col gap-5 lg:gap-6">
-            <StudentNotesBlock variant="dashboard" levelLabel={levelLabel} />
-            <StudentPaymentPendingCard payments={pendingPayments} />
-          </div>
+          <StudentUpcomingLessonsCard lessons={upcomingLessons} isLoading={isLoading} />
+          <StudentNotesBlock variant="dashboard" levelLabel={levelLabel} />
+          <StudentProgressCard
+            isLoading={isLoading}
+            overall={stats?.progress?.overall ?? 0}
+            attendanceRate={stats?.progress?.attendanceRate ?? stats?.attendance?.rate ?? 0}
+            studyProgress={stats?.progress?.recordingRate ?? 0}
+            levelLabel={levelLabel}
+          />
+          <StudentPaymentPendingCard payments={pendingPayments} />
         </div>
       </div>
     </DashboardLayout>

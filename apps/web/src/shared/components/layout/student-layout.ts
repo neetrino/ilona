@@ -28,6 +28,22 @@ export const PORTAL_SIDEBAR_WIDTH_CLASS = {
 /** Extra label styles for longer Armenian nav copy. */
 export const PORTAL_SIDEBAR_NAV_LABEL_HY_CLASS = 'text-[0.8125rem] leading-tight break-words';
 
+/** Sidebar shell width animation when collapsing/expanding. */
+export const PORTAL_SIDEBAR_SHELL_TRANSITION_CLASS =
+  'transition-[width] duration-300 ease-in-out motion-reduce:transition-none';
+
+/** Nav item background, padding, and radius animation. */
+export const PORTAL_SIDEBAR_NAV_LINK_TRANSITION_CLASS =
+  'transition-[background-color,border-radius,padding,color] duration-300 ease-in-out motion-reduce:transition-none';
+
+/** Header row layout animation (brand + toggle). */
+export const PORTAL_SIDEBAR_HEADER_TRANSITION_CLASS =
+  'transition-[padding,gap] duration-300 ease-in-out motion-reduce:transition-none';
+
+/** Grid-based reveal for labels that fade/slide in and out. */
+export const PORTAL_SIDEBAR_REVEAL_GRID_TRANSITION_CLASS =
+  'transition-[grid-template-columns,opacity] duration-300 ease-in-out motion-reduce:transition-none';
+
 export function getPortalSidebarWidthClass(
   collapsed: boolean,
   isArmenianLocale: boolean,

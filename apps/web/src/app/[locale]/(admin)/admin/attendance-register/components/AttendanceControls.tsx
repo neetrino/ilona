@@ -43,6 +43,7 @@ interface AttendanceControlsProps {
   showAbsenceTypeFilter?: boolean;
   absenceFilter?: AbsenceFilterType;
   onAbsenceFilterChange?: (value: AbsenceFilterType) => void;
+  viewModeSelectorVariant?: 'default' | 'teacher';
 }
 
 export function AttendanceControls({
@@ -63,6 +64,7 @@ export function AttendanceControls({
   showAbsenceTypeFilter = false,
   absenceFilter = 'all',
   onAbsenceFilterChange,
+  viewModeSelectorVariant = 'default',
 }: AttendanceControlsProps) {
   const t = useTranslations('attendance');
   const tc = useTranslations('common');
@@ -119,6 +121,7 @@ export function AttendanceControls({
           onChange={onViewModeChange}
           disabled={safeSelectedGroupIds.length === 0}
           availableModes={isMobile ? ['day', 'week'] : undefined}
+          variant={viewModeSelectorVariant}
         />
       </div>
 

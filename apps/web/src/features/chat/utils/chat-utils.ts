@@ -114,3 +114,43 @@ export function shouldShowDateSeparator(message: Message, prevMessage?: Message)
   return currDate !== prevDate;
 }
 
+export interface ChatListSortable {
+  lastMessage?: { createdAt?: string } | null;
+  lastMessageAt?: string | null;
+  updatedAt?: string | null;
+  unreadCount?: number | null;
+}
+
+export function getChatListActivityTime(item: ChatListSortable): number {
+  if (item.lastMessageAt) {
+    const time = new Date(item.lastMessageAt).getTime();
+    if (!Number.isNaN(time)) return time;
+  }
+  if (item.lastMessage?.createdAt) {
+    const time = new Date(item.lastMessage.createdAt).getTime();
+    if (!Number.isNaN(time)) return time;
+  }
+  if (item.updatedAt) {
+    const time = new Date(item.updatedAt).getTime();
+    if (!Number.isNaN(time)) return time;
+  }
+  return 0;
+}
+
+/** Unread conversations first, then by most recent message activity. */
+export function compareChatListItems(a: ChatListSortable, b: ChatListSortable): number {
+  const aUnread = (a.unreadCount ?? 0) > 0 ? 1 : 0;
+  const bUnread = (b.unreadCount ?? 0) > 0 ? 1 : 0;
+  if (bUnread !== aUnread) return bUnread - aUnread;
+  return getChatListActivityTime(b) - getChatListActivityTime(a);
+}
+
+export function sortChatListItems<T>(
+  items: T[],
+  pickSortable: (item: T) => ChatListSortable,
+): T[] {
+  return [...items].sort((a, b) =>
+    compareChatListItems(pickSortable(a), pickSortable(b)),
+  );
+}
+

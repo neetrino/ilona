@@ -11,7 +11,7 @@ import type { AssignedTeacher } from '@/features/students/api/students.api';
 import { cn } from '@/shared/lib/utils';
 import { getChatTheme } from '../lib/chat-theme';
 import { formatMessagePreview } from '../utils';
-import { formatChatListTime } from '../utils/chat-utils';
+import { formatChatListTime, sortChatListItems } from '../utils/chat-utils';
 import Image from 'next/image';
 import { formatDisplayName, getInitials, getInitialsFromParts } from '@/shared/components/ui/avatar';
 import { OnlineStatusDot } from './OnlineStatusDot';
@@ -39,7 +39,7 @@ export function StudentChatList({ onSelectChat }: StudentChatListProps) {
   const createDirectChat = useCreateDirectChat();
 
   // Socket for online status
-  const { isConnected, isUserOnline } = useSocket();
+  const { isUserOnline } = useSocket();
 
   const messagePreviewLabels = useMemo(
     () => ({
@@ -66,11 +66,7 @@ export function StudentChatList({ onSelectChat }: StudentChatListProps) {
         return fullName.includes(query);
       });
     });
-    list = [...list].sort((a, b) => {
-      const aTime = new Date(a.lastMessage?.createdAt || a.updatedAt || 0).getTime();
-      const bTime = new Date(b.lastMessage?.createdAt || b.updatedAt || 0).getTime();
-      return bTime - aTime;
-    });
+    list = sortChatListItems(list, (chat) => chat);
     return list;
   }, [chats, searchQuery]);
 
@@ -99,7 +95,12 @@ export function StudentChatList({ onSelectChat }: StudentChatListProps) {
       items.push({ type: 'chat', chat });
     }
 
-    return items;
+    return sortChatListItems(items, (item) => {
+      if (item.type === 'chat') {
+        return item.chat;
+      }
+      return { unreadCount: 0 };
+    });
   }, [filteredChats, teachers, user?.id, searchQuery]);
 
   // Get chat display info
@@ -134,53 +135,38 @@ export function StudentChatList({ onSelectChat }: StudentChatListProps) {
     formatChatListTime(dateStr, locale, tChat('yesterday'));
 
   return (
-    <div className="flex flex-col h-full">
-      {/* Header */}
-      <div className={cn('p-4 border-b', ui.border)}>
-        <div className="flex items-center justify-between mb-4">
-          <h2 className={cn('text-lg font-semibold', ui.title)}>{tChat('messages')}</h2>
-          {/* Connection status */}
-          <div
-            className={cn(
-              'flex items-center gap-1.5 px-2 py-1 rounded-full text-xs',
-              isConnected 
-                ? 'bg-green-100 text-green-700' 
-                : 'bg-red-100 text-red-700'
-            )}
-            title={isConnected ? tChat('connected') : tChat('disconnected')}
-          >
-            <div
-              className={cn(
-                'w-2 h-2 rounded-full',
-                isConnected ? 'bg-green-500' : 'bg-red-500'
-              )}
-            />
-            {isConnected ? tChat('online') : tChat('offline')}
+    <div className="flex min-h-0 flex-1 flex-col overflow-hidden bg-white">
+      <div className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain [touch-action:pan-y] [-webkit-overflow-scrolling:touch]">
+        <div className="sticky top-0 z-20 bg-white">
+          <div className="border-b border-[rgba(14,14,16,0.07)] px-3 pb-3 pt-2">
+            <div className="relative">
+              <svg
+                className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#8b8b90]"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                aria-hidden
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                />
+              </svg>
+              <input
+                type="search"
+                placeholder={tChat('searchChats')}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full rounded-[0.875rem] border border-[rgba(14,14,16,0.07)] bg-white py-2 pl-9 pr-4 text-[16px] text-[#3b3b40] placeholder:text-[#8b8b90] focus:border-[#1010a3] focus:outline-none focus:ring-2 focus:ring-[#1010a3]/15 lg:text-sm"
+              />
+            </div>
           </div>
         </div>
 
-        {/* Search */}
-        <div className="relative">
-          <svg
-            className={cn('absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2', ui.muted)}
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
-          <input
-            type="search"
-            placeholder={tChat('searchChats')}
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className={ui.searchInput}
-          />
-        </div>
-      </div>
-
-      {/* Unified chat list: teachers (or placeholder) + all chats */}
-      <div className="flex-1 overflow-y-auto">
+        {/* Unified chat list: teachers (or placeholder) + all chats */}
+        <div>
         {isLoadingChats || isLoadingTeachers ? (
           <div className="p-4 space-y-3">
             {[1, 2, 3].map((i) => (
@@ -349,6 +335,7 @@ export function StudentChatList({ onSelectChat }: StudentChatListProps) {
               );
             })
           )}
+        </div>
       </div>
     </div>
   );

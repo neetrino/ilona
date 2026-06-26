@@ -25,6 +25,7 @@ const WEEKDAYS = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'] as const;
 const ISO_DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 const DESKTOP_MIN_WIDTH = 1367;
 const MOBILE_POPOVER_WIDTH = 264;
+const EXPANDED_POPOVER_WIDTH = 280;
 const MOBILE_CALENDAR_BACKDROP_Z_CLASS = 'z-[9998]';
 const MOBILE_CALENDAR_Z_CLASS = 'z-[9999]';
 const ESTIMATED_POPOVER_HEIGHT = 390;
@@ -50,6 +51,8 @@ export interface DatePickerInputProps
   onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;
   onValueChange?: (value: string) => void;
   allowClear?: boolean;
+  /** Wider calendar popover; trigger input size is unchanged. */
+  popoverExpanded?: boolean;
 }
 
 function parseValue(value?: string): Date | null {
@@ -124,6 +127,7 @@ export const DatePickerInput = React.forwardRef<HTMLInputElement, DatePickerInpu
       className,
       placeholder,
       allowClear = true,
+      popoverExpanded = false,
       ...rest
     },
     ref
@@ -187,19 +191,23 @@ export const DatePickerInput = React.forwardRef<HTMLInputElement, DatePickerInpu
       const isDesktop = isDesktopViewport();
       const triggerRect = trigger.getBoundingClientRect();
       const rootRect = root.getBoundingClientRect();
-      const popoverWidth = isDesktop
-        ? root.offsetWidth
-        : Math.min(MOBILE_POPOVER_WIDTH, window.innerWidth - VIEWPORT_PADDING * 2);
+      const popoverWidth = popoverExpanded
+        ? Math.min(EXPANDED_POPOVER_WIDTH, window.innerWidth - VIEWPORT_PADDING * 2)
+        : isDesktop
+          ? root.offsetWidth
+          : Math.min(MOBILE_POPOVER_WIDTH, window.innerWidth - VIEWPORT_PADDING * 2);
+      const matchFormWidth = popoverExpanded ? false : isDesktop;
 
-      const anchorTop = isDesktop ? rootRect.top : triggerRect.top;
-      const anchorBottom = isDesktop ? rootRect.bottom : triggerRect.bottom;
+      const anchorTop = isDesktop && !popoverExpanded ? rootRect.top : triggerRect.top;
+      const anchorBottom = isDesktop && !popoverExpanded ? rootRect.bottom : triggerRect.bottom;
       const canOpenBelow =
         anchorBottom + ESTIMATED_POPOVER_HEIGHT <= window.innerHeight - VIEWPORT_PADDING;
       const placement: PopoverPosition['placement'] = canOpenBelow ? 'below' : 'above';
 
       if (useDialogPortal) {
         const dialogRect = portalTarget.getBoundingClientRect();
-        let left = (isDesktop ? rootRect.left : triggerRect.left) - dialogRect.left;
+        let left =
+          (isDesktop && !popoverExpanded ? rootRect.left : triggerRect.left) - dialogRect.left;
         const maxLeft = portalTarget.clientWidth - popoverWidth - VIEWPORT_PADDING;
         left = Math.max(VIEWPORT_PADDING, Math.min(left, maxLeft));
 
@@ -215,13 +223,13 @@ export const DatePickerInput = React.forwardRef<HTMLInputElement, DatePickerInpu
           top,
           width: popoverWidth,
           placement,
-          matchFormWidth: isDesktop,
+          matchFormWidth,
           positionMode: 'absolute',
         });
         return;
       }
 
-      let left = isDesktop ? rootRect.left : triggerRect.left;
+      let left = isDesktop && !popoverExpanded ? rootRect.left : triggerRect.left;
       if (left + popoverWidth > window.innerWidth - VIEWPORT_PADDING) {
         left = Math.max(VIEWPORT_PADDING, window.innerWidth - popoverWidth - VIEWPORT_PADDING);
       }
@@ -238,10 +246,10 @@ export const DatePickerInput = React.forwardRef<HTMLInputElement, DatePickerInpu
         top,
         width: popoverWidth,
         placement,
-        matchFormWidth: isDesktop,
+        matchFormWidth,
         positionMode: 'fixed',
       });
-    }, []);
+    }, [popoverExpanded]);
 
     const handleOpenChange = React.useCallback(
       (nextOpen: boolean) => {

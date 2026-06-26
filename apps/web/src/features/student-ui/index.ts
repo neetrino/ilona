@@ -3,6 +3,7 @@ export * from './PortalDashboardSection';
 export * from './PortalDashboardStatCard';
 export * from './StudentCard';
 export * from './StudentStates';
+export * from './StudentAnimatedPillSwitcher';
 export * from './StudentButtons';
 export * from './StudentForm';
 export * from './StudentData';

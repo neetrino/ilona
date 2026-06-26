@@ -5,6 +5,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import type { Lesson } from '@/features/lessons';
 import { STUDENT_DASHBOARD_ASSETS } from '@/features/student-dashboard/assets';
 import { StudentBadge, StudentGhostButton, StudentPrimaryButton } from '@/features/student-ui';
+import { cn } from '@/shared/lib/utils';
 
 type TeacherTodayLessonsCardProps = {
   lessons: Lesson[];
@@ -13,6 +14,7 @@ type TeacherTodayLessonsCardProps = {
   onCompleteLesson: (id: string) => void;
   isStartPending?: boolean;
   isCompletePending?: boolean;
+  className?: string;
 };
 
 function lessonStatusVariant(status: string): 'success' | 'warning' | 'neutral' | 'info' {
@@ -143,6 +145,7 @@ export function TeacherTodayLessonsCard({
   onCompleteLesson,
   isStartPending,
   isCompletePending,
+  className,
 }: TeacherTodayLessonsCardProps) {
   const t = useTranslations('dashboard.teacherLessons');
   const locale = useLocale();
@@ -152,7 +155,12 @@ export function TeacherTodayLessonsCard({
   );
 
   return (
-    <section className="rounded-3xl border border-[rgba(14,14,16,0.07)] bg-white p-5 sm:p-6">
+    <section
+      className={cn(
+        'rounded-3xl border border-[rgba(14,14,16,0.07)] bg-white p-5 sm:p-6',
+        className,
+      )}
+    >
       <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h3 className="text-base font-semibold tracking-tight text-[#1010a3]">{t('title')}</h3>

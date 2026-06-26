@@ -9,13 +9,22 @@ import { AdminSidebar } from './AdminSidebar';
 import { Header } from './Header';
 import { StudentDashboardHeader } from '@/features/student-dashboard';
 import { TeacherDashboardHeader } from '@/features/teacher-dashboard';
-import { AdminDashboardHeader, AdminPortalBottomNav } from '@/features/admin-dashboard';
-import { ADMIN_PORTAL_MOBILE_BOTTOM_NAV_OFFSET_CLASS } from '@/features/admin-dashboard/admin-portal-layout';
+import { AdminDashboardHeader } from '@/features/admin-dashboard';
 import { FloatingChatWidget } from '@/features/chat';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { PortalShellProvider } from '@/shared/context/portal-shell-context';
+import { PortalMobileBottomNav } from '@/shared/components/layout/PortalMobileBottomNav';
 import { cn } from '@/shared/lib/utils';
-import { isAdminPortalPath, isAdminPortalSubpage } from '@/shared/lib/role-routes';
+import {
+  isAdminPortalPath,
+  isAdminPortalSubpage,
+  isStudentPortalSubpage,
+  isTeacherPortalSubpage,
+} from '@/shared/lib/role-routes';
+import {
+  PORTAL_CONTENT_SCROLL_ID,
+  PORTAL_MOBILE_BOTTOM_NAV_OFFSET_CLASS,
+} from '@/shared/lib/portal-mobile-layout';
 import {
   PORTAL_MAIN_PADDING,
   PORTAL_MOBILE_NAV_WIDTH,
@@ -71,9 +80,12 @@ export function DashboardLayout({
     (variant === 'default' && (role === 'ADMIN' || role === 'MANAGER') && isAdminRoute);
   const normalizedPath = pathname.replace(/^\/[a-z]{2}\//, '/');
   const hasAdminBottomNav = isAdminPortal && isAdminPortalSubpage(normalizedPath, role);
+  const hasTeacherBottomNav = isTeacherPortal && isTeacherPortalSubpage(normalizedPath);
+  const hasStudentBottomNav = isStudentPortal && isStudentPortalSubpage(normalizedPath);
+  const hasMobileBottomNav = hasAdminBottomNav || hasTeacherBottomNav || hasStudentBottomNav;
   const isPortalShell = isStudentPortal || isTeacherPortal || isAdminPortal;
   const isDashboardHome = isPortalShell && !title;
-  const adminPageSubtitle = isAdminPortal ? undefined : subtitle;
+  const portalHeaderSubtitle = isDashboardHome ? subtitle : undefined;
 
   useEffect(() => {
     setMobileNavOpen(false);
@@ -93,7 +105,7 @@ export function DashboardLayout({
   }, [sidebarCollapsed]);
 
   const mainPadding =
-    mobileFullBleed && isAdminPortal
+    mobileFullBleed && isPortalShell
       ? 'p-0 lg:p-[clamp(0.75rem,2vw,2rem)] lg:py-[clamp(0.75rem,1.5vw,1.25rem)]'
       : isPortalShell
         ? PORTAL_MAIN_PADDING
@@ -147,7 +159,7 @@ export function DashboardLayout({
           />
         )}
 
-        {isPortalShell && mobileNavOpen && !isAdminPortal ? (
+        {isPortalShell && mobileNavOpen && !isAdminPortal && !isTeacherPortal && !isStudentPortal ? (
           <>
             <button
               type="button"
@@ -172,22 +184,24 @@ export function DashboardLayout({
           )}
         >
           {isStudentPortal ? (
-            <StudentDashboardHeader
-              pageTitle={isDashboardHome ? undefined : title}
-              pageSubtitle={isDashboardHome ? undefined : subtitle}
-              onMenuClick={() => setMobileNavOpen(true)}
-            />
+            <div className={cn(mobileFullBleed && 'hidden lg:block')}>
+              <StudentDashboardHeader
+                pageTitle={isDashboardHome ? undefined : title}
+                pageSubtitle={portalHeaderSubtitle}
+              />
+            </div>
           ) : isTeacherPortal ? (
-            <TeacherDashboardHeader
-              pageTitle={isDashboardHome ? undefined : title}
-              pageSubtitle={isDashboardHome ? undefined : subtitle}
-              onMenuClick={() => setMobileNavOpen(true)}
-            />
+            <div className={cn(mobileFullBleed && 'hidden lg:block')}>
+              <TeacherDashboardHeader
+                pageTitle={isDashboardHome ? undefined : title}
+                pageSubtitle={portalHeaderSubtitle}
+              />
+            </div>
           ) : isAdminPortal ? (
             <div className={cn(mobileFullBleed && 'hidden lg:block')}>
               <AdminDashboardHeader
                 pageTitle={isDashboardHome ? undefined : title}
-                pageSubtitle={isDashboardHome ? undefined : adminPageSubtitle}
+                pageSubtitle={portalHeaderSubtitle}
                 headerContent={headerContent}
               />
             </div>
@@ -195,13 +209,13 @@ export function DashboardLayout({
             <Header title={title} subtitle={subtitle} headerContent={headerContent} />
           )}
           <div
-            id={isAdminPortal ? 'admin-portal-content-scroll' : undefined}
+            id={isPortalShell ? PORTAL_CONTENT_SCROLL_ID : undefined}
             className={cn(
               isAdminPortal
                 ? 'flex-1 overflow-visible md:min-h-0 md:overflow-x-hidden md:overflow-y-auto'
                 : 'flex-1 overflow-visible lg:min-h-0 lg:overflow-x-hidden lg:overflow-y-auto',
               mainPadding,
-              hasAdminBottomNav && !mobileFullBleed && ADMIN_PORTAL_MOBILE_BOTTOM_NAV_OFFSET_CLASS,
+              hasMobileBottomNav && !mobileFullBleed && PORTAL_MOBILE_BOTTOM_NAV_OFFSET_CLASS,
               mobileFullBleed &&
                 'max-lg:flex max-lg:min-h-0 max-lg:flex-1 max-lg:flex-col max-lg:bg-white max-lg:overflow-hidden lg:flex lg:min-h-0 lg:flex-col lg:overflow-hidden',
               contentScrollClassName,
@@ -220,7 +234,7 @@ export function DashboardLayout({
             </div>
           </div>
         </main>
-        {isAdminPortal ? <AdminPortalBottomNav /> : null}
+        {isPortalShell ? <PortalMobileBottomNav showNotifications={isAdminPortal} /> : null}
         <FloatingChatWidget />
       </div>
     </PortalShellProvider>

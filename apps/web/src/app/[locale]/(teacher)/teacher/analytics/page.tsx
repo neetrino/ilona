@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { useMyLessons } from '@/features/lessons';
@@ -12,16 +12,13 @@ import {
   toYmd,
   type TimeFilterMode,
 } from '@/shared/lib/analytics-time-range';
-import { formatCurrency } from '@/shared/lib/utils';
+import { formatCurrency, cn } from '@/shared/lib/utils';
 import {
   StudentCard,
   StudentPageStack,
   StudentProgressBar,
   StudentSectionHeader,
   StudentStatTile,
-  studentPillActiveClass,
-  studentPillInactiveClass,
-  studentPillTrackClass,
 } from '@/features/student-ui';
 
 type TabId = 'attendance' | 'feedback' | 'performance' | 'revenue';
@@ -176,21 +173,68 @@ export default function TeacherAnalyticsPage() {
     { id: 'performance', label: t('studentPerformanceTab') ?? 'Performance' },
     { id: 'revenue', label: t('revenueTab') ?? 'Revenue' },
   ];
+  const tabsTrackRef = useRef<HTMLDivElement | null>(null);
+  const tabRefs = useRef<Record<TabId, HTMLButtonElement | null>>({
+    attendance: null,
+    feedback: null,
+    performance: null,
+    revenue: null,
+  });
+  const [tabIndicator, setTabIndicator] = useState({ x: 0, width: 0, visible: false });
+
+  useEffect(() => {
+    const syncIndicator = () => {
+      const activeTabEl = tabRefs.current[activeTab];
+      const tabsTrackEl = tabsTrackRef.current;
+      if (!activeTabEl || !tabsTrackEl) {
+        setTabIndicator((prev) => ({ ...prev, visible: false }));
+        return;
+      }
+      setTabIndicator({
+        x: activeTabEl.offsetLeft,
+        width: activeTabEl.offsetWidth,
+        visible: true,
+      });
+    };
+
+    syncIndicator();
+    window.addEventListener('resize', syncIndicator);
+    return () => window.removeEventListener('resize', syncIndicator);
+  }, [activeTab]);
 
   return (
     <DashboardLayout title={t('myAnalytics')} subtitle={t('teacherSubtitle')}>
       <StudentPageStack>
-      <div className={studentPillTrackClass}>
-        {tabs.map((tab) => (
-          <button
-            key={tab.id}
-            type="button"
-            onClick={() => setActiveTab(tab.id)}
-            className={activeTab === tab.id ? studentPillActiveClass : studentPillInactiveClass}
-          >
-            {tab.label}
-          </button>
-        ))}
+      <div className="mb-6 w-full min-w-0 overflow-x-auto border-b border-[rgba(14,14,16,0.07)] [-webkit-overflow-scrolling:touch] [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div ref={tabsTrackRef} className="relative flex w-max min-w-full">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              type="button"
+              ref={(node) => {
+                tabRefs.current[tab.id] = node;
+              }}
+              onClick={() => setActiveTab(tab.id)}
+              className={cn(
+                'relative whitespace-nowrap px-4 py-3 text-sm font-medium transition-colors',
+                activeTab === tab.id
+                  ? 'text-blue-600'
+                  : 'text-[#3b3b40] hover:text-[#1010a3]',
+              )}
+            >
+              {tab.label}
+            </button>
+          ))}
+          <span
+            aria-hidden
+            className="pointer-events-none absolute bottom-0 h-0.5 bg-blue-600 transition-[transform,width,opacity] duration-300 ease-out"
+            style={{
+              width: `${tabIndicator.width}px`,
+              transform: `translateX(${tabIndicator.x}px)`,
+              opacity: tabIndicator.visible ? 1 : 0,
+            }}
+          />
+        </div>
       </div>
 
       {activeTab === 'attendance' && (
@@ -312,11 +356,11 @@ export default function TeacherAnalyticsPage() {
       {activeTab === 'revenue' && (
         <div className="space-y-6">
           <div>
-            <p className="mb-2 text-sm font-medium text-[#8b8b90]">
+            <p className="mb-2 text-sm font-medium text-[#3b3b40]">
               {t('paymentsTimeFilterLabel')}
             </p>
             <AnalyticsTimeFilterBar
-              variant="student"
+              variant="admin"
               mode={payTimeMode}
               onModeChange={setPayTimeMode}
               dayYmd={payDayYmd}

@@ -40,6 +40,8 @@ export type ScheduleBoardProps = {
   variant?: 'default' | 'student';
   /** Hide month toggle on mobile screens only. */
   hideMonthOnMobile?: boolean;
+  /** Rectangular week/month toggle (teacher calendar styling). */
+  rectangularViewToggle?: boolean;
 };
 
 export function ScheduleBoard({
@@ -58,8 +60,10 @@ export function ScheduleBoard({
   highlightPastLessonCards = false,
   variant = 'default',
   hideMonthOnMobile = false,
+  rectangularViewToggle = false,
 }: ScheduleBoardProps) {
   const isStudent = variant === 'student';
+  const useRectangularToggle = rectangularViewToggle && isStudent;
   const isIPad = useIsIPad();
   const [isIPadMini, setIsIPadMini] = useState(false);
   const isIPadAirLayout = isIPad && !isIPadMini;
@@ -186,20 +190,22 @@ export function ScheduleBoard({
 
           <div
             className={
-              isStudent
-                ? `${mobileToggleVisibilityClass}relative items-center self-start rounded-full border border-[rgba(14,14,16,0.07)] bg-[#f6f6f7] p-1 md:self-auto`
-                : `${mobileToggleVisibilityClass}relative items-center self-start rounded-lg border border-slate-200 bg-slate-50 p-1 md:self-auto`
+              useRectangularToggle
+                ? `${mobileToggleVisibilityClass}relative items-center self-start rounded-lg border border-[rgba(14,14,16,0.12)] bg-[#f6f6f7] p-1 shadow-sm md:self-auto`
+                : isStudent
+                  ? `${mobileToggleVisibilityClass}relative items-center self-start rounded-full border border-[rgba(14,14,16,0.07)] bg-[#f6f6f7] p-1 md:self-auto`
+                  : `${mobileToggleVisibilityClass}relative items-center self-start rounded-lg border border-slate-200 bg-slate-50 p-1 md:self-auto`
             }
           >
             <span
               className={
                 viewMode === 'week'
-                  ? isStudent
-                    ? 'pointer-events-none absolute z-0 h-8 w-[92px] rounded-full bg-[#1010a3] transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] translate-x-0'
-                    : 'pointer-events-none absolute z-0 h-8 w-[92px] rounded-md bg-[#1010a3] shadow-sm transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] translate-x-0'
-                  : isStudent
-                    ? 'pointer-events-none absolute z-0 h-8 w-[92px] rounded-full bg-[#1010a3] transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] translate-x-[92px]'
-                    : 'pointer-events-none absolute z-0 h-8 w-[92px] rounded-md bg-[#1010a3] shadow-sm transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] translate-x-[92px]'
+                  ? useRectangularToggle || !isStudent
+                    ? 'pointer-events-none absolute z-0 h-8 w-[92px] rounded-md bg-[#1010a3] shadow-sm transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] translate-x-0'
+                    : 'pointer-events-none absolute z-0 h-8 w-[92px] rounded-full bg-[#1010a3] transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] translate-x-0'
+                  : useRectangularToggle || !isStudent
+                    ? 'pointer-events-none absolute z-0 h-8 w-[92px] rounded-md bg-[#1010a3] shadow-sm transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] translate-x-[92px]'
+                    : 'pointer-events-none absolute z-0 h-8 w-[92px] rounded-full bg-[#1010a3] transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] translate-x-[92px]'
               }
             />
             <button
@@ -207,12 +213,16 @@ export function ScheduleBoard({
               onClick={() => onViewModeChange('week')}
               className={
                 viewMode === 'week'
-                  ? isStudent
-                    ? 'relative z-10 inline-flex h-8 w-[92px] items-center justify-center rounded-full px-3 text-sm font-medium text-white transition-colors duration-300'
-                    : 'relative z-10 inline-flex h-8 w-[92px] items-center justify-center rounded-md px-3 text-center text-sm text-white transition-colors duration-300'
-                  : isStudent
-                    ? 'relative z-10 inline-flex h-8 w-[92px] items-center justify-center rounded-full px-3 text-sm font-medium text-[#3b3b40] transition-colors duration-300 hover:text-[#1010a3]'
-                    : 'relative z-10 inline-flex h-8 w-[92px] items-center justify-center rounded-md px-3 text-center text-sm text-slate-600 transition-colors duration-300 hover:text-slate-800'
+                  ? useRectangularToggle
+                    ? 'relative z-10 inline-flex h-8 w-[92px] items-center justify-center rounded-md px-3 text-sm font-semibold text-white transition-colors duration-300'
+                    : isStudent
+                      ? 'relative z-10 inline-flex h-8 w-[92px] items-center justify-center rounded-full px-3 text-sm font-medium text-white transition-colors duration-300'
+                      : 'relative z-10 inline-flex h-8 w-[92px] items-center justify-center rounded-md px-3 text-center text-sm text-white transition-colors duration-300'
+                  : useRectangularToggle
+                    ? 'relative z-10 inline-flex h-8 w-[92px] items-center justify-center rounded-md px-3 text-sm font-semibold text-[#3b3b40] transition-colors duration-300 hover:text-[#1010a3]'
+                    : isStudent
+                      ? 'relative z-10 inline-flex h-8 w-[92px] items-center justify-center rounded-full px-3 text-sm font-medium text-[#3b3b40] transition-colors duration-300 hover:text-[#1010a3]'
+                      : 'relative z-10 inline-flex h-8 w-[92px] items-center justify-center rounded-md px-3 text-center text-sm text-slate-600 transition-colors duration-300 hover:text-slate-800'
               }
             >
               Week
@@ -222,12 +232,16 @@ export function ScheduleBoard({
               onClick={() => onViewModeChange('month')}
               className={`${mobileToggleVisibilityClass}${
                 viewMode === 'month'
-                  ? isStudent
-                    ? 'relative z-10 inline-flex h-8 w-[92px] items-center justify-center rounded-full px-3 text-sm font-medium text-white transition-colors duration-300'
-                    : 'relative z-10 inline-flex h-8 w-[92px] items-center justify-center rounded-md px-3 text-center text-sm text-white transition-colors duration-300'
-                  : isStudent
-                    ? 'relative z-10 inline-flex h-8 w-[92px] items-center justify-center rounded-full px-3 text-sm font-medium text-[#3b3b40] transition-colors duration-300 hover:text-[#1010a3]'
-                    : 'relative z-10 inline-flex h-8 w-[92px] items-center justify-center rounded-md px-3 text-center text-sm text-slate-600 transition-colors duration-300 hover:text-slate-800'
+                  ? useRectangularToggle
+                    ? 'relative z-10 inline-flex h-8 w-[92px] items-center justify-center rounded-md px-3 text-sm font-semibold text-white transition-colors duration-300'
+                    : isStudent
+                      ? 'relative z-10 inline-flex h-8 w-[92px] items-center justify-center rounded-full px-3 text-sm font-medium text-white transition-colors duration-300'
+                      : 'relative z-10 inline-flex h-8 w-[92px] items-center justify-center rounded-md px-3 text-center text-sm text-white transition-colors duration-300'
+                  : useRectangularToggle
+                    ? 'relative z-10 inline-flex h-8 w-[92px] items-center justify-center rounded-md px-3 text-sm font-semibold text-[#3b3b40] transition-colors duration-300 hover:text-[#1010a3]'
+                    : isStudent
+                      ? 'relative z-10 inline-flex h-8 w-[92px] items-center justify-center rounded-full px-3 text-sm font-medium text-[#3b3b40] transition-colors duration-300 hover:text-[#1010a3]'
+                      : 'relative z-10 inline-flex h-8 w-[92px] items-center justify-center rounded-md px-3 text-center text-sm text-slate-600 transition-colors duration-300 hover:text-slate-800'
               }`}
             >
               Month

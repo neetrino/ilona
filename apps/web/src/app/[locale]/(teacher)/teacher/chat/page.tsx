@@ -9,10 +9,11 @@ export default function TeacherChatPage() {
   const tChat = useTranslations('chat');
 
   return (
-    <DashboardLayout title={tNav('chat')}>
+    <DashboardLayout title={tNav('chat')} mobileFullBleed>
       <ChatContainer
-        emptyTitle={tChat('selectGroup')}
-        emptyDescription={tChat('selectGroupDescription')}
+        className="min-h-0 flex-1 rounded-none border-0 bg-white lg:rounded-[2rem] lg:border lg:border-[rgba(14,14,16,0.07)]"
+        emptyTitle={tChat('selectChat')}
+        emptyDescription={tChat('selectChatDescription')}
       />
     </DashboardLayout>
   );

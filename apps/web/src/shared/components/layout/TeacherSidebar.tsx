@@ -1,10 +1,8 @@
 'use client';
 
-import { PublicAssetImage } from '@/shared/components/ui';
 import { StudentLogoutControl } from './StudentLogoutControl';
-import { PortalSidebarCollapseToggle } from './PortalSidebarCollapseToggle';
-import { StudentSidebarNavIcon } from './StudentSidebarNavIcon';
-import Link from 'next/link';
+import { PortalSidebarNavLink } from './PortalSidebarNavLink';
+import { PortalSidebarHeader } from './PortalSidebarHeader';
 import { usePathname } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { cn } from '@/shared/lib/utils';
@@ -15,7 +13,7 @@ import {
   STUDENT_SIDEBAR_ASSETS,
   type StudentSidebarIconKey,
 } from '@/features/student-dashboard/studentSidebarAssets';
-import { PORTAL_SIDEBAR_NAV_ITEM_GAP_CLASS, PORTAL_SIDEBAR_NAV_LABEL_HY_CLASS, getPortalSidebarWidthClass } from './student-layout';
+import { getPortalSidebarWidthClass, PORTAL_SIDEBAR_SHELL_TRANSITION_CLASS } from './student-layout';
 
 type NavEntry = {
   labelKey: string;
@@ -24,54 +22,6 @@ type NavEntry = {
 };
 
 const NAV_LIST_GAP_CLASS = 'gap-0.5';
-const NAV_ICON_COLUMN_CLASS = 'flex h-12 w-[2.375rem] shrink-0 items-center justify-center';
-
-function NavLink({
-  item,
-  active,
-  collapsed,
-  label,
-  onNavigate,
-  isArmenianLocale,
-}: {
-  item: NavEntry & { href: string };
-  active: boolean;
-  collapsed: boolean;
-  label: string;
-  onNavigate?: () => void;
-  isArmenianLocale: boolean;
-}) {
-  return (
-    <Link
-      href={item.href}
-      title={collapsed ? label : undefined}
-      onClick={onNavigate}
-      className={cn(
-        'flex min-h-12 w-full items-center transition-colors',
-        PORTAL_SIDEBAR_NAV_ITEM_GAP_CLASS,
-        active
-          ? 'rounded-[3.375rem] bg-[#1010a3] py-1 pl-1.5 pr-3'
-          : 'rounded-[0.875rem] px-3 py-1 hover:bg-[#f6f6f7]',
-        collapsed && 'h-12 justify-center px-1.5 py-0',
-      )}
-    >
-      <span className={NAV_ICON_COLUMN_CLASS}>
-        <StudentSidebarNavIcon icon={item.icon} active={active} />
-      </span>
-      {!collapsed ? (
-        <span
-          className={cn(
-            'min-w-0 flex-1 overflow-visible pr-0.5 text-sm italic leading-snug',
-            isArmenianLocale && PORTAL_SIDEBAR_NAV_LABEL_HY_CLASS,
-            active ? 'font-semibold text-white' : 'font-medium text-[#787878]',
-          )}
-        >
-          {label}
-        </span>
-      ) : null}
-    </Link>
-  );
-}
 
 interface TeacherSidebarProps {
   collapsed?: boolean;
@@ -129,6 +79,7 @@ export function TeacherSidebar({
     <div
       className={cn(
         'flex h-full shrink-0 flex-col bg-[#ececec]',
+        !isDrawer && PORTAL_SIDEBAR_SHELL_TRANSITION_CLASS,
         isDrawer
           ? 'w-full py-2 pl-2 pr-2'
           : cn(
@@ -145,70 +96,32 @@ export function TeacherSidebar({
           !showLabels && '[scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden',
         )}
       >
-        <div
-          className={cn(
-            'flex shrink-0 border-b border-transparent pb-2 pt-5',
-            showLabels
-              ? 'items-center gap-3 px-4'
-              : 'flex-col items-center gap-2 px-2',
-          )}
-        >
-          <div className="relative h-[3.25rem] w-[3.25rem] shrink-0 overflow-hidden rounded-full">
-            <PublicAssetImage
-              src={brandLogo}
-              alt={t('brandName')}
-              fill
-              className="object-cover"
-              onError={(e) => {
-                const target = e.target as HTMLImageElement;
-                if (target.src.includes('student-sidebar')) return;
-                target.src = STUDENT_SIDEBAR_ASSETS.brandLogo;
-              }}
-            />
-          </div>
-          {showLabels ? (
-            <p className="min-w-0 flex-1 text-sm font-semibold leading-snug tracking-tight text-[#242427]">
-              {t('brandName')}
-            </p>
-          ) : null}
-          {isDrawer ? (
-            <button
-              type="button"
-              onClick={onNavigate}
-              className="ml-auto shrink-0 rounded-lg p-1.5 text-[#8b8b90] transition-colors hover:bg-[#f6f6f7] hover:text-[#242427]"
-              aria-label={tCommon('close')}
-            >
-              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
-            </button>
-          ) : null}
-          {onToggle && !isDrawer ? (
-            <PortalSidebarCollapseToggle
-              collapsed={collapsed}
-              onToggle={onToggle}
-              className={showLabels ? 'ml-auto' : undefined}
-            />
-          ) : null}
-        </div>
+        <PortalSidebarHeader
+          brandLogo={brandLogo}
+          brandName={t('brandName')}
+          showLabels={showLabels}
+          collapsed={collapsed}
+          isDrawer={isDrawer}
+          onToggle={onToggle}
+          onNavigate={onNavigate}
+          closeLabel={tCommon('close')}
+        />
 
         <nav
           className={cn(
-            'flex min-h-0 flex-1 flex-col overflow-x-visible overflow-y-auto py-4 pr-3.5',
-            isArmenianLocale ? 'px-4' : 'px-3',
+            'flex min-h-0 flex-1 flex-col overflow-x-visible overflow-y-auto py-4',
+            showLabels
+              ? cn('pr-3.5', isArmenianLocale ? 'px-4' : 'px-3')
+              : 'px-2',
             NAV_LIST_GAP_CLASS,
             !showLabels && '[scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden',
           )}
         >
           {navItems.map((item) => (
-            <NavLink
+            <PortalSidebarNavLink
               key={item.href}
-              item={{ ...item, href: withLocale(item.href) }}
+              href={withLocale(item.href)}
+              icon={item.icon}
               active={isActive(item.href)}
               collapsed={!showLabels}
               label={t(item.labelKey)}

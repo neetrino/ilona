@@ -5,8 +5,17 @@ import { useTranslations } from 'next-intl';
 import { useStaffPlannedAbsences } from '../hooks/useAttendance';
 import { PublicAssetImage } from '@/shared/components/ui';
 import { STUDENT_DASHBOARD_ASSETS } from '@/features/student-dashboard/assets';
+import { cn } from '@/shared/lib/utils';
 
-export function PlannedAbsencesStaffBlock() {
+type PlannedAbsencesStaffBlockProps = {
+  fillHeight?: boolean;
+  className?: string;
+};
+
+export function PlannedAbsencesStaffBlock({
+  fillHeight = false,
+  className,
+}: PlannedAbsencesStaffBlockProps) {
   const t = useTranslations('attendance');
   const { dateFrom, dateTo } = useMemo(() => {
     const from = new Date();
@@ -20,8 +29,14 @@ export function PlannedAbsencesStaffBlock() {
   const { data = [], isLoading } = useStaffPlannedAbsences(dateFrom, dateTo, true);
 
   return (
-    <section className="rounded-3xl border border-[rgba(14,14,16,0.07)] bg-[#f6f7ff] p-5 shadow-[0_10px_30px_-24px_rgba(16,16,163,0.45)] sm:p-6">
-      <header className="mb-4 sm:mb-5">
+    <section
+      className={cn(
+        'rounded-3xl border border-[rgba(14,14,16,0.07)] bg-[#f6f7ff] p-5 shadow-[0_10px_30px_-24px_rgba(16,16,163,0.45)] sm:p-6',
+        fillHeight && 'flex min-h-0 flex-col',
+        className,
+      )}
+    >
+      <header className="mb-4 shrink-0 sm:mb-5">
         <h2 className="text-[clamp(0.875rem,1.25vw,1rem)] font-semibold tracking-tight text-[#1010a3]">
           {t('plannedAbsencesStaffTitle')}
         </h2>
@@ -32,9 +47,16 @@ export function PlannedAbsencesStaffBlock() {
           <div className="h-20 animate-pulse rounded-3xl border border-[rgba(14,14,16,0.07)] bg-white" />
         </div>
       ) : data.length === 0 ? (
-        <p className="text-sm text-[#8b8b90]">{t('plannedAbsencesStaffEmpty')}</p>
+        <p className={cn('text-sm text-[#8b8b90]', fillHeight && 'flex flex-1 items-center')}>
+          {t('plannedAbsencesStaffEmpty')}
+        </p>
       ) : (
-        <ul className="max-h-64 space-y-3 overflow-y-auto">
+        <ul
+          className={cn(
+            'space-y-3 overflow-y-auto',
+            fillHeight ? 'min-h-0 flex-1' : 'max-h-64',
+          )}
+        >
           {data.map((row) => (
             <li key={row.id}>
               <div className="rounded-3xl border border-[rgba(14,14,16,0.07)] bg-white p-4 text-sm shadow-[0_14px_30px_-28px_rgba(16,16,163,0.9)] transition-shadow hover:shadow-[0_22px_40px_-32px_rgba(16,16,163,0.9)]">

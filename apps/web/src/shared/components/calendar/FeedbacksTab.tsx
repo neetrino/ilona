@@ -8,6 +8,7 @@ import type { CreateFeedbackDto, FeedbackCefrLevelCode } from '@/features/feedba
 import { Button } from '@/shared/components/ui/button';
 import { Avatar } from '@/shared/components/ui/avatar';
 import { MultiSelectChipsDropdown } from '@/shared/components/ui/multi-select-chips-dropdown';
+import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
 import { useQueryClient } from '@tanstack/react-query';
 import { lessonKeys } from '@/features/lessons/hooks/useLessons';
 import { cn } from '@/shared/lib/utils';
@@ -33,14 +34,6 @@ interface StudentItem {
 
 const fieldShell =
   'w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 transition-colors focus:border-[#1010a3]/45 focus:outline-none focus:ring-4 focus:ring-[#1010a3]/10';
-
-function levelSelectClass(hasValue: boolean): string {
-  return cn(
-    'unified-native-select h-11 w-full cursor-pointer appearance-none rounded-xl border-2 bg-white px-3 pr-10 text-sm text-slate-800',
-    'transition-colors focus:border-[#1010a3]/45 focus:outline-none',
-    hasValue ? 'border-[#1010a3]/45' : 'border-slate-200'
-  );
-}
 
 /** Same visual as the Participation disclosure tick (emerald + white check when on). */
 function ParticipationStyleTickBox({ checked }: { checked: boolean }) {
@@ -321,31 +314,18 @@ export function FeedbacksTab({ lessonId }: FeedbacksTabProps) {
               <div className="grid grid-cols-1 gap-5 md:grid-cols-2 md:gap-6 lg:gap-8">
                 <div className="space-y-2">
                   <label className="block text-sm font-bold text-slate-900">{t('levelLabel')}</label>
-                  <div className="relative">
-                    <select
-                      value={structured.level}
-                      onChange={(event) => {
-                        setStructuredFeedbacks((prev) => ({
-                          ...prev,
-                          [student.id]: { ...structured, level: event.target.value },
-                        }));
-                        clearSaveStatusFor(student.id);
-                      }}
-                      className={levelSelectClass(Boolean(structured.level))}
-                    >
-                      <option value="">{t('select')}</option>
-                      {LEVEL_OPTIONS.map((level) => (
-                        <option key={level} value={level}>
-                          {level}
-                        </option>
-                      ))}
-                    </select>
-                    <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-500">
-                      <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                      </svg>
-                    </span>
-                  </div>
+                  <SingleSelectDropdown
+                    options={LEVEL_OPTIONS.map((level) => ({ id: level, label: level }))}
+                    value={structured.level || null}
+                    onValueChange={(next) => {
+                      setStructuredFeedbacks((prev) => ({
+                        ...prev,
+                        [student.id]: { ...structured, level: next ?? '' },
+                      }));
+                      clearSaveStatusFor(student.id);
+                    }}
+                    placeholder={t('select')}
+                  />
                 </div>
 
                 <div className="space-y-2 md:min-w-0">

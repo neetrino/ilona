@@ -76,12 +76,7 @@ export default function TeacherDashboardPage() {
   return (
     <DashboardLayout title="" subtitle="">
       <div className="flex w-full min-w-0 flex-col gap-5 lg:gap-6">
-        <TeacherDashboardHero
-          totalStudents={totalStudents}
-          groupsCount={groups.length}
-          todayLessonsCount={todayLessons.length}
-          completedLessons={completedLessons}
-        />
+        <TeacherDashboardHero />
 
         <TeacherDashboardStatCards
           isLoading={isLoadingLessons}
@@ -93,34 +88,35 @@ export default function TeacherDashboardPage() {
           vocabularySent={vocabularySent}
         />
 
-        <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1.65fr)_minmax(0,1fr)] xl:gap-6">
-          <div className="flex min-w-0 flex-col gap-5 lg:gap-6">
-            {isIPadProLayout && groups.length > 0 ? (
-              <StudentCard>
-                <StudentSectionHeader title={tDash('teacherStats.myGroups')} />
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  {groups.slice(0, 6).map((group) => (
-                    <StudentInnerCard key={group.id}>
-                      <div className="mb-2 flex items-start justify-between gap-2">
-                        <h4 className="font-medium text-[#1010a3]">{group.name}</h4>
-                        {group.level ? (
-                          <StudentBadge variant="info">{group.level}</StudentBadge>
-                        ) : null}
-                      </div>
-                      <p className="text-sm text-[#8b8b90]">
-                        {group._count?.students || 0} students · {group._count?.lessons || 0}{' '}
-                        lessons
-                      </p>
-                      {group.center?.name ? (
-                        <p className="mt-1 text-xs text-[#8b8b90]">{group.center.name}</p>
+        <div className="flex w-full min-w-0 flex-col gap-5 lg:gap-6">
+          {isIPadProLayout && groups.length > 0 ? (
+            <StudentCard>
+              <StudentSectionHeader title={tDash('teacherStats.myGroups')} />
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                {groups.slice(0, 6).map((group) => (
+                  <StudentInnerCard key={group.id}>
+                    <div className="mb-2 flex items-start justify-between gap-2">
+                      <h4 className="font-medium text-[#1010a3]">{group.name}</h4>
+                      {group.level ? (
+                        <StudentBadge variant="info">{group.level}</StudentBadge>
                       ) : null}
-                    </StudentInnerCard>
-                  ))}
-                </div>
-              </StudentCard>
-            ) : null}
+                    </div>
+                    <p className="text-sm text-[#8b8b90]">
+                      {group._count?.students || 0} students · {group._count?.lessons || 0}{' '}
+                      lessons
+                    </p>
+                    {group.center?.name ? (
+                      <p className="mt-1 text-xs text-[#8b8b90]">{group.center.name}</p>
+                    ) : null}
+                  </StudentInnerCard>
+                ))}
+              </div>
+            </StudentCard>
+          ) : null}
 
+          <div className="grid grid-cols-1 items-stretch gap-5 xl:grid-cols-[minmax(0,1.65fr)_minmax(0,1fr)] xl:gap-6">
             <TeacherTodayLessonsCard
+              className="h-full min-h-0"
               lessons={todayLessons}
               isLoading={isLoadingLessons}
               onStartLesson={handleStartLesson}
@@ -128,35 +124,38 @@ export default function TeacherDashboardPage() {
               isStartPending={startLesson.isPending}
               isCompletePending={completeLesson.isPending}
             />
+            <NotesBlock variant="dashboard" fillHeight className="h-full min-h-0" />
+          </div>
 
-            {!isIPadProLayout && groups.length > 0 ? (
-              <StudentCard>
-                <StudentSectionHeader title={tDash('teacherStats.myGroups')} />
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  {groups.slice(0, 6).map((group) => (
-                    <StudentInnerCard key={group.id}>
-                      <div className="mb-2 flex items-start justify-between gap-2">
-                        <h4 className="font-medium text-[#1010a3]">{group.name}</h4>
-                        {group.level ? (
-                          <StudentBadge variant="info">{group.level}</StudentBadge>
-                        ) : null}
-                      </div>
-                      <p className="text-sm text-[#8b8b90]">
-                        {group._count?.students || 0} students · {group._count?.lessons || 0}{' '}
-                        lessons
-                      </p>
-                      {group.center?.name ? (
-                        <p className="mt-1 text-xs text-[#8b8b90]">{group.center.name}</p>
+          {!isIPadProLayout && groups.length > 0 ? (
+            <StudentCard>
+              <StudentSectionHeader title={tDash('teacherStats.myGroups')} />
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                {groups.slice(0, 6).map((group) => (
+                  <StudentInnerCard key={group.id}>
+                    <div className="mb-2 flex items-start justify-between gap-2">
+                      <h4 className="font-medium text-[#1010a3]">{group.name}</h4>
+                      {group.level ? (
+                        <StudentBadge variant="info">{group.level}</StudentBadge>
                       ) : null}
-                    </StudentInnerCard>
-                  ))}
-                </div>
-              </StudentCard>
-            ) : null}
+                    </div>
+                    <p className="text-sm text-[#8b8b90]">
+                      {group._count?.students || 0} students · {group._count?.lessons || 0}{' '}
+                      lessons
+                    </p>
+                    {group.center?.name ? (
+                      <p className="mt-1 text-xs text-[#8b8b90]">{group.center.name}</p>
+                    ) : null}
+                  </StudentInnerCard>
+                ))}
+              </div>
+            </StudentCard>
+          ) : null}
 
-            <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
-              <StudentCard>
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
+          <div className="grid grid-cols-1 items-stretch gap-5 xl:grid-cols-[minmax(0,1.65fr)_minmax(0,1fr)] xl:gap-6">
+            <div className="grid h-full min-h-0 grid-cols-1 gap-5 lg:grid-cols-2">
+              <StudentCard className="h-full">
+                <div className="flex h-full flex-col gap-4 sm:flex-row sm:items-start">
                   <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[0.875rem] bg-[#ffeb8c]">
                     <svg
                       className="h-6 w-6 text-[#3a2f00]"
@@ -184,8 +183,8 @@ export default function TeacherDashboardPage() {
                 </div>
               </StudentCard>
 
-              <StudentCard>
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
+              <StudentCard className="h-full">
+                <div className="flex h-full flex-col gap-4 sm:flex-row sm:items-start">
                   <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-[0.875rem] bg-[#ddecff]">
                     <svg
                       className="h-6 w-6 text-[#1010a3]"
@@ -213,11 +212,7 @@ export default function TeacherDashboardPage() {
                 </div>
               </StudentCard>
             </div>
-          </div>
-
-          <div className="flex min-w-0 flex-col gap-5 lg:gap-6">
-            <NotesBlock variant="dashboard" />
-            <PlannedAbsencesStaffBlock />
+            <PlannedAbsencesStaffBlock fillHeight className="h-full min-h-0" />
           </div>
         </div>
       </div>

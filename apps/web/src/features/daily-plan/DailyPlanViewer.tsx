@@ -124,6 +124,7 @@ export function DailyPlanViewer({ plan, onClose }: DailyPlanViewerProps) {
       <DialogPrimitive.Portal>
         <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/60 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
         <DialogPrimitive.Content
+          onOpenAutoFocus={(event) => event.preventDefault()}
           style={dragStyle}
           className={cn(
             'fixed inset-x-0 bottom-[7px] top-auto z-50 grid w-full translate-y-0 lg:bottom-0 [@media(min-width:1024px)_and_(max-width:1366px)_and_(min-height:1000px)]:bottom-0',
@@ -148,7 +149,7 @@ export function DailyPlanViewer({ plan, onClose }: DailyPlanViewerProps) {
 
           <header className="sticky top-0 flex items-center justify-between border-b border-slate-200 bg-white p-4">
             <div>
-              <h2 className="text-lg font-semibold text-slate-800">Daily Plan</h2>
+              <h2 className="text-lg font-semibold text-[#1010a3]">Daily Plan</h2>
               <p className="text-sm text-slate-600">
                 {plan.teacher.user.firstName} {plan.teacher.user.lastName}
               </p>
@@ -183,12 +184,12 @@ export function DailyPlanViewer({ plan, onClose }: DailyPlanViewerProps) {
                 key={topic.id}
                 className="space-y-2 rounded-lg border border-slate-200 bg-slate-50/40 p-4"
               >
-                <h3 className="font-semibold text-slate-800">{topic.title}</h3>
+                <h3 className="font-semibold text-[#1010a3]">{topic.title}</h3>
                 {topic.resources.length > 0 ? (
                   <ul className="space-y-1 text-sm text-slate-700">
                     {topic.resources.map((resource) => (
                       <li key={resource.id}>
-                        <span className="mr-2 text-slate-500">{KIND_LABEL[resource.kind]}:</span>
+                        <span className="mr-2 font-medium text-[#1010a3]">{KIND_LABEL[resource.kind]}:</span>
                         {resource.link ? (
                           <a
                             href={resource.link}
