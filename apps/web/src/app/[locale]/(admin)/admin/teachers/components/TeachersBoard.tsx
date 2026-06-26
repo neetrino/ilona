@@ -5,67 +5,10 @@ import { TeacherCard } from './TeacherCard';
 import { TeachersCentersStrip } from './TeachersCentersStrip';
 import type { Teacher } from '@/features/teachers';
 import type { Center } from '@ilona/types';
-import { useLocale, useTranslations, type useTranslations as useTranslationsType } from 'next-intl';
+import { useTranslations, type useTranslations as useTranslationsType } from 'next-intl';
 import { useIsIPad } from '@/shared/hooks/useIsIPad';
 import { cn } from '@/shared/lib/utils';
 
-const CENTER_NAME_PAIRS = [
-  { en: 'Andranik 40', hy: 'Անդրանիկի 40' },
-  { en: 'Andranik 40/55', hy: 'Անդրանիկի 40/55' },
-  { en: 'Hanrapetutyan 67/3', hy: 'Հանրապետության 67/3' },
-  { en: 'Ervand Qochar 23/2', hy: 'Երվանդ Քոչարի 23/2' },
-  { en: 'Yervand Qochar 23/2', hy: 'Երվանդ Քոչարի 23/2' },
-  { en: 'Z. Andranik 131/8', hy: 'Անդրանիկի 131/8' },
-  { en: '40 Zoravar Andranik Street, Yerevan', hy: 'Զորավար Անդրանիկի 40, Երևան' },
-  { en: '40/55 Zoravar Andranik Street, Yerevan', hy: 'Զորավար Անդրանիկի 40/55, Երևան' },
-  { en: '67/3 Hanrapetutyan Street, Yerevan', hy: 'Հանրապետության 67/3, Երևան' },
-  { en: '23/2 Ervand Qochar Street, Yerevan', hy: 'Երվանդ Քոչարի 23/2' },
-  { en: '23/2 Yervand Qochar Street, Yerevan', hy: 'Երվանդ Քոչարի 23/2' },
-  { en: '131/8 Zoravar Andranik Street, Yerevan', hy: 'Զորավար Անդրանիկի 131/8' },
-  { en: 'Andranik Branch', hy: 'Անդրանիկի մասնաճյուղ' },
-  { en: 'Hanrapetutyan Branch', hy: 'Հանրապետության մասնաճյուղ' },
-  { en: 'Zoravar Andranik Branch', hy: 'Զորավար Անդրանիկի մասնաճյուղ' },
-] as const;
-
-function getLocalizedCenterName(centerName: string, isArmenianLocale: boolean): string {
-  const normalizeCenterName = (value: string) =>
-    value
-      .toLowerCase()
-      .replace(/[.,]/g, '')
-      .replace(/\s+/g, ' ')
-      .trim();
-
-  const normalizedName = normalizeCenterName(centerName);
-  const matchedPair = CENTER_NAME_PAIRS.find((pair) => {
-    const normalizedEnglish = normalizeCenterName(pair.en);
-    const normalizedArmenian = normalizeCenterName(pair.hy);
-    return (
-      normalizedName === normalizedEnglish ||
-      normalizedName === normalizedArmenian ||
-      normalizedName.includes(normalizedEnglish) ||
-      normalizedName.includes(normalizedArmenian)
-    );
-  });
-  if (matchedPair) return isArmenianLocale ? matchedPair.hy : matchedPair.en;
-
-  if (/qochar|քոչար/.test(normalizedName)) {
-    return isArmenianLocale ? 'Երվանդ Քոչարի 23/2' : 'Yervand Qochar 23/2';
-  }
-  if (/hanrapetutyan|հանրապետության/.test(normalizedName)) {
-    return isArmenianLocale ? 'Հանրապետության 67/3' : 'Hanrapetutyan 67/3';
-  }
-  if (/andranik|անդրանիկ/.test(normalizedName) && /131\/8/.test(normalizedName)) {
-    return isArmenianLocale ? 'Անդրանիկի 131/8' : 'Z. Andranik 131/8';
-  }
-  if (/andranik|անդրանիկ/.test(normalizedName) && /40\/55/.test(normalizedName)) {
-    return isArmenianLocale ? 'Անդրանիկի 40/55' : 'Andranik 40/55';
-  }
-  if (/andranik|անդրանիկ/.test(normalizedName) && /\b40\b/.test(normalizedName)) {
-    return isArmenianLocale ? 'Անդրանիկի 40' : 'Andranik 40';
-  }
-
-  return centerName;
-}
 
 interface TeachersBoardProps {
   teachersByCenter: Record<string, Teacher[]>;
@@ -96,16 +39,11 @@ export function TeachersBoard({
   onCardClick,
   t,
 }: TeachersBoardProps) {
-  const locale = useLocale();
-  const isArmenianLocale = locale === 'hy';
   const tc = useTranslations('common');
   const [mobileTeachersPage, setMobileTeachersPage] = useState(0);
   const isIPad = useIsIPad();
   const mobileTeachersStartRef = useRef<HTMLDivElement | null>(null);
-  const sortedCenters = (centersData ?? []).map((center) => ({
-    ...center,
-    name: getLocalizedCenterName(center.name, isArmenianLocale),
-  }));
+  const sortedCenters = centersData ?? [];
   const hasUnassigned = (teachersByCenter.unassigned?.length || 0) > 0;
 
   const selectedTeachers = useMemo(
