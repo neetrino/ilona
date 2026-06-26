@@ -700,7 +700,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "/Users/lianayengoyan/Documents/ilona/packages/database/src/generated/client",
+      "value": "D:\\Neetrino\\ilonaaaaaaaaaaaaa\\ilona-english-center-gugo\\packages\\database\\src\\generated\\client",
       "fromEnvVar": null
     },
     "config": {
@@ -709,12 +709,12 @@ const config = {
     "binaryTargets": [
       {
         "fromEnvVar": null,
-        "value": "darwin-arm64",
+        "value": "windows",
         "native": true
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "/Users/lianayengoyan/Documents/ilona/packages/database/prisma/schema.prisma",
+    "sourceFilePath": "D:\\Neetrino\\ilonaaaaaaaaaaaaa\\ilona-english-center-gugo\\packages\\database\\prisma\\schema.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {
@@ -775,8 +775,8 @@ exports.PrismaClient = PrismaClient
 Object.assign(exports, Prisma)
 
 // file annotations for bundling tools to include these files
-path.join(__dirname, "libquery_engine-darwin-arm64.dylib.node");
-path.join(process.cwd(), "src/generated/client/libquery_engine-darwin-arm64.dylib.node")
+path.join(__dirname, "query_engine-windows.dll.node");
+path.join(process.cwd(), "src/generated/client/query_engine-windows.dll.node")
 // file annotations for bundling tools to include these files
 path.join(__dirname, "schema.prisma");
 path.join(process.cwd(), "src/generated/client/schema.prisma")

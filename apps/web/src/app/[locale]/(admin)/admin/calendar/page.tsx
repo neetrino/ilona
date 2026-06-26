@@ -27,65 +27,22 @@ import { useAuthStore } from '@/features/auth/store/auth.store';
 import { getAdminPortalBasePath } from '@/shared/lib/role-routes';
 import { readUrlSearchParam } from '@/shared/lib/url-search-params';
 import { useAppSearchUrl } from '@/shared/hooks/useAppSearchUrl';
-
-// Helper to get week dates
-function getWeekDates(date: Date): Date[] {
-  const start = new Date(date);
-  start.setDate(start.getDate() - start.getDay() + 1); // Monday
-  
-  const dates: Date[] = [];
-  for (let i = 0; i < 7; i++) {
-    const d = new Date(start);
-    d.setDate(d.getDate() + i);
-    dates.push(d);
-  }
-  return dates;
-}
-
-function getMonthDates(date: Date): (Date | null)[][] {
-  const year = date.getFullYear();
-  const month = date.getMonth();
-  const firstDay = new Date(year, month, 1);
-  const lastDay = new Date(year, month + 1, 0);
-  const firstWeekday = (firstDay.getDay() + 6) % 7;
-  const totalDays = lastDay.getDate();
-
-  const weeks: (Date | null)[][] = [];
-  let day = 1;
-
-  while (day <= totalDays) {
-    const week: (Date | null)[] = [];
-    for (let i = 0; i < 7; i += 1) {
-      if ((weeks.length === 0 && i < firstWeekday) || day > totalDays) {
-        week.push(null);
-      } else {
-        week.push(new Date(year, month, day));
-        day += 1;
-      }
-    }
-    weeks.push(week);
-  }
-
-  return weeks;
-}
+import {
+  formatScheduleDate,
+  getMonthDates,
+  getWeekDateRangeForApi,
+  getWeekDates,
+  scheduleDateKeyFromIso,
+} from '@/features/schedule/schedule-dates';
+import {
+  filterLessonsByLocalDateRange,
+  getCalendarListReferenceDate,
+} from '@/shared/lib/calendar/teacher-calendar-list-order';
 
 // Helper to format time
 function formatTime(dateStr: string): string {
   const date = new Date(dateStr);
   return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
-}
-
-// Helper to format date
-function formatDate(date: Date): string {
-  return date.toISOString().split('T')[0];
-}
-
-/** YYYY-MM-DD in local calendar (matches teacher list window / schedule grid). */
-function formatLocalDateKey(date: Date): string {
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, '0');
-  const d = String(date.getDate()).padStart(2, '0');
-  return `${y}-${m}-${d}`;
 }
 
 // Status badge config
@@ -300,37 +257,26 @@ export default function CalendarPage() {
   
   const weekDates = useMemo(() => getWeekDates(currentDate), [currentDate]);
   const monthDates = useMemo(() => getMonthDates(currentDate), [currentDate]);
-  const { rangeFrom, rangeTo } = useMemo(() => {
-    if (viewMode === 'list') {
-      const from = new Date();
-      from.setMonth(from.getMonth() - 3);
-      from.setHours(0, 0, 0, 0);
-      const to = new Date();
-      to.setMonth(to.getMonth() + 3);
-      to.setDate(1);
-      return { rangeFrom: formatLocalDateKey(from), rangeTo: formatLocalDateKey(to) };
-    }
+  const { dateFrom: rangeFrom, dateTo: rangeTo } = useMemo(() => {
     if (viewMode === 'month') {
       const start = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
       const end = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1);
-      return { rangeFrom: formatDate(start), rangeTo: formatDate(end) };
+      return { dateFrom: formatScheduleDate(start), dateTo: formatScheduleDate(end) };
     }
-    return {
-      rangeFrom: formatDate(weekDates[0]),
-      rangeTo: formatDate(new Date(weekDates[6].getTime() + 24 * 60 * 60 * 1000)),
-    };
+    return getWeekDateRangeForApi(weekDates);
   }, [currentDate, viewMode, weekDates]);
 
   // Fetch lessons for the week. Poll every 60s only when tab is visible (no background spam).
   const {
     data: lessonsData,
     isLoading,
+    isFetching,
     refetch: _refetch,
   } = useLessons(
     {
       dateFrom: rangeFrom,
       dateTo: rangeTo,
-      take: viewMode === 'list' ? 250 : viewMode === 'month' ? 500 : 100,
+      take: viewMode === 'month' ? 500 : 100,
       sortBy: sortBy === 'scheduledAt' ? 'scheduledAt' : undefined,
       sortOrder: sortOrder,
       search: searchQuery || undefined,
@@ -347,11 +293,28 @@ export default function CalendarPage() {
 
   const lessons = useMemo(() => lessonsData?.items || [], [lessonsData?.items]);
 
+  const listViewLessons = useMemo(() => {
+    if (viewMode !== 'list') {
+      return lessons;
+    }
+    return filterLessonsByLocalDateRange(lessons, weekDates[0], weekDates[6]);
+  }, [lessons, viewMode, weekDates]);
+
+  const listReferenceDate = useMemo(
+    () => getCalendarListReferenceDate(weekDates),
+    [weekDates],
+  );
+
+  const isListLoading = isLoading || isFetching;
+
   // Group lessons by date (all days in the fetched range, not only the current week)
   const lessonsByDate = useMemo(() => {
     const grouped: Record<string, Lesson[]> = {};
     for (const lesson of lessons) {
-      const dateKey = lesson.scheduledAt.split('T')[0];
+      const dateKey = scheduleDateKeyFromIso(lesson.scheduledAt);
+      if (!dateKey) {
+        continue;
+      }
       if (!grouped[dateKey]) {
         grouped[dateKey] = [];
       }
@@ -366,16 +329,14 @@ export default function CalendarPage() {
     return grouped;
   }, [lessons]);
 
-  // Navigation
-  const goToPreviousWeek = () => {
+  const navigatePeriod = (direction: 'prev' | 'next') => {
+    const delta = direction === 'next' ? 1 : -1;
     const newDate = new Date(currentDate);
-    newDate.setDate(newDate.getDate() - 7);
-    setCurrentDate(newDate);
-  };
-
-  const goToNextWeek = () => {
-    const newDate = new Date(currentDate);
-    newDate.setDate(newDate.getDate() + 7);
+    if (viewMode === 'month') {
+      newDate.setMonth(newDate.getMonth() + delta);
+    } else {
+      newDate.setDate(newDate.getDate() + delta * 7);
+    }
     setCurrentDate(newDate);
   };
 
@@ -526,7 +487,8 @@ export default function CalendarPage() {
           <div className="w-full min-w-0 space-y-2 sm:w-auto sm:flex sm:min-w-0 sm:flex-wrap sm:items-center sm:gap-4 sm:space-y-0">
             <div className="grid grid-cols-[auto_1fr_auto] items-center gap-2 sm:contents">
               <button
-                onClick={goToPreviousWeek}
+                type="button"
+                onClick={() => navigatePeriod('prev')}
                 className="p-2 rounded-lg hover:bg-[#f6f6f7]"
               >
                 <svg className="w-5 h-5 text-[#3b3b40]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -537,7 +499,8 @@ export default function CalendarPage() {
                 {viewMode === 'month' ? monthHeader : weekHeader}
               </h2>
               <button
-                onClick={goToNextWeek}
+                type="button"
+                onClick={() => navigatePeriod('next')}
                 className="justify-self-end p-2 rounded-lg hover:bg-[#f6f6f7]"
               >
                 <svg className="w-5 h-5 text-[#3b3b40]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -546,6 +509,7 @@ export default function CalendarPage() {
               </button>
             </div>
             <button
+              type="button"
               onClick={goToToday}
               className="px-3 py-1.5 text-sm font-medium text-blue-600 hover:bg-blue-50 rounded-lg sm:ml-0"
             >
@@ -650,7 +614,7 @@ export default function CalendarPage() {
             {/* Lessons Grid */}
             <div className="grid grid-cols-7 min-h-[400px]">
               {weekDates.map((date, i) => {
-                const dateKey = formatDate(date);
+                const dateKey = formatScheduleDate(date);
                 const dayLessons = lessonsByDate[dateKey] || [];
                 
                 return (
@@ -756,7 +720,7 @@ export default function CalendarPage() {
         {/* List View */}
         {viewMode === 'list' && (
           <>
-            {isLoading ? (
+            {isListLoading ? (
               <div className="bg-white rounded-xl border border-[rgba(14,14,16,0.07)] p-8">
                 <div className="animate-pulse space-y-4">
                   <div className="h-12 bg-[#f1f1f2] rounded-lg" />
@@ -764,7 +728,7 @@ export default function CalendarPage() {
                   <div className="h-12 bg-[#f1f1f2] rounded-lg" />
                 </div>
               </div>
-            ) : lessons.length === 0 ? (
+            ) : listViewLessons.length === 0 ? (
               <div className="bg-white rounded-xl border border-[rgba(14,14,16,0.07)] p-8 text-center">
                 <p className="text-[#8b8b90]">
                   {searchQuery || selectedTeacherId ? t('noLessonsMatchFilters') : t('noLessonsFound')}
@@ -772,14 +736,15 @@ export default function CalendarPage() {
               </div>
             ) : (
               <LessonListTable
-                lessons={lessons}
-                isLoading={isLoading}
+                lessons={listViewLessons}
+                isLoading={isListLoading}
                 sortBy={sortBy}
                 sortOrder={sortOrder}
                 onSort={handleSort}
                 sectionedCalendarList
                 showScheduleColumn={false}
                 useMobileCards
+                listReferenceDate={listReferenceDate}
                 onBulkDelete={handleBulkDeleteClick}
                 onObligationClick={(lessonId, obligation) => {
                   router.push(`/${locale}${portalBasePath}/calendar/${lessonId}?tab=${obligation}`);

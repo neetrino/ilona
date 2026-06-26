@@ -51,6 +51,8 @@ interface LessonListTableProps {
   showScheduleColumn?: boolean;
   /** Enables card-style mobile layout for admin calendar list. */
   useMobileCards?: boolean;
+  /** When set, section headers (completed / today / upcoming) use this instant instead of now. */
+  listReferenceDate?: Date;
 }
 
 const MOBILE_CARD_PAGE_SIZE = 5;
@@ -73,6 +75,7 @@ export function LessonListTable({
   sectionedCalendarList = false,
   showScheduleColumn = true,
   useMobileCards = false,
+  listReferenceDate,
 }: LessonListTableProps) {
   const locale = useLocale();
   const tCal = useTranslations('calendar');
@@ -88,8 +91,11 @@ export function LessonListTable({
   const mobileCardsStartRef = useRef<HTMLDivElement | null>(null);
 
   const sectionedOrderedRows = useMemo(
-    () => (sectionedCalendarList ? buildTeacherCalendarOrderedRows(lessons) : []),
-    [lessons, sectionedCalendarList],
+    () =>
+      sectionedCalendarList
+        ? buildTeacherCalendarOrderedRows(lessons, listReferenceDate ?? new Date())
+        : [],
+    [lessons, sectionedCalendarList, listReferenceDate],
   );
 
   useEffect(() => {
