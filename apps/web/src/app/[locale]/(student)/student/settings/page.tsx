@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { LanguageSwitcher } from '@/shared/components/LanguageSwitcher';
@@ -50,7 +50,7 @@ export default function StudentSettingsPage() {
   const tabs: { id: SettingsTab; label: string; icon: React.ReactNode }[] = [
     {
       id: 'security',
-      label: 'Security',
+      label: t('security'),
       icon: (
         <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
@@ -59,7 +59,7 @@ export default function StudentSettingsPage() {
     },
     {
       id: 'notifications',
-      label: 'Notifications',
+      label: t('notifications'),
       icon: (
         <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
@@ -78,20 +78,81 @@ export default function StudentSettingsPage() {
     },
   ];
 
+  const mobileTabs = tabs.filter((tab) => tab.id !== 'system');
+  const tabsTrackRef = useRef<HTMLDivElement | null>(null);
+  const tabRefs = useRef<Record<SettingsTab, HTMLButtonElement | null>>({
+    security: null,
+    notifications: null,
+    system: null,
+  });
+  const [tabIndicator, setTabIndicator] = useState({ x: 0, width: 0, visible: false });
+
+  useEffect(() => {
+    const syncIndicator = () => {
+      const activeTabEl = tabRefs.current[activeTab];
+      const tabsTrackEl = tabsTrackRef.current;
+      if (!activeTabEl || !tabsTrackEl || activeTab === 'system') {
+        setTabIndicator((prev) => ({ ...prev, visible: false }));
+        return;
+      }
+      setTabIndicator({
+        x: activeTabEl.offsetLeft,
+        width: activeTabEl.offsetWidth,
+        visible: true,
+      });
+    };
+
+    syncIndicator();
+    window.addEventListener('resize', syncIndicator);
+    return () => window.removeEventListener('resize', syncIndicator);
+  }, [activeTab]);
+
   return (
     <DashboardLayout title={t('title')} subtitle={t('subtitle')}>
       <StudentPageStack>
+        <div className="mb-6 w-full min-w-0 overflow-x-auto border-b border-[rgba(14,14,16,0.07)] [-webkit-overflow-scrolling:touch] [-ms-overflow-style:none] [scrollbar-width:none] lg:hidden [&::-webkit-scrollbar]:hidden">
+          <div ref={tabsTrackRef} className="relative flex w-full min-w-full">
+            {mobileTabs.map((tab) => (
+              <button
+                key={tab.id}
+                type="button"
+                ref={(node) => {
+                  tabRefs.current[tab.id] = node;
+                }}
+                onClick={() => setActiveTab(tab.id)}
+                className={cn(
+                  'relative flex-1 whitespace-nowrap px-4 py-3 text-center text-sm font-medium transition-colors',
+                  activeTab === tab.id
+                    ? 'text-blue-600'
+                    : 'text-[#3b3b40] hover:text-[#1010a3]',
+                )}
+              >
+                {tab.label}
+              </button>
+            ))}
+            <span
+              aria-hidden
+              className="pointer-events-none absolute bottom-0 h-0.5 bg-blue-600 transition-[transform,width,opacity] duration-300 ease-out"
+              style={{
+                width: `${tabIndicator.width}px`,
+                transform: `translateX(${tabIndicator.x}px)`,
+                opacity: tabIndicator.visible ? 1 : 0,
+              }}
+            />
+          </div>
+        </div>
+
         <div className="flex flex-col gap-5 lg:flex-row lg:gap-6">
-          <div className="w-full shrink-0 lg:w-64">
+          <div className="hidden w-full shrink-0 lg:block lg:w-64">
             <StudentCard className="p-2 sm:p-2">
-              <nav className="flex flex-row gap-1 overflow-x-auto lg:flex-col lg:overflow-visible">
+              <nav className="flex flex-col">
                 {tabs.map((tab) => (
                   <button
                     key={tab.id}
                     type="button"
                     onClick={() => setActiveTab(tab.id)}
                     className={cn(
-                      'flex min-w-[8.5rem] items-center gap-3 rounded-[0.875rem] px-4 py-3 text-left transition-colors lg:min-w-0 lg:w-full',
+                      'flex w-full items-center gap-3 rounded-[0.875rem] px-4 py-3 text-left transition-colors',
                       activeTab === tab.id
                         ? 'bg-[#1010a3] text-white'
                         : 'text-[#3b3b40] hover:bg-[#f6f6f7]',
@@ -148,7 +209,7 @@ export default function StudentSettingsPage() {
             )}
 
             {activeTab === 'system' && (
-              <StudentCard>
+              <StudentCard className="hidden lg:block">
                 <StudentSectionHeader title={t('appearance')} />
                 <div>
                   <label className="mb-3 block text-sm font-medium text-[#3b3b40]">
