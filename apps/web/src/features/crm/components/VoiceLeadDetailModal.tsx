@@ -13,6 +13,14 @@ import { useQuery } from '@tanstack/react-query';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
 import { ADMIN_ICON_BUTTON_CLASS } from '@/shared/lib/admin-control-theme';
+import { cn } from '@/shared/lib/utils';
+import {
+  portalSheetLayerProps,
+  stackedSheetDialogHandlers,
+  useSheetStackZIndex,
+  stackedSheetOverlayClassName,
+} from '@/shared/lib/sheet-stack';
+import { CUSTOM_MODAL_OVERLAY_CLASS, CUSTOM_MODAL_PANEL_CLASS } from '@/shared/lib/portal-form-sheet-classes';
 
 const LEVEL_OPTIONS = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
 
@@ -235,14 +243,17 @@ export function VoiceLeadDetailModal({
   };
 
   if (!open) return null;
+  const { overlayStyle, contentStyle, isBaseLayer } = useSheetStackZIndex(open);
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
-      onClick={(e) => e.target === e.currentTarget && onClose()}
-    >
+    <>
       <div
-        className="w-full max-w-lg max-h-[90vh] flex flex-col rounded-xl bg-white shadow-xl"
+        className={stackedSheetOverlayClassName(CUSTOM_MODAL_OVERLAY_CLASS, isBaseLayer)}
+        onClick={(e) => e.target === e.currentTarget && onClose()}
+        aria-hidden="true"
+      />
+      <div
+        style={contentStyle} {...portalSheetLayerProps} className={cn(CUSTOM_MODAL_PANEL_CLASS, 'max-w-lg')}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4 flex-shrink-0">
@@ -555,6 +566,6 @@ export function VoiceLeadDetailModal({
           )}
         </div>
       </div>
-    </div>
+    </>
   );
 }

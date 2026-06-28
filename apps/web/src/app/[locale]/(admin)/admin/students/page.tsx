@@ -332,13 +332,11 @@ export default function StudentsPage() {
         onClose={handleStudentDetailsClose}
         locale={locale}
         onEdit={(student) => {
-          handleStudentDetailsClose();
           handleEditClick(student);
         }}
         onDelete={
           viewMode === 'board'
             ? (student) => {
-                handleStudentDetailsClose();
                 handleDeleteClick(student);
               }
             : undefined

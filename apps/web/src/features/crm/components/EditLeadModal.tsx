@@ -18,6 +18,7 @@ import { RecordingPlayback } from './VoiceRecorder';
 import { SingleSelectDropdown, portaledDropdownDialogHandlers } from '@/shared/components/ui/single-select-dropdown';
 import { usePortalSheetDrag } from '@/shared/hooks/usePortalSheetDrag';
 import { PortalFormSheetDragHandle } from '@/shared/components/ui/portal-form-sheet-drag-handle';
+import { PortalSheetPortal } from '@/shared/components/ui/portal-sheet-portal';
 import {
   PORTAL_FORM_SHEET_CLOSE_BUTTON_CLASS,
   PORTAL_FORM_SHEET_HEADER_CLASS,
@@ -300,14 +301,7 @@ export function EditLeadModal({
   return (
     <>
       <DialogPrimitive.Root open={isDialogOpen} onOpenChange={(nextOpen) => !nextOpen && requestClose()}>
-        <DialogPrimitive.Portal>
-          <DialogPrimitive.Overlay className={PORTAL_FORM_SHEET_OVERLAY_CLASS} />
-          <DialogPrimitive.Content
-            style={dragStyle}
-            {...portaledDropdownDialogHandlers}
-            className={portalFormSheetContentClass('3xl')}
-            aria-describedby={undefined}
-          >
+        <PortalSheetPortal open={isDialogOpen} dragStyle={dragStyle} contentClassName={portalFormSheetContentClass('3xl')} contentProps={{ 'aria-describedby': undefined }}>
             <PortalFormSheetDragHandle dragHandleProps={dragHandleProps} />
             <DialogPrimitive.Title className="sr-only">{t('editLead')}</DialogPrimitive.Title>
             <div className={PORTAL_FORM_SHEET_HEADER_CLASS}>
@@ -619,8 +613,7 @@ export function EditLeadModal({
                 </form>
               </div>
             )}
-          </DialogPrimitive.Content>
-        </DialogPrimitive.Portal>
+          </PortalSheetPortal>
       </DialogPrimitive.Root>
       <PaidRegistrationModal
         open={paidRegistrationOpen}

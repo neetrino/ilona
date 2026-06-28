@@ -2,6 +2,14 @@
 
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
+import { cn } from '@/shared/lib/utils';
+import {
+  portalSheetLayerProps,
+  stackedSheetDialogHandlers,
+  useSheetStackZIndex,
+  stackedSheetOverlayClassName,
+} from '@/shared/lib/sheet-stack';
+import { CUSTOM_MODAL_OVERLAY_CLASS, CUSTOM_MODAL_PANEL_CLASS } from '@/shared/lib/portal-form-sheet-classes';
 
 interface VocabularyModalProps {
   isOpen: boolean;
@@ -45,10 +53,12 @@ export function VocabularyModal({
   };
 
   if (!isOpen) return null;
+  const { overlayStyle, contentStyle, isBaseLayer } = useSheetStackZIndex(isOpen);
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-xl shadow-xl w-full max-w-md mx-4 overflow-hidden">
+    <>
+      <div className={stackedSheetOverlayClassName(CUSTOM_MODAL_OVERLAY_CLASS, isBaseLayer)} onClick={onClose} aria-hidden="true" />
+      <div style={contentStyle} {...portalSheetLayerProps} className={cn(CUSTOM_MODAL_PANEL_CLASS, 'max-w-md mx-4 min-[1367px]:mx-0')}>
         <div className="p-4 border-b border-slate-200 bg-gradient-to-r from-purple-600 to-purple-700">
           <h3 className="text-lg font-semibold text-white flex items-center gap-2">
             <span>📚</span>
@@ -121,6 +131,6 @@ export function VocabularyModal({
           </button>
         </div>
       </div>
-    </div>
+    </>
   );
 }

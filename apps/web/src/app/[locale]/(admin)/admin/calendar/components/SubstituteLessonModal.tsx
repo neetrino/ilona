@@ -14,6 +14,12 @@ import { PortalFormSheetDragHandle } from '@/shared/components/ui/portal-form-sh
 import { usePortalSheetDrag } from '@/shared/hooks/usePortalSheetDrag';
 import { cn } from '@/shared/lib/utils';
 import {
+  portalSheetLayerProps,
+  stackedSheetDialogHandlers,
+  useSheetStackZIndex,
+  stackedSheetOverlayClassName,
+} from '@/shared/lib/sheet-stack';
+import {
   PORTAL_FORM_SHEET_HEADER_CLASS,
   PORTAL_FORM_SHEET_OVERLAY_CLASS,
   PORTAL_FORM_SHEET_SCROLL_CLASS,
@@ -98,14 +104,13 @@ export function SubstituteLessonModal({
     });
     requestClose();
   };
+  const { overlayStyle, contentStyle, isBaseLayer } = useSheetStackZIndex(isDialogOpen);
 
   return (
     <DialogPrimitive.Root open={isDialogOpen} onOpenChange={(nextOpen) => !nextOpen && requestClose()}>
       <DialogPrimitive.Portal>
-        <DialogPrimitive.Overlay className={cn(PORTAL_FORM_SHEET_OVERLAY_CLASS, 'z-[60]')} />
-        <DialogPrimitive.Content
-          style={dragStyle}
-          {...portaledDropdownDialogHandlers}
+        <DialogPrimitive.Overlay style={overlayStyle} {...portalSheetLayerProps} className={stackedSheetOverlayClassName(PORTAL_FORM_SHEET_OVERLAY_CLASS, isBaseLayer, 'z-[60]')} />
+        <DialogPrimitive.Content style={{ ...dragStyle, ...contentStyle }} {...stackedSheetDialogHandlers} {...portalSheetLayerProps}
           className={cn(portalFormSheetContentClass('xl'), 'z-[60]')}
           aria-describedby={undefined}
         >

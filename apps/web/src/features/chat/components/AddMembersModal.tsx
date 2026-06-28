@@ -1,11 +1,19 @@
 'use client';
 
+import {
+  portalSheetLayerProps,
+  stackedSheetDialogHandlers,
+  useSheetStackZIndex,
+  stackedSheetOverlayClassName,
+} from '@/shared/lib/sheet-stack';
+
 import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { useAdminAllUsers, useAddGroupChatMember, useAddCustomGroupChatMember } from '../hooks';
 import type { Chat } from '../types';
 import type { AdminChatAllUser } from '../api/chat.api';
 import { cn, formatPhoneForDisplay } from '@/shared/lib/utils';
+import { CUSTOM_MODAL_OVERLAY_CLASS, CUSTOM_MODAL_PANEL_CLASS } from '@/shared/lib/portal-form-sheet-classes';
 import Image from 'next/image';
 import { getInitials } from '@/shared/components/ui/avatar';
 
@@ -61,10 +69,12 @@ export function AddMembersModal({
   };
 
   if (!isOpen) return null;
+  const { overlayStyle, contentStyle, isBaseLayer } = useSheetStackZIndex(isOpen);
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-xl shadow-xl w-full max-w-md mx-4 overflow-hidden flex flex-col max-h-[80vh]">
+    <>
+      <div className={stackedSheetOverlayClassName(CUSTOM_MODAL_OVERLAY_CLASS, isBaseLayer)} onClick={onClose} aria-hidden="true" />
+      <div style={contentStyle} {...portalSheetLayerProps} className={cn(CUSTOM_MODAL_PANEL_CLASS, 'max-w-md mx-4 min-[1367px]:mx-0 max-h-[80vh]')}>
         <div className="p-4 border-b border-slate-200">
           <h3 className="text-lg font-semibold text-slate-800">{tChat('addMembers')}</h3>
           <p className="text-sm text-slate-500 mt-1">
@@ -194,6 +204,6 @@ export function AddMembersModal({
           </button>
         </div>
       </div>
-    </div>
+    </>
   );
 }

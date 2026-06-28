@@ -5,6 +5,10 @@ import { useState, useRef, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { createPortal } from 'react-dom';
 import { cn } from '@/shared/lib/utils';
+import {
+  preventStackedSheetDismiss,
+  stackedSheetDialogHandlers,
+} from '@/shared/lib/sheet-stack';
 import { DATE_PICKER_POPOVER_ATTR } from './date-picker-input';
 import {
   DROPDOWN_CHEVRON_CLASS,
@@ -54,22 +58,12 @@ export const SINGLE_SELECT_DROPDOWN_MENU_ATTR = 'data-single-select-dropdown-men
 
 /** Spread onto Radix Dialog.Content when the dialog contains portaled SingleSelectDropdown menus. */
 export function preventDialogDismissOnPortaledDropdown(event: Event) {
-  const target = event.target;
-  if (
-    target instanceof Element &&
-    (target.closest(`[${SINGLE_SELECT_DROPDOWN_MENU_ATTR}]`) ||
-      target.closest(`[${SINGLE_SELECT_DROPDOWN_BACKDROP_ATTR}]`) ||
-      target.closest(`[${DATE_PICKER_POPOVER_ATTR}]`))
-  ) {
-    event.preventDefault();
-  }
+  preventStackedSheetDismiss(event);
 }
 
-export const portaledDropdownDialogHandlers = {
-  onPointerDownOutside: preventDialogDismissOnPortaledDropdown,
-  onInteractOutside: preventDialogDismissOnPortaledDropdown,
-  onFocusOutside: preventDialogDismissOnPortaledDropdown,
-};
+export { preventStackedSheetDismiss, stackedSheetDialogHandlers };
+
+export const portaledDropdownDialogHandlers = stackedSheetDialogHandlers;
 
 interface SingleSelectDropdownProps {
   id?: string;

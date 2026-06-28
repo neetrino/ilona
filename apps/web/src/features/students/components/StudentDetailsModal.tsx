@@ -1,5 +1,13 @@
 'use client';
 
+import {
+  portalSheetLayerProps,
+  stackedSheetDialogHandlers,
+  useSheetStackZIndex,
+  stackedSheetOverlayClassName,
+} from '@/shared/lib/sheet-stack';
+
+
 import { useCallback, useEffect, useMemo, useRef, useState, type TouchEvent } from 'react';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import Image from 'next/image';
@@ -7,6 +15,7 @@ import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { AdminAvatarPhotoLightbox, Avatar, Badge, PublicAssetImage, ActionButtons } from '@/shared/components/ui';
 import { cn, formatCurrency, formatPhoneForDisplay, getAppDateLocaleTag } from '@/shared/lib/utils';
+import { PORTAL_DESKTOP_SIDE_SHEET_CLASS } from '@/shared/lib/portal-form-sheet-classes';
 import { portalInnerCardClass, portalPrimaryButtonClass } from '@/shared/lib/portal-theme';
 import { STUDENT_DASHBOARD_ASSETS } from '@/features/student-dashboard/assets';
 import { useStudent, useStudentStatistics } from '../hooks/useStudents';
@@ -46,6 +55,35 @@ function formatDisplayDate(value: string | null | undefined, locale: string): st
     month: 'long',
     day: 'numeric',
   });
+}
+
+function formatDateOfBirth(value: string | null | undefined, locale: string): string {
+  if (!value?.trim()) return '—';
+
+  const trimmed = value.trim();
+  let day: number;
+  let monthIndex: number;
+  let year: number;
+
+  if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
+    const [yearStr, monthStr, dayStr] = trimmed.split('-');
+    year = Number(yearStr);
+    monthIndex = Number(monthStr) - 1;
+    day = Number(dayStr);
+  } else {
+    const d = new Date(trimmed);
+    if (Number.isNaN(d.getTime())) return '—';
+    day = d.getDate();
+    monthIndex = d.getMonth();
+    year = d.getFullYear();
+  }
+
+  const month = new Date(Date.UTC(year, monthIndex, day)).toLocaleDateString(
+    getAppDateLocaleTag(locale),
+    { month: 'short', timeZone: 'UTC' },
+  );
+
+  return `${day} ${month} ${year}`;
 }
 
 type StudentModalStatCardProps = {
@@ -224,6 +262,8 @@ export function StudentDetailsModal({
   const avatarUrl = student?.user?.avatarUrl;
   const showActions = !!(onEdit || onDelete || onDeactivate);
 
+  const { overlayStyle, contentStyle, isBaseLayer } = useSheetStackZIndex(isDialogOpen);
+
   return (
     <>
       <AdminAvatarPhotoLightbox
@@ -237,16 +277,14 @@ export function StudentDetailsModal({
 
       <DialogPrimitive.Root open={isDialogOpen} onOpenChange={(nextOpen) => !nextOpen && requestClose()}>
       <DialogPrimitive.Portal>
-      <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/60 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
-      <DialogPrimitive.Content
-        style={dragStyle}
+      <DialogPrimitive.Overlay style={overlayStyle} {...portalSheetLayerProps} className={stackedSheetOverlayClassName('fixed inset-0 z-50 bg-black/60 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0', isBaseLayer)} />
+      <DialogPrimitive.Content style={{ ...dragStyle, ...contentStyle }} {...stackedSheetDialogHandlers} {...portalSheetLayerProps}
         className={cn(
           'fixed inset-x-0 bottom-[7px] top-auto z-50 grid w-full translate-y-0 lg:bottom-0 [@media(min-width:1024px)_and_(max-width:1366px)_and_(min-height:1000px)]:bottom-0',
           'duration-700 ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out min-[1367px]:duration-350 min-[1367px]:ease-[cubic-bezier(0.22,1,0.36,1)]',
           'data-[state=open]:slide-in-from-bottom-full data-[state=closed]:slide-out-to-bottom-full',
           'h-[calc(94dvh+7px)] [@media(min-width:1024px)_and_(max-width:1366px)_and_(min-height:1000px)]:h-[56dvh] grid-rows-[auto_auto_1fr] gap-0 overflow-hidden rounded-t-[22px] border border-slate-200 bg-[#f8f9fb] shadow-xl',
-          'min-[1367px]:inset-0 min-[1367px]:m-auto min-[1367px]:w-[95vw] min-[1367px]:max-w-4xl min-[1367px]:h-auto min-[1367px]:max-h-[90vh] min-[1367px]:translate-x-0 min-[1367px]:translate-y-0 min-[1367px]:rounded-2xl',
-          'min-[1367px]:data-[state=open]:fade-in-0 min-[1367px]:data-[state=closed]:fade-out-0 min-[1367px]:data-[state=open]:slide-in-from-bottom-0 min-[1367px]:data-[state=closed]:slide-out-to-bottom-0'
+          PORTAL_DESKTOP_SIDE_SHEET_CLASS,
         )}
         aria-describedby={undefined}
       >
@@ -482,7 +520,7 @@ export function StudentDetailsModal({
                     <UserCircle className="h-4 w-4 text-slate-400 shrink-0" aria-hidden="true" />
                     {t('dateOfBirth')}
                   </label>
-                  <p className="text-slate-800 text-sm sm:text-base">{formatDisplayDate(student.dateOfBirth, locale)}</p>
+                  <p className="text-slate-800 text-sm sm:text-base">{formatDateOfBirth(student.dateOfBirth, locale)}</p>
                 </div>
               )}
               <div

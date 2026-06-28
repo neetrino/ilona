@@ -13,6 +13,14 @@ import { useQuery } from '@tanstack/react-query';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
 import { ADMIN_ICON_BUTTON_CLASS } from '@/shared/lib/admin-control-theme';
+import { cn } from '@/shared/lib/utils';
+import {
+  portalSheetLayerProps,
+  stackedSheetDialogHandlers,
+  useSheetStackZIndex,
+  stackedSheetOverlayClassName,
+} from '@/shared/lib/sheet-stack';
+import { CUSTOM_DESKTOP_SIDE_PANEL_CLASS, CUSTOM_MODAL_OVERLAY_CLASS } from '@/shared/lib/portal-form-sheet-classes';
 
 interface LeadDrawerProps {
   leadId: string | null;
@@ -177,9 +185,19 @@ export function LeadDrawer({ leadId, onClose, onUpdated }: LeadDrawerProps) {
   };
 
   if (!leadId) return null;
+  const { overlayStyle, contentStyle, isBaseLayer } = useSheetStackZIndex(Boolean(leadId));
 
   return (
-    <div className="fixed inset-y-0 right-0 z-50 w-full max-w-lg bg-white shadow-xl flex flex-col">
+    <>
+      <div
+        className={stackedSheetOverlayClassName(CUSTOM_MODAL_OVERLAY_CLASS, isBaseLayer)}
+        onClick={onClose}
+        aria-hidden="true"
+      />
+      <div
+        style={contentStyle} {...portalSheetLayerProps} className={cn('fixed inset-y-0 right-0 z-50 flex w-full max-w-lg flex-col bg-white shadow-xl', CUSTOM_DESKTOP_SIDE_PANEL_CLASS,
+        )}
+      >
       <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4">
         <h2 className="text-lg font-semibold text-slate-900">{t('leadDetails')}</h2>
         <button
@@ -462,6 +480,7 @@ export function LeadDrawer({ leadId, onClose, onUpdated }: LeadDrawerProps) {
           </>
         )}
       </div>
-    </div>
+      </div>
+    </>
   );
 }

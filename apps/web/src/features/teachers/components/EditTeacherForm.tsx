@@ -19,6 +19,7 @@ import { cn } from '@/shared/lib/utils';
 import { ADMIN_FORM_INPUT_CLASS, ADMIN_ICON_BUTTON_SM_CLASS, ADMIN_OUTLINE_BUTTON_CLASS, ADMIN_PRIMARY_BUTTON_CLASS } from '@/shared/lib/admin-control-theme';
 import { SingleSelectDropdown, portaledDropdownDialogHandlers } from '@/shared/components/ui/single-select-dropdown';
 import { PortalFormSheetDragHandle } from '@/shared/components/ui/portal-form-sheet-drag-handle';
+import { PortalSheetPortal } from '@/shared/components/ui/portal-sheet-portal';
 import { usePortalSheetDrag } from '@/shared/hooks/usePortalSheetDrag';
 import {
   PORTAL_FORM_SHEET_CLOSE_BUTTON_CLASS,
@@ -253,14 +254,7 @@ export function EditTeacherForm({
 
   return (
     <DialogPrimitive.Root open={isDialogOpen} onOpenChange={(nextOpen) => !nextOpen && requestClose()}>
-      <DialogPrimitive.Portal>
-        <DialogPrimitive.Overlay className={PORTAL_FORM_SHEET_OVERLAY_CLASS} />
-        <DialogPrimitive.Content
-          style={dragStyle}
-          {...portaledDropdownDialogHandlers}
-          className={portalFormSheetContentClass('2xl')}
-          aria-describedby={undefined}
-        >
+      <PortalSheetPortal open={isDialogOpen} dragStyle={dragStyle} contentClassName={portalFormSheetContentClass('2xl')} contentProps={{ 'aria-describedby': undefined }}>
           <PortalFormSheetDragHandle dragHandleProps={dragHandleProps} />
           <DialogPrimitive.Title className="sr-only">{tForm('editTitle')}</DialogPrimitive.Title>
           <div className={PORTAL_FORM_SHEET_HEADER_CLASS}>
@@ -460,8 +454,7 @@ export function EditTeacherForm({
           </form>
         )}
           </div>
-        </DialogPrimitive.Content>
-      </DialogPrimitive.Portal>
+        </PortalSheetPortal>
     </DialogPrimitive.Root>
   );
 }

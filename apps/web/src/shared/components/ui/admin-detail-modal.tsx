@@ -3,6 +3,12 @@
 import { useEffect, type ReactNode } from 'react';
 import { cn } from '@/shared/lib/utils';
 import { portalCardClass } from '@/shared/lib/portal-theme';
+import { CUSTOM_DESKTOP_SIDE_PANEL_CLASS } from '@/shared/lib/portal-form-sheet-classes';
+import {
+  portalSheetLayerProps,
+  stackedSheetOverlayClassName,
+  useSheetStackZIndex,
+} from '@/shared/lib/sheet-stack';
 
 export interface AdminDetailModalProps {
   open: boolean;
@@ -46,11 +52,18 @@ export function AdminDetailModal({
     return () => window.removeEventListener('keydown', handleEscape);
   }, [open, onClose, onEscapeKey]);
 
+  const { overlayStyle, contentStyle, isBaseLayer } = useSheetStackZIndex(open);
+
   if (!open) return null;
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 p-0 sm:items-center sm:p-3 md:p-5"
+      className={stackedSheetOverlayClassName(
+        'fixed inset-0 bg-black/50 min-[1367px]:bg-black/60',
+        isBaseLayer,
+      )}
+      style={overlayStyle}
+      {...portalSheetLayerProps}
       onClick={(e) => e.target === e.currentTarget && onClose()}
       role="dialog"
       aria-modal="true"
@@ -59,9 +72,13 @@ export function AdminDetailModal({
       <div
         className={cn(
           portalCardClass,
-          'flex max-h-[92vh] w-full max-w-3xl flex-col rounded-t-3xl shadow-2xl sm:rounded-3xl',
+          'fixed inset-x-0 bottom-0 flex max-h-[92vh] w-full flex-col rounded-t-3xl shadow-2xl sm:max-h-[92vh]',
+          'min-[1367px]:bottom-auto min-[1367px]:top-auto',
+          CUSTOM_DESKTOP_SIDE_PANEL_CLASS,
           'p-0',
         )}
+        style={contentStyle}
+        {...portalSheetLayerProps}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex flex-shrink-0 items-center justify-between border-b border-[rgba(14,14,16,0.07)] px-5 py-4 sm:px-7 sm:py-5">

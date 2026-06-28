@@ -1,5 +1,13 @@
 'use client';
 
+import {
+  portalSheetLayerProps,
+  stackedSheetDialogHandlers,
+  useSheetStackZIndex,
+  stackedSheetOverlayClassName,
+} from '@/shared/lib/sheet-stack';
+
+
 import React, { useCallback, useEffect, useState } from 'react';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { X } from 'lucide-react';
@@ -7,16 +15,13 @@ import { useLocale, useTranslations } from 'next-intl';
 import { useStudent } from '@/features/students';
 import { usePortalSheetDrag } from '@/shared/hooks/usePortalSheetDrag';
 import { formatPhoneForDisplay } from '@/shared/lib/utils';
-import { portaledDropdownDialogHandlers } from '@/shared/components/ui/single-select-dropdown';
+import { portalFormSheetContentClass } from '@/shared/lib/portal-form-sheet-classes';
 
 interface StudentDetailsModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   studentId: string | null;
 }
-
-const PORTAL_SHEET_CLASS =
-  'fixed inset-x-0 bottom-[7px] top-auto z-50 grid w-full translate-y-0 lg:bottom-0 [@media(min-width:1024px)_and_(max-width:1366px)_and_(min-height:1000px)]:bottom-0 duration-700 ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out min-[1367px]:duration-350 min-[1367px]:ease-[cubic-bezier(0.22,1,0.36,1)] data-[state=open]:slide-in-from-bottom-full data-[state=closed]:slide-out-to-bottom-full h-[calc(94dvh+7px)] [@media(min-width:1024px)_and_(max-width:1366px)_and_(min-height:1000px)]:h-[56dvh] grid-rows-[auto_auto_1fr] gap-0 overflow-hidden rounded-t-[22px] border border-slate-200 bg-[#f8f9fb] shadow-xl min-[1367px]:inset-0 min-[1367px]:m-auto min-[1367px]:w-[95vw] min-[1367px]:max-w-2xl min-[1367px]:h-auto min-[1367px]:max-h-[90vh] min-[1367px]:translate-x-0 min-[1367px]:translate-y-0 min-[1367px]:rounded-2xl min-[1367px]:data-[state=open]:fade-in-0 min-[1367px]:data-[state=closed]:fade-out-0 min-[1367px]:data-[state=open]:slide-in-from-bottom-0 min-[1367px]:data-[state=closed]:slide-out-to-bottom-0';
 
 function formatDate(value: string | null | undefined, locale: string): string {
   if (!value) {
@@ -86,14 +91,14 @@ export function StudentDetailsModal({ open, onOpenChange, studentId }: StudentDe
   const courseStartDate = student?.registerDate ?? student?.enrolledAt ?? null;
   const groupHistory = student?.groupHistory ?? [];
 
+  const { overlayStyle, contentStyle, isBaseLayer } = useSheetStackZIndex(isDialogOpen);
+
   return (
     <DialogPrimitive.Root open={isDialogOpen} onOpenChange={(nextOpen) => !nextOpen && requestClose()}>
       <DialogPrimitive.Portal>
-        <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/60 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
-        <DialogPrimitive.Content
-          style={dragStyle}
-          {...portaledDropdownDialogHandlers}
-          className={PORTAL_SHEET_CLASS}
+        <DialogPrimitive.Overlay style={overlayStyle} {...portalSheetLayerProps} className={stackedSheetOverlayClassName('fixed inset-0 z-50 bg-black/60 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0', isBaseLayer)} />
+        <DialogPrimitive.Content style={{ ...dragStyle, ...contentStyle }} {...stackedSheetDialogHandlers} {...portalSheetLayerProps}
+          className={portalFormSheetContentClass('2xl')}
           aria-describedby={undefined}
         >
           <div className="relative flex h-9 w-full items-center justify-center bg-[#f8f9fb] min-[1367px]:hidden">

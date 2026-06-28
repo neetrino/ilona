@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useLesson } from '@/features/lessons';
 import { PortalFormSheetDragHandle } from '@/shared/components/ui/portal-form-sheet-drag-handle';
+import { PortalSheetPortal } from '@/shared/components/ui/portal-sheet-portal';
 import { usePortalSheetDrag } from '@/shared/hooks/usePortalSheetDrag';
 import { cn } from '@/shared/lib/utils';
 import {
@@ -72,13 +73,7 @@ export function AdminLessonDetailSheet({
 
   return (
     <DialogPrimitive.Root open={isDialogOpen} onOpenChange={(nextOpen) => !nextOpen && requestClose()}>
-      <DialogPrimitive.Portal>
-        <DialogPrimitive.Overlay className={PORTAL_FORM_SHEET_OVERLAY_CLASS} />
-        <DialogPrimitive.Content
-          style={dragStyle}
-          className={portalFormSheetContentClass('2xl')}
-          aria-describedby={undefined}
-        >
+      <PortalSheetPortal open={isDialogOpen} dragStyle={dragStyle} contentClassName={portalFormSheetContentClass('2xl')} contentProps={{ 'aria-describedby': undefined }}>
           <PortalFormSheetDragHandle dragHandleProps={dragHandleProps} />
 
           <div className={cn(PORTAL_FORM_SHEET_HEADER_CLASS, 'pb-3 pt-2 min-[1367px]:pb-5 min-[1367px]:pt-6')}>
@@ -115,8 +110,7 @@ export function AdminLessonDetailSheet({
               />
             ) : null}
           </div>
-        </DialogPrimitive.Content>
-      </DialogPrimitive.Portal>
+        </PortalSheetPortal>
     </DialogPrimitive.Root>
   );
 }

@@ -8,7 +8,7 @@ import { formatCurrency, formatPhoneForDisplay, cn } from '@/shared/lib/utils';
 import { Avatar, Badge } from '@/shared/components/ui';
 import { ADMIN_ICON_BUTTON_SM_CLASS } from '@/shared/lib/admin-control-theme';
 import { PortalFormSheetDragHandle } from '@/shared/components/ui/portal-form-sheet-drag-handle';
-import { portaledDropdownDialogHandlers } from '@/shared/components/ui/single-select-dropdown';
+import { PortalSheetPortal } from '@/shared/components/ui/portal-sheet-portal';
 import { usePortalSheetDrag } from '@/shared/hooks/usePortalSheetDrag';
 import {
   PORTAL_FORM_SHEET_CLOSE_BUTTON_CLASS,
@@ -115,14 +115,7 @@ export function TeacherDetailsModal({
 
   return (
     <DialogPrimitive.Root open={isDialogOpen} onOpenChange={(nextOpen) => !nextOpen && requestClose()}>
-      <DialogPrimitive.Portal>
-        <DialogPrimitive.Overlay className={PORTAL_FORM_SHEET_OVERLAY_CLASS} />
-        <DialogPrimitive.Content
-          style={dragStyle}
-          {...portaledDropdownDialogHandlers}
-          className={portalFormSheetContentClass('xl')}
-          aria-describedby={undefined}
-        >
+      <PortalSheetPortal open={isDialogOpen} dragStyle={dragStyle} contentClassName={portalFormSheetContentClass('xl')} contentProps={{ 'aria-describedby': undefined }}>
           <PortalFormSheetDragHandle dragHandleProps={dragHandleProps} />
 
           <DialogPrimitive.Title className="sr-only">
@@ -252,8 +245,7 @@ export function TeacherDetailsModal({
               </div>
             )}
           </div>
-        </DialogPrimitive.Content>
-      </DialogPrimitive.Portal>
+        </PortalSheetPortal>
     </DialogPrimitive.Root>
   );
 }

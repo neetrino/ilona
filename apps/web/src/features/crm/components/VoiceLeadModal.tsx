@@ -6,6 +6,13 @@ import { createLeadFromVoice } from '@/features/crm/api/crm.api';
 import type { CrmLead } from '@/features/crm/types';
 import { cn } from '@/shared/lib/utils';
 import {
+  portalSheetLayerProps,
+  stackedSheetDialogHandlers,
+  useSheetStackZIndex,
+  stackedSheetOverlayClassName,
+} from '@/shared/lib/sheet-stack';
+import { CUSTOM_MODAL_OVERLAY_CLASS, CUSTOM_MODAL_PANEL_CLASS } from '@/shared/lib/portal-form-sheet-classes';
+import {
   createAudioRecorder,
   getAudioExtension,
   normalizeMimeType,
@@ -151,10 +158,12 @@ export function VoiceLeadModal({ open, onClose, onCreated, centerId }: VoiceLead
   }, [isRecording, onClose, previewUrl]);
 
   if (!open) return null;
+  const { overlayStyle, contentStyle, isBaseLayer } = useSheetStackZIndex(open);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="w-full max-w-sm rounded-xl bg-white shadow-xl">
+    <>
+      <div className={stackedSheetOverlayClassName(CUSTOM_MODAL_OVERLAY_CLASS, isBaseLayer)} onClick={handleCancel} aria-hidden="true" />
+      <div style={contentStyle} {...portalSheetLayerProps} className={cn(CUSTOM_MODAL_PANEL_CLASS, 'max-w-sm')} onClick={(e) => e.stopPropagation()}>
         <div className="border-b border-slate-200 px-6 py-4">
           <h2 className="text-lg font-semibold text-slate-900">{t('newLeadFromVoice')}</h2>
           <p className="text-sm text-slate-500 mt-0.5">{t('recordVoiceToCreateLead')}</p>
@@ -224,6 +233,6 @@ export function VoiceLeadModal({ open, onClose, onCreated, centerId }: VoiceLead
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }
