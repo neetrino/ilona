@@ -256,6 +256,7 @@ export default function StudentOurTeachersPage() {
         onClose={() => setSelectedTeacherId(null)}
         showInternalStats={false}
         showInternalMeta={false}
+        scrollClassName="pt-3 min-[1367px]:pt-5"
       />
     </DashboardLayout>
   );

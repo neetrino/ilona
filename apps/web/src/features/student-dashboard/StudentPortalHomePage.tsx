@@ -40,7 +40,7 @@ export function StudentPortalHomePage() {
 
   return (
     <div className={cn('min-h-[100dvh]', PORTAL_SHELL_BG)}>
-      <AdminPortalNavbar showLanguageToggle={false} />
+      <AdminPortalNavbar />
 
       <main
         className={cn(PORTAL_MOBILE_HORIZONTAL_PADDING, 'pb-[max(1rem,env(safe-area-inset-bottom))]')}

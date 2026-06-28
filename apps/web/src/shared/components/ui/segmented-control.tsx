@@ -7,6 +7,7 @@ import {
   SEGMENTED_TOGGLE_BUTTON_CLASS,
   SEGMENTED_TOGGLE_BUTTON_INACTIVE_CLASS,
   SEGMENTED_TOGGLE_GRID_TRACK_CLASS,
+  SEGMENTED_TOGGLE_INDICATOR_CLASS,
   SEGMENTED_TOGGLE_TRACK_PADDING_PX,
 } from './segmented-toggle-theme';
 
@@ -48,7 +49,7 @@ export function SegmentedControl({
       {selectedIndex >= 0 ? (
         <span
           aria-hidden
-          className="pointer-events-none absolute z-0 rounded-[0.625rem] bg-[#1010a3] shadow-sm transition-[left,width] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] lg:rounded-[11px]"
+          className={SEGMENTED_TOGGLE_INDICATOR_CLASS}
           style={getSegmentedIndicatorStyle(
             selectedIndex,
             optionCount,
@@ -73,8 +74,8 @@ export function SegmentedControl({
             disabled={disabled}
             className={cn(
               SEGMENTED_TOGGLE_BUTTON_CLASS,
-              'min-w-0 px-0.5 font-semibold tabular-nums whitespace-nowrap',
-              compact ? 'text-xs' : 'text-sm',
+              'min-w-0 font-semibold whitespace-nowrap',
+              compact ? 'px-0.5 text-xs tabular-nums' : 'px-2 text-sm sm:px-3',
               isSelected ? SEGMENTED_TOGGLE_BUTTON_ACTIVE_CLASS : SEGMENTED_TOGGLE_BUTTON_INACTIVE_CLASS,
               !isSelected && 'hover:text-[#1010a3]',
               disabled && 'cursor-not-allowed opacity-50',

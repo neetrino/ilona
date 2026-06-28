@@ -1,19 +1,22 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { type Locale } from '@/config/i18n';
-import { studentPillTrackClass } from '@/features/student-ui/tokens';
 import { useSwitchLocale } from '@/shared/hooks/useSwitchLocale';
 import { cn } from '@/shared/lib/utils';
+import {
+  SEGMENTED_TOGGLE_BUTTON_ACTIVE_CLASS,
+  SEGMENTED_TOGGLE_BUTTON_CLASS,
+  SEGMENTED_TOGGLE_BUTTON_INACTIVE_CLASS,
+  SEGMENTED_TOGGLE_INDICATOR_CLASS,
+  SEGMENTED_TOGGLE_TRACK_CLASS,
+  SEGMENTED_TOGGLE_TWO_SEGMENT_WIDTH_CLASS,
+} from '@/shared/components/ui/segmented-toggle-theme';
 
 type LanguageSwitcherProps = {
   variant?: 'default' | 'compact' | 'circle';
   className?: string;
 };
-
-const INDICATOR_TRANSITION =
-  'transition-[transform,width,height,opacity] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none';
 
 const BUTTON_FOCUS =
   'focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1010a3]/20 focus-visible:ring-offset-2';
@@ -71,33 +74,6 @@ export function LanguageSwitcher({ variant = 'default', className }: LanguageSwi
   const isCompact = variant === 'compact';
   const isCircle = variant === 'circle';
   const { locale, switchLocale } = useSwitchLocale();
-  const trackRef = useRef<HTMLDivElement>(null);
-  const buttonRefs = useRef<Partial<Record<Locale, HTMLButtonElement | null>>>({});
-  const [indicator, setIndicator] = useState({ x: 0, y: 0, width: 0, height: 0, visible: false });
-
-  useEffect(() => {
-    if (isCircle) return;
-
-    const syncIndicator = () => {
-      const activeEl = buttonRefs.current[locale];
-      const trackEl = trackRef.current;
-      if (!activeEl || !trackEl) {
-        setIndicator((prev) => ({ ...prev, visible: false }));
-        return;
-      }
-      setIndicator({
-        x: activeEl.offsetLeft,
-        y: activeEl.offsetTop,
-        width: activeEl.offsetWidth,
-        height: activeEl.offsetHeight,
-        visible: true,
-      });
-    };
-
-    syncIndicator();
-    window.addEventListener('resize', syncIndicator);
-    return () => window.removeEventListener('resize', syncIndicator);
-  }, [locale, isCircle]);
 
   const handleKeyDown = (e: React.KeyboardEvent, targetLocale: Locale) => {
     if (e.key === 'Enter' || e.key === ' ') {
@@ -132,48 +108,35 @@ export function LanguageSwitcher({ variant = 'default', className }: LanguageSwi
   }
 
   const buttonClass = cn(
-    'relative z-10 inline-flex shrink-0 items-center gap-1 rounded-full font-medium transition-colors duration-300 motion-reduce:transition-none',
+    SEGMENTED_TOGGLE_BUTTON_CLASS,
+    'gap-1.5 shrink-0',
     BUTTON_FOCUS,
-    isCompact ? 'gap-1 px-2 py-1 text-xs' : 'gap-2 px-4 py-1.5 text-sm',
+    isCompact ? 'text-xs' : 'text-sm',
   );
 
   return (
     <div
-      ref={trackRef}
       role="group"
       aria-label={t('selectLanguage')}
-      className={cn(
-        isCompact
-          ? 'inline-flex h-11 shrink-0 items-center gap-0.5 rounded-full border border-[rgba(14,14,16,0.07)] bg-[#f3f3f4] p-0.5 sm:h-12'
-          : cn(studentPillTrackClass, 'relative shrink-0 gap-0.5'),
-        className,
-      )}
+      className={cn(SEGMENTED_TOGGLE_TRACK_CLASS, 'inline-flex shrink-0', className)}
     >
       <span
         aria-hidden
         className={cn(
-          'pointer-events-none absolute left-0 top-0 z-0 rounded-full bg-[#1010a3] shadow-sm',
-          INDICATOR_TRANSITION,
+          SEGMENTED_TOGGLE_INDICATOR_CLASS,
+          SEGMENTED_TOGGLE_TWO_SEGMENT_WIDTH_CLASS,
+          locale === 'en' && 'translate-x-full',
         )}
-        style={{
-          width: `${indicator.width}px`,
-          height: `${indicator.height}px`,
-          transform: `translate(${indicator.x}px, ${indicator.y}px)`,
-          opacity: indicator.visible ? 1 : 0,
-        }}
       />
       <button
         type="button"
-        ref={(node) => {
-          buttonRefs.current.hy = node;
-        }}
         onClick={() => switchLocale('hy')}
         onKeyDown={(e) => handleKeyDown(e, 'hy')}
         aria-label={t('switchToArmenian')}
         aria-pressed={locale === 'hy'}
         className={cn(
           buttonClass,
-          locale === 'hy' ? 'text-white' : 'text-[#3b3b40] hover:text-[#1010a3]',
+          locale === 'hy' ? SEGMENTED_TOGGLE_BUTTON_ACTIVE_CLASS : SEGMENTED_TOGGLE_BUTTON_INACTIVE_CLASS,
         )}
       >
         <ArmenianFlag size={flagSize} />
@@ -181,16 +144,13 @@ export function LanguageSwitcher({ variant = 'default', className }: LanguageSwi
       </button>
       <button
         type="button"
-        ref={(node) => {
-          buttonRefs.current.en = node;
-        }}
         onClick={() => switchLocale('en')}
         onKeyDown={(e) => handleKeyDown(e, 'en')}
         aria-label={t('switchToEnglish')}
         aria-pressed={locale === 'en'}
         className={cn(
           buttonClass,
-          locale === 'en' ? 'text-white' : 'text-[#3b3b40] hover:text-[#1010a3]',
+          locale === 'en' ? SEGMENTED_TOGGLE_BUTTON_ACTIVE_CLASS : SEGMENTED_TOGGLE_BUTTON_INACTIVE_CLASS,
         )}
       >
         <UkFlag size={flagSize} />

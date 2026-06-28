@@ -26,6 +26,7 @@ interface TeacherDetailsModalProps {
   onEdit?: () => void;
   showInternalStats?: boolean;
   showInternalMeta?: boolean;
+  scrollClassName?: string;
 }
 
 function formatDate(value?: string | null): string {
@@ -64,6 +65,7 @@ export function TeacherDetailsModal({
   onEdit,
   showInternalStats = true,
   showInternalMeta = true,
+  scrollClassName,
 }: TeacherDetailsModalProps) {
   const t = useTranslations('teachers');
   const tCommon = useTranslations('common');
@@ -121,7 +123,7 @@ export function TeacherDetailsModal({
             {fullName} - {t('teacherDetails')}
           </DialogPrimitive.Title>
 
-          <div className={PORTAL_FORM_SHEET_HEADER_CLASS}>
+          <div className={cn(PORTAL_FORM_SHEET_HEADER_CLASS, 'border-b-0')}>
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0 flex-1">
                 <h2 className="break-words text-lg font-semibold text-[#3b3b40]">{fullName}</h2>
@@ -149,7 +151,7 @@ export function TeacherDetailsModal({
             </div>
           </div>
 
-          <div className={PORTAL_FORM_SHEET_SCROLL_CLASS}>
+          <div className={cn(PORTAL_FORM_SHEET_SCROLL_CLASS, scrollClassName)}>
             {!teacherId ? (
               <div className="py-8 text-center text-[#8b8b90]">{t('teacherNotFound')}</div>
             ) : isLoading ? (
