@@ -7,6 +7,9 @@ import { WeekLessonGrid, MonthLessonGrid } from '@/features/schedule/ScheduleLes
 import { scheduleDateKeyFromIso, type ScheduleViewMode } from '@/features/schedule/schedule-dates';
 import type { ReactNode } from 'react';
 import { useIsIPad } from '@/shared/hooks/useIsIPad';
+import { ListBoardViewToggle } from '@/shared/components/ui';
+import { ADMIN_CONTROL_CLASS } from '@/shared/lib/admin-control-theme';
+import { cn } from '@/shared/lib/utils';
 
 function buildLessonsByDate(lessons: Lesson[]): Record<string, Lesson[]> {
   return lessons.reduce<Record<string, Lesson[]>>((acc, lesson) => {
@@ -132,7 +135,7 @@ export function ScheduleBoard({
               className={
                 isStudent
                   ? 'flex h-9 w-9 items-center justify-center rounded-[0.875rem] border border-[rgba(14,14,16,0.07)] text-[#3b3b40] hover:bg-[#f6f6f7]'
-                  : 'h-9 w-9 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50'
+                  : 'flex h-11 w-11 items-center justify-center rounded-[15px] border border-slate-200 text-slate-600 hover:bg-slate-50'
               }
               aria-label={tCommon('previousPeriod')}
             >
@@ -153,7 +156,7 @@ export function ScheduleBoard({
               className={
                 isStudent
                   ? 'flex h-9 w-9 items-center justify-center rounded-[0.875rem] border border-[rgba(14,14,16,0.07)] text-[#3b3b40] hover:bg-[#f6f6f7]'
-                  : 'h-9 w-9 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50'
+                  : 'flex h-11 w-11 items-center justify-center rounded-[15px] border border-slate-200 text-slate-600 hover:bg-slate-50'
               }
               aria-label={tCommon('nextPeriod')}
             >
@@ -165,7 +168,7 @@ export function ScheduleBoard({
               className={
                 isStudent
                   ? 'ml-2 h-9 rounded-full border border-[rgba(14,14,16,0.07)] px-3 text-sm font-medium text-[#1010a3] hover:bg-[#f6f6f7]'
-                  : 'ml-2 h-9 rounded-lg border border-slate-200 px-3 text-sm text-slate-700 hover:bg-slate-50'
+                  : 'ml-2 h-11 rounded-[15px] border border-slate-200 px-3 text-sm text-slate-700 hover:bg-slate-50'
               }
             >
               Today
@@ -190,6 +193,17 @@ export function ScheduleBoard({
             </div>
           ) : null}
 
+          {!isStudent && !useRectangularToggle ? (
+            <div className={mobileToggleVisibilityClass}>
+              <ListBoardViewToggle
+                value={viewMode === 'week' ? 'list' : 'board'}
+                onChange={(mode) => onViewModeChange(mode === 'list' ? 'week' : 'month')}
+                listLabel="Week"
+                boardLabel="Month"
+                className={cn(ADMIN_CONTROL_CLASS, 'self-start md:self-auto')}
+              />
+            </div>
+          ) : (
           <div
             className={
               useRectangularToggle
@@ -249,6 +263,7 @@ export function ScheduleBoard({
               Month
             </button>
           </div>
+          )}
         </div>
 
         <div>

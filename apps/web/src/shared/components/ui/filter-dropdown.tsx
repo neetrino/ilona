@@ -31,6 +31,7 @@ interface FilterDropdownProps {
   isLoading?: boolean;
   error?: string | null;
   className?: string;
+  triggerClassName?: string;
 }
 
 export function FilterDropdown({
@@ -42,6 +43,7 @@ export function FilterDropdown({
   isLoading = false,
   error = null,
   className,
+  triggerClassName,
 }: FilterDropdownProps) {
   const isPortal = usePortalShell();
   const [isOpen, setIsOpen] = useState(false);
@@ -89,6 +91,7 @@ export function FilterDropdown({
                   DROPDOWN_TRIGGER_INTERACTIVE_CLASS,
                 ),
             'disabled:cursor-not-allowed disabled:opacity-50 transition-colors',
+            triggerClassName,
           )}
         >
           <div className="flex min-w-0 flex-1 items-center justify-between gap-2">

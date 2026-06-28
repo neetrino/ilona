@@ -204,7 +204,7 @@ export default function AdminSchedulePage() {
         maxChipsHeightClassName="max-h-10"
         showSelectedChipsOnlyWhenOpen
         hideSelectedLabelsInTrigger
-        className="w-full [&_[role=button]]:min-h-9 [&_[role=button]]:py-1"
+        className="w-full"
       />
     </div>
   ) : null;

@@ -2,6 +2,7 @@
 
 import { Button, ListBoardViewToggle } from '@/shared/components/ui';
 import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
+import { cn } from '@/shared/lib/utils';
 import type { useTranslations } from 'next-intl';
 import { useLocale } from 'next-intl';
 import { useTranslations as useTranslationsRuntime } from 'next-intl';
@@ -43,6 +44,7 @@ export function TeachersFilters({
     { id: 'SUSPENDED', label: tStatus('suspended') },
   ];
   const isLg = useIsLgViewport();
+  const toolbarControlClass = 'h-11 min-h-11 rounded-[15px]';
 
   useEffect(() => {
     if (isLg === false && viewMode !== 'board') {
@@ -54,15 +56,15 @@ export function TeachersFilters({
     <div className="space-y-4 w-full min-w-0">
       <div className="flex w-full min-w-0 flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end">
       {/* Search and Status - equal width in one row */}
-      <div className="grid grid-cols-1 gap-3 flex-1 min-w-0 sm:grid-cols-2 sm:gap-4">
+      <div className="grid min-w-0 flex-1 grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
       {/* Search by Keywords */}
       <div className="min-w-0">
-        <label className="block text-sm font-medium text-[#8b8b90] mb-1.5">
+        <label className="mb-1.5 block text-sm font-medium text-[#8b8b90]">
           {tCommon('search')}
         </label>
         <div className="relative">
           <svg
-            className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#8b8b90]"
+            className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-[#8b8b90]"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -79,7 +81,10 @@ export function TeachersFilters({
             placeholder={t('searchPlaceholder')}
             value={searchQuery}
             onChange={onSearchChange}
-            className="w-full h-12 pl-10 pr-4 py-3 bg-white border border-[rgba(14,14,16,0.07)] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20 focus:border-[#1010a3]"
+            className={cn(
+              'w-full border border-[rgba(14,14,16,0.07)] bg-white py-0 pl-10 pr-4 text-sm focus:border-[#1010a3] focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20',
+              toolbarControlClass,
+            )}
           />
         </div>
       </div>
@@ -94,6 +99,7 @@ export function TeachersFilters({
           onValueChange={(nextValue) => {
             onStatusChange((nextValue ?? '') as 'ACTIVE' | 'INACTIVE' | 'SUSPENDED' | '');
           }}
+          triggerClassName={toolbarControlClass}
         />
       </div>
 
@@ -106,11 +112,14 @@ export function TeachersFilters({
             onChange={onViewModeChange}
             listLabel={tGroups('listView')}
             boardLabel={tGroups('boardView')}
-            className="w-full sm:w-auto"
+            className={cn(toolbarControlClass, 'w-full sm:w-auto')}
           />
-          {/* Add Teacher Button */}
           <Button
-            className="h-10 whitespace-nowrap rounded-lg bg-[#1010a3] px-4 text-sm font-medium text-white hover:bg-[#1010a3]/90"
+            size="lg"
+            className={cn(
+              toolbarControlClass,
+              'whitespace-nowrap px-4 py-0 text-sm font-medium bg-[#1010a3] text-white hover:bg-[#1010a3]/90',
+            )}
             onClick={onAddTeacher}
             disabled={isDeleting}
           >
@@ -124,7 +133,11 @@ export function TeachersFilters({
         <div className="w-full shrink-0">
           <div className="hidden w-full items-center justify-end gap-3 tablet:flex">
             <Button
-              className="h-10 whitespace-nowrap rounded-lg bg-[#1010a3] px-4 text-sm font-medium text-white hover:bg-[#1010a3]/90"
+              size="lg"
+              className={cn(
+                toolbarControlClass,
+                'whitespace-nowrap px-4 py-0 text-sm font-medium bg-[#1010a3] text-white hover:bg-[#1010a3]/90',
+              )}
               onClick={onAddTeacher}
               disabled={isDeleting}
             >
@@ -132,7 +145,10 @@ export function TeachersFilters({
             </Button>
           </div>
           <Button
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-lg bg-[#1010a3] px-4 font-medium text-white hover:bg-[#1010a3]/90 tablet:hidden"
+            className={cn(
+              toolbarControlClass,
+              'flex w-full items-center justify-center gap-2 px-4 py-0 font-medium bg-[#1010a3] text-white hover:bg-[#1010a3]/90 tablet:hidden',
+            )}
             onClick={onAddTeacher}
             disabled={isDeleting}
           >

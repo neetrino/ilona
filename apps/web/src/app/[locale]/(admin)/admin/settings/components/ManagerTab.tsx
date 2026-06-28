@@ -116,33 +116,33 @@ export function ManagerTab() {
 
         <form onSubmit={handleSubmit} className="mt-5 grid grid-cols-1 md:grid-cols-2 gap-4">
           <input
-            className="h-11 rounded-xl border border-[rgba(14,14,16,0.07)] px-3 text-sm outline-none focus:border-[#1010a3]"
+            className="h-11 min-h-11 rounded-[15px] border border-[rgba(14,14,16,0.07)] px-3 py-0 text-sm outline-none focus:border-[#1010a3]"
             placeholder={t('firstName')}
             value={form.firstName}
             onChange={(e) => setForm((prev) => ({ ...prev, firstName: e.target.value }))}
           />
           <input
-            className="h-11 rounded-xl border border-[rgba(14,14,16,0.07)] px-3 text-sm outline-none focus:border-[#1010a3]"
+            className="h-11 min-h-11 rounded-[15px] border border-[rgba(14,14,16,0.07)] px-3 py-0 text-sm outline-none focus:border-[#1010a3]"
             placeholder={t('lastName')}
             value={form.lastName}
             onChange={(e) => setForm((prev) => ({ ...prev, lastName: e.target.value }))}
           />
           <input
             type="email"
-            className="h-11 rounded-xl border border-[rgba(14,14,16,0.07)] px-3 text-sm outline-none focus:border-[#1010a3]"
+            className="h-11 min-h-11 rounded-[15px] border border-[rgba(14,14,16,0.07)] px-3 py-0 text-sm outline-none focus:border-[#1010a3]"
             placeholder={t('emailAddress')}
             value={form.email}
             onChange={(e) => setForm((prev) => ({ ...prev, email: e.target.value }))}
           />
           <input
             type="password"
-            className="h-11 rounded-xl border border-[rgba(14,14,16,0.07)] px-3 text-sm outline-none focus:border-[#1010a3]"
+            className="h-11 min-h-11 rounded-[15px] border border-[rgba(14,14,16,0.07)] px-3 py-0 text-sm outline-none focus:border-[#1010a3]"
             placeholder={t('managerPasswordPlaceholder')}
             value={form.password}
             onChange={(e) => setForm((prev) => ({ ...prev, password: e.target.value }))}
           />
           <input
-            className="h-11 rounded-xl border border-[rgba(14,14,16,0.07)] px-3 text-sm outline-none focus:border-[#1010a3]"
+            className="h-11 min-h-11 rounded-[15px] border border-[rgba(14,14,16,0.07)] px-3 py-0 text-sm outline-none focus:border-[#1010a3]"
             placeholder={t('phoneNumber')}
             value={form.phone}
             onChange={(e) => setForm((prev) => ({ ...prev, phone: e.target.value }))}
@@ -156,6 +156,7 @@ export function ManagerTab() {
             value={form.centerId}
             onValueChange={(nextValue) => setForm((prev) => ({ ...prev, centerId: nextValue ?? '' }))}
             disabled={availableCenters.length === 0}
+            triggerClassName="h-11 min-h-11 rounded-[15px]"
           />
 
           {availableCenters.length === 0 && (
@@ -170,7 +171,7 @@ export function ManagerTab() {
             <button
               type="submit"
               disabled={!canSubmit || createManager.isPending}
-              className="h-10 px-4 rounded-xl bg-[#1010a3] text-white text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              className="h-11 min-h-11 rounded-[15px] px-4 py-0 bg-[#1010a3] text-white text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {createManager.isPending ? t('saving') : t('createManager')}
             </button>
@@ -186,7 +187,7 @@ export function ManagerTab() {
             onClick={() => setIsInactiveOpen(true)}
             title={t('viewInactiveManagers')}
             aria-label={t('viewInactiveManagers')}
-            className="inline-flex items-center gap-2 h-9 px-3 rounded-lg border border-[rgba(14,14,16,0.07)] text-sm font-medium text-[#3b3b40] hover:bg-[#fafafa] transition-colors"
+            className="inline-flex h-11 min-h-11 items-center gap-2 rounded-[15px] border border-[rgba(14,14,16,0.07)] px-3 py-0 text-sm font-medium text-[#3b3b40] transition-colors hover:bg-[#fafafa]"
           >
             <Archive className="h-4 w-4 text-[#8b8b90]" aria-hidden />
             <span className="hidden sm:inline">{t('inactiveManagers')}</span>
@@ -241,7 +242,7 @@ export function ManagerTab() {
                     <button
                       type="button"
                       onClick={() => openEdit(manager)}
-                      className="h-9 px-3 rounded-lg border border-[rgba(14,14,16,0.07)] text-sm font-medium text-[#3b3b40] hover:bg-[#fafafa] shrink-0"
+                      className="h-11 min-h-11 shrink-0 rounded-[15px] border border-[rgba(14,14,16,0.07)] px-3 py-0 text-sm font-medium text-[#3b3b40] hover:bg-[#fafafa]"
                     >
                       {tCommon('edit')}
                     </button>

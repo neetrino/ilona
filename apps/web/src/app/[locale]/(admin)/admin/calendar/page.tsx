@@ -28,6 +28,15 @@ import { getAdminPortalBasePath } from '@/shared/lib/role-routes';
 import { readUrlSearchParam } from '@/shared/lib/url-search-params';
 import { useAppSearchUrl } from '@/shared/hooks/useAppSearchUrl';
 import {
+  getSegmentedIndicatorStyle,
+  SEGMENTED_TOGGLE_BUTTON_ACTIVE_CLASS,
+  SEGMENTED_TOGGLE_BUTTON_CLASS,
+  SEGMENTED_TOGGLE_BUTTON_INACTIVE_CLASS,
+  SEGMENTED_TOGGLE_INDICATOR_CLASS,
+  SEGMENTED_TOGGLE_TRACK_CLASS,
+  SEGMENTED_TOGGLE_TRACK_PADDING_PX,
+} from '@/shared/components/ui/segmented-toggle-theme';
+import {
   formatScheduleDate,
   getMonthDates,
   getWeekDateRangeForApi,
@@ -535,36 +544,39 @@ export default function CalendarPage() {
             <button
               type="button"
               onClick={goToToday}
-              className="px-3 py-1.5 text-sm font-medium text-blue-600 hover:bg-blue-50 rounded-lg sm:ml-0"
+              className="h-11 min-h-11 rounded-[15px] px-3 text-sm font-medium text-blue-600 hover:bg-blue-50 sm:ml-0"
             >
               {t('today')}
             </button>
           </div>
 
           <div className="flex w-full items-center justify-between gap-2 sm:w-auto sm:justify-start">
-            <div className="relative inline-flex flex-1 rounded-lg border-2 border-[rgba(14,14,16,0.12)] bg-white p-1 shadow-sm sm:w-[276px] sm:flex-none">
+            <div className={cn(SEGMENTED_TOGGLE_TRACK_CLASS, 'flex-1 sm:w-[276px] sm:flex-none')}>
               <span
-                className={cn(
-                  'pointer-events-none absolute bottom-1 left-1 top-1 z-0 rounded-md bg-[#1010a3] shadow-sm transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]',
-                  viewMode === 'list'
-                    ? locale === 'hy'
-                      ? 'w-[calc(50%-0.125rem)] sm:w-[calc(33.333%-0.166rem)] translate-x-0'
-                      : 'w-[calc(50%-0.125rem)] sm:w-[calc(33.333%-0.166rem)] translate-x-0'
-                    : viewMode === 'week'
-                      ? locale === 'hy'
-                        ? 'w-[calc(50%-0.125rem)] sm:w-[calc(33.333%-0.166rem)] translate-x-full sm:translate-x-[100%]'
-                        : 'w-[calc(50%-0.125rem)] sm:w-[calc(33.333%-0.166rem)] translate-x-full sm:translate-x-[100%]'
-                      : 'hidden sm:block sm:w-[calc(33.333%-0.166rem)] sm:translate-x-[200%]'
+                aria-hidden
+                className={cn(SEGMENTED_TOGGLE_INDICATOR_CLASS, 'sm:hidden')}
+                style={getSegmentedIndicatorStyle(
+                  viewMode === 'list' ? 0 : 1,
+                  2,
+                  SEGMENTED_TOGGLE_TRACK_PADDING_PX,
+                )}
+              />
+              <span
+                aria-hidden
+                className={cn(SEGMENTED_TOGGLE_INDICATOR_CLASS, 'hidden sm:block')}
+                style={getSegmentedIndicatorStyle(
+                  Math.max(0, (['list', 'week', 'month'] as const).indexOf(viewMode)),
+                  3,
+                  SEGMENTED_TOGGLE_TRACK_PADDING_PX,
                 )}
               />
               <button
                 type="button"
                 onClick={() => updateViewModeInUrl('list')}
                 className={cn(
-                  'relative z-10 flex-1 py-2 text-center font-semibold rounded-md transition-colors',
+                  SEGMENTED_TOGGLE_BUTTON_CLASS,
                   locale === 'hy' ? 'px-3 text-xs sm:px-4 sm:text-sm' : 'px-4 text-sm',
-                  'focus:outline-none',
-                  viewMode === 'list' ? 'text-white' : 'text-[#3b3b40] hover:bg-[#f6f6f7]'
+                  viewMode === 'list' ? SEGMENTED_TOGGLE_BUTTON_ACTIVE_CLASS : SEGMENTED_TOGGLE_BUTTON_INACTIVE_CLASS,
                 )}
                 aria-pressed={viewMode === 'list'}
               >
@@ -574,10 +586,9 @@ export default function CalendarPage() {
                 type="button"
                 onClick={() => updateViewModeInUrl('week')}
                 className={cn(
-                  'relative z-10 flex-1 py-2 text-center font-semibold rounded-md transition-colors',
+                  SEGMENTED_TOGGLE_BUTTON_CLASS,
                   locale === 'hy' ? 'px-3 text-xs sm:px-4 sm:text-sm' : 'px-4 text-sm',
-                  'focus:outline-none',
-                  viewMode === 'week' ? 'text-white' : 'text-[#3b3b40] hover:bg-[#f6f6f7]'
+                  viewMode === 'week' ? SEGMENTED_TOGGLE_BUTTON_ACTIVE_CLASS : SEGMENTED_TOGGLE_BUTTON_INACTIVE_CLASS,
                 )}
                 aria-pressed={viewMode === 'week'}
               >
@@ -587,9 +598,9 @@ export default function CalendarPage() {
                 type="button"
                 onClick={() => updateViewModeInUrl('month')}
                 className={cn(
-                  'relative z-10 hidden flex-1 px-4 py-2 text-center text-sm font-semibold rounded-md transition-colors sm:inline-flex sm:justify-center',
-                  'focus:outline-none',
-                  viewMode === 'month' ? 'text-white' : 'text-[#3b3b40] hover:bg-[#f6f6f7]'
+                  SEGMENTED_TOGGLE_BUTTON_CLASS,
+                  'hidden px-4 text-sm sm:inline-flex',
+                  viewMode === 'month' ? SEGMENTED_TOGGLE_BUTTON_ACTIVE_CLASS : SEGMENTED_TOGGLE_BUTTON_INACTIVE_CLASS,
                 )}
                 aria-pressed={viewMode === 'month'}
               >
@@ -599,9 +610,10 @@ export default function CalendarPage() {
             <Button
               type="button"
               variant="default"
+              size="lg"
               onClick={() => handleAddLessonOpenChange(true)}
               className={cn(
-                'whitespace-nowrap font-semibold shadow-sm',
+                'h-11 min-h-11 rounded-[15px] py-0 whitespace-nowrap font-semibold shadow-sm bg-[#1010a3] text-white hover:bg-[#1010a3]/90',
                 locale === 'hy' ? 'px-3 text-sm sm:px-4' : 'px-4 text-sm',
               )}
             >

@@ -66,7 +66,7 @@ export function NotificationsTab() {
       </div>
 
       <div className="pt-6 flex justify-end">
-        <Button className="bg-[#1010a3] hover:bg-[#1010a3]/90 text-white px-6">
+        <Button size="lg" className="h-11 min-h-11 rounded-[15px] bg-[#1010a3] px-6 py-0 text-white hover:bg-[#1010a3]/90">
           {t('savePreferences')}
         </Button>
       </div>

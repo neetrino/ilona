@@ -639,7 +639,9 @@ export function GroupsTab({
             }
             value={searchQuery}
             onChange={onSearchChange}
-            className="w-full pl-10 pr-4 py-3 bg-white border border-[rgba(14,14,16,0.07)] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20 focus:border-[#1010a3]"
+            className={cn(
+              'h-11 min-h-11 w-full rounded-[15px] border border-[rgba(14,14,16,0.07)] bg-white py-0 pl-10 pr-4 text-sm focus:border-[#1010a3] focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20',
+            )}
           />
         </div>
         {selectedGroupIds.size > 0 && (
@@ -687,10 +689,11 @@ export function GroupsTab({
               }}
               listLabel={t('listView')}
               boardLabel={t('boardView')}
-              className="w-full sm:w-auto"
+              className="h-11 min-h-11 w-full rounded-[15px] sm:w-auto"
             />
             <Button
-              className="h-10 whitespace-nowrap rounded-lg bg-[#1010a3] px-4 text-sm font-medium text-white hover:bg-[#1010a3]/90"
+              size="lg"
+              className="h-11 min-h-11 rounded-[15px] px-4 py-0 text-sm font-medium bg-[#1010a3] text-white hover:bg-[#1010a3]/90"
               onClick={() => handleCreateGroupOpenChange(true)}
             >
               {t('addGroupButton')}
@@ -699,7 +702,7 @@ export function GroupsTab({
         ) : null}
 
         <Button 
-          className="h-12 w-full rounded-lg bg-[#1010a3] px-4 font-medium text-white hover:bg-[#1010a3]/90 sm:hidden"
+          className="h-11 min-h-11 w-full rounded-[15px] bg-[#1010a3] px-4 py-0 font-medium text-white hover:bg-[#1010a3]/90 sm:hidden"
           onClick={() => handleCreateGroupOpenChange(true)}
         >
           {t('addGroupButton')}

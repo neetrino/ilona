@@ -584,7 +584,7 @@ export const DatePickerInput = React.forwardRef<HTMLInputElement, DatePickerInpu
             aria-expanded={open}
             aria-controls={`${triggerId}-dialog`}
             className={cn(
-              'h-10 w-full rounded-lg border border-slate-300 py-2 pl-3 pr-10 text-[16px] transition-colors lg:text-sm',
+              'h-11 min-h-11 w-full rounded-[15px] border border-slate-300 py-0 pl-3 pr-10 text-[16px] transition-colors lg:text-sm',
               'focus:outline-none focus:ring-2 focus:ring-[#3036b6]/25',
               selectedDate || isEditing ? 'text-slate-900' : 'text-slate-400',
               disabled && 'cursor-not-allowed opacity-60',

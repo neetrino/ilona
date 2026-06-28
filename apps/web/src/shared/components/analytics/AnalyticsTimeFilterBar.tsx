@@ -6,6 +6,16 @@ import { cn } from '@/shared/lib/utils';
 import { type TimeFilterMode } from '@/shared/lib/analytics-time-range';
 import { DatePickerInput } from '@/shared/components/ui';
 import { StudentAnimatedPillSwitcher, StudentDatePicker } from '@/features/student-ui';
+import {
+  getSegmentedIndicatorStyle,
+  SEGMENTED_TOGGLE_BUTTON_ACTIVE_CLASS,
+  SEGMENTED_TOGGLE_BUTTON_CLASS,
+  SEGMENTED_TOGGLE_BUTTON_INACTIVE_CLASS,
+  SEGMENTED_TOGGLE_GRID_TRACK_CLASS,
+  SEGMENTED_TOGGLE_INDICATOR_CLASS,
+  SEGMENTED_TOGGLE_TRACK_PADDING_PX,
+} from '@/shared/components/ui/segmented-toggle-theme';
+import { ADMIN_DATE_INPUT_CLASS, ADMIN_PRIMARY_BUTTON_CLASS } from '@/shared/lib/admin-control-theme';
 
 type ApplyAction = {
   onApply: () => void;
@@ -99,7 +109,10 @@ export function AnalyticsTimeFilterBar({
     usesGroupAccent ? 'text-[#8b8b90]' : 'text-slate-500',
   );
   const adminDateFieldWrapClassName = 'min-w-0 flex-1 basis-0 sm:min-w-[9.5rem] sm:flex-none';
-  const adminDateInputClassName = cn(adminDatePickerClassName, 'min-w-0 pl-2 pr-8');
+  const adminDateInputClassName = isAdmin
+    ? cn(ADMIN_DATE_INPUT_CLASS, 'min-w-0 pl-2 pr-8')
+    : cn(adminDatePickerClassName, 'min-w-0 pl-2 pr-8');
+  const selectedModeIndex = Math.max(0, modes.findIndex((m) => m.id === mode));
   const studentDateFieldWrapClassName = 'min-w-0 flex-1 basis-0 sm:flex-none sm:basis-auto';
   const isSingleDateMode = mode === 'day' || mode === 'week';
   const inlineApplyWithDate = Boolean(applyAction && isSingleDateMode);
@@ -127,6 +140,36 @@ export function AnalyticsTimeFilterBar({
           size="md"
           className="w-full sm:w-auto"
         />
+      ) : isAdmin ? (
+      <div
+        className={cn(SEGMENTED_TOGGLE_GRID_TRACK_CLASS, 'w-full sm:w-auto')}
+        style={{ gridTemplateColumns: 'repeat(3, minmax(0, 1fr))' }}
+      >
+        <span
+          aria-hidden
+          className={SEGMENTED_TOGGLE_INDICATOR_CLASS}
+          style={getSegmentedIndicatorStyle(
+            selectedModeIndex,
+            modes.length,
+            SEGMENTED_TOGGLE_TRACK_PADDING_PX,
+          )}
+        />
+        {modes.map((m) => (
+          <button
+            key={m.id}
+            type="button"
+            onClick={() => onModeChange(m.id)}
+            className={cn(
+              SEGMENTED_TOGGLE_BUTTON_CLASS,
+              mode === m.id
+                ? SEGMENTED_TOGGLE_BUTTON_ACTIVE_CLASS
+                : SEGMENTED_TOGGLE_BUTTON_INACTIVE_CLASS,
+            )}
+          >
+            {m.label}
+          </button>
+        ))}
+      </div>
       ) : (
       <div
         className={cn(
@@ -287,7 +330,7 @@ export function AnalyticsTimeFilterBar({
                 isStudent
                   ? 'rounded-full bg-[#1010a3]'
                   : isAdmin
-                    ? 'rounded-lg bg-[#1010a3] shadow-sm ring-1 ring-[rgba(14,14,16,0.12)]'
+                    ? cn(ADMIN_PRIMARY_BUTTON_CLASS, 'bg-[#1010a3] text-white shadow-sm ring-1 ring-[rgba(14,14,16,0.12)] hover:bg-[#1010a3]/90')
                     : 'rounded-lg bg-primary shadow-sm ring-1 ring-slate-200/40',
               )}
             >
