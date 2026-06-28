@@ -707,6 +707,8 @@
       "failedUpdate": "Failed to update student. Please try again.",
       "createdSuccess": "Student created successfully!",
       "failedCreate": "Failed to create student. Please try again.",
+      "createStudent": "Create Student",
+      "creating": "Creating...",
       "ageYears": "Age (years)",
       "ageHint": "Age: {age}",
       "useIfDobUnknown": "Use if date of birth is unknown",
