@@ -617,7 +617,16 @@ export default function StudentPaymentsPage() {
         </StudentCard>
       </StudentPageStack>
 
-      <Dialog open={!!processModal} onOpenChange={(open) => !open && setProcessModal(null)}>
+      <Dialog
+        open={!!processModal}
+        onOpenChange={(open) => {
+          if (!open) {
+            setProcessModal(null);
+            setConfirmStep(false);
+            setSuccessMessage(null);
+          }
+        }}
+      >
         <DialogContent
           variant="portal"
           className="border-[rgba(14,14,16,0.07)] lg:max-w-md lg:rounded-3xl"
@@ -638,7 +647,7 @@ export default function StudentPaymentsPage() {
                   <div className="mb-4 lg:hidden">
                     <h2 className="text-xl font-semibold text-[#1010a3]">{t('pay')}</h2>
                   </div>
-                  <p className="mb-[50px] lg:mb-4 text-sm font-medium text-[#1010a3]">
+                  <p className="mb-[50px] text-sm font-medium text-[#1010a3] lg:mb-4">
                     {(processModal.month ? new Date(processModal.month) : new Date(processModal.dueDate)).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })}
                     {' — '}
                     {formatCurrency(Number(processModal.amount))}
@@ -646,7 +655,7 @@ export default function StudentPaymentsPage() {
                   {!confirmStep ? (
                     <>
                       <Label className="mb-4 block text-[#3b3b40]">{t('paymentMethod')}</Label>
-                      <div className="mb-3 lg:mb-4 grid grid-cols-3 gap-3 sm:grid-cols-3">
+                      <div className="mb-3 grid grid-cols-3 gap-3 sm:grid-cols-3 lg:mb-4">
                         {(['cash', 'card', 'idram'] as const).map((method) => (
                           <button
                             key={method}
@@ -686,7 +695,7 @@ export default function StudentPaymentsPage() {
                     </>
                   ) : (
                     <>
-                      <p className="mb-3 lg:mb-4 text-sm text-[#8b8b90]">
+                      <p className="mb-3 text-sm text-[#8b8b90] lg:mb-4">
                         {t('payConfirm', {
                           amount: formatCurrency(Number(processModal.amount)),
                           method:
