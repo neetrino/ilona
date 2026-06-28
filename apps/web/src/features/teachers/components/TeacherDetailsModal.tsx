@@ -3,9 +3,10 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { useTranslations } from 'next-intl';
-import { X } from 'lucide-react';
-import { formatCurrency, formatPhoneForDisplay } from '@/shared/lib/utils';
+import { Pencil, X } from 'lucide-react';
+import { formatCurrency, formatPhoneForDisplay, cn } from '@/shared/lib/utils';
 import { Avatar, Badge } from '@/shared/components/ui';
+import { ADMIN_ICON_BUTTON_SM_CLASS } from '@/shared/lib/admin-control-theme';
 import { PortalFormSheetDragHandle } from '@/shared/components/ui/portal-form-sheet-drag-handle';
 import { portaledDropdownDialogHandlers } from '@/shared/components/ui/single-select-dropdown';
 import { usePortalSheetDrag } from '@/shared/hooks/usePortalSheetDrag';
@@ -23,6 +24,7 @@ interface TeacherDetailsModalProps {
   teacherId: string | null;
   open: boolean;
   onClose: () => void;
+  onEdit?: () => void;
   showInternalStats?: boolean;
   showInternalMeta?: boolean;
 }
@@ -60,6 +62,7 @@ export function TeacherDetailsModal({
   teacherId,
   open,
   onClose,
+  onEdit,
   showInternalStats = true,
   showInternalMeta = true,
 }: TeacherDetailsModalProps) {
@@ -132,9 +135,25 @@ export function TeacherDetailsModal({
                 <h2 className="break-words text-lg font-semibold text-[#3b3b40]">{fullName}</h2>
                 <p className="mt-1 text-sm text-[#8b8b90]">{t('teacherDetails')}</p>
               </div>
-              <DialogPrimitive.Close className={PORTAL_FORM_SHEET_CLOSE_BUTTON_CLASS} aria-label={tCommon('close')}>
-                <X className="h-4 w-4" />
-              </DialogPrimitive.Close>
+              <div className="flex shrink-0 items-center gap-2">
+                {onEdit ? (
+                  <button
+                    type="button"
+                    aria-label={tCommon('edit')}
+                    title={tCommon('edit')}
+                    onClick={onEdit}
+                    className={cn(
+                      ADMIN_ICON_BUTTON_SM_CLASS,
+                      'text-slate-500 hover:bg-slate-100 hover:text-slate-700',
+                    )}
+                  >
+                    <Pencil className="h-4 w-4" aria-hidden />
+                  </button>
+                ) : null}
+                <DialogPrimitive.Close className={PORTAL_FORM_SHEET_CLOSE_BUTTON_CLASS} aria-label={tCommon('close')}>
+                  <X className="h-4 w-4" />
+                </DialogPrimitive.Close>
+              </div>
             </div>
           </div>
 

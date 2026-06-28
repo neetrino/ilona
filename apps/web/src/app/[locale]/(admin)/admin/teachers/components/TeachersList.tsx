@@ -26,7 +26,6 @@ interface TeachersListProps {
   onSelectAll: () => void;
   onToggleSelect: (teacherId: string) => void;
   onView: (teacher: Teacher) => void;
-  onEdit: (teacher: Teacher) => void;
   onCenterChange: (teacherId: string, centerId: string | null) => Promise<void>;
   onOpenGroupsModal: (teacher: Teacher, tab: 'groups' | 'subgroups') => void;
   isLoading: boolean;
@@ -39,7 +38,6 @@ interface TeachersListProps {
   searchQuery: string;
   centerOptions: Array<{ id: string; label: string }>;
   t: ReturnType<typeof useTranslations<'teachers'>>;
-  tCommon: ReturnType<typeof useTranslations<'common'>>;
   tStatus: ReturnType<typeof useTranslations<'status'>>;
 }
 
@@ -62,7 +60,6 @@ export function TeachersList({
   onSelectAll,
   onToggleSelect,
   onView,
-  onEdit,
   onCenterChange,
   onOpenGroupsModal,
   isLoading,
@@ -75,7 +72,6 @@ export function TeachersList({
   searchQuery,
   centerOptions,
   t,
-  tCommon,
   tStatus,
 }: TeachersListProps) {
   const tc = useTranslationsRuntime('common');
@@ -87,7 +83,6 @@ export function TeachersList({
   const showingEnd = hasTeachers ? Math.min((safePage + 1) * PAGE_SIZE, totalTeachers) : 0;
   const teacherColumns = createTeachersTableColumns({
     t,
-    tCommon,
     tStatus,
     allSelected,
     someSelected,
@@ -95,7 +90,6 @@ export function TeachersList({
     onSelectAll,
     onToggleSelect,
     onView,
-    onEdit,
     onCenterChange,
     onOpenGroupsModal,
     isDeleting: isDeleting || isUpdating,

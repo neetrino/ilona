@@ -1,7 +1,6 @@
 'use client';
 
 import { Avatar } from '@/shared/components/ui';
-import { ActionButtons } from '@/shared/components/ui';
 import { InlineSelect } from '@/features/students';
 import { SelectAllCheckbox } from './SelectAllCheckbox';
 import { TeacherBranchDisplay } from './TeacherBranchDisplay';
@@ -12,7 +11,6 @@ import type { useTranslations } from 'next-intl';
 
 interface TeachersTableColumnsProps {
   t: ReturnType<typeof useTranslations<'teachers'>>;
-  tCommon: ReturnType<typeof useTranslations<'common'>>;
   tStatus: ReturnType<typeof useTranslations<'status'>>;
   allSelected: boolean;
   someSelected: boolean;
@@ -20,7 +18,6 @@ interface TeachersTableColumnsProps {
   onSelectAll: () => void;
   onToggleSelect: (teacherId: string) => void;
   onView: (teacher: Teacher) => void;
-  onEdit: (teacher: Teacher) => void;
   onCenterChange: (teacherId: string, centerId: string | null) => Promise<void>;
   onOpenGroupsModal: (teacher: Teacher, tab: 'groups' | 'subgroups') => void;
   centerOptions: Array<{ id: string; label: string }>;
@@ -31,7 +28,6 @@ interface TeachersTableColumnsProps {
 
 export function createTeachersTableColumns({
   t,
-  tCommon,
   tStatus,
   allSelected,
   someSelected,
@@ -39,7 +35,6 @@ export function createTeachersTableColumns({
   onSelectAll,
   onToggleSelect,
   onView: _onView,
-  onEdit,
   onCenterChange,
   onOpenGroupsModal,
   centerOptions,
@@ -206,28 +201,6 @@ export function createTeachersTableColumns({
             <span className="text-[#3b3b40] font-medium text-center">
               {formatLessonRate(rate)}
             </span>
-          </div>
-        );
-      },
-    },
-    {
-      key: 'actions',
-      header: t('actions'),
-      className: '!pl-4 !pr-4 !w-[170px] !min-w-[170px] !max-w-[170px]',
-      render: (teacher: Teacher) => {
-        return (
-          <div className="w-full" onClick={(e) => e.stopPropagation()}>
-            <ActionButtons
-              onEdit={() => onEdit(teacher)}
-              disabled={isUpdating || isDeleting}
-              ariaLabels={{
-                edit: tCommon('edit'),
-              }}
-              titles={{
-                edit: tCommon('edit'),
-              }}
-              className="whitespace-nowrap"
-            />
           </div>
         );
       },

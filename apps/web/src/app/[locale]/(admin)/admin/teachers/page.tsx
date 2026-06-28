@@ -165,7 +165,6 @@ export default function TeachersPage() {
             onSelectAll={handleSelectAll}
             onToggleSelect={handleToggleSelect}
             onView={handleRowClick}
-            onEdit={handleEditClick}
             onCenterChange={handleCenterChange}
             onOpenGroupsModal={(teacher, tab) => {
               setGroupsModalTeacher(teacher);
@@ -185,7 +184,6 @@ export default function TeachersPage() {
               label: center.name,
             }))}
             t={t}
-            tCommon={tCommon}
             tStatus={tStatus}
           />
         ) : (
@@ -272,11 +270,21 @@ export default function TeachersPage() {
         title={t('deleteTeachersTitle')}
       />
 
-      {/* Teacher Details Modal (CRM-style) */}
+      {/* Teacher Details Modal — edit action in header for list view only */}
       <TeacherDetailsModal
         teacherId={selectedTeacherIdForDetails}
         open={isDetailsDrawerOpen}
         onClose={handleDetailsDrawerClose}
+        onEdit={
+          viewMode === 'list'
+            ? () => {
+                const teacher = teachers.find((item) => item.id === selectedTeacherIdForDetails);
+                if (teacher) {
+                  handleEditClick(teacher);
+                }
+              }
+            : undefined
+        }
       />
       <TeacherGroupsModal
         teacher={groupsModalTeacher}
