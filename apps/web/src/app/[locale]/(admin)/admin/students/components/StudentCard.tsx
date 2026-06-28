@@ -1,6 +1,6 @@
 'use client';
 
-import { Badge, ActionButtons, Avatar } from '@/shared/components/ui';
+import { Badge, Avatar } from '@/shared/components/ui';
 import { cn, formatCurrency, formatPhoneForDisplay } from '@/shared/lib/utils';
 import type { Student } from '@/features/students';
 import { useTranslations } from 'next-intl';
@@ -52,13 +52,10 @@ function isNewPaidStudent(student: Student): boolean {
 
 interface StudentCardProps {
   student: Student;
-  onEdit: () => void;
-  onDelete: () => void;
-  onDeactivate: () => void;
   onCardClick?: (student: Student) => void;
 }
 
-export function StudentCard({ student, onEdit, onDelete, onDeactivate, onCardClick }: StudentCardProps) {
+export function StudentCard({ student, onCardClick }: StudentCardProps) {
   const t = useTranslations('students');
   const tAnalytics = useTranslations('analytics');
   const firstName = student.user?.firstName || '';
@@ -99,50 +96,29 @@ export function StudentCard({ student, onEdit, onDelete, onDeactivate, onCardCli
     >
       {/* Student Header */}
       <div className="mb-3">
-        <div className="flex items-start justify-between gap-2 mb-1">
-          <div className="flex items-center gap-2 flex-1 min-w-0">
-            <div className="relative shrink-0">
-              <Avatar
-                src={student.user?.avatarUrl}
-                name={fullName}
-                size="sm"
-              />
-              {showNewBadge && (
-                <span className="absolute -left-2 top-[14%] -translate-y-1/2 -rotate-12 inline-flex items-center px-1 py-0.5 rounded text-[8px] font-extrabold uppercase tracking-[0.08em] bg-emerald-500 text-white shadow-sm pointer-events-none">
-                  NEW
-                </span>
-              )}
-            </div>
-            <h4 className="font-semibold text-[#3b3b40] text-sm leading-tight truncate">
-              {fullName}
-            </h4>
-            {riskBadge && (
-              <span
-                className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wide border ${riskBadge.className}`}
-              >
-                {riskBadge.label}
+        <div className="flex items-center gap-2 mb-1 min-w-0">
+          <div className="relative shrink-0">
+            <Avatar
+              src={student.user?.avatarUrl}
+              name={fullName}
+              size="sm"
+            />
+            {showNewBadge && (
+              <span className="absolute -left-2 top-[14%] -translate-y-1/2 -rotate-12 inline-flex items-center px-1 py-0.5 rounded text-[8px] font-extrabold uppercase tracking-[0.08em] bg-emerald-500 text-white shadow-sm pointer-events-none">
+                NEW
               </span>
             )}
           </div>
-          <div onClick={(e) => e.stopPropagation()}>
-            <ActionButtons
-              onEdit={onEdit}
-              onDisable={onDeactivate}
-              onDelete={onDelete}
-              isActive={isActive}
-              size="sm"
-              ariaLabels={{
-                edit: t('editStudentAria'),
-                disable: isActive ? t('deactivateStudentAria') : t('activateStudentAria'),
-                delete: t('deleteStudentAria'),
-              }}
-              titles={{
-                edit: t('editStudentAria'),
-                disable: isActive ? t('deactivateStudentAria') : t('activateStudentAria'),
-                delete: t('deleteStudentAria'),
-              }}
-            />
-          </div>
+          <h4 className="font-semibold text-[#3b3b40] text-sm leading-tight truncate">
+            {fullName}
+          </h4>
+          {riskBadge && (
+            <span
+              className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wide border shrink-0 ${riskBadge.className}`}
+            >
+              {riskBadge.label}
+            </span>
+          )}
         </div>
       </div>
 

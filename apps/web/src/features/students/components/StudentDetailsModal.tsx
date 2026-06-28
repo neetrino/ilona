@@ -5,14 +5,14 @@ import * as DialogPrimitive from '@radix-ui/react-dialog';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
-import { AdminAvatarPhotoLightbox, Avatar, Badge, PublicAssetImage } from '@/shared/components/ui';
+import { AdminAvatarPhotoLightbox, Avatar, Badge, PublicAssetImage, ActionButtons } from '@/shared/components/ui';
 import { cn, formatCurrency, formatPhoneForDisplay, getAppDateLocaleTag } from '@/shared/lib/utils';
 import { portalInnerCardClass, portalPrimaryButtonClass } from '@/shared/lib/portal-theme';
 import { STUDENT_DASHBOARD_ASSETS } from '@/features/student-dashboard/assets';
 import { useStudent, useStudentStatistics } from '../hooks/useStudents';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { getAdminPortalBasePath } from '@/shared/lib/role-routes';
-import type { StudentLifecycleStatus } from '../types';
+import type { StudentLifecycleStatus, Student } from '../types';
 import {
   Building2,
   Calendar,
@@ -31,6 +31,10 @@ export interface StudentDetailsModalProps {
   open: boolean;
   onClose: () => void;
   locale: string;
+  onEdit?: (student: Student) => void;
+  onDelete?: (student: Student) => void;
+  onDeactivate?: (student: Student) => void;
+  actionsDisabled?: boolean;
 }
 
 function formatDisplayDate(value: string | null | undefined, locale: string): string {
@@ -85,7 +89,16 @@ function formatLifecycle(status: StudentLifecycleStatus | undefined): string {
   return labels[status] ?? status;
 }
 
-export function StudentDetailsModal({ studentId, open, onClose, locale }: StudentDetailsModalProps) {
+export function StudentDetailsModal({
+  studentId,
+  open,
+  onClose,
+  locale,
+  onEdit,
+  onDelete,
+  onDeactivate,
+  actionsDisabled = false,
+}: StudentDetailsModalProps) {
   const { user } = useAuthStore();
   const basePath = getAdminPortalBasePath(user?.role);
   const t = useTranslations('students');
@@ -209,6 +222,7 @@ export function StudentDetailsModal({ studentId, open, onClose, locale }: Studen
       : Number(student?.monthlyFee || 0);
 
   const avatarUrl = student?.user?.avatarUrl;
+  const showActions = !!(onEdit || onDelete || onDeactivate);
 
   return (
     <>
@@ -295,12 +309,13 @@ export function StudentDetailsModal({ studentId, open, onClose, locale }: Studen
         <p className="text-slate-500">{t('studentNotFound')}</p>
       ) : (
         <>
-          <div className="flex flex-col sm:flex-row items-start gap-4 sm:gap-6 pb-6">
+          {/* Mobile: actions opposite avatar at top */}
+          <div className="grid grid-cols-[1fr_auto] grid-rows-[auto_auto] gap-x-3 gap-y-4 pb-6 sm:hidden">
             <button
               type="button"
               onClick={() => student.user?.avatarUrl && setPhotoPreviewOpen(true)}
               className={cn(
-                'rounded-full min-[1367px]:rounded-xl flex-shrink-0 overflow-hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2',
+                'col-start-1 row-start-1 self-start rounded-full flex-shrink-0 overflow-hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2',
                 !student.user?.avatarUrl && 'cursor-default pointer-events-none',
               )}
               aria-label={student.user?.avatarUrl ? tTeachers('viewFullPhoto') : undefined}
@@ -309,12 +324,35 @@ export function StudentDetailsModal({ studentId, open, onClose, locale }: Studen
                 src={student.user?.avatarUrl}
                 name={fullName}
                 size="xl"
-                className="w-40 h-40 sm:w-56 sm:h-56 lg:w-64 lg:h-64 rounded-full min-[1367px]:rounded-xl"
+                className="w-40 h-40 rounded-full"
                 alt={fullName}
               />
             </button>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-2 flex-wrap">
+            {showActions && (
+              <div className="col-start-2 row-start-1 self-start">
+                <ActionButtons
+                  onEdit={onEdit ? () => onEdit(student) : undefined}
+                  onDisable={onDeactivate ? () => onDeactivate(student) : undefined}
+                  onDelete={onDelete ? () => onDelete(student) : undefined}
+                  isActive={isUserActive}
+                  disabled={actionsDisabled}
+                  size="md"
+                  className="shrink-0"
+                  ariaLabels={{
+                    edit: t('editStudentAria'),
+                    disable: isUserActive ? t('deactivateStudentAria') : t('activateStudentAria'),
+                    delete: t('deleteStudentAria'),
+                  }}
+                  titles={{
+                    edit: t('editStudentAria'),
+                    disable: isUserActive ? t('deactivateStudentAria') : t('activateStudentAria'),
+                    delete: t('deleteStudentAria'),
+                  }}
+                />
+              </div>
+            )}
+            <div className="col-span-2 row-start-2 min-w-0">
+              <div className="flex items-center gap-2 mb-2 flex-wrap min-w-0">
                 <h3
                   className={cn(
                     'text-2xl font-bold leading-tight',
@@ -345,10 +383,84 @@ export function StudentDetailsModal({ studentId, open, onClose, locale }: Studen
             </div>
           </div>
 
+          {/* Desktop: avatar left, name + actions right */}
+          <div className="hidden sm:flex items-start gap-6 pb-6">
+            <button
+              type="button"
+              onClick={() => student.user?.avatarUrl && setPhotoPreviewOpen(true)}
+              className={cn(
+                'rounded-full min-[1367px]:rounded-xl flex-shrink-0 overflow-hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2',
+                !student.user?.avatarUrl && 'cursor-default pointer-events-none',
+              )}
+              aria-label={student.user?.avatarUrl ? tTeachers('viewFullPhoto') : undefined}
+            >
+              <Avatar
+                src={student.user?.avatarUrl}
+                name={fullName}
+                size="xl"
+                className="w-56 h-56 lg:w-64 lg:h-64 rounded-full min-[1367px]:rounded-xl"
+                alt={fullName}
+              />
+            </button>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex items-center gap-2 mb-2 flex-wrap min-w-0">
+                  <h3
+                    className={cn(
+                      'text-2xl font-bold leading-tight',
+                      isUserActive ? 'text-slate-800' : 'text-slate-500',
+                    )}
+                  >
+                    {fullName}
+                  </h3>
+                  {!isUserActive ? (
+                    <Badge variant="warning">{tStatus('inactive')}</Badge>
+                  ) : (
+                    <Badge variant="success">{tStatus('active')}</Badge>
+                  )}
+                  {student.status &&
+                    !(
+                      (student.status === 'ACTIVE' && isUserActive) ||
+                      (student.status === 'INACTIVE' && !isUserActive)
+                    ) && (
+                      <Badge variant="default">{formatLifecycle(student.status)}</Badge>
+                    )}
+                </div>
+                {showActions && (
+                  <ActionButtons
+                    onEdit={onEdit ? () => onEdit(student) : undefined}
+                    onDisable={onDeactivate ? () => onDeactivate(student) : undefined}
+                    onDelete={onDelete ? () => onDelete(student) : undefined}
+                    isActive={isUserActive}
+                    disabled={actionsDisabled}
+                    size="md"
+                    className="shrink-0"
+                    ariaLabels={{
+                      edit: t('editStudentAria'),
+                      disable: isUserActive ? t('deactivateStudentAria') : t('activateStudentAria'),
+                      delete: t('deleteStudentAria'),
+                    }}
+                    titles={{
+                      edit: t('editStudentAria'),
+                      disable: isUserActive ? t('deactivateStudentAria') : t('activateStudentAria'),
+                      delete: t('deleteStudentAria'),
+                    }}
+                  />
+                )}
+              </div>
+              {student.user?.email && (
+                <div className="mt-1 flex items-center gap-2 text-slate-500 text-sm">
+                  <Mail className="h-4 w-4 text-slate-400 shrink-0" aria-hidden="true" />
+                  <p className="truncate">{student.user.email}</p>
+                </div>
+              )}
+            </div>
+          </div>
+
           <div className="space-y-5 pt-[10px] min-[1367px]:pt-0">
             <h4 className="font-semibold text-slate-800 text-base sm:text-lg">{tTeachers('basicInformation')}</h4>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="rounded-lg border border-slate-200 bg-slate-50/60 p-4 space-y-1">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 min-[1367px]:flex min-[1367px]:gap-3">
+              <div className="rounded-lg border border-slate-200 bg-slate-50/60 p-4 space-y-1 min-[1367px]:min-w-0 min-[1367px]:flex-1">
                 <label className="text-sm font-medium text-slate-600 flex items-center gap-2">
                   <Phone className="h-4 w-4 text-slate-400 shrink-0" aria-hidden="true" />
                   {tTeachers('phoneNumber')}
@@ -357,7 +469,7 @@ export function StudentDetailsModal({ studentId, open, onClose, locale }: Studen
                   {formatPhoneForDisplay(student.user?.phone, tTeachers('noPhoneNumber'))}
                 </p>
               </div>
-              <div className="rounded-lg border border-slate-200 bg-slate-50/60 p-4 space-y-1">
+              <div className="rounded-lg border border-slate-200 bg-slate-50/60 p-4 space-y-1 min-[1367px]:min-w-0 min-[1367px]:flex-1">
                 <label className="text-sm font-medium text-slate-600 flex items-center gap-2">
                   <Calendar className="h-4 w-4 text-slate-400 shrink-0" aria-hidden="true" />
                   {t('memberSince')}
@@ -365,7 +477,7 @@ export function StudentDetailsModal({ studentId, open, onClose, locale }: Studen
                 <p className="text-slate-800 text-sm sm:text-base">{formatDisplayDate(student.user?.createdAt, locale)}</p>
               </div>
               {student.dateOfBirth && (
-                <div className="rounded-lg border border-slate-200 bg-slate-50/60 p-4 space-y-1">
+                <div className="rounded-lg border border-slate-200 bg-slate-50/60 p-4 space-y-1 min-[1367px]:min-w-0 min-[1367px]:flex-1">
                   <label className="text-sm font-medium text-slate-600 flex items-center gap-2">
                     <UserCircle className="h-4 w-4 text-slate-400 shrink-0" aria-hidden="true" />
                     {t('dateOfBirth')}
@@ -373,7 +485,7 @@ export function StudentDetailsModal({ studentId, open, onClose, locale }: Studen
                   <p className="text-slate-800 text-sm sm:text-base">{formatDisplayDate(student.dateOfBirth, locale)}</p>
                 </div>
               )}
-              <div className="rounded-lg border border-slate-200 bg-slate-50/60 p-4 space-y-1">
+              <div className="rounded-lg border border-slate-200 bg-slate-50/60 p-4 space-y-1 min-[1367px]:min-w-0 min-[1367px]:flex-1">
                 <label className="text-sm font-medium text-slate-600 flex items-center gap-2">
                   <CircleDollarSign className="h-4 w-4 text-slate-400 shrink-0" aria-hidden="true" />
                   {t('monthlyFeeLabel')}
@@ -383,13 +495,13 @@ export function StudentDetailsModal({ studentId, open, onClose, locale }: Studen
             </div>
           </div>
 
-          <div className="space-y-5">
+          <div className="space-y-5 mt-8">
             <h4 className="font-semibold text-slate-800 text-base sm:text-lg flex items-center gap-2">
               <GraduationCap className="h-4 w-4 text-slate-500" aria-hidden="true" />
               {t('enrollmentSection')}
             </h4>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="rounded-lg border border-slate-200 bg-slate-50/60 p-4 space-y-1">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 min-[1367px]:flex min-[1367px]:gap-3">
+              <div className="rounded-lg border border-slate-200 bg-slate-50/60 p-4 space-y-1 min-[1367px]:min-w-0 min-[1367px]:flex-1">
                 <label className="text-sm font-medium text-slate-600 flex items-center gap-2">
                   <Users className="h-4 w-4 text-slate-400 shrink-0" aria-hidden="true" />
                   {t('group')}
@@ -400,7 +512,7 @@ export function StudentDetailsModal({ studentId, open, onClose, locale }: Studen
                     : '—'}
                 </p>
               </div>
-              <div className="rounded-lg border border-slate-200 bg-slate-50/60 p-4 space-y-1">
+              <div className="rounded-lg border border-slate-200 bg-slate-50/60 p-4 space-y-1 min-[1367px]:min-w-0 min-[1367px]:flex-1">
                 <label className="text-sm font-medium text-slate-600">{t('teacher')}</label>
                 <p className="text-slate-800 text-sm sm:text-base break-words">
                   {student.teacher
@@ -409,7 +521,7 @@ export function StudentDetailsModal({ studentId, open, onClose, locale }: Studen
                 </p>
               </div>
               {(student.center?.name || student.group?.center?.name) && (
-                <div className="rounded-lg border border-slate-200 bg-slate-50/60 p-4 space-y-1 sm:col-span-2">
+                <div className="rounded-lg border border-slate-200 bg-slate-50/60 p-4 space-y-1 sm:col-span-2 min-[1367px]:col-span-1 min-[1367px]:min-w-0 min-[1367px]:flex-1">
                   <label className="text-sm font-medium text-slate-600 flex items-center gap-2">
                     <Building2 className="h-4 w-4 text-slate-400 shrink-0" aria-hidden="true" />
                     {tTeachers('centers')}
@@ -420,7 +532,7 @@ export function StudentDetailsModal({ studentId, open, onClose, locale }: Studen
                 </div>
               )}
               {student.registerDate && (
-                <div className="rounded-lg border border-slate-200 bg-slate-50/60 p-4 space-y-1 sm:col-span-2">
+                <div className="rounded-lg border border-slate-200 bg-slate-50/60 p-4 space-y-1 sm:col-span-2 min-[1367px]:col-span-1 min-[1367px]:min-w-0 min-[1367px]:flex-1">
                   <label className="text-sm font-medium text-slate-600">{t('registerDateLabel')}</label>
                   <p className="text-slate-800 text-sm sm:text-base">{formatDisplayDate(student.registerDate, locale)}</p>
                 </div>
@@ -429,17 +541,17 @@ export function StudentDetailsModal({ studentId, open, onClose, locale }: Studen
           </div>
 
           {(student.parentName || student.parentPhone || student.parentEmail) && (
-            <div className="space-y-5">
+            <div className="space-y-5 mt-8">
               <h4 className="font-semibold text-slate-800 text-base sm:text-lg">{t('parentContact')}</h4>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 min-[1367px]:flex min-[1367px]:gap-3">
                 {student.parentName && (
-                  <div className="rounded-lg border border-slate-200 bg-slate-50/60 p-4 space-y-1">
+                  <div className="rounded-lg border border-slate-200 bg-slate-50/60 p-4 space-y-1 min-[1367px]:min-w-0 min-[1367px]:flex-1">
                     <label className="text-sm font-medium text-slate-600">{t('parentName')}</label>
                     <p className="text-slate-800 text-sm sm:text-base break-words">{student.parentName}</p>
                   </div>
                 )}
                 {student.parentPhone && (
-                  <div className="rounded-lg border border-slate-200 bg-slate-50/60 p-4 space-y-1">
+                  <div className="rounded-lg border border-slate-200 bg-slate-50/60 p-4 space-y-1 min-[1367px]:min-w-0 min-[1367px]:flex-1">
                     <label className="text-sm font-medium text-slate-600 flex items-center gap-2">
                       <Phone className="h-4 w-4 text-slate-400 shrink-0" aria-hidden="true" />
                       {t('parentPhone')}
@@ -448,7 +560,7 @@ export function StudentDetailsModal({ studentId, open, onClose, locale }: Studen
                   </div>
                 )}
                 {student.parentEmail && (
-                  <div className="rounded-lg border border-slate-200 bg-slate-50/60 p-4 space-y-1 sm:col-span-2">
+                  <div className="rounded-lg border border-slate-200 bg-slate-50/60 p-4 space-y-1 sm:col-span-2 min-[1367px]:col-span-1 min-[1367px]:min-w-0 min-[1367px]:flex-1">
                     <label className="text-sm font-medium text-slate-600 flex items-center gap-2">
                       <Mail className="h-4 w-4 text-slate-400 shrink-0" aria-hidden="true" />
                       {t('parentEmail')}
@@ -473,7 +585,7 @@ export function StudentDetailsModal({ studentId, open, onClose, locale }: Studen
           )}
 
           {statistics && (
-            <div className="space-y-4 border-t border-[rgba(14,14,16,0.07)] pt-6">
+            <div className="space-y-4 mt-8">
               <h4 className="flex items-center gap-2 text-base font-semibold text-[#1010a3] sm:text-lg">
                 <GraduationCap className="h-4 w-4 text-[#8b8b90]" aria-hidden="true" />
                 {tTeachers('statistics')}
@@ -501,13 +613,13 @@ export function StudentDetailsModal({ studentId, open, onClose, locale }: Studen
             </div>
           )}
 
-          <div className="flex flex-wrap items-center gap-3 pt-4">
-            <Link href={`/${locale}${basePath}/students/${student.id}`} className={portalPrimaryButtonClass} onClick={() => onClose()}>
-              {t('openFullProfile')}
-            </Link>
+          <div className="flex flex-wrap items-center justify-end gap-3 pt-6">
             {student.receiveReports ? (
               <span className="text-xs text-[#8b8b90]">{t('receiveReportsOn')}</span>
             ) : null}
+            <Link href={`/${locale}${basePath}/students/${student.id}`} className={portalPrimaryButtonClass} onClick={() => onClose()}>
+              {t('openFullProfile')}
+            </Link>
           </div>
         </>
       )}

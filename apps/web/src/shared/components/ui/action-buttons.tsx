@@ -167,9 +167,9 @@ export function ActionButtons({
           disabled={disabled || deleteDisabled}
           className={cn(
             padding,
-            'text-slate-900 hover:text-slate-700 hover:bg-slate-50 rounded-lg transition-colors duration-150 ease-out',
-            'disabled:opacity-50 disabled:cursor-not-allowed',
-            'focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-1',
+            'text-slate-900 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors duration-150 ease-out',
+            'disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:text-slate-900 disabled:hover:bg-transparent',
+            'focus:outline-none focus:ring-2 focus:ring-red-400/30 focus:ring-offset-1',
             'active:scale-95'
           )}
         >

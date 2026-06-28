@@ -253,9 +253,6 @@ export default function StudentsPage() {
             centersData={centersData?.items}
             isLoading={isLoading}
             searchQuery={searchQuery}
-            onEdit={handleEditClick}
-            onDelete={handleDeleteClick}
-            onDeactivate={handleDeactivateClick}
             onCardClick={handleStudentDetailsOpen}
           />
         )}
@@ -333,6 +330,16 @@ export default function StudentsPage() {
         open={isStudentDetailsModalOpen}
         onClose={handleStudentDetailsClose}
         locale={locale}
+        onEdit={(student) => {
+          handleStudentDetailsClose();
+          handleEditClick(student);
+        }}
+        onDelete={(student) => {
+          handleStudentDetailsClose();
+          handleDeleteClick(student);
+        }}
+        onDeactivate={handleDeactivateClick}
+        actionsDisabled={deleteStudent.isPending || updateStudent.isPending}
       />
     </DashboardLayout>
   );
