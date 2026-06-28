@@ -61,17 +61,21 @@ type DialogContentProps = React.ComponentPropsWithoutRef<typeof DialogPrimitive.
   /** Hide the top-right close control on mobile (sheet closed via drag handle). */
   hideCloseButton?: boolean;
   closeButtonClassName?: string;
+  /** Drives stacked sheet z-index when the dialog root open state is known. */
+  stackOpen?: boolean;
 };
 
 const DialogContent = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Content>,
   DialogContentProps
->(({ className, overlayClassName, children, sheet = true, variant = 'default', hideCloseButton = false, closeButtonClassName, ...props }, ref) => {
+>(({ className, overlayClassName, children, sheet = true, variant = 'default', hideCloseButton = false, closeButtonClassName, stackOpen, ...props }, ref) => {
   const t = useTranslations('common');
   const isPortalSheet = variant === 'portal';
   const useSheet = sheet || isPortalSheet;
   const closeRef = React.useRef<HTMLButtonElement>(null);
   const contentRef = React.useRef<HTMLDivElement>(null);
+  const [contentNode, setContentNode] = React.useState<HTMLDivElement | null>(null);
+  const [isContentOpen, setIsContentOpen] = React.useState(false);
 
   const { dragStyle, dragHandleProps, resetDrag } = usePortalSheetDrag({
     enabled: useSheet,
@@ -79,39 +83,31 @@ const DialogContent = React.forwardRef<
   });
 
   React.useEffect(() => {
-    const el = contentRef.current;
-    if (!el || !useSheet) return;
-
-    const observer = new MutationObserver(() => {
-      if (el.getAttribute('data-state') === 'closed') {
-        resetDrag();
-      }
-    });
-    observer.observe(el, { attributes: true, attributeFilter: ['data-state'] });
-    return () => observer.disconnect();
-  }, [resetDrag, useSheet]);
-
-  const [isContentOpen, setIsContentOpen] = React.useState(false);
-
-  React.useEffect(() => {
-    const el = contentRef.current;
-    if (!el) return;
+    if (!contentNode) return;
 
     const syncOpenState = () => {
-      setIsContentOpen(el.getAttribute('data-state') === 'open');
+      setIsContentOpen(contentNode.getAttribute('data-state') === 'open');
     };
 
     syncOpenState();
-    const observer = new MutationObserver(syncOpenState);
-    observer.observe(el, { attributes: true, attributeFilter: ['data-state'] });
-    return () => observer.disconnect();
-  }, []);
 
-  const { overlayStyle, contentStyle, isBaseLayer } = useSheetStackZIndex(isContentOpen);
+    const observer = new MutationObserver(() => {
+      syncOpenState();
+      if (useSheet && contentNode.getAttribute('data-state') === 'closed') {
+        resetDrag();
+      }
+    });
+    observer.observe(contentNode, { attributes: true, attributeFilter: ['data-state'] });
+    return () => observer.disconnect();
+  }, [contentNode, resetDrag, useSheet]);
+
+  const stackActive = stackOpen ?? isContentOpen;
+  const { overlayStyle, contentStyle, isBaseLayer } = useSheetStackZIndex(stackActive);
 
   const setRefs = React.useCallback(
     (node: HTMLDivElement | null) => {
       contentRef.current = node;
+      setContentNode(node);
       if (typeof ref === 'function') {
         ref(node);
       } else if (ref) {
@@ -126,15 +122,23 @@ const DialogContent = React.forwardRef<
     closeButtonClassName,
   );
 
+  const suppressStackedOverlayDim = useSheet && !isBaseLayer;
+  const centeredOverlayClass = !useSheet
+    ? isBaseLayer
+      ? 'bg-black/75'
+      : 'bg-black/35'
+    : undefined;
+
   return (
     <DialogPortal>
       <DialogOverlay
         className={stackedSheetOverlayClassName(
           cn(
             useSheet && (isPortalSheet ? 'bg-black/60 lg:bg-black/80' : 'bg-black/60 lg:bg-black/80'),
+            centeredOverlayClass,
             overlayClassName,
           ),
-          isBaseLayer,
+          !suppressStackedOverlayDim,
         )}
         style={overlayStyle}
         {...portalSheetLayerProps}

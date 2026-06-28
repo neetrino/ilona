@@ -422,6 +422,7 @@ export default function FinancePage() {
         <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
           <DialogContent
             sheet={false}
+            stackOpen={isDeleteDialogOpen}
             overlayClassName={DELETE_CONFIRMATION_DIALOG_OVERLAY_CLASS}
             className={DELETE_CONFIRMATION_DIALOG_CONTENT_CLASS}
           >
@@ -466,6 +467,7 @@ export default function FinancePage() {
         <Dialog open={isDeletePaymentsDialogOpen} onOpenChange={setIsDeletePaymentsDialogOpen}>
           <DialogContent
             sheet={false}
+            stackOpen={isDeletePaymentsDialogOpen}
             overlayClassName={DELETE_CONFIRMATION_DIALOG_OVERLAY_CLASS}
             className={DELETE_CONFIRMATION_DIALOG_CONTENT_CLASS}
           >

@@ -10,7 +10,7 @@ import {
   Button,
 } from '@/shared/components/ui';
 
-/** Centered delete card on all breakpoints (matches admin teachers desktop delete). */
+/** Centered delete modal on all breakpoints. */
 export const DELETE_CONFIRMATION_DIALOG_CONTENT_CLASS =
   'w-[calc(100%-1.5rem)] max-w-md rounded-[15px] p-5 duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] sm:w-full';
 
@@ -46,6 +46,7 @@ export function DeleteConfirmationDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         sheet={false}
+        stackOpen={open}
         overlayClassName={DELETE_CONFIRMATION_DIALOG_OVERLAY_CLASS}
         className={DELETE_CONFIRMATION_DIALOG_CONTENT_CLASS}
       >

@@ -33,6 +33,7 @@ export function CrmDeleteLeadDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         sheet={false}
+        stackOpen={open}
         overlayClassName={DELETE_CONFIRMATION_DIALOG_OVERLAY_CLASS}
         className={DELETE_CONFIRMATION_DIALOG_CONTENT_CLASS}
       >
