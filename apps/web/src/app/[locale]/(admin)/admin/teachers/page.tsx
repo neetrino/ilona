@@ -139,7 +139,9 @@ export default function TeachersPage() {
               onClick={handleBulkDeleteClick}
               disabled={deleteTeachers.isPending || deleteTeacher.isPending}
             >
-              Delete All ({selectedTeacherIds.size})
+              {allSelected
+                ? t('deleteAll', { count: selectedTeacherIds.size })
+                : t('deleteSelected', { count: selectedTeacherIds.size })}
             </Button>
           </div>
         )}

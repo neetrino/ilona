@@ -2,8 +2,12 @@
 
 import { useTranslations } from 'next-intl';
 import { DataTable } from '@/shared/components/ui';
+import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
 import { getPaymentColumns } from '../utils/tableColumns';
-import { InlineSelect } from '@/features/students/components/InlineSelect';
+import {
+  PaymentStatusBadgeDropdown,
+  buildPaymentStatusLabels,
+} from './PaymentStatusBadgeDropdown';
 import { formatCurrency } from '@/shared/lib/utils';
 import type { Payment, PaymentStatus } from '@/features/finance';
 
@@ -34,14 +38,6 @@ const METHOD_OPTIONS = [
   { id: 'TERMINAL', labelKey: 'methodTerminal' },
 ] as const;
 
-const STATUS_OPTIONS: Array<{ id: PaymentStatus; labelKey: string }> = [
-  { id: 'PENDING', labelKey: 'pending' },
-  { id: 'PAID', labelKey: 'paid' },
-  { id: 'OVERDUE', labelKey: 'overdue' },
-  { id: 'CANCELLED', labelKey: 'cancelled' },
-  { id: 'REFUNDED', labelKey: 'refunded' },
-];
-
 function formatMethodLabel(method: string | null | undefined, t: (key: string) => string): string {
   if (!method) return '—';
   const upper = method.toUpperCase();
@@ -67,6 +63,8 @@ export function PaymentsTable({
   noResultsKey,
 }: PaymentsTableProps) {
   const t = useTranslations('finance');
+  const tCommon = useTranslations('common');
+  const paymentStatusLabels = buildPaymentStatusLabels(t as (key: string) => string);
   const columns = getPaymentColumns({
     t: t as (key: string) => string,
     allPaymentsSelected,
@@ -77,15 +75,22 @@ export function PaymentsTable({
     updatePaymentMethod,
     onSelectAllPayments,
     onToggleSelectPayment,
+    notAssignedLabel: tCommon('notAssigned'),
   });
   const emptyMessage =
     searchTerm && noResultsKey ? t(noResultsKey) : t('noPaymentsFound');
 
-  const statusBadgeClass = (status: PaymentStatus) => {
-    if (status === 'PAID') return 'border-emerald-300 bg-emerald-50 text-emerald-700';
-    if (status === 'OVERDUE') return 'border-red-300 bg-red-50 text-red-700';
-    if (status === 'PENDING') return 'border-amber-300 bg-amber-50 text-amber-700';
-    return 'border-slate-300 bg-slate-100 text-slate-600';
+  const handlePaymentStatusChange = (
+    paymentId: string,
+    currentStatus: PaymentStatus,
+    newStatus: PaymentStatus,
+  ) => {
+    if (newStatus === currentStatus) return;
+    void updatePaymentStatus
+      .mutateAsync({ id: paymentId, status: newStatus })
+      .catch((error) => {
+        console.error('Failed to update payment status:', error);
+      });
   };
 
   return (
@@ -166,43 +171,51 @@ export function PaymentsTable({
                     <span className="font-semibold text-[#1f2937]">{dueDate}</span>
                   </div>
                   <div className="flex items-center justify-between gap-3 text-[1rem]">
-                    <span className="text-[#64748b]">{t('method')}</span>
-                    <div className="min-w-[9rem] max-w-[11rem]">
+                    <span className="shrink-0 text-[#64748b]">{t('method')}</span>
+                    <div className="relative shrink-0">
                       {canEditMethod ? (
-                        <InlineSelect
+                        <SingleSelectDropdown
+                          options={[
+                            { id: '', label: tCommon('notAssigned') },
+                            ...METHOD_OPTIONS.map((o) => ({ id: o.id, label: t(o.labelKey) })),
+                          ]}
                           value={payment.paymentMethod ?? null}
-                          options={METHOD_OPTIONS.map((o) => ({ id: o.id, label: t(o.labelKey) }))}
-                          onChange={async (nextMethod) => {
-                            if (nextMethod && nextMethod !== payment.paymentMethod) {
-                              try {
-                                await updatePaymentMethod?.mutateAsync({
-                                  id: payment.id,
-                                  paymentMethod: nextMethod,
-                                });
-                              } catch (error) {
+                          placeholder={tCommon('notAssigned')}
+                          onValueChange={(nextMethod) => {
+                            if (!nextMethod || nextMethod === payment.paymentMethod) return;
+                            void updatePaymentMethod
+                              ?.mutateAsync({
+                                id: payment.id,
+                                paymentMethod: nextMethod,
+                              })
+                              .catch((error) => {
                                 console.error('Failed to update payment method:', error);
-                              }
-                            }
+                              });
                           }}
                           disabled={updatePaymentMethod?.isPending}
-                          className="w-full"
+                          className="w-auto"
+                          triggerClassName="h-auto min-h-9 w-auto px-3 py-2 text-sm"
+                          menuMinWidth={176}
                         />
                       ) : (
-                        <span className="inline-flex min-h-8 items-center rounded-xl border border-[rgba(14,14,16,0.1)] px-2.5 text-sm text-[#475569]">
+                        <span className="inline-flex min-h-9 items-center rounded-xl border border-[rgba(14,14,16,0.1)] px-2.5 text-sm text-[#475569]">
                           {formatMethodLabel(payment.paymentMethod, t as (key: string) => string)}
                         </span>
                       )}
                     </div>
                   </div>
                   <div className="flex items-center justify-between gap-3 text-[1rem]">
-                    <span className="text-[#64748b]">{t('status')}</span>
-                    <span
-                      className={`inline-flex items-center rounded-xl border px-3 py-1 text-sm font-medium ${statusBadgeClass(payment.status)}`}
-                    >
-                      {t(
-                        STATUS_OPTIONS.find((option) => option.id === payment.status)?.labelKey ?? 'pending',
-                      )}
-                    </span>
+                    <span className="shrink-0 text-[#64748b]">{t('status')}</span>
+                    <PaymentStatusBadgeDropdown
+                      appearance="outlined"
+                      status={payment.status}
+                      labels={paymentStatusLabels}
+                      notAssignedLabel={tCommon('notAssigned')}
+                      disabled={updatePaymentStatus.isPending}
+                      onStatusChange={(newStatus) =>
+                        handlePaymentStatusChange(payment.id, payment.status, newStatus)
+                      }
+                    />
                   </div>
                 </div>
               </article>

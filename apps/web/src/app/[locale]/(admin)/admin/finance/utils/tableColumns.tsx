@@ -1,6 +1,7 @@
 'use client';
 
 import { InlineSelect } from '@/features/students/components/InlineSelect';
+import { PaymentStatusBadgeDropdown, buildPaymentStatusLabels } from '../components/PaymentStatusBadgeDropdown';
 import { SalaryStatusBadgeDropdown } from '../components/SalaryStatusBadgeDropdown';
 import { Eye, FileText } from 'lucide-react';
 import { SelectAllCheckbox } from '../components/SelectAllCheckbox';
@@ -90,6 +91,7 @@ interface PaymentColumnsProps {
   onSelectAllPayments?: () => void;
   onToggleSelectPayment?: (paymentId: string) => void;
   isLoadingPayments?: boolean;
+  notAssignedLabel?: string;
 }
 
 export function getPaymentColumns({
@@ -102,7 +104,9 @@ export function getPaymentColumns({
   onSelectAllPayments,
   onToggleSelectPayment,
   isLoadingPayments = false,
+  notAssignedLabel = 'Not assigned',
 }: PaymentColumnsProps) {
+  const paymentStatusLabels = buildPaymentStatusLabels(t);
   const showCheckboxes = onSelectAllPayments != null && onToggleSelectPayment != null;
   const isPending = (p: Payment) => p.status === 'PENDING' || p.status === 'OVERDUE';
   const canEditMethod = updatePaymentMethod != null;
@@ -196,6 +200,7 @@ export function getPaymentColumns({
               <div className="w-32">
                 <InlineSelect
                 value={currentMethod || null}
+                placeholder={notAssignedLabel}
                 options={ADMIN_METHOD_OPTIONS.map((o) => ({ id: o.id, label: t(o.labelKey) }))}
                 onChange={async (newMethod) => {
                   if (newMethod && newMethod !== currentMethod) {
@@ -227,32 +232,24 @@ export function getPaymentColumns({
       className: 'text-center',
       render: (payment: Payment) => (
         <div className="flex justify-center">
-          <div className="w-32">
-            <InlineSelect
-            value={payment.status}
-            options={[
-              { id: 'PENDING', label: t('pending') },
-              { id: 'PAID', label: t('paid') },
-              { id: 'OVERDUE', label: t('overdue') },
-              { id: 'CANCELLED', label: t('cancelled') },
-              { id: 'REFUNDED', label: t('refunded') },
-            ]}
-            onChange={async (newStatus) => {
-              if (newStatus && newStatus !== payment.status) {
-                try {
-                  await updatePaymentStatus.mutateAsync({
+          <PaymentStatusBadgeDropdown
+            status={payment.status}
+            labels={paymentStatusLabels}
+            notAssignedLabel={notAssignedLabel}
+            disabled={updatePaymentStatus.isPending}
+            onStatusChange={(newStatus) => {
+              if (newStatus !== payment.status) {
+                void updatePaymentStatus
+                  .mutateAsync({
                     id: payment.id,
-                    status: newStatus as PaymentStatus,
+                    status: newStatus,
+                  })
+                  .catch((error) => {
+                    console.error('Failed to update payment status:', error);
                   });
-                } catch (error) {
-                  console.error('Failed to update payment status:', error);
-                }
               }
             }}
-            disabled={updatePaymentStatus.isPending}
-            className="w-full"
           />
-          </div>
         </div>
       ),
     },

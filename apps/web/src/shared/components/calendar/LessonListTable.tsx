@@ -342,7 +342,9 @@ export function LessonListTable({
               onClick={handleBulkDelete}
               tabIndex={hasSelectedLessons ? 0 : -1}
             >
-              {tCal('deleteSelected')}
+              {allSelected
+                ? tCal('deleteAll', { count: selectedLessons.size })
+                : tCal('deleteSelected', { count: selectedLessons.size })}
             </Button>
           </div>
         </div>

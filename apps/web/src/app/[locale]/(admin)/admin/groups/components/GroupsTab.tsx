@@ -648,7 +648,7 @@ export function GroupsTab({
             onClick={handleBulkDeleteGroupsClick}
             disabled={deleteGroup.isPending || isLoading}
           >
-            {allGroupsSelected && groups.length > 1
+            {allGroupsSelected
               ? t('deleteAll', { count: selectedGroupIds.size })
               : t('deleteSelected', { count: selectedGroupIds.size })}
           </Button>

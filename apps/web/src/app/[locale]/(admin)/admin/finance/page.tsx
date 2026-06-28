@@ -293,6 +293,7 @@ export default function FinancePage() {
           salaryStatus={salaryStatus}
           selectedSalaryIds={selectedSalaryIds}
           allSalariesSelected={allSalariesSelected}
+          allPaymentsSelected={allPaymentsSelected}
           onSearchChange={handleSearchChange}
           onPaymentStatusChange={handlePaymentStatusChange}
           onSalaryStatusChange={handleSalaryStatusChange}

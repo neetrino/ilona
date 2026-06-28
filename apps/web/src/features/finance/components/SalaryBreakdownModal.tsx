@@ -396,7 +396,9 @@ export function SalaryBreakdownModal({
                   disabled={excludeLessons.isPending}
                 >
                   <Trash2 className="w-4 h-4" />
-                  Delete ({selectedLessonIds.size})
+                  {allSelected
+                    ? t('deleteAll', { count: selectedLessonIds.size })
+                    : t('deleteSelected', { count: selectedLessonIds.size })}
                 </Button>
               )}
             </div>

@@ -82,6 +82,7 @@ interface SingleSelectDropdownProps {
   searchable?: boolean;
   searchPlaceholder?: string;
   noSearchResultsMessage?: string;
+  menuMinWidth?: number;
 }
 
 export function SingleSelectDropdown({
@@ -101,6 +102,7 @@ export function SingleSelectDropdown({
   searchable = false,
   searchPlaceholder,
   noSearchResultsMessage,
+  menuMinWidth,
 }: SingleSelectDropdownProps) {
   const t = useTranslations('common');
   const [isOpen, setIsOpen] = useState(false);
@@ -153,7 +155,15 @@ export function SingleSelectDropdown({
     const useDialogPortal = portalTarget !== document.body;
 
     const rect = trigger.getBoundingClientRect();
+    const menuWidth = menuMinWidth ? Math.max(rect.width, menuMinWidth) : rect.width;
+    let menuLeft = menuMinWidth && menuWidth > rect.width ? rect.right - menuWidth : rect.left;
     const viewportPadding = 12;
+    if (menuMinWidth) {
+      menuLeft = Math.max(
+        viewportPadding,
+        Math.min(menuLeft, window.innerWidth - menuWidth - viewportPadding),
+      );
+    }
     const spaceBelow = window.innerHeight - rect.bottom - viewportPadding;
     const spaceAbove = rect.top - viewportPadding;
     const searchInputHeight = searchable ? 52 : 0;
@@ -169,8 +179,8 @@ export function SingleSelectDropdown({
       const dialogRect = portalTarget.getBoundingClientRect();
       setMenuPosition({
         positionMode: 'absolute',
-        left: rect.left - dialogRect.left,
-        width: rect.width,
+        left: rect.left - dialogRect.left + (menuLeft - rect.left),
+        width: menuWidth,
         maxHeight,
         ...(shouldOpenUpward
           ? { bottom: dialogRect.bottom - rect.top + 6 }
@@ -181,14 +191,14 @@ export function SingleSelectDropdown({
 
     setMenuPosition({
       positionMode: 'fixed',
-      left: rect.left,
-      width: rect.width,
+      left: menuLeft,
+      width: menuWidth,
       maxHeight,
       ...(shouldOpenUpward
         ? { bottom: window.innerHeight - rect.top + 6 }
         : { top: rect.bottom + 6 }),
     });
-  }, [searchable]);
+  }, [searchable, menuMinWidth]);
 
   useEffect(() => {
     if (!isOpen) {
