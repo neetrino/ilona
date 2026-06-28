@@ -1,6 +1,7 @@
 'use client';
 
 import { InlineSelect } from '@/features/students/components/InlineSelect';
+import { SalaryStatusBadgeDropdown } from '../components/SalaryStatusBadgeDropdown';
 import { Eye, FileText } from 'lucide-react';
 import { SelectAllCheckbox } from '../components/SelectAllCheckbox';
 import type { Payment, SalaryRecord, PaymentStatus, SalaryStatus } from '@/features/finance';
@@ -159,6 +160,7 @@ export function getPaymentColumns({
     {
       key: 'amount',
       header: t('amount'),
+      className: 'text-center',
       render: (payment: Payment) => {
         const amount = typeof payment.amount === 'string' ? parseFloat(payment.amount) : Number(payment.amount);
         return (
@@ -171,6 +173,7 @@ export function getPaymentColumns({
     {
       key: 'dueDate',
       header: t('dueDate'),
+      className: 'text-center',
       render: (payment: Payment) => {
         const date = new Date(payment.dueDate);
         return (
@@ -183,14 +186,15 @@ export function getPaymentColumns({
     {
       key: 'method',
       header: t('method'),
-      className: 'text-left',
+      className: 'text-center',
       render: (payment: Payment) => {
         const pending = isPending(payment);
         const currentMethod = payment.paymentMethod ?? '';
         if (pending && canEditMethod) {
           return (
-            <div className="w-32">
-              <InlineSelect
+            <div className="flex justify-center">
+              <div className="w-32">
+                <InlineSelect
                 value={currentMethod || null}
                 options={ADMIN_METHOD_OPTIONS.map((o) => ({ id: o.id, label: t(o.labelKey) }))}
                 onChange={async (newMethod) => {
@@ -208,6 +212,7 @@ export function getPaymentColumns({
                 disabled={updatePaymentMethod?.isPending}
                 className="w-full"
               />
+              </div>
             </div>
           );
         }
@@ -219,10 +224,11 @@ export function getPaymentColumns({
     {
       key: 'status',
       header: t('status'),
-      className: 'text-left',
+      className: 'text-center',
       render: (payment: Payment) => (
-        <div className="w-32">
-          <InlineSelect
+        <div className="flex justify-center">
+          <div className="w-32">
+            <InlineSelect
             value={payment.status}
             options={[
               { id: 'PENDING', label: t('pending') },
@@ -246,6 +252,7 @@ export function getPaymentColumns({
             disabled={updatePaymentStatus.isPending}
             className="w-full"
           />
+          </div>
         </div>
       ),
     },
@@ -267,6 +274,7 @@ interface SalaryColumnsProps {
   onSelectOne: (salaryId: string, checked: boolean) => void;
   locale: string;
   onOpenSalaryDetail?: (salaryId: string) => void;
+  notAssignedLabel?: string;
 }
 
 export function getSalaryColumns({
@@ -280,6 +288,7 @@ export function getSalaryColumns({
   onSelectOne,
   locale,
   onOpenSalaryDetail,
+  notAssignedLabel = 'Not assigned',
 }: SalaryColumnsProps) {
   return [
     {
@@ -331,6 +340,7 @@ export function getSalaryColumns({
     {
       key: 'month',
       header: t('month'),
+      className: 'text-center',
       render: (salary: SalaryRecord) => {
         const date =
           salary.month && salary.year ? new Date(salary.year, salary.month - 1) : null;
@@ -344,6 +354,7 @@ export function getSalaryColumns({
     {
       key: 'lessons',
       header: t('lessons'),
+      className: 'text-center',
       render: (salary: SalaryRecord) => (
         <span className="text-[#3b3b40]">{salary.lessonsCount ?? 0}</span>
       ),
@@ -351,6 +362,7 @@ export function getSalaryColumns({
     {
       key: 'deductions',
       header: t('deductions'),
+      className: 'text-center',
       render: (salary: SalaryRecord) => {
         const amount =
           typeof salary.totalDeductions === 'string'
@@ -373,6 +385,7 @@ export function getSalaryColumns({
     {
       key: 'salary',
       header: t('netSalary'),
+      className: 'text-center',
       render: (salary: SalaryRecord) => {
         const amount =
           typeof salary.netAmount === 'string' ? parseFloat(salary.netAmount) : Number(salary.netAmount);
@@ -386,29 +399,27 @@ export function getSalaryColumns({
     {
       key: 'status',
       header: t('status'),
-      className: 'text-left',
+      className: 'text-center',
       render: (salary: SalaryRecord) => (
-        <div className="w-32">
-          <InlineSelect
-            value={salary.status}
-            options={[
-              { id: 'PENDING', label: t('pending') },
-              { id: 'PAID', label: t('paid') },
-            ]}
-            onChange={async (newStatus) => {
-              if (newStatus && newStatus !== salary.status) {
-                try {
-                  await updateSalaryStatus.mutateAsync({
+        <div className="flex justify-center">
+          <SalaryStatusBadgeDropdown
+            status={salary.status}
+            pendingLabel={t('pending')}
+            paidLabel={t('paid')}
+            notAssignedLabel={notAssignedLabel}
+            disabled={updateSalaryStatus.isPending}
+            onStatusChange={(newStatus) => {
+              if (newStatus !== salary.status) {
+                void updateSalaryStatus
+                  .mutateAsync({
                     id: salary.id,
-                    status: newStatus as SalaryStatus,
+                    status: newStatus,
+                  })
+                  .catch((error) => {
+                    console.error('Failed to update salary status:', error);
                   });
-                } catch (error) {
-                  console.error('Failed to update salary status:', error);
-                }
               }
             }}
-            disabled={updateSalaryStatus.isPending}
-            className="w-full"
           />
         </div>
       ),
@@ -416,9 +427,9 @@ export function getSalaryColumns({
     {
       key: 'action',
       header: t('actions'),
-      className: 'text-left',
+      className: 'text-center',
       render: (salary: SalaryRecord) => (
-        <div className="flex items-center justify-start gap-1">
+        <div className="flex items-center justify-center gap-1">
           {onOpenSalaryDetail ? (
             <button
               type="button"
