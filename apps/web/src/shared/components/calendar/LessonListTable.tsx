@@ -53,6 +53,8 @@ interface LessonListTableProps {
   useMobileCards?: boolean;
   /** When set, section headers (completed / today / upcoming) use this instant instead of now. */
   listReferenceDate?: Date;
+  /** Desktop table: hide actions column and open lesson detail on row click. */
+  hideActionsColumn?: boolean;
 }
 
 const MOBILE_CARD_PAGE_SIZE = 5;
@@ -76,6 +78,7 @@ export function LessonListTable({
   showScheduleColumn = true,
   useMobileCards = false,
   listReferenceDate,
+  hideActionsColumn = false,
 }: LessonListTableProps) {
   const locale = useLocale();
   const tCal = useTranslations('calendar');
@@ -281,7 +284,9 @@ export function LessonListTable({
   }
 
   const tableColSpan =
-    10 + (sectionedCalendarList && showScheduleColumn ? 1 : 0) + (hideTeacherColumn ? 0 : 1);
+    (hideActionsColumn ? 9 : 10) +
+    (sectionedCalendarList && showScheduleColumn ? 1 : 0) +
+    (hideTeacherColumn ? 0 : 1);
 
   const allSelected = sectionedCalendarList
     ? sectionedPageLessonIds.length > 0 && sectionedPageLessonIds.every((id) => selectedLessons.has(id))
@@ -594,13 +599,13 @@ export function LessonListTable({
                   {tCal('scheduleCategoryColumn')}
                 </th>
               )}
-              <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase">
+              <th className="px-4 py-3 text-center text-xs font-semibold text-slate-600 uppercase">
                 {!sectionedCalendarList && onSort ? (
                   <button
                     type="button"
                     onClick={() => onSort('scheduledAt')}
                     className={cn(
-                      'flex items-center gap-1.5 w-full text-left text-xs font-semibold uppercase hover:bg-slate-50 rounded-md px-0 py-0.5 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-1',
+                      'mx-auto flex items-center justify-center gap-1.5 text-xs font-semibold uppercase hover:bg-slate-50 rounded-md px-0 py-0.5 transition-colors focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-1',
                       sortBy === 'scheduledAt' && 'text-slate-700',
                     )}
                     aria-label={
@@ -629,7 +634,7 @@ export function LessonListTable({
                 )}
               </th>
               {!hideTeacherColumn && (
-                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase">
+                <th className="px-4 py-3 text-center text-xs font-semibold text-slate-600 uppercase">
                   {tCommon('teacher')}
                 </th>
               )}
@@ -648,9 +653,11 @@ export function LessonListTable({
               <th className="px-2 py-3 text-center text-xs font-semibold text-slate-600 uppercase w-[100px]">
                 {tActions('dailyPlanLabel')}
               </th>
-              <th className="px-4 py-3 text-center text-xs font-semibold text-slate-600 uppercase">
-                {tCommon('actions')}
-              </th>
+              {!hideActionsColumn && (
+                <th className="px-4 py-3 text-center text-xs font-semibold text-slate-600 uppercase">
+                  {tCommon('actions')}
+                </th>
+              )}
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
@@ -698,6 +705,8 @@ export function LessonListTable({
                       onEdit={onEdit}
                       onDelete={onDelete}
                       onAssignSubstitute={onAssignSubstitute}
+                      hideActionsColumn={hideActionsColumn}
+                      onRowClick={hideActionsColumn ? handleView : undefined}
                       scheduleCategory={showScheduleColumn ? row.category : undefined}
                       scheduleCategoryLabels={scheduleCategoryLabels}
                     />,
@@ -719,6 +728,8 @@ export function LessonListTable({
                     onEdit={onEdit}
                     onDelete={onDelete}
                     onAssignSubstitute={onAssignSubstitute}
+                    hideActionsColumn={hideActionsColumn}
+                    onRowClick={hideActionsColumn ? handleView : undefined}
                     scheduleCategoryLabels={scheduleCategoryLabels}
                   />
                 ))}

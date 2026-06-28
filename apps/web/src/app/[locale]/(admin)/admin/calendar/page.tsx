@@ -734,6 +734,7 @@ export default function CalendarPage() {
                 sectionedCalendarList
                 showScheduleColumn={false}
                 useMobileCards
+                hideActionsColumn
                 listReferenceDate={listReferenceDate}
                 onBulkDelete={handleBulkDeleteClick}
                 onObligationClick={(lessonId, obligation) => {
