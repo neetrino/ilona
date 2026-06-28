@@ -82,7 +82,7 @@ interface PaymentColumnsProps {
     isPending: boolean;
   };
   updatePaymentMethod?: {
-    mutateAsync: (params: { id: string; paymentMethod: string }) => Promise<void>;
+    mutateAsync: (params: { id: string; paymentMethod: string | null }) => Promise<void>;
     isPending: boolean;
   };
   allPaymentsSelected?: boolean;
@@ -203,15 +203,16 @@ export function getPaymentColumns({
                 placeholder={notAssignedLabel}
                 options={ADMIN_METHOD_OPTIONS.map((o) => ({ id: o.id, label: t(o.labelKey) }))}
                 onChange={async (newMethod) => {
-                  if (newMethod && newMethod !== currentMethod) {
-                    try {
-                      await updatePaymentMethod?.mutateAsync({
-                        id: payment.id,
-                        paymentMethod: newMethod,
-                      });
-                    } catch (error) {
-                      console.error('Failed to update payment method:', error);
-                    }
+                  const next = newMethod || null;
+                  const current = currentMethod || null;
+                  if (next === current) return;
+                  try {
+                    await updatePaymentMethod?.mutateAsync({
+                      id: payment.id,
+                      paymentMethod: next,
+                    });
+                  } catch (error) {
+                    console.error('Failed to update payment method:', error);
                   }
                 }}
                 disabled={updatePaymentMethod?.isPending}

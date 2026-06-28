@@ -122,7 +122,7 @@ export function SingleSelectDropdown({
   const listboxId = `${triggerId}-listbox`;
 
   const hasSelection = Boolean(value);
-  const selectedOption = options.find((opt) => opt.id === value);
+  const selectedOption = options.find((opt) => (value ?? '') === opt.id);
   const displayText = selectedOption ? selectedOption.label : placeholder;
   const resolvedSearchPlaceholder = searchPlaceholder ?? `${t('search')}...`;
   const resolvedNoSearchResultsMessage = noSearchResultsMessage ?? t('globalSearchEmpty');
@@ -241,7 +241,9 @@ export function SingleSelectDropdown({
   }, [isOpen, searchable]);
 
   const handleSelect = (optionId: string) => {
-    const nextValue = allowDeselect && optionId === value ? null : optionId;
+    const normalizedOption = optionId === '' ? null : optionId;
+    const nextValue =
+      allowDeselect && normalizedOption === value ? null : normalizedOption;
     onValueChange(nextValue);
     closeMenu();
     triggerRef.current?.focus();
@@ -473,11 +475,11 @@ export function SingleSelectDropdown({
                     <div className="px-3 py-2 text-sm text-[#8b8b90]">{resolvedNoSearchResultsMessage}</div>
                   ) : (
                     filteredOptions.map((option, index) => {
-                      const isSelected = value === option.id;
+                      const isSelected = (value ?? '') === option.id;
                       return (
                         <button
-                          id={`${listboxId}-option-${option.id}`}
-                          key={option.id}
+                          id={`${listboxId}-option-${option.id || index}`}
+                          key={option.id || `empty-${index}`}
                           ref={(node) => {
                             optionRefs.current[index] = node;
                           }}
@@ -485,7 +487,11 @@ export function SingleSelectDropdown({
                           role="option"
                           aria-selected={isSelected}
                           title={option.label}
-                          onPointerDown={(event) => {
+                          onMouseDown={(event) => {
+                            event.preventDefault();
+                            event.stopPropagation();
+                          }}
+                          onClick={(event) => {
                             event.preventDefault();
                             event.stopPropagation();
                             handleSelect(option.id);

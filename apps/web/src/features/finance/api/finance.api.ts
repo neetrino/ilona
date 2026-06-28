@@ -80,7 +80,7 @@ export async function processPayment(id: string, data?: ProcessPaymentDto): Prom
  */
 export async function updatePayment(
   id: string,
-  data: { status?: string; amount?: number; dueDate?: string; notes?: string; paymentMethod?: string }
+  data: { status?: string; amount?: number; dueDate?: string; notes?: string; paymentMethod?: string | null }
 ): Promise<Payment> {
   return api.put<Payment>(`/finance/payments/${id}`, data);
 }

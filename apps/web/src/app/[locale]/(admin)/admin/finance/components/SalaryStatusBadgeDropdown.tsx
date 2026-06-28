@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { ChevronDown } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
+import { getFixedDropdownPlacement, type FixedDropdownPlacement } from '@/shared/lib/dropdown-placement';
 import {
   DROPDOWN_CHEVRON_CLASS,
   DROPDOWN_MENU_PORTAL_SURFACE_CLASS,
@@ -16,6 +17,7 @@ import type { SalaryStatus } from '@/features/finance';
 const STATUS_OPTIONS: SalaryStatus[] = ['PENDING', 'PAID'];
 const MENU_MIN_WIDTH_PX = 176;
 const MENU_MIN_WIDTH_COMPACT_PX = 160;
+const ESTIMATED_MENU_HEIGHT_PX = 180;
 
 const STATUS_STYLES: Record<SalaryStatus, string> = {
   PAID: 'bg-emerald-50 text-emerald-700',
@@ -62,9 +64,7 @@ export function SalaryStatusBadgeDropdown({
   const containerRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
-  const [menuPosition, setMenuPosition] = useState<{ top: number; left: number; width: number } | null>(
-    null,
-  );
+  const [menuPosition, setMenuPosition] = useState<FixedDropdownPlacement | null>(null);
 
   const labels: Record<SalaryStatus, string> = {
     PENDING: pendingLabel,
@@ -84,11 +84,7 @@ export function SalaryStatusBadgeDropdown({
         rect.width,
         size === 'compact' ? MENU_MIN_WIDTH_COMPACT_PX : MENU_MIN_WIDTH_PX,
       );
-      setMenuPosition({
-        top: rect.bottom + 4,
-        left: rect.right - width,
-        width,
-      });
+      setMenuPosition(getFixedDropdownPlacement(rect, width, ESTIMATED_MENU_HEIGHT_PX));
     }
 
     updatePosition();
@@ -127,9 +123,11 @@ export function SalaryStatusBadgeDropdown({
             ref={menuRef}
             className={cn(DROPDOWN_MENU_PORTAL_SURFACE_CLASS, size === 'compact' ? 'p-1.5' : 'p-2')}
             style={{
-              top: `${menuPosition.top}px`,
               left: `${menuPosition.left}px`,
               width: `${menuPosition.width}px`,
+              maxHeight: `${menuPosition.maxHeight}px`,
+              ...(menuPosition.top !== undefined ? { top: `${menuPosition.top}px` } : {}),
+              ...(menuPosition.bottom !== undefined ? { bottom: `${menuPosition.bottom}px` } : {}),
             }}
           >
             <button

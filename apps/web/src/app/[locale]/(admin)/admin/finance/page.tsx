@@ -124,7 +124,7 @@ export default function FinancePage() {
 
   // Wrap updatePaymentMethod to match expected interface (mutateAsync returns void)
   const updatePaymentMethod = {
-    mutateAsync: async (params: { id: string; paymentMethod: string }) => {
+    mutateAsync: async (params: { id: string; paymentMethod: string | null }) => {
       await updatePaymentMethodMutation.mutateAsync({ id: params.id, paymentMethod: params.paymentMethod });
     },
     isPending: updatePaymentMethodMutation.isPending,

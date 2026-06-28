@@ -133,7 +133,7 @@ export function useUpdatePaymentMethod() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, paymentMethod }: { id: string; paymentMethod: string }) =>
+    mutationFn: ({ id, paymentMethod }: { id: string; paymentMethod: string | null }) =>
       updatePayment(id, { paymentMethod }),
     onSuccess: (_, { id }) => {
       queryClient.invalidateQueries({ queryKey: financeKeys.paymentDetail(id) });

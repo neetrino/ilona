@@ -23,7 +23,7 @@ interface PaymentsTableProps {
     isPending: boolean;
   };
   updatePaymentMethod?: {
-    mutateAsync: (params: { id: string; paymentMethod: string }) => Promise<void>;
+    mutateAsync: (params: { id: string; paymentMethod: string | null }) => Promise<void>;
     isPending: boolean;
   };
   onSelectAllPayments: () => void;
@@ -182,11 +182,13 @@ export function PaymentsTable({
                           value={payment.paymentMethod ?? null}
                           placeholder={tCommon('notAssigned')}
                           onValueChange={(nextMethod) => {
-                            if (!nextMethod || nextMethod === payment.paymentMethod) return;
+                            const current = payment.paymentMethod ?? null;
+                            const next = nextMethod || null;
+                            if (next === current) return;
                             void updatePaymentMethod
                               ?.mutateAsync({
                                 id: payment.id,
-                                paymentMethod: nextMethod,
+                                paymentMethod: next,
                               })
                               .catch((error) => {
                                 console.error('Failed to update payment method:', error);
