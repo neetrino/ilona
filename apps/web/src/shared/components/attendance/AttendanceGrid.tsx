@@ -13,6 +13,12 @@ import {
   DialogFooter,
 } from '@/shared/components/ui';
 import { Pencil, X } from 'lucide-react';
+import {
+  ATTENDANCE_CELL_RADIUS_CLASS,
+  ATTENDANCE_EDIT_ICON_BUTTON_CLASS,
+  ATTENDANCE_NOTE_BUTTON_CLASS,
+  ATTENDANCE_PRIMARY_BUTTON_CLASS,
+} from '@/shared/components/attendance/attendance-button-theme';
 import { useLocale, useTranslations } from 'next-intl';
 import type { Lesson } from '@/features/lessons';
 import type { AbsenceType } from '@/features/attendance';
@@ -660,7 +666,7 @@ export function AttendanceGrid({
             type="button"
             size="icon"
             variant={isEditMode ? 'destructive' : 'outline'}
-            className="h-9 w-9"
+            className={ATTENDANCE_EDIT_ICON_BUTTON_CLASS}
             onClick={isEditMode ? handleCancelEditMode : handleStartEditMode}
             title={isEditMode ? t('cancelEditing') : t('enableEditing')}
             aria-label={isEditMode ? t('cancelEditing') : t('enableEditing')}
@@ -678,7 +684,7 @@ export function AttendanceGrid({
             <Button
               onClick={handleConfirmEditMode}
               disabled={hasAnySaving || missingJustificationCount > 0}
-              className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold px-6 py-2.5 text-base shadow-md hover:shadow-lg transition-all"
+              className={cn(ATTENDANCE_PRIMARY_BUTTON_CLASS, 'px-6 text-base')}
               size="lg"
             >
               {t('confirmChanges')}
@@ -688,7 +694,7 @@ export function AttendanceGrid({
             <Button
               onClick={handleSaveAll}
               disabled={lessonsWithChanges.length === 0 || hasAnySaving || missingJustificationCount > 0}
-              className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold px-6 py-2.5 text-base shadow-md hover:shadow-lg transition-all"
+              className={cn(ATTENDANCE_PRIMARY_BUTTON_CLASS, 'px-6 text-base')}
               size="lg"
             >
               {t('saveAllChanges')}
@@ -797,10 +803,10 @@ export function AttendanceGrid({
                               : t('clickPencilToEdit')
                           }
                         >
-                          <div className="flex items-center justify-center h-10 w-10 md:h-12 md:w-12 mx-auto rounded-md text-base md:text-lg font-bold relative">
+                          <div className={cn('flex items-center justify-center h-10 w-10 md:h-12 md:w-12 mx-auto text-base md:text-lg font-bold relative', ATTENDANCE_CELL_RADIUS_CLASS)}>
                             {getStatusIcon(status)}
                             {isLessonSaving && (
-                              <div className="absolute inset-0 flex items-center justify-center bg-white/80 rounded-md">
+                              <div className={cn('absolute inset-0 flex items-center justify-center bg-white/80', ATTENDANCE_CELL_RADIUS_CLASS)}>
                                 <div className="h-4 w-4 animate-spin rounded-full border-[3px] border-current border-t-transparent"></div>
                               </div>
                             )}
@@ -816,7 +822,7 @@ export function AttendanceGrid({
                           {status === 'absent_justified' && hasJustification && !isLessonSaving && (
                             <button
                               type="button"
-                              className="absolute bottom-2 left-1.5 rounded-md bg-slate-800 px-2.5 py-1 text-xs font-bold tracking-wide text-white shadow-md hover:bg-slate-700"
+                              className={cn('absolute bottom-2 left-1.5', ATTENDANCE_NOTE_BUTTON_CLASS)}
                               onClick={(e) => {
                                 e.stopPropagation();
                                 setCommentPreviewDialog({ studentId: student.id, lessonId: lesson.id });
@@ -878,6 +884,7 @@ export function AttendanceGrid({
                 !justificationDialog ||
                 !attendanceData[justificationDialog.lessonId]?.[justificationDialog.studentId]?.note?.trim()
               }
+              className={cn(ATTENDANCE_PRIMARY_BUTTON_CLASS, 'px-4')}
             >
               {t('saveComment')}
             </Button>

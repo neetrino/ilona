@@ -15,6 +15,10 @@ import type { AttendanceCell } from '../hooks/useAttendanceData';
 import { toAttendanceRow } from '../hooks/useAttendanceData';
 import type { AbsenceType } from '@/features/attendance';
 import { useIsIPad } from '@/shared/hooks/useIsIPad';
+import {
+  ATTENDANCE_PAGER_INDICATOR_CLASS,
+  attendancePagerButtonClass,
+} from '@/shared/components/attendance/attendance-button-theme';
 
 const MOBILE_GROUP_CARDS_PAGE_SIZE = 5;
 const IPAD_GROUP_CARDS_PAGE_SIZE = 10;
@@ -233,11 +237,7 @@ export function WeekView({
             <div className="flex items-center gap-3">
               <button
                 type="button"
-                className={`inline-flex h-9 w-9 items-center justify-center rounded-full border transition-colors ${
-                  safeMobileCardPage === 0
-                    ? 'border-[#d9dde8] bg-[#f1f1f4] text-[#9aa3b5]'
-                    : 'border-[rgba(14,14,16,0.12)] bg-white text-[#3b3b40] hover:bg-[#f6f6f7]'
-                }`}
+                className={attendancePagerButtonClass(safeMobileCardPage !== 0)}
                 disabled={safeMobileCardPage === 0}
                 onClick={() =>
                   goToMobileCardsPage(Math.max(0, safeMobileCardPage - 1))
@@ -248,16 +248,12 @@ export function WeekView({
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                 </svg>
               </button>
-              <span className="inline-flex h-9 min-w-9 items-center justify-center rounded-full bg-[#1010a3] px-3 text-xs font-semibold text-white">
+              <span className={ATTENDANCE_PAGER_INDICATOR_CLASS}>
                 {safeMobileCardPage + 1}
               </span>
               <button
                 type="button"
-                className={`inline-flex h-9 w-9 items-center justify-center rounded-full border transition-colors ${
-                  safeMobileCardPage >= totalMobileCardPages - 1
-                    ? 'border-[#d9dde8] bg-[#f1f1f4] text-[#9aa3b5]'
-                    : 'border-[rgba(14,14,16,0.12)] bg-white text-[#3b3b40] hover:bg-[#f6f6f7]'
-                }`}
+                className={attendancePagerButtonClass(safeMobileCardPage < totalMobileCardPages - 1)}
                 disabled={safeMobileCardPage >= totalMobileCardPages - 1}
                 onClick={() =>
                   goToMobileCardsPage(

@@ -6,6 +6,7 @@ import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropd
 import {
   ADMIN_CONTROL_CLASS,
   ADMIN_DATE_INPUT_CLASS,
+  ADMIN_FORM_INPUT_CLASS,
   ADMIN_OUTLINE_BUTTON_CLASS,
   ADMIN_PRIMARY_BUTTON_CLASS,
 } from '@/shared/lib/admin-control-theme';
@@ -238,7 +239,7 @@ export function AttendanceControls({
                   onAbsenceFilterChange((nextValue as AbsenceFilterType | null) ?? 'all')
                 }
                 disabled={safeSelectedGroupIds.length === 0}
-                triggerClassName={ADMIN_CONTROL_CLASS}
+                triggerClassName={ADMIN_FORM_INPUT_CLASS}
                 className="
                   [&>div>button>div>span]:flex-1
                   [&>div>button>div>span]:text-center

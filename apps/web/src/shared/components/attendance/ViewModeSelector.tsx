@@ -52,16 +52,16 @@ export function ViewModeSelector({
       role="group"
       aria-label={tc('viewMode')}
       className={cn(
-        isTeacher
-          ? 'relative grid h-11 min-h-11 min-w-[190px] items-stretch rounded-lg border border-[rgba(14,14,16,0.12)] bg-[#f6f6f7] p-1 shadow-sm sm:min-w-[220px] lg:rounded-[15px]'
-          : cn(SEGMENTED_TOGGLE_GRID_TRACK_CLASS, 'min-w-[190px] sm:min-w-[220px]'),
+        SEGMENTED_TOGGLE_GRID_TRACK_CLASS,
+        'min-w-[190px] sm:min-w-[220px]',
+        isTeacher && 'bg-[#f6f6f7]',
       )}
       style={{ gridTemplateColumns: `repeat(${optionCount}, minmax(0, 1fr))` }}
     >
       <span
         aria-hidden
         className={cn(
-          isTeacher ? 'pointer-events-none absolute z-0 rounded-md bg-[#1010a3] shadow-sm transition-[left,width] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] lg:rounded-[11px]' : SEGMENTED_TOGGLE_INDICATOR_CLASS,
+          SEGMENTED_TOGGLE_INDICATOR_CLASS,
         )}
         style={getSegmentedIndicatorStyle(
           selectedIndex,

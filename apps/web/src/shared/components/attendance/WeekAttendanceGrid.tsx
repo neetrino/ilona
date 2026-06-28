@@ -13,6 +13,13 @@ import {
   DialogFooter,
 } from '@/shared/components/ui';
 import { Pencil, X } from 'lucide-react';
+import {
+  ATTENDANCE_CELL_RADIUS_CLASS,
+  ATTENDANCE_EDIT_ICON_BUTTON_CLASS,
+  ATTENDANCE_NOTE_BUTTON_CLASS,
+  ATTENDANCE_PRIMARY_BUTTON_CLASS,
+  ATTENDANCE_SMALL_OUTLINE_BUTTON_CLASS,
+} from '@/shared/components/attendance/attendance-button-theme';
 import type { Lesson } from '@/features/lessons';
 import type { AbsenceType } from '@/features/attendance';
 import { formatDateString, formatDateDisplay, isToday } from '@/features/attendance/utils/dateUtils';
@@ -607,7 +614,7 @@ export function WeekAttendanceGrid({
             type="button"
             size="icon"
             variant={isEditMode ? 'destructive' : 'outline'}
-            className="h-9 w-9"
+            className={ATTENDANCE_EDIT_ICON_BUTTON_CLASS}
             onClick={isEditMode ? handleCancelEditMode : handleStartEditMode}
             title={isEditMode ? t('cancelEditing') : t('enableEditing')}
             aria-label={isEditMode ? t('cancelEditing') : t('enableEditing')}
@@ -625,7 +632,7 @@ export function WeekAttendanceGrid({
             <Button
               onClick={handleConfirmEditMode}
               disabled={hasAnySaving || missingJustificationCount > 0}
-              className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold px-6 py-2.5 text-base shadow-md hover:shadow-lg transition-all"
+              className={cn(ATTENDANCE_PRIMARY_BUTTON_CLASS, 'px-6 text-base')}
               size="lg"
             >
               {t('confirmChanges')}
@@ -635,7 +642,7 @@ export function WeekAttendanceGrid({
             <Button
               onClick={handleSaveAll}
               disabled={datesWithChanges.length === 0 || hasAnySaving || missingJustificationCount > 0}
-              className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold px-6 py-2.5 text-base shadow-md hover:shadow-lg transition-all"
+              className={cn(ATTENDANCE_PRIMARY_BUTTON_CLASS, 'px-6 text-base')}
               size="lg"
             >
               {t('saveAllChanges')}
@@ -716,7 +723,7 @@ export function WeekAttendanceGrid({
                               }}
                               size="sm"
                               variant="outline"
-                              className="h-6 px-2 text-xs"
+                              className={ATTENDANCE_SMALL_OUTLINE_BUTTON_CLASS}
                               disabled={isDateSaving}
                             >
                               {tCommon('save')}
@@ -795,10 +802,10 @@ export function WeekAttendanceGrid({
                         >
                           {hasLessons ? (
                             <>
-                              <div className="flex items-center justify-center h-10 w-10 md:h-12 md:w-12 mx-auto rounded-md text-base md:text-lg font-bold relative">
+                              <div className={cn('flex items-center justify-center h-10 w-10 md:h-12 md:w-12 mx-auto text-base md:text-lg font-bold relative', ATTENDANCE_CELL_RADIUS_CLASS)}>
                                 {getStatusIcon(status)}
                                 {isDateSaving && (
-                                  <div className="absolute inset-0 flex items-center justify-center bg-white/80 rounded-md">
+                                  <div className={cn('absolute inset-0 flex items-center justify-center bg-white/80', ATTENDANCE_CELL_RADIUS_CLASS)}>
                                     <div className="h-4 w-4 animate-spin rounded-full border-[3px] border-current border-t-transparent"></div>
                                   </div>
                                 )}
@@ -814,7 +821,7 @@ export function WeekAttendanceGrid({
                               {status === 'absent_justified' && !!cellNote && !isDateSaving && (
                                 <button
                                   type="button"
-                                  className="absolute bottom-2 left-1.5 rounded-md bg-slate-800 px-2.5 py-1 text-xs font-bold tracking-wide text-white shadow-md hover:bg-slate-700"
+                                  className={cn('absolute bottom-2 left-1.5', ATTENDANCE_NOTE_BUTTON_CLASS)}
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     setCommentPreviewDialog({ studentId: student.id, dateStr });
@@ -905,6 +912,7 @@ export function WeekAttendanceGrid({
                     : '';
                 })()
               }
+              className={cn(ATTENDANCE_PRIMARY_BUTTON_CLASS, 'px-4')}
             >
               {t('saveComment')}
             </Button>
