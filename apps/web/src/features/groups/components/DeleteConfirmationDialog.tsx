@@ -9,8 +9,8 @@ import {
   DialogDescription,
   DialogFooter,
   Button,
-  DELETE_CONFIRMATION_DIALOG_CONTENT_CLASS,
   DELETE_CONFIRMATION_DIALOG_OVERLAY_CLASS,
+  useDeleteConfirmationDialogLayout,
 } from '@/shared/components/ui';
 
 interface DeleteConfirmationDialogProps {
@@ -45,14 +45,15 @@ export function DeleteConfirmationDialog({
     : isGroup
       ? t('deleteGroupGeneric')
       : t('deleteCenterGeneric');
+  const { sheet, stackOpen, contentClassName } = useDeleteConfirmationDialogLayout(open);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        sheet={false}
-        stackOpen={open}
+        sheet={sheet}
+        stackOpen={stackOpen}
         overlayClassName={DELETE_CONFIRMATION_DIALOG_OVERLAY_CLASS}
-        className={DELETE_CONFIRMATION_DIALOG_CONTENT_CLASS}
+        className={contentClassName}
       >
         <DialogHeader>
           <DialogTitle>{dialogTitle}</DialogTitle>

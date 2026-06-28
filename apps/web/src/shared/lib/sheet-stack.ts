@@ -1,5 +1,6 @@
 import type { CSSProperties } from 'react';
 import { useEffect, useState } from 'react';
+import { PORTAL_MOBILE_BOTTOM_NAV_Z_INDEX } from '@/shared/lib/portal-mobile-layout';
 import { cn } from '@/shared/lib/utils';
 
 export const PORTAL_SHEET_LAYER_ATTR = 'data-portal-sheet-layer';
@@ -14,6 +15,9 @@ const DATE_PICKER_POPOVER_ATTR = 'data-date-picker-popover';
 
 const BASE_Z_INDEX = 50;
 const LAYER_STEP = 20;
+const MOBILE_SHEET_LAYER_STEP = 4;
+const MOBILE_SHEET_MEDIA_QUERY = '(max-width: 1366px)';
+const MOBILE_SHEET_MAX_CONTENT_Z_INDEX = PORTAL_MOBILE_BOTTOM_NAV_Z_INDEX - 1;
 
 /** Keep backdrop darkness from the first sheet when stacking additional layers. */
 export const STACKED_SHEET_OVERLAY_DIM_SUPPRESS_CLASS = '!bg-transparent';
@@ -104,6 +108,38 @@ export const stackedSheetDialogHandlers = {
   onFocusOutside: preventStackedSheetDismiss,
 };
 
+function useMobileSheetViewport(): boolean {
+  const [isMobileSheet, setIsMobileSheet] = useState(false);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia(MOBILE_SHEET_MEDIA_QUERY);
+    const sync = () => setIsMobileSheet(mediaQuery.matches);
+    sync();
+    mediaQuery.addEventListener('change', sync);
+    return () => mediaQuery.removeEventListener('change', sync);
+  }, []);
+
+  return isMobileSheet;
+}
+
+function resolveSheetStackZIndexes(
+  layer: number | null,
+  isMobileSheet: boolean,
+): { overlayZIndex: number; contentZIndex: number } {
+  const layerStep = isMobileSheet ? MOBILE_SHEET_LAYER_STEP : LAYER_STEP;
+  const rawOverlayZIndex = layer !== null ? BASE_Z_INDEX + layer * layerStep : BASE_Z_INDEX;
+  const rawContentZIndex = rawOverlayZIndex + 1;
+
+  if (!isMobileSheet) {
+    return { overlayZIndex: rawOverlayZIndex, contentZIndex: rawContentZIndex };
+  }
+
+  return {
+    overlayZIndex: Math.min(rawOverlayZIndex, MOBILE_SHEET_MAX_CONTENT_Z_INDEX - 1),
+    contentZIndex: Math.min(rawContentZIndex, MOBILE_SHEET_MAX_CONTENT_Z_INDEX),
+  };
+}
+
 export function useSheetStackZIndex(active: boolean): {
   layer: number | null;
   isBaseLayer: boolean;
@@ -114,6 +150,7 @@ export function useSheetStackZIndex(active: boolean): {
   overlayDimClassName: string | undefined;
 } {
   const [layer, setLayer] = useState<number | null>(null);
+  const isMobileSheet = useMobileSheetViewport();
 
   useEffect(() => {
     if (!active) {
@@ -131,8 +168,7 @@ export function useSheetStackZIndex(active: boolean): {
     };
   }, [active]);
 
-  const overlayZIndex = layer !== null ? BASE_Z_INDEX + layer * LAYER_STEP : BASE_Z_INDEX;
-  const contentZIndex = overlayZIndex + 1;
+  const { overlayZIndex, contentZIndex } = resolveSheetStackZIndexes(layer, isMobileSheet);
   const isBaseLayer = layer === null || layer === 1;
 
   return {

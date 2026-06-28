@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl';
 import { useParams } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
-import { Button, Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DELETE_CONFIRMATION_DIALOG_CONTENT_CLASS, DELETE_CONFIRMATION_DIALOG_OVERLAY_CLASS } from '@/shared/components/ui';
+import { Button, Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DELETE_CONFIRMATION_DIALOG_OVERLAY_CLASS, useDeleteConfirmationDialogLayout } from '@/shared/components/ui';
 import { SalaryDetailsModal } from '@/features/finance/components/SalaryDetailsModal';
 import {
   useFinanceDashboard,
@@ -79,6 +79,9 @@ export default function FinancePage() {
     handlePaymentsPageChange,
     handleSalariesPageChange,
   } = useFinancePage();
+
+  const salaryDeleteLayout = useDeleteConfirmationDialogLayout(isDeleteDialogOpen);
+  const paymentsDeleteLayout = useDeleteConfirmationDialogLayout(isDeletePaymentsDialogOpen);
 
   // Fetch dashboard stats
   const { data: dashboard, isLoading: isLoadingDashboard } = useFinanceDashboard();
@@ -421,10 +424,10 @@ export default function FinancePage() {
         {/* Delete Confirmation Dialog */}
         <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
           <DialogContent
-            sheet={false}
-            stackOpen={isDeleteDialogOpen}
+            sheet={salaryDeleteLayout.sheet}
+            stackOpen={salaryDeleteLayout.stackOpen}
             overlayClassName={DELETE_CONFIRMATION_DIALOG_OVERLAY_CLASS}
-            className={DELETE_CONFIRMATION_DIALOG_CONTENT_CLASS}
+            className={salaryDeleteLayout.contentClassName}
           >
             <DialogHeader>
               <DialogTitle>{t('deleteSalaryRecords')}</DialogTitle>
@@ -466,10 +469,10 @@ export default function FinancePage() {
         {/* Delete Payments Confirmation Dialog */}
         <Dialog open={isDeletePaymentsDialogOpen} onOpenChange={setIsDeletePaymentsDialogOpen}>
           <DialogContent
-            sheet={false}
-            stackOpen={isDeletePaymentsDialogOpen}
+            sheet={paymentsDeleteLayout.sheet}
+            stackOpen={paymentsDeleteLayout.stackOpen}
             overlayClassName={DELETE_CONFIRMATION_DIALOG_OVERLAY_CLASS}
-            className={DELETE_CONFIRMATION_DIALOG_CONTENT_CLASS}
+            className={paymentsDeleteLayout.contentClassName}
           >
             <DialogHeader>
               <DialogTitle>{t('deletePayments')}</DialogTitle>

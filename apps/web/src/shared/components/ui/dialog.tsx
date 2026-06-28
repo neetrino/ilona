@@ -125,9 +125,10 @@ const DialogContent = React.forwardRef<
   const suppressStackedOverlayDim = useSheet && !isBaseLayer;
   const centeredOverlayClass = !useSheet
     ? isBaseLayer
-      ? 'bg-black/75'
-      : 'bg-black/35'
+      ? 'bg-black/80'
+      : 'bg-black/40'
     : undefined;
+  const overlayDimIsBase = !useSheet ? true : !suppressStackedOverlayDim;
 
   return (
     <DialogPortal>
@@ -138,7 +139,7 @@ const DialogContent = React.forwardRef<
             centeredOverlayClass,
             overlayClassName,
           ),
-          !suppressStackedOverlayDim,
+          overlayDimIsBase,
         )}
         style={overlayStyle}
         {...portalSheetLayerProps}
