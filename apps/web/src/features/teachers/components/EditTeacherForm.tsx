@@ -23,9 +23,6 @@ import { PortalSheetPortal } from '@/shared/components/ui/portal-sheet-portal';
 import { usePortalSheetDrag } from '@/shared/hooks/usePortalSheetDrag';
 import {
   PORTAL_FORM_SHEET_CLOSE_BUTTON_CLASS,
-  PORTAL_FORM_SHEET_HEADER_CLASS,
-  PORTAL_FORM_SHEET_OVERLAY_CLASS,
-  PORTAL_FORM_SHEET_SCROLL_CLASS,
   portalFormSheetContentClass,
 } from '@/shared/lib/portal-form-sheet-classes';
 import { Trash2, X } from 'lucide-react';
@@ -257,7 +254,7 @@ export function EditTeacherForm({
       <PortalSheetPortal open={isDialogOpen} dragStyle={dragStyle} contentClassName={portalFormSheetContentClass('2xl')} contentProps={{ 'aria-describedby': undefined }}>
           <PortalFormSheetDragHandle dragHandleProps={dragHandleProps} />
           <DialogPrimitive.Title className="sr-only">{tForm('editTitle')}</DialogPrimitive.Title>
-          <div className={PORTAL_FORM_SHEET_HEADER_CLASS}>
+          <div className="shrink-0 bg-[#f8f9fb] px-4 pb-4 pt-3 min-[1367px]:px-6 min-[1367px]:pb-5 min-[1367px]:pt-6">
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0 flex-1">
                 <h2 className="text-lg font-semibold text-[#3b3b40]">{tForm('editTitle')}</h2>
@@ -265,10 +262,10 @@ export function EditTeacherForm({
               {renderHeaderActions()}
             </div>
           </div>
-          <div className={PORTAL_FORM_SHEET_SCROLL_CLASS}>
+          <div className="min-h-0 overflow-y-auto overscroll-y-contain [touch-action:pan-y] [-webkit-overflow-scrolling:touch] px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-4 min-[1367px]:px-6 min-[1367px]:pb-6 min-[1367px]:pt-5">
 
         {isLoadingTeacher ? (
-          <div className="flex items-center justify-center py-8">
+          <div className="flex items-center justify-center py-4">
             <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
           </div>
         ) : (

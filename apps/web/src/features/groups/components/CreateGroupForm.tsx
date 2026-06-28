@@ -503,16 +503,33 @@ export function CreateGroupForm({ open, onOpenChange }: CreateGroupFormProps) {
                 ) : centers.length === 0 ? (
                   <p className="text-sm text-amber-600">{tForm('noCentersAvailable')}</p>
                 ) : (
-                  <SegmentedControl
-                    options={centerSegmentOptions}
-                    value={watchedCenterId}
-                    onChange={handleCenterChange}
-                    disabled={isSubmitting || isLoadingCenters}
-                    aria-label={tCommon('center')}
-                  />
+                  <>
+                    <div className="min-[1367px]:hidden">
+                      <SingleSelectDropdown
+                        id="centerId"
+                        triggerClassName={ADMIN_FORM_INPUT_CLASS}
+                        options={centerSegmentOptions}
+                        value={watchedCenterId || null}
+                        onValueChange={(nextValue) => handleCenterChange(nextValue ?? '')}
+                        placeholder={tForm('selectCenter')}
+                        isLoading={isLoadingCenters}
+                        error={errors.centerId?.message ?? null}
+                        disabled={isSubmitting || isLoadingCenters}
+                      />
+                    </div>
+                    <div className="hidden min-[1367px]:block">
+                      <SegmentedControl
+                        options={centerSegmentOptions}
+                        value={watchedCenterId}
+                        onChange={handleCenterChange}
+                        disabled={isSubmitting || isLoadingCenters}
+                        aria-label={tCommon('center')}
+                      />
+                    </div>
+                  </>
                 )}
                 {errors.centerId?.message ? (
-                  <p className="text-sm text-red-600">{errors.centerId.message}</p>
+                  <p className="hidden text-sm text-red-600 min-[1367px]:block">{errors.centerId.message}</p>
                 ) : null}
               </div>
 
