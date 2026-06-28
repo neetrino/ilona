@@ -89,6 +89,7 @@ export function TeacherShowcaseCard({
       onKeyDown={articleIsButton ? handleKeyDown : undefined}
       className={cn(
         'group overflow-hidden rounded-[1.75rem] border bg-white p-4 transition-all duration-300 md:rounded-3xl md:p-5',
+        'sm:flex sm:h-full sm:flex-col',
         isStudent
           ? 'border-[rgba(14,14,16,0.07)]'
           : 'border-slate-200 shadow-sm',
@@ -123,7 +124,7 @@ export function TeacherShowcaseCard({
 
       <div
         className={cn(
-          'relative mb-4 flex w-full justify-center',
+          'relative mb-4 flex w-full justify-center sm:mb-0 sm:shrink-0',
           photoOpensDetails &&
             'cursor-pointer rounded-3xl focus:outline-none focus-visible:outline-none focus-visible:ring-0',
         )}
@@ -155,7 +156,7 @@ export function TeacherShowcaseCard({
         />
       </div>
 
-      <div className="min-w-0 text-center">
+      <div className="min-w-0 text-center sm:flex sm:flex-1 sm:flex-col sm:justify-center sm:py-3">
         <h3
           className={cn(
             'truncate text-[clamp(1.125rem,7vw,2rem)] font-semibold leading-tight sm:text-xl',
@@ -183,15 +184,13 @@ export function TeacherShowcaseCard({
             />
             <span className="truncate">{experienceLabel}</span>
           </p>
-        ) : (
-          <div className="mt-2 h-8" aria-hidden />
-        )}
+        ) : null}
       </div>
 
       {afterExperience ? (
         <div
           className={cn(
-            'mt-4 border-t pt-4 text-left',
+            'mt-4 border-t pt-4 text-left sm:mt-0 sm:shrink-0',
             isStudent ? 'border-[rgba(14,14,16,0.07)]' : 'border-slate-100',
           )}
         >
