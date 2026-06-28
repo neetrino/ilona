@@ -25,9 +25,12 @@ import {
   PORTAL_FORM_SHEET_SCROLL_CLASS,
   portalFormSheetContentClass,
 } from '@/shared/lib/portal-form-sheet-classes';
+import { computeAgeFromDob } from '@/features/students/student-account-form.schema';
+import { resolveAgeFromDobAndManual } from '@/features/students/student-account-form.age';
 
 const LEVEL_OPTIONS = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
 const DEFAULT_LEVEL_ID = LEVEL_OPTIONS[0];
+const FORM_FIELD_CLASS = 'w-full rounded-[15px] border border-slate-300 px-3 py-2 text-sm';
 
 interface CenterOption {
   id: string;
@@ -158,6 +161,10 @@ export function EditLeadModal({
     () => lead?.attachments?.filter((attachment) => attachment.type === 'VOICE_RECORDING') ?? [],
     [lead?.attachments],
   );
+  const effectiveAge = useMemo(
+    () => resolveAgeFromDobAndManual(form.dateOfBirth, form.age),
+    [form.age, form.dateOfBirth],
+  );
 
   // Sync form whenever modal opens or lead data is available (so edit always shows current saved values)
   useEffect(() => {
@@ -166,12 +173,13 @@ export function EditLeadModal({
       setForm({});
       return;
     }
+    const dob = lead.dateOfBirth ? lead.dateOfBirth.slice(0, 10) : undefined;
     setForm({
       firstName: lead.firstName ?? '',
       lastName: lead.lastName ?? '',
       phone: (lead.phone ?? '').replace(/\D/g, ''),
-      age: lead.age ?? undefined,
-      dateOfBirth: lead.dateOfBirth ? lead.dateOfBirth.slice(0, 10) : undefined,
+      age: resolveAgeFromDobAndManual(dob, lead.age ?? undefined),
+      dateOfBirth: dob,
       firstLessonDate: lead.firstLessonDate ? lead.firstLessonDate.slice(0, 10) : undefined,
       comment: lead.comment ?? '',
       parentName: lead.parentName ?? '',
@@ -209,7 +217,7 @@ export function EditLeadModal({
         firstName: form.firstName,
         lastName: form.lastName,
         phone: form.phone,
-        age: form.age,
+        age: effectiveAge,
         dateOfBirth: form.dateOfBirth,
         firstLessonDate: form.firstLessonDate,
         parentName: form.parentName,
@@ -243,7 +251,11 @@ export function EditLeadModal({
       if (isManager) {
         delete updatePayload.centerId;
       }
-      await updateLead(leadId, updatePayload);
+      const resolvedAge = resolveAgeFromDobAndManual(form.dateOfBirth, form.age);
+      await updateLead(leadId, {
+        ...updatePayload,
+        age: resolvedAge,
+      });
       if (formStatus && formStatus !== lead.status) {
         await changeLeadStatus(leadId, {
           status: formStatus,
@@ -337,16 +349,13 @@ export function EditLeadModal({
             </section>
             <section className="space-y-2">
               <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">{t('comment')}</h3>
-              <div>
-                <label className="mb-1 block text-sm font-medium text-slate-700">{t('comment')}</label>
-                <textarea
-                  rows={3}
-                  value={form.comment ?? ''}
-                  onChange={(e) => setForm((f) => ({ ...f, comment: e.target.value }))}
-                  placeholder={t('commentPlaceholder')}
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-                />
-              </div>
+              <textarea
+                rows={3}
+                value={form.comment ?? ''}
+                onChange={(e) => setForm((f) => ({ ...f, comment: e.target.value }))}
+                placeholder={t('commentPlaceholder')}
+                className={FORM_FIELD_CLASS}
+              />
             </section>
             <section className="space-y-3">
               <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">{t('basicInfo')}</h3>
@@ -357,7 +366,7 @@ export function EditLeadModal({
                     type="text"
                     value={form.firstName ?? ''}
                     onChange={(e) => setForm((f) => ({ ...f, firstName: e.target.value }))}
-                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                    className={FORM_FIELD_CLASS}
                   />
                 </div>
                 <div>
@@ -366,7 +375,7 @@ export function EditLeadModal({
                     type="text"
                     value={form.lastName ?? ''}
                     onChange={(e) => setForm((f) => ({ ...f, lastName: e.target.value }))}
-                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                    className={FORM_FIELD_CLASS}
                   />
                 </div>
                 <div className="col-span-2 sm:col-span-1">
@@ -377,7 +386,7 @@ export function EditLeadModal({
                     autoComplete="tel"
                     value={form.phone != null && form.phone !== '' ? `+${form.phone}` : '+'}
                     onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value.replace(/\D/g, '') }))}
-                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                    className={FORM_FIELD_CLASS}
                   />
                 </div>
               </div>
@@ -385,34 +394,44 @@ export function EditLeadModal({
             <section className="space-y-3">
               <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">{t('additionalInfo')}</h3>
               <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
-                <div className="col-span-2 sm:col-span-1">
-                  <label className="mb-1 block text-sm font-medium text-slate-700">{t('age')}</label>
-                  <input
-                    type="number"
-                    min={0}
-                    value={form.age ?? ''}
-                    onChange={(e) =>
-                      setForm((f) => ({
-                        ...f,
-                        age: e.target.value ? Number(e.target.value) : undefined,
-                      }))
-                    }
-                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-                  />
-                </div>
                 <div>
                   <label className="mb-1 block text-sm font-medium text-slate-700">
                     {t('dateOfBirth')}
                   </label>
                   <DatePickerInput
                     value={form.dateOfBirth ?? ''}
-                    onValueChange={(nextValue) =>
-                      setForm((f) => ({ ...f, dateOfBirth: nextValue || undefined }))
-                    }
-                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                    onValueChange={(nextValue) => {
+                      const dateOfBirth = nextValue || undefined;
+                      const fromDob = computeAgeFromDob(dateOfBirth);
+                      setForm((f) => ({
+                        ...f,
+                        dateOfBirth,
+                        age: fromDob ?? f.age,
+                      }));
+                    }}
+                    className={cn(FORM_FIELD_CLASS, 'h-auto min-h-0 pr-10')}
                   />
                 </div>
                 <div>
+                  <label className="mb-1 block text-sm font-medium text-slate-700">{t('age')}</label>
+                  {form.dateOfBirth && effectiveAge !== undefined ? (
+                    <p className={cn(FORM_FIELD_CLASS, 'bg-slate-50 text-slate-800')}>{effectiveAge}</p>
+                  ) : (
+                    <input
+                      type="number"
+                      min={0}
+                      value={form.age ?? ''}
+                      onChange={(e) =>
+                        setForm((f) => ({
+                          ...f,
+                          age: e.target.value ? Number(e.target.value) : undefined,
+                        }))
+                      }
+                      className={FORM_FIELD_CLASS}
+                    />
+                  )}
+                </div>
+                <div className="col-span-2 sm:col-span-1">
                   <label className="mb-1 block text-sm font-medium text-slate-700">
                     {t('firstLessonDate')}
                   </label>
@@ -421,12 +440,12 @@ export function EditLeadModal({
                     onValueChange={(nextValue) =>
                       setForm((f) => ({ ...f, firstLessonDate: nextValue || undefined }))
                     }
-                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                    className={cn(FORM_FIELD_CLASS, 'h-auto min-h-0 pr-10')}
                   />
                 </div>
               </div>
             </section>
-            {typeof form.age === 'number' && form.age > 0 && form.age < 18 && (
+            {effectiveAge !== undefined && effectiveAge > 0 && effectiveAge < 18 && (
               <section className="space-y-3 rounded-lg border border-slate-200 bg-slate-50 p-3">
                 <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
                   {t('parentDetailsUnder18')}
@@ -438,7 +457,7 @@ export function EditLeadModal({
                     value={form.parentName ?? ''}
                     onChange={(e) => setForm((f) => ({ ...f, parentName: e.target.value }))}
                     placeholder={t('parentNamePlaceholder')}
-                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                    className={FORM_FIELD_CLASS}
                   />
                 </div>
                 <div>
@@ -448,7 +467,7 @@ export function EditLeadModal({
                     value={form.parentSurname ?? ''}
                     onChange={(e) => setForm((f) => ({ ...f, parentSurname: e.target.value }))}
                     placeholder={t('parentSurnamePlaceholder')}
-                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                    className={FORM_FIELD_CLASS}
                   />
                 </div>
                 <div>
@@ -461,7 +480,7 @@ export function EditLeadModal({
                       setForm((f) => ({ ...f, parentPhone: e.target.value.replace(/\D/g, '') }))
                     }
                     placeholder={t('parentPhonePlaceholder')}
-                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                    className={FORM_FIELD_CLASS}
                   />
                 </div>
                 <div>
@@ -472,7 +491,7 @@ export function EditLeadModal({
                     value={form.parentEmail ?? ''}
                     onChange={(e) => setForm((f) => ({ ...f, parentEmail: e.target.value }))}
                     placeholder={t('parentEmailPlaceholder')}
-                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                    className={FORM_FIELD_CLASS}
                   />
                 </div>
                 <div>
@@ -482,7 +501,7 @@ export function EditLeadModal({
                     value={form.parentPassportInfo ?? ''}
                     onChange={(e) => setForm((f) => ({ ...f, parentPassportInfo: e.target.value }))}
                     placeholder={t('passportPlaceholder')}
-                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                    className={FORM_FIELD_CLASS}
                   />
                 </div>
               </section>
@@ -592,7 +611,7 @@ export function EditLeadModal({
                       setForm((f) => ({ ...f, archivedReason: e.target.value || undefined }))
                     }
                     placeholder={t('archiveReasonPlaceholder')}
-                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                    className={FORM_FIELD_CLASS}
                   />
                 </div>
               )}
