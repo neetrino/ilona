@@ -342,6 +342,7 @@ export default function StudentsPage() {
             : undefined
         }
         onDeactivate={handleDeactivateClick}
+        onFeedback={handleShowFeedback}
         actionsDisabled={deleteStudent.isPending || updateStudent.isPending}
       />
     </DashboardLayout>

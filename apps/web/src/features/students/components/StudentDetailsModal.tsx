@@ -13,7 +13,9 @@ import * as DialogPrimitive from '@radix-ui/react-dialog';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
-import { AdminAvatarPhotoLightbox, Avatar, Badge, PublicAssetImage, ActionButtons } from '@/shared/components/ui';
+import { AdminAvatarPhotoLightbox, Avatar, Badge, PublicAssetImage } from '@/shared/components/ui';
+import { ADMIN_ICON_BUTTON_SM_CLASS } from '@/shared/lib/admin-control-theme';
+import { useOutsidePress } from '@/shared/hooks/useOutsidePress';
 import { cn, formatCurrency, formatPhoneForDisplay, getAppDateLocaleTag } from '@/shared/lib/utils';
 import { PORTAL_DESKTOP_SIDE_SHEET_CLASS } from '@/shared/lib/portal-form-sheet-classes';
 import { portalInnerCardClass, portalPrimaryButtonClass } from '@/shared/lib/portal-theme';
@@ -29,7 +31,11 @@ import {
   FileText,
   GraduationCap,
   Mail,
+  MessageCircle,
+  MoreVertical,
+  Pencil,
   Phone,
+  Trash2,
   UserCircle,
   Users,
   X,
@@ -43,6 +49,7 @@ export interface StudentDetailsModalProps {
   onEdit?: (student: Student) => void;
   onDelete?: (student: Student) => void;
   onDeactivate?: (student: Student) => void;
+  onFeedback?: (student: Student) => void;
   actionsDisabled?: boolean;
 }
 
@@ -135,6 +142,7 @@ export function StudentDetailsModal({
   onEdit,
   onDelete,
   onDeactivate,
+  onFeedback,
   actionsDisabled = false,
 }: StudentDetailsModalProps) {
   const { user } = useAuthStore();
@@ -153,6 +161,8 @@ export function StudentDetailsModal({
   const { data: statistics } = useStudentStatistics(studentId || '', !!studentId && open && !!student);
 
   const [photoPreviewOpen, setPhotoPreviewOpen] = useState(false);
+  const [actionsMenuOpen, setActionsMenuOpen] = useState(false);
+  const headerActionsRef = useRef<HTMLDivElement>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(open);
   const [dragOffsetY, setDragOffsetY] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
@@ -168,6 +178,14 @@ export function StudentDetailsModal({
   useEffect(() => {
     if (!open) setPhotoPreviewOpen(false);
   }, [open]);
+
+  useEffect(() => {
+    if (!open) setActionsMenuOpen(false);
+  }, [open]);
+
+  useOutsidePress(headerActionsRef, () => setActionsMenuOpen(false), {
+    enabled: actionsMenuOpen,
+  });
 
   useEffect(() => {
     setPhotoPreviewOpen(false);
@@ -260,7 +278,17 @@ export function StudentDetailsModal({
       : Number(student?.monthlyFee || 0);
 
   const avatarUrl = student?.user?.avatarUrl;
-  const showActions = !!(onEdit || onDelete || onDeactivate);
+  const showActions = !!(onEdit || onDelete || onDeactivate || onFeedback);
+
+  const runHeaderAction = (action: () => void) => {
+    setActionsMenuOpen(false);
+    action();
+  };
+
+  const studentActionsMenuItemClass =
+    'flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm text-[#3b3b40] transition-colors hover:bg-[#f6f6f7] disabled:cursor-not-allowed disabled:opacity-50';
+
+  const canShowActionsMenu = showActions && !!student && !isLoading && !error;
 
   const { overlayStyle, contentStyle, isBaseLayer } = useSheetStackZIndex(isDialogOpen);
 
@@ -300,7 +328,7 @@ export function StudentDetailsModal({
       </div>
       <DialogPrimitive.Title className="sr-only">{t('studentDetails')}</DialogPrimitive.Title>
       <div className="flex items-center border-b border-slate-200 bg-white px-4 py-3 min-[1367px]:justify-between min-[1367px]:px-6">
-        <div className="flex items-center gap-2">
+        <div className="flex min-w-0 items-center gap-2">
           <Image
             src="/students-logo.webp"
             alt=""
@@ -308,16 +336,97 @@ export function StudentDetailsModal({
             width={20}
             height={20}
           />
-          <h2 className="mt-0.5 text-[1.0625rem] font-semibold text-[#3b3b40] min-[1367px]:mt-0 min-[1367px]:text-lg">{t('studentDetails')}</h2>
+          <h2 className="mt-0.5 truncate text-[1.0625rem] font-semibold text-[#3b3b40] min-[1367px]:mt-0 min-[1367px]:text-lg">
+            {t('studentDetails')}
+          </h2>
         </div>
-        <button
-          type="button"
-          onClick={requestClose}
-          className="hidden rounded-lg p-2 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900 min-[1367px]:inline-flex"
-          aria-label={tCommon('close')}
-        >
-          <X className="h-4 w-4" />
-        </button>
+        <div className="flex shrink-0 items-center gap-1">
+          {canShowActionsMenu ? (
+            <div ref={headerActionsRef} className="relative shrink-0">
+              <button
+                type="button"
+                aria-label={tCommon('actions')}
+                aria-haspopup="menu"
+                aria-expanded={actionsMenuOpen}
+                disabled={actionsDisabled}
+                onClick={() => setActionsMenuOpen((prev) => !prev)}
+                className={cn(
+                  ADMIN_ICON_BUTTON_SM_CLASS,
+                  'text-[#3b3b40] hover:bg-[#f3f3f4] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1010a3]/20',
+                  actionsDisabled && 'cursor-not-allowed opacity-50',
+                )}
+              >
+                <MoreVertical className="h-4 w-4" aria-hidden="true" />
+              </button>
+              {actionsMenuOpen ? (
+                <div
+                  role="menu"
+                  className="absolute right-0 top-full z-30 mt-1 min-w-[11rem] overflow-hidden rounded-xl border border-[rgba(14,14,16,0.08)] bg-white p-1 shadow-[0_16px_40px_rgba(15,23,42,0.14)] ring-1 ring-black/5"
+                >
+                  {onFeedback ? (
+                    <button
+                      type="button"
+                      role="menuitem"
+                      disabled={actionsDisabled}
+                      onClick={() => runHeaderAction(() => onFeedback(student!))}
+                      className={studentActionsMenuItemClass}
+                    >
+                      <MessageCircle className="h-4 w-4 shrink-0 text-[#1010a3]" aria-hidden="true" />
+                      {t('teacherFeedback')}
+                    </button>
+                  ) : null}
+                  {onEdit ? (
+                    <button
+                      type="button"
+                      role="menuitem"
+                      disabled={actionsDisabled}
+                      onClick={() => runHeaderAction(() => onEdit(student!))}
+                      className={studentActionsMenuItemClass}
+                    >
+                      <Pencil className="h-4 w-4 shrink-0" aria-hidden="true" />
+                      {tCommon('edit')}
+                    </button>
+                  ) : null}
+                  {onDeactivate ? (
+                    <button
+                      type="button"
+                      role="menuitem"
+                      disabled={actionsDisabled}
+                      onClick={() => runHeaderAction(() => onDeactivate(student!))}
+                      className={studentActionsMenuItemClass}
+                    >
+                      <UserCircle className="h-4 w-4 shrink-0" aria-hidden="true" />
+                      {isUserActive ? tTeachers('deactivate') : tTeachers('activate')}
+                    </button>
+                  ) : null}
+                  {onDelete ? (
+                    <button
+                      type="button"
+                      role="menuitem"
+                      disabled={actionsDisabled}
+                      onClick={() => runHeaderAction(() => onDelete(student!))}
+                      className={cn(
+                        studentActionsMenuItemClass,
+                        'text-red-600 hover:bg-red-50',
+                      )}
+                    >
+                      <Trash2 className="h-4 w-4 shrink-0" aria-hidden="true" />
+                      {tCommon('delete')}
+                    </button>
+                  ) : null}
+                </div>
+              ) : null}
+            </div>
+          ) : null}
+          <button
+            type="button"
+            onClick={requestClose}
+            className="rounded-lg p-2 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900 min-[1367px]:inline-flex"
+            aria-label={tCommon('close')}
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
       </div>
       <div className="overflow-y-auto px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-4 min-[1367px]:p-6">
       {!studentId ? (
@@ -347,13 +456,13 @@ export function StudentDetailsModal({
         <p className="text-slate-500">{t('studentNotFound')}</p>
       ) : (
         <>
-          {/* Mobile: actions opposite avatar at top */}
-          <div className="grid grid-cols-[1fr_auto] grid-rows-[auto_auto] gap-x-3 gap-y-4 pb-6 sm:hidden">
+          {/* Mobile: avatar + name */}
+          <div className="space-y-4 pb-6 sm:hidden">
             <button
               type="button"
               onClick={() => student.user?.avatarUrl && setPhotoPreviewOpen(true)}
               className={cn(
-                'col-start-1 row-start-1 self-start rounded-full flex-shrink-0 overflow-hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2',
+                'rounded-full flex-shrink-0 overflow-hidden focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2',
                 !student.user?.avatarUrl && 'cursor-default pointer-events-none',
               )}
               aria-label={student.user?.avatarUrl ? tTeachers('viewFullPhoto') : undefined}
@@ -366,30 +475,7 @@ export function StudentDetailsModal({
                 alt={fullName}
               />
             </button>
-            {showActions && (
-              <div className="col-start-2 row-start-1 self-start">
-                <ActionButtons
-                  onEdit={onEdit ? () => onEdit(student) : undefined}
-                  onDisable={onDeactivate ? () => onDeactivate(student) : undefined}
-                  onDelete={onDelete ? () => onDelete(student) : undefined}
-                  isActive={isUserActive}
-                  disabled={actionsDisabled}
-                  size="md"
-                  className="shrink-0"
-                  ariaLabels={{
-                    edit: t('editStudentAria'),
-                    disable: isUserActive ? t('deactivateStudentAria') : t('activateStudentAria'),
-                    delete: t('deleteStudentAria'),
-                  }}
-                  titles={{
-                    edit: t('editStudentAria'),
-                    disable: isUserActive ? t('deactivateStudentAria') : t('activateStudentAria'),
-                    delete: t('deleteStudentAria'),
-                  }}
-                />
-              </div>
-            )}
-            <div className="col-span-2 row-start-2 min-w-0">
+            <div className="min-w-0">
               <div className="flex items-center gap-2 mb-2 flex-wrap min-w-0">
                 <h3
                   className={cn(
@@ -441,8 +527,7 @@ export function StudentDetailsModal({
               />
             </button>
             <div className="flex-1 min-w-0">
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex items-center gap-2 mb-2 flex-wrap min-w-0">
+              <div className="mb-2 flex flex-wrap items-center gap-2 min-w-0">
                   <h3
                     className={cn(
                       'text-2xl font-bold leading-tight',
@@ -464,28 +549,6 @@ export function StudentDetailsModal({
                       <Badge variant="default">{formatLifecycle(student.status)}</Badge>
                     )}
                 </div>
-                {showActions && (
-                  <ActionButtons
-                    onEdit={onEdit ? () => onEdit(student) : undefined}
-                    onDisable={onDeactivate ? () => onDeactivate(student) : undefined}
-                    onDelete={onDelete ? () => onDelete(student) : undefined}
-                    isActive={isUserActive}
-                    disabled={actionsDisabled}
-                    size="md"
-                    className="shrink-0"
-                    ariaLabels={{
-                      edit: t('editStudentAria'),
-                      disable: isUserActive ? t('deactivateStudentAria') : t('activateStudentAria'),
-                      delete: t('deleteStudentAria'),
-                    }}
-                    titles={{
-                      edit: t('editStudentAria'),
-                      disable: isUserActive ? t('deactivateStudentAria') : t('activateStudentAria'),
-                      delete: t('deleteStudentAria'),
-                    }}
-                  />
-                )}
-              </div>
               {student.user?.email && (
                 <div className="mt-1 flex items-center gap-2 text-slate-500 text-sm">
                   <Mail className="h-4 w-4 text-slate-400 shrink-0" aria-hidden="true" />
