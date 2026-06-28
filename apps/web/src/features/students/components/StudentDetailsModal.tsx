@@ -223,8 +223,6 @@ export function StudentDetailsModal({
 
   const avatarUrl = student?.user?.avatarUrl;
   const showActions = !!(onEdit || onDelete || onDeactivate);
-  const basicInfoCardCount = student ? 3 + (student.dateOfBirth ? 1 : 0) : 0;
-  const basicInfoMobileTwoColumns = basicInfoCardCount > 0 && basicInfoCardCount % 2 === 0;
 
   return (
     <>
@@ -461,12 +459,7 @@ export function StudentDetailsModal({
 
           <div className="space-y-5 pt-[10px] min-[1367px]:pt-0">
             <h4 className="font-semibold text-slate-800 text-base sm:text-lg">{tTeachers('basicInformation')}</h4>
-            <div
-              className={cn(
-                'grid gap-4 sm:grid-cols-2 min-[1367px]:flex min-[1367px]:gap-3',
-                basicInfoMobileTwoColumns ? 'grid-cols-2' : 'grid-cols-1',
-              )}
-            >
+            <div className="grid grid-cols-2 gap-4 min-[1367px]:flex min-[1367px]:gap-3">
               <div className="rounded-lg border border-slate-200 bg-slate-50/60 p-4 space-y-1 min-[1367px]:min-w-0 min-[1367px]:flex-1">
                 <label className="text-sm font-medium text-slate-600 flex items-center gap-2">
                   <Phone className="h-4 w-4 text-slate-400 shrink-0" aria-hidden="true" />
@@ -492,7 +485,12 @@ export function StudentDetailsModal({
                   <p className="text-slate-800 text-sm sm:text-base">{formatDisplayDate(student.dateOfBirth, locale)}</p>
                 </div>
               )}
-              <div className="rounded-lg border border-slate-200 bg-slate-50/60 p-4 space-y-1 min-[1367px]:min-w-0 min-[1367px]:flex-1">
+              <div
+                className={cn(
+                  'rounded-lg border border-slate-200 bg-slate-50/60 p-4 space-y-1 min-[1367px]:min-w-0 min-[1367px]:flex-1',
+                  !student.dateOfBirth && 'col-span-2 min-[1367px]:col-span-1',
+                )}
+              >
                 <label className="text-sm font-medium text-slate-600 flex items-center gap-2">
                   <CircleDollarSign className="h-4 w-4 text-slate-400 shrink-0" aria-hidden="true" />
                   {t('monthlyFeeLabel')}
