@@ -1,20 +1,19 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import type { CrmLead, CrmLeadStatus } from '@/features/crm/types';
 import { CRM_COLUMN_ORDER } from '@/features/crm/types';
 import {
   ArrowRightLeft,
   Building2,
-  CalendarDays,
   CheckCircle2,
-  Clock3,
   GraduationCap,
   Phone,
   User,
   Users,
 } from 'lucide-react';
-import { cn } from '@/shared/lib/utils';
+import { cn, getAppDateLocaleTag } from '@/shared/lib/utils';
+import { LessonListDateCell } from '@/shared/components/calendar/LessonListDateCell';
 import { CrmStatusSelector } from './CrmStatusSelector';
 import { CrmBranchSelector, type CrmBranchOption } from './CrmBranchSelector';
 import { LeadCardVoiceInline } from './LeadCardVoiceInline';
@@ -31,16 +30,6 @@ interface LeadCardProps {
   className?: string;
 }
 
-function formatRecordingTime(isoDate: string): string {
-  const d = new Date(isoDate);
-  return d.toLocaleTimeString(undefined, {
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-  });
-}
-
-/** CRM cards: API often stores digits-only; show E.164-style leading + when absent. */
 function formatPhoneForDisplay(phone: string): string {
   const trimmed = phone.trim();
   if (!trimmed) return '';
@@ -59,18 +48,11 @@ export function LeadCard({
   className,
 }: LeadCardProps) {
   const t = useTranslations('crm');
+  const locale = useLocale();
   const voiceAttachment = lead.attachments?.find((a) => a.type === 'VOICE_RECORDING');
   const name =
     [lead.firstName, lead.lastName].filter(Boolean).join(' ') ||
     (voiceAttachment ? t('voiceNote') : t('noName'));
-  const createdAt = lead.createdAt
-    ? new Date(lead.createdAt).toLocaleDateString(undefined, {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-      })
-    : '';
-  const recordingTime = lead.createdAt ? formatRecordingTime(lead.createdAt) : '';
 
   const handleStatusChange = (status: CrmLeadStatus) => {
     if (status !== lead.status) onStatusChange?.(lead.id, status);
@@ -90,22 +72,26 @@ export function LeadCard({
         className
       )}
     >
-      {/* Top section: name */}
-      <div className="flex items-start justify-between gap-2">
+      {/* Top section: name + date/time */}
+      <div className="flex items-center justify-between gap-2">
         <p className="min-w-0 flex-1 font-medium text-slate-900 truncate">{name}</p>
+        {lead.createdAt ? (
+          <>
+            <div className="hidden shrink-0 origin-top-right scale-[0.82] lg:block">
+              <LessonListDateCell dateStr={lead.createdAt} locale={locale} />
+            </div>
+            <p className="shrink-0 text-xs text-slate-400 lg:hidden">
+              {new Date(lead.createdAt).toLocaleDateString(getAppDateLocaleTag(locale), {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric',
+              })}
+            </p>
+          </>
+        ) : null}
       </div>
 
       {/* Middle section: lead info */}
-      <p className="mt-1 flex items-center gap-1.5 text-xs text-slate-400">
-        <CalendarDays className="h-3.5 w-3.5 shrink-0" />
-        <span>{createdAt}</span>
-      </p>
-      {recordingTime && (
-        <p className="flex items-center gap-1.5 text-xs text-slate-500">
-          <Clock3 className="h-3.5 w-3.5 shrink-0" />
-          <span>{recordingTime}</span>
-        </p>
-      )}
       {lead.phone && (
         <p className="mt-0.5 flex items-center gap-1.5 text-sm text-slate-500 truncate">
           <Phone className="h-3.5 w-3.5 shrink-0" />
