@@ -42,7 +42,8 @@ export default function TeachersPage() {
     selectedTeacherIdForEdit,
     isAddTeacherOpen,
     isEditTeacherOpen,
-    isDeleteDialogOpen,
+    teacherIdPendingDelete,
+    teacherPendingDeleteLabel,
     isBulkDeleteDialogOpen,
     isDetailsDrawerOpen,
     allSelected,
@@ -87,6 +88,7 @@ export default function TeachersPage() {
     handleActiveCenterTabChange,
     handleEditClick,
     handleDeleteClick,
+    handleDeleteDialogOpenChange,
     handleDeleteConfirm,
     handleBulkDeleteClick,
     handleBulkDeleteConfirm,
@@ -96,7 +98,6 @@ export default function TeachersPage() {
     handleDetailsDrawerClose,
     setIsAddTeacherOpen,
     setIsEditTeacherOpen,
-    setIsDeleteDialogOpen,
     setIsBulkDeleteDialogOpen,
     setSelectedTeacher,
     setDeleteError,
@@ -238,17 +239,10 @@ export default function TeachersPage() {
 
       {/* Delete Confirmation Dialog */}
       <DeleteConfirmationDialog
-        open={isDeleteDialogOpen}
-        onOpenChange={(open) => {
-          setIsDeleteDialogOpen(open);
-          if (!open) {
-            setSelectedTeacher(null);
-            setDeleteError(null);
-            setDeleteSuccess(false);
-          }
-        }}
+        open={teacherIdPendingDelete !== null}
+        onOpenChange={handleDeleteDialogOpenChange}
         onConfirm={handleDeleteConfirm}
-        teacherName={selectedTeacher ? `${selectedTeacher.user.firstName} ${selectedTeacher.user.lastName}` : undefined}
+        teacherName={teacherPendingDeleteLabel ?? undefined}
         isLoading={deleteTeacher.isPending}
         error={deleteError}
       />

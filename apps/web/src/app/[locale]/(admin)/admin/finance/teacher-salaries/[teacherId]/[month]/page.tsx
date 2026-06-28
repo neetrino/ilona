@@ -6,7 +6,7 @@ import { useTranslations } from 'next-intl';
 import { useAppSearchUrl } from '@/shared/hooks/useAppSearchUrl';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { DataTable } from '@/shared/components/ui';
-import { Button, StatCard } from '@/shared/components/ui';
+import { Button, StatCard, DeleteConfirmationDialog } from '@/shared/components/ui';
 import { useSalaryBreakdown, useExcludeLessonsFromSalary, financeKeys } from '@/features/finance/hooks/useFinance';
 import { TeacherSubstituteBadge, substituteLessonChipClassName } from '@/features/finance';
 import type { SalaryBreakdownLesson } from '@/features/finance/types';
@@ -14,14 +14,6 @@ import { cn } from '@/shared/lib/utils';
 import { Trash2, ArrowLeft, Wallet, TrendingDown, TrendingUp } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { ObligationDetailsModal } from '@/features/finance/components/ObligationDetailsModal';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from '@/shared/components/ui';
 import { formatCurrency } from '@/shared/lib/utils';
 import { SelectAllCheckbox } from '../../../components/SelectAllCheckbox';
 
@@ -574,42 +566,21 @@ export default function SalaryBreakdownPage() {
         )}
       </div>
 
-      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>{t('excludeLessonsTitle')}</DialogTitle>
-            <DialogDescription>
-              {t('excludeLessonsLead', { count: selectedLessonIds.size })} {t('excludeLessonsDetail')}
-            </DialogDescription>
-          </DialogHeader>
-          {deleteError && (
-            <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
-              <p className="text-sm text-red-600">{deleteError}</p>
-            </div>
-          )}
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => {
-                setIsDeleteDialogOpen(false);
-                setDeleteError(null);
-              }}
-              disabled={excludeLessons.isPending}
-            >
-              {tCommon('cancel')}
-            </Button>
-            <Button
-              type="button"
-              variant="destructive"
-              onClick={handleDeleteConfirm}
-              disabled={excludeLessons.isPending}
-            >
-              {excludeLessons.isPending ? t('excluding') : t('excludeLessonsConfirm')}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <DeleteConfirmationDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={(open) => {
+          setIsDeleteDialogOpen(open);
+          if (!open) setDeleteError(null);
+        }}
+        onConfirm={handleDeleteConfirm}
+        title={t('excludeLessonsTitle')}
+        description={`${t('excludeLessonsLead', { count: selectedLessonIds.size })} ${t('excludeLessonsDetail')}`}
+        isLoading={excludeLessons.isPending}
+        error={deleteError}
+        confirmLabel={t('excludeLessonsConfirm')}
+        cancelLabel={tCommon('cancel')}
+        loadingLabel={t('excluding')}
+      />
 
       <ObligationDetailsModal
         lessonId={selectedLessonIdForObligation}

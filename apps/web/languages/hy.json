@@ -2059,6 +2059,8 @@
     "created": "Ստեղծվել է",
     "updated": "Թարմացվել է",
     "deleteLead": "Ջնջել լիդը",
+    "deleteLeadConfirmDescription": "Վստահ եք, որ ցանկանում եք ջնջել այս լիդը?",
+    "deleteLeadConfirm": "Հաստատել",
     "statusNew": "Նոր",
     "statusFirstLesson": "Առաջին դաս",
     "statusPaid": "Վճարված",

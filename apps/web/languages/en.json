@@ -2037,6 +2037,8 @@
     "created": "Created",
     "updated": "Updated",
     "deleteLead": "Delete lead",
+    "deleteLeadConfirmDescription": "Are you sure you want to delete this lead?",
+    "deleteLeadConfirm": "Confirm",
     "statusNew": "New",
     "statusFirstLesson": "First Lesson",
     "statusPaid": "Paid",

@@ -58,7 +58,8 @@ export function useTeachersPage() {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   
   // Modal/Dialog states
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [teacherIdPendingDelete, setTeacherIdPendingDelete] = useState<string | null>(null);
+  const [teacherPendingDeleteLabel, setTeacherPendingDeleteLabel] = useState<string | null>(null);
   const [isBulkDeleteDialogOpen, setIsBulkDeleteDialogOpen] = useState(false);
   const [selectedTeacher, setSelectedTeacher] = useState<Teacher | null>(null);
   
@@ -412,24 +413,33 @@ export function useTeachersPage() {
   };
 
   const handleDeleteClick = (teacher: Teacher) => {
-    setSelectedTeacher(teacher);
+    setTeacherIdPendingDelete(teacher.id);
+    setTeacherPendingDeleteLabel(`${teacher.user.firstName} ${teacher.user.lastName}`);
     setDeleteError(null);
     setDeleteSuccess(false);
-    setIsDeleteDialogOpen(true);
+  };
+
+  const handleDeleteDialogOpenChange = (open: boolean) => {
+    if (open) return;
+    if (deleteTeacher.isPending) return;
+    setTeacherIdPendingDelete(null);
+    setTeacherPendingDeleteLabel(null);
+    setDeleteError(null);
+    setDeleteSuccess(false);
   };
 
   const handleDeleteConfirm = async () => {
-    if (!selectedTeacher) return;
+    if (!teacherIdPendingDelete) return;
 
     setDeleteError(null);
     setDeleteSuccess(false);
 
     try {
-      const deletedId = selectedTeacher.id;
+      const deletedId = teacherIdPendingDelete;
       await deleteTeacher.mutateAsync(deletedId);
       setDeleteSuccess(true);
-      setIsDeleteDialogOpen(false);
-      setSelectedTeacher(null);
+      setTeacherIdPendingDelete(null);
+      setTeacherPendingDeleteLabel(null);
 
       if (readUrlSearchParam(EDIT_TEACHER_URL_PARAM, searchParams) === deletedId) {
         replaceParams({ [EDIT_TEACHER_URL_PARAM]: null });
@@ -564,7 +574,8 @@ export function useTeachersPage() {
     selectedTeacherIdForEdit,
     isAddTeacherOpen,
     isEditTeacherOpen,
-    isDeleteDialogOpen,
+    teacherIdPendingDelete,
+    teacherPendingDeleteLabel,
     isBulkDeleteDialogOpen,
     isDetailsDrawerOpen,
     allSelected,
@@ -616,6 +627,7 @@ export function useTeachersPage() {
     handleActiveCenterTabChange,
     handleEditClick,
     handleDeleteClick,
+    handleDeleteDialogOpenChange,
     handleDeleteConfirm,
     handleBulkDeleteClick,
     handleBulkDeleteConfirm,
@@ -625,7 +637,6 @@ export function useTeachersPage() {
     handleDetailsDrawerClose,
     setIsAddTeacherOpen,
     setIsEditTeacherOpen,
-    setIsDeleteDialogOpen,
     setIsBulkDeleteDialogOpen,
     setSelectedTeacher,
     setDeleteError,

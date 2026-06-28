@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl';
 import { useParams } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
-import { Button, Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DELETE_CONFIRMATION_DIALOG_OVERLAY_CLASS, useDeleteConfirmationDialogLayout } from '@/shared/components/ui';
+import { Button, DeleteConfirmationDialog } from '@/shared/components/ui';
 import { SalaryDetailsModal } from '@/features/finance/components/SalaryDetailsModal';
 import {
   useFinanceDashboard,
@@ -29,6 +29,7 @@ import { useIsIPad } from '@/shared/hooks/useIsIPad';
 
 export default function FinancePage() {
   const t = useTranslations('finance');
+  const tCommon = useTranslations('common');
   const params = useParams();
   const locale = params.locale as string;
   const isIPad = useIsIPad();
@@ -79,9 +80,6 @@ export default function FinancePage() {
     handlePaymentsPageChange,
     handleSalariesPageChange,
   } = useFinancePage();
-
-  const salaryDeleteLayout = useDeleteConfirmationDialogLayout(isDeleteDialogOpen);
-  const paymentsDeleteLayout = useDeleteConfirmationDialogLayout(isDeletePaymentsDialogOpen);
 
   // Fetch dashboard stats
   const { data: dashboard, isLoading: isLoadingDashboard } = useFinanceDashboard();
@@ -421,95 +419,35 @@ export default function FinancePage() {
           onClose={closeSalaryDetail}
         />
 
-        {/* Delete Confirmation Dialog */}
-        <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-          <DialogContent
-            sheet={salaryDeleteLayout.sheet}
-            stackOpen={salaryDeleteLayout.stackOpen}
-            overlayClassName={DELETE_CONFIRMATION_DIALOG_OVERLAY_CLASS}
-            className={salaryDeleteLayout.contentClassName}
-          >
-            <DialogHeader>
-              <DialogTitle>{t('deleteSalaryRecords')}</DialogTitle>
-              <DialogDescription>
-                Are you sure you want to delete {selectedSalaryIds.size} salary record{selectedSalaryIds.size > 1 ? 's' : ''}? This action cannot be undone and will permanently remove the selected record{selectedSalaryIds.size > 1 ? 's' : ''}.
-              </DialogDescription>
-            </DialogHeader>
-            {deleteError && (
-              <div className="rounded-[15px] border border-red-200 bg-red-50 p-3">
-                <p className="text-sm text-red-600">{deleteError}</p>
-              </div>
-            )}
-            <DialogFooter className="gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => {
-                  setIsDeleteDialogOpen(false);
-                  setDeleteError(null);
-                }}
-                disabled={deleteSalaries.isPending}
-                className="rounded-full px-5"
-              >
-                Cancel
-              </Button>
-              <Button
-                type="button"
-                variant="destructive"
-                onClick={handleDeleteConfirm}
-                disabled={deleteSalaries.isPending}
-                className="rounded-full px-5"
-              >
-                {deleteSalaries.isPending ? 'Deleting...' : 'Delete'}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+        <DeleteConfirmationDialog
+          open={isDeleteDialogOpen}
+          onOpenChange={(open) => {
+            setIsDeleteDialogOpen(open);
+            if (!open) setDeleteError(null);
+          }}
+          onConfirm={handleDeleteConfirm}
+          title={t('deleteSalaryRecords')}
+          description={`Are you sure you want to delete ${selectedSalaryIds.size} salary record${selectedSalaryIds.size > 1 ? 's' : ''}? This action cannot be undone and will permanently remove the selected record${selectedSalaryIds.size > 1 ? 's' : ''}.`}
+          isLoading={deleteSalaries.isPending}
+          error={deleteError}
+          confirmLabel={tCommon('delete')}
+          cancelLabel={tCommon('cancel')}
+        />
 
-        {/* Delete Payments Confirmation Dialog */}
-        <Dialog open={isDeletePaymentsDialogOpen} onOpenChange={setIsDeletePaymentsDialogOpen}>
-          <DialogContent
-            sheet={paymentsDeleteLayout.sheet}
-            stackOpen={paymentsDeleteLayout.stackOpen}
-            overlayClassName={DELETE_CONFIRMATION_DIALOG_OVERLAY_CLASS}
-            className={paymentsDeleteLayout.contentClassName}
-          >
-            <DialogHeader>
-              <DialogTitle>{t('deletePayments')}</DialogTitle>
-              <DialogDescription>
-                Are you sure you want to delete {selectedPaymentIds.size} payment{selectedPaymentIds.size > 1 ? 's' : ''}? This action cannot be undone and will permanently remove the selected record{selectedPaymentIds.size > 1 ? 's' : ''}.
-              </DialogDescription>
-            </DialogHeader>
-            {deletePaymentsError && (
-              <div className="rounded-[15px] border border-red-200 bg-red-50 p-3">
-                <p className="text-sm text-red-600">{deletePaymentsError}</p>
-              </div>
-            )}
-            <DialogFooter className="gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => {
-                  setIsDeletePaymentsDialogOpen(false);
-                  setDeletePaymentsError(null);
-                }}
-                disabled={deletePayments.isPending}
-                className="rounded-full px-5"
-              >
-                Cancel
-              </Button>
-              <Button
-                type="button"
-                variant="destructive"
-                onClick={handleDeletePaymentsConfirm}
-                disabled={deletePayments.isPending}
-                className="rounded-full px-5"
-              >
-                {deletePayments.isPending ? 'Deleting...' : 'Delete'}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+        <DeleteConfirmationDialog
+          open={isDeletePaymentsDialogOpen}
+          onOpenChange={(open) => {
+            setIsDeletePaymentsDialogOpen(open);
+            if (!open) setDeletePaymentsError(null);
+          }}
+          onConfirm={handleDeletePaymentsConfirm}
+          title={t('deletePayments')}
+          description={`Are you sure you want to delete ${selectedPaymentIds.size} payment${selectedPaymentIds.size > 1 ? 's' : ''}? This action cannot be undone and will permanently remove the selected record${selectedPaymentIds.size > 1 ? 's' : ''}.`}
+          isLoading={deletePayments.isPending}
+          error={deletePaymentsError}
+          confirmLabel={tCommon('delete')}
+          cancelLabel={tCommon('cancel')}
+        />
       </div>
     </DashboardLayout>
   );

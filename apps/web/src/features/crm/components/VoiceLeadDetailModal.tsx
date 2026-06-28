@@ -9,6 +9,7 @@ import { fetchCenters } from '@/features/centers/api/centers.api';
 import { fetchTeachers } from '@/features/teachers/api/teachers.api';
 import { fetchGroups } from '@/features/groups/api/groups.api';
 import { VoiceRecorder, RecordingPlayback } from './VoiceRecorder';
+import { CrmDeleteLeadDialog } from './CrmDeleteLeadDialog';
 import { useQuery } from '@tanstack/react-query';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
@@ -69,7 +70,7 @@ export function VoiceLeadDetailModal({
   const [deleting, setDeleting] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [form, setForm] = useState<Partial<CrmLead>>({});
   const [phoneError, setPhoneError] = useState<string | null>(null);
@@ -178,20 +179,23 @@ export function VoiceLeadDetailModal({
     }
   }, [selectedTeacherId, form.groupId, groupsForSelectedTeacher]);
 
-  const handleDeleteClick = () => setShowDeleteConfirm(true);
+  const handleDeleteClick = () => {
+    setDeleteError(null);
+    setIsDeleteDialogOpen(true);
+  };
   const handleDeleteConfirm = async () => {
     if (!leadId) return;
     setDeleting(true);
     setDeleteError(null);
     try {
       await deleteLead(leadId);
+      setIsDeleteDialogOpen(false);
       onUpdated();
       onClose();
     } catch (e) {
       setDeleteError(e instanceof Error ? e.message : t('failedDeleteLead'));
     } finally {
       setDeleting(false);
-      setShowDeleteConfirm(false);
     }
   };
 
@@ -445,34 +449,6 @@ export function VoiceLeadDetailModal({
                 </div>
               )}
 
-              {deleteError && (
-                <p className="text-sm text-red-600">{deleteError}</p>
-              )}
-
-              {showDeleteConfirm && (
-                <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 space-y-3">
-                  <p className="text-sm text-amber-800">{t('deleteVoiceLeadConfirm')}</p>
-                  <div className="flex gap-2">
-                    <button
-                      type="button"
-                      onClick={handleDeleteConfirm}
-                      disabled={deleting}
-                      className="rounded-lg px-3 py-1.5 text-sm font-medium bg-red-600 text-white hover:bg-red-700 disabled:opacity-50"
-                    >
-                      {deleting ? t('deleting') : t('deleteLead')}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => { setShowDeleteConfirm(false); setDeleteError(null); }}
-                      disabled={deleting}
-                      className="rounded-lg px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-200"
-                    >
-                      {tCommon('cancel')}
-                    </button>
-                  </div>
-                </div>
-              )}
-
               {/* Approved / Transfer are mutually exclusive: show only one */}
               {(lead.teacherApprovedAt || lead.activities?.some((a) => a.type === 'TEACHER_APPROVED')) ? (
                 <div className="rounded-lg border border-green-200 bg-green-50/80 p-4">
@@ -566,6 +542,18 @@ export function VoiceLeadDetailModal({
           )}
         </div>
       </div>
+
+      <CrmDeleteLeadDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={(open) => {
+          setIsDeleteDialogOpen(open);
+          if (!open) setDeleteError(null);
+        }}
+        onConfirm={handleDeleteConfirm}
+        isLoading={deleting}
+        error={deleteError}
+        description={t('deleteVoiceLeadConfirm')}
+      />
     </>
   );
 }

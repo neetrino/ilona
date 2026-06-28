@@ -1,17 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-  Button,
-  DELETE_CONFIRMATION_DIALOG_OVERLAY_CLASS,
-  useDeleteConfirmationDialogLayout,
-} from '@/shared/components/ui';
+import { DeleteConfirmationDialog } from '@/shared/components/ui';
 
 export interface CrmDeleteLeadDialogProps {
   open: boolean;
@@ -19,6 +9,8 @@ export interface CrmDeleteLeadDialogProps {
   onConfirm: () => void;
   isLoading?: boolean;
   error?: string | null;
+  /** Overrides default voice-lead / standard delete copy */
+  description?: string;
 }
 
 export function CrmDeleteLeadDialog({
@@ -27,47 +19,23 @@ export function CrmDeleteLeadDialog({
   onConfirm,
   isLoading = false,
   error,
+  description,
 }: CrmDeleteLeadDialogProps) {
   const t = useTranslations('crm');
-  const { sheet, stackOpen, contentClassName } = useDeleteConfirmationDialogLayout(open);
+  const tCommon = useTranslations('common');
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent
-        sheet={sheet}
-        stackOpen={stackOpen}
-        overlayClassName={DELETE_CONFIRMATION_DIALOG_OVERLAY_CLASS}
-        className={contentClassName}
-      >
-        <DialogHeader>
-          <DialogTitle>{t('deleteLead')}</DialogTitle>
-          <DialogDescription>Are you sure you want to delete this lead?</DialogDescription>
-        </DialogHeader>
-        {error ? (
-          <div className="rounded-[15px] border border-red-200 bg-red-50 p-3">
-            <p className="text-sm text-red-600">{error}</p>
-          </div>
-        ) : null}
-        <DialogFooter className="gap-2">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => onOpenChange(false)}
-            disabled={isLoading}
-            className="rounded-full px-5"
-          >
-            Cancel
-          </Button>
-          <Button
-            type="button"
-            variant="destructive"
-            onClick={onConfirm}
-            isLoading={isLoading}
-            className="rounded-full px-5"
-          >
-            {isLoading ? 'Deleting...' : 'Confirm'}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    <DeleteConfirmationDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      onConfirm={onConfirm}
+      title={t('deleteLead')}
+      description={description ?? t('deleteLeadConfirmDescription')}
+      isLoading={isLoading}
+      error={error}
+      confirmLabel={t('deleteLeadConfirm')}
+      cancelLabel={tCommon('cancel')}
+      loadingLabel={t('deleting')}
+    />
   );
 }
