@@ -11,7 +11,6 @@ import {
   Clock3,
   GraduationCap,
   Phone,
-  Trash2,
   User,
   Users,
 } from 'lucide-react';
@@ -29,10 +28,6 @@ interface LeadCardProps {
   onBranchChange?: (leadId: string, centerId: string | null) => void;
   isChangingStatus?: boolean;
   isChangingBranch?: boolean;
-  /** Admin-only: show delete control on the card header. */
-  showDelete?: boolean;
-  onDeleteClick?: () => void;
-  deleteDisabled?: boolean;
   className?: string;
 }
 
@@ -61,9 +56,6 @@ export function LeadCard({
   onBranchChange,
   isChangingStatus,
   isChangingBranch,
-  showDelete,
-  onDeleteClick,
-  deleteDisabled,
   className,
 }: LeadCardProps) {
   const t = useTranslations('crm');
@@ -98,30 +90,9 @@ export function LeadCard({
         className
       )}
     >
-      {/* Top section: name + delete */}
+      {/* Top section: name */}
       <div className="flex items-start justify-between gap-2">
         <p className="min-w-0 flex-1 font-medium text-slate-900 truncate">{name}</p>
-        {showDelete && onDeleteClick ? (
-          <button
-            type="button"
-            aria-label={t('deleteLead')}
-            title={t('deleteLead')}
-            disabled={deleteDisabled}
-            onClick={(e) => {
-              e.stopPropagation();
-              if (!deleteDisabled) onDeleteClick();
-            }}
-            className={cn(
-              'shrink-0 rounded-[15px] p-1.5 text-slate-900 transition-colors duration-150 ease-out',
-              'hover:bg-slate-50 hover:text-slate-700',
-              'focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-1',
-              'active:scale-95',
-              'disabled:pointer-events-none disabled:opacity-50'
-            )}
-          >
-            <Trash2 className="h-4 w-4" aria-hidden />
-          </button>
-        ) : null}
       </div>
 
       {/* Middle section: lead info */}

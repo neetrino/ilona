@@ -379,16 +379,8 @@ export const DatePickerInput = React.forwardRef<HTMLInputElement, DatePickerInpu
     const mobileBackdrop =
       isMobileLayout && open && portalContainer ? (
         <div
-          className={cn('fixed inset-0 bg-transparent', MOBILE_CALENDAR_BACKDROP_Z_CLASS)}
+          className={cn('fixed inset-0 bg-transparent pointer-events-none', MOBILE_CALENDAR_BACKDROP_Z_CLASS)}
           aria-hidden
-          onPointerDown={(event) => {
-            event.stopPropagation();
-            if (yearDropdownOpen) {
-              setYearDropdownOpen(false);
-              return;
-            }
-            handleOpenChange(false);
-          }}
         />
       ) : null;
 
@@ -577,6 +569,11 @@ export const DatePickerInput = React.forwardRef<HTMLInputElement, DatePickerInpu
             onFocus={handleInputFocus}
             onBlur={handleInputBlur}
             onKeyDown={handleInputKeyDown}
+            onPointerDown={(event) => {
+              if (disabled || isDesktopViewport()) return;
+              event.preventDefault();
+              handleOpenChange(!open);
+            }}
             placeholder={placeholder ?? 'DD/MM/YYYY'}
             disabled={disabled}
             role="combobox"

@@ -31,6 +31,12 @@ type MenuPosition = {
   positionMode: 'fixed' | 'absolute';
 };
 
+const MOBILE_BODY_PORTAL_MAX_WIDTH = 1366;
+
+function shouldPortalMenuToBody(): boolean {
+  return typeof window !== 'undefined' && window.innerWidth <= MOBILE_BODY_PORTAL_MAX_WIDTH;
+}
+
 function resolvePortalContainer(root: HTMLElement | null): HTMLElement {
   if (!root) return document.body;
   const dialog = root.closest('[role="dialog"]');
@@ -150,9 +156,11 @@ export function SingleSelectDropdown({
     const root = dropdownRef.current;
     if (!trigger) return;
 
-    const portalTarget = resolvePortalContainer(root);
+    const portalTarget = shouldPortalMenuToBody()
+      ? document.body
+      : resolvePortalContainer(root);
     setPortalContainer(portalTarget);
-    const useDialogPortal = portalTarget !== document.body;
+    const useDialogPortal = !shouldPortalMenuToBody() && portalTarget !== document.body;
 
     const rect = trigger.getBoundingClientRect();
     const menuWidth = menuMinWidth ? Math.max(rect.width, menuMinWidth) : rect.width;
@@ -209,7 +217,7 @@ export function SingleSelectDropdown({
 
     updateMenuPosition();
 
-    const handleClickOutside = (event: Event) => {
+    const handlePointerDownOutside = (event: PointerEvent) => {
       const target = event.target as Node;
       if (
         dropdownRef.current?.contains(target) ||
@@ -221,14 +229,14 @@ export function SingleSelectDropdown({
     };
 
     const timeoutId = setTimeout(() => {
-      document.addEventListener('click', handleClickOutside, true);
+      document.addEventListener('pointerdown', handlePointerDownOutside, true);
     }, 0);
 
     window.addEventListener('resize', updateMenuPosition);
     window.addEventListener('scroll', updateMenuPosition, true);
     return () => {
       clearTimeout(timeoutId);
-      document.removeEventListener('click', handleClickOutside, true);
+      document.removeEventListener('pointerdown', handlePointerDownOutside, true);
       window.removeEventListener('resize', updateMenuPosition);
       window.removeEventListener('scroll', updateMenuPosition, true);
     };
@@ -247,6 +255,23 @@ export function SingleSelectDropdown({
     onValueChange(nextValue);
     closeMenu();
     triggerRef.current?.focus();
+  };
+
+  const handleTriggerPointerDown = (event: React.PointerEvent<HTMLButtonElement>) => {
+    if (disabled || isLoading) return;
+    if (event.pointerType === 'mouse' && event.button !== 0) return;
+    event.preventDefault();
+    setIsOpen((prev) => {
+      const nextOpen = !prev;
+      if (nextOpen) {
+        const selectedIndex = Math.max(
+          0,
+          filteredOptions.findIndex((option) => option.id === value),
+        );
+        setActiveIndex(selectedIndex);
+      }
+      return nextOpen;
+    });
   };
 
   const handleTriggerKeyDown = (event: React.KeyboardEvent<HTMLButtonElement>) => {
@@ -349,7 +374,7 @@ export function SingleSelectDropdown({
           id={triggerId}
           ref={triggerRef}
           type="button"
-          onClick={() => !disabled && setIsOpen(!isOpen)}
+          onPointerDown={handleTriggerPointerDown}
           onKeyDown={handleTriggerKeyDown}
           disabled={isLoading || disabled}
           aria-haspopup="listbox"
@@ -402,13 +427,8 @@ export function SingleSelectDropdown({
             <>
               <div
                 {...{ [SINGLE_SELECT_DROPDOWN_BACKDROP_ATTR]: '' }}
-                className={cn(backdropPositionClass, 'inset-0 z-[9998]')}
+                className={cn(backdropPositionClass, 'inset-0 z-[9998] pointer-events-none')}
                 aria-hidden="true"
-                onPointerDown={(event) => {
-                  event.preventDefault();
-                  event.stopPropagation();
-                  closeMenu();
-                }}
               />
               <div
                 ref={menuRef}

@@ -23,6 +23,7 @@ interface CreateLeadModalProps {
 }
 
 const LEVEL_OPTIONS = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
+const DEFAULT_LEVEL_ID = LEVEL_OPTIONS[0];
 
 export function CreateLeadModal({
   open,
@@ -69,9 +70,10 @@ export function CreateLeadModal({
       setError(null);
       return;
     }
-    if (defaultCenterId) {
-      setForm((prev) => ({ ...prev, centerId: defaultCenterId }));
-    }
+    setForm({
+      levelId: DEFAULT_LEVEL_ID,
+      ...(defaultCenterId ? { centerId: defaultCenterId } : {}),
+    });
   }, [open, defaultCenterId]);
   const groups = useMemo(() => groupsData?.items ?? [], [groupsData?.items]);
 

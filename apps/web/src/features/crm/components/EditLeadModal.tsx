@@ -1,24 +1,33 @@
 'use client';
 
-import { useState, useEffect, useMemo, useRef, type RefObject } from 'react';
-import { createPortal } from 'react-dom';
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { useTranslations } from 'next-intl';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { X, Trash2 } from 'lucide-react';
+import { Trash2, X } from 'lucide-react';
 import { fetchLead, updateLead, changeLeadStatus } from '@/features/crm/api/crm.api';
 import type { UpdateLeadDto, CrmLeadStatus } from '@/features/crm/types';
 import { CRM_COLUMN_ORDER } from '@/features/crm/types';
-import { useModalClose } from '@/shared/hooks/useModalClose';
 import { cn } from '@/shared/lib/utils';
-import { ADMIN_ICON_BUTTON_CLASS } from '@/shared/lib/admin-control-theme';
-import { DatePickerInput } from '@/shared/components/ui';
+import { ADMIN_ICON_BUTTON_SM_CLASS } from '@/shared/lib/admin-control-theme';
+import { DatePickerInput, SegmentedControl } from '@/shared/components/ui';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { CrmStatusSelector } from './CrmStatusSelector';
 import { PaidRegistrationModal } from './PaidRegistrationModal';
 import { RecordingPlayback } from './VoiceRecorder';
-import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
+import { SingleSelectDropdown, portaledDropdownDialogHandlers } from '@/shared/components/ui/single-select-dropdown';
+import { usePortalSheetDrag } from '@/shared/hooks/usePortalSheetDrag';
+import { PortalFormSheetDragHandle } from '@/shared/components/ui/portal-form-sheet-drag-handle';
+import {
+  PORTAL_FORM_SHEET_CLOSE_BUTTON_CLASS,
+  PORTAL_FORM_SHEET_HEADER_CLASS,
+  PORTAL_FORM_SHEET_OVERLAY_CLASS,
+  PORTAL_FORM_SHEET_SCROLL_CLASS,
+  portalFormSheetContentClass,
+} from '@/shared/lib/portal-form-sheet-classes';
 
 const LEVEL_OPTIONS = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
+const DEFAULT_LEVEL_ID = LEVEL_OPTIONS[0];
 
 interface CenterOption {
   id: string;
@@ -73,26 +82,35 @@ export function EditLeadModal({
   }, [centers, isManager, t, user?.managerCenterId]);
 
   const queryClient = useQueryClient();
-  const modalContainerRef = useRef<HTMLDivElement>(null);
   const crmStatusPortaledMenuRef = useRef<HTMLDivElement>(null);
-  const modalAdditionalInsideRefs = useMemo(
-    () => [crmStatusPortaledMenuRef] as const satisfies ReadonlyArray<RefObject<HTMLElement | null>>,
-    [],
-  );
-  const { onOverlayMouseDown, onOverlayClick } = useModalClose({
-    open,
-    onClose,
-    containerRef: modalContainerRef,
-    additionalInsideRefs: modalAdditionalInsideRefs,
-  });
+  const [isDialogOpen, setIsDialogOpen] = useState(open);
   const [form, setForm] = useState<
     UpdateLeadDto & { status?: CrmLeadStatus; archivedReason?: string; parentSurname?: string }
   >({});
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [isMounted, setIsMounted] = useState(false);
   const [paidRegistrationOpen, setPaidRegistrationOpen] = useState(false);
   const [paidPrefill, setPaidPrefill] = useState<Partial<UpdateLeadDto> | undefined>(undefined);
+
+  const requestClose = useCallback(() => {
+    setIsDialogOpen(false);
+    onClose();
+  }, [onClose]);
+
+  const { dragStyle, dragHandleProps, resetDrag } = usePortalSheetDrag({
+    enabled: open,
+    onClose: requestClose,
+  });
+
+  useEffect(() => {
+    setIsDialogOpen(open);
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) {
+      resetDrag();
+    }
+  }, [open, resetDrag]);
 
   const { data: lead, isLoading } = useQuery({
     queryKey: ['crm-lead', leadId],
@@ -105,11 +123,8 @@ export function EditLeadModal({
     () => (selectedTeacherId ? groups.filter((group) => group.teacherId === selectedTeacherId) : []),
     [groups, selectedTeacherId],
   );
-  const levelOptions = useMemo(
-    () => [
-      { id: '', label: '—' },
-      ...LEVEL_OPTIONS.map((level) => ({ id: level, label: level })),
-    ],
+  const levelSegmentOptions = useMemo(
+    () => LEVEL_OPTIONS.map((level) => ({ id: level, label: level })),
     [],
   );
   const teacherOptions = useMemo(
@@ -163,7 +178,7 @@ export function EditLeadModal({
       parentPhone: (lead.parentPhone ?? '').replace(/\D/g, ''),
       parentEmail: lead.parentEmail ?? '',
       parentPassportInfo: lead.parentPassportInfo ?? '',
-      levelId: lead.levelId ?? undefined,
+      levelId: lead.levelId ?? DEFAULT_LEVEL_ID,
       teacherId: lead.teacherId ?? undefined,
       groupId: lead.groupId ?? undefined,
       centerId: lead.centerId ?? undefined,
@@ -187,11 +202,6 @@ export function EditLeadModal({
       setForm((prev) => ({ ...prev, groupId: undefined }));
     }
   }, [selectedTeacherId, form.groupId, groupsForSelectedTeacher]);
-
-  useEffect(() => {
-    setIsMounted(true);
-    return () => setIsMounted(false);
-  }, []);
 
   const handleCrmStatusChange = (status: CrmLeadStatus) => {
     if (status === 'PAID' && lead && lead.status !== 'PAID') {
@@ -252,60 +262,57 @@ export function EditLeadModal({
     }
   };
 
-  if (!open) return null;
-
-  if (!isMounted) return null;
-
-  const editLeadPortal = createPortal(
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 overflow-y-auto"
-      onMouseDown={onOverlayMouseDown}
-      onClick={onOverlayClick}
-    >
-      <div className="flex min-h-full items-center justify-center w-full">
-        <div
-          ref={modalContainerRef}
-          className="flex w-full max-w-3xl flex-col overflow-hidden rounded-xl bg-white shadow-xl max-h-[calc(100vh-1rem)] sm:max-h-[calc(100vh-2rem)]"
+  const renderHeaderActions = () => (
+    <div className="flex shrink-0 items-center gap-2">
+      {canDeleteLead && onDeleteRequest ? (
+        <button
+          type="button"
+          aria-label={t('deleteLead')}
+          title={t('deleteLead')}
+          disabled={deleteDisabled || saving}
+          onClick={onDeleteRequest}
+          className={cn(
+            ADMIN_ICON_BUTTON_SM_CLASS,
+            'text-slate-500 hover:bg-red-50 hover:text-red-600 disabled:pointer-events-none disabled:opacity-50',
+          )}
         >
-          <div className="border-b border-slate-200 px-4 py-4 sm:px-6">
-            <div className="flex items-center justify-between gap-2">
-              <h2 className="text-lg font-semibold text-slate-900">{t('editLead')}</h2>
-              <div className="flex items-center gap-2">
-                {canDeleteLead && onDeleteRequest ? (
-                  <button
-                    type="button"
-                    aria-label={t('deleteLead')}
-                    title={t('deleteLead')}
-                    disabled={deleteDisabled || saving}
-                    onClick={onDeleteRequest}
-                    className={cn(
-                      ADMIN_ICON_BUTTON_CLASS,
-                      'text-slate-500 hover:bg-red-50 hover:text-red-600 active:bg-red-100 disabled:pointer-events-none disabled:opacity-50',
-                    )}
-                  >
-                    <Trash2 className="h-5 w-5" aria-hidden />
-                  </button>
-                ) : null}
-                <button
-                  type="button"
-                  onClick={onClose}
-                  className={cn(
-                    ADMIN_ICON_BUTTON_CLASS,
-                    'text-slate-500 hover:bg-slate-100 hover:text-slate-700 active:bg-slate-200',
-                  )}
-                  aria-label={t('closeEditLeadModal')}
-                  title={tc('close')}
-                >
-                  <X className="h-5 w-5" />
-                </button>
+          <Trash2 className="h-4 w-4" aria-hidden />
+        </button>
+      ) : null}
+      <DialogPrimitive.Close className={PORTAL_FORM_SHEET_CLOSE_BUTTON_CLASS} aria-label={t('closeEditLeadModal')}>
+        <X className="h-4 w-4" />
+      </DialogPrimitive.Close>
+    </div>
+  );
+
+  return (
+    <>
+      <DialogPrimitive.Root open={isDialogOpen} onOpenChange={(nextOpen) => !nextOpen && requestClose()}>
+        <DialogPrimitive.Portal>
+          <DialogPrimitive.Overlay className={PORTAL_FORM_SHEET_OVERLAY_CLASS} />
+          <DialogPrimitive.Content
+            style={dragStyle}
+            {...portaledDropdownDialogHandlers}
+            className={portalFormSheetContentClass('3xl')}
+            aria-describedby={undefined}
+          >
+            <PortalFormSheetDragHandle dragHandleProps={dragHandleProps} />
+            <DialogPrimitive.Title className="sr-only">{t('editLead')}</DialogPrimitive.Title>
+            <div className={PORTAL_FORM_SHEET_HEADER_CLASS}>
+              <div className="flex items-start justify-between gap-4">
+                <div className="min-w-0 flex-1">
+                  <h2 className="text-lg font-semibold text-[#3b3b40]">{t('editLead')}</h2>
+                </div>
+                {renderHeaderActions()}
               </div>
             </div>
-          </div>
-        {isLoading ? (
-          <div className="p-8 text-center text-slate-500">{tc('loading')}</div>
-        ) : (
-          <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
-            <div className="min-h-0 flex-1 space-y-6 overflow-y-auto px-4 py-4 sm:px-6 sm:py-5">
+            {isLoading ? (
+              <div className={cn(PORTAL_FORM_SHEET_SCROLL_CLASS, 'p-8 text-center text-slate-500')}>
+                {tc('loading')}
+              </div>
+            ) : (
+              <div className={cn(PORTAL_FORM_SHEET_SCROLL_CLASS, 'pt-4 sm:pt-5')}>
+                <form onSubmit={handleSubmit} className="space-y-6">
             {error && (
               <p className="text-sm text-red-600 rounded-lg bg-red-50 p-2">{error}</p>
             )}
@@ -343,7 +350,7 @@ export function EditLeadModal({
             </section>
             <section className="space-y-3">
               <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">{t('basicInfo')}</h3>
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
                 <div>
                   <label className="mb-1 block text-sm font-medium text-slate-700">{t('firstName')}</label>
                   <input
@@ -362,7 +369,7 @@ export function EditLeadModal({
                     className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
                   />
                 </div>
-                <div>
+                <div className="col-span-2 sm:col-span-1">
                   <label className="mb-1 block text-sm font-medium text-slate-700">{t('phoneNumber')}</label>
                   <input
                     type="tel"
@@ -377,8 +384,8 @@ export function EditLeadModal({
             </section>
             <section className="space-y-3">
               <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">{t('additionalInfo')}</h3>
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                <div>
+              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+                <div className="col-span-2 sm:col-span-1">
                   <label className="mb-1 block text-sm font-medium text-slate-700">{t('age')}</label>
                   <input
                     type="number"
@@ -485,13 +492,14 @@ export function EditLeadModal({
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
                   <label className="mb-1 block text-sm font-medium text-slate-700">{t('level')}</label>
-                  <SingleSelectDropdown
-                    id="edit-lead-level"
-                    options={levelOptions}
+                  <SegmentedControl
+                    options={levelSegmentOptions}
                     value={form.levelId ?? ''}
-                    onValueChange={(nextValue) =>
+                    onChange={(nextValue) =>
                       setForm((f) => ({ ...f, levelId: nextValue || undefined }))
                     }
+                    allowDeselect
+                    aria-label={t('level')}
                   />
                 </div>
                 <div>
@@ -548,12 +556,10 @@ export function EditLeadModal({
                 )}
               </div>
             </section>
-            </div>
-            <div className="border-t border-slate-200 bg-white/95 px-4 py-3 shadow-[0_-2px_8px_rgba(15,23,42,0.06)] backdrop-blur sm:px-6">
-              <section className="space-y-2">
-                <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">{tc('status')}</h3>
-                <div>
-                  <label className="mb-1 block text-sm font-medium text-slate-700">{tc('status')}</label>
+            <section className="space-y-2">
+              <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">{tc('status')}</h3>
+              <div className="flex items-end gap-3">
+                <div className="min-w-0 flex-1">
                   <CrmStatusSelector
                     id="edit-lead-status"
                     value={form.status}
@@ -564,48 +570,39 @@ export function EditLeadModal({
                     disabled={lead?.status === 'PAID'}
                   />
                 </div>
-                {form.status === 'ARCHIVE' && (
-                  <div>
-                    <label className="mb-1 block text-sm font-medium text-slate-700">
-                      {t('archiveReasonOptional')}
-                    </label>
-                    <input
-                      type="text"
-                      value={form.archivedReason ?? ''}
-                      onChange={(e) =>
-                        setForm((f) => ({ ...f, archivedReason: e.target.value || undefined }))
-                      }
-                      placeholder={t('archiveReasonPlaceholder')}
-                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-                    />
-                  </div>
-                )}
-              </section>
-            </div>
-            <div className="border-t border-slate-200 px-4 py-3 sm:px-6">
-              <div className="flex justify-center gap-2">
-              <button
-                type="submit"
-                disabled={saving}
-                className={cn(
-                  'rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90 disabled:opacity-50'
-                )}
-              >
-                {saving ? t('saving') : tc('save')}
-              </button>
+                <button
+                  type="submit"
+                  disabled={saving}
+                  className={cn(
+                    'inline-flex h-11 shrink-0 items-center justify-center rounded-[15px] bg-primary px-4 text-sm font-medium text-white hover:bg-primary/90 disabled:opacity-50',
+                  )}
+                >
+                  {saving ? t('saving') : tc('save')}
+                </button>
               </div>
-            </div>
-          </form>
-        )}
-        </div>
-      </div>
-    </div>,
-    document.body
-  );
-
-  return (
-    <>
-      {editLeadPortal}
+              {form.status === 'ARCHIVE' && (
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-slate-700">
+                    {t('archiveReasonOptional')}
+                  </label>
+                  <input
+                    type="text"
+                    value={form.archivedReason ?? ''}
+                    onChange={(e) =>
+                      setForm((f) => ({ ...f, archivedReason: e.target.value || undefined }))
+                    }
+                    placeholder={t('archiveReasonPlaceholder')}
+                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                  />
+                </div>
+              )}
+            </section>
+                </form>
+              </div>
+            )}
+          </DialogPrimitive.Content>
+        </DialogPrimitive.Portal>
+      </DialogPrimitive.Root>
       <PaidRegistrationModal
         open={paidRegistrationOpen}
         leadId={paidRegistrationOpen ? leadId : null}

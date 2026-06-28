@@ -115,27 +115,15 @@ export function CrmStatusSelector({
       setOpen(false);
     }
 
-    const supportsPointer = typeof window !== 'undefined' && 'PointerEvent' in window;
-
     const timeoutId = setTimeout(() => {
-      if (supportsPointer) {
-        document.addEventListener('pointerdown', handleClickOutside);
-      } else {
-        document.addEventListener('mousedown', handleClickOutside);
-        document.addEventListener('touchstart', handleClickOutside);
-      }
+      document.addEventListener('pointerdown', handleClickOutside, true);
     }, 0);
 
     return () => {
       window.removeEventListener('scroll', updatePosition, true);
       window.removeEventListener('resize', updatePosition);
       clearTimeout(timeoutId);
-      if (supportsPointer) {
-        document.removeEventListener('pointerdown', handleClickOutside);
-      } else {
-        document.removeEventListener('mousedown', handleClickOutside);
-        document.removeEventListener('touchstart', handleClickOutside);
-      }
+      document.removeEventListener('pointerdown', handleClickOutside, true);
     };
   }, [open, menuPlacement]);
 
@@ -149,6 +137,13 @@ export function CrmStatusSelector({
     setOpen(false);
   };
 
+  const handleTriggerPointerDown = (event: React.PointerEvent<HTMLButtonElement>) => {
+    if (disabled) return;
+    if (event.pointerType === 'mouse' && event.button !== 0) return;
+    event.preventDefault();
+    setOpen((prev) => !prev);
+  };
+
   const displayValue = value ? (statusLabels[value] ?? value) : '—';
   const triggerTitle = disabled ? resolvedDisabledHint : t('changeStatus');
   const triggerAria = disabled ? resolvedDisabledHint : t('changeStatus');
@@ -159,10 +154,7 @@ export function CrmStatusSelector({
         ref={triggerRef}
         id={id}
         type="button"
-        onClick={() => {
-          if (disabled) return;
-          setOpen((prev) => !prev);
-        }}
+        onPointerDown={handleTriggerPointerDown}
         disabled={disabled}
         className={cn(
           'w-full min-h-11 inline-flex items-center justify-between gap-2 !border-2 !border-slate-300 !bg-slate-50/40 py-2 text-sm font-semibold text-slate-800 shadow-sm',
