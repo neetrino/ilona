@@ -12,6 +12,8 @@ import { useQueryClient } from '@tanstack/react-query';
 import { lessonKeys } from '@/features/lessons/hooks/useLessons';
 import type { AbsenceType } from '@/features/attendance';
 import type { AutoDismissToastVariant } from '@/shared/components/ui';
+import { cn } from '@/shared/lib/utils';
+import { ADMIN_PRIMARY_BUTTON_CLASS } from '@/shared/lib/admin-control-theme';
 
 interface AbsenceTabProps {
   lessonId: string;
@@ -209,10 +211,10 @@ export function AbsenceTab({ lessonId }: AbsenceTabProps) {
               : 'Mark attendance for all students in this lesson'}
           </p>
         </div>
-        <Button 
-          onClick={handleSave} 
+        <Button
+          onClick={handleSave}
           disabled={markBulkAttendance.isPending || students.length === 0}
-          className="bg-blue-600 hover:bg-blue-700 text-white"
+          className={cn(ADMIN_PRIMARY_BUTTON_CLASS, 'bg-blue-600 text-white hover:bg-blue-700')}
         >
           {markBulkAttendance.isPending ? 'Saving...' : hasChanges ? 'Save Changes' : 'Save Attendance'}
         </Button>
@@ -241,7 +243,7 @@ export function AbsenceTab({ lessonId }: AbsenceTabProps) {
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => handleAttendanceChange(student.id, 'present')}
-                    className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                    className={`px-4 py-2 rounded-[15px] text-sm font-medium transition-colors ${
                       status === 'present'
                         ? 'bg-green-100 text-green-700 border-2 border-green-500'
                         : 'bg-slate-100 text-slate-600 border-2 border-transparent hover:bg-slate-200'
@@ -251,7 +253,7 @@ export function AbsenceTab({ lessonId }: AbsenceTabProps) {
                   </button>
                   <button
                     onClick={() => handleAttendanceChange(student.id, 'absent_justified')}
-                    className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                    className={`px-4 py-2 rounded-[15px] text-sm font-medium transition-colors ${
                       status === 'absent_justified'
                         ? 'bg-yellow-100 text-yellow-700 border-2 border-yellow-500'
                         : 'bg-slate-100 text-slate-600 border-2 border-transparent hover:bg-slate-200'
@@ -261,7 +263,7 @@ export function AbsenceTab({ lessonId }: AbsenceTabProps) {
                   </button>
                   <button
                     onClick={() => handleAttendanceChange(student.id, 'absent_unjustified')}
-                    className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                    className={`px-4 py-2 rounded-[15px] text-sm font-medium transition-colors ${
                       status === 'absent_unjustified'
                         ? 'bg-red-100 text-red-700 border-2 border-red-500'
                         : 'bg-slate-100 text-slate-600 border-2 border-transparent hover:bg-slate-200'
