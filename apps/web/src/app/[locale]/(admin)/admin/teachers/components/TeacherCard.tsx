@@ -3,11 +3,12 @@
 import type { ReactNode } from 'react';
 import { useTranslations } from 'next-intl';
 import { Badge } from '@/shared/components/ui';
-import { formatCurrency } from '@/shared/lib/utils';
+import { formatCurrency, cn } from '@/shared/lib/utils';
 import { TeacherShowcaseCard } from '@/features/teachers';
 import type { Teacher } from '@/features/teachers';
 import type { UserStatus } from '@/types';
 import { getTeacherCenters } from '../utils';
+import { usePortalSidebarCollapsed } from '@/shared/context/portal-shell-context';
 import { Building2, Mail, Users } from 'lucide-react';
 
 interface TeacherCardProps {
@@ -53,6 +54,8 @@ export function TeacherCard({
 }: TeacherCardProps) {
   const t = useTranslations('teachers');
   const tStatus = useTranslations('status');
+  const sidebarCollapsed = usePortalSidebarCollapsed();
+  const sidebarExpanded = !sidebarCollapsed;
 
   const status = teacher.user?.status;
   const isActive = status === 'ACTIVE';
@@ -135,9 +138,28 @@ export function TeacherCard({
             </div>
             <div className="min-w-0">
               <div className="text-[11px] uppercase tracking-wide text-[#8b8b90]">{t('rate')}</div>
-              <div className="mt-1 truncate text-xl font-semibold leading-none text-[#1f2937]">
-                {formatCurrency(hourlyRate)}
-                <span className="ml-1 text-sm font-medium text-[#3b3b40]">/hr</span>
+              <div
+                className={cn(
+                  'mt-1 font-semibold leading-none text-[#1f2937]',
+                  sidebarExpanded
+                    ? cn(
+                        'truncate text-xl',
+                        'sm:flex sm:min-w-0 sm:items-baseline sm:overflow-visible sm:whitespace-nowrap sm:tabular-nums sm:text-base lg:sm:text-lg',
+                      )
+                    : 'truncate text-xl',
+                )}
+              >
+                <span className={cn(sidebarExpanded && 'sm:shrink-0')}>
+                  {formatCurrency(hourlyRate)}
+                </span>
+                <span
+                  className={cn(
+                    'ml-1 text-sm font-medium text-[#3b3b40]',
+                    sidebarExpanded && 'sm:shrink-0 sm:text-xs lg:sm:text-sm',
+                  )}
+                >
+                  /hr
+                </span>
               </div>
             </div>
           </div>
