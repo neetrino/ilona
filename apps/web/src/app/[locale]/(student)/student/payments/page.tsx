@@ -1,16 +1,19 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { useTranslations, type useTranslations as UseTranslations } from 'next-intl';
+import { X } from 'lucide-react';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
+import { PortalFormSheetDragHandle } from '@/shared/components/ui/portal-form-sheet-drag-handle';
+import { PortalSheetPortal } from '@/shared/components/ui/portal-sheet-portal';
+import { usePortalSheetDrag } from '@/shared/hooks/usePortalSheetDrag';
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from '@/shared/components/ui/dialog';
+  PORTAL_FORM_SHEET_CLOSE_BUTTON_CLASS,
+  PORTAL_FORM_SHEET_HEADER_CLASS,
+  PORTAL_FORM_SHEET_SCROLL_CLASS,
+  portalFormSheetContentClass,
+} from '@/shared/lib/portal-form-sheet-classes';
 import { Label } from '@/shared/components/ui';
 import { useMyPayments, useMyPaymentsSummary, useProcessMyPayment } from '@/features/finance';
 import { cn, formatCurrency } from '@/shared/lib/utils';
@@ -297,6 +300,25 @@ export default function StudentPaymentsPage() {
     if (key !== sortKey) return '';
     return sortDir === 'asc' ? ' ▲' : ' ▼';
   };
+
+  const isPayModalOpen = !!processModal;
+
+  const requestClosePayModal = useCallback(() => {
+    setProcessModal(null);
+    setConfirmStep(false);
+    setSuccessMessage(null);
+  }, []);
+
+  const { dragStyle, dragHandleProps, resetDrag } = usePortalSheetDrag({
+    enabled: true,
+    onClose: requestClosePayModal,
+  });
+
+  useEffect(() => {
+    if (!isPayModalOpen) {
+      resetDrag();
+    }
+  }, [isPayModalOpen, resetDrag]);
 
   const openPayModal = (payment: Payment) => {
     setProcessModal(payment);
@@ -617,37 +639,43 @@ export default function StudentPaymentsPage() {
         </StudentCard>
       </StudentPageStack>
 
-      <Dialog
-        open={!!processModal}
-        onOpenChange={(open) => {
-          if (!open) {
-            setProcessModal(null);
-            setConfirmStep(false);
-            setSuccessMessage(null);
-          }
-        }}
+      <DialogPrimitive.Root
+        open={isPayModalOpen}
+        onOpenChange={(nextOpen) => !nextOpen && requestClosePayModal()}
       >
-        <DialogContent
-          variant="portal"
-          className="border-[rgba(14,14,16,0.07)] lg:max-w-md lg:rounded-3xl"
-          aria-describedby={undefined}
+        <PortalSheetPortal
+          open={isPayModalOpen}
+          dragStyle={dragStyle}
+          contentClassName={portalFormSheetContentClass('2xl')}
+          contentProps={{ 'aria-describedby': undefined }}
         >
-          <DialogHeader className="hidden lg:flex">
-            <DialogTitle className="text-xl font-semibold text-[#1010a3]">{t('pay')}</DialogTitle>
-            <DialogDescription className="sr-only">{t('paymentMethod')}</DialogDescription>
-          </DialogHeader>
-          {processModal && (
-            <>
-              {successMessage ? (
+          <PortalFormSheetDragHandle dragHandleProps={dragHandleProps} />
+
+          <div className={cn(PORTAL_FORM_SHEET_HEADER_CLASS, 'border-b-0')}>
+            <div className="flex items-start justify-between gap-4">
+              <div className="min-w-0 flex-1">
+                <DialogPrimitive.Title className="break-words text-xl font-semibold leading-snug text-[#1010a3] min-[1367px]:text-lg min-[1367px]:text-[#3b3b40]">
+                  {t('pay')}
+                </DialogPrimitive.Title>
+              </div>
+              <DialogPrimitive.Close
+                className={PORTAL_FORM_SHEET_CLOSE_BUTTON_CLASS}
+                aria-label={tCommon('close')}
+              >
+                <X className="h-4 w-4" />
+              </DialogPrimitive.Close>
+            </div>
+          </div>
+
+          <div className={PORTAL_FORM_SHEET_SCROLL_CLASS}>
+            {processModal ? (
+              successMessage ? (
                 <div className="py-4 text-center">
                   <p className="font-medium text-[#0a7a3e]">{successMessage}</p>
                 </div>
               ) : (
                 <>
-                  <div className="mb-4 lg:hidden">
-                    <h2 className="text-xl font-semibold text-[#1010a3]">{t('pay')}</h2>
-                  </div>
-                  <p className="mb-[50px] text-sm font-medium text-[#1010a3] lg:mb-4">
+                  <p className="mb-6 text-sm font-medium text-[#1010a3] min-[1367px]:mb-4">
                     {(processModal.month ? new Date(processModal.month) : new Date(processModal.dueDate)).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })}
                     {' — '}
                     {formatCurrency(Number(processModal.amount))}
@@ -655,14 +683,14 @@ export default function StudentPaymentsPage() {
                   {!confirmStep ? (
                     <>
                       <Label className="mb-4 block text-[#3b3b40]">{t('paymentMethod')}</Label>
-                      <div className="mb-3 grid grid-cols-3 gap-3 sm:grid-cols-3 lg:mb-4">
+                      <div className="mb-3 grid grid-cols-3 gap-3 sm:grid-cols-3 min-[1367px]:mb-4">
                         {(['cash', 'card', 'idram'] as const).map((method) => (
                           <button
                             key={method}
                             type="button"
                             onClick={() => setPaymentMethod(method)}
                             className={cn(
-                              'min-h-12 rounded-[0.875rem] border-2 px-2 py-3.5 text-sm font-bold transition-colors lg:min-h-11 lg:px-4 lg:py-3 lg:text-base',
+                              'min-h-12 rounded-[0.875rem] border-2 px-2 py-3.5 text-sm font-bold transition-colors min-[1367px]:min-h-11 min-[1367px]:px-4 min-[1367px]:py-3 min-[1367px]:text-base',
                               paymentMethod === method
                                 ? 'border-[#1010a3] bg-[#d9d9f4] text-[#1010a3]'
                                 : 'border-[rgba(14,14,16,0.07)] text-[#3b3b40] hover:bg-[#f6f6f7]',
@@ -676,26 +704,26 @@ export default function StudentPaymentsPage() {
                           </button>
                         ))}
                       </div>
-                      <DialogFooter className="max-lg:flex-row max-lg:justify-end max-lg:pt-4 gap-3 sm:gap-0">
+                      <div className="flex flex-row justify-end gap-3 pt-4 min-[1367px]:flex-row min-[1367px]:justify-end">
                         <StudentGhostButton
                           type="button"
-                          onClick={() => setProcessModal(null)}
-                          className="min-h-12 px-6 text-base font-semibold lg:min-h-10 lg:px-4 lg:text-sm lg:font-medium"
+                          onClick={requestClosePayModal}
+                          className="min-h-12 px-6 text-base font-semibold min-[1367px]:min-h-10 min-[1367px]:px-4 min-[1367px]:text-sm min-[1367px]:font-medium"
                         >
                           {tCommon('cancel')}
                         </StudentGhostButton>
                         <StudentPrimaryButton
                           type="button"
                           onClick={() => setConfirmStep(true)}
-                          className="min-h-12 px-6 text-base lg:min-h-10 lg:px-5 lg:text-sm"
+                          className="min-h-12 px-6 text-base min-[1367px]:min-h-10 min-[1367px]:px-5 min-[1367px]:text-sm"
                         >
                           {tCommon('next')}
                         </StudentPrimaryButton>
-                      </DialogFooter>
+                      </div>
                     </>
                   ) : (
                     <>
-                      <p className="mb-3 text-sm text-[#8b8b90] lg:mb-4">
+                      <p className="mb-3 text-sm text-[#8b8b90] min-[1367px]:mb-4">
                         {t('payConfirm', {
                           amount: formatCurrency(Number(processModal.amount)),
                           method:
@@ -706,11 +734,11 @@ export default function StudentPaymentsPage() {
                                 : t('methodIdram'),
                         })}
                       </p>
-                      <DialogFooter className="max-lg:flex-row max-lg:justify-end max-lg:pt-4 gap-3 sm:gap-0">
+                      <div className="flex flex-row justify-end gap-3 pt-4 min-[1367px]:flex-row min-[1367px]:justify-end">
                         <StudentGhostButton
                           type="button"
                           onClick={() => setConfirmStep(false)}
-                          className="min-h-12 px-6 text-base font-semibold lg:min-h-10 lg:px-4 lg:text-sm lg:font-medium"
+                          className="min-h-12 px-6 text-base font-semibold min-[1367px]:min-h-10 min-[1367px]:px-4 min-[1367px]:text-sm min-[1367px]:font-medium"
                         >
                           {tCommon('back')}
                         </StudentGhostButton>
@@ -718,19 +746,19 @@ export default function StudentPaymentsPage() {
                           type="button"
                           onClick={handleConfirmPayment}
                           disabled={processPaymentMutation.isPending}
-                          className="min-h-12 px-6 text-base lg:min-h-10 lg:px-5 lg:text-sm"
+                          className="min-h-12 px-6 text-base min-[1367px]:min-h-10 min-[1367px]:px-5 min-[1367px]:text-sm"
                         >
                           {processPaymentMutation.isPending ? tCommon('loading') : tCommon('confirm')}
                         </StudentPrimaryButton>
-                      </DialogFooter>
+                      </div>
                     </>
                   )}
                 </>
-              )}
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
+              )
+            ) : null}
+          </div>
+        </PortalSheetPortal>
+      </DialogPrimitive.Root>
     </DashboardLayout>
   );
 }
