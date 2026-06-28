@@ -23,6 +23,12 @@ import {
 } from '../group-schedule-utils';
 import { cn } from '@/shared/lib/utils';
 import {
+  ADMIN_FORM_INPUT_CLASS,
+  ADMIN_ICON_BUTTON_SM_CLASS,
+  ADMIN_OUTLINE_BUTTON_CLASS,
+  ADMIN_PRIMARY_BUTTON_CLASS,
+} from '@/shared/lib/admin-control-theme';
+import {
   portalSheetLayerProps,
   stackedSheetDialogHandlers,
   useSheetStackZIndex,
@@ -56,6 +62,7 @@ function translateScheduleSlotError(
 }
 
 const REGENERATE_CONFIRM_MESSAGE = 'GROUP_SCHEDULE_REGENERATION_CONFIRMATION_REQUIRED';
+const ADMIN_TEXTAREA_CLASS = cn(ADMIN_FORM_INPUT_CLASS, 'h-auto min-h-[5.5rem] resize-none py-2');
 
 interface EditGroupFormProps {
   open: boolean;
@@ -415,7 +422,7 @@ export function EditGroupForm({
                   <p className="mt-1 text-sm text-[#8b8b90]">{tForm('loadingGroupData')}</p>
                 </div>
                 <DialogPrimitive.Close
-                  className="hidden h-8 w-8 shrink-0 items-center justify-center rounded-full text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 min-[1367px]:inline-flex"
+                  className={cn(ADMIN_ICON_BUTTON_SM_CLASS, 'hidden text-slate-500 hover:bg-slate-100 hover:text-slate-700 min-[1367px]:inline-flex')}
                   aria-label={tCommon('close')}
                 >
                   <X className="h-4 w-4" />
@@ -483,7 +490,7 @@ export function EditGroupForm({
                   </button>
                 ) : null}
                 <DialogPrimitive.Close
-                  className="hidden h-8 w-8 items-center justify-center rounded-full text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 min-[1367px]:inline-flex"
+                  className={cn(ADMIN_ICON_BUTTON_SM_CLASS, 'hidden text-slate-500 hover:bg-slate-100 hover:text-slate-700 min-[1367px]:inline-flex')}
                   aria-label={tCommon('close')}
                 >
                   <X className="h-4 w-4" />
@@ -494,12 +501,12 @@ export function EditGroupForm({
           <div className="min-h-0 overflow-y-auto overscroll-y-contain [touch-action:pan-y] [-webkit-overflow-scrolling:touch] px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] min-[1367px]:px-6 min-[1367px]:pb-6">
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           {successMessage && (
-            <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+            <div className="rounded-[15px] border border-green-200 bg-green-50 p-3">
               <p className="text-sm text-green-600">{successMessage}</p>
             </div>
           )}
           {errorMessage && (
-            <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+            <div className="rounded-[15px] border border-red-200 bg-red-50 p-3">
               <p className="text-sm text-red-600">{errorMessage}</p>
             </div>
           )}
@@ -511,6 +518,7 @@ export function EditGroupForm({
               </Label>
               <Input
                 id="name"
+                className={ADMIN_FORM_INPUT_CLASS}
                 {...register('name')}
                 error={errors.name?.message}
                 placeholder={tForm('namePlaceholder')}
@@ -522,6 +530,7 @@ export function EditGroupForm({
               <Label htmlFor="level">{tCommon('level')}</Label>
               <Input
                 id="level"
+                className={ADMIN_FORM_INPUT_CLASS}
                 {...register('level')}
                 error={errors.level?.message}
                 placeholder={tForm('levelPlaceholder')}
@@ -537,6 +546,7 @@ export function EditGroupForm({
               value={iconKey}
               onChange={setIconKey}
               disabled={isSubmitting}
+              adminControls
               aria-labelledby="edit-group-icon-label"
             />
           </div>
@@ -549,9 +559,11 @@ export function EditGroupForm({
               rows={3}
               placeholder={tForm('descriptionPlaceholder')}
               disabled={isSubmitting}
-              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm resize-none ${
-                errors.description ? 'border-red-300' : 'border-slate-300'
-              } ${isSubmitting ? 'bg-slate-100 cursor-not-allowed' : 'bg-white'}`}
+              className={cn(
+                ADMIN_TEXTAREA_CLASS,
+                errors.description ? 'border-red-300' : '',
+                isSubmitting ? 'cursor-not-allowed bg-slate-100' : '',
+              )}
             />
             {errors.description && (
               <p className="text-sm text-red-600">{errors.description.message}</p>
@@ -565,6 +577,7 @@ export function EditGroupForm({
             <input type="hidden" {...register('centerId')} />
             <SingleSelectDropdown
               id="centerId"
+              triggerClassName={ADMIN_FORM_INPUT_CLASS}
               options={centers.map((center) => ({
                 id: center.id,
                 label: center.name,
@@ -603,6 +616,7 @@ export function EditGroupForm({
               <input type="hidden" {...register('teacherId')} />
               <SingleSelectDropdown
                 id="teacherId"
+                triggerClassName={ADMIN_FORM_INPUT_CLASS}
                 options={teachersForCenter.map((teacher) => ({
                   id: teacher.id,
                   label: teacherOptionLabel(teacher),
@@ -635,6 +649,7 @@ export function EditGroupForm({
               <input type="hidden" {...register('secondTeacherId')} />
               <SingleSelectDropdown
                 id="secondTeacherId"
+                triggerClassName={ADMIN_FORM_INPUT_CLASS}
                 options={teachersForCenter
                   .filter((teacher) => teacher.id !== watchedTeacherId)
                   .map((teacher) => ({
@@ -679,12 +694,14 @@ export function EditGroupForm({
             onDateFromChange={setDateFrom}
             onDateToChange={setDateTo}
             disabled={isSubmitting || updateGroup.isPending}
+            adminControls
           />
 
           <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end">
             <Button
               type="button"
-              variant="ghost"
+              variant="outline"
+              className={cn(ADMIN_OUTLINE_BUTTON_CLASS, 'border-[rgba(14,14,16,0.07)] hover:bg-slate-50')}
               onClick={requestClose}
               disabled={isFormBusy}
             >
@@ -698,7 +715,7 @@ export function EditGroupForm({
                 isLoadingTeachers ||
                 centers.length === 0
               }
-              className="bg-primary hover:bg-primary/90 text-primary-foreground"
+              className={cn(ADMIN_PRIMARY_BUTTON_CLASS, 'bg-primary text-primary-foreground hover:bg-primary/90')}
             >
               {isSubmitting || updateGroup.isPending ? tForm('saving') : tForm('saveChanges')}
             </Button>
@@ -710,16 +727,25 @@ export function EditGroupForm({
     </DialogPrimitive.Root>
 
     <Dialog open={regenerateDialogOpen} onOpenChange={setRegenerateDialogOpen}>
-      <DialogContent className="max-w-md">
+      <DialogContent sheet={false} className="max-w-md rounded-[15px]">
         <DialogHeader>
           <DialogTitle>{tForm('replaceLessonsTitle')}</DialogTitle>
           <DialogDescription>{tForm('replaceLessonsDescription')}</DialogDescription>
         </DialogHeader>
         <DialogFooter className="gap-2 sm:gap-0">
-          <Button type="button" variant="ghost" onClick={() => setRegenerateDialogOpen(false)}>
+          <Button
+            type="button"
+            variant="outline"
+            className={cn(ADMIN_OUTLINE_BUTTON_CLASS, 'border-[rgba(14,14,16,0.07)] hover:bg-slate-50')}
+            onClick={() => setRegenerateDialogOpen(false)}
+          >
             {tForm('goBack')}
           </Button>
-          <Button type="button" className="bg-primary text-primary-foreground" onClick={onConfirmRegenerate}>
+          <Button
+            type="button"
+            className={cn(ADMIN_PRIMARY_BUTTON_CLASS, 'bg-primary text-primary-foreground hover:bg-primary/90')}
+            onClick={onConfirmRegenerate}
+          >
             {tForm('replaceAndSave')}
           </Button>
         </DialogFooter>
