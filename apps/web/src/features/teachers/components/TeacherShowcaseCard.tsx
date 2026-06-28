@@ -88,11 +88,10 @@ export function TeacherShowcaseCard({
       onClick={hasCardAction ? onCardClick : undefined}
       onKeyDown={articleIsButton ? handleKeyDown : undefined}
       className={cn(
-        'group overflow-hidden rounded-[1.75rem] border bg-white p-4 transition-all duration-300 md:rounded-3xl md:p-5',
-        'sm:flex sm:h-full sm:flex-col',
+        'group overflow-hidden bg-white p-4 transition-all duration-300 sm:flex sm:h-full sm:flex-col md:p-5',
         isStudent
-          ? 'border-[rgba(14,14,16,0.07)]'
-          : 'border-slate-200 shadow-sm',
+          ? 'rounded-[1.75rem] border border-[rgba(14,14,16,0.07)] md:rounded-3xl'
+          : 'rounded-2xl border border-slate-100 shadow-sm sm:rounded-[1.75rem] sm:border-slate-200 md:rounded-3xl',
         interactive &&
           (isStudent
             ? 'cursor-pointer hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus-visible:outline-none focus-visible:ring-0'

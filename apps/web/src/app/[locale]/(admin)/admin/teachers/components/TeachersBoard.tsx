@@ -88,130 +88,138 @@ export function TeachersBoard({
   const selectedCenter = sortedCenters.find((center) => center.id === activeCenterTabId);
   const panelTitle = activeCenterTabId === 'unassigned' ? tc('unassigned') : selectedCenter?.name || tc('center');
 
-  return (
-    <div className="overflow-hidden rounded-2xl border-0 bg-white shadow-sm sm:border">
-      <TeachersCentersStrip
-        centers={sortedCenters}
-        teachersByCenter={teachersByCenter}
-        activeCenterTabId={activeCenterTabId}
-        onSelectCenter={onSelectCenter}
-        uniqueTeachersCount={uniqueTeachersCount}
-        isLoading={isLoading}
-        t={t}
-        unassignedLabel={tc('unassigned')}
-      />
-
-      <div
-        className="p-4 sm:p-5"
-        role="tabpanel"
-        aria-label={panelTitle}
-      >
-        {isLoading ? (
-          <div className="flex items-center justify-center py-12">
-            <div className="text-[#8b8b90]">{t('loadingTeacherInfo')}</div>
+  const teachersPanelContent = (
+    <>
+      {isLoading ? (
+        <div className="flex items-center justify-center py-12">
+          <div className="text-[#8b8b90]">{t('loadingTeacherInfo')}</div>
+        </div>
+      ) : searchQuery &&
+        sortedCenters.every((center) => (teachersByCenter[center.id] || []).length === 0) &&
+        !hasUnassigned ? (
+        <div className="flex items-center justify-center py-12">
+          <div className="text-[#8b8b90]">{t('noTeachersMatch')}</div>
+        </div>
+      ) : sortedCenters.length === 0 && !hasUnassigned ? (
+        <div className="flex items-center justify-center py-12">
+          <div className="text-[#8b8b90]">{t('noTeachersFound')}</div>
+        </div>
+      ) : !activeCenterTabId ? (
+        <div className="rounded-lg border border-dashed border-[rgba(14,14,16,0.07)] bg-[#fafafa]/60 py-12 text-center">
+          <p className="text-sm text-[#8b8b90]">{t('noTeachersFound')}</p>
+        </div>
+      ) : selectedTeachers.length === 0 ? (
+        <div className="flex items-center justify-center py-12 text-sm text-[#8b8b90]">
+          {activeCenterTabId === 'unassigned' ? t('noUnassignedTeachers') : t('noTeachersInThisCenter')}
+        </div>
+      ) : (
+        <div className="space-y-3 sm:space-y-4">
+          <div ref={mobileTeachersStartRef} className="sm:hidden" />
+          <div className="grid w-full min-w-0 grid-cols-1 items-stretch gap-3 sm:hidden">
+            {paginatedTeachers.map((teacher) => (
+              <TeacherCard
+                key={teacher.id}
+                teacher={teacher}
+                onEdit={() => onEdit(teacher)}
+                onCardClick={onCardClick}
+              />
+            ))}
           </div>
-        ) : searchQuery &&
-          sortedCenters.every((center) => (teachersByCenter[center.id] || []).length === 0) &&
-          !hasUnassigned ? (
-          <div className="flex items-center justify-center py-12">
-            <div className="text-[#8b8b90]">{t('noTeachersMatch')}</div>
+          <div
+            className={cn(
+              'hidden w-full min-w-0 grid-cols-1 items-stretch gap-4 sm:grid sm:grid-cols-2',
+              isIPad
+                ? 'lg:grid-cols-2 xl:grid-cols-2'
+                : 'lg:grid-cols-4 xl:grid-cols-4',
+            )}
+          >
+            {(isIPad ? paginatedTeachers : selectedTeachers).map((teacher) => (
+              <TeacherCard
+                key={teacher.id}
+                teacher={teacher}
+                onEdit={() => onEdit(teacher)}
+                onCardClick={onCardClick}
+              />
+            ))}
           </div>
-        ) : sortedCenters.length === 0 && !hasUnassigned ? (
-          <div className="flex items-center justify-center py-12">
-            <div className="text-[#8b8b90]">{t('noTeachersFound')}</div>
-          </div>
-        ) : !activeCenterTabId ? (
-          <div className="rounded-lg border border-dashed border-[rgba(14,14,16,0.07)] bg-[#fafafa]/60 py-12 text-center">
-            <p className="text-sm text-[#8b8b90]">{t('noTeachersFound')}</p>
-          </div>
-        ) : selectedTeachers.length === 0 ? (
-          <div className="flex items-center justify-center py-12 text-sm text-[#8b8b90]">
-            {activeCenterTabId === 'unassigned' ? t('noUnassignedTeachers') : t('noTeachersInThisCenter')}
-          </div>
-        ) : (
-          <div className="space-y-4">
-            <div ref={mobileTeachersStartRef} className="sm:hidden" />
-            <div className="grid w-full min-w-0 grid-cols-1 items-stretch gap-4 sm:hidden">
-              {paginatedTeachers.map((teacher) => (
-                <TeacherCard
-                  key={teacher.id}
-                  teacher={teacher}
-                  onEdit={() => onEdit(teacher)}
-                  onCardClick={onCardClick}
-                />
-              ))}
-            </div>
+          {selectedTeachers.length > teachersPageSize && (
             <div
               className={cn(
-                'hidden w-full min-w-0 grid-cols-1 items-stretch gap-4 sm:grid sm:grid-cols-2',
-                isIPad
-                  ? 'lg:grid-cols-2 xl:grid-cols-2'
-                  : 'lg:grid-cols-4 xl:grid-cols-4',
+                'flex items-center text-sm text-[#8b8b90]',
+                isIPad ? 'justify-start gap-4' : 'justify-between sm:hidden',
               )}
             >
-              {(isIPad ? paginatedTeachers : selectedTeachers).map((teacher) => (
-                <TeacherCard
-                  key={teacher.id}
-                  teacher={teacher}
-                  onEdit={() => onEdit(teacher)}
-                  onCardClick={onCardClick}
-                />
-              ))}
-            </div>
-            {selectedTeachers.length > teachersPageSize && (
-              <div
-                className={cn(
-                  'flex items-center text-sm text-[#8b8b90]',
-                  isIPad ? 'justify-start gap-4' : 'justify-between sm:hidden',
-                )}
-              >
-                <span>
-                  {safeMobileTeachersPage * teachersPageSize + 1}-
-                  {Math.min((safeMobileTeachersPage + 1) * teachersPageSize, selectedTeachers.length)} / {selectedTeachers.length}
+              <span>
+                {safeMobileTeachersPage * teachersPageSize + 1}-
+                {Math.min((safeMobileTeachersPage + 1) * teachersPageSize, selectedTeachers.length)} / {selectedTeachers.length}
+              </span>
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  className={`inline-flex h-9 w-9 items-center justify-center rounded-full border transition-colors focus:outline-none focus-visible:outline-none focus-visible:ring-0 ${
+                    safeMobileTeachersPage === 0
+                      ? 'border-[#d9dde8] bg-[#f1f1f4] text-[#9aa3b5]'
+                      : 'border-[rgba(14,14,16,0.12)] bg-white text-[#3b3b40] hover:bg-[#f6f6f7]'
+                  }`}
+                  disabled={safeMobileTeachersPage === 0}
+                  onClick={() => goToMobileTeachersPage(Math.max(0, safeMobileTeachersPage - 1))}
+                  aria-label={tc('previousCardsPage')}
+                >
+                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+                <span className="inline-flex h-9 min-w-9 items-center justify-center rounded-full bg-[#1010a3] px-3 text-xs font-semibold text-white">
+                  {safeMobileTeachersPage + 1}
                 </span>
-                <div className="flex items-center gap-3">
-                  <button
-                    type="button"
-                    className={`inline-flex h-9 w-9 items-center justify-center rounded-full border transition-colors focus:outline-none focus-visible:outline-none focus-visible:ring-0 ${
-                      safeMobileTeachersPage === 0
-                        ? 'border-[#d9dde8] bg-[#f1f1f4] text-[#9aa3b5]'
-                        : 'border-[rgba(14,14,16,0.12)] bg-white text-[#3b3b40] hover:bg-[#f6f6f7]'
-                    }`}
-                    disabled={safeMobileTeachersPage === 0}
-                    onClick={() => goToMobileTeachersPage(Math.max(0, safeMobileTeachersPage - 1))}
-                    aria-label={tc('previousCardsPage')}
-                  >
-                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                    </svg>
-                  </button>
-                  <span className="inline-flex h-9 min-w-9 items-center justify-center rounded-full bg-[#1010a3] px-3 text-xs font-semibold text-white">
-                    {safeMobileTeachersPage + 1}
-                  </span>
-                  <button
-                    type="button"
-                    className={`inline-flex h-9 w-9 items-center justify-center rounded-full border transition-colors focus:outline-none focus-visible:outline-none focus-visible:ring-0 ${
-                      safeMobileTeachersPage >= totalMobileTeachersPages - 1
-                        ? 'border-[#d9dde8] bg-[#f1f1f4] text-[#9aa3b5]'
-                        : 'border-[rgba(14,14,16,0.12)] bg-white text-[#3b3b40] hover:bg-[#f6f6f7]'
-                    }`}
-                    disabled={safeMobileTeachersPage >= totalMobileTeachersPages - 1}
-                    onClick={() =>
-                      goToMobileTeachersPage(
-                        Math.min(totalMobileTeachersPages - 1, safeMobileTeachersPage + 1),
-                      )
-                    }
-                    aria-label={tc('nextCardsPage')}
-                  >
-                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </button>
-                </div>
+                <button
+                  type="button"
+                  className={`inline-flex h-9 w-9 items-center justify-center rounded-full border transition-colors focus:outline-none focus-visible:outline-none focus-visible:ring-0 ${
+                    safeMobileTeachersPage >= totalMobileTeachersPages - 1
+                      ? 'border-[#d9dde8] bg-[#f1f1f4] text-[#9aa3b5]'
+                      : 'border-[rgba(14,14,16,0.12)] bg-white text-[#3b3b40] hover:bg-[#f6f6f7]'
+                  }`}
+                  disabled={safeMobileTeachersPage >= totalMobileTeachersPages - 1}
+                  onClick={() =>
+                    goToMobileTeachersPage(
+                      Math.min(totalMobileTeachersPages - 1, safeMobileTeachersPage + 1),
+                    )
+                  }
+                  aria-label={tc('nextCardsPage')}
+                >
+                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
               </div>
-            )}
-          </div>
-        )}
+            </div>
+          )}
+        </div>
+      )}
+    </>
+  );
+
+  return (
+    <div className="flex flex-col gap-3 sm:overflow-hidden sm:rounded-2xl sm:border sm:border-slate-100 sm:bg-white sm:shadow-sm sm:gap-0">
+      <div className="overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm sm:rounded-none sm:border-0 sm:shadow-none">
+        <TeachersCentersStrip
+          centers={sortedCenters}
+          teachersByCenter={teachersByCenter}
+          activeCenterTabId={activeCenterTabId}
+          onSelectCenter={onSelectCenter}
+          uniqueTeachersCount={uniqueTeachersCount}
+          isLoading={isLoading}
+          t={t}
+          unassignedLabel={tc('unassigned')}
+        />
+      </div>
+
+      <div
+        role="tabpanel"
+        aria-label={panelTitle}
+        className="min-w-0 sm:p-5"
+      >
+        {teachersPanelContent}
       </div>
     </div>
   );

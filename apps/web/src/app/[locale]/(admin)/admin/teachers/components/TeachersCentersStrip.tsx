@@ -31,7 +31,7 @@ export function TeachersCentersStrip({
   const hasCenterTabs = centers.length > 0 || hasUnassigned;
 
   return (
-    <div className="border-b border-[rgba(14,14,16,0.07)] bg-gradient-to-b from-[#fafafa] to-white px-3 pt-3">
+    <div className="bg-gradient-to-b from-[#fafafa] to-white px-3 pt-3 sm:border-b sm:border-[rgba(14,14,16,0.07)]">
       <div className="flex flex-col gap-3 pb-3 sm:flex-row sm:items-center sm:gap-3">
         <TeachersUniqueTotalStat count={uniqueTeachersCount} isLoading={isLoading} t={t} />
 

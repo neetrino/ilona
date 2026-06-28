@@ -708,25 +708,27 @@ export function GroupsTab({
 
       {/* Board: branch tabs + groups directly underneath */}
       {viewMode === 'board' && (
-        <div className="mb-6 overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm animate-in fade-in-0 duration-150">
-          <div className="border-b border-[rgba(14,14,16,0.07)] bg-gradient-to-b from-[#fafafa] to-white px-3 pt-3">
-            <GroupsBranchTabsStrip
-              centers={centersForBranchTabs}
-              activeCenterId={activeBranchTabId}
-              totalGroupsAcrossCenters={totalGroupsAcrossCenters}
-              isLoading={isLoadingBranchTabs}
-              onCenterSelect={handleBranchTabClick}
-              t={t}
-            />
-            {centersForBranchTabs.length === 0 && !isLoadingBranchTabs && allCenters.length > 0 && (
-              <p className="pb-3 text-sm text-[#8b8b90]">{t('noBranchesMatch')}</p>
-            )}
+        <div className="mb-6 flex flex-col gap-3 animate-in fade-in-0 duration-150 sm:gap-0 sm:overflow-hidden sm:rounded-2xl sm:border sm:border-slate-100 sm:bg-white sm:shadow-sm">
+          <div className="overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm sm:rounded-none sm:border-0 sm:shadow-none">
+            <div className="bg-gradient-to-b from-[#fafafa] to-white px-3 pt-3 sm:border-b sm:border-[rgba(14,14,16,0.07)]">
+              <GroupsBranchTabsStrip
+                centers={centersForBranchTabs}
+                activeCenterId={activeBranchTabId}
+                totalGroupsAcrossCenters={totalGroupsAcrossCenters}
+                isLoading={isLoadingBranchTabs}
+                onCenterSelect={handleBranchTabClick}
+                t={t}
+              />
+              {centersForBranchTabs.length === 0 && !isLoadingBranchTabs && allCenters.length > 0 && (
+                <p className="pb-3 text-sm text-[#8b8b90]">{t('noBranchesMatch')}</p>
+              )}
+            </div>
           </div>
 
           <div
-            className="bg-[#f2f2f7] p-3 sm:bg-white sm:p-5"
             role="tabpanel"
             aria-label={activeBranchTabId ? t('tabpanelGroupsForBranch') : t('tabpanelSelectBranch')}
+            className="min-w-0 sm:p-5"
           >
             {showBoardCenterPicker ? (
               <div className="rounded-lg border border-dashed border-[rgba(14,14,16,0.07)] bg-[#fafafa]/60 py-12 text-center">
@@ -746,7 +748,7 @@ export function GroupsTab({
                 <div ref={desktopBoardStartRef} className={cn('hidden sm:block', isCompactIPad && 'sm:hidden')} />
                 <div
                   className={cn(
-                    'grid w-full min-w-0 gap-4',
+                    'grid w-full min-w-0 gap-3',
                     isCompactIPad ? 'grid-cols-2' : 'grid-cols-1',
                     !isCompactIPad && 'sm:hidden',
                   )}
