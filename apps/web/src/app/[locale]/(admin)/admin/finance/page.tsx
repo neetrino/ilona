@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl';
 import { useParams } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
-import { Button, Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/shared/components/ui';
+import { Button, Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DELETE_CONFIRMATION_DIALOG_CONTENT_CLASS, DELETE_CONFIRMATION_DIALOG_OVERLAY_CLASS } from '@/shared/components/ui';
 import { SalaryDetailsModal } from '@/features/finance/components/SalaryDetailsModal';
 import {
   useFinanceDashboard,
@@ -421,8 +421,9 @@ export default function FinancePage() {
         {/* Delete Confirmation Dialog */}
         <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
           <DialogContent
-            overlayClassName="duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]"
-            className="w-[calc(100%-1.5rem)] max-w-sm rounded-[15px] p-5 duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] sm:w-full"
+            sheet={false}
+            overlayClassName={DELETE_CONFIRMATION_DIALOG_OVERLAY_CLASS}
+            className={DELETE_CONFIRMATION_DIALOG_CONTENT_CLASS}
           >
             <DialogHeader>
               <DialogTitle>{t('deleteSalaryRecords')}</DialogTitle>
@@ -464,8 +465,9 @@ export default function FinancePage() {
         {/* Delete Payments Confirmation Dialog */}
         <Dialog open={isDeletePaymentsDialogOpen} onOpenChange={setIsDeletePaymentsDialogOpen}>
           <DialogContent
-            overlayClassName="duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]"
-            className="w-[calc(100%-1.5rem)] max-w-sm rounded-[15px] p-5 duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] sm:w-full"
+            sheet={false}
+            overlayClassName={DELETE_CONFIRMATION_DIALOG_OVERLAY_CLASS}
+            className={DELETE_CONFIRMATION_DIALOG_CONTENT_CLASS}
           >
             <DialogHeader>
               <DialogTitle>{t('deletePayments')}</DialogTitle>

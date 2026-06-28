@@ -9,6 +9,8 @@ import {
   DialogDescription,
   DialogFooter,
   Button,
+  DELETE_CONFIRMATION_DIALOG_CONTENT_CLASS,
+  DELETE_CONFIRMATION_DIALOG_OVERLAY_CLASS,
 } from '@/shared/components/ui';
 
 interface BulkDeleteConfirmationDialogProps {
@@ -52,7 +54,11 @@ export function BulkDeleteConfirmationDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="lg:max-w-md lg:rounded-[15px] p-5 duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] lg:w-full">
+        <DialogContent
+          sheet={false}
+          overlayClassName={DELETE_CONFIRMATION_DIALOG_OVERLAY_CLASS}
+          className={DELETE_CONFIRMATION_DIALOG_CONTENT_CLASS}
+        >
         <DialogHeader>
           <DialogTitle>{title ?? defaultTitle}</DialogTitle>
           <DialogDescription>{description ?? defaultDescription}</DialogDescription>
