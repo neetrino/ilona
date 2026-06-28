@@ -102,8 +102,8 @@ export default function AdminLessonDetailPage({ params }: { params: Promise<{ le
 
   if (isLoading) {
     return (
-      <DashboardLayout title={t('lessonLoadingTitle')} subtitle={t('lessonLoadingSubtitle')}>
-        <div className="flex items-center justify-center p-12">
+      <DashboardLayout title={t('lessonLoadingTitle')} subtitle={t('lessonLoadingSubtitle')} mobileFullBleed>
+        <div className="flex min-h-0 flex-1 items-center justify-center rounded-none border-0 bg-white lg:rounded-[2rem] lg:border lg:border-[rgba(14,14,16,0.07)]">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
         </div>
       </DashboardLayout>
@@ -112,17 +112,14 @@ export default function AdminLessonDetailPage({ params }: { params: Promise<{ le
 
   if (!lesson) {
     return (
-      <DashboardLayout title={t('lessonNotFoundTitle')} subtitle={t('lessonNotFoundSubtitle')}>
-        <div className="text-center p-12">
+      <DashboardLayout title={t('lessonNotFoundTitle')} subtitle={t('lessonNotFoundSubtitle')} mobileFullBleed>
+        <div className="flex min-h-0 flex-1 flex-col items-center justify-center rounded-none border-0 bg-white lg:rounded-[2rem] lg:border lg:border-[rgba(14,14,16,0.07)]">
           <Button onClick={() => router.back()}>{tCommon('goBack')}</Button>
         </div>
       </DashboardLayout>
     );
   }
 
-  const mainTeacherName = lesson.teacher?.user
-    ? `${lesson.teacher.user.firstName} ${lesson.teacher.user.lastName}`.trim()
-    : null;
   const subTeacherName = lesson.substituteTeacher?.user
     ? `${lesson.substituteTeacher.user.firstName} ${lesson.substituteTeacher.user.lastName}`.trim()
     : null;
@@ -131,50 +128,54 @@ export default function AdminLessonDetailPage({ params }: { params: Promise<{ le
     <DashboardLayout
       title={t('lessonTitle', { name: lesson.group?.name || t('lessonUnknown') })}
       subtitle={`${new Date(lesson.scheduledAt).toLocaleDateString()} at ${new Date(lesson.scheduledAt).toLocaleTimeString()}`}
+      mobileFullBleed
     >
-      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="text-sm text-[#3b3b40] space-y-1">
-          {mainTeacherName && (
-            <p>
-              <span className="font-medium text-[#1010a3]">{t('mainTeacherLabel')}</span> {mainTeacherName}
-            </p>
-          )}
-          {subTeacherName ? (
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-none border-0 bg-white lg:rounded-[2rem] lg:border lg:border-[rgba(14,14,16,0.07)]">
+        {subTeacherName && (
+          <div className="shrink-0 border-b border-[rgba(14,14,16,0.07)] px-4 py-3 text-sm text-[#3b3b40]">
             <p className="text-amber-900 bg-amber-50 border border-amber-200 rounded-md px-3 py-2 inline-block">
               <span className="font-medium">{t('substituteThisDay')}</span> {subTeacherName}
             </p>
-          ) : (
-            <p className="text-[#8b8b90]">{t('noSubstituteForLesson')}</p>
-          )}
+          </div>
+        )}
+        <div className="flex-1 min-h-0">
+          <LessonDetailTabs
+            lesson={lesson}
+            activeTab={activeTab}
+            onTabChange={handleTabChange}
+          >
+            {{
+              absence: <AbsenceTab lessonId={resolvedParams.lessonId} />,
+              feedback: <FeedbacksTab lessonId={resolvedParams.lessonId} />,
+              voice: <VoiceTab lessonId={resolvedParams.lessonId} />,
+              text: <TextTab lessonId={resolvedParams.lessonId} />,
+              dailyPlan: (
+                <DailyPlanTab
+                  lessonId={resolvedParams.lessonId}
+                  groupId={lesson.groupId}
+                />
+              ),
+            }}
+          </LessonDetailTabs>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <Button type="button" variant="outline" onClick={() => setSubstituteOpen(true)}>
+        <div className="shrink-0 flex flex-wrap items-center justify-start gap-2 border-t border-[rgba(14,14,16,0.07)] px-4 py-3">
+          <Button
+            type="button"
+            variant="outline"
+            className="rounded-[15px] transition-transform duration-200 hover:-translate-y-px"
+            onClick={() => setSubstituteOpen(true)}
+          >
             {t('substituteTeacherButton')}
           </Button>
-          <Button type="button" variant="destructive" onClick={() => setIsDeleteDialogOpen(true)}>
+          <Button
+            type="button"
+            variant="destructive"
+            className="rounded-[15px] transition-transform duration-200 hover:-translate-y-px"
+            onClick={() => setIsDeleteDialogOpen(true)}
+          >
             {tCommon('delete')}
           </Button>
         </div>
-      </div>
-      <div className="bg-white rounded-xl border border-[rgba(14,14,16,0.07)] h-[calc(100vh-200px)] flex flex-col">
-        <LessonDetailTabs
-          lesson={lesson}
-          activeTab={activeTab}
-          onTabChange={handleTabChange}
-        >
-          {{
-            absence: <AbsenceTab lessonId={resolvedParams.lessonId} />,
-            feedback: <FeedbacksTab lessonId={resolvedParams.lessonId} />,
-            voice: <VoiceTab lessonId={resolvedParams.lessonId} />,
-            text: <TextTab lessonId={resolvedParams.lessonId} />,
-            dailyPlan: (
-              <DailyPlanTab
-                lessonId={resolvedParams.lessonId}
-                groupId={lesson.groupId}
-              />
-            ),
-          }}
-        </LessonDetailTabs>
       </div>
 
       <SubstituteLessonModal

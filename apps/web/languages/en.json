@@ -2254,7 +2254,7 @@
     "groupLabel": "Group:",
     "currentlyAssignedSubstitute": "Currently assigned substitute:",
     "substituteThisDay": "Substitute (this day):",
-    "substituteTeacherButton": "Substitute teacher…",
+    "substituteTeacherButton": "Substitute teacher",
     "lessonTitle": "Lesson: {name}",
     "lessonUnknown": "Unknown",
     "lessonLoadingTitle": "Loading...",
