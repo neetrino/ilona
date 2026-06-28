@@ -158,6 +158,7 @@ export function LandingNavbar({ logoUrl, profileHref, logoHref = '#home' }: Land
             logoHref={logoHref}
             onLogoClick={handleLogoClick}
             isCanvasActive={isCanvasActive}
+            languageToggleClassName="hidden lg:inline-flex"
             center={
               <>
                 {NAV_ITEMS.map((item) => (
