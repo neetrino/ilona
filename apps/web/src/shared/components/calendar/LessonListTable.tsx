@@ -287,7 +287,7 @@ export function LessonListTable({
   }
 
   const tableColSpan =
-    (hideActionsColumn ? 9 : 10) +
+    (hideActionsColumn ? 8 : 9) +
     (sectionedCalendarList && showScheduleColumn ? 1 : 0) +
     (hideTeacherColumn ? 0 : 1);
 
@@ -427,20 +427,22 @@ export function LessonListTable({
                       />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <div className="flex items-center justify-between gap-2">
-                        <p className="whitespace-normal break-words text-[1.2rem] leading-tight font-semibold text-[#111827]">
-                          {lesson.group?.name || tCal('unknownGroupName')}
-                        </p>
-                        {lesson.completionStatus === 'DONE' ? (
+                      <p className="whitespace-normal break-words text-[1.2rem] leading-tight font-semibold text-[#111827]">
+                        {lesson.group?.name || tCal('unknownGroupName')}
+                      </p>
+                      {lesson.completionStatus === 'DONE' ? (
+                        <div className="mt-1">
                           <Badge variant="success" className="bg-green-100 text-green-700 border-green-200">
                             {tCal('completed')}
                           </Badge>
-                        ) : lesson.completionStatus === 'IN_PROCESS' ? (
+                        </div>
+                      ) : lesson.completionStatus === 'IN_PROCESS' ? (
+                        <div className="mt-1">
                           <Badge variant="warning" className="bg-yellow-100 text-yellow-700 border-yellow-200">
                             {tCal('statusInProcess')}
                           </Badge>
-                        ) : null}
-                      </div>
+                        </div>
+                      ) : null}
                       <div className="mt-5 -ml-[31px] grid grid-cols-2 items-stretch gap-3">
                         <div className="justify-self-start flex items-start gap-2">
                           <svg
@@ -627,9 +629,6 @@ export function LessonListTable({
               </th>
               <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 uppercase">
                 {tCal('columnLessonName')}
-              </th>
-              <th className="px-4 py-3 text-center text-xs font-semibold text-slate-600 uppercase w-[120px]">
-                {tCommon('status')}
               </th>
               {sectionedCalendarList && showScheduleColumn && (
                 <th className="px-3 py-3 text-center text-xs font-semibold text-slate-600 uppercase min-w-[7rem]">

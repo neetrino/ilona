@@ -119,6 +119,17 @@ export function LessonListTableBodyRow({
 
   const obligationIds: LessonActionId[] = ['absence', 'feedback', 'voice', 'text', 'dailyPlan'];
 
+  const statusBadge =
+    lesson.completionStatus === 'DONE' ? (
+      <Badge variant="success" className="bg-green-100 text-green-700 border-green-200">
+        {t('completed')}
+      </Badge>
+    ) : lesson.completionStatus === 'IN_PROCESS' ? (
+      <Badge variant="warning" className="bg-yellow-100 text-yellow-700 border-yellow-200">
+        {t('statusInProcess')}
+      </Badge>
+    ) : null;
+
   return (
     <tr
       className={rowClassName}
@@ -139,20 +150,7 @@ export function LessonListTableBodyRow({
       <td className="px-4 py-3">
         <div>
           <p className="font-semibold text-slate-800">{lesson.group?.name || t('unknownGroupName')}</p>
-        </div>
-      </td>
-      <td className="px-4 py-3 align-middle text-center">
-        <div className="flex min-h-[1.75rem] items-center justify-center">
-          {lesson.completionStatus === 'DONE' && (
-            <Badge variant="success" className="bg-green-100 text-green-700 border-green-200">
-              {t('completed')}
-            </Badge>
-          )}
-          {lesson.completionStatus === 'IN_PROCESS' && (
-            <Badge variant="warning" className="bg-yellow-100 text-yellow-700 border-yellow-200">
-              {t('statusInProcess')}
-            </Badge>
-          )}
+          {statusBadge ? <div className="mt-1">{statusBadge}</div> : null}
         </div>
       </td>
       {scheduleCategory !== undefined && (
