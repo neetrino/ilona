@@ -15,6 +15,7 @@ type LandingMobileNavbarPillProps = {
   trailing?: ReactNode;
   isCanvasActive?: boolean;
   showLanguageToggle?: boolean;
+  languageToggleClassName?: string;
   logoOnError?: (event: SyntheticEvent<HTMLImageElement>) => void;
   enlargeLogoInner?: boolean;
 };
@@ -28,6 +29,7 @@ export function LandingMobileNavbarPill({
   trailing,
   isCanvasActive = false,
   showLanguageToggle = true,
+  languageToggleClassName,
   logoOnError,
   enlargeLogoInner = false,
 }: LandingMobileNavbarPillProps) {
@@ -95,7 +97,12 @@ export function LandingMobileNavbarPill({
       ) : null}
 
       <div className={cn('flex items-center', isCanvasActive ? 'gap-3' : 'gap-1.5 sm:gap-2 tablet:gap-3')}>
-        {showLanguageToggle ? <LandingNavbarLanguageToggle isCanvasActive={isCanvasActive} /> : null}
+        {showLanguageToggle ? (
+          <LandingNavbarLanguageToggle
+            isCanvasActive={isCanvasActive}
+            className={languageToggleClassName}
+          />
+        ) : null}
         {trailing}
       </div>
     </div>

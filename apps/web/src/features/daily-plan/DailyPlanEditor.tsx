@@ -13,6 +13,20 @@ import { DatePickerInput } from '@/shared/components/ui/date-picker-input';
 import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
 import { usePortalSheetDrag } from '@/shared/hooks/usePortalSheetDrag';
 import { cn } from '@/shared/lib/utils';
+import {
+  portalSheetLayerProps,
+  stackedSheetDialogHandlers,
+  useSheetStackZIndex,
+  stackedSheetOverlayClassName,
+} from '@/shared/lib/sheet-stack';
+import { PORTAL_DESKTOP_SIDE_SHEET_CLASS } from '@/shared/lib/portal-form-sheet-classes';
+import {
+  ADMIN_DATE_INPUT_CLASS,
+  ADMIN_FORM_INPUT_CLASS,
+  ADMIN_ICON_BUTTON_SM_CLASS,
+  ADMIN_OUTLINE_BUTTON_CLASS,
+  ADMIN_PRIMARY_BUTTON_CLASS,
+} from '@/shared/lib/admin-control-theme';
 import type {
   DailyPlan,
   DailyPlanResourceKind,
@@ -25,6 +39,11 @@ const RESOURCE_KINDS: DailyPlanResourceKind[] = [
   'WRITING',
   'SPEAKING',
 ];
+
+const dailyPlanTextareaClass = cn(
+  ADMIN_FORM_INPUT_CLASS,
+  'h-auto min-h-[3.5rem] resize-y overflow-auto py-2',
+);
 
 interface DailyPlanEditorProps {
   mode: 'create' | 'edit';
@@ -97,7 +116,7 @@ function AutoResizeTextarea({
       placeholder={placeholder}
       rows={2}
       style={height ? { height: `${height}px` } : undefined}
-      className="w-full min-h-[56px] px-2 py-1.5 text-sm border border-slate-200 rounded focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary resize-y overflow-auto"
+      className={dailyPlanTextareaClass}
     />
   );
 }
@@ -287,7 +306,10 @@ export function DailyPlanEditor({
         <button
           type="button"
           onClick={onClose}
-          className="hidden rounded-lg p-2 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900 min-[1367px]:inline-flex"
+          className={cn(
+            ADMIN_ICON_BUTTON_SM_CLASS,
+            'hidden text-slate-500 hover:bg-slate-100 hover:text-slate-900 min-[1367px]:inline-flex',
+          )}
           aria-label={tCommon('close')}
         >
           <X className="size-5" />
@@ -295,7 +317,7 @@ export function DailyPlanEditor({
       </header>
 
       <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain [-webkit-overflow-scrolling:touch]">
-        <div className="flex flex-col gap-5 p-5">
+        <div className="flex flex-col gap-6 p-5">
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div>
               <label
@@ -309,7 +331,7 @@ export function DailyPlanEditor({
                 value={date}
                 onValueChange={setDate}
                 disabled={readOnly}
-                className="h-10 w-full px-3 bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                className={ADMIN_DATE_INPUT_CLASS}
               />
             </div>
             <div>
@@ -322,13 +344,17 @@ export function DailyPlanEditor({
               {isGroupLocked ? (
                 <div
                   id="dp-group"
-                  className="h-10 w-full px-3 bg-slate-50 border border-slate-200 rounded-lg text-slate-700 flex items-center"
+                  className={cn(
+                    ADMIN_FORM_INPUT_CLASS,
+                    'flex items-center bg-slate-50 text-slate-700',
+                  )}
                 >
                   {selectedGroupName}
                 </div>
               ) : (
                 <SingleSelectDropdown
                   id="dp-group"
+                  triggerClassName={ADMIN_FORM_INPUT_CLASS}
                   options={myGroups.map((group) => ({ id: group.id, label: group.name }))}
                   value={groupId || null}
                   onValueChange={(next) => setGroupId(next ?? '')}
@@ -341,16 +367,16 @@ export function DailyPlanEditor({
           </div>
 
           {error && (
-            <div className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600">
+            <div className="rounded-[15px] border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600">
               {error}
             </div>
           )}
 
-          <div className="space-y-4">
+          <div className="space-y-6">
               {topics.map((topic, idx) => (
                 <div
                   key={idx}
-                  className="space-y-3"
+                  className="space-y-4"
                 >
                   <div className="flex items-center justify-between gap-3">
                     <input
@@ -361,7 +387,7 @@ export function DailyPlanEditor({
                       }
                       disabled={readOnly}
                       placeholder={t('topicTitlePlaceholder', { number: idx + 1 })}
-                      className="flex-1 h-10 px-3 bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                      className={cn(ADMIN_FORM_INPUT_CLASS, 'flex-1')}
                     />
                     {!readOnly && topics.length > 1 && (
                       <button
@@ -374,11 +400,11 @@ export function DailyPlanEditor({
                     )}
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                     {topic.resources.map((res) => (
                       <div
                         key={res.kind}
-                        className="space-y-2"
+                        className="space-y-3"
                       >
                         <div className="text-xs font-semibold uppercase tracking-wide text-[#1010a3]">
                           {kindLabel[res.kind]}
@@ -393,7 +419,7 @@ export function DailyPlanEditor({
                           }
                           disabled={readOnly}
                           placeholder={tCommon('title')}
-                          className="w-full h-9 px-2 text-sm border border-slate-200 rounded focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                          className={ADMIN_FORM_INPUT_CLASS}
                         />
                         <input
                           type="url"
@@ -405,7 +431,7 @@ export function DailyPlanEditor({
                           }
                           disabled={readOnly}
                           placeholder={t('linkOptionalPlaceholder')}
-                          className="w-full h-9 px-2 text-sm border border-slate-200 rounded focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                          className={ADMIN_FORM_INPUT_CLASS}
                         />
                         <AutoResizeTextarea
                           value={res.description}
@@ -427,7 +453,10 @@ export function DailyPlanEditor({
             <button
               type="button"
               onClick={addTopic}
-              className="h-11 shrink-0 rounded-lg border-2 border-dashed border-slate-300 text-slate-600 hover:bg-slate-50 active:scale-100"
+              className={cn(
+                ADMIN_OUTLINE_BUTTON_CLASS,
+                'w-full shrink-0 border-2 border-dashed border-slate-300 text-slate-600 hover:bg-slate-50 active:scale-100',
+              )}
             >
               {t('addAnotherTopic')}
             </button>
@@ -437,7 +466,10 @@ export function DailyPlanEditor({
             <button
               type="button"
               onClick={onClose}
-              className="h-10 rounded-lg border border-slate-200 px-4 text-slate-700 hover:bg-slate-50"
+              className={cn(
+                ADMIN_OUTLINE_BUTTON_CLASS,
+                'text-slate-700 hover:bg-slate-50 disabled:opacity-60',
+              )}
             >
               {tCommon('cancel')}
             </button>
@@ -446,7 +478,10 @@ export function DailyPlanEditor({
                 type="button"
                 onClick={handleSave}
                 disabled={isSaving}
-                className="h-10 rounded-lg bg-primary px-4 font-medium text-white hover:bg-primary/90 disabled:opacity-60"
+                className={cn(
+                  ADMIN_PRIMARY_BUTTON_CLASS,
+                  'bg-primary text-white hover:bg-primary/90 disabled:opacity-60',
+                )}
               >
                 {isSaving ? tCommon('saving') : tCommon('save')}
               </button>
@@ -457,24 +492,23 @@ export function DailyPlanEditor({
     </>
   );
 
+  const { overlayStyle, contentStyle, isBaseLayer } = useSheetStackZIndex(true);
+
   return (
     <DialogPrimitive.Root open onOpenChange={(nextOpen) => !nextOpen && onClose()}>
       <DialogPrimitive.Portal>
         <DialogPrimitive.Overlay
-          className="fixed inset-0 z-50 bg-black/60 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0"
+          style={overlayStyle} {...portalSheetLayerProps} className={stackedSheetOverlayClassName('fixed inset-0 z-50 bg-black/60 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0', isBaseLayer)}
         />
-        <DialogPrimitive.Content
-          onOpenAutoFocus={(event) => event.preventDefault()}
-          style={dragStyle}
+        <DialogPrimitive.Content onOpenAutoFocus={(event) => event.preventDefault()} style={{ ...dragStyle, ...contentStyle }} {...stackedSheetDialogHandlers} {...portalSheetLayerProps}
           className={cn(
             'fixed inset-x-0 bottom-[7px] top-auto z-50 grid w-full translate-y-0 lg:bottom-0 [@media(min-width:1024px)_and_(max-width:1366px)_and_(min-height:1000px)]:bottom-0',
             'duration-700 ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out min-[1367px]:duration-350 min-[1367px]:ease-[cubic-bezier(0.22,1,0.36,1)]',
             'data-[state=open]:slide-in-from-bottom-full data-[state=closed]:slide-out-to-bottom-full',
             'h-[calc(94dvh+7px)] [@media(min-width:1024px)_and_(max-width:1366px)_and_(min-height:1000px)]:h-[56dvh] grid-rows-[auto_auto_1fr] gap-0 overflow-hidden rounded-t-[22px] bg-white shadow-xl',
-            'min-[1367px]:inset-0 min-[1367px]:m-auto min-[1367px]:w-[95vw] min-[1367px]:max-w-5xl min-[1367px]:h-auto min-[1367px]:max-h-[90vh] min-[1367px]:translate-x-0 min-[1367px]:translate-y-0 min-[1367px]:rounded-2xl min-[1367px]:border min-[1367px]:border-slate-200',
+            PORTAL_DESKTOP_SIDE_SHEET_CLASS,
             'min-[1367px]:grid-rows-[auto_1fr]',
-            'min-[1367px]:data-[state=open]:fade-in-0 min-[1367px]:data-[state=closed]:fade-out-0 min-[1367px]:data-[state=open]:slide-in-from-bottom-0 min-[1367px]:data-[state=closed]:slide-out-to-bottom-0',
-          )}
+            )}
           aria-describedby={undefined}
         >
           <DialogPrimitive.Title className="sr-only">

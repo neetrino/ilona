@@ -2,11 +2,19 @@
 
 import { cn } from '@/shared/lib/utils';
 import { Button } from '@/shared/components/ui/button';
+import {
+  getSegmentedIndicatorStyle,
+  SEGMENTED_TOGGLE_BUTTON_ACTIVE_CLASS,
+  SEGMENTED_TOGGLE_BUTTON_CLASS,
+  SEGMENTED_TOGGLE_BUTTON_INACTIVE_CLASS,
+  SEGMENTED_TOGGLE_GRID_TRACK_CLASS,
+  SEGMENTED_TOGGLE_INDICATOR_CLASS,
+  SEGMENTED_TOGGLE_TRACK_PADDING_PX,
+} from '@/shared/components/ui/segmented-toggle-theme';
 
 type ViewMode = 'week' | 'month' | 'list';
 
 const VIEW_MODES: ViewMode[] = ['list', 'week', 'month'];
-const TRACK_PADDING_PX = 4;
 
 interface CalendarControlsProps {
   viewMode: ViewMode;
@@ -21,29 +29,35 @@ export function CalendarControls({
   onAddCourse,
   t,
 }: CalendarControlsProps) {
-  const selectedIndex = VIEW_MODES.indexOf(viewMode);
-  const segmentShare = 100 / VIEW_MODES.length;
+  const selectedIndex = Math.max(0, VIEW_MODES.indexOf(viewMode));
+  const mobileSelectedIndex = viewMode === 'list' ? 0 : 1;
 
   return (
     <div className="flex items-center gap-3">
       <div
         role="group"
         aria-label={t?.('viewMode') ?? 'View mode'}
-        className="relative grid w-full rounded-lg border border-[rgba(14,14,16,0.12)] bg-[#f6f6f7] p-1 shadow-sm sm:w-[276px]"
+        className={cn(SEGMENTED_TOGGLE_GRID_TRACK_CLASS, 'w-full sm:w-[276px]')}
         style={{ gridTemplateColumns: 'repeat(3, minmax(0, 1fr))' }}
       >
-        {selectedIndex >= 0 ? (
-          <span
-            aria-hidden
-            className="pointer-events-none absolute z-0 rounded-md bg-[#1010a3] shadow-sm transition-[left,width] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]"
-            style={{
-              top: TRACK_PADDING_PX,
-              bottom: TRACK_PADDING_PX,
-              left: `calc(${selectedIndex * segmentShare}% + ${TRACK_PADDING_PX}px)`,
-              width: `calc(${segmentShare}% - ${TRACK_PADDING_PX * 2}px)`,
-            }}
-          />
-        ) : null}
+        <span
+          aria-hidden
+          className={cn(SEGMENTED_TOGGLE_INDICATOR_CLASS, 'sm:hidden')}
+          style={getSegmentedIndicatorStyle(
+            mobileSelectedIndex,
+            2,
+            SEGMENTED_TOGGLE_TRACK_PADDING_PX,
+          )}
+        />
+        <span
+          aria-hidden
+          className={cn(SEGMENTED_TOGGLE_INDICATOR_CLASS, 'hidden sm:block')}
+          style={getSegmentedIndicatorStyle(
+            selectedIndex,
+            VIEW_MODES.length,
+            SEGMENTED_TOGGLE_TRACK_PADDING_PX,
+          )}
+        />
         {VIEW_MODES.map((mode) => {
           const isSelected = viewMode === mode;
           const label =
@@ -59,10 +73,12 @@ export function CalendarControls({
               type="button"
               onClick={() => onViewModeChange(mode)}
               className={cn(
-                'relative z-10 rounded-md px-4 py-2 text-sm font-semibold transition-colors duration-300 focus:outline-none',
+                SEGMENTED_TOGGLE_BUTTON_CLASS,
+                'duration-300',
+                mode === 'month' && 'hidden sm:inline-flex',
                 isSelected
-                  ? 'text-white'
-                  : 'text-[#3b3b40] hover:text-[#1010a3]',
+                  ? SEGMENTED_TOGGLE_BUTTON_ACTIVE_CLASS
+                  : cn(SEGMENTED_TOGGLE_BUTTON_INACTIVE_CLASS, 'hover:text-[#1010a3]'),
               )}
               aria-pressed={isSelected}
             >

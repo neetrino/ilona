@@ -6,6 +6,7 @@ import {
   AddStudentForm,
   EditStudentForm,
   DeleteConfirmationDialog,
+  StudentStatusConfirmationDialog,
   StudentDetailsModal,
 } from '@/features/students';
 import { StudentsStats } from './components/StudentsStats';
@@ -48,6 +49,8 @@ export default function StudentsPage() {
     editStudentIdFromUrl,
     isDeleteDialogOpen,
     isBulkDeleteDialogOpen,
+    isStatusDialogOpen,
+    selectedStudentForStatusChange,
     isFeedbackModalOpen,
     selectedStudentForFeedback,
     feedbackStudentIdFromUrl,
@@ -92,6 +95,8 @@ export default function StudentsPage() {
     handleEditClick,
     handleEditModalOpenChange,
     handleDeactivateClick,
+    handleStatusConfirm,
+    handleStatusDialogOpenChange,
     handleShowFeedback,
     handleFeedbackModalOpenChange,
     handleGroupChange,
@@ -201,6 +206,7 @@ export default function StudentsPage() {
           onViewModeChange={handleViewModeChange}
           onAddStudent={() => setIsAddStudentOpen(true)}
           selectedStudentIds={selectedStudentIds}
+          allSelected={allSelected}
           onBulkDelete={handleBulkDeleteClick}
           statusFilterOptions={statusFilterOptions}
           teacherFilterOptions={teacherFilterOptions}
@@ -253,9 +259,6 @@ export default function StudentsPage() {
             centersData={centersData?.items}
             isLoading={isLoading}
             searchQuery={searchQuery}
-            onEdit={handleEditClick}
-            onDelete={handleDeleteClick}
-            onDeactivate={handleDeactivateClick}
             onCardClick={handleStudentDetailsOpen}
           />
         )}
@@ -269,7 +272,6 @@ export default function StudentsPage() {
         bulkDeleteError={bulkDeleteError}
         deletedCount={deletedCount}
         deactivateSuccess={deactivateSuccess}
-        deactivateError={deactivateError}
       />
 
       {/* Add Student Modal */}
@@ -320,6 +322,22 @@ export default function StudentsPage() {
         title={t('deleteStudentsTitle')}
       />
 
+      <StudentStatusConfirmationDialog
+        open={isStatusDialogOpen}
+        onOpenChange={handleStatusDialogOpenChange}
+        onConfirm={handleStatusConfirm}
+        action={
+          selectedStudentForStatusChange?.user?.status === 'ACTIVE' ? 'deactivate' : 'activate'
+        }
+        studentName={
+          selectedStudentForStatusChange
+            ? `${selectedStudentForStatusChange.user?.firstName || ''} ${selectedStudentForStatusChange.user?.lastName || ''}`.trim()
+            : undefined
+        }
+        isLoading={updateStudent.isPending}
+        error={deactivateError}
+      />
+
       {/* Student feedback modal (message icon) */}
       <StudentFeedbackModal
         open={isFeedbackModalOpen || !!feedbackStudentIdFromUrl}
@@ -333,6 +351,19 @@ export default function StudentsPage() {
         open={isStudentDetailsModalOpen}
         onClose={handleStudentDetailsClose}
         locale={locale}
+        onEdit={(student) => {
+          handleEditClick(student);
+        }}
+        onDelete={
+          viewMode === 'board'
+            ? (student) => {
+                handleDeleteClick(student);
+              }
+            : undefined
+        }
+        onDeactivate={handleDeactivateClick}
+        onFeedback={handleShowFeedback}
+        actionsDisabled={deleteStudent.isPending || updateStudent.isPending}
       />
     </DashboardLayout>
   );

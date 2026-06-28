@@ -26,7 +26,6 @@ export default function TeachersPage() {
   const {
     // Translations
     t,
-    tCommon,
     tStatus,
     
     // State
@@ -37,12 +36,12 @@ export default function TeachersPage() {
     viewMode,
     selectedStatus,
     selectedTeacherIds,
-    selectedTeacher,
     selectedTeacherIdForDetails,
     selectedTeacherIdForEdit,
     isAddTeacherOpen,
     isEditTeacherOpen,
-    isDeleteDialogOpen,
+    teacherIdPendingDelete,
+    teacherPendingDeleteLabel,
     isBulkDeleteDialogOpen,
     isDetailsDrawerOpen,
     allSelected,
@@ -87,6 +86,7 @@ export default function TeachersPage() {
     handleActiveCenterTabChange,
     handleEditClick,
     handleDeleteClick,
+    handleDeleteDialogOpenChange,
     handleDeleteConfirm,
     handleBulkDeleteClick,
     handleBulkDeleteConfirm,
@@ -96,11 +96,8 @@ export default function TeachersPage() {
     handleDetailsDrawerClose,
     setIsAddTeacherOpen,
     setIsEditTeacherOpen,
-    setIsDeleteDialogOpen,
     setIsBulkDeleteDialogOpen,
     setSelectedTeacher,
-    setDeleteError,
-    setDeleteSuccess,
     setBulkDeleteError,
     setBulkDeleteSuccess,
   } = useTeachersPage();
@@ -139,7 +136,9 @@ export default function TeachersPage() {
               onClick={handleBulkDeleteClick}
               disabled={deleteTeachers.isPending || deleteTeacher.isPending}
             >
-              Delete All ({selectedTeacherIds.size})
+              {allSelected
+                ? t('deleteAll', { count: selectedTeacherIds.size })
+                : t('deleteSelected', { count: selectedTeacherIds.size })}
             </Button>
           </div>
         )}
@@ -163,7 +162,6 @@ export default function TeachersPage() {
             onSelectAll={handleSelectAll}
             onToggleSelect={handleToggleSelect}
             onView={handleRowClick}
-            onEdit={handleEditClick}
             onCenterChange={handleCenterChange}
             onOpenGroupsModal={(teacher, tab) => {
               setGroupsModalTeacher(teacher);
@@ -183,7 +181,6 @@ export default function TeachersPage() {
               label: center.name,
             }))}
             t={t}
-            tCommon={tCommon}
             tStatus={tStatus}
           />
         ) : (
@@ -238,17 +235,10 @@ export default function TeachersPage() {
 
       {/* Delete Confirmation Dialog */}
       <DeleteConfirmationDialog
-        open={isDeleteDialogOpen}
-        onOpenChange={(open) => {
-          setIsDeleteDialogOpen(open);
-          if (!open) {
-            setSelectedTeacher(null);
-            setDeleteError(null);
-            setDeleteSuccess(false);
-          }
-        }}
+        open={teacherIdPendingDelete !== null}
+        onOpenChange={handleDeleteDialogOpenChange}
         onConfirm={handleDeleteConfirm}
-        teacherName={selectedTeacher ? `${selectedTeacher.user.firstName} ${selectedTeacher.user.lastName}` : undefined}
+        teacherName={teacherPendingDeleteLabel ?? undefined}
         isLoading={deleteTeacher.isPending}
         error={deleteError}
       />
@@ -270,11 +260,21 @@ export default function TeachersPage() {
         title={t('deleteTeachersTitle')}
       />
 
-      {/* Teacher Details Modal (CRM-style) */}
+      {/* Teacher Details Modal — edit action in header for list view only */}
       <TeacherDetailsModal
         teacherId={selectedTeacherIdForDetails}
         open={isDetailsDrawerOpen}
         onClose={handleDetailsDrawerClose}
+        onEdit={
+          viewMode === 'list'
+            ? () => {
+                const teacher = teachers.find((item) => item.id === selectedTeacherIdForDetails);
+                if (teacher) {
+                  handleEditClick(teacher);
+                }
+              }
+            : undefined
+        }
       />
       <TeacherGroupsModal
         teacher={groupsModalTeacher}

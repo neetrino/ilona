@@ -31,6 +31,7 @@ import {
 } from '@/features/crm/components';
 import { Eye, EyeOff } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
+import { isPortalMobileViewport } from '@/shared/lib/role-routes';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { getErrorMessage } from '@/shared/lib/api';
 import { useIsLgViewport } from '@/shared/hooks/useIsLgViewport';
@@ -488,12 +489,12 @@ export default function AdminCrmPage() {
 
   const handleCardClick = (lead: CrmLead) => {
     const isVoiceLead = lead.attachments?.some((a) => a.type === 'VOICE_RECORDING');
-    if (isVoiceLead) {
+    if (isVoiceLead || isPortalMobileViewport()) {
       openEditLead(lead.id);
-    } else {
-      setSelectedLeadId(lead.id);
-      replaceParams({ [LEAD_ID_PARAM]: lead.id, [EDIT_LEAD_PARAM]: null });
+      return;
     }
+    setSelectedLeadId(lead.id);
+    replaceParams({ [LEAD_ID_PARAM]: lead.id, [EDIT_LEAD_PARAM]: null });
   };
   const handleCardStatusChange = (leadId: string, status: CrmLeadStatus) => {
     if (status === 'PAID') {
@@ -579,7 +580,7 @@ export default function AdminCrmPage() {
                   replaceParams({ [ARCHIVE_PARAM]: next ? '1' : null });
                 }}
                 className={cn(
-                  'rounded-lg p-1.5 text-[#3b3b40] transition-colors hover:bg-[#f6f6f7] hover:text-[#1010a3]',
+                  'rounded-[15px] p-1.5 text-[#3b3b40] transition-colors hover:bg-[#f6f6f7] hover:text-[#1010a3]',
                   showArchiveColumn && 'bg-[#3b3b40] text-white hover:bg-[#3b3b40] hover:text-white'
                 )}
                 title={showArchiveColumn ? tCrm('hideArchiveColumn') : tCrm('showArchiveColumn')}
@@ -626,17 +627,12 @@ export default function AdminCrmPage() {
             onAddLead={handleNewLeadFromBoard}
             newLeadAddMode={isAdmin ? 'voice' : 'text'}
             branchOptions={isAdmin ? centers.map((c) => ({ id: c.id, name: c.name })) : undefined}
-            canDeleteLead={isAdmin}
-            onLeadDeleteRequest={isAdmin ? handleLeadDeleteRequest : undefined}
-            deleteInProgress={deleteLeadMutation.isPending}
           />
         ) : (
           <ListTable
             leads={paginatedListLeads}
             onRowClick={handleCardClick}
             isLoading={isLoading}
-            canDeleteLead={isAdmin}
-            onLeadDeleteRequest={isAdmin ? handleLeadDeleteRequest : undefined}
             deleteInProgress={deleteLeadMutation.isPending}
             page={safeListPage}
             totalPages={totalListPages}
@@ -686,6 +682,13 @@ export default function AdminCrmPage() {
           teachers={teachers}
           groups={groups}
           availableStatuses={adminVisibleStatuses}
+          canDeleteLead={isAdmin}
+          onDeleteRequest={
+            isAdmin && editLeadId
+              ? () => handleLeadDeleteRequest({ id: editLeadId } as CrmLead)
+              : undefined
+          }
+          deleteDisabled={deleteLeadMutation.isPending}
         />
         {isAdmin ? (
           <VoiceLeadModal

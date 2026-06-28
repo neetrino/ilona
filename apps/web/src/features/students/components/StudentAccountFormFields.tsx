@@ -1,12 +1,13 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import type { FieldErrors, UseFormRegister, UseFormSetValue, UseFormWatch } from 'react-hook-form';
 import { Input, Label, PasswordInput } from '@/shared/components/ui';
 import { DmyDateInput } from '@/shared/components/ui/dmy-date-input';
 import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
 import { formatPhoneForDisplay } from '@/shared/lib/utils';
+import { computeAgeFromDob } from '../student-account-form.schema';
 import type { CreateStudentFormData } from '../student-account-form.schema';
 
 export type StudentAccountTeacherOption = {
@@ -58,7 +59,7 @@ export function StudentAccountFormFields({
   errors,
   watch,
   setValue,
-  computedAge,
+  computedAge: _computedAge,
   showParentSection,
   groupsForTeacher,
   teachers,
@@ -82,6 +83,17 @@ export function StudentAccountFormFields({
   const watchedCenterId = watch('centerId') || '';
   const watchedDateOfBirth = watch('dateOfBirth') ?? '';
   const watchedFirstLessonDate = watch('firstLessonDate') ?? '';
+  const ageFromDob = useMemo(
+    () => computeAgeFromDob(watchedDateOfBirth.trim() || undefined),
+    [watchedDateOfBirth],
+  );
+  const showManualAgeInput = ageFromDob === undefined;
+
+  useEffect(() => {
+    if (ageFromDob !== undefined) {
+      setValue('manualAge', undefined, { shouldDirty: true, shouldValidate: true });
+    }
+  }, [ageFromDob, setValue]);
   const selectedTeacher = teachers.find((te) => te.id === watchedTeacherId);
   const centerNamesFromTeacher = [
     ...new Set(
@@ -202,33 +214,44 @@ export function StudentAccountFormFields({
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <div className="space-y-2">
-          <Label htmlFor={p('manualAge')}>{tForm('ageYears')}</Label>
-          <Input
-            id={p('manualAge')}
-            type="number"
-            min={0}
-            {...register('manualAge')}
-            error={errors.manualAge?.message}
-          />
-          <p className="text-xs text-slate-500">{tForm('useIfDobUnknown')}</p>
-        </div>
-        <div className="space-y-2">
           <Label htmlFor={p('dateOfBirth')}>{t('dateOfBirth')}</Label>
           <DmyDateInput
             id={p('dateOfBirth')}
             value={watchedDateOfBirth}
             placeholder={tForm('dateOfBirthPlaceholder')}
-            onChange={(value) =>
-              setValue('dateOfBirth', value, { shouldValidate: true, shouldDirty: true })
-            }
+            onChange={(value) => {
+              setValue('dateOfBirth', value, { shouldValidate: true, shouldDirty: true });
+              const fromDob = computeAgeFromDob(value.trim() || undefined);
+              if (fromDob !== undefined) {
+                setValue('manualAge', undefined, { shouldDirty: true, shouldValidate: true });
+              }
+            }}
             className={dmyInputClassName}
             disabled={isSubmitting}
           />
           {errors.dateOfBirth && (
             <p className="text-sm text-red-600">{errors.dateOfBirth.message}</p>
           )}
-          {computedAge !== undefined && (
-            <p className="text-xs text-slate-500">{tForm('ageHint', { age: computedAge })}</p>
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor={p('manualAge')}>{tForm('ageYears')}</Label>
+          {showManualAgeInput ? (
+            <>
+              <Input
+                id={p('manualAge')}
+                type="number"
+                min={0}
+                {...register('manualAge')}
+                error={errors.manualAge?.message}
+              />
+            </>
+          ) : (
+            <>
+              <p className="flex h-10 items-center rounded-md border border-input bg-muted/40 px-3 text-sm">
+                {ageFromDob}
+              </p>
+              <p className="text-xs text-slate-500">{tForm('ageHint', { age: ageFromDob })}</p>
+            </>
           )}
         </div>
 

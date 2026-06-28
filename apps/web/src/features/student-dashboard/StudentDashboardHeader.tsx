@@ -86,11 +86,6 @@ export function StudentDashboardHeader({
                 </>
               )}
             </div>
-            {isStudentMobileSubpage ? (
-              <div className="shrink-0 lg:hidden">
-                <LandingNavbarLanguageToggle />
-              </div>
-            ) : null}
           </div>
 
           <div
@@ -103,9 +98,7 @@ export function StudentDashboardHeader({
             </div>
 
             <div className="flex shrink-0 flex-wrap items-center justify-end gap-1.5 sm:gap-2">
-              <LandingNavbarLanguageToggle
-                className={isStudentMobileSubpage ? 'hidden lg:inline-flex' : undefined}
-              />
+              <LandingNavbarLanguageToggle className="hidden lg:inline-flex" />
               <div className="inline-flex h-11 shrink-0 items-center gap-1 rounded-full bg-[#ffeb8c] px-2.5 text-xs sm:h-12 sm:gap-1.5 sm:px-3.5 sm:text-sm">
                 <PublicAssetImage
                   src={STUDENT_DASHBOARD_ASSETS.fireIcon}

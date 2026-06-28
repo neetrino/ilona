@@ -2,28 +2,14 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { Pencil, Trash2 } from 'lucide-react';
 import type { DailyPlan, DailyPlanResourceKind } from './types';
+import { DailyPlanCard } from './DailyPlanCard';
 import { useIsIPad } from '@/shared/hooks/useIsIPad';
-
-function formatDate(value: string): string {
-  const date = new Date(value);
-  return Number.isNaN(date.getTime())
-    ? value
-    : date.toLocaleDateString(undefined, {
-        year: 'numeric',
-        month: 'short',
-        day: '2-digit',
-      });
-}
-
-function teacherName(plan: DailyPlan): string {
-  return `${plan.teacher.user.firstName} ${plan.teacher.user.lastName}`;
-}
-
-function centerName(plan: DailyPlan): string | null {
-  return plan.group?.center?.name ?? plan.lesson?.group?.center?.name ?? null;
-}
+import {
+  ADMIN_PRIMARY_BUTTON_CLASS,
+  ADMIN_SEARCH_INPUT_CLASS,
+} from '@/shared/lib/admin-control-theme';
+import { cn } from '@/shared/lib/utils';
 
 interface DailyPlanListSectionProps {
   search: string;
@@ -108,14 +94,14 @@ export function DailyPlanListSection({
       <div className="flex flex-col md:flex-row md:items-center gap-3">
         <div className="flex-1 relative">
           <input
-            type="text"
+            type="search"
             value={search}
             onChange={(event) => onSearchChange(event.target.value)}
             placeholder={t('searchPlaceholder')}
-            className="w-full h-11 pl-10 pr-3 bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+            className={ADMIN_SEARCH_INPUT_CLASS}
           />
           <svg
-            className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400"
+            className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#8b8b90]"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -133,7 +119,10 @@ export function DailyPlanListSection({
         <button
           type="button"
           onClick={onCreate}
-          className="h-11 px-4 bg-primary text-white rounded-lg font-medium hover:bg-primary/90 transition-colors"
+          className={cn(
+            ADMIN_PRIMARY_BUTTON_CLASS,
+            'shrink-0 bg-[#1010a3] text-white transition-colors hover:bg-[#1010a3]/90',
+          )}
         >
           {createLabel}
         </button>
@@ -160,258 +149,28 @@ export function DailyPlanListSection({
           <div ref={cardsStartRef} className="md:hidden" />
           <div className="grid grid-cols-1 gap-4 md:hidden">
           {mobileItems.map((plan) => (
-            <article
+            <DailyPlanCard
               key={plan.id}
-              className="bg-white border border-slate-200 rounded-xl p-4 flex flex-col gap-3 cursor-pointer hover:border-primary/40 transition-colors"
-              onClick={() => onView(plan)}
-              onKeyDown={(event) => {
-                if (event.key === 'Enter' || event.key === ' ') {
-                  event.preventDefault();
-                  onView(plan);
-                }
-              }}
-              role="button"
-              tabIndex={0}
-            >
-              <header className="flex items-start justify-between gap-3">
-                <div>
-                  <div className="text-xs text-slate-500 uppercase tracking-wide">
-                    {formatDate(plan.date)}
-                  </div>
-                  <div className="font-semibold text-[#1010a3]">
-                    {teacherName(plan)}
-                  </div>
-                  <div className="text-sm text-slate-600 mt-0.5">
-                    {plan.group?.name ?? tCommon('noGroup')}{' '}
-                    {plan.group?.level && (
-                      <span className="text-slate-500 font-normal">
-                        · {plan.group.level}
-                      </span>
-                    )}
-                  </div>
-                  {centerName(plan) && (
-                    <div className="text-xs text-slate-500 mt-0.5">
-                      {centerName(plan)}
-                    </div>
-                  )}
-                  {plan.lesson && (
-                    <div className="text-xs text-slate-500 mt-0.5">
-                      {t('linkedToLesson', {
-                        date: formatDate(plan.lesson.scheduledAt),
-                      })}
-                    </div>
-                  )}
-                </div>
-                {plan.canEdit && (
-                <div className="flex items-start gap-1">
-                  <button
-                    type="button"
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      onEdit(plan);
-                    }}
-                    className="inline-flex h-8 w-8 items-center justify-center rounded-md text-primary hover:bg-primary/10 disabled:opacity-60"
-                    aria-label={t('editDailyPlan')}
-                    title={tCommon('edit')}
-                    disabled={isDeletePending}
-                  >
-                    <Pencil className="h-5 w-5" />
-                  </button>
-                  {onDelete && (
-                    <button
-                      type="button"
-                      onClick={async (event) => {
-                        event.stopPropagation();
-                        if (isDeletePending) {
-                          return;
-                        }
-                        if (confirm(t('deleteConfirm'))) {
-                          await onDelete(plan);
-                        }
-                      }}
-                      className="inline-flex h-8 w-8 items-center justify-center rounded-md text-red-600 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
-                      aria-label={t('deleteDailyPlan')}
-                      title={tCommon('delete')}
-                      disabled={isDeletePending}
-                    >
-                      <Trash2 className="h-5 w-5" />
-                    </button>
-                  )}
-                </div>
-                )}
-              </header>
-              <ul className="space-y-2">
-                {plan.topics.map((topic) => (
-                  <li
-                    key={topic.id}
-                    className="border border-slate-100 rounded-md px-3 py-2 bg-slate-50"
-                  >
-                    <div className="text-sm font-medium text-[#1010a3]">
-                      {topic.title}
-                    </div>
-                    {topic.resources.length > 0 && (
-                      <ul className="mt-1 text-xs text-slate-600 space-y-0.5">
-                        {topic.resources.map((resource) => (
-                          <li key={resource.id} className="flex gap-1">
-                            <span className="w-16 shrink-0 font-medium text-[#1010a3]">
-                              {kindLabel[resource.kind]}
-                            </span>
-                            <span className="truncate">
-                              {resource.link ? (
-                                <a
-                                  href={resource.link}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-primary hover:underline"
-                                >
-                                  {resource.title}
-                                </a>
-                              ) : (
-                                resource.title
-                              )}
-                              {resource.description && (
-                                <span className="text-slate-400">
-                                  {' '}
-                                  — {resource.description}
-                                </span>
-                              )}
-                            </span>
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                  </li>
-                ))}
-              </ul>
-            </article>
+              plan={plan}
+              kindLabel={kindLabel}
+              onView={() => onView(plan)}
+              onEdit={() => onEdit(plan)}
+              onDelete={onDelete ? () => onDelete(plan) : undefined}
+              isDeletePending={isDeletePending}
+            />
           ))}
           </div>
           <div className="hidden grid-cols-1 gap-4 md:grid md:grid-cols-2">
             {items.map((plan) => (
-              <article
+              <DailyPlanCard
                 key={`desktop-${plan.id}`}
-                className="bg-white border border-slate-200 rounded-xl p-4 flex flex-col gap-3 cursor-pointer hover:border-primary/40 transition-colors"
-                onClick={() => onView(plan)}
-                onKeyDown={(event) => {
-                  if (event.key === 'Enter' || event.key === ' ') {
-                    event.preventDefault();
-                    onView(plan);
-                  }
-                }}
-                role="button"
-                tabIndex={0}
-              >
-                <header className="flex items-start justify-between gap-3">
-                  <div>
-                    <div className="text-xs text-slate-500 uppercase tracking-wide">
-                      {formatDate(plan.date)}
-                    </div>
-                    <div className="font-semibold text-[#1010a3]">
-                      {teacherName(plan)}
-                    </div>
-                    <div className="text-sm text-slate-600 mt-0.5">
-                      {plan.group?.name ?? tCommon('noGroup')}{' '}
-                      {plan.group?.level && (
-                        <span className="text-slate-500 font-normal">
-                          · {plan.group.level}
-                        </span>
-                      )}
-                    </div>
-                    {centerName(plan) && (
-                      <div className="text-xs text-slate-500 mt-0.5">
-                        {centerName(plan)}
-                      </div>
-                    )}
-                    {plan.lesson && (
-                      <div className="text-xs text-slate-500 mt-0.5">
-                        {t('linkedToLesson', {
-                        date: formatDate(plan.lesson.scheduledAt),
-                      })}
-                      </div>
-                    )}
-                  </div>
-                  {plan.canEdit && (
-                  <div className="flex items-start gap-1">
-                    <button
-                      type="button"
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        onEdit(plan);
-                      }}
-                      className="inline-flex h-8 w-8 items-center justify-center rounded-md text-primary hover:bg-primary/10 disabled:opacity-60"
-                      aria-label={t('editDailyPlan')}
-                      title={tCommon('edit')}
-                      disabled={isDeletePending}
-                    >
-                      <Pencil className="h-5 w-5" />
-                    </button>
-                    {onDelete && (
-                      <button
-                        type="button"
-                        onClick={async (event) => {
-                          event.stopPropagation();
-                          if (isDeletePending) {
-                            return;
-                          }
-                          if (confirm(t('deleteConfirm'))) {
-                            await onDelete(plan);
-                          }
-                        }}
-                        className="inline-flex h-8 w-8 items-center justify-center rounded-md text-red-600 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
-                        aria-label={t('deleteDailyPlan')}
-                        title={tCommon('delete')}
-                        disabled={isDeletePending}
-                      >
-                        <Trash2 className="h-5 w-5" />
-                      </button>
-                    )}
-                  </div>
-                  )}
-                </header>
-                <ul className="space-y-2">
-                  {plan.topics.map((topic) => (
-                    <li
-                      key={topic.id}
-                      className="border border-slate-100 rounded-md px-3 py-2 bg-slate-50"
-                    >
-                      <div className="text-sm font-medium text-[#1010a3]">
-                        {topic.title}
-                      </div>
-                      {topic.resources.length > 0 && (
-                        <ul className="mt-1 text-xs text-slate-600 space-y-0.5">
-                          {topic.resources.map((resource) => (
-                            <li key={resource.id} className="flex gap-1">
-                              <span className="w-16 shrink-0 font-medium text-[#1010a3]">
-                                {kindLabel[resource.kind]}
-                              </span>
-                              <span className="truncate">
-                                {resource.link ? (
-                                  <a
-                                    href={resource.link}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="text-primary hover:underline"
-                                  >
-                                    {resource.title}
-                                  </a>
-                                ) : (
-                                  resource.title
-                                )}
-                                {resource.description && (
-                                  <span className="text-slate-400">
-                                    {' '}
-                                    — {resource.description}
-                                  </span>
-                                )}
-                              </span>
-                            </li>
-                          ))}
-                        </ul>
-                      )}
-                    </li>
-                  ))}
-                </ul>
-              </article>
+                plan={plan}
+                kindLabel={kindLabel}
+                onView={() => onView(plan)}
+                onEdit={() => onEdit(plan)}
+                onDelete={onDelete ? () => onDelete(plan) : undefined}
+                isDeletePending={isDeletePending}
+              />
             ))}
           </div>
           {items.length > pageSize && (

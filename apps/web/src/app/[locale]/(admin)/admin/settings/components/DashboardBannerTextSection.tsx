@@ -12,7 +12,7 @@ const TITLE_MAX_LENGTH = 150;
 const SUBTITLE_MAX_LENGTH = 400;
 
 const inputClassName =
-  'w-full rounded-xl border border-[rgba(14,14,16,0.07)] px-4 py-3 text-sm text-[#3b3b40] focus:border-[#1010a3] focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20';
+  'h-11 min-h-11 w-full rounded-[15px] border border-[rgba(14,14,16,0.07)] px-4 py-0 text-sm text-[#3b3b40] focus:border-[#1010a3] focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20';
 
 export function DashboardBannerTextSection() {
   const t = useTranslations('settings');
@@ -154,7 +154,7 @@ export function DashboardBannerTextSection() {
           <Button
             type="button"
             variant="ghost"
-            className="inline-flex min-h-10 items-center justify-center rounded-full border border-red-200 bg-red-50 px-4 text-sm font-medium text-red-600 transition-colors hover:bg-red-100"
+            className="inline-flex h-11 min-h-11 items-center justify-center rounded-[15px] border border-red-200 bg-red-50 px-4 py-0 text-sm font-medium text-red-600 transition-colors hover:bg-red-100"
             onClick={handleReset}
             disabled={updateMutation.isPending}
           >
@@ -164,7 +164,7 @@ export function DashboardBannerTextSection() {
 
         <Button
           type="button"
-          className="inline-flex min-h-10 items-center justify-center rounded-full bg-[#1010a3] px-4 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+          className="inline-flex h-11 min-h-11 items-center justify-center rounded-[15px] bg-[#1010a3] px-4 py-0 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
           onClick={handleSave}
           disabled={!isDirty || updateMutation.isPending}
         >

@@ -1,5 +1,6 @@
 'use client';
 
+
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -13,6 +14,20 @@ import { useState, useEffect, useMemo, useRef, type TouchEvent } from 'react';
 import type { UserStatus } from '@/types';
 import { getErrorMessage } from '@/shared/lib/api';
 import { cn } from '@/shared/lib/utils';
+import {
+  portalSheetLayerProps,
+  stackedSheetDialogHandlers,
+  useSheetStackZIndex,
+  stackedSheetOverlayClassName,
+} from '@/shared/lib/sheet-stack';
+import { PORTAL_DESKTOP_SIDE_SHEET_CLASS } from '@/shared/lib/portal-form-sheet-classes';
+import {
+  ADMIN_DATE_INPUT_CLASS,
+  ADMIN_FORM_INPUT_CLASS,
+  ADMIN_ICON_BUTTON_SM_CLASS,
+  ADMIN_OUTLINE_BUTTON_CLASS,
+  ADMIN_PRIMARY_BUTTON_CLASS,
+} from '@/shared/lib/admin-control-theme';
 import { X } from 'lucide-react';
 import {
   ensureCurrentGroupInList,
@@ -20,14 +35,15 @@ import {
 } from '../lib/group-center-assignment';
 import {
   SingleSelectDropdown,
-  portaledDropdownDialogHandlers,
 } from '@/shared/components/ui/single-select-dropdown';
 import { computeAgeFromDob } from '../student-account-form.schema';
 import { isoToDmy, resolveDmyOrIsoToIso } from '@/shared/lib/dmy-date';
 import { DmyDateInput } from '@/shared/components/ui/dmy-date-input';
 
-const dmyInputClassName =
-  'flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50';
+const ADMIN_TEXTAREA_CLASS = cn(
+  ADMIN_FORM_INPUT_CLASS,
+  'h-auto min-h-[5.5rem] resize-none py-2',
+);
 
 type UpdateStudentFormData = {
   firstName: string;
@@ -363,23 +379,20 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
     setErrorMessage(null);
     setSuccessMessage(null);
   };
+  const { overlayStyle, contentStyle, isBaseLayer } = useSheetStackZIndex(open);
 
   return (
     <DialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
       <DialogPrimitive.Portal>
-      <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/60 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
-      <DialogPrimitive.Content
-        style={dragStyle}
+      <DialogPrimitive.Overlay style={overlayStyle} {...portalSheetLayerProps} className={stackedSheetOverlayClassName('fixed inset-0 z-50 bg-black/60 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0', isBaseLayer)} />
+      <DialogPrimitive.Content style={{ ...dragStyle, ...contentStyle }} {...stackedSheetDialogHandlers} {...portalSheetLayerProps}
         onOpenAutoFocus={(event) => event.preventDefault()}
-        {...portaledDropdownDialogHandlers}
         className={cn(
           'fixed inset-x-0 bottom-[7px] top-auto z-50 grid w-full translate-y-0 lg:bottom-0 [@media(min-width:1024px)_and_(max-width:1366px)_and_(min-height:1000px)]:bottom-0',
           'duration-700 ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out min-[1367px]:duration-350 min-[1367px]:ease-[cubic-bezier(0.22,1,0.36,1)]',
           'data-[state=open]:slide-in-from-bottom-full data-[state=closed]:slide-out-to-bottom-full',
-          'h-[calc(94dvh+7px)] [@media(min-width:1024px)_and_(max-width:1366px)_and_(min-height:1000px)]:h-[56dvh] grid-rows-[auto_1fr] gap-0 overflow-hidden rounded-t-[22px] border border-slate-200 bg-[#f8f9fb] shadow-xl',
-          'min-[1367px]:grid-rows-[auto_1fr]',
-          'min-[1367px]:inset-0 min-[1367px]:m-auto min-[1367px]:w-[95vw] min-[1367px]:max-w-2xl min-[1367px]:h-auto min-[1367px]:max-h-[90vh] min-[1367px]:translate-x-0 min-[1367px]:translate-y-0 min-[1367px]:rounded-2xl',
-          'min-[1367px]:data-[state=open]:fade-in-0 min-[1367px]:data-[state=closed]:fade-out-0 min-[1367px]:data-[state=open]:slide-in-from-bottom-0 min-[1367px]:data-[state=closed]:slide-out-to-bottom-0'
+          'h-[calc(94dvh+7px)] [@media(min-width:1024px)_and_(max-width:1366px)_and_(min-height:1000px)]:h-[56dvh] grid-rows-[auto_auto_1fr] gap-0 overflow-hidden rounded-t-[22px] border border-slate-200 bg-[#f8f9fb] shadow-xl',
+          PORTAL_DESKTOP_SIDE_SHEET_CLASS,
         )}
         aria-describedby={undefined}
       >
@@ -395,20 +408,21 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
           <div className="h-1.5 w-14 rounded-full bg-slate-400" />
         </div>
         <DialogPrimitive.Title className="sr-only">{tForm('editTitle')}</DialogPrimitive.Title>
-        <div className="hidden min-[1367px]:flex shrink-0 items-center justify-end bg-[#f8f9fb] px-2 pt-2">
-          <DialogPrimitive.Close
-            className="inline-flex h-8 w-8 items-center justify-center rounded-full text-slate-500 transition hover:bg-slate-100 hover:text-slate-700"
-            aria-label={tCommon('close')}
-          >
-            <X className="h-4 w-4" />
-          </DialogPrimitive.Close>
-        </div>
-        <div className="min-h-0 overflow-y-auto overflow-x-hidden overscroll-y-contain [touch-action:pan-y] [-webkit-overflow-scrolling:touch] px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-4 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden min-[1367px]:px-6 min-[1367px]:pb-6 min-[1367px]:pt-2">
-          <div className="mb-4">
-            <h2 className="text-lg font-semibold text-[#3b3b40]">{tForm('editTitle')}</h2>
-            <p className="mt-1 text-sm text-[#8b8b90]">{tForm('editDescription')}</p>
+        <div className="shrink-0 bg-[#f8f9fb] px-4 pb-4 pt-3 min-[1367px]:px-6 min-[1367px]:pb-5 min-[1367px]:pt-6">
+          <div className="flex items-center justify-between gap-4">
+            <h2 className="min-w-0 text-lg font-semibold text-[#3b3b40]">{tForm('editTitle')}</h2>
+            <DialogPrimitive.Close
+              className={cn(
+                ADMIN_ICON_BUTTON_SM_CLASS,
+                'shrink-0 text-slate-500 hover:bg-slate-100 hover:text-slate-700',
+              )}
+              aria-label={tCommon('close')}
+            >
+              <X className="h-4 w-4" />
+            </DialogPrimitive.Close>
           </div>
-
+        </div>
+        <div className="min-h-0 overflow-y-auto overflow-x-hidden overscroll-y-contain [touch-action:pan-y] [-webkit-overflow-scrolling:touch] px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-4 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden min-[1367px]:px-6 min-[1367px]:pb-6 min-[1367px]:pt-0">
         {isLoadingStudent ? (
           <div className="flex items-center justify-center py-8">
             <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
@@ -416,12 +430,12 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
         ) : (
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             {successMessage && (
-              <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+              <div className="rounded-[15px] border border-green-200 bg-green-50 p-3">
                 <p className="text-sm text-green-600">{successMessage}</p>
               </div>
             )}
             {errorMessage && (
-              <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+              <div className="rounded-[15px] border border-red-200 bg-red-50 p-3">
                 <p className="text-sm text-red-600">{errorMessage}</p>
               </div>
             )}
@@ -433,6 +447,7 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
                 </Label>
                 <Input
                   id="firstName"
+                  className={ADMIN_FORM_INPUT_CLASS}
                   {...register('firstName')}
                   error={errors.firstName?.message}
                   placeholder={tForm('firstNamePlaceholder')}
@@ -445,6 +460,7 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
                 </Label>
                 <Input
                   id="lastName"
+                  className={ADMIN_FORM_INPUT_CLASS}
                   {...register('lastName')}
                   error={errors.lastName?.message}
                   placeholder={tForm('lastNamePlaceholder')}
@@ -457,6 +473,7 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
               <Input
                 id="phone"
                 type="tel"
+                className={ADMIN_FORM_INPUT_CLASS}
                 {...register('phone')}
                 error={errors.phone?.message}
                 placeholder={t('phonePlaceholder')}
@@ -473,7 +490,7 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
                   onChange={(value) =>
                     setValue('dateOfBirth', value, { shouldDirty: true, shouldValidate: true })
                   }
-                  className={dmyInputClassName}
+                  className={ADMIN_DATE_INPUT_CLASS}
                   disabled={isSubmitting}
                 />
                 {errors.dateOfBirth && (
@@ -497,7 +514,7 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
                   onChange={(value) =>
                     setValue('firstLessonDate', value, { shouldDirty: true, shouldValidate: true })
                   }
-                  className={dmyInputClassName}
+                  className={ADMIN_DATE_INPUT_CLASS}
                   disabled={isSubmitting}
                 />
                 {errors.firstLessonDate && (
@@ -512,6 +529,7 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
                 <input type="hidden" {...register('status')} />
                 <SingleSelectDropdown
                   id="status"
+                  triggerClassName={ADMIN_FORM_INPUT_CLASS}
                   options={statusOptions}
                   value={watchedStatus}
                   onValueChange={(nextValue) =>
@@ -531,6 +549,7 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
                 <input type="hidden" {...register('centerId')} />
                 <SingleSelectDropdown
                   id="centerId"
+                  triggerClassName={ADMIN_FORM_INPUT_CLASS}
                   options={[
                     { id: '', label: tCommon('notAssigned') },
                     ...centers.map((center) => ({
@@ -558,6 +577,7 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
               <input type="hidden" {...register('groupId')} />
               <SingleSelectDropdown
                 id="groupId"
+                triggerClassName={ADMIN_FORM_INPUT_CLASS}
                 options={[
                   {
                     id: '',
@@ -610,6 +630,7 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
                   type="number"
                   step="0.01"
                   min="0"
+                  className={ADMIN_FORM_INPUT_CLASS}
                   {...register('monthlyFee', { valueAsNumber: true })}
                   error={errors.monthlyFee?.message}
                   placeholder="50000"
@@ -621,6 +642,7 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
                 <Input
                   id="registerDate"
                   type="date"
+                  className={ADMIN_DATE_INPUT_CLASS}
                   {...register('registerDate')}
                   error={errors.registerDate?.message}
                 />
@@ -639,6 +661,7 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
                     <Label htmlFor="parentName">{t('parentName')}</Label>
                     <Input
                       id="parentName"
+                      className={ADMIN_FORM_INPUT_CLASS}
                       {...register('parentName')}
                       error={errors.parentName?.message}
                       placeholder={tForm('firstNamePlaceholder')}
@@ -650,6 +673,7 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
                     <Input
                       id="parentPhone"
                       type="tel"
+                      className={ADMIN_FORM_INPUT_CLASS}
                       {...register('parentPhone')}
                       error={errors.parentPhone?.message}
                       placeholder={t('phonePlaceholder')}
@@ -663,6 +687,7 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
                     <Input
                       id="parentEmail"
                       type="email"
+                      className={ADMIN_FORM_INPUT_CLASS}
                       {...register('parentEmail')}
                       error={errors.parentEmail?.message}
                       placeholder={tForm('emailPlaceholder')}
@@ -673,6 +698,7 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
                     <Label htmlFor="parentPassportInfo">{tForm('parentPassportInfo')}</Label>
                     <Input
                       id="parentPassportInfo"
+                      className={ADMIN_FORM_INPUT_CLASS}
                       {...register('parentPassportInfo')}
                       error={errors.parentPassportInfo?.message}
                       placeholder={tForm('parentPassportInfo')}
@@ -689,7 +715,7 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
                 id="notes"
                 {...register('notes')}
                 rows={4}
-                className="flex w-full rounded-md border border-[rgba(14,14,16,0.12)] bg-white px-3 py-2 text-sm text-[#3b3b40] placeholder:text-[#8b8b90] transition-colors hover:border-[rgba(14,14,16,0.2)] focus-visible:border-[#1010a3]/45 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#1010a3]/10 disabled:cursor-not-allowed disabled:opacity-50"
+                className={ADMIN_TEXTAREA_CLASS}
                 placeholder={t('notes')}
               />
               {errors.notes && (
@@ -701,12 +727,17 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
               <Button
                 type="button"
                 variant="outline"
+                className={cn(ADMIN_OUTLINE_BUTTON_CLASS, 'border-[rgba(14,14,16,0.07)] hover:bg-slate-50')}
                 onClick={requestClose}
                 disabled={isSubmitting || updateStudent.isPending}
               >
                 {tCommon('cancel')}
               </Button>
-              <Button type="submit" isLoading={isSubmitting || updateStudent.isPending}>
+              <Button
+                type="submit"
+                isLoading={isSubmitting || updateStudent.isPending}
+                className={cn(ADMIN_PRIMARY_BUTTON_CLASS, 'bg-primary text-primary-foreground hover:bg-primary/90')}
+              >
                 {isSubmitting || updateStudent.isPending ? tSettings('saving') : tSettings('saveChanges')}
               </Button>
             </div>

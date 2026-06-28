@@ -6,6 +6,16 @@ import { cn } from '@/shared/lib/utils';
 import { type TimeFilterMode } from '@/shared/lib/analytics-time-range';
 import { DatePickerInput } from '@/shared/components/ui';
 import { StudentAnimatedPillSwitcher, StudentDatePicker } from '@/features/student-ui';
+import {
+  getSegmentedIndicatorStyle,
+  SEGMENTED_TOGGLE_BUTTON_ACTIVE_CLASS,
+  SEGMENTED_TOGGLE_BUTTON_INACTIVE_CLASS,
+  SEGMENTED_TOGGLE_GRID_BUTTON_CLASS,
+  SEGMENTED_TOGGLE_GRID_TRACK_CLASS,
+  SEGMENTED_TOGGLE_INDICATOR_CLASS,
+  SEGMENTED_TOGGLE_TRACK_PADDING_PX,
+} from '@/shared/components/ui/segmented-toggle-theme';
+import { ADMIN_DATE_INPUT_CLASS, ADMIN_PRIMARY_BUTTON_CLASS } from '@/shared/lib/admin-control-theme';
 
 type ApplyAction = {
   onApply: () => void;
@@ -93,11 +103,28 @@ export function AnalyticsTimeFilterBar({
       ? 'border-[rgba(14,14,16,0.07)] text-[#3b3b40] focus:border-[#1010a3] focus:outline-none focus:ring-2 focus:ring-[#1010a3]/15'
       : 'rounded-md border-slate-200 text-slate-800',
   );
+  const adminDateRowClassName = 'flex w-full min-w-0 flex-nowrap items-center gap-1.5 sm:w-auto sm:gap-2';
+  const adminDateLabelClassName = cn(
+    'shrink-0 whitespace-nowrap',
+    usesGroupAccent ? 'text-[#8b8b90]' : 'text-slate-500',
+  );
+  const adminDateFieldWrapClassName = 'min-w-0 flex-1 basis-0 sm:min-w-[9.5rem] sm:flex-none';
+  const adminDateInputClassName = isAdmin
+    ? cn(ADMIN_DATE_INPUT_CLASS, 'min-w-0 pl-2 pr-8')
+    : cn(adminDatePickerClassName, 'min-w-0 pl-2 pr-8');
+  const selectedModeIndex = Math.max(0, modes.findIndex((m) => m.id === mode));
+  const studentDateFieldWrapClassName = 'min-w-0 flex-1 basis-0 sm:flex-none sm:basis-auto';
+  const isSingleDateMode = mode === 'day' || mode === 'week';
+  const inlineApplyWithDate = Boolean(applyAction && isSingleDateMode);
+  const singleDateRowClassName = cn(
+    'flex min-w-0 flex-nowrap items-center gap-1.5 sm:gap-2',
+    inlineApplyWithDate ? 'flex-1' : 'w-full sm:w-auto',
+  );
 
   return (
     <div
       className={cn(
-        'flex flex-col gap-3 rounded-xl border p-4 pb-6 sm:flex-row sm:items-end sm:justify-between sm:pb-7',
+        'flex min-w-0 flex-col gap-3 rounded-xl border p-4 pb-6 sm:flex-row sm:items-end sm:justify-between sm:pb-7',
         usesGroupAccent
           ? 'border-[rgba(14,14,16,0.07)] bg-[#fafafa]'
           : 'border-slate-200 bg-slate-50/80',
@@ -113,6 +140,36 @@ export function AnalyticsTimeFilterBar({
           size="md"
           className="w-full sm:w-auto"
         />
+      ) : isAdmin ? (
+      <div
+        className={cn(SEGMENTED_TOGGLE_GRID_TRACK_CLASS, 'w-full sm:w-auto')}
+        style={{ gridTemplateColumns: 'repeat(3, minmax(0, 1fr))' }}
+      >
+        <span
+          aria-hidden
+          className={SEGMENTED_TOGGLE_INDICATOR_CLASS}
+          style={getSegmentedIndicatorStyle(
+            selectedModeIndex,
+            modes.length,
+            SEGMENTED_TOGGLE_TRACK_PADDING_PX,
+          )}
+        />
+        {modes.map((m) => (
+          <button
+            key={m.id}
+            type="button"
+            onClick={() => onModeChange(m.id)}
+            className={cn(
+              SEGMENTED_TOGGLE_GRID_BUTTON_CLASS,
+              mode === m.id
+                ? SEGMENTED_TOGGLE_BUTTON_ACTIVE_CLASS
+                : SEGMENTED_TOGGLE_BUTTON_INACTIVE_CLASS,
+            )}
+          >
+            {m.label}
+          </button>
+        ))}
+      </div>
       ) : (
       <div
         className={cn(
@@ -167,61 +224,49 @@ export function AnalyticsTimeFilterBar({
 
       <div
         className={cn(
-          'flex flex-wrap items-center gap-3 text-sm',
-          isStudent && 'w-full sm:w-auto',
+          'flex min-w-0 w-full gap-3 text-sm sm:w-auto',
+          inlineApplyWithDate ? 'flex-nowrap items-end' : 'flex-wrap items-center',
           usesGroupAccent ? 'text-[#3b3b40]' : 'text-slate-600',
         )}
       >
         {mode === 'day' && (
-          <label
-            className={cn(
-              'flex items-center gap-2',
-              isStudent && 'w-full justify-end sm:w-auto sm:justify-start',
-            )}
-          >
-            <span
-              className={cn(
-                'whitespace-nowrap',
-                usesGroupAccent ? 'text-[#8b8b90]' : 'text-slate-500',
+          <label className={singleDateRowClassName}>
+            <span className={adminDateLabelClassName}>{t('timeFilterSelectDay')}</span>
+            <div className={isStudent ? studentDateFieldWrapClassName : adminDateFieldWrapClassName}>
+              {isStudent ? (
+                <StudentDatePicker
+                  className="w-full min-w-0 sm:w-auto"
+                  value={dayYmd}
+                  onValueChange={onDayYmdChange}
+                />
+              ) : (
+                <DatePickerInput
+                  className={adminDateInputClassName}
+                  value={dayYmd}
+                  onValueChange={onDayYmdChange}
+                />
               )}
-            >
-              {t('timeFilterSelectDay')}
-            </span>
-            {isStudent ? (
-              <StudentDatePicker value={dayYmd} onValueChange={onDayYmdChange} />
-            ) : (
-              <DatePickerInput
-                className={adminDatePickerClassName}
-                value={dayYmd}
-                onValueChange={onDayYmdChange}
-              />
-            )}
+            </div>
           </label>
         )}
         {mode === 'week' && (
-          <label
-            className={cn(
-              'flex items-center gap-2',
-              isStudent && 'w-full justify-end sm:w-auto sm:justify-start',
-            )}
-          >
-            <span
-              className={cn(
-                'whitespace-nowrap',
-                usesGroupAccent ? 'text-[#8b8b90]' : 'text-slate-500',
+          <label className={singleDateRowClassName}>
+            <span className={adminDateLabelClassName}>{t('timeFilterSelectWeek')}</span>
+            <div className={isStudent ? studentDateFieldWrapClassName : adminDateFieldWrapClassName}>
+              {isStudent ? (
+                <StudentDatePicker
+                  className="w-full min-w-0 sm:w-auto"
+                  value={weekAnchorYmd}
+                  onValueChange={onWeekAnchorYmdChange}
+                />
+              ) : (
+                <DatePickerInput
+                  className={adminDateInputClassName}
+                  value={weekAnchorYmd}
+                  onValueChange={onWeekAnchorYmdChange}
+                />
               )}
-            >
-              {t('timeFilterSelectWeek')}
-            </span>
-            {isStudent ? (
-              <StudentDatePicker value={weekAnchorYmd} onValueChange={onWeekAnchorYmdChange} />
-            ) : (
-              <DatePickerInput
-                className={adminDatePickerClassName}
-                value={weekAnchorYmd}
-                onValueChange={onWeekAnchorYmdChange}
-              />
-            )}
+            </div>
           </label>
         )}
         {mode === 'date' && isStudent ? (
@@ -245,38 +290,22 @@ export function AnalyticsTimeFilterBar({
           </div>
         ) : null}
         {mode === 'date' && !isStudent && (
-          <div className="flex w-full justify-center overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:w-auto sm:justify-start sm:overflow-visible">
-            <div className="inline-flex min-w-max flex-nowrap items-center gap-2">
-              <span
-                className={cn(
-                  'whitespace-nowrap',
-                  usesGroupAccent ? 'text-[#8b8b90]' : 'text-slate-500',
-                )}
-              >
-                {t('timeFilterFrom')}
-              </span>
-              <div className="min-w-[8.5rem] shrink-0 sm:min-w-[9.5rem]">
-                <DatePickerInput
-                  className={adminDatePickerClassName}
-                  value={customFromYmd}
-                  onValueChange={onCustomFromYmd}
-                />
-              </div>
-              <span
-                className={cn(
-                  'whitespace-nowrap',
-                  usesGroupAccent ? 'text-[#8b8b90]' : 'text-slate-500',
-                )}
-              >
-                {t('timeFilterTo')}
-              </span>
-              <div className="min-w-[8.5rem] shrink-0 sm:min-w-[9.5rem]">
-                <DatePickerInput
-                  className={adminDatePickerClassName}
-                  value={customToYmd}
-                  onValueChange={onCustomToYmd}
-                />
-              </div>
+          <div className={adminDateRowClassName}>
+            <span className={adminDateLabelClassName}>{t('timeFilterFrom')}</span>
+            <div className={adminDateFieldWrapClassName}>
+              <DatePickerInput
+                className={adminDateInputClassName}
+                value={customFromYmd}
+                onValueChange={onCustomFromYmd}
+              />
+            </div>
+            <span className={adminDateLabelClassName}>{t('timeFilterTo')}</span>
+            <div className={adminDateFieldWrapClassName}>
+              <DatePickerInput
+                className={adminDateInputClassName}
+                value={customToYmd}
+                onValueChange={onCustomToYmd}
+              />
             </div>
           </div>
         )}
@@ -284,7 +313,8 @@ export function AnalyticsTimeFilterBar({
         {applyAction && (
           <div
             className={cn(
-              'relative flex min-w-0 flex-col items-stretch sm:items-end sm:self-end sm:pl-2',
+              'relative flex min-w-0 flex-col sm:items-end sm:self-end sm:pl-2',
+              inlineApplyWithDate ? 'shrink-0 items-stretch' : 'items-stretch',
               mode === 'date' && 'ml-auto',
             )}
           >
@@ -293,11 +323,14 @@ export function AnalyticsTimeFilterBar({
               onClick={applyAction.onApply}
               disabled={applyAction.applyDisabled ?? !applyAction.hasUnsavedChanges}
               className={cn(
-                'inline-flex w-full min-w-[7rem] items-center justify-center px-4 py-2 text-sm font-medium text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto',
+                'inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50',
+                inlineApplyWithDate
+                  ? 'w-auto min-w-[5.5rem] shrink-0'
+                  : 'w-full min-w-[7rem] sm:w-auto',
                 isStudent
                   ? 'rounded-full bg-[#1010a3]'
                   : isAdmin
-                    ? 'rounded-lg bg-[#1010a3] shadow-sm ring-1 ring-[rgba(14,14,16,0.12)]'
+                    ? cn(ADMIN_PRIMARY_BUTTON_CLASS, 'bg-[#1010a3] text-white shadow-sm ring-1 ring-[rgba(14,14,16,0.12)] hover:bg-[#1010a3]/90')
                     : 'rounded-lg bg-primary shadow-sm ring-1 ring-slate-200/40',
               )}
             >

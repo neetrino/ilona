@@ -1,7 +1,7 @@
 export const DROPDOWN_LABEL_CLASS = 'mb-1.5 block text-sm font-medium text-[#8b8b90]';
 
 export const DROPDOWN_TRIGGER_BASE_CLASS =
-  'h-11 w-full rounded-xl border border-[rgba(14,14,16,0.08)] bg-white px-3 text-left transition-colors';
+  'h-11 w-full rounded-[15px] border border-[rgba(14,14,16,0.08)] bg-white px-3 text-left transition-colors';
 
 export const DROPDOWN_TRIGGER_INTERACTIVE_CLASS =
   'hover:border-[#1010a3]/30 focus:border-[#1010a3]/45 focus:outline-none focus:ring-4 focus:ring-[#1010a3]/10';

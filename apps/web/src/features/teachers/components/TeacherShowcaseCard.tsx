@@ -88,10 +88,10 @@ export function TeacherShowcaseCard({
       onClick={hasCardAction ? onCardClick : undefined}
       onKeyDown={articleIsButton ? handleKeyDown : undefined}
       className={cn(
-        'group overflow-hidden rounded-[1.75rem] border bg-white p-4 transition-all duration-300 md:rounded-3xl md:p-5',
+        'group overflow-hidden bg-white p-4 transition-all duration-300 sm:flex sm:h-full sm:flex-col md:p-5',
         isStudent
-          ? 'border-[rgba(14,14,16,0.07)]'
-          : 'border-slate-200 shadow-sm',
+          ? 'rounded-[1.75rem] border border-[rgba(14,14,16,0.07)] md:rounded-3xl'
+          : 'rounded-2xl border border-slate-100 shadow-sm sm:rounded-[1.75rem] sm:border-slate-200 md:rounded-3xl',
         interactive &&
           (isStudent
             ? 'cursor-pointer hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus-visible:outline-none focus-visible:ring-0'
@@ -123,7 +123,7 @@ export function TeacherShowcaseCard({
 
       <div
         className={cn(
-          'relative mb-4 flex w-full justify-center',
+          'relative mb-4 flex w-full justify-center sm:mb-0 sm:shrink-0',
           photoOpensDetails &&
             'cursor-pointer rounded-3xl focus:outline-none focus-visible:outline-none focus-visible:ring-0',
         )}
@@ -155,7 +155,7 @@ export function TeacherShowcaseCard({
         />
       </div>
 
-      <div className="min-w-0 text-center">
+      <div className="min-w-0 text-center sm:flex sm:flex-1 sm:flex-col sm:justify-center sm:py-3">
         <h3
           className={cn(
             'truncate text-[clamp(1.125rem,7vw,2rem)] font-semibold leading-tight sm:text-xl',
@@ -189,7 +189,7 @@ export function TeacherShowcaseCard({
       {afterExperience ? (
         <div
           className={cn(
-            'mt-4 border-t pt-4 text-left',
+            'mt-4 border-t pt-4 text-left sm:mt-0 sm:shrink-0',
             isStudent ? 'border-[rgba(14,14,16,0.07)]' : 'border-slate-100',
           )}
         >

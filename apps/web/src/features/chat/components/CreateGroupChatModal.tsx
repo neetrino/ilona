@@ -1,5 +1,6 @@
 'use client';
 
+
 import { useTranslations } from 'next-intl';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { useState, useEffect, useMemo, useCallback, useRef, type TouchEvent } from 'react';
@@ -10,6 +11,20 @@ import { useAuthStore } from '@/features/auth/store/auth.store';
 import type { AdminChatAllUser } from '../api/chat.api';
 import type { Chat } from '../types';
 import { cn } from '@/shared/lib/utils';
+import {
+  portalSheetLayerProps,
+  stackedSheetDialogHandlers,
+  useSheetStackZIndex,
+  stackedSheetOverlayClassName,
+} from '@/shared/lib/sheet-stack';
+import { PORTAL_DESKTOP_SIDE_SHEET_CLASS } from '@/shared/lib/portal-form-sheet-classes';
+import {
+  ADMIN_FORM_INPUT_CLASS,
+  ADMIN_ICON_BUTTON_SM_CLASS,
+  ADMIN_OUTLINE_BUTTON_CLASS,
+  ADMIN_PRIMARY_BUTTON_CLASS,
+  ADMIN_SEARCH_INPUT_CLASS,
+} from '@/shared/lib/admin-control-theme';
 import { getInitials } from '@/shared/components/ui/avatar';
 import { Button, Input, Label } from '@/shared/components/ui';
 
@@ -20,12 +35,11 @@ interface CreateGroupChatModalProps {
 }
 
 const SHEET_CONTENT_CLASS = cn(
-  'fixed inset-x-0 bottom-[7px] top-auto z-50 flex w-full translate-y-0 flex-col lg:bottom-0 [@media(min-width:1024px)_and_(max-width:1366px)_and_(min-height:1000px)]:bottom-0',
+  'fixed inset-x-0 bottom-[7px] top-auto z-50 grid w-full translate-y-0 lg:bottom-0 [@media(min-width:1024px)_and_(max-width:1366px)_and_(min-height:1000px)]:bottom-0',
   'duration-700 ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out min-[1367px]:duration-350 min-[1367px]:ease-[cubic-bezier(0.22,1,0.36,1)]',
   'data-[state=open]:slide-in-from-bottom-full data-[state=closed]:slide-out-to-bottom-full',
-  'h-[calc(94dvh+7px)] [@media(min-width:1024px)_and_(max-width:1366px)_and_(min-height:1000px)]:h-[56dvh] gap-0 overflow-hidden rounded-t-[22px] border border-slate-200 bg-[#f8f9fb] shadow-xl',
-  'min-[1367px]:inset-0 min-[1367px]:m-auto min-[1367px]:h-auto min-[1367px]:max-h-[90vh] min-[1367px]:w-[95vw] min-[1367px]:max-w-2xl min-[1367px]:translate-x-0 min-[1367px]:translate-y-0 min-[1367px]:rounded-2xl',
-  'min-[1367px]:data-[state=open]:fade-in-0 min-[1367px]:data-[state=closed]:fade-out-0 min-[1367px]:data-[state=open]:slide-in-from-bottom-0 min-[1367px]:data-[state=closed]:slide-out-to-bottom-0',
+  'h-[calc(94dvh+7px)] [@media(min-width:1024px)_and_(max-width:1366px)_and_(min-height:1000px)]:h-[56dvh] grid-rows-[auto_auto_1fr_auto] gap-0 overflow-hidden rounded-t-[22px] border border-slate-200 bg-[#f8f9fb] shadow-xl',
+  PORTAL_DESKTOP_SIDE_SHEET_CLASS,
 );
 
 export function CreateGroupChatModal({
@@ -198,13 +212,13 @@ export function CreateGroupChatModal({
       // Error shown via mutation state
     }
   };
+  const { overlayStyle, contentStyle, isBaseLayer } = useSheetStackZIndex(isDialogOpen);
 
   return (
     <DialogPrimitive.Root open={isDialogOpen} onOpenChange={(nextOpen) => !nextOpen && requestClose()}>
       <DialogPrimitive.Portal>
-        <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/60 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
-        <DialogPrimitive.Content
-          style={dragStyle}
+        <DialogPrimitive.Overlay style={overlayStyle} {...portalSheetLayerProps} className={stackedSheetOverlayClassName('fixed inset-0 z-50 bg-black/60 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0', isBaseLayer)} />
+        <DialogPrimitive.Content style={{ ...dragStyle, ...contentStyle }} {...stackedSheetDialogHandlers} {...portalSheetLayerProps}
           className={SHEET_CONTENT_CLASS}
           aria-describedby={undefined}
         >
@@ -220,79 +234,83 @@ export function CreateGroupChatModal({
           </div>
 
           <DialogPrimitive.Title className="sr-only">{tChat('createGroupChat')}</DialogPrimitive.Title>
-          <DialogPrimitive.Close
-            className="absolute right-4 top-4 hidden h-8 w-8 items-center justify-center rounded-full text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 min-[1367px]:inline-flex"
-            aria-label={tCommon('close')}
-          >
-            <X className="h-4 w-4" />
-          </DialogPrimitive.Close>
 
-          <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-            <div className="shrink-0 px-4 pt-4 min-[1367px]:px-6 min-[1367px]:pt-6">
-              <h2 className="text-lg font-semibold text-[#3b3b40]">{tChat('createGroupChat')}</h2>
-              <p className="mt-1 text-sm text-[#8b8b90]">
-                {tChat('createGroupChatDescription')}
-              </p>
+          <div className="shrink-0 bg-[#f8f9fb] px-4 pb-4 pt-3 min-[1367px]:px-6 min-[1367px]:pb-5 min-[1367px]:pt-6">
+            <div className="flex items-start justify-between gap-4">
+              <div className="min-w-0 flex-1">
+                <h2 className="text-lg font-semibold text-[#3b3b40]">{tChat('createGroupChat')}</h2>
+              </div>
+              <DialogPrimitive.Close
+                className={cn(
+                  ADMIN_ICON_BUTTON_SM_CLASS,
+                  'hidden text-slate-500 hover:bg-slate-100 hover:text-slate-700 min-[1367px]:inline-flex',
+                )}
+                aria-label={tCommon('close')}
+              >
+                <X className="h-4 w-4" />
+              </DialogPrimitive.Close>
+            </div>
+          </div>
 
-              <div className="mt-4 space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="group-chat-name">
-                    {tChat('groupName')} <span className="text-red-500">*</span>
-                  </Label>
-                  <Input
-                    id="group-chat-name"
-                    type="text"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    placeholder={tChat('groupNamePlaceholder')}
-                    disabled={createChat.isPending}
-                  />
-                </div>
+          <div className="min-h-0 overflow-y-auto overscroll-y-contain bg-[#f8f9fb] [touch-action:pan-y] [-webkit-overflow-scrolling:touch] px-4 min-[1367px]:px-6">
+            <div className="space-y-4 pb-2">
+              <div className="space-y-2">
+                <Label htmlFor="group-chat-name">
+                  {tChat('groupName')} <span className="text-red-500">*</span>
+                </Label>
+                <Input
+                  id="group-chat-name"
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder={tChat('groupNamePlaceholder')}
+                  disabled={createChat.isPending}
+                  className={ADMIN_FORM_INPUT_CLASS}
+                />
+              </div>
 
+              <div className="space-y-2">
                 <div className="flex items-center justify-between gap-2">
                   <Label htmlFor="group-chat-member-search">{tChat('members')}</Label>
                   {teacherIds.length > 0 && (
                     <button
                       type="button"
                       onClick={toggleAllTeachers}
-                      className="text-xs font-medium text-[#1010a3] hover:opacity-80"
+                      className="rounded-[15px] px-2 py-1 text-xs font-medium text-[#1010a3] hover:bg-[#f0f0fc]"
                     >
                       {allTeachersSelected ? tChat('removeAllTeachers') : tChat('addAllTeachers')}
                     </button>
                   )}
                 </div>
-              </div>
-            </div>
-
-            <div className="shrink-0 bg-[#f8f9fb] px-4 pt-2 pb-3 min-[1367px]:px-6">
-              <div className="relative">
-                <svg
-                  className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#8b8b90]"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  aria-hidden
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                <div className="relative">
+                  <svg
+                    className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#8b8b90]"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    aria-hidden
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                    />
+                  </svg>
+                  <Input
+                    id="group-chat-member-search"
+                    type="search"
+                    placeholder={tChat('searchByNameEmailPhone')}
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    className={ADMIN_SEARCH_INPUT_CLASS}
+                    disabled={createChat.isPending}
                   />
-                </svg>
-                <Input
-                  id="group-chat-member-search"
-                  type="search"
-                  placeholder={tChat('searchByNameEmailPhone')}
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className="bg-white pl-9"
-                  disabled={createChat.isPending}
-                />
+                </div>
               </div>
             </div>
 
-            <div className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain bg-[#f8f9fb] [touch-action:pan-y] [-webkit-overflow-scrolling:touch] px-4 min-[1367px]:px-6">
+            <div className="mt-4 pb-2">
               {isLoading ? (
                 <div className="space-y-3 py-2">
                   {[1, 2, 3, 4].map((i) => (
@@ -369,8 +387,9 @@ export function CreateGroupChatModal({
                 </div>
               )}
             </div>
+          </div>
 
-            <div className="shrink-0 space-y-3 bg-[#f8f9fb] px-4 pt-3 pb-[calc(4.5rem+env(safe-area-inset-bottom))] min-[1367px]:px-6 min-[1367px]:py-6 min-[1367px]:pb-6">
+          <div className="shrink-0 space-y-3 border-t border-[rgba(14,14,16,0.07)] bg-[#f8f9fb] px-4 pt-3 pb-[calc(4.5rem+env(safe-area-inset-bottom))] min-[1367px]:px-6 min-[1367px]:py-6 min-[1367px]:pb-6">
               {createChat.isError && (
                 <div className="rounded-[15px] border border-red-200 bg-red-50 p-3">
                   <p className="text-sm text-red-600">
@@ -384,9 +403,10 @@ export function CreateGroupChatModal({
               <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
                 <Button
                   type="button"
-                  variant="ghost"
+                  variant="outline"
                   onClick={requestClose}
                   disabled={createChat.isPending}
+                  className={cn(ADMIN_OUTLINE_BUTTON_CLASS, 'border-[rgba(14,14,16,0.07)] hover:bg-slate-50')}
                 >
                   {tCommon('cancel')}
                 </Button>
@@ -394,13 +414,12 @@ export function CreateGroupChatModal({
                   type="button"
                   onClick={handleSubmit}
                   disabled={!name.trim() || createChat.isPending}
-                  className="bg-[#1010a3] text-white hover:bg-[#0d0d85]"
+                  className={cn(ADMIN_PRIMARY_BUTTON_CLASS, 'bg-[#1010a3] text-white hover:bg-[#1010a3]/90')}
                 >
                   {createChat.isPending ? tChat('creating') : tChat('createGroupChat')}
                 </Button>
               </div>
             </div>
-          </div>
         </DialogPrimitive.Content>
       </DialogPrimitive.Portal>
     </DialogPrimitive.Root>

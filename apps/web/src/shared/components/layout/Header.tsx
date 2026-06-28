@@ -57,7 +57,7 @@ export function Header({ title, subtitle, headerContent }: HeaderProps) {
         {headerContent}
 
         {/* Language Switcher */}
-        <LandingNavbarLanguageToggle />
+        <LandingNavbarLanguageToggle className="hidden lg:inline-flex" />
 
         {/* Notifications */}
         <button className="relative p-2 rounded-lg hover:bg-slate-100 text-slate-500 transition-colors">

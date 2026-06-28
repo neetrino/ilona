@@ -28,7 +28,14 @@ export {
   DialogTitle,
   DialogDescription,
 } from './dialog';
-export { DeleteConfirmationDialog } from './DeleteConfirmationDialog';
+export {
+  DeleteConfirmationDialog,
+  DELETE_CONFIRMATION_DIALOG_CONTENT_CLASS,
+  DELETE_CONFIRMATION_DIALOG_DESKTOP_CONTENT_CLASS,
+  DELETE_CONFIRMATION_DIALOG_MOBILE_CONTENT_CLASS,
+  DELETE_CONFIRMATION_DIALOG_OVERLAY_CLASS,
+  useDeleteConfirmationDialogLayout,
+} from './DeleteConfirmationDialog';
 export type { DeleteConfirmationDialogProps } from './DeleteConfirmationDialog';
 export { AdminDetailModal } from './admin-detail-modal';
 export type { AdminDetailModalProps } from './admin-detail-modal';

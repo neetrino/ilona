@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, startTransition } from 'react';
 import { useTranslations } from 'next-intl';
 import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
+import { ADMIN_CONTROL_CLASS, ADMIN_SEARCH_INPUT_CLASS } from '@/shared/lib/admin-control-theme';
 
 interface CalendarFiltersProps {
   searchQuery: string;
@@ -68,7 +69,7 @@ export function CalendarFilters({
           value={localSearchQuery}
           onChange={(e) => setLocalSearchQuery(e.target.value)}
           placeholder={t('searchLessonsPlaceholder')}
-          className="w-full pl-10 pr-10 py-3 bg-white border border-[rgba(14,14,16,0.07)] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20 focus:border-[#1010a3]"
+          className={ADMIN_SEARCH_INPUT_CLASS}
         />
         {localSearchQuery && (
           <button
@@ -93,6 +94,7 @@ export function CalendarFilters({
           onValueChange={(nextValue) => onTeacherChange(nextValue ?? '')}
           isLoading={isLoadingTeachers}
           className="sm:min-w-[11rem]"
+          triggerClassName={ADMIN_CONTROL_CLASS}
         />
       </div>
     </div>

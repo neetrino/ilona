@@ -3,6 +3,14 @@ import { Button } from '@/shared/components/ui/button';
 import { DatePickerInput } from '@/shared/components/ui/date-picker-input';
 import { MultiSelectGroupDropdown } from '@/shared/components/ui/multi-select-group-dropdown';
 import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
+import {
+  ADMIN_CONTROL_CLASS,
+  ADMIN_DATE_INPUT_CLASS,
+  ADMIN_FORM_INPUT_CLASS,
+  ADMIN_OUTLINE_BUTTON_CLASS,
+  ADMIN_PRIMARY_BUTTON_CLASS,
+} from '@/shared/lib/admin-control-theme';
+import { cn } from '@/shared/lib/utils';
 import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import {
@@ -112,9 +120,18 @@ export function AttendanceControls({
     }
   };
 
+  const navButtonClass = cn(
+    ADMIN_OUTLINE_BUTTON_CLASS,
+    'shrink-0 px-3 text-[#3b3b40] hover:bg-[#fafafa] disabled:opacity-50',
+  );
+  const periodLabelClass = cn(
+    ADMIN_CONTROL_CLASS,
+    'flex flex-1 items-center justify-center border border-[rgba(14,14,16,0.12)] bg-[#fafafa] px-3 text-sm font-medium text-[#3b3b40]',
+  );
+
   return (
-    <div className="bg-white rounded-xl border border-[rgba(14,14,16,0.07)] p-6">
-      <div className="flex items-center justify-between mb-4">
+    <div className="rounded-[15px] border border-[rgba(14,14,16,0.07)] bg-white p-6">
+      <div className="mb-4 flex items-center justify-between">
         <label className="block text-sm font-medium text-[#3b3b40]">{tc('viewMode')}</label>
         <ViewModeSelector
           value={viewMode}
@@ -143,38 +160,36 @@ export function AttendanceControls({
         <div>
           {viewMode === 'day' && (
             <>
-              <label className="block text-sm font-medium text-[#3b3b40] mb-2">{tc('selectDate')}</label>
+              <label className="mb-2 block text-sm font-medium text-[#3b3b40]">{tc('selectDate')}</label>
               <DatePickerInput
                 value={formatDateString(currentDate)}
                 onValueChange={onDateChange}
                 max={getTodayDate()}
-                className="w-full h-10 px-4 py-2 text-sm text-left bg-white border border-[rgba(14,14,16,0.12)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1010a3] focus:border-[#1010a3] disabled:opacity-50 disabled:cursor-not-allowed hover:border-[rgba(14,14,16,0.18)] transition-colors"
+                className={ADMIN_DATE_INPUT_CLASS}
                 disabled={safeSelectedGroupIds.length === 0}
               />
             </>
           )}
           {viewMode === 'week' && (
             <>
-              <label className="block text-sm font-medium text-[#3b3b40] mb-2">{tc('week')}</label>
+              <label className="mb-2 block text-sm font-medium text-[#3b3b40]">{tc('week')}</label>
               <div className="flex items-center gap-2">
                 <Button
                   onClick={onPrevious}
                   variant="outline"
-                  size="sm"
                   disabled={safeSelectedGroupIds.length === 0}
-                  className="px-3"
+                  className={navButtonClass}
                 >
                   ←
                 </Button>
-                <div className="flex-1 text-center px-3 py-2 border border-[rgba(14,14,16,0.12)] rounded-lg bg-[#fafafa] text-sm font-medium">
+                <div className={periodLabelClass}>
                   {formatWeekRange(currentDate)}
                 </div>
                 <Button
                   onClick={onNext}
                   variant="outline"
-                  size="sm"
                   disabled={safeSelectedGroupIds.length === 0}
-                  className="px-3"
+                  className={navButtonClass}
                 >
                   →
                 </Button>
@@ -183,26 +198,24 @@ export function AttendanceControls({
           )}
           {viewMode === 'month' && (
             <>
-              <label className="block text-sm font-medium text-[#3b3b40] mb-2">{tc('month')}</label>
+              <label className="mb-2 block text-sm font-medium text-[#3b3b40]">{tc('month')}</label>
               <div className="flex items-center gap-2">
                 <Button
                   onClick={onPrevious}
                   variant="outline"
-                  size="sm"
                   disabled={safeSelectedGroupIds.length === 0}
-                  className="px-3"
+                  className={navButtonClass}
                 >
                   ←
                 </Button>
-                <div className="flex-1 text-center px-3 py-2 border border-[rgba(14,14,16,0.12)] rounded-lg bg-[#fafafa] text-sm font-medium">
+                <div className={periodLabelClass}>
                   {formatMonthDisplay(currentDate)}
                 </div>
                 <Button
                   onClick={onNext}
                   variant="outline"
-                  size="sm"
                   disabled={safeSelectedGroupIds.length === 0}
-                  className="px-3"
+                  className={navButtonClass}
                 >
                   →
                 </Button>
@@ -215,7 +228,7 @@ export function AttendanceControls({
         <div className="flex items-end">
           {showAbsenceTypeFilter && onAbsenceFilterChange ? (
             <div className="w-full">
-              <label className="block text-sm font-medium text-[#3b3b40] mb-2">
+              <label className="mb-2 block text-sm font-medium text-[#3b3b40]">
                 {t('filterByType')}
               </label>
               <SingleSelectDropdown
@@ -226,6 +239,7 @@ export function AttendanceControls({
                   onAbsenceFilterChange((nextValue as AbsenceFilterType | null) ?? 'all')
                 }
                 disabled={safeSelectedGroupIds.length === 0}
+                triggerClassName={ADMIN_FORM_INPUT_CLASS}
                 className="
                   [&>div>button>div>span]:flex-1
                   [&>div>button>div>span]:text-center
@@ -238,7 +252,11 @@ export function AttendanceControls({
               onClick={onGoToToday}
               disabled={isCurrentDateToday && viewMode === 'day'}
               variant={isCurrentDateToday && viewMode === 'day' ? 'outline' : 'default'}
-              className="w-full"
+              className={cn(
+                ADMIN_PRIMARY_BUTTON_CLASS,
+                'w-full bg-[#1010a3] text-white hover:bg-[#1010a3]/90',
+                isCurrentDateToday && viewMode === 'day' && 'border border-[rgba(14,14,16,0.12)] bg-white text-[#3b3b40] hover:bg-[#fafafa]',
+              )}
             >
               {isCurrentDateToday && viewMode === 'day' ? tc('today') : t('backToToday')}
             </Button>
@@ -248,7 +266,6 @@ export function AttendanceControls({
     </div>
   );
 }
-
 
 
 

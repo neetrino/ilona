@@ -162,7 +162,7 @@ export function DashboardBannerImageSection() {
         <Button
           type="button"
           variant="ghost"
-          className="inline-flex min-h-10 items-center justify-center rounded-full border border-[rgba(14,14,16,0.07)] bg-white px-4 text-sm font-medium text-[#3b3b40] transition-colors hover:bg-[#f5f5f6]"
+          className="inline-flex h-11 min-h-11 items-center justify-center rounded-[15px] border border-[rgba(14,14,16,0.07)] bg-white px-4 py-0 text-sm font-medium text-[#3b3b40] transition-colors hover:bg-[#f5f5f6]"
           onClick={() => fileInputRef.current?.click()}
           disabled={uploadMutation.isPending || deleteMutation.isPending}
         >
@@ -173,7 +173,7 @@ export function DashboardBannerImageSection() {
           <Button
             type="button"
             variant="ghost"
-            className="inline-flex min-h-10 items-center justify-center rounded-full border border-red-200 bg-red-50 px-4 text-sm font-medium text-red-600 transition-colors hover:bg-red-100"
+            className="inline-flex h-11 min-h-11 items-center justify-center rounded-[15px] border border-red-200 bg-red-50 px-4 py-0 text-sm font-medium text-red-600 transition-colors hover:bg-red-100"
             onClick={handleReset}
             disabled={uploadMutation.isPending || deleteMutation.isPending}
           >
@@ -183,7 +183,7 @@ export function DashboardBannerImageSection() {
 
         <Button
           type="button"
-          className="inline-flex min-h-10 items-center justify-center rounded-full bg-[#1010a3] px-4 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+          className="inline-flex h-11 min-h-11 items-center justify-center rounded-[15px] bg-[#1010a3] px-4 py-0 text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
           onClick={handleSave}
           disabled={!selectedFile || uploadMutation.isPending || deleteMutation.isPending}
         >

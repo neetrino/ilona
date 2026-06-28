@@ -14,6 +14,8 @@ import { useMyGroups } from '@/features/groups/hooks/useGroups';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { StudentFeedbackModal } from '@/app/[locale]/(admin)/admin/students/components/StudentFeedbackModal';
 import { cn } from '@/shared/lib/utils';
+import { CUSTOM_MODAL_OVERLAY_CLASS, CUSTOM_MODAL_PANEL_CLASS } from '@/shared/lib/portal-form-sheet-classes';
+import { ADMIN_ICON_BUTTON_CLASS } from '@/shared/lib/admin-control-theme';
 import Link from 'next/link';
 import Image from 'next/image';
 
@@ -348,7 +350,7 @@ export default function TeacherStudentsPage() {
                           onClick={() => setFeedbackStudent(student)}
                           title={tTeacherStudents('viewFeedbackHistory')}
                           aria-label={tTeacherStudents('viewFeedbackHistory')}
-                          className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-[#8b8b90] transition-colors hover:bg-primary/10 hover:text-primary"
+                          className={`${ADMIN_ICON_BUTTON_CLASS} text-[#8b8b90] hover:bg-primary/10 hover:text-primary`}
                         >
                           <svg
                             className="h-5 w-5"
@@ -391,8 +393,9 @@ export default function TeacherStudentsPage() {
 
       {/* Transfer modal for onboarding leads */}
       {transferLeadId && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
+        <>
+          <div className={CUSTOM_MODAL_OVERLAY_CLASS} aria-hidden="true" />
+          <div className={cn(CUSTOM_MODAL_PANEL_CLASS, 'max-w-md p-6')}>
             <h3 className="mb-2 text-lg font-semibold text-[#1010a3]">{tTeacherStudents('transferTitle')}</h3>
             <p className="mb-4 text-sm text-[#8b8b90]">
               {tTeacherStudents('transferDescription')}
@@ -432,7 +435,7 @@ export default function TeacherStudentsPage() {
               </button>
             </div>
           </div>
-        </div>
+        </>
       )}
     </DashboardLayout>
   );

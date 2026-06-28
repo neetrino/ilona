@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef } from 'react';
 import type { MouseEvent, RefObject } from 'react';
+import { PORTAL_SHEET_LAYER_ATTR } from '@/shared/lib/sheet-stack';
 
 interface UseModalCloseOptions {
   open: boolean;
@@ -35,14 +36,21 @@ export function useModalClose({
     if (!open || !closeOnEscape) return;
 
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        onClose();
+      if (event.key !== 'Escape') return;
+      const container = containerRef?.current;
+      if (container) {
+        const layers = document.querySelectorAll(`[${PORTAL_SHEET_LAYER_ATTR}]`);
+        const topLayer = layers.item(layers.length - 1);
+        if (topLayer && topLayer !== container && !container.contains(topLayer)) {
+          return;
+        }
       }
+      onClose();
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [closeOnEscape, onClose, open]);
+  }, [closeOnEscape, containerRef, onClose, open]);
 
   useEffect(() => {
     if (!open || !closeOnOutsideClick) return;
@@ -53,6 +61,16 @@ export function useModalClose({
       const targetNode = event.target as Node | null;
       if (!targetNode) return;
       if (container.contains(targetNode)) return;
+      if (targetNode instanceof Element) {
+        const foreignLayer = targetNode.closest(`[${PORTAL_SHEET_LAYER_ATTR}]`);
+        if (
+          foreignLayer instanceof HTMLElement &&
+          foreignLayer !== container &&
+          !container.contains(foreignLayer)
+        ) {
+          return;
+        }
+      }
       const insideExtra = additionalInsideRefs?.some((ref) => ref.current?.contains(targetNode));
       if (insideExtra) return;
       onClose();

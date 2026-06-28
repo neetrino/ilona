@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, Button } from '@/shared/components/ui';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Button, DeleteConfirmationDialog } from '@/shared/components/ui';
 import { DataTable } from '@/shared/components/ui';
 import { useSalaryBreakdown, useExcludeLessonsFromSalary, financeKeys } from '../hooks/useFinance';
 import type { SalaryBreakdownLesson } from '../types';
@@ -74,6 +74,7 @@ export function SalaryBreakdownModal({
   onClose,
 }: SalaryBreakdownModalProps) {
   const t = useTranslations('finance');
+  const tCommon = useTranslations('common');
   const queryClient = useQueryClient();
   const { data: breakdown, isLoading, error, refetch } = useSalaryBreakdown(teacherId, month, open && !!teacherId);
   const excludeLessons = useExcludeLessonsFromSalary();
@@ -396,7 +397,9 @@ export function SalaryBreakdownModal({
                   disabled={excludeLessons.isPending}
                 >
                   <Trash2 className="w-4 h-4" />
-                  Delete ({selectedLessonIds.size})
+                  {allSelected
+                    ? t('deleteAll', { count: selectedLessonIds.size })
+                    : t('deleteSelected', { count: selectedLessonIds.size })}
                 </Button>
               )}
             </div>
@@ -445,45 +448,21 @@ export function SalaryBreakdownModal({
         </DialogContent>
       </Dialog>
 
-      {/* Delete Confirmation Dialog - Rendered outside main dialog to avoid nested dialog aria-hidden issue */}
-      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>{t('excludeLessonsTitle')}</DialogTitle>
-            <DialogDescription>
-              Are you sure you want to exclude {selectedLessonIds.size} lesson{selectedLessonIds.size > 1 ? 's' : ''} from salary calculation? 
-              This will change the lesson status to CANCELLED and remove {selectedLessonIds.size > 1 ? 'them' : 'it'} from the salary breakdown. 
-              The lesson{selectedLessonIds.size > 1 ? 's' : ''} will remain in the system but won't be counted for salary.
-            </DialogDescription>
-          </DialogHeader>
-          {deleteError && (
-            <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
-              <p className="text-sm text-red-600">{deleteError}</p>
-            </div>
-          )}
-          <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => {
-                setIsDeleteDialogOpen(false);
-                setDeleteError(null);
-              }}
-              disabled={excludeLessons.isPending}
-            >
-              Cancel
-            </Button>
-            <Button
-              type="button"
-              variant="destructive"
-              onClick={handleDeleteConfirm}
-              disabled={excludeLessons.isPending}
-            >
-              {excludeLessons.isPending ? 'Excluding...' : 'Exclude'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <DeleteConfirmationDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={(open) => {
+          setIsDeleteDialogOpen(open);
+          if (!open) setDeleteError(null);
+        }}
+        onConfirm={handleDeleteConfirm}
+        title={t('excludeLessonsTitle')}
+        description={`${t('excludeLessonsLead', { count: selectedLessonIds.size })} ${t('excludeLessonsDetail')}`}
+        isLoading={excludeLessons.isPending}
+        error={deleteError}
+        confirmLabel={t('excludeLessonsConfirm')}
+        cancelLabel={tCommon('cancel')}
+        loadingLabel={t('excluding')}
+      />
 
       {/* Obligation Details Modal */}
       <ObligationDetailsModal

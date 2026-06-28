@@ -19,6 +19,13 @@ import { resolveAgeFromDobAndManual } from '@/features/students/student-account-
 import { StudentAccountFormFields } from '@/features/students/components/StudentAccountFormFields';
 import { useModalClose } from '@/shared/hooks/useModalClose';
 import { cn } from '@/shared/lib/utils';
+import {
+  portalSheetLayerProps,
+  useSheetStackZIndex,
+  stackedSheetOverlayClassName,
+} from '@/shared/lib/sheet-stack';
+import { CUSTOM_MODAL_OVERLAY_CLASS, CUSTOM_MODAL_PANEL_CLASS } from '@/shared/lib/portal-form-sheet-classes';
+import { ADMIN_ICON_BUTTON_CLASS } from '@/shared/lib/admin-control-theme';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 
 export interface PaidRegistrationModalProps {
@@ -202,19 +209,21 @@ export function PaidRegistrationModal({
     }
   };
 
+  const { overlayStyle, contentStyle, isBaseLayer } = useSheetStackZIndex(open && mounted);
+
   if (!open || !mounted) return null;
 
   return createPortal(
-    <div
-      className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4 overflow-y-auto transition-opacity duration-200"
-      onMouseDown={onOverlayMouseDown}
-      onClick={onOverlayClick}
-    >
-      <div className="flex min-h-full w-full items-center justify-center">
-        <div
-          ref={modalContainerRef}
-          className="flex w-full max-w-2xl flex-col overflow-hidden rounded-xl bg-white shadow-xl transition-all duration-200 max-h-[90vh] sm:max-h-[calc(100vh-2rem)]"
-        >
+    <>
+      <div
+        className={stackedSheetOverlayClassName(CUSTOM_MODAL_OVERLAY_CLASS, isBaseLayer)} style={overlayStyle} {...portalSheetLayerProps}
+        onMouseDown={onOverlayMouseDown}
+        onClick={onOverlayClick}
+      />
+      <div
+        ref={modalContainerRef}
+        style={contentStyle} {...portalSheetLayerProps} className={cn(CUSTOM_MODAL_PANEL_CLASS, 'max-w-2xl max-h-[90vh] sm:max-h-[calc(100vh-2rem)]')}
+      >
           <div className="border-b border-slate-200 px-4 py-4 sm:px-6">
             <div className="flex items-start justify-between gap-2">
               <div>
@@ -227,7 +236,7 @@ export function PaidRegistrationModal({
               <button
                 type="button"
                 onClick={onClose}
-                className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-700"
+                className={`${ADMIN_ICON_BUTTON_CLASS} shrink-0 text-slate-500 hover:bg-slate-100 hover:text-slate-700`}
                 aria-label={t('closeRegistration')}
               >
                 <X className="h-5 w-5" />
@@ -290,9 +299,8 @@ export function PaidRegistrationModal({
               </div>
             </form>
           )}
-        </div>
       </div>
-    </div>,
+    </>,
     document.body,
   );
 }

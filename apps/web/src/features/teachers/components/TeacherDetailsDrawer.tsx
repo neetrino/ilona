@@ -3,6 +3,12 @@
 import { useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { cn, formatCurrency, formatPhoneForDisplay } from '@/shared/lib/utils';
+import { CUSTOM_DESKTOP_SIDE_PANEL_CLASS } from '@/shared/lib/portal-form-sheet-classes';
+import {
+  portalSheetLayerProps,
+  useSheetStackZIndex,
+  stackedSheetOverlayClassName,
+} from '@/shared/lib/sheet-stack';
 import { Avatar, Badge } from '@/shared/components/ui';
 import { useTeacher } from '../hooks/useTeachers';
 import { getExperienceLabelFromHireDate } from '../utils/experience';
@@ -55,6 +61,8 @@ export function TeacherDetailsDrawer({
     return () => window.removeEventListener('keydown', handleEscape);
   }, [open, onClose]);
 
+  const { overlayStyle, contentStyle, isBaseLayer } = useSheetStackZIndex(open);
+
   if (!open) return null;
 
   const firstName = teacher?.user?.firstName || '';
@@ -80,7 +88,9 @@ export function TeacherDetailsDrawer({
     <>
       {/* Overlay */}
       <div
-        className="fixed inset-0 bg-black/50 z-[60] transition-opacity animate-in fade-in-0"
+        className={stackedSheetOverlayClassName('fixed inset-0 bg-black/50 z-[60] transition-opacity animate-in fade-in-0', isBaseLayer)}
+        style={overlayStyle}
+        {...portalSheetLayerProps}
         onClick={onClose}
         aria-hidden="true"
       />
@@ -90,11 +100,14 @@ export function TeacherDetailsDrawer({
         className={cn(
           'fixed right-0 top-0 bottom-0 z-[70]',
           'w-full sm:w-[480px] lg:w-[600px]',
+          CUSTOM_DESKTOP_SIDE_PANEL_CLASS,
           'bg-white shadow-2xl',
           'flex flex-col',
           'transform transition-transform duration-300 ease-out',
-          'animate-in slide-in-from-right'
+          'animate-in slide-in-from-right',
         )}
+        style={contentStyle}
+        {...portalSheetLayerProps}
         role="dialog"
         aria-modal="true"
         aria-label={t('teacherDetails')}

@@ -92,7 +92,7 @@ export function MonthViewCalendar({
               onClick={() => hasLessons && onDaySelect(date)}
               disabled={!hasLessons}
               className={cn(
-                'rounded-[14px] border border-[rgba(14,14,16,0.08)] px-2 py-3 text-center transition-all min-h-[92px]',
+                'rounded-[15px] border border-[rgba(14,14,16,0.08)] px-2 py-3 text-center transition-all min-h-[92px]',
                 !isInCurrentMonth && 'text-[#b5bbd5]',
                 isSelected && 'border-2 border-[#99a3ff] bg-[#f6f7ff]',
                 !isSelected && hasLessons && 'bg-white',
@@ -103,7 +103,7 @@ export function MonthViewCalendar({
                 {date.getDate()}
               </div>
               {isTodayDate && (
-                <div className="mt-1 inline-flex rounded-full bg-[#1010a3] px-2 py-0.5 text-[14px] font-semibold text-white">
+                <div className="mt-1 inline-flex rounded-[15px] bg-[#1010a3] px-2 py-0.5 text-[14px] font-semibold text-white">
                   {t('monthTodayLabel')}
                 </div>
               )}
@@ -139,7 +139,7 @@ export function MonthViewCalendar({
               onClick={() => hasLessons && onDaySelect(date)}
               disabled={!hasLessons}
               className={cn(
-                'p-3 border-2 rounded-lg text-center transition-all min-h-[80px]',
+                'p-3 border-2 rounded-[15px] text-center transition-all min-h-[80px]',
                 !isInCurrentMonth && 'opacity-40',
                 isSelected && 'border-[#1010a3] bg-[#f0f0fc]',
                 !isSelected && hasLessons && 'border-[rgba(14,14,16,0.12)] hover:border-[#1010a3]/40 hover:bg-[#f0f0fc]',

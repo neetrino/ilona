@@ -101,10 +101,13 @@ export function useStudentsPage() {
   const [isEditStudentOpen, setIsEditStudentOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isBulkDeleteDialogOpen, setIsBulkDeleteDialogOpen] = useState(false);
+  const [isStatusDialogOpen, setIsStatusDialogOpen] = useState(false);
   const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
   const isFeedbackClosingRef = useRef(false);
   const isEditClosingRef = useRef(false);
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
+  const [selectedStudentForStatusChange, setSelectedStudentForStatusChange] =
+    useState<Student | null>(null);
   const [selectedStudentForFeedback, setSelectedStudentForFeedback] = useState<Student | null>(null);
 
   /** Student details modal — synced with `?studentId=` (same pattern as Teachers `?teacherId=`). */
@@ -484,11 +487,20 @@ export function useStudentsPage() {
     }, 100);
   };
 
-  // Handle deactivate button click
-  const handleDeactivateClick = async (student: Student) => {
+  // Handle deactivate/activate — open confirmation dialog
+  const handleDeactivateClick = (student: Student) => {
+    setDeactivateError(null);
+    setSelectedStudentForStatusChange(student);
+    setIsStatusDialogOpen(true);
+  };
+
+  const handleStatusConfirm = async () => {
+    const student = selectedStudentForStatusChange;
+    if (!student) return;
+
     const isCurrentlyActive = student.user?.status === 'ACTIVE';
     const newStatus = isCurrentlyActive ? 'INACTIVE' : 'ACTIVE';
-    
+
     setDeactivateError(null);
     setDeactivateSuccess(false);
 
@@ -498,14 +510,26 @@ export function useStudentsPage() {
         data: { status: newStatus },
       });
       setDeactivateSuccess(true);
-      
-      // Clear success message after a delay
+      setIsStatusDialogOpen(false);
+      setSelectedStudentForStatusChange(null);
+
       setTimeout(() => {
         startTransition(() => setDeactivateSuccess(false));
       }, 3000);
     } catch (err: unknown) {
-      const message = getErrorMessage(err, `Failed to ${isCurrentlyActive ? 'deactivate' : 'activate'} student. Please try again.`);
+      const message = getErrorMessage(
+        err,
+        `Failed to ${isCurrentlyActive ? 'deactivate' : 'activate'} student. Please try again.`,
+      );
       setDeactivateError(message);
+    }
+  };
+
+  const handleStatusDialogOpenChange = (open: boolean) => {
+    setIsStatusDialogOpen(open);
+    if (!open) {
+      setSelectedStudentForStatusChange(null);
+      setDeactivateError(null);
     }
   };
 
@@ -664,6 +688,8 @@ export function useStudentsPage() {
     editStudentIdFromUrl,
     isDeleteDialogOpen,
     isBulkDeleteDialogOpen,
+    isStatusDialogOpen,
+    selectedStudentForStatusChange,
     isFeedbackModalOpen,
     selectedStudentForFeedback,
     feedbackStudentIdFromUrl,
@@ -712,6 +738,8 @@ export function useStudentsPage() {
     handleEditClick,
     handleEditModalOpenChange,
     handleDeactivateClick,
+    handleStatusConfirm,
+    handleStatusDialogOpenChange,
     handleShowFeedback,
     handleFeedbackModalOpenChange,
     handleGroupChange,

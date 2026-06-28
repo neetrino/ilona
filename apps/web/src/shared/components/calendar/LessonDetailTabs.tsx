@@ -9,9 +9,8 @@ import {
   Type,
   NotebookPen,
   AlertTriangle,
-  Check,
-  Clock,
   Lock,
+  LockOpen,
 } from 'lucide-react';
 import type { Lesson } from '@/features/lessons';
 import { cn } from '@/shared/lib/utils';
@@ -29,6 +28,8 @@ interface LessonDetailTabsProps {
   lesson: Lesson;
   activeTab?: Tab;
   onTabChange?: (tab: Tab) => void;
+  /** fill: tab body scrolls inside fixed height; flow: content grows for outer scroll */
+  layout?: 'fill' | 'flow';
   children: {
     absence?: React.ReactNode;
     feedback?: React.ReactNode;
@@ -68,38 +69,36 @@ function reminderKey(id: Tab): `lessonActions.${string}` {
   return keys[id];
 }
 
-function StatusBadge({
+function LockStatusIcon({
   action,
   t,
 }: {
   action: LessonActionDerived;
   t: ReturnType<typeof useTranslations<'calendar'>>;
 }) {
-  if (action.state === 'done') {
+  if (action.state === 'missed') {
     return (
-      <span className="inline-flex items-center gap-0.5 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-800">
-        <Check className="h-3 w-3" aria-hidden />
-        {t('lessonActions.statusDone')}
-      </span>
+      <Lock
+        className="h-4 w-4 text-slate-500"
+        aria-label={t('lessonActions.statusMissed')}
+      />
     );
   }
-  if (action.state === 'pending') {
-    return (
-      <span className="inline-flex items-center gap-0.5 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-900">
-        <Clock className="h-3 w-3" aria-hidden />
-        {t('lessonActions.statusPending')}
-      </span>
-    );
-  }
-  return (
-    <span className="inline-flex items-center gap-0.5 rounded-full bg-slate-200 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-slate-700">
-      <Lock className="h-3 w-3" aria-hidden />
-      {t('lessonActions.statusMissed')}
-    </span>
-  );
+
+  const label =
+    action.state === 'done' ? t('lessonActions.statusDone') : t('lessonActions.statusPending');
+  const colorClass = action.state === 'done' ? 'text-emerald-700' : 'text-amber-700';
+
+  return <LockOpen className={cn('h-4 w-4', colorClass)} aria-label={label} />;
 }
 
-export function LessonDetailTabs({ lesson, activeTab: initialTab, onTabChange, children }: LessonDetailTabsProps) {
+export function LessonDetailTabs({
+  lesson,
+  activeTab: initialTab,
+  onTabChange,
+  layout = 'fill',
+  children,
+}: LessonDetailTabsProps) {
   const t = useTranslations('calendar');
   const [activeTab, setActiveTab] = useState<Tab>(initialTab || 'absence');
 
@@ -111,7 +110,6 @@ export function LessonDetailTabs({ lesson, activeTab: initialTab, onTabChange, c
 
   const actions = useMemo(() => getLessonActionsDerived(lesson), [lesson]);
   const pending = useMemo(() => actions.filter((a) => a.state === 'pending'), [actions]);
-  const missed = useMemo(() => actions.filter((a) => a.state === 'missed'), [actions]);
 
   const showEmergency =
     pending.length > 0 && (lesson.completionStatus === 'IN_PROCESS' || isLessonPastEnd(lesson));
@@ -124,7 +122,7 @@ export function LessonDetailTabs({ lesson, activeTab: initialTab, onTabChange, c
   const tabs: Tab[] = ['absence', 'feedback', 'voice', 'text', 'dailyPlan'];
 
   return (
-    <div className="flex flex-col h-full min-h-0">
+    <div className={cn('flex flex-col', layout === 'fill' && 'h-full min-h-0')}>
       <div className="shrink-0 border-b border-slate-200 bg-gradient-to-b from-slate-50/80 to-white px-3 py-3 sm:px-4 sm:py-4">
         {showEmergency && (
           <div
@@ -167,16 +165,6 @@ export function LessonDetailTabs({ lesson, activeTab: initialTab, onTabChange, c
           </div>
         )}
 
-        {missed.length > 0 && (
-          <div
-            className="mb-3 rounded-xl border border-slate-200 bg-slate-50/90 px-3 py-2.5 text-sm text-slate-700 sm:px-4"
-            role="status"
-          >
-            <p className="font-medium text-slate-800">{t('lessonActions.missedNoticeTitle')}</p>
-            <p className="mt-1 text-xs leading-relaxed text-slate-600 sm:text-sm">{t('lessonActions.missedNoticeBody')}</p>
-          </div>
-        )}
-
         <p className="mb-2 text-xs font-medium uppercase tracking-wide text-slate-500">{t('lessonActions.checklistHeading')}</p>
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5 lg:gap-2.5">
           {tabs.map((tab) => {
@@ -188,8 +176,9 @@ export function LessonDetailTabs({ lesson, activeTab: initialTab, onTabChange, c
                 key={tab}
                 type="button"
                 onClick={() => handleTabChange(tab)}
+                aria-pressed={isActive}
                 className={cn(
-                  'flex flex-col items-stretch rounded-xl border p-2.5 text-left transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 sm:p-3',
+                  'flex items-start gap-2 rounded-xl border p-2.5 text-left transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 sm:p-3',
                   isActive
                     ? 'border-2 border-blue-300 bg-blue-50/90 shadow-sm'
                     : 'border-slate-200/90 bg-white hover:border-slate-300 hover:bg-slate-50/80',
@@ -198,42 +187,29 @@ export function LessonDetailTabs({ lesson, activeTab: initialTab, onTabChange, c
                   action.state === 'missed' && !isActive && 'border-slate-200 bg-slate-50/50',
                 )}
               >
-                <div className="mb-2 flex w-full items-start justify-between gap-1">
-                  <span
-                    className={cn(
-                      'flex h-8 w-8 items-center justify-center rounded-lg sm:h-9 sm:w-9',
-                      action.state === 'done' && 'bg-emerald-100 text-emerald-800',
-                      action.state === 'pending' && 'bg-amber-100 text-amber-900',
-                      action.state === 'missed' && 'bg-slate-200 text-slate-700',
-                    )}
-                  >
-                    <Icon className="h-4 w-4 sm:h-[18px] sm:w-[18px]" aria-hidden />
-                  </span>
-                  <StatusBadge action={action} t={t} />
-                </div>
-                <span className="line-clamp-2 text-xs font-semibold leading-tight text-slate-900 sm:text-[13px]">
+                <span
+                  className={cn(
+                    'flex h-8 w-8 shrink-0 self-center items-center justify-center rounded-lg sm:h-9 sm:w-9',
+                    action.state === 'done' && 'bg-emerald-100 text-emerald-800',
+                    action.state === 'pending' && 'bg-amber-100 text-amber-900',
+                    action.state === 'missed' && 'bg-slate-200 text-slate-700',
+                  )}
+                >
+                  <Icon className="h-4 w-4 sm:h-[18px] sm:w-[18px]" aria-hidden />
+                </span>
+                <span className="min-w-0 flex-1 self-center line-clamp-2 text-xs font-semibold leading-tight text-slate-900 sm:text-[13px]">
                   {t(actionLabelKey(tab))}
                 </span>
-                {action.state === 'pending' && (
-                  <span className="mt-1.5 line-clamp-3 text-[11px] leading-snug text-amber-900/90 sm:text-xs">
-                    {t(reminderKey(tab))}
-                  </span>
-                )}
-                {action.state === 'missed' && (
-                  <span className="mt-1.5 line-clamp-2 text-[11px] leading-snug text-slate-600 sm:text-xs">
-                    {t('lessonActions.missedHint')}
-                  </span>
-                )}
-                {action.state === 'done' && (
-                  <span className="mt-1.5 text-[11px] text-emerald-800/90 sm:text-xs">{t('lessonActions.doneHint')}</span>
-                )}
+                <div className="shrink-0 self-center">
+                  <LockStatusIcon action={action} t={t} />
+                </div>
               </button>
             );
           })}
         </div>
       </div>
 
-      <div className="flex-1 min-h-0 overflow-y-auto">
+      <div className={cn(layout === 'fill' && 'min-h-0 flex-1 overflow-y-auto')}>
         {activeTab === 'absence' && children.absence}
         {activeTab === 'feedback' && children.feedback}
         {activeTab === 'voice' && children.voice}

@@ -9,7 +9,11 @@ import { STUDENT_SIDEBAR_ASSETS } from '@/features/student-dashboard/studentSide
 import { ADMIN_PORTAL_MOBILE_HORIZONTAL_PADDING } from './admin-portal-layout';
 import { cn } from '@/shared/lib/utils';
 
-export function AdminPortalNavbar() {
+type AdminPortalNavbarProps = {
+  showLanguageToggle?: boolean;
+};
+
+export function AdminPortalNavbar({ showLanguageToggle = true }: AdminPortalNavbarProps) {
   const t = useTranslations('home.nav');
   const { data: logoData } = useLogo();
   const apiLogo = getFullApiUrl(logoData?.logoUrl);
@@ -21,6 +25,7 @@ export function AdminPortalNavbar() {
         logoUrl={brandLogo}
         brandLabel={t('brand')}
         enlargeLogoInner
+        showLanguageToggle={showLanguageToggle}
         logoOnError={(event) => {
           const target = event.target as HTMLImageElement;
           if (target.src.includes('student-sidebar')) return;

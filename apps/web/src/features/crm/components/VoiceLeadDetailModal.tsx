@@ -9,9 +9,18 @@ import { fetchCenters } from '@/features/centers/api/centers.api';
 import { fetchTeachers } from '@/features/teachers/api/teachers.api';
 import { fetchGroups } from '@/features/groups/api/groups.api';
 import { VoiceRecorder, RecordingPlayback } from './VoiceRecorder';
+import { CrmDeleteLeadDialog } from './CrmDeleteLeadDialog';
 import { useQuery } from '@tanstack/react-query';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
+import { ADMIN_ICON_BUTTON_CLASS } from '@/shared/lib/admin-control-theme';
+import { cn } from '@/shared/lib/utils';
+import {
+  portalSheetLayerProps,
+  useSheetStackZIndex,
+  stackedSheetOverlayClassName,
+} from '@/shared/lib/sheet-stack';
+import { CUSTOM_MODAL_OVERLAY_CLASS, CUSTOM_MODAL_PANEL_CLASS } from '@/shared/lib/portal-form-sheet-classes';
 
 const LEVEL_OPTIONS = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
 
@@ -60,7 +69,7 @@ export function VoiceLeadDetailModal({
   const [deleting, setDeleting] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [form, setForm] = useState<Partial<CrmLead>>({});
   const [phoneError, setPhoneError] = useState<string | null>(null);
@@ -169,20 +178,23 @@ export function VoiceLeadDetailModal({
     }
   }, [selectedTeacherId, form.groupId, groupsForSelectedTeacher]);
 
-  const handleDeleteClick = () => setShowDeleteConfirm(true);
+  const handleDeleteClick = () => {
+    setDeleteError(null);
+    setIsDeleteDialogOpen(true);
+  };
   const handleDeleteConfirm = async () => {
     if (!leadId) return;
     setDeleting(true);
     setDeleteError(null);
     try {
       await deleteLead(leadId);
+      setIsDeleteDialogOpen(false);
       onUpdated();
       onClose();
     } catch (e) {
       setDeleteError(e instanceof Error ? e.message : t('failedDeleteLead'));
     } finally {
       setDeleting(false);
-      setShowDeleteConfirm(false);
     }
   };
 
@@ -233,15 +245,19 @@ export function VoiceLeadDetailModal({
     setSaveError(null);
   };
 
+  const { contentStyle, isBaseLayer } = useSheetStackZIndex(open);
+
   if (!open) return null;
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
-      onClick={(e) => e.target === e.currentTarget && onClose()}
-    >
+    <>
       <div
-        className="w-full max-w-lg max-h-[90vh] flex flex-col rounded-xl bg-white shadow-xl"
+        className={stackedSheetOverlayClassName(CUSTOM_MODAL_OVERLAY_CLASS, isBaseLayer)}
+        onClick={(e) => e.target === e.currentTarget && onClose()}
+        aria-hidden="true"
+      />
+      <div
+        style={contentStyle} {...portalSheetLayerProps} className={cn(CUSTOM_MODAL_PANEL_CLASS, 'max-w-lg')}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4 flex-shrink-0">
@@ -260,7 +276,7 @@ export function VoiceLeadDetailModal({
             <button
               type="button"
               onClick={onClose}
-              className="rounded-lg p-1 text-slate-500 hover:bg-slate-100"
+              className={`${ADMIN_ICON_BUTTON_CLASS} text-slate-500 hover:bg-slate-100 hover:text-slate-700`}
             >
               ✕
             </button>
@@ -433,34 +449,6 @@ export function VoiceLeadDetailModal({
                 </div>
               )}
 
-              {deleteError && (
-                <p className="text-sm text-red-600">{deleteError}</p>
-              )}
-
-              {showDeleteConfirm && (
-                <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 space-y-3">
-                  <p className="text-sm text-amber-800">{t('deleteVoiceLeadConfirm')}</p>
-                  <div className="flex gap-2">
-                    <button
-                      type="button"
-                      onClick={handleDeleteConfirm}
-                      disabled={deleting}
-                      className="rounded-lg px-3 py-1.5 text-sm font-medium bg-red-600 text-white hover:bg-red-700 disabled:opacity-50"
-                    >
-                      {deleting ? t('deleting') : t('deleteLead')}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => { setShowDeleteConfirm(false); setDeleteError(null); }}
-                      disabled={deleting}
-                      className="rounded-lg px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-200"
-                    >
-                      {tCommon('cancel')}
-                    </button>
-                  </div>
-                </div>
-              )}
-
               {/* Approved / Transfer are mutually exclusive: show only one */}
               {(lead.teacherApprovedAt || lead.activities?.some((a) => a.type === 'TEACHER_APPROVED')) ? (
                 <div className="rounded-lg border border-green-200 bg-green-50/80 p-4">
@@ -554,6 +542,18 @@ export function VoiceLeadDetailModal({
           )}
         </div>
       </div>
-    </div>
+
+      <CrmDeleteLeadDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={(open) => {
+          setIsDeleteDialogOpen(open);
+          if (!open) setDeleteError(null);
+        }}
+        onConfirm={handleDeleteConfirm}
+        isLoading={deleting}
+        error={deleteError}
+        description={t('deleteVoiceLeadConfirm')}
+      />
+    </>
   );
 }

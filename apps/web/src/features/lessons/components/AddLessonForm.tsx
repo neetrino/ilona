@@ -1,5 +1,6 @@
 'use client';
 
+
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -8,7 +9,7 @@ import {
   Button,
   Label,
 } from '@/shared/components/ui';
-import { SingleSelectDropdown, portaledDropdownDialogHandlers } from '@/shared/components/ui/single-select-dropdown';
+import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
 import {
   useCreateRecurringLessons,
   type CreateRecurringLessonsDto,
@@ -26,6 +27,18 @@ import { useState, useEffect, useCallback, useMemo, useRef, type TouchEvent } fr
 import { useTranslations } from 'next-intl';
 import { getErrorMessage } from '@/shared/lib/api';
 import { cn } from '@/shared/lib/utils';
+import {
+  portalSheetLayerProps,
+  stackedSheetDialogHandlers,
+  useSheetStackZIndex,
+} from '@/shared/lib/sheet-stack';
+import { PORTAL_DESKTOP_SIDE_SHEET_CLASS } from '@/shared/lib/portal-form-sheet-classes';
+import {
+  ADMIN_FORM_INPUT_CLASS,
+  ADMIN_ICON_BUTTON_SM_CLASS,
+  ADMIN_OUTLINE_BUTTON_CLASS,
+  ADMIN_PRIMARY_BUTTON_CLASS,
+} from '@/shared/lib/admin-control-theme';
 import { X } from 'lucide-react';
 
 type AddLessonFormData = {
@@ -350,20 +363,26 @@ export function AddLessonForm({ open, onOpenChange, defaultDate }: AddLessonForm
   const noGroupsAvailable = !isLoadingGroups && groups.length === 0;
   const scheduleValid = validateSchedule() === null;
 
+  const { overlayStyle, contentStyle } = useSheetStackZIndex(isDialogOpen);
+
   return (
     <DialogPrimitive.Root open={isDialogOpen} onOpenChange={(nextOpen) => !nextOpen && requestClose()}>
       <DialogPrimitive.Portal>
-        <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/60 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
+        <DialogPrimitive.Overlay
+          style={overlayStyle}
+          {...portalSheetLayerProps}
+          className="fixed inset-0 z-50 bg-black/60 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0"
+        />
         <DialogPrimitive.Content
-          style={dragStyle}
-          {...portaledDropdownDialogHandlers}
+          style={{ ...dragStyle, ...contentStyle }}
+          {...stackedSheetDialogHandlers}
+          {...portalSheetLayerProps}
           className={cn(
             'fixed inset-x-0 bottom-[7px] top-auto z-50 grid w-full translate-y-0 lg:bottom-0 [@media(min-width:1024px)_and_(max-width:1366px)_and_(min-height:1000px)]:bottom-0',
             'duration-700 ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out min-[1367px]:duration-350 min-[1367px]:ease-[cubic-bezier(0.22,1,0.36,1)]',
             'data-[state=open]:slide-in-from-bottom-full data-[state=closed]:slide-out-to-bottom-full',
-            'h-fit max-h-[calc(82dvh+7px)] [@media(min-width:1024px)_and_(max-width:1366px)_and_(min-height:1000px)]:max-h-[50dvh] flex flex-col gap-0 overflow-hidden rounded-t-[22px] border border-slate-200 bg-[#f8f9fb] shadow-xl',
-            'min-[1367px]:left-1/2 min-[1367px]:top-1/2 min-[1367px]:right-auto min-[1367px]:bottom-auto min-[1367px]:w-[95vw] min-[1367px]:max-w-2xl min-[1367px]:h-fit min-[1367px]:max-h-[80vh] min-[1367px]:-translate-x-1/2 min-[1367px]:-translate-y-1/2 min-[1367px]:rounded-2xl',
-            'min-[1367px]:data-[state=open]:fade-in-0 min-[1367px]:data-[state=closed]:fade-out-0 min-[1367px]:data-[state=open]:slide-in-from-bottom-0 min-[1367px]:data-[state=closed]:slide-out-to-bottom-0'
+            'h-[calc(94dvh+7px)] [@media(min-width:1024px)_and_(max-width:1366px)_and_(min-height:1000px)]:h-[56dvh] grid-rows-[auto_auto_1fr] gap-0 overflow-hidden rounded-t-[22px] border border-slate-200 bg-[#f8f9fb] shadow-xl',
+            PORTAL_DESKTOP_SIDE_SHEET_CLASS,
           )}
           aria-describedby={undefined}
         >
@@ -378,97 +397,127 @@ export function AddLessonForm({ open, onOpenChange, defaultDate }: AddLessonForm
             <div className="h-1.5 w-14 rounded-full bg-slate-400" />
           </div>
           <DialogPrimitive.Title className="sr-only">{tForm('addTitle')}</DialogPrimitive.Title>
-          <DialogPrimitive.Close
-            className="absolute right-4 top-4 hidden h-8 w-8 items-center justify-center rounded-full text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 min-[1367px]:inline-flex"
-            aria-label={tCommon('close')}
-          >
-            <X className="h-4 w-4" />
-          </DialogPrimitive.Close>
-
-          <div className="min-h-0 overflow-y-auto overscroll-y-contain [touch-action:pan-y] [-webkit-overflow-scrolling:touch] px-4 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-4 min-[1367px]:p-6">
-            <div className="mb-4">
-              <h2 className="text-lg font-semibold text-[#3b3b40]">{tForm('addTitle')}</h2>
-              <p className="mt-1 text-sm text-[#8b8b90]">{tForm('addDescription')}</p>
+          <div className="shrink-0 bg-[#f8f9fb] px-4 pb-4 pt-3 min-[1367px]:px-6 min-[1367px]:pb-5 min-[1367px]:pt-6">
+            <div className="flex items-start justify-between gap-4">
+              <div className="min-w-0 flex-1">
+                <h2 className="text-lg font-semibold text-[#3b3b40]">{tForm('addTitle')}</h2>
+              </div>
+              <DialogPrimitive.Close
+                className={cn(
+                  ADMIN_ICON_BUTTON_SM_CLASS,
+                  'hidden text-slate-500 hover:bg-slate-100 hover:text-slate-700 min-[1367px]:inline-flex',
+                )}
+                aria-label={tCommon('close')}
+              >
+                <X className="h-4 w-4" />
+              </DialogPrimitive.Close>
             </div>
-
-            <form
-              onSubmit={handleSubmit(onSubmit)}
-              className="space-y-4"
-            >
+          </div>
+          <div className="min-h-0 overflow-y-auto overscroll-y-contain [touch-action:pan-y] [-webkit-overflow-scrolling:touch] px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] min-[1367px]:px-6 min-[1367px]:pb-6">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           {successMessage && (
-            <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+            <div className="rounded-[15px] border border-green-200 bg-green-50 p-3">
               <p className="text-sm text-green-600">{successMessage}</p>
             </div>
           )}
           {errorMessage && (
-            <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+            <div className="rounded-[15px] border border-red-200 bg-red-50 p-3">
               <p className="text-sm text-red-600">{errorMessage}</p>
             </div>
           )}
 
-          <div className="space-y-2">
-            <Label htmlFor="groupId">
-              {tCommon('group')} <span className="text-red-500">*</span>
-            </Label>
-            <input type="hidden" {...register('groupId')} />
-            <SingleSelectDropdown
-              id="groupId"
-              options={[
-                { id: '', label: tForm('selectGroup') },
-                ...groups.map((group) => ({
-                  id: group.id,
-                  label: `${group.name}${group.level ? ` (${group.level})` : ''}${group.center ? ` - ${group.center.name}` : ''}`,
-                })),
-              ]}
-              value={groupIdW || ''}
-              onValueChange={handleGroupChange}
-              disabled={isBusy || isLoadingGroups}
-              error={errors.groupId?.message ?? null}
-              searchable
-              searchPlaceholder={tForm('searchGroups')}
-              placeholder={tForm('selectGroup')}
-              wrapText
-            />
-            {errors.groupId && <p className="text-sm text-red-600">{errors.groupId.message}</p>}
-            {isLoadingGroups && <p className="text-sm text-slate-500">{tForm('loadingGroups')}</p>}
-            {!isLoadingGroups && noGroupsAvailable && (
-              <p className="text-sm text-amber-600">{tForm('noGroupsAvailable')}</p>
-            )}
-            {selectedGroupHasNoTeacher && (
-              <p className="text-sm text-amber-600">{tForm('noTeacherOnGroup')}</p>
-            )}
-          </div>
-
           <div className="space-y-4">
-            <input type="hidden" {...register('teacherId')} />
-            {!hasGroup ? (
+            <div className="grid grid-cols-2 gap-4">
+              <div className="min-w-0 space-y-2">
+                <Label htmlFor="groupId">
+                  {tCommon('group')} <span className="text-red-500">*</span>
+                </Label>
+                <input type="hidden" {...register('groupId')} />
+                <SingleSelectDropdown
+                  id="groupId"
+                  triggerClassName={ADMIN_FORM_INPUT_CLASS}
+                  options={[
+                    { id: '', label: tForm('selectGroup') },
+                    ...groups.map((group) => ({
+                      id: group.id,
+                      label: `${group.name}${group.level ? ` (${group.level})` : ''}${group.center ? ` - ${group.center.name}` : ''}`,
+                    })),
+                  ]}
+                  value={groupIdW || ''}
+                  onValueChange={handleGroupChange}
+                  disabled={isBusy || isLoadingGroups}
+                  error={errors.groupId?.message ?? null}
+                  searchable
+                  searchPlaceholder={tForm('searchGroups')}
+                  placeholder={tForm('selectGroup')}
+                  wrapText
+                />
+                {errors.groupId && <p className="text-sm text-red-600">{errors.groupId.message}</p>}
+                {isLoadingGroups && <p className="text-sm text-slate-500">{tForm('loadingGroups')}</p>}
+                {!isLoadingGroups && noGroupsAvailable && (
+                  <p className="text-sm text-amber-600">{tForm('noGroupsAvailable')}</p>
+                )}
+                {selectedGroupHasNoTeacher && (
+                  <p className="text-sm text-amber-600">{tForm('noTeacherOnGroup')}</p>
+                )}
+              </div>
+
+              <div className="min-w-0 space-y-2">
+                <input type="hidden" {...register('teacherId')} />
+                {!hasGroup ? (
+                  <>
+                    <Label htmlFor="teacherId">
+                      {tCommon('teacher')} <span className="text-red-500">*</span>
+                    </Label>
+                    <div
+                      id="teacherId"
+                      className={cn(ADMIN_FORM_INPUT_CLASS, 'flex items-center bg-slate-50')}
+                    >
+                      <span className="text-sm text-slate-400">{tForm('selectGroupFirst')}</span>
+                    </div>
+                  </>
+                ) : selectedGroupTeachers[0] ? (
+                  <>
+                    <Label htmlFor="teacherId">
+                      {tGroupsForm('teacher1Main')} <span className="text-red-500">*</span>
+                    </Label>
+                    <div
+                      id="teacherId"
+                      className={cn(ADMIN_FORM_INPUT_CLASS, 'flex items-center bg-slate-50')}
+                    >
+                      <GroupTeacherReadonlyRow teacher={selectedGroupTeachers[0]} />
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <Label htmlFor="teacherId">
+                      {tCommon('teacher')} <span className="text-red-500">*</span>
+                    </Label>
+                    <div
+                      id="teacherId"
+                      className={cn(ADMIN_FORM_INPUT_CLASS, 'flex items-center bg-slate-50')}
+                    >
+                      <span className="text-sm text-slate-400">—</span>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+
+            {hasGroup && selectedGroupTeachers.length > 1 ? (
               <div className="space-y-2">
-                <Label htmlFor="teacherId">
-                  {tCommon('teacher')} <span className="text-red-500">*</span>
+                <Label htmlFor={`teacherId-${selectedGroupTeachers[1].id}`}>
+                  {tGroupsForm('teacher2')}
                 </Label>
                 <div
-                  id="teacherId"
-                  className="flex min-h-11 items-center rounded-xl border border-[rgba(14,14,16,0.08)] bg-slate-50 px-3 py-2.5"
+                  id={`teacherId-${selectedGroupTeachers[1].id}`}
+                  className={cn(ADMIN_FORM_INPUT_CLASS, 'flex items-center bg-slate-50')}
                 >
-                  <span className="text-sm text-slate-400">{tForm('selectGroupFirst')}</span>
+                  <GroupTeacherReadonlyRow teacher={selectedGroupTeachers[1]} />
                 </div>
               </div>
-            ) : (
-              selectedGroupTeachers.map((teacher, index) => (
-                <div key={teacher.id} className="space-y-2">
-                  <Label htmlFor={`teacherId-${teacher.id}`}>
-                    {index === 0 ? tGroupsForm('teacher1Main') : tGroupsForm('teacher2')}{' '}
-                    <span className="text-red-500">*</span>
-                  </Label>
-                  <div
-                    id={index === 0 ? 'teacherId' : `teacherId-${teacher.id}`}
-                    className="flex min-h-11 items-center rounded-xl border border-[rgba(14,14,16,0.08)] bg-slate-50 px-3 py-2.5"
-                  >
-                    <GroupTeacherReadonlyRow teacher={teacher} />
-                  </div>
-                </div>
-              ))
-            )}
+            ) : null}
+
             {errors.teacherId && <p className="text-sm text-red-600">{errors.teacherId.message}</p>}
           </div>
 
@@ -480,24 +529,22 @@ export function AddLessonForm({ open, onOpenChange, defaultDate }: AddLessonForm
             onDateFromChange={setDateFrom}
             onDateToChange={setDateTo}
             disabled={isBusy}
+            adminControls
           />
 
-          <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+          <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end">
             <Button
               type="button"
               variant="outline"
-              onClick={() => {
-                reset();
-                requestClose();
-                setErrorMessage(null);
-                setSuccessMessage(null);
-              }}
+              className={cn(ADMIN_OUTLINE_BUTTON_CLASS, 'border-[rgba(14,14,16,0.07)] hover:bg-slate-50')}
+              onClick={requestClose}
               disabled={isBusy}
             >
               {tCommon('cancel')}
             </Button>
             <Button
               type="submit"
+              className={cn(ADMIN_PRIMARY_BUTTON_CLASS, 'bg-primary text-primary-foreground hover:bg-primary/90')}
               disabled={
                 isBusy ||
                 isLoadingGroups ||
@@ -507,6 +554,7 @@ export function AddLessonForm({ open, onOpenChange, defaultDate }: AddLessonForm
                 selectedGroupHasNoTeacher ||
                 !scheduleValid
               }
+              isLoading={isBusy}
             >
               {isBusy ? tForm('creating') : tForm('createLessons')}
             </Button>

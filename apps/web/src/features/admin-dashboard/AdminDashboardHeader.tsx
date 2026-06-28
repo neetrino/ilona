@@ -99,11 +99,6 @@ export function AdminDashboardHeader({
                 </>
               )}
             </div>
-            {isAdminMobileSubpage ? (
-              <div className="shrink-0 lg:hidden">
-                <LandingNavbarLanguageToggle />
-              </div>
-            ) : null}
             {onMenuClick ? <div className="h-11 w-11 shrink-0 lg:hidden" aria-hidden /> : null}
           </div>
 
@@ -119,9 +114,7 @@ export function AdminDashboardHeader({
             <div className="flex shrink-0 flex-wrap items-center justify-end gap-1.5 sm:gap-2">
               {headerContent}
 
-              <LandingNavbarLanguageToggle
-                className={isAdminMobileSubpage ? 'hidden lg:inline-flex' : undefined}
-              />
+              <LandingNavbarLanguageToggle className="hidden lg:inline-flex" />
               <StudentLogoutControl variant="header" className="hidden lg:inline-flex" />
             </div>
           </div>

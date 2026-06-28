@@ -22,7 +22,9 @@ const NEW_STUDENT_BADGE_DAYS = 30;
 
 /** Equal header rhythm: same horizontal padding + equal share after the checkbox column. */
 const HEADER_CELL_X = '!px-4';
-const DATA_COL_SHARE = '!w-[calc((100%-2.5rem)/7)]';
+const DATA_COL_SHARE_MOBILE = '!w-[calc((100%-2.5rem)/7)]';
+const DATA_COL_SHARE_DESKTOP = 'sheet:!w-[calc((100%-2.5rem)/6)]';
+const DATA_COL_SHARE = `${DATA_COL_SHARE_MOBILE} ${DATA_COL_SHARE_DESKTOP}`;
 
 const COL = {
   checkbox: `!w-10 !min-w-10 !max-w-10 shrink-0 ${HEADER_CELL_X} align-middle`,
@@ -32,7 +34,7 @@ const COL = {
   register: `${DATA_COL_SHARE} !min-w-[5.75rem] ${HEADER_CELL_X} align-middle text-center`,
   monthlyFee: `${DATA_COL_SHARE} !min-w-[6.25rem] ${HEADER_CELL_X} align-middle text-center`,
   absence: `${DATA_COL_SHARE} !min-w-[4.5rem] ${HEADER_CELL_X} align-middle text-center`,
-  actions: `${DATA_COL_SHARE} !min-w-[7.5rem] shrink-0 ${HEADER_CELL_X} align-middle text-center`,
+  actions: `${DATA_COL_SHARE_MOBILE} !min-w-[7.5rem] shrink-0 ${HEADER_CELL_X} align-middle text-center sheet:!hidden`,
 } as const;
 
 const INLINE_SELECT_TABLE_CLASS =

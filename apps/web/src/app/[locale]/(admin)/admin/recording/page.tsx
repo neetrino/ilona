@@ -18,6 +18,12 @@ import { chatKeys } from '@/features/chat/hooks/useChat';
 import type { Group } from '@/features/groups/types';
 import type { Student, TeacherAssignedItem } from '@/features/students/types';
 import { useIsIPad } from '@/shared/hooks/useIsIPad';
+import { cn } from '@/shared/lib/utils';
+import {
+  ADMIN_DATE_INPUT_CLASS,
+  ADMIN_FORM_INPUT_CLASS,
+  ADMIN_OUTLINE_BUTTON_CLASS,
+} from '@/shared/lib/admin-control-theme';
 
 function formatDateTime(value: string): string {
   return new Date(value).toLocaleString(undefined, {
@@ -568,7 +574,7 @@ export default function AdminRecordingPage() {
               value={dateFrom}
               max={dateTo || undefined}
               onValueChange={setDateFrom}
-              className="w-full h-11 px-3 bg-white border border-[rgba(14,14,16,0.07)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20 focus:border-[#1010a3]"
+              className={ADMIN_DATE_INPUT_CLASS}
             />
           </div>
 
@@ -584,7 +590,7 @@ export default function AdminRecordingPage() {
               value={dateTo}
               min={dateFrom || undefined}
               onValueChange={setDateTo}
-              className="w-full h-11 px-3 bg-white border border-[rgba(14,14,16,0.07)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20 focus:border-[#1010a3]"
+              className={ADMIN_DATE_INPUT_CLASS}
             />
           </div>
         </div>
@@ -603,13 +609,13 @@ export default function AdminRecordingPage() {
             value={search}
             onChange={(event) => setSearch(event.target.value)}
             placeholder={t('searchPlaceholder')}
-            className="w-full h-11 px-3 bg-white border border-[rgba(14,14,16,0.07)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20 focus:border-[#1010a3]"
+            className={ADMIN_FORM_INPUT_CLASS}
           />
         </div>
         <button
           type="button"
           onClick={clearAllFilters}
-          className="h-11 px-4 bg-[#f6f6f7] hover:bg-[#f6f6f7] text-[#3b3b40] text-sm font-medium rounded-lg border border-[rgba(14,14,16,0.07)] transition-colors"
+          className={cn(ADMIN_OUTLINE_BUTTON_CLASS, 'bg-[#f6f6f7] text-[#3b3b40] transition-colors hover:bg-[#f6f6f7]')}
         >
           {t('clearAll')}
         </button>

@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { Clock, MoreVertical } from 'lucide-react';
 import { Badge } from '@/shared/components/ui';
 import { cn } from '@/shared/lib/utils';
+import { ADMIN_ICON_BUTTON_SM_CLASS } from '@/shared/lib/admin-control-theme';
 import { useOutsidePress } from '@/shared/hooks/useOutsidePress';
 import type { Group, GroupScheduleEntry } from '../types';
 import { getGroupOccupancyMeta } from '../occupancy';
@@ -24,11 +25,49 @@ function formatScheduleSummary(entries: GroupScheduleEntry[] | null | undefined)
 const MAX_CARD_STUDENTS = 8;
 const CARD_STUDENTS_LEFT_COLUMN_SIZE = 4;
 
+function getOccupancyDotClass(status: ReturnType<typeof getGroupOccupancyMeta>['status']): string {
+  if (status === 'full') return 'bg-green-500';
+  if (status === 'filling') return 'bg-orange-500';
+  return 'bg-red-500';
+}
+
+interface GroupCardScheduleSlotsProps {
+  slots: string[];
+  layout?: 'inline' | 'paired';
+}
+
+function GroupCardScheduleSlots({ slots, layout = 'inline' }: GroupCardScheduleSlotsProps) {
+  const pillClass =
+    layout === 'paired'
+      ? 'flex w-full min-w-0 items-start justify-start rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs leading-snug text-slate-700 whitespace-normal'
+      : 'inline-flex max-w-full shrink-0 items-center whitespace-nowrap rounded-full border border-slate-200 bg-slate-50 px-2.5 py-0.5 text-xs leading-snug text-slate-700';
+
+  return (
+    <div
+      className={cn(
+        'min-w-0 flex-1',
+        layout === 'paired'
+          ? 'grid grid-cols-2 items-start gap-x-2 gap-y-1.5'
+          : 'flex flex-nowrap items-center gap-1.5 overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden',
+      )}
+    >
+      {slots.map((slot) => (
+        <span key={slot} className={pillClass} title={slot}>
+          {slot}
+        </span>
+      ))}
+    </div>
+  );
+}
+
 interface GroupCardStudentListProps {
   students: NonNullable<Group['students']>;
   onStudentClick?: (studentId: string) => void;
   className?: string;
   itemClassName?: string;
+  layout?: 'single' | 'double';
+  numberClassName?: string;
+  nameClassName?: string;
 }
 
 function GroupCardStudentItem({
@@ -36,11 +75,15 @@ function GroupCardStudentItem({
   index,
   onStudentClick,
   itemClassName,
+  numberClassName,
+  nameClassName,
 }: {
   student: NonNullable<Group['students']>[number];
   index: number;
   onStudentClick?: (studentId: string) => void;
   itemClassName?: string;
+  numberClassName?: string;
+  nameClassName?: string;
 }) {
   const fullName = `${student.user.firstName} ${student.user.lastName}`;
 
@@ -49,7 +92,7 @@ function GroupCardStudentItem({
       className={cn('flex min-w-0 items-baseline gap-1.5 leading-snug', itemClassName)}
       title={fullName}
     >
-      <span className="shrink-0 tabular-nums font-semibold text-slate-500">{index + 1}.</span>
+      <span className={cn('shrink-0 tabular-nums text-slate-500', numberClassName)}>{index + 1}.</span>
       {onStudentClick ? (
         <button
           type="button"
@@ -57,12 +100,15 @@ function GroupCardStudentItem({
             e.stopPropagation();
             onStudentClick(student.id);
           }}
-          className="min-w-0 max-w-full w-fit truncate rounded text-left font-medium text-primary underline decoration-primary/30 underline-offset-2 hover:text-primary/90 hover:decoration-primary focus:outline-none focus:ring-2 focus:ring-primary/20 focus:ring-offset-1"
+          className={cn(
+            'min-w-0 max-w-full w-fit truncate rounded text-left font-semibold text-[#1010a3] underline decoration-[#1010a3]/40 underline-offset-2 hover:text-[#1010a3]/90 hover:decoration-[#1010a3] focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20 focus:ring-offset-1',
+            nameClassName,
+          )}
         >
           {fullName}
         </button>
       ) : (
-        <span className="min-w-0 truncate font-medium">{fullName}</span>
+        <span className={cn('min-w-0 truncate font-semibold text-[#1010a3]', nameClassName)}>{fullName}</span>
       )}
     </li>
   );
@@ -73,12 +119,34 @@ function GroupCardStudentList({
   onStudentClick,
   className,
   itemClassName,
+  layout = 'double',
+  numberClassName,
+  nameClassName,
 }: GroupCardStudentListProps) {
   if (students.length === 0) {
     return null;
   }
 
   const visibleStudents = students.slice(0, MAX_CARD_STUDENTS);
+
+  if (layout === 'single') {
+    return (
+      <ul className={cn('min-w-0 list-none space-y-2 p-0', className)}>
+        {visibleStudents.map((student, index) => (
+          <GroupCardStudentItem
+            key={student.id}
+            student={student}
+            index={index}
+            onStudentClick={onStudentClick}
+            itemClassName={itemClassName}
+            numberClassName={numberClassName}
+            nameClassName={nameClassName}
+          />
+        ))}
+      </ul>
+    );
+  }
+
   const leftStudents = visibleStudents.slice(0, CARD_STUDENTS_LEFT_COLUMN_SIZE);
   const rightStudents = visibleStudents.slice(CARD_STUDENTS_LEFT_COLUMN_SIZE);
 
@@ -91,6 +159,8 @@ function GroupCardStudentList({
           index={startIndex + columnIndex}
           onStudentClick={onStudentClick}
           itemClassName={itemClassName}
+          numberClassName={numberClassName}
+          nameClassName={nameClassName}
         />
       ))}
     </ul>
@@ -148,7 +218,7 @@ export function GroupCardOverflowMenu({
         aria-haspopup="menu"
         aria-expanded={open}
         onClick={() => setOpen((prev) => !prev)}
-        className="inline-flex h-8 w-8 items-center justify-center rounded-full border-0 text-[#3b3b40] outline-none transition-colors hover:bg-[#f3f3f4] focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0"
+        className={`${ADMIN_ICON_BUTTON_SM_CLASS} text-[#3b3b40] hover:bg-[#f3f3f4]`}
       >
         <MoreVertical className="h-4 w-4" aria-hidden="true" />
       </button>
@@ -208,12 +278,7 @@ export function GroupCard({
   const scheduleSummary = formatScheduleSummary(getGroupWeeklySlots(group.schedule));
   const studentCount = group._count?.students || 0;
   const occupancy = getGroupOccupancyMeta(studentCount);
-  const dotColorClass =
-    occupancy.status === 'full'
-      ? 'bg-green-500'
-      : occupancy.status === 'filling'
-        ? 'bg-yellow-500'
-        : 'bg-red-500';
+  const dotColorClass = getOccupancyDotClass(occupancy.status);
   const studentListBlockClass = 'min-w-0 overflow-x-hidden text-sm text-slate-700';
   const students = group.students;
 
@@ -239,18 +304,18 @@ export function GroupCard({
         onClick={handleCardActivate}
         onKeyDown={handleCardKeyDown}
         className={cn(
-          'flex flex-col overflow-hidden rounded-2xl border border-slate-100 bg-white sm:hidden',
+          'flex flex-col rounded-2xl border border-slate-100 bg-white shadow-sm sm:hidden',
           cardInteractiveClass,
         )}
       >
-        <div className="flex items-start justify-between gap-3 px-4 py-3">
-          <div className="flex min-w-0 flex-1 gap-2">
-            <div className="grid min-w-0 flex-1 grid-cols-[auto_1fr] items-center gap-x-2 gap-y-[5px]">
-              <span className="shrink-0 self-start" aria-hidden>
+        <div className="px-4 pb-3 pt-4">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex min-w-0 flex-1 items-start gap-2">
+              <span className="shrink-0 self-start pt-0.5" aria-hidden>
                 <GroupIconDisplay iconKey={group.iconKey} size={18} />
               </span>
-              <div className="flex min-w-0 flex-wrap items-center gap-[15px]">
-                <p className="min-w-0 break-words text-[1.125rem] font-semibold leading-snug text-[#3b3b40]">
+              <div className="flex min-w-0 flex-wrap items-center gap-2">
+                <p className="min-w-0 break-words text-lg font-semibold leading-snug text-[#1a1a1a]">
                   {group.name}
                 </p>
                 {group.level ? (
@@ -259,47 +324,60 @@ export function GroupCard({
                   </Badge>
                 ) : null}
               </div>
-              <Image
-                src="/teachers-logo.webp"
-                alt=""
-                width={20}
-                height={20}
-                className="h-5 w-5 shrink-0 object-contain"
-              />
-              <p
-                className="min-w-0 truncate text-[1.125rem] font-medium text-[#3b3b40]"
-                title={teachersDisplay ?? undefined}
-              >
-                {teachersDisplay || 'Not assigned'}
-              </p>
             </div>
+            <GroupCardOverflowMenu
+              isActive={group.isActive}
+              onToggleActive={onToggleActive}
+              onDelete={onDelete}
+              isStatusTogglePending={isStatusTogglePending}
+            />
           </div>
-          <GroupCardOverflowMenu
-            isActive={group.isActive}
-            onToggleActive={onToggleActive}
-            onDelete={onDelete}
-            isStatusTogglePending={isStatusTogglePending}
-          />
+
+          <div className="mt-1.4 flex min-w-0 items-center gap-2">
+            <Image
+              src="/teachers-logo.webp"
+              alt=""
+              width={20}
+              height={20}
+              className="h-5 w-5 shrink-0 object-contain"
+            />
+            <p
+              className="min-w-0 truncate text-sm font-normal text-[#8b8b90]"
+              title={teachersDisplay ?? undefined}
+            >
+              {teachersDisplay || 'Not assigned'}
+            </p>
+          </div>
+
+          {scheduleSummary ? (
+            <div className="mt-3.5 flex min-w-0 items-center gap-2">
+              <span className="flex h-5 w-5 shrink-0 items-center justify-center" aria-hidden="true">
+                <Clock className="h-5 w-5 text-[#8b8b90]" />
+              </span>
+              <GroupCardScheduleSlots slots={scheduleSummary} layout="paired" />
+            </div>
+          ) : null}
         </div>
 
         <div className="mx-4 border-t border-[rgba(14,14,16,0.07)]" />
 
         {students !== undefined ? (
-          <div className={`mx-4 mb-1 px-0 text-slate-600 ${studentListBlockClass}`}>
+          <div className={cn('px-4 py-3', studentListBlockClass)}>
             <GroupCardStudentList
               students={students}
               onStudentClick={onStudentClick}
-              className="text-[1rem]"
+              layout="double"
+              numberClassName="font-normal text-[#8b8b90]"
             />
           </div>
         ) : (
           <div className="min-h-[4rem] flex-1" aria-hidden />
         )}
 
-        <div className="mt-3 border-t border-[rgba(14,14,16,0.07)] px-4 py-3">
-          <div className="flex items-center gap-2 text-slate-600">
-            <span className={`inline-flex h-3 w-3 rounded-full ${dotColorClass}`} aria-hidden="true" />
-            <span className="text-[1.125rem] font-medium text-slate-700">{occupancy.label}</span>
+        <div className="px-4 pb-4">
+          <div className="flex items-center gap-2">
+            <span className={`inline-flex h-2.5 w-2.5 rounded-full ${dotColorClass}`} aria-hidden="true" />
+            <span className="text-sm font-normal text-[#3b3b40]">{occupancy.label}</span>
           </div>
         </div>
       </div>
@@ -348,17 +426,7 @@ export function GroupCard({
                   <span className="flex h-5 w-5 shrink-0 items-center justify-center" aria-hidden="true">
                     <Clock className="h-5 w-5 text-slate-400" />
                   </span>
-                  <div className="flex min-w-0 flex-1 flex-nowrap items-center gap-1.5 overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-                    {scheduleSummary.map((slot) => (
-                      <span
-                        key={slot}
-                        className="inline-flex max-w-full shrink-0 items-center whitespace-nowrap rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-xs leading-snug text-slate-700"
-                        title={slot}
-                      >
-                        {slot}
-                      </span>
-                    ))}
-                  </div>
+                  <GroupCardScheduleSlots slots={scheduleSummary} layout="inline" />
                 </div>
               ) : null}
             </div>

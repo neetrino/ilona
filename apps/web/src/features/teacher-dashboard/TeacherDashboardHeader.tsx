@@ -80,11 +80,6 @@ export function TeacherDashboardHeader({
                 </>
               )}
             </div>
-            {isTeacherMobileSubpage ? (
-              <div className="shrink-0 lg:hidden">
-                <LandingNavbarLanguageToggle />
-              </div>
-            ) : null}
           </div>
 
           <div
@@ -97,9 +92,7 @@ export function TeacherDashboardHeader({
             </div>
 
             <div className="flex shrink-0 flex-wrap items-center justify-end gap-1.5 sm:gap-2">
-              <LandingNavbarLanguageToggle
-                className={isTeacherMobileSubpage ? 'hidden lg:inline-flex' : undefined}
-              />
+              <LandingNavbarLanguageToggle className="hidden lg:inline-flex" />
               <StudentLogoutControl variant="header" className="hidden lg:inline-flex" />
             </div>
           </div>

@@ -1,9 +1,10 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
+import { Eye, FileText } from 'lucide-react';
 import { DataTable } from '@/shared/components/ui';
 import { getSalaryColumns } from '../utils/tableColumns';
-import { InlineSelect } from '@/features/students/components/InlineSelect';
+import { SalaryStatusBadgeDropdown } from './SalaryStatusBadgeDropdown';
 import Link from 'next/link';
 import { useAppSearchUrl } from '@/shared/hooks/useAppSearchUrl';
 import { formatCurrency } from '@/shared/lib/utils';
@@ -44,6 +45,7 @@ export function SalariesTable({
   onOpenSalaryDetail,
 }: SalariesTableProps) {
   const t = useTranslations('finance');
+  const tCommon = useTranslations('common');
   const { readParam } = useAppSearchUrl();
   const columns = getSalaryColumns({
     t: t as (key: string) => string,
@@ -56,14 +58,19 @@ export function SalariesTable({
     onSelectOne,
     locale,
     onOpenSalaryDetail,
+    notAssignedLabel: tCommon('notAssigned'),
   });
   const emptyMessage =
     searchTerm && noResultsKey ? t(noResultsKey) : t('noSalariesFound');
 
-  const salaryStatusOptions: Array<{ id: SalaryStatus; labelKey: string }> = [
-    { id: 'PENDING', labelKey: 'pending' },
-    { id: 'PAID', labelKey: 'paid' },
-  ];
+  const handleSalaryStatusChange = (salaryId: string, currentStatus: SalaryStatus, newStatus: SalaryStatus) => {
+    if (newStatus === currentStatus) return;
+    void updateSalaryStatus
+      .mutateAsync({ id: salaryId, status: newStatus })
+      .catch((error) => {
+        console.error('Failed to update salary status:', error);
+      });
+  };
 
   return (
     <>
@@ -155,9 +162,18 @@ export function SalariesTable({
                     <div className="flex items-center px-1 py-3 text-[1rem]">
                       <span className="whitespace-nowrap text-[1.3rem] font-bold text-[#1010a3]">{monthLabel}</span>
                     </div>
-                    <div className="flex items-center justify-between gap-3 rounded-2xl border border-[rgba(14,14,16,0.08)] px-4 py-3.5 text-[1rem]">
-                      <span className="whitespace-nowrap text-[#475569]">{t('lessons')}</span>
-                      <span className="whitespace-nowrap font-semibold text-[#0f172a]">{salary.lessonsCount ?? 0}</span>
+                    <div className="flex items-center justify-end px-1 py-3">
+                      <SalaryStatusBadgeDropdown
+                        size="compact"
+                        status={salary.status}
+                        pendingLabel={t('pending')}
+                        paidLabel={t('paid')}
+                        notAssignedLabel={tCommon('notAssigned')}
+                        disabled={updateSalaryStatus.isPending}
+                        onStatusChange={(newStatus) =>
+                          handleSalaryStatusChange(salary.id, salary.status, newStatus)
+                        }
+                      />
                     </div>
                   </div>
                   <div className="grid grid-cols-2 items-stretch gap-3">
@@ -173,52 +189,29 @@ export function SalariesTable({
                       <p className="mt-1 font-semibold text-[#0f172a]">{formatCurrency(netSalary)}</p>
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 items-stretch gap-3">
-                    <div className="flex min-h-[94px] flex-col justify-center rounded-2xl border border-[rgba(14,14,16,0.08)] px-4 py-3.5 text-[1rem]">
-                      <p className="text-[#475569]">{t('status')}</p>
-                      <div className="mt-2 min-w-0">
-                        <InlineSelect
-                          value={salary.status}
-                          options={salaryStatusOptions.map((option) => ({
-                            id: option.id,
-                            label: t(option.labelKey),
-                          }))}
-                          onChange={async (nextStatus) => {
-                            if (nextStatus && nextStatus !== salary.status) {
-                              try {
-                                await updateSalaryStatus.mutateAsync({
-                                  id: salary.id,
-                                  status: nextStatus as SalaryStatus,
-                                });
-                              } catch (error) {
-                                console.error('Failed to update salary status:', error);
-                              }
-                            }
-                          }}
-                          disabled={updateSalaryStatus.isPending}
-                          className="w-full"
-                        />
-                      </div>
+                  <div className="flex items-center justify-between gap-3 rounded-2xl border border-[rgba(14,14,16,0.08)] px-4 py-3.5 text-[1rem]">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[#475569]">{t('lessons')}</span>
+                      <span className="font-semibold text-[#0f172a]">{salary.lessonsCount ?? 0}</span>
                     </div>
-                    <div className="flex min-h-[94px] flex-col justify-center rounded-2xl border border-[rgba(14,14,16,0.08)] px-4 py-3.5 text-[1rem]">
-                      <p className="text-[#475569]">{t('actions')}</p>
-                      <div className="mt-2 flex flex-wrap gap-2">
-                        {onOpenSalaryDetail ? (
-                          <button
-                            type="button"
-                            onClick={() => onOpenSalaryDetail(salary.id)}
-                            className="inline-flex items-center rounded-full border border-[rgba(14,14,16,0.12)] px-4 py-1.5 text-sm font-medium text-[#3b3b40]"
-                          >
-                            {t('salaryDetailsTitle')}
-                          </button>
-                        ) : null}
-                        <Link
-                          href={href}
-                          className="inline-flex items-center rounded-full border border-amber-300 px-4 py-1.5 text-sm font-medium text-amber-700"
+                    <div className="flex items-center gap-1">
+                      {onOpenSalaryDetail ? (
+                        <button
+                          type="button"
+                          onClick={() => onOpenSalaryDetail(salary.id)}
+                          className="rounded-lg p-2 transition-colors hover:bg-[#f6f6f7]"
+                          aria-label={t('viewSalaryDetails')}
                         >
-                          {t('view')}
-                        </Link>
-                      </div>
+                          <FileText className="h-5 w-5 text-[#3b3b40]" />
+                        </button>
+                      ) : null}
+                      <Link
+                        href={href}
+                        className="rounded-lg p-2 transition-colors hover:bg-[#f6f6f7]"
+                        aria-label={t('viewBreakdown')}
+                      >
+                        <Eye className="h-5 w-5 text-[#3b3b40]" />
+                      </Link>
                     </div>
                   </div>
                 </div>

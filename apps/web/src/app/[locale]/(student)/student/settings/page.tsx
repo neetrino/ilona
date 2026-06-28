@@ -215,7 +215,7 @@ export default function StudentSettingsPage() {
                   <label className="mb-3 block text-sm font-medium text-[#3b3b40]">
                     {t('language')}
                   </label>
-                  <LanguageSwitcher />
+                  <LanguageSwitcher className="hidden lg:inline-flex" />
                 </div>
               </StudentCard>
             )}

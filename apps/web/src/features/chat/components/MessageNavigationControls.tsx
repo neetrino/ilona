@@ -10,6 +10,7 @@ type MessageNavigationControlsProps = {
   onNext: () => void;
   canGoPrevious: boolean;
   canGoNext: boolean;
+  embedded?: boolean;
 };
 
 export function MessageNavigationControls({
@@ -18,14 +19,15 @@ export function MessageNavigationControls({
   onNext,
   canGoPrevious,
   canGoNext,
+  embedded = false,
 }: MessageNavigationControlsProps) {
   const tChat = useTranslations('chat');
   const ui = getChatTheme(variant);
   return (
     <div
       className={cn(
-        'flex items-center rounded-lg border bg-white/90 shadow-sm',
-        ui.border,
+        'flex h-9 shrink-0 items-center',
+        !embedded && cn('rounded-[15px] border bg-white/90 shadow-sm', ui.border),
       )}
     >
       <button
@@ -33,7 +35,7 @@ export function MessageNavigationControls({
         onClick={onPrevious}
         disabled={!canGoPrevious}
         className={cn(
-          'rounded-l-lg p-2 transition-colors',
+          'inline-flex h-9 w-9 items-center justify-center rounded-l-[15px] transition-colors',
           canGoPrevious ? cn(ui.body, ui.listHover) : cn(ui.subtle, 'cursor-not-allowed'),
         )}
         title={tChat('previousMessage')}
@@ -49,7 +51,8 @@ export function MessageNavigationControls({
         onClick={onNext}
         disabled={!canGoNext}
         className={cn(
-          'rounded-r-lg p-2 transition-colors',
+          'inline-flex h-9 w-9 items-center justify-center transition-colors',
+          !embedded && 'rounded-r-[15px]',
           canGoNext ? cn(ui.body, ui.listHover) : cn(ui.subtle, 'cursor-not-allowed'),
         )}
         title={tChat('nextMessage')}

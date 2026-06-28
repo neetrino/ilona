@@ -9,6 +9,12 @@ import { fetchTeachers } from '@/features/teachers/api/teachers.api';
 import { fetchGroups } from '@/features/groups/api/groups.api';
 import { useQuery } from '@tanstack/react-query';
 import { cn } from '@/shared/lib/utils';
+import {
+  portalSheetLayerProps,
+  useSheetStackZIndex,
+  stackedSheetOverlayClassName,
+} from '@/shared/lib/sheet-stack';
+import { CUSTOM_MODAL_OVERLAY_CLASS, CUSTOM_MODAL_PANEL_CLASS } from '@/shared/lib/portal-form-sheet-classes';
 import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
 
 interface CreateLeadModalProps {
@@ -23,6 +29,7 @@ interface CreateLeadModalProps {
 }
 
 const LEVEL_OPTIONS = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
+const DEFAULT_LEVEL_ID = LEVEL_OPTIONS[0];
 
 export function CreateLeadModal({
   open,
@@ -69,9 +76,10 @@ export function CreateLeadModal({
       setError(null);
       return;
     }
-    if (defaultCenterId) {
-      setForm((prev) => ({ ...prev, centerId: defaultCenterId }));
-    }
+    setForm({
+      levelId: DEFAULT_LEVEL_ID,
+      ...(defaultCenterId ? { centerId: defaultCenterId } : {}),
+    });
   }, [open, defaultCenterId]);
   const groups = useMemo(() => groupsData?.items ?? [], [groupsData?.items]);
 
@@ -123,11 +131,20 @@ export function CreateLeadModal({
     }
   };
 
+  const { overlayStyle, contentStyle, isBaseLayer } = useSheetStackZIndex(open);
+
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="w-full max-w-lg rounded-xl bg-white shadow-xl">
+    <>
+      <div
+        className={stackedSheetOverlayClassName(CUSTOM_MODAL_OVERLAY_CLASS, isBaseLayer)}
+        style={overlayStyle}
+        {...portalSheetLayerProps}
+        onClick={onClose}
+        aria-hidden="true"
+      />
+      <div style={contentStyle} {...portalSheetLayerProps} className={cn(CUSTOM_MODAL_PANEL_CLASS, 'max-w-lg')} onClick={(e) => e.stopPropagation()}>
         <div className="border-b border-slate-200 px-6 py-4">
           <h2 className="text-lg font-semibold text-slate-900">{t('newLead')}</h2>
         </div>
@@ -329,6 +346,6 @@ export function CreateLeadModal({
           </div>
         </form>
       </div>
-    </div>
+    </>
   );
 }

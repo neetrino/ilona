@@ -1,18 +1,49 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import type { CrmLead } from '@/features/crm/types';
-import { ActionButtons } from '@/shared/components/ui';
 import { useCrmStatusLabels } from '@/features/crm/hooks/useCrmStatusLabels';
-import { cn, formatPhoneForDisplay } from '@/shared/lib/utils';
+import { formatPhoneForDisplay, cn } from '@/shared/lib/utils';
 import { useIsIPad } from '@/shared/hooks/useIsIPad';
+import { LessonListDateCell } from '@/shared/components/calendar/LessonListDateCell';
+
+function CrmListDateTimeCell({
+  isoDate,
+  locale,
+}: {
+  isoDate: string | null | undefined;
+  locale: string;
+}) {
+  if (!isoDate) {
+    return <span className="text-sm text-slate-500">—</span>;
+  }
+
+  return (
+    <div className="flex origin-center scale-[0.75] justify-center sm:scale-[0.82]">
+      <LessonListDateCell dateStr={isoDate} locale={locale} />
+    </div>
+  );
+}
+
+function listHeaderClass(index: number): string {
+  return cn(
+    'px-4 py-3 text-xs font-medium uppercase text-slate-500',
+    index === 0 ? 'text-left' : 'text-center',
+  );
+}
+
+function listCellClass(index: number, extra?: string): string {
+  return cn(
+    'px-4 py-3 align-middle',
+    index === 0 ? 'text-left' : 'text-center',
+    extra,
+  );
+}
 
 interface ListTableProps {
   leads: CrmLead[];
   onRowClick: (lead: CrmLead) => void;
   isLoading?: boolean;
-  canDeleteLead?: boolean;
-  onLeadDeleteRequest?: (lead: CrmLead) => void;
   deleteInProgress?: boolean;
   page: number;
   totalPages: number;
@@ -24,8 +55,6 @@ export function ListTable({
   leads,
   onRowClick,
   isLoading,
-  canDeleteLead,
-  onLeadDeleteRequest,
   deleteInProgress,
   page,
   totalPages,
@@ -34,6 +63,7 @@ export function ListTable({
 }: ListTableProps) {
   const t = useTranslations('crm');
   const tc = useTranslations('common');
+  const locale = useLocale();
   const statusLabels = useCrmStatusLabels();
   const isIPad = useIsIPad();
   const pageSize = 10;
@@ -53,7 +83,6 @@ export function ListTable({
     t('level'),
     t('created'),
     t('updated'),
-    ...(canDeleteLead ? [tc('actions')] : []),
   ] as const;
 
   if (isLoading) {
@@ -63,14 +92,8 @@ export function ListTable({
         <table className="min-w-full divide-y divide-slate-200">
           <thead className="bg-slate-50">
             <tr>
-              {headers.map((label) => (
-                <th
-                  key={label}
-                  className={cn(
-                    'px-4 py-3 text-xs font-medium text-slate-500 uppercase',
-                    label === tc('actions') ? 'text-right' : 'text-left',
-                  )}
-                >
+              {headers.map((label, index) => (
+                <th key={label} className={listHeaderClass(index)}>
                   {label}
                 </th>
               ))}
@@ -88,9 +111,6 @@ export function ListTable({
                 <td className="px-4 py-3"><div className="h-4 bg-slate-200 rounded w-8" /></td>
                 <td className="px-4 py-3"><div className="h-4 bg-slate-200 rounded w-20" /></td>
                 <td className="px-4 py-3"><div className="h-4 bg-slate-200 rounded w-20" /></td>
-                {canDeleteLead ? (
-                  <td className="px-4 py-3"><div className="ml-auto h-8 w-16 bg-slate-200 rounded" /></td>
-                ) : null}
               </tr>
             ))}
           </tbody>
@@ -106,14 +126,8 @@ export function ListTable({
       <table className="min-w-full divide-y divide-slate-200">
         <thead className="bg-slate-50">
           <tr>
-            {headers.map((label) => (
-              <th
-                key={label}
-                className={cn(
-                  'px-4 py-3 text-xs font-medium text-slate-500 uppercase',
-                  label === tc('actions') ? 'text-right' : 'text-left',
-                )}
-              >
+            {headers.map((label, index) => (
+              <th key={label} className={listHeaderClass(index)}>
                 {label}
               </th>
             ))}
@@ -126,62 +140,40 @@ export function ListTable({
               onClick={() => onRowClick(lead)}
               className="cursor-pointer hover:bg-slate-50"
             >
-              <td className="px-4 py-3 text-sm font-medium text-slate-900">
+              <td className={listCellClass(0, 'text-sm font-medium text-slate-900')}>
                 {[lead.firstName, lead.lastName].filter(Boolean).join(' ') || '—'}
               </td>
-              <td className="px-4 py-3 text-sm text-slate-600">{formatPhoneForDisplay(lead.phone)}</td>
-              <td className="px-4 py-3">
-                <span className="inline-flex rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700">
-                  {statusLabels[lead.status]}
-                </span>
-                {lead.teacherApprovedAt ? (
-                  <span className="ml-1 inline-flex rounded bg-green-100 px-1.5 py-0.5 text-xs text-green-800">
-                    {t('approved')}
+              <td className={listCellClass(1, 'text-sm text-slate-600')}>{formatPhoneForDisplay(lead.phone)}</td>
+              <td className={listCellClass(2)}>
+                <div className="flex flex-wrap items-center justify-center gap-1">
+                  <span className="inline-flex rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700">
+                    {statusLabels[lead.status]}
                   </span>
-                ) : lead.transferFlag ? (
-                  <span className="ml-1 inline-flex rounded bg-amber-100 px-1.5 py-0.5 text-xs text-amber-800">
-                    {t('transfer')}
-                  </span>
-                ) : null}
+                  {lead.teacherApprovedAt ? (
+                    <span className="inline-flex rounded bg-green-100 px-1.5 py-0.5 text-xs text-green-800">
+                      {t('approved')}
+                    </span>
+                  ) : lead.transferFlag ? (
+                    <span className="inline-flex rounded bg-amber-100 px-1.5 py-0.5 text-xs text-amber-800">
+                      {t('transfer')}
+                    </span>
+                  ) : null}
+                </div>
               </td>
-              <td className="px-4 py-3 text-sm text-slate-600">{lead.center?.name ?? '—'}</td>
-              <td className="px-4 py-3 text-sm text-slate-600">
+              <td className={listCellClass(3, 'text-sm text-slate-600')}>{lead.center?.name ?? '—'}</td>
+              <td className={listCellClass(4, 'text-sm text-slate-600')}>
                 {lead.teacher?.user
                   ? `${lead.teacher.user.firstName} ${lead.teacher.user.lastName}`
                   : '—'}
               </td>
-              <td className="px-4 py-3 text-sm text-slate-600">{lead.group?.name ?? '—'}</td>
-              <td className="px-4 py-3 text-sm text-slate-600">{lead.levelId ?? '—'}</td>
-              <td className="px-4 py-3 text-sm text-slate-500">
-                {lead.createdAt
-                  ? new Date(lead.createdAt).toLocaleDateString(undefined, {
-                      month: 'short',
-                      day: 'numeric',
-                      year: 'numeric',
-                    })
-                  : '—'}
+              <td className={listCellClass(5, 'text-sm text-slate-600')}>{lead.group?.name ?? '—'}</td>
+              <td className={listCellClass(6, 'text-sm text-slate-600')}>{lead.levelId ?? '—'}</td>
+              <td className={listCellClass(7)}>
+                <CrmListDateTimeCell isoDate={lead.createdAt} locale={locale} />
               </td>
-              <td className="px-4 py-3 text-sm text-slate-500">
-                {lead.updatedAt
-                  ? new Date(lead.updatedAt).toLocaleDateString(undefined, {
-                      month: 'short',
-                      day: 'numeric',
-                      year: 'numeric',
-                    })
-                  : '—'}
+              <td className={listCellClass(8)}>
+                <CrmListDateTimeCell isoDate={lead.updatedAt} locale={locale} />
               </td>
-              {canDeleteLead && onLeadDeleteRequest ? (
-                <td className="px-4 py-3 text-right" onClick={(e) => e.stopPropagation()}>
-                  <ActionButtons
-                    className="justify-end"
-                    onDelete={() => onLeadDeleteRequest(lead)}
-                    disabled={deleteInProgress}
-                    deleteDisabled={deleteInProgress}
-                    ariaLabels={{ delete: t('deleteLead') }}
-                    titles={{ delete: t('deleteLead') }}
-                  />
-                </td>
-              ) : null}
             </tr>
           ))}
         </tbody>

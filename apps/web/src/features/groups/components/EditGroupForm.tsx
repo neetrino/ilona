@@ -1,5 +1,6 @@
 'use client';
 
+
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -21,7 +22,20 @@ import {
   scheduleSlotsValidationError,
 } from '../group-schedule-utils';
 import { cn } from '@/shared/lib/utils';
-import { SingleSelectDropdown, portaledDropdownDialogHandlers } from '@/shared/components/ui/single-select-dropdown';
+import {
+  ADMIN_FORM_INPUT_CLASS,
+  ADMIN_ICON_BUTTON_SM_CLASS,
+  ADMIN_OUTLINE_BUTTON_CLASS,
+  ADMIN_PRIMARY_BUTTON_CLASS,
+} from '@/shared/lib/admin-control-theme';
+import {
+  portalSheetLayerProps,
+  stackedSheetDialogHandlers,
+  useSheetStackZIndex,
+  stackedSheetOverlayClassName,
+} from '@/shared/lib/sheet-stack';
+import { PORTAL_DESKTOP_SIDE_SHEET_CLASS } from '@/shared/lib/portal-form-sheet-classes';
+import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
 import {
   filterTeachersForCenter,
   teacherOptionLabel,
@@ -48,6 +62,7 @@ function translateScheduleSlotError(
 }
 
 const REGENERATE_CONFIRM_MESSAGE = 'GROUP_SCHEDULE_REGENERATION_CONFIRMATION_REQUIRED';
+const ADMIN_TEXTAREA_CLASS = cn(ADMIN_FORM_INPUT_CLASS, 'h-auto min-h-[5.5rem] resize-none py-2');
 
 interface EditGroupFormProps {
   open: boolean;
@@ -207,6 +222,8 @@ export function EditGroupForm({
       }
     };
   }, []);
+
+  const { overlayStyle, contentStyle, isBaseLayer } = useSheetStackZIndex(isDialogOpen);
 
   const requestClose = useCallback(() => {
     setIsDialogOpen(false);
@@ -376,17 +393,14 @@ export function EditGroupForm({
     return (
       <DialogPrimitive.Root open={isDialogOpen} onOpenChange={(nextOpen) => !nextOpen && requestClose()}>
         <DialogPrimitive.Portal>
-          <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/60 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
-          <DialogPrimitive.Content
-            style={dragStyle}
-            {...portaledDropdownDialogHandlers}
+          <DialogPrimitive.Overlay style={overlayStyle} {...portalSheetLayerProps} className={stackedSheetOverlayClassName('fixed inset-0 z-50 bg-black/60 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0', isBaseLayer)} />
+          <DialogPrimitive.Content style={{ ...dragStyle, ...contentStyle }} {...stackedSheetDialogHandlers} {...portalSheetLayerProps}
             className={cn(
               'fixed inset-x-0 bottom-[7px] top-auto z-50 grid w-full translate-y-0 lg:bottom-0 [@media(min-width:1024px)_and_(max-width:1366px)_and_(min-height:1000px)]:bottom-0',
               'duration-700 ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out min-[1367px]:duration-350 min-[1367px]:ease-[cubic-bezier(0.22,1,0.36,1)]',
               'data-[state=open]:slide-in-from-bottom-full data-[state=closed]:slide-out-to-bottom-full',
               'h-[calc(94dvh+7px)] [@media(min-width:1024px)_and_(max-width:1366px)_and_(min-height:1000px)]:h-[56dvh] grid-rows-[auto_auto_1fr] gap-0 overflow-hidden rounded-t-[22px] border border-slate-200 bg-[#f8f9fb] shadow-xl',
-              'min-[1367px]:inset-0 min-[1367px]:m-auto min-[1367px]:w-[95vw] min-[1367px]:max-w-2xl min-[1367px]:h-auto min-[1367px]:max-h-[90vh] min-[1367px]:translate-x-0 min-[1367px]:translate-y-0 min-[1367px]:rounded-2xl',
-              'min-[1367px]:data-[state=open]:fade-in-0 min-[1367px]:data-[state=closed]:fade-out-0 min-[1367px]:data-[state=open]:slide-in-from-bottom-0 min-[1367px]:data-[state=closed]:slide-out-to-bottom-0'
+              PORTAL_DESKTOP_SIDE_SHEET_CLASS,
             )}
             aria-describedby={undefined}
           >
@@ -408,7 +422,7 @@ export function EditGroupForm({
                   <p className="mt-1 text-sm text-[#8b8b90]">{tForm('loadingGroupData')}</p>
                 </div>
                 <DialogPrimitive.Close
-                  className="hidden h-8 w-8 shrink-0 items-center justify-center rounded-full text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 min-[1367px]:inline-flex"
+                  className={cn(ADMIN_ICON_BUTTON_SM_CLASS, 'hidden text-slate-500 hover:bg-slate-100 hover:text-slate-700 min-[1367px]:inline-flex')}
                   aria-label={tCommon('close')}
                 >
                   <X className="h-4 w-4" />
@@ -417,7 +431,7 @@ export function EditGroupForm({
             </div>
             <div className="min-h-0 overflow-y-auto overscroll-y-contain [touch-action:pan-y] [-webkit-overflow-scrolling:touch] px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] min-[1367px]:px-6 min-[1367px]:pb-6" />
           </DialogPrimitive.Content>
-        </DialogPrimitive.Portal>
+      </DialogPrimitive.Portal>
       </DialogPrimitive.Root>
     );
   }
@@ -426,17 +440,14 @@ export function EditGroupForm({
     <Fragment>
     <DialogPrimitive.Root open={isDialogOpen} onOpenChange={(nextOpen) => !nextOpen && requestClose()}>
       <DialogPrimitive.Portal>
-        <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/60 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
-        <DialogPrimitive.Content
-          style={dragStyle}
-          {...portaledDropdownDialogHandlers}
+        <DialogPrimitive.Overlay style={overlayStyle} {...portalSheetLayerProps} className="fixed inset-0 z-50 bg-black/60 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
+        <DialogPrimitive.Content style={{ ...dragStyle, ...contentStyle }} {...stackedSheetDialogHandlers} {...portalSheetLayerProps}
           className={cn(
             'fixed inset-x-0 bottom-[7px] top-auto z-50 grid w-full translate-y-0 lg:bottom-0 [@media(min-width:1024px)_and_(max-width:1366px)_and_(min-height:1000px)]:bottom-0',
             'duration-700 ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out min-[1367px]:duration-350 min-[1367px]:ease-[cubic-bezier(0.22,1,0.36,1)]',
             'data-[state=open]:slide-in-from-bottom-full data-[state=closed]:slide-out-to-bottom-full',
             'h-[calc(94dvh+7px)] [@media(min-width:1024px)_and_(max-width:1366px)_and_(min-height:1000px)]:h-[56dvh] grid-rows-[auto_auto_1fr] gap-0 overflow-hidden rounded-t-[22px] border border-slate-200 bg-[#f8f9fb] shadow-xl',
-            'min-[1367px]:inset-0 min-[1367px]:m-auto min-[1367px]:w-[95vw] min-[1367px]:max-w-2xl min-[1367px]:h-auto min-[1367px]:max-h-[90vh] min-[1367px]:translate-x-0 min-[1367px]:translate-y-0 min-[1367px]:rounded-2xl',
-            'min-[1367px]:data-[state=open]:fade-in-0 min-[1367px]:data-[state=closed]:fade-out-0 min-[1367px]:data-[state=open]:slide-in-from-bottom-0 min-[1367px]:data-[state=closed]:slide-out-to-bottom-0'
+            PORTAL_DESKTOP_SIDE_SHEET_CLASS,
           )}
           aria-describedby={undefined}
         >
@@ -479,7 +490,7 @@ export function EditGroupForm({
                   </button>
                 ) : null}
                 <DialogPrimitive.Close
-                  className="hidden h-8 w-8 items-center justify-center rounded-full text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 min-[1367px]:inline-flex"
+                  className={cn(ADMIN_ICON_BUTTON_SM_CLASS, 'hidden text-slate-500 hover:bg-slate-100 hover:text-slate-700 min-[1367px]:inline-flex')}
                   aria-label={tCommon('close')}
                 >
                   <X className="h-4 w-4" />
@@ -490,12 +501,12 @@ export function EditGroupForm({
           <div className="min-h-0 overflow-y-auto overscroll-y-contain [touch-action:pan-y] [-webkit-overflow-scrolling:touch] px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] min-[1367px]:px-6 min-[1367px]:pb-6">
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           {successMessage && (
-            <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+            <div className="rounded-[15px] border border-green-200 bg-green-50 p-3">
               <p className="text-sm text-green-600">{successMessage}</p>
             </div>
           )}
           {errorMessage && (
-            <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+            <div className="rounded-[15px] border border-red-200 bg-red-50 p-3">
               <p className="text-sm text-red-600">{errorMessage}</p>
             </div>
           )}
@@ -507,6 +518,7 @@ export function EditGroupForm({
               </Label>
               <Input
                 id="name"
+                className={ADMIN_FORM_INPUT_CLASS}
                 {...register('name')}
                 error={errors.name?.message}
                 placeholder={tForm('namePlaceholder')}
@@ -518,6 +530,7 @@ export function EditGroupForm({
               <Label htmlFor="level">{tCommon('level')}</Label>
               <Input
                 id="level"
+                className={ADMIN_FORM_INPUT_CLASS}
                 {...register('level')}
                 error={errors.level?.message}
                 placeholder={tForm('levelPlaceholder')}
@@ -533,6 +546,7 @@ export function EditGroupForm({
               value={iconKey}
               onChange={setIconKey}
               disabled={isSubmitting}
+              adminControls
               aria-labelledby="edit-group-icon-label"
             />
           </div>
@@ -545,9 +559,11 @@ export function EditGroupForm({
               rows={3}
               placeholder={tForm('descriptionPlaceholder')}
               disabled={isSubmitting}
-              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm resize-none ${
-                errors.description ? 'border-red-300' : 'border-slate-300'
-              } ${isSubmitting ? 'bg-slate-100 cursor-not-allowed' : 'bg-white'}`}
+              className={cn(
+                ADMIN_TEXTAREA_CLASS,
+                errors.description ? 'border-red-300' : '',
+                isSubmitting ? 'cursor-not-allowed bg-slate-100' : '',
+              )}
             />
             {errors.description && (
               <p className="text-sm text-red-600">{errors.description.message}</p>
@@ -561,6 +577,7 @@ export function EditGroupForm({
             <input type="hidden" {...register('centerId')} />
             <SingleSelectDropdown
               id="centerId"
+              triggerClassName={ADMIN_FORM_INPUT_CLASS}
               options={centers.map((center) => ({
                 id: center.id,
                 label: center.name,
@@ -599,6 +616,7 @@ export function EditGroupForm({
               <input type="hidden" {...register('teacherId')} />
               <SingleSelectDropdown
                 id="teacherId"
+                triggerClassName={ADMIN_FORM_INPUT_CLASS}
                 options={teachersForCenter.map((teacher) => ({
                   id: teacher.id,
                   label: teacherOptionLabel(teacher),
@@ -631,6 +649,7 @@ export function EditGroupForm({
               <input type="hidden" {...register('secondTeacherId')} />
               <SingleSelectDropdown
                 id="secondTeacherId"
+                triggerClassName={ADMIN_FORM_INPUT_CLASS}
                 options={teachersForCenter
                   .filter((teacher) => teacher.id !== watchedTeacherId)
                   .map((teacher) => ({
@@ -675,12 +694,14 @@ export function EditGroupForm({
             onDateFromChange={setDateFrom}
             onDateToChange={setDateTo}
             disabled={isSubmitting || updateGroup.isPending}
+            adminControls
           />
 
           <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end">
             <Button
               type="button"
-              variant="ghost"
+              variant="outline"
+              className={cn(ADMIN_OUTLINE_BUTTON_CLASS, 'border-[rgba(14,14,16,0.07)] hover:bg-slate-50')}
               onClick={requestClose}
               disabled={isFormBusy}
             >
@@ -694,7 +715,7 @@ export function EditGroupForm({
                 isLoadingTeachers ||
                 centers.length === 0
               }
-              className="bg-primary hover:bg-primary/90 text-primary-foreground"
+              className={cn(ADMIN_PRIMARY_BUTTON_CLASS, 'bg-primary text-primary-foreground hover:bg-primary/90')}
             >
               {isSubmitting || updateGroup.isPending ? tForm('saving') : tForm('saveChanges')}
             </Button>
@@ -706,16 +727,25 @@ export function EditGroupForm({
     </DialogPrimitive.Root>
 
     <Dialog open={regenerateDialogOpen} onOpenChange={setRegenerateDialogOpen}>
-      <DialogContent className="max-w-md">
+      <DialogContent sheet={false} className="max-w-md rounded-[15px]">
         <DialogHeader>
           <DialogTitle>{tForm('replaceLessonsTitle')}</DialogTitle>
           <DialogDescription>{tForm('replaceLessonsDescription')}</DialogDescription>
         </DialogHeader>
         <DialogFooter className="gap-2 sm:gap-0">
-          <Button type="button" variant="ghost" onClick={() => setRegenerateDialogOpen(false)}>
+          <Button
+            type="button"
+            variant="outline"
+            className={cn(ADMIN_OUTLINE_BUTTON_CLASS, 'border-[rgba(14,14,16,0.07)] hover:bg-slate-50')}
+            onClick={() => setRegenerateDialogOpen(false)}
+          >
             {tForm('goBack')}
           </Button>
-          <Button type="button" className="bg-primary text-primary-foreground" onClick={onConfirmRegenerate}>
+          <Button
+            type="button"
+            className={cn(ADMIN_PRIMARY_BUTTON_CLASS, 'bg-primary text-primary-foreground hover:bg-primary/90')}
+            onClick={onConfirmRegenerate}
+          >
             {tForm('replaceAndSave')}
           </Button>
         </DialogFooter>

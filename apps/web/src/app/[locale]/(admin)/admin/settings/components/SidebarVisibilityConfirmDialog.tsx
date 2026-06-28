@@ -43,7 +43,7 @@ export function SidebarVisibilityConfirmDialog({
             type="button"
             variant="outline"
             onClick={() => onOpenChange(false)}
-            className="rounded-full px-5"
+            className="h-11 min-h-11 rounded-[15px] px-5 py-0"
           >
             {cancelLabel}
           </Button>
@@ -51,7 +51,7 @@ export function SidebarVisibilityConfirmDialog({
             type="button"
             variant={confirmVariant}
             onClick={onConfirm}
-            className="rounded-full px-5"
+            className="h-11 min-h-11 rounded-[15px] px-5 py-0"
           >
             {confirmLabel}
           </Button>

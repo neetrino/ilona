@@ -1,23 +1,36 @@
 'use client';
 
-import { useState, useEffect, useMemo, useRef, type RefObject } from 'react';
-import { createPortal } from 'react-dom';
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { useTranslations } from 'next-intl';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { X } from 'lucide-react';
+import { Trash2, X } from 'lucide-react';
 import { fetchLead, updateLead, changeLeadStatus } from '@/features/crm/api/crm.api';
 import type { UpdateLeadDto, CrmLeadStatus } from '@/features/crm/types';
 import { CRM_COLUMN_ORDER } from '@/features/crm/types';
-import { useModalClose } from '@/shared/hooks/useModalClose';
 import { cn } from '@/shared/lib/utils';
-import { DatePickerInput } from '@/shared/components/ui';
+import { ADMIN_ICON_BUTTON_SM_CLASS } from '@/shared/lib/admin-control-theme';
+import { DatePickerInput, SegmentedControl } from '@/shared/components/ui';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { CrmStatusSelector } from './CrmStatusSelector';
 import { PaidRegistrationModal } from './PaidRegistrationModal';
 import { RecordingPlayback } from './VoiceRecorder';
 import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
+import { usePortalSheetDrag } from '@/shared/hooks/usePortalSheetDrag';
+import { PortalFormSheetDragHandle } from '@/shared/components/ui/portal-form-sheet-drag-handle';
+import { PortalSheetPortal } from '@/shared/components/ui/portal-sheet-portal';
+import {
+  PORTAL_FORM_SHEET_CLOSE_BUTTON_CLASS,
+  PORTAL_FORM_SHEET_HEADER_CLASS,
+  PORTAL_FORM_SHEET_SCROLL_CLASS,
+  portalFormSheetContentClass,
+} from '@/shared/lib/portal-form-sheet-classes';
+import { computeAgeFromDob } from '@/features/students/student-account-form.schema';
+import { resolveAgeFromDobAndManual } from '@/features/students/student-account-form.age';
 
 const LEVEL_OPTIONS = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
+const DEFAULT_LEVEL_ID = LEVEL_OPTIONS[0];
+const FORM_FIELD_CLASS = 'w-full rounded-[15px] border border-slate-300 px-3 py-2 text-sm';
 
 interface CenterOption {
   id: string;
@@ -43,6 +56,9 @@ interface EditLeadModalProps {
   groups: GroupOption[];
   /** All CRM statuses to show in the status selector (must match board columns). Defaults to CRM_COLUMN_ORDER. */
   availableStatuses?: CrmLeadStatus[];
+  canDeleteLead?: boolean;
+  onDeleteRequest?: () => void;
+  deleteDisabled?: boolean;
 }
 
 export function EditLeadModal({
@@ -54,6 +70,9 @@ export function EditLeadModal({
   teachers,
   groups,
   availableStatuses = CRM_COLUMN_ORDER,
+  canDeleteLead,
+  onDeleteRequest,
+  deleteDisabled,
 }: EditLeadModalProps) {
   const t = useTranslations('crm');
   const tc = useTranslations('common');
@@ -66,26 +85,35 @@ export function EditLeadModal({
   }, [centers, isManager, t, user?.managerCenterId]);
 
   const queryClient = useQueryClient();
-  const modalContainerRef = useRef<HTMLDivElement>(null);
   const crmStatusPortaledMenuRef = useRef<HTMLDivElement>(null);
-  const modalAdditionalInsideRefs = useMemo(
-    () => [crmStatusPortaledMenuRef] as const satisfies ReadonlyArray<RefObject<HTMLElement | null>>,
-    [],
-  );
-  const { onOverlayMouseDown, onOverlayClick } = useModalClose({
-    open,
-    onClose,
-    containerRef: modalContainerRef,
-    additionalInsideRefs: modalAdditionalInsideRefs,
-  });
+  const [isDialogOpen, setIsDialogOpen] = useState(open);
   const [form, setForm] = useState<
     UpdateLeadDto & { status?: CrmLeadStatus; archivedReason?: string; parentSurname?: string }
   >({});
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [isMounted, setIsMounted] = useState(false);
   const [paidRegistrationOpen, setPaidRegistrationOpen] = useState(false);
   const [paidPrefill, setPaidPrefill] = useState<Partial<UpdateLeadDto> | undefined>(undefined);
+
+  const requestClose = useCallback(() => {
+    setIsDialogOpen(false);
+    onClose();
+  }, [onClose]);
+
+  const { dragStyle, dragHandleProps, resetDrag } = usePortalSheetDrag({
+    enabled: open,
+    onClose: requestClose,
+  });
+
+  useEffect(() => {
+    setIsDialogOpen(open);
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) {
+      resetDrag();
+    }
+  }, [open, resetDrag]);
 
   const { data: lead, isLoading } = useQuery({
     queryKey: ['crm-lead', leadId],
@@ -98,11 +126,8 @@ export function EditLeadModal({
     () => (selectedTeacherId ? groups.filter((group) => group.teacherId === selectedTeacherId) : []),
     [groups, selectedTeacherId],
   );
-  const levelOptions = useMemo(
-    () => [
-      { id: '', label: '—' },
-      ...LEVEL_OPTIONS.map((level) => ({ id: level, label: level })),
-    ],
+  const levelSegmentOptions = useMemo(
+    () => LEVEL_OPTIONS.map((level) => ({ id: level, label: level })),
     [],
   );
   const teacherOptions = useMemo(
@@ -136,6 +161,10 @@ export function EditLeadModal({
     () => lead?.attachments?.filter((attachment) => attachment.type === 'VOICE_RECORDING') ?? [],
     [lead?.attachments],
   );
+  const effectiveAge = useMemo(
+    () => resolveAgeFromDobAndManual(form.dateOfBirth, form.age),
+    [form.age, form.dateOfBirth],
+  );
 
   // Sync form whenever modal opens or lead data is available (so edit always shows current saved values)
   useEffect(() => {
@@ -144,19 +173,20 @@ export function EditLeadModal({
       setForm({});
       return;
     }
+    const dob = lead.dateOfBirth ? lead.dateOfBirth.slice(0, 10) : undefined;
     setForm({
       firstName: lead.firstName ?? '',
       lastName: lead.lastName ?? '',
       phone: (lead.phone ?? '').replace(/\D/g, ''),
-      age: lead.age ?? undefined,
-      dateOfBirth: lead.dateOfBirth ? lead.dateOfBirth.slice(0, 10) : undefined,
+      age: resolveAgeFromDobAndManual(dob, lead.age ?? undefined),
+      dateOfBirth: dob,
       firstLessonDate: lead.firstLessonDate ? lead.firstLessonDate.slice(0, 10) : undefined,
       comment: lead.comment ?? '',
       parentName: lead.parentName ?? '',
       parentPhone: (lead.parentPhone ?? '').replace(/\D/g, ''),
       parentEmail: lead.parentEmail ?? '',
       parentPassportInfo: lead.parentPassportInfo ?? '',
-      levelId: lead.levelId ?? undefined,
+      levelId: lead.levelId ?? DEFAULT_LEVEL_ID,
       teacherId: lead.teacherId ?? undefined,
       groupId: lead.groupId ?? undefined,
       centerId: lead.centerId ?? undefined,
@@ -181,18 +211,13 @@ export function EditLeadModal({
     }
   }, [selectedTeacherId, form.groupId, groupsForSelectedTeacher]);
 
-  useEffect(() => {
-    setIsMounted(true);
-    return () => setIsMounted(false);
-  }, []);
-
   const handleCrmStatusChange = (status: CrmLeadStatus) => {
     if (status === 'PAID' && lead && lead.status !== 'PAID') {
       setPaidPrefill({
         firstName: form.firstName,
         lastName: form.lastName,
         phone: form.phone,
-        age: form.age,
+        age: effectiveAge,
         dateOfBirth: form.dateOfBirth,
         firstLessonDate: form.firstLessonDate,
         parentName: form.parentName,
@@ -226,7 +251,11 @@ export function EditLeadModal({
       if (isManager) {
         delete updatePayload.centerId;
       }
-      await updateLead(leadId, updatePayload);
+      const resolvedAge = resolveAgeFromDobAndManual(form.dateOfBirth, form.age);
+      await updateLead(leadId, {
+        ...updatePayload,
+        age: resolvedAge,
+      });
       if (formStatus && formStatus !== lead.status) {
         await changeLeadStatus(leadId, {
           status: formStatus,
@@ -245,40 +274,50 @@ export function EditLeadModal({
     }
   };
 
-  if (!open) return null;
-
-  if (!isMounted) return null;
-
-  const editLeadPortal = createPortal(
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 overflow-y-auto"
-      onMouseDown={onOverlayMouseDown}
-      onClick={onOverlayClick}
-    >
-      <div className="flex min-h-full items-center justify-center w-full">
-        <div
-          ref={modalContainerRef}
-          className="flex w-full max-w-3xl flex-col overflow-hidden rounded-xl bg-white shadow-xl max-h-[calc(100vh-1rem)] sm:max-h-[calc(100vh-2rem)]"
+  const renderHeaderActions = () => (
+    <div className="flex shrink-0 items-center gap-2">
+      {canDeleteLead && onDeleteRequest ? (
+        <button
+          type="button"
+          aria-label={t('deleteLead')}
+          title={t('deleteLead')}
+          disabled={deleteDisabled || saving}
+          onClick={onDeleteRequest}
+          className={cn(
+            ADMIN_ICON_BUTTON_SM_CLASS,
+            'text-slate-500 hover:bg-red-50 hover:text-red-600 disabled:pointer-events-none disabled:opacity-50',
+          )}
         >
-          <div className="border-b border-slate-200 px-4 py-4 sm:px-6">
-            <div className="flex items-center justify-between gap-2">
-              <h2 className="text-lg font-semibold text-slate-900">{t('editLead')}</h2>
-              <button
-                type="button"
-                onClick={onClose}
-                className="inline-flex h-9 w-9 items-center justify-center rounded-md text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-700 active:bg-slate-200"
-                aria-label={t('closeEditLeadModal')}
-                title={tc('close')}
-              >
-                <X className="h-5 w-5" />
-              </button>
+          <Trash2 className="h-4 w-4" aria-hidden />
+        </button>
+      ) : null}
+      <DialogPrimitive.Close className={PORTAL_FORM_SHEET_CLOSE_BUTTON_CLASS} aria-label={t('closeEditLeadModal')}>
+        <X className="h-4 w-4" />
+      </DialogPrimitive.Close>
+    </div>
+  );
+
+  return (
+    <>
+      <DialogPrimitive.Root open={isDialogOpen} onOpenChange={(nextOpen) => !nextOpen && requestClose()}>
+        <PortalSheetPortal open={isDialogOpen} dragStyle={dragStyle} contentClassName={portalFormSheetContentClass('3xl')} contentProps={{ 'aria-describedby': undefined }}>
+            <PortalFormSheetDragHandle dragHandleProps={dragHandleProps} />
+            <DialogPrimitive.Title className="sr-only">{t('editLead')}</DialogPrimitive.Title>
+            <div className={PORTAL_FORM_SHEET_HEADER_CLASS}>
+              <div className="flex items-start justify-between gap-4">
+                <div className="min-w-0 flex-1">
+                  <h2 className="text-lg font-semibold text-[#3b3b40]">{t('editLead')}</h2>
+                </div>
+                {renderHeaderActions()}
+              </div>
             </div>
-          </div>
-        {isLoading ? (
-          <div className="p-8 text-center text-slate-500">{tc('loading')}</div>
-        ) : (
-          <form onSubmit={handleSubmit} className="flex min-h-0 flex-1 flex-col">
-            <div className="min-h-0 flex-1 space-y-6 overflow-y-auto px-4 py-4 sm:px-6 sm:py-5">
+            {isLoading ? (
+              <div className={cn(PORTAL_FORM_SHEET_SCROLL_CLASS, 'p-8 text-center text-slate-500')}>
+                {tc('loading')}
+              </div>
+            ) : (
+              <div className={cn(PORTAL_FORM_SHEET_SCROLL_CLASS, 'pt-4 sm:pt-5')}>
+                <form onSubmit={handleSubmit} className="space-y-6">
             {error && (
               <p className="text-sm text-red-600 rounded-lg bg-red-50 p-2">{error}</p>
             )}
@@ -303,27 +342,24 @@ export function EditLeadModal({
             </section>
             <section className="space-y-2">
               <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">{t('comment')}</h3>
-              <div>
-                <label className="mb-1 block text-sm font-medium text-slate-700">{t('comment')}</label>
-                <textarea
-                  rows={3}
-                  value={form.comment ?? ''}
-                  onChange={(e) => setForm((f) => ({ ...f, comment: e.target.value }))}
-                  placeholder={t('commentPlaceholder')}
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-                />
-              </div>
+              <textarea
+                rows={3}
+                value={form.comment ?? ''}
+                onChange={(e) => setForm((f) => ({ ...f, comment: e.target.value }))}
+                placeholder={t('commentPlaceholder')}
+                className={FORM_FIELD_CLASS}
+              />
             </section>
             <section className="space-y-3">
               <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">{t('basicInfo')}</h3>
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
                 <div>
                   <label className="mb-1 block text-sm font-medium text-slate-700">{t('firstName')}</label>
                   <input
                     type="text"
                     value={form.firstName ?? ''}
                     onChange={(e) => setForm((f) => ({ ...f, firstName: e.target.value }))}
-                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                    className={FORM_FIELD_CLASS}
                   />
                 </div>
                 <div>
@@ -332,53 +368,63 @@ export function EditLeadModal({
                     type="text"
                     value={form.lastName ?? ''}
                     onChange={(e) => setForm((f) => ({ ...f, lastName: e.target.value }))}
-                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                    className={FORM_FIELD_CLASS}
                   />
                 </div>
-              </div>
-              <div>
-                <label className="mb-1 block text-sm font-medium text-slate-700">{t('phoneNumber')}</label>
-                <input
-                  type="tel"
-                  inputMode="numeric"
-                  autoComplete="tel"
-                  value={form.phone != null && form.phone !== '' ? `+${form.phone}` : '+'}
-                  onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value.replace(/\D/g, '') }))}
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-                />
+                <div className="col-span-2 sm:col-span-1">
+                  <label className="mb-1 block text-sm font-medium text-slate-700">{t('phoneNumber')}</label>
+                  <input
+                    type="tel"
+                    inputMode="numeric"
+                    autoComplete="tel"
+                    value={form.phone != null && form.phone !== '' ? `+${form.phone}` : '+'}
+                    onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value.replace(/\D/g, '') }))}
+                    className={FORM_FIELD_CLASS}
+                  />
+                </div>
               </div>
             </section>
             <section className="space-y-3">
               <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">{t('additionalInfo')}</h3>
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                <div>
-                  <label className="mb-1 block text-sm font-medium text-slate-700">{t('age')}</label>
-                  <input
-                    type="number"
-                    min={0}
-                    value={form.age ?? ''}
-                    onChange={(e) =>
-                      setForm((f) => ({
-                        ...f,
-                        age: e.target.value ? Number(e.target.value) : undefined,
-                      }))
-                    }
-                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-                  />
-                </div>
+              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
                 <div>
                   <label className="mb-1 block text-sm font-medium text-slate-700">
                     {t('dateOfBirth')}
                   </label>
                   <DatePickerInput
                     value={form.dateOfBirth ?? ''}
-                    onValueChange={(nextValue) =>
-                      setForm((f) => ({ ...f, dateOfBirth: nextValue || undefined }))
-                    }
-                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                    onValueChange={(nextValue) => {
+                      const dateOfBirth = nextValue || undefined;
+                      const fromDob = computeAgeFromDob(dateOfBirth);
+                      setForm((f) => ({
+                        ...f,
+                        dateOfBirth,
+                        age: fromDob ?? f.age,
+                      }));
+                    }}
+                    className={cn(FORM_FIELD_CLASS, 'h-auto min-h-0 pr-10')}
                   />
                 </div>
                 <div>
+                  <label className="mb-1 block text-sm font-medium text-slate-700">{t('age')}</label>
+                  {form.dateOfBirth && effectiveAge !== undefined ? (
+                    <p className={cn(FORM_FIELD_CLASS, 'bg-slate-50 text-slate-800')}>{effectiveAge}</p>
+                  ) : (
+                    <input
+                      type="number"
+                      min={0}
+                      value={form.age ?? ''}
+                      onChange={(e) =>
+                        setForm((f) => ({
+                          ...f,
+                          age: e.target.value ? Number(e.target.value) : undefined,
+                        }))
+                      }
+                      className={FORM_FIELD_CLASS}
+                    />
+                  )}
+                </div>
+                <div className="col-span-2 sm:col-span-1">
                   <label className="mb-1 block text-sm font-medium text-slate-700">
                     {t('firstLessonDate')}
                   </label>
@@ -387,12 +433,12 @@ export function EditLeadModal({
                     onValueChange={(nextValue) =>
                       setForm((f) => ({ ...f, firstLessonDate: nextValue || undefined }))
                     }
-                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                    className={cn(FORM_FIELD_CLASS, 'h-auto min-h-0 pr-10')}
                   />
                 </div>
               </div>
             </section>
-            {typeof form.age === 'number' && form.age > 0 && form.age < 18 && (
+            {effectiveAge !== undefined && effectiveAge > 0 && effectiveAge < 18 && (
               <section className="space-y-3 rounded-lg border border-slate-200 bg-slate-50 p-3">
                 <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
                   {t('parentDetailsUnder18')}
@@ -404,7 +450,7 @@ export function EditLeadModal({
                     value={form.parentName ?? ''}
                     onChange={(e) => setForm((f) => ({ ...f, parentName: e.target.value }))}
                     placeholder={t('parentNamePlaceholder')}
-                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                    className={FORM_FIELD_CLASS}
                   />
                 </div>
                 <div>
@@ -414,7 +460,7 @@ export function EditLeadModal({
                     value={form.parentSurname ?? ''}
                     onChange={(e) => setForm((f) => ({ ...f, parentSurname: e.target.value }))}
                     placeholder={t('parentSurnamePlaceholder')}
-                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                    className={FORM_FIELD_CLASS}
                   />
                 </div>
                 <div>
@@ -427,7 +473,7 @@ export function EditLeadModal({
                       setForm((f) => ({ ...f, parentPhone: e.target.value.replace(/\D/g, '') }))
                     }
                     placeholder={t('parentPhonePlaceholder')}
-                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                    className={FORM_FIELD_CLASS}
                   />
                 </div>
                 <div>
@@ -438,7 +484,7 @@ export function EditLeadModal({
                     value={form.parentEmail ?? ''}
                     onChange={(e) => setForm((f) => ({ ...f, parentEmail: e.target.value }))}
                     placeholder={t('parentEmailPlaceholder')}
-                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                    className={FORM_FIELD_CLASS}
                   />
                 </div>
                 <div>
@@ -448,7 +494,7 @@ export function EditLeadModal({
                     value={form.parentPassportInfo ?? ''}
                     onChange={(e) => setForm((f) => ({ ...f, parentPassportInfo: e.target.value }))}
                     placeholder={t('passportPlaceholder')}
-                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                    className={FORM_FIELD_CLASS}
                   />
                 </div>
               </section>
@@ -458,13 +504,14 @@ export function EditLeadModal({
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
                   <label className="mb-1 block text-sm font-medium text-slate-700">{t('level')}</label>
-                  <SingleSelectDropdown
-                    id="edit-lead-level"
-                    options={levelOptions}
+                  <SegmentedControl
+                    options={levelSegmentOptions}
                     value={form.levelId ?? ''}
-                    onValueChange={(nextValue) =>
+                    onChange={(nextValue) =>
                       setForm((f) => ({ ...f, levelId: nextValue || undefined }))
                     }
+                    allowDeselect
+                    aria-label={t('level')}
                   />
                 </div>
                 <div>
@@ -521,63 +568,52 @@ export function EditLeadModal({
                 )}
               </div>
             </section>
-            </div>
-            <div className="border-t border-slate-200 bg-white/95 px-4 py-3 shadow-[0_-2px_8px_rgba(15,23,42,0.06)] backdrop-blur sm:px-6">
-              <section className="space-y-2">
-                <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">{tc('status')}</h3>
-                <div>
-                  <label className="mb-1 block text-sm font-medium text-slate-700">{tc('status')}</label>
+            <section className="space-y-2">
+              <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">{tc('status')}</h3>
+              <div className="flex items-end gap-3">
+                <div className="min-w-0 flex-1">
                   <CrmStatusSelector
                     id="edit-lead-status"
                     value={form.status}
                     options={availableStatuses}
                     portaledMenuRef={crmStatusPortaledMenuRef}
+                    menuPlacement="top"
                     onChange={handleCrmStatusChange}
                     disabled={lead?.status === 'PAID'}
                   />
                 </div>
-                {form.status === 'ARCHIVE' && (
-                  <div>
-                    <label className="mb-1 block text-sm font-medium text-slate-700">
-                      {t('archiveReasonOptional')}
-                    </label>
-                    <input
-                      type="text"
-                      value={form.archivedReason ?? ''}
-                      onChange={(e) =>
-                        setForm((f) => ({ ...f, archivedReason: e.target.value || undefined }))
-                      }
-                      placeholder={t('archiveReasonPlaceholder')}
-                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-                    />
-                  </div>
-                )}
-              </section>
-            </div>
-            <div className="border-t border-slate-200 px-4 py-3 sm:px-6">
-              <div className="flex justify-center gap-2">
-              <button
-                type="submit"
-                disabled={saving}
-                className={cn(
-                  'rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90 disabled:opacity-50'
-                )}
-              >
-                {saving ? t('saving') : tc('save')}
-              </button>
+                <button
+                  type="submit"
+                  disabled={saving}
+                  className={cn(
+                    'inline-flex h-11 shrink-0 items-center justify-center rounded-[15px] bg-primary px-4 text-sm font-medium text-white hover:bg-primary/90 disabled:opacity-50',
+                  )}
+                >
+                  {saving ? t('saving') : tc('save')}
+                </button>
               </div>
-            </div>
-          </form>
-        )}
-        </div>
-      </div>
-    </div>,
-    document.body
-  );
-
-  return (
-    <>
-      {editLeadPortal}
+              {form.status === 'ARCHIVE' && (
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-slate-700">
+                    {t('archiveReasonOptional')}
+                  </label>
+                  <input
+                    type="text"
+                    value={form.archivedReason ?? ''}
+                    onChange={(e) =>
+                      setForm((f) => ({ ...f, archivedReason: e.target.value || undefined }))
+                    }
+                    placeholder={t('archiveReasonPlaceholder')}
+                    className={FORM_FIELD_CLASS}
+                  />
+                </div>
+              )}
+            </section>
+                </form>
+              </div>
+            )}
+          </PortalSheetPortal>
+      </DialogPrimitive.Root>
       <PaidRegistrationModal
         open={paidRegistrationOpen}
         leadId={paidRegistrationOpen ? leadId : null}

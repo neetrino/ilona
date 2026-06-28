@@ -639,7 +639,9 @@ export function GroupsTab({
             }
             value={searchQuery}
             onChange={onSearchChange}
-            className="w-full pl-10 pr-4 py-3 bg-white border border-[rgba(14,14,16,0.07)] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20 focus:border-[#1010a3]"
+            className={cn(
+              'h-11 min-h-11 w-full rounded-[15px] border border-[rgba(14,14,16,0.07)] bg-white py-0 pl-10 pr-4 text-sm focus:border-[#1010a3] focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20',
+            )}
           />
         </div>
         {selectedGroupIds.size > 0 && (
@@ -648,7 +650,7 @@ export function GroupsTab({
             onClick={handleBulkDeleteGroupsClick}
             disabled={deleteGroup.isPending || isLoading}
           >
-            {allGroupsSelected && groups.length > 1
+            {allGroupsSelected
               ? t('deleteAll', { count: selectedGroupIds.size })
               : t('deleteSelected', { count: selectedGroupIds.size })}
           </Button>
@@ -687,10 +689,11 @@ export function GroupsTab({
               }}
               listLabel={t('listView')}
               boardLabel={t('boardView')}
-              className="w-full sm:w-auto"
+              className="h-11 min-h-11 w-full rounded-[15px] sm:w-auto"
             />
             <Button
-              className="h-10 whitespace-nowrap rounded-lg bg-[#1010a3] px-4 text-sm font-medium text-white hover:bg-[#1010a3]/90"
+              size="lg"
+              className="h-11 min-h-11 rounded-[15px] px-4 py-0 text-sm font-medium bg-[#1010a3] text-white hover:bg-[#1010a3]/90"
               onClick={() => handleCreateGroupOpenChange(true)}
             >
               {t('addGroupButton')}
@@ -699,7 +702,7 @@ export function GroupsTab({
         ) : null}
 
         <Button 
-          className="h-12 w-full rounded-lg bg-[#1010a3] px-4 font-medium text-white hover:bg-[#1010a3]/90 sm:hidden"
+          className="h-11 min-h-11 w-full rounded-[15px] bg-[#1010a3] px-4 py-0 font-medium text-white hover:bg-[#1010a3]/90 sm:hidden"
           onClick={() => handleCreateGroupOpenChange(true)}
         >
           {t('addGroupButton')}
@@ -708,25 +711,27 @@ export function GroupsTab({
 
       {/* Board: branch tabs + groups directly underneath */}
       {viewMode === 'board' && (
-        <div className="mb-6 overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm animate-in fade-in-0 duration-150">
-          <div className="border-b border-[rgba(14,14,16,0.07)] bg-gradient-to-b from-[#fafafa] to-white px-3 pt-3">
-            <GroupsBranchTabsStrip
-              centers={centersForBranchTabs}
-              activeCenterId={activeBranchTabId}
-              totalGroupsAcrossCenters={totalGroupsAcrossCenters}
-              isLoading={isLoadingBranchTabs}
-              onCenterSelect={handleBranchTabClick}
-              t={t}
-            />
-            {centersForBranchTabs.length === 0 && !isLoadingBranchTabs && allCenters.length > 0 && (
-              <p className="pb-3 text-sm text-[#8b8b90]">{t('noBranchesMatch')}</p>
-            )}
+        <div className="mb-6 flex flex-col gap-3 animate-in fade-in-0 duration-150 sm:gap-0 sm:overflow-hidden sm:rounded-2xl sm:border sm:border-slate-100 sm:bg-white sm:shadow-sm">
+          <div className="overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm sm:rounded-none sm:border-0 sm:shadow-none">
+            <div className="bg-gradient-to-b from-[#fafafa] to-white px-3 pt-3 sm:border-b sm:border-[rgba(14,14,16,0.07)]">
+              <GroupsBranchTabsStrip
+                centers={centersForBranchTabs}
+                activeCenterId={activeBranchTabId}
+                totalGroupsAcrossCenters={totalGroupsAcrossCenters}
+                isLoading={isLoadingBranchTabs}
+                onCenterSelect={handleBranchTabClick}
+                t={t}
+              />
+              {centersForBranchTabs.length === 0 && !isLoadingBranchTabs && allCenters.length > 0 && (
+                <p className="pb-3 text-sm text-[#8b8b90]">{t('noBranchesMatch')}</p>
+              )}
+            </div>
           </div>
 
           <div
-            className="p-4 sm:p-5"
             role="tabpanel"
             aria-label={activeBranchTabId ? t('tabpanelGroupsForBranch') : t('tabpanelSelectBranch')}
+            className="min-w-0 sm:p-5"
           >
             {showBoardCenterPicker ? (
               <div className="rounded-lg border border-dashed border-[rgba(14,14,16,0.07)] bg-[#fafafa]/60 py-12 text-center">
@@ -741,12 +746,12 @@ export function GroupsTab({
                 {searchQuery ? t('noGroupsMatch') : t('noGroupsInBranch')}
               </div>
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-3 sm:space-y-4">
                 <div ref={mobileBoardStartRef} className={isCompactIPad ? '' : 'sm:hidden'} />
                 <div ref={desktopBoardStartRef} className={cn('hidden sm:block', isCompactIPad && 'sm:hidden')} />
                 <div
                   className={cn(
-                    'grid w-full min-w-0 gap-4',
+                    'grid w-full min-w-0 gap-3',
                     isCompactIPad ? 'grid-cols-2' : 'grid-cols-1',
                     !isCompactIPad && 'sm:hidden',
                   )}

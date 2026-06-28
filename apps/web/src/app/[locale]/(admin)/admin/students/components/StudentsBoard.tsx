@@ -77,9 +77,6 @@ interface StudentsBoardProps {
   centersData?: Array<Center>;
   isLoading: boolean;
   searchQuery: string;
-  onEdit: (student: Student) => void;
-  onDelete: (student: Student) => void;
-  onDeactivate: (student: Student) => void;
   onCardClick?: (student: Student) => void;
 }
 
@@ -88,9 +85,6 @@ export function StudentsBoard({
   centersData,
   isLoading,
   searchQuery,
-  onEdit,
-  onDelete,
-  onDeactivate,
   onCardClick,
 }: StudentsBoardProps) {
   const locale = useLocale();
@@ -324,9 +318,6 @@ export function StudentsBoard({
                           <StudentCard
                             key={getItemId(item)}
                             student={item}
-                            onEdit={() => onEdit(item)}
-                            onDelete={() => onDelete(item)}
-                            onDeactivate={() => onDeactivate(item)}
                             onCardClick={onCardClick}
                           />
                         );
@@ -369,9 +360,6 @@ export function StudentsBoard({
                     <StudentCard
                       key={getItemId(item)}
                       student={item}
-                      onEdit={() => onEdit(item)}
-                      onDelete={() => onDelete(item)}
-                      onDeactivate={() => onDeactivate(item)}
                       onCardClick={onCardClick}
                     />
                   );
@@ -445,9 +433,6 @@ export function StudentsBoard({
                       <StudentCard
                         key={getItemId(item)}
                         student={item}
-                        onEdit={() => onEdit(item)}
-                        onDelete={() => onDelete(item)}
-                        onDeactivate={() => onDeactivate(item)}
                         onCardClick={onCardClick}
                       />
                     );

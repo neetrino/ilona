@@ -100,13 +100,14 @@ export default function SettingsPage() {
                     autoComplete="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full px-4 py-3 border border-[rgba(14,14,16,0.07)] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20 focus:border-[#1010a3]"
+                    className="h-11 min-h-11 w-full rounded-[15px] border border-[rgba(14,14,16,0.07)] px-4 py-0 focus:border-[#1010a3] focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20"
                   />
                 </div>
                 <div className="flex justify-end pt-2">
                   <Button
                     type="submit"
-                    className="bg-[#1010a3] hover:bg-[#1010a3]/90 text-white px-6"
+                    size="lg"
+                    className="h-11 min-h-11 rounded-[15px] bg-[#1010a3] px-6 py-0 text-white hover:bg-[#1010a3]/90"
                     disabled={updateProfile.isPending}
                   >
                     {updateProfile.isPending ? t('saving') : t('saveChanges')}
@@ -127,7 +128,7 @@ export default function SettingsPage() {
                     autoComplete="current-password"
                     value={currentPassword}
                     onChange={(e) => setCurrentPassword(e.target.value)}
-                    className="w-full px-4 py-3 border border-[rgba(14,14,16,0.07)] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20 focus:border-[#1010a3]"
+                    className="h-11 min-h-11 w-full rounded-[15px] border border-[rgba(14,14,16,0.07)] px-4 py-0 focus:border-[#1010a3] focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20"
                   />
                 </div>
                 <div>
@@ -139,7 +140,7 @@ export default function SettingsPage() {
                     autoComplete="new-password"
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
-                    className="w-full px-4 py-3 border border-[rgba(14,14,16,0.07)] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20 focus:border-[#1010a3]"
+                    className="h-11 min-h-11 w-full rounded-[15px] border border-[rgba(14,14,16,0.07)] px-4 py-0 focus:border-[#1010a3] focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20"
                   />
                   <p className="text-xs text-[#8b8b90] mt-1">{t('minimum8Characters')}</p>
                 </div>
@@ -152,13 +153,14 @@ export default function SettingsPage() {
                     autoComplete="new-password"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="w-full px-4 py-3 border border-[rgba(14,14,16,0.07)] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20 focus:border-[#1010a3]"
+                    className="h-11 min-h-11 w-full rounded-[15px] border border-[rgba(14,14,16,0.07)] px-4 py-0 focus:border-[#1010a3] focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20"
                   />
                 </div>
                 <div className="pt-2 flex justify-end">
                   <Button
                     type="submit"
-                    className="bg-[#1010a3] hover:bg-[#1010a3]/90 text-white px-6"
+                    size="lg"
+                    className="h-11 min-h-11 rounded-[15px] bg-[#1010a3] px-6 py-0 text-white hover:bg-[#1010a3]/90"
                     disabled={changePassword.isPending}
                   >
                     {changePassword.isPending ? t('updating') : t('updatePassword')}

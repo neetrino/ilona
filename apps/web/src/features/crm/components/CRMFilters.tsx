@@ -4,6 +4,9 @@ import { useTranslations } from 'next-intl';
 import type { CrmLeadFilters } from '@/features/crm/types';
 import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
 import { DatePickerInput } from '@/shared/components/ui';
+import { cn } from '@/shared/lib/utils';
+
+const CRM_DESKTOP_CONTROL_CLASS = 'lg:h-11 lg:rounded-[15px]';
 
 interface CRMFiltersProps {
   filters: CrmLeadFilters;
@@ -32,7 +35,11 @@ export function CRMFilters({
           placeholder={t('searchPlaceholder')}
           value={filters.search ?? ''}
           onChange={(e) => onFiltersChange({ ...filters, search: e.target.value || undefined })}
-          className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+          className={cn(
+            'w-full rounded-lg border border-slate-300 px-3 py-2 text-sm',
+            CRM_DESKTOP_CONTROL_CLASS,
+            'lg:border-[rgba(14,14,16,0.08)] lg:py-0 lg:focus:border-[#1010a3]/45 lg:focus:outline-none lg:focus:ring-4 lg:focus:ring-[#1010a3]/10',
+          )}
         />
       </div>
       <div className="min-w-0">
@@ -47,6 +54,7 @@ export function CRMFilters({
           onValueChange={(nextValue) =>
             onFiltersChange({ ...filters, centerId: nextValue || undefined })
           }
+          triggerClassName={CRM_DESKTOP_CONTROL_CLASS}
         />
       </div>
       <div className="min-w-0">
@@ -64,6 +72,7 @@ export function CRMFilters({
           onValueChange={(nextValue) =>
             onFiltersChange({ ...filters, teacherId: nextValue || undefined })
           }
+          triggerClassName={CRM_DESKTOP_CONTROL_CLASS}
         />
       </div>
       <div className="min-w-0">
@@ -78,6 +87,7 @@ export function CRMFilters({
           onValueChange={(nextValue) =>
             onFiltersChange({ ...filters, groupId: nextValue || undefined })
           }
+          triggerClassName={CRM_DESKTOP_CONTROL_CLASS}
         />
       </div>
       <div className="min-w-0 grid grid-cols-2 gap-3 sm:contents">
@@ -88,6 +98,7 @@ export function CRMFilters({
             value={filters.dateFrom ?? ''}
             placeholder={t('dateFrom')}
             onValueChange={(nextDate) => onFiltersChange({ ...filters, dateFrom: nextDate || undefined })}
+            className={CRM_DESKTOP_CONTROL_CLASS}
           />
         </div>
         <div className="min-w-0">
@@ -97,6 +108,7 @@ export function CRMFilters({
             value={filters.dateTo ?? ''}
             placeholder={t('dateTo')}
             onValueChange={(nextDate) => onFiltersChange({ ...filters, dateTo: nextDate || undefined })}
+            className={CRM_DESKTOP_CONTROL_CLASS}
           />
         </div>
       </div>

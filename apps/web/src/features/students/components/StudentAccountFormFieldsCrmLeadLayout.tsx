@@ -1,27 +1,41 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import type { FieldErrors, UseFormRegister, UseFormSetValue, UseFormWatch } from 'react-hook-form';
-import { PasswordInput } from '@/shared/components/ui';
+import {
+  Checkbox,
+  Input,
+  Label,
+  PasswordInput,
+  SegmentedControl,
+} from '@/shared/components/ui';
 import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
+import {
+  ADMIN_FORM_INPUT_CLASS,
+} from '@/shared/lib/admin-control-theme';
+import {
+  DEFAULT_GROUP_LEVEL,
+  GROUP_LEVEL_SEGMENT_OPTIONS,
+} from '@/features/groups/lib/group-level-options';
+import { cn } from '@/shared/lib/utils';
 import { formatDmyInputValue } from '../student-dob-date';
+import { computeAgeFromDob } from '../student-account-form.schema';
 import type { CreateStudentWithConfirmFormData } from '../student-account-form.schema';
 import type { GroupAssignmentOption } from '../lib/group-center-assignment';
 
-const LEVEL_OPTIONS = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'] as const;
+const sectionHeading = 'text-sm font-semibold text-[#3b3b40]';
 
-const inputClass =
-  'w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1';
-
-const sectionTitle = 'text-xs font-semibold uppercase tracking-wide text-slate-500';
+const ADMIN_TEXTAREA_CLASS = cn(
+  ADMIN_FORM_INPUT_CLASS,
+  'h-auto min-h-[5.5rem] resize-none py-2',
+);
 
 export interface StudentAccountFormFieldsCrmLeadLayoutProps {
   register: UseFormRegister<CreateStudentWithConfirmFormData>;
   setValue: UseFormSetValue<CreateStudentWithConfirmFormData>;
   errors: FieldErrors<CreateStudentWithConfirmFormData>;
   watch: UseFormWatch<CreateStudentWithConfirmFormData>;
-  computedAge: number | undefined;
   showParentSection: boolean;
   groupsForCenter: GroupAssignmentOption[];
   centers: Array<{ id: string; name: string }>;
@@ -39,7 +53,6 @@ export function StudentAccountFormFieldsCrmLeadLayout({
   setValue,
   errors,
   watch,
-  computedAge,
   showParentSection,
   groupsForCenter,
   centers,
@@ -60,12 +73,23 @@ export function StudentAccountFormFieldsCrmLeadLayout({
   const watchedCenterId = watch('centerId') || '';
   const effectiveCenterId = lockedCenterId || watchedCenterId || '';
   const hasCenterScope = Boolean(effectiveCenterId);
-  const watchedLevelId = watch('levelId') || '';
+  const watchedLevelId = watch('levelId') || DEFAULT_GROUP_LEVEL;
   const watchedGroupId = watch('groupId') || '';
   const phoneDigits = (watch('phone') ?? '').replace(/\D/g, '');
   const parentPhoneDigits = (watch('parentPhone') ?? '').replace(/\D/g, '');
   const watchedDateOfBirth = watch('dateOfBirth') ?? '';
   const watchedFirstLessonDate = watch('firstLessonDate') ?? '';
+  const ageFromDob = useMemo(
+    () => computeAgeFromDob(watchedDateOfBirth.trim() || undefined),
+    [watchedDateOfBirth],
+  );
+  const showManualAgeInput = ageFromDob === undefined;
+
+  useEffect(() => {
+    if (ageFromDob !== undefined) {
+      setValue('manualAge', undefined, { shouldDirty: true, shouldValidate: true });
+    }
+  }, [ageFromDob, setValue]);
 
   const groupPlaceholder = !hasCenterScope
     ? tForm('selectCenterFirst')
@@ -74,14 +98,6 @@ export function StudentAccountFormFieldsCrmLeadLayout({
       : groupsForCenter.length === 0
         ? tForm('noGroupsForCenter')
         : t('selectGroup');
-
-  const levelOptions = useMemo(
-    () => [
-      { id: '', label: '—' },
-      ...LEVEL_OPTIONS.map((level) => ({ id: level, label: level })),
-    ],
-    [],
-  );
 
   const centerOptions = useMemo(
     () => [
@@ -99,145 +115,178 @@ export function StudentAccountFormFieldsCrmLeadLayout({
     [groupPlaceholder, groupsForCenter],
   );
 
+  const handleCenterChange = (nextCenterId: string) => {
+    setValue('centerId', nextCenterId, { shouldDirty: true, shouldValidate: true });
+    setValue('teacherId', '', { shouldDirty: true });
+    setValue('groupId', '', { shouldDirty: true });
+  };
+
   return (
     <div className="space-y-6">
-      <section className="space-y-3">
-        <h3 className={sectionTitle}>{tCrm('basicInfo')}</h3>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <div>
-            <label htmlFor={p('firstName')} className="mb-1 block text-sm font-medium text-slate-700">
-              {tCommon('firstName')} <span className="text-red-500">{tForm('requiredMark')}</span>
-            </label>
-            <input
+      <section className="space-y-4">
+        <h3 className={sectionHeading}>{tCrm('basicInfo')}</h3>
+        <div className="grid grid-cols-2 gap-4 min-[1367px]:grid-cols-3">
+          <div className="min-w-0 space-y-2">
+            <Label htmlFor={p('firstName')}>
+              {tCommon('firstName')} <span className="text-red-500">*</span>
+            </Label>
+            <Input
               id={p('firstName')}
-              type="text"
+              className={ADMIN_FORM_INPUT_CLASS}
               placeholder={tForm('firstNamePlaceholder')}
               {...register('firstName')}
-              className={inputClass}
+              disabled={isSubmitting}
             />
-            {errors.firstName && <p className="mt-1 text-sm text-red-600">{errors.firstName.message}</p>}
+            {errors.firstName ? (
+              <p className="text-sm text-red-600">{errors.firstName.message}</p>
+            ) : null}
           </div>
-          <div>
-            <label htmlFor={p('lastName')} className="mb-1 block text-sm font-medium text-slate-700">
-              {tCommon('lastName')} <span className="text-red-500">{tForm('requiredMark')}</span>
-            </label>
-            <input
+          <div className="min-w-0 space-y-2">
+            <Label htmlFor={p('lastName')}>
+              {tCommon('lastName')} <span className="text-red-500">*</span>
+            </Label>
+            <Input
               id={p('lastName')}
-              type="text"
+              className={ADMIN_FORM_INPUT_CLASS}
               placeholder={tForm('lastNamePlaceholder')}
               {...register('lastName')}
-              className={inputClass}
+              disabled={isSubmitting}
             />
-            {errors.lastName && <p className="mt-1 text-sm text-red-600">{errors.lastName.message}</p>}
+            {errors.lastName ? (
+              <p className="text-sm text-red-600">{errors.lastName.message}</p>
+            ) : null}
           </div>
-        </div>
-        <div>
-          <label htmlFor={p('phone')} className="mb-1 block text-sm font-medium text-slate-700">
-            {tForm('phoneNumber')}
-          </label>
-          <input
-            id={p('phone')}
-            type="tel"
-            inputMode="numeric"
-            autoComplete="tel"
-            value={phoneDigits !== '' ? `+${phoneDigits}` : ''}
-            onChange={(e) =>
-              setValue('phone', e.target.value.replace(/\D/g, ''), { shouldValidate: true, shouldDirty: true })
-            }
-            placeholder={tForm('phoneExamplePlaceholder')}
-            className={inputClass}
-            disabled={isSubmitting}
-          />
-          {errors.phone && <p className="mt-1 text-sm text-red-600">{errors.phone.message}</p>}
+          <div className="col-span-2 min-w-0 space-y-2 min-[1367px]:col-span-1">
+            <Label htmlFor={p('phone')}>{tForm('phoneNumber')}</Label>
+            <Input
+              id={p('phone')}
+              type="tel"
+              inputMode="numeric"
+              autoComplete="tel"
+              value={phoneDigits !== '' ? `+${phoneDigits}` : ''}
+              onChange={(e) =>
+                setValue('phone', e.target.value.replace(/\D/g, ''), {
+                  shouldValidate: true,
+                  shouldDirty: true,
+                })
+              }
+              placeholder={tForm('phoneExamplePlaceholder')}
+              className={ADMIN_FORM_INPUT_CLASS}
+              disabled={isSubmitting}
+            />
+            {errors.phone ? <p className="text-sm text-red-600">{errors.phone.message}</p> : null}
+          </div>
         </div>
       </section>
 
-      <section className="space-y-3">
-        <h3 className={sectionTitle}>{tForm('account')}</h3>
-        <div>
-          <label htmlFor={p('email')} className="mb-1 block text-sm font-medium text-slate-700">
-            {tCommon('email')} <span className="text-red-500">{tForm('requiredMark')}</span>
-          </label>
-          <input
-            id={p('email')}
-            type="email"
-            autoComplete="email"
-            placeholder={tForm('emailPlaceholder')}
-            {...register('email')}
-            className={inputClass}
-          />
-          {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>}
-        </div>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <div>
-            <label htmlFor={p('password')} className="mb-1 block text-sm font-medium text-slate-700">
-              {tForm('password')} <span className="text-red-500">{tForm('requiredMark')}</span>
-            </label>
+      <section className="space-y-4">
+        <h3 className={sectionHeading}>{tForm('account')}</h3>
+        <div className="grid grid-cols-2 gap-4 min-[1367px]:grid-cols-3">
+          <div className="col-span-2 min-w-0 space-y-2 min-[1367px]:col-span-1">
+            <Label htmlFor={p('email')}>
+              {tCommon('email')} <span className="text-red-500">*</span>
+            </Label>
+            <Input
+              id={p('email')}
+              type="email"
+              autoComplete="email"
+              placeholder={tForm('emailPlaceholder')}
+              className={ADMIN_FORM_INPUT_CLASS}
+              {...register('email')}
+              disabled={isSubmitting}
+            />
+            {errors.email ? <p className="text-sm text-red-600">{errors.email.message}</p> : null}
+          </div>
+          <div className="min-w-0 space-y-2">
+            <Label htmlFor={p('password')}>
+              {tForm('password')} <span className="text-red-500">*</span>
+            </Label>
             <PasswordInput
               id={p('password')}
               autoComplete="new-password"
               placeholder={tForm('passwordPlaceholder')}
+              className={ADMIN_FORM_INPUT_CLASS}
               {...register('password')}
-              className={inputClass}
               error={errors.password?.message}
+              disabled={isSubmitting}
             />
           </div>
-          <div>
-            <label htmlFor={p('confirmPassword')} className="mb-1 block text-sm font-medium text-slate-700">
-              {tForm('confirmPassword')} <span className="text-red-500">{tForm('requiredMark')}</span>
-            </label>
+          <div className="min-w-0 space-y-2">
+            <Label htmlFor={p('confirmPassword')}>
+              {tForm('confirmPassword')} <span className="text-red-500">*</span>
+            </Label>
             <PasswordInput
               id={p('confirmPassword')}
               autoComplete="new-password"
               placeholder={tForm('passwordPlaceholder')}
+              className={ADMIN_FORM_INPUT_CLASS}
               {...register('confirmPassword')}
-              className={inputClass}
               error={errors.confirmPassword?.message}
+              disabled={isSubmitting}
             />
           </div>
         </div>
       </section>
 
-      <section className="space-y-3">
-        <h3 className={sectionTitle}>{tCrm('additionalInfo')}</h3>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-          <div>
-            <label htmlFor={p('manualAge')} className="mb-1 block text-sm font-medium text-slate-700">
-              {tForm('ageYears')}
-            </label>
-            <input id={p('manualAge')} type="number" min={0} placeholder={tForm('ageExamplePlaceholder')} {...register('manualAge')} className={inputClass} disabled={isSubmitting} />
-            {computedAge !== undefined && (
-              <p className="mt-1 text-xs text-slate-500">{tForm('effectiveAge', { age: computedAge })}</p>
-            )}
-            {errors.manualAge && <p className="mt-1 text-sm text-red-600">{errors.manualAge.message}</p>}
-          </div>
-          <div>
-            <label htmlFor={p('dateOfBirth')} className="mb-1 block text-sm font-medium text-slate-700">
-              {t('dateOfBirth')}
-            </label>
-            <input
+      <section className="space-y-4">
+        <h3 className={sectionHeading}>{tCrm('additionalInfo')}</h3>
+        <div className="grid grid-cols-2 gap-4 min-[1367px]:grid-cols-3">
+          <div className="min-w-0 space-y-2">
+            <Label htmlFor={p('dateOfBirth')}>{t('dateOfBirth')}</Label>
+            <Input
               id={p('dateOfBirth')}
               type="text"
               inputMode="numeric"
               autoComplete="bday"
               placeholder={tForm('dateOfBirthPlaceholder')}
               value={watchedDateOfBirth}
-              onChange={(e) =>
-                setValue('dateOfBirth', formatDmyInputValue(e.target.value, watchedDateOfBirth), {
-                  shouldValidate: true,
-                  shouldDirty: true,
-                })
-              }
-              className={inputClass}
+              onChange={(e) => {
+                const next = formatDmyInputValue(e.target.value, watchedDateOfBirth);
+                setValue('dateOfBirth', next, { shouldValidate: true, shouldDirty: true });
+                const fromDob = computeAgeFromDob(next.trim() || undefined);
+                if (fromDob !== undefined) {
+                  setValue('manualAge', undefined, { shouldDirty: true, shouldValidate: true });
+                }
+              }}
+              className={ADMIN_FORM_INPUT_CLASS}
               disabled={isSubmitting}
             />
-            {errors.dateOfBirth && <p className="mt-1 text-sm text-red-600">{errors.dateOfBirth.message}</p>}
+            {errors.dateOfBirth ? (
+              <p className="text-sm text-red-600">{errors.dateOfBirth.message}</p>
+            ) : null}
           </div>
-          <div>
-            <label htmlFor={p('firstLessonDate')} className="mb-1 block text-sm font-medium text-slate-700">
-              {tForm('firstLessonDate')}
-            </label>
-            <input
+          <div className="min-w-0 space-y-2">
+            <Label htmlFor={p('manualAge')}>{tForm('ageYears')}</Label>
+            {showManualAgeInput ? (
+              <>
+                <Input
+                  id={p('manualAge')}
+                  type="number"
+                  min={0}
+                  placeholder={tForm('ageExamplePlaceholder')}
+                  className={ADMIN_FORM_INPUT_CLASS}
+                  {...register('manualAge')}
+                  disabled={isSubmitting}
+                />
+                {errors.manualAge ? (
+                  <p className="text-sm text-red-600">{errors.manualAge.message}</p>
+                ) : null}
+              </>
+            ) : (
+              <>
+                <p
+                  className="flex h-10 items-center rounded-[15px] border border-[rgba(14,14,16,0.12)] bg-slate-50/80 px-3 text-sm text-[#3b3b40]"
+                  aria-live="polite"
+                >
+                  {ageFromDob}
+                </p>
+                <p className="text-xs text-slate-500">{tForm('ageHint', { age: ageFromDob })}</p>
+              </>
+            )}
+          </div>
+          <div className="col-span-2 min-w-0 space-y-2 min-[1367px]:col-span-1">
+            <Label htmlFor={p('firstLessonDate')}>{tForm('firstLessonDate')}</Label>
+            <Input
               id={p('firstLessonDate')}
               type="text"
               inputMode="numeric"
@@ -249,50 +298,52 @@ export function StudentAccountFormFieldsCrmLeadLayout({
                   shouldDirty: true,
                 })
               }
-              className={inputClass}
+              className={ADMIN_FORM_INPUT_CLASS}
               disabled={isSubmitting}
             />
-            {errors.firstLessonDate && (
-              <p className="mt-1 text-sm text-red-600">{errors.firstLessonDate.message}</p>
-            )}
+            {errors.firstLessonDate ? (
+              <p className="text-sm text-red-600">{errors.firstLessonDate.message}</p>
+            ) : null}
           </div>
         </div>
       </section>
 
-      {showParentSection && (
-        <section className="space-y-3 rounded-lg border border-slate-200 bg-slate-50 p-3">
-          <p className={sectionTitle}>{tCrm('parentDetailsUnder18')}</p>
-          <div>
-            <label htmlFor={p('parentName')} className="mb-1 block text-sm font-medium text-slate-700">
-              {tCrm('parentName')} <span className="text-red-500">{tForm('requiredMark')}</span>
-            </label>
-            <input
+      {showParentSection ? (
+        <section className="space-y-4 rounded-[15px] border border-slate-200 bg-slate-50/60 p-4">
+          <p className={sectionHeading}>{tCrm('parentDetailsUnder18')}</p>
+          <div className="min-w-0 space-y-2">
+            <Label htmlFor={p('parentName')}>
+              {tCrm('parentName')} <span className="text-red-500">*</span>
+            </Label>
+            <Input
               id={p('parentName')}
-              type="text"
+              className={ADMIN_FORM_INPUT_CLASS}
               placeholder={tCrm('parentNamePlaceholder')}
               {...register('parentName')}
-              className={inputClass}
+              disabled={isSubmitting}
             />
-            {errors.parentName && <p className="mt-1 text-sm text-red-600">{errors.parentName.message}</p>}
+            {errors.parentName ? (
+              <p className="text-sm text-red-600">{errors.parentName.message}</p>
+            ) : null}
           </div>
-          <div>
-            <label htmlFor={p('parentSurname')} className="mb-1 block text-sm font-medium text-slate-700">
-              {tCrm('parentSurname')}
-            </label>
-            <input
+          <div className="min-w-0 space-y-2">
+            <Label htmlFor={p('parentSurname')}>{tCrm('parentSurname')}</Label>
+            <Input
               id={p('parentSurname')}
-              type="text"
+              className={ADMIN_FORM_INPUT_CLASS}
               placeholder={tCrm('parentSurnamePlaceholder')}
               {...register('parentSurname')}
-              className={inputClass}
+              disabled={isSubmitting}
             />
-            {errors.parentSurname && <p className="mt-1 text-sm text-red-600">{errors.parentSurname.message}</p>}
+            {errors.parentSurname ? (
+              <p className="text-sm text-red-600">{errors.parentSurname.message}</p>
+            ) : null}
           </div>
-          <div>
-            <label htmlFor={p('parentPhone')} className="mb-1 block text-sm font-medium text-slate-700">
-              {tCrm('parentPhone')} <span className="text-red-500">{tForm('requiredMark')}</span>
-            </label>
-            <input
+          <div className="min-w-0 space-y-2">
+            <Label htmlFor={p('parentPhone')}>
+              {tCrm('parentPhone')} <span className="text-red-500">*</span>
+            </Label>
+            <Input
               id={p('parentPhone')}
               type="tel"
               inputMode="numeric"
@@ -304,98 +355,99 @@ export function StudentAccountFormFieldsCrmLeadLayout({
                 })
               }
               placeholder={tCrm('parentPhonePlaceholder')}
-              className={inputClass}
+              className={ADMIN_FORM_INPUT_CLASS}
               disabled={isSubmitting}
             />
-            {errors.parentPhone && <p className="mt-1 text-sm text-red-600">{errors.parentPhone.message}</p>}
+            {errors.parentPhone ? (
+              <p className="text-sm text-red-600">{errors.parentPhone.message}</p>
+            ) : null}
           </div>
-          <div>
-            <label htmlFor={p('parentEmail')} className="mb-1 block text-sm font-medium text-slate-700">
-              {tCrm('parentEmail')} <span className="text-red-500">{tForm('requiredMark')}</span>
-            </label>
-            <input
+          <div className="min-w-0 space-y-2">
+            <Label htmlFor={p('parentEmail')}>
+              {tCrm('parentEmail')} <span className="text-red-500">*</span>
+            </Label>
+            <Input
               id={p('parentEmail')}
               type="email"
               autoComplete="email"
               placeholder={tCrm('parentEmailPlaceholder')}
+              className={ADMIN_FORM_INPUT_CLASS}
               {...register('parentEmail')}
-              className={inputClass}
-            />
-            {errors.parentEmail && <p className="mt-1 text-sm text-red-600">{errors.parentEmail.message}</p>}
-          </div>
-          <div>
-            <label htmlFor={p('parentPassportInfo')} className="mb-1 block text-sm font-medium text-slate-700">
-              {tCrm('parentPassport')} <span className="text-red-500">{tForm('requiredMark')}</span>
-            </label>
-            <input
-              id={p('parentPassportInfo')}
-              type="text"
-              placeholder={tCrm('passportPlaceholder')}
-              {...register('parentPassportInfo')}
-              className={inputClass}
-            />
-            {errors.parentPassportInfo && (
-              <p className="mt-1 text-sm text-red-600">{errors.parentPassportInfo.message}</p>
-            )}
-          </div>
-        </section>
-      )}
-
-      <section className="space-y-3">
-        <h3 className={sectionTitle}>{tCrm('academicInfo')}</h3>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <div>
-            <label htmlFor={p('levelId')} className="mb-1 block text-sm font-medium text-slate-700">
-              {tCommon('level')}
-            </label>
-            <input type="hidden" {...register('levelId')} />
-            <SingleSelectDropdown
-              id={p('levelId')}
-              options={levelOptions}
-              value={watchedLevelId}
-              onValueChange={(nextValue) =>
-                setValue('levelId', nextValue ?? '', { shouldDirty: true, shouldValidate: true })
-              }
               disabled={isSubmitting}
             />
+            {errors.parentEmail ? (
+              <p className="text-sm text-red-600">{errors.parentEmail.message}</p>
+            ) : null}
           </div>
+          <div className="min-w-0 space-y-2">
+            <Label htmlFor={p('parentPassportInfo')}>
+              {tCrm('parentPassport')} <span className="text-red-500">*</span>
+            </Label>
+            <Input
+              id={p('parentPassportInfo')}
+              className={ADMIN_FORM_INPUT_CLASS}
+              placeholder={tCrm('passportPlaceholder')}
+              {...register('parentPassportInfo')}
+              disabled={isSubmitting}
+            />
+            {errors.parentPassportInfo ? (
+              <p className="text-sm text-red-600">{errors.parentPassportInfo.message}</p>
+            ) : null}
+          </div>
+        </section>
+      ) : null}
+
+      <section className="space-y-4">
+        <h3 className={sectionHeading}>{tCrm('academicInfo')}</h3>
+        <div className="grid grid-cols-2 gap-4 min-[1367px]:grid-cols-3">
+          <div className="col-span-2 min-w-0 space-y-2 min-[1367px]:col-span-1">
+            <Label>{tCommon('level')}</Label>
+            <input type="hidden" {...register('levelId')} />
+            <SegmentedControl
+              options={GROUP_LEVEL_SEGMENT_OPTIONS}
+              value={watchedLevelId}
+              onChange={(nextValue) =>
+                setValue('levelId', nextValue, { shouldDirty: true, shouldValidate: true })
+              }
+              disabled={isSubmitting}
+              aria-label={tCommon('level')}
+            />
+          </div>
+
           {showCenterSelect ? (
-            <div>
-              <label htmlFor={p('centerId')} className="mb-1 block text-sm font-medium text-slate-700">
-                {tCommon('center')}
-              </label>
+            <div className="min-w-0 space-y-2">
+              <Label htmlFor={p('centerId')}>{tCommon('center')}</Label>
               <input type="hidden" {...register('centerId')} />
               <SingleSelectDropdown
                 id={p('centerId')}
+                triggerClassName={ADMIN_FORM_INPUT_CLASS}
                 options={centerOptions}
                 value={watchedCenterId}
-                onValueChange={(nextValue) => {
-                  setValue('centerId', nextValue ?? '', { shouldDirty: true, shouldValidate: true });
-                  setValue('teacherId', '', { shouldDirty: true });
-                  setValue('groupId', '', { shouldDirty: true });
-                }}
+                onValueChange={(nextValue) => handleCenterChange(nextValue ?? '')}
                 isLoading={isLoadingCenters}
                 disabled={isLoadingCenters || isSubmitting}
                 error={errors.centerId?.message ?? null}
               />
-              {errors.centerId && <p className="mt-1 text-sm text-red-600">{errors.centerId.message}</p>}
+              {errors.centerId ? (
+                <p className="text-sm text-red-600">{errors.centerId.message}</p>
+              ) : null}
             </div>
           ) : assignedCenterDisplay ? (
-            <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700">{tCommon('center')}</label>
-              <p className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700">
+            <div className="min-w-0 space-y-2">
+              <Label>{tCommon('center')}</Label>
+              <p className="rounded-[15px] border border-slate-200 bg-slate-50/60 px-3 py-2 text-sm text-[#3b3b40]">
                 {assignedCenterDisplay}
               </p>
             </div>
           ) : null}
-          <div>
+
+          <div className="min-w-0 space-y-2">
             <input type="hidden" {...register('teacherId')} />
-            <label htmlFor={p('groupId')} className="mb-1 block text-sm font-medium text-slate-700">
-              {tCommon('group')}
-            </label>
+            <Label htmlFor={p('groupId')}>{tCommon('group')}</Label>
             <input type="hidden" {...register('groupId')} />
             <SingleSelectDropdown
               id={p('groupId')}
+              triggerClassName={ADMIN_FORM_INPUT_CLASS}
               options={groupOptions}
               value={watchedGroupId}
               onValueChange={(nextValue) =>
@@ -405,12 +457,12 @@ export function StudentAccountFormFieldsCrmLeadLayout({
               disabled={isLoadingGroups || isSubmitting || !hasCenterScope}
               error={errors.groupId?.message ?? null}
             />
-            {errors.groupId && <p className="mt-1 text-sm text-red-600">{errors.groupId.message}</p>}
+            {errors.groupId ? <p className="text-sm text-red-600">{errors.groupId.message}</p> : null}
             {hasCenterScope && !isLoadingGroups && groupsForCenter.length === 0 ? (
-              <p className="mt-1 text-xs text-slate-500">{tForm('noGroupsForCenter')}</p>
+              <p className="text-xs text-slate-500">{tForm('noGroupsForCenter')}</p>
             ) : null}
             {watchedGroupId ? (
-              <p className="mt-1 text-xs text-slate-500">
+              <p className="text-xs text-slate-500">
                 {tForm('groupLocation', {
                   name: groupsForCenter.find((g) => g.id === watchedGroupId)?.center?.name ?? '—',
                 })}
@@ -420,47 +472,53 @@ export function StudentAccountFormFieldsCrmLeadLayout({
         </div>
       </section>
 
-      <section className="space-y-3">
-        <h3 className={sectionTitle}>{tForm('billingPreferences')}</h3>
-        <div>
-          <label htmlFor={p('monthlyFee')} className="mb-1 block text-sm font-medium text-slate-700">
-            {t('monthlyFeeLabel')} (֏) <span className="text-red-500">{tForm('requiredMark')}</span>
-          </label>
-          <input
+      <section className="space-y-4">
+        <h3 className={sectionHeading}>{tForm('billingPreferences')}</h3>
+        <div className="min-w-0 space-y-2">
+          <Label htmlFor={p('monthlyFee')}>
+            {t('monthlyFeeLabel')} (֏) <span className="text-red-500">*</span>
+          </Label>
+          <Input
             id={p('monthlyFee')}
             type="number"
             step="0.01"
             min={0}
             placeholder={tForm('monthlyFeePlaceholder')}
+            className={ADMIN_FORM_INPUT_CLASS}
             {...register('monthlyFee', { valueAsNumber: true })}
-            className={inputClass}
+            disabled={isSubmitting}
           />
-          {errors.monthlyFee && <p className="mt-1 text-sm text-red-600">{errors.monthlyFee.message}</p>}
+          {errors.monthlyFee ? (
+            <p className="text-sm text-red-600">{errors.monthlyFee.message}</p>
+          ) : null}
         </div>
-        <div>
-          <label htmlFor={p('notes')} className="mb-1 block text-sm font-medium text-slate-700">
-            {tCommon('notes')}
-          </label>
+        <div className="min-w-0 space-y-2">
+          <Label htmlFor={p('notes')}>{tCommon('notes')}</Label>
           <textarea
             id={p('notes')}
             rows={3}
             {...register('notes')}
             placeholder={tForm('notesPlaceholder')}
-            className={inputClass}
+            disabled={isSubmitting}
+            className={cn(
+              ADMIN_TEXTAREA_CLASS,
+              errors.notes ? 'border-red-300' : '',
+              isSubmitting ? 'cursor-not-allowed bg-slate-100' : '',
+            )}
           />
-          {errors.notes && <p className="mt-1 text-sm text-red-600">{errors.notes.message}</p>}
+          {errors.notes ? <p className="text-sm text-red-600">{errors.notes.message}</p> : null}
         </div>
-        <div className="flex items-center gap-2">
-          <input
-            id={p('receiveReports')}
-            type="checkbox"
-            {...register('receiveReports')}
-            className="h-4 w-4 rounded border-slate-300 text-primary focus:ring-primary"
+        <label className="flex cursor-pointer select-none items-start gap-2">
+          <Checkbox
+            checked={watch('receiveReports')}
+            onCheckedChange={(checked) =>
+              setValue('receiveReports', checked === true, { shouldDirty: true })
+            }
+            disabled={isSubmitting}
+            className="mt-0.5"
           />
-          <label htmlFor={p('receiveReports')} className="text-sm font-medium text-slate-700">
-            {t('receiveReportsOn')}
-          </label>
-        </div>
+          <span className="text-sm text-slate-600">{t('receiveReportsOn')}</span>
+        </label>
       </section>
     </div>
   );

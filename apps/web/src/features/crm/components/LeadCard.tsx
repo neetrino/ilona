@@ -1,24 +1,25 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import type { CrmLead, CrmLeadStatus } from '@/features/crm/types';
 import { CRM_COLUMN_ORDER } from '@/features/crm/types';
 import {
   ArrowRightLeft,
   Building2,
-  CalendarDays,
   CheckCircle2,
-  Clock3,
   GraduationCap,
   Phone,
-  Trash2,
   User,
   Users,
 } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
+import { LessonListDateCell } from '@/shared/components/calendar/LessonListDateCell';
 import { CrmStatusSelector } from './CrmStatusSelector';
 import { CrmBranchSelector, type CrmBranchOption } from './CrmBranchSelector';
 import { LeadCardVoiceInline } from './LeadCardVoiceInline';
+
+const LEAD_CARD_META_BADGE_CLASS =
+  'flex min-h-7 w-full min-w-0 items-center justify-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium leading-tight';
 
 interface LeadCardProps {
   lead: CrmLead;
@@ -29,23 +30,9 @@ interface LeadCardProps {
   onBranchChange?: (leadId: string, centerId: string | null) => void;
   isChangingStatus?: boolean;
   isChangingBranch?: boolean;
-  /** Admin-only: show delete control on the card header. */
-  showDelete?: boolean;
-  onDeleteClick?: () => void;
-  deleteDisabled?: boolean;
   className?: string;
 }
 
-function formatRecordingTime(isoDate: string): string {
-  const d = new Date(isoDate);
-  return d.toLocaleTimeString(undefined, {
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-  });
-}
-
-/** CRM cards: API often stores digits-only; show E.164-style leading + when absent. */
 function formatPhoneForDisplay(phone: string): string {
   const trimmed = phone.trim();
   if (!trimmed) return '';
@@ -61,24 +48,14 @@ export function LeadCard({
   onBranchChange,
   isChangingStatus,
   isChangingBranch,
-  showDelete,
-  onDeleteClick,
-  deleteDisabled,
   className,
 }: LeadCardProps) {
   const t = useTranslations('crm');
+  const locale = useLocale();
   const voiceAttachment = lead.attachments?.find((a) => a.type === 'VOICE_RECORDING');
   const name =
     [lead.firstName, lead.lastName].filter(Boolean).join(' ') ||
     (voiceAttachment ? t('voiceNote') : t('noName'));
-  const createdAt = lead.createdAt
-    ? new Date(lead.createdAt).toLocaleDateString(undefined, {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-      })
-    : '';
-  const recordingTime = lead.createdAt ? formatRecordingTime(lead.createdAt) : '';
 
   const handleStatusChange = (status: CrmLeadStatus) => {
     if (status !== lead.status) onStatusChange?.(lead.id, status);
@@ -86,6 +63,27 @@ export function LeadCard({
   const handleBranchChange = (centerId: string | null) => {
     if ((lead.centerId ?? null) !== centerId) onBranchChange?.(lead.id, centerId);
   };
+
+  const centerBadge = lead.center?.name ? (
+    <span className={cn(LEAD_CARD_META_BADGE_CLASS, 'bg-slate-100 text-slate-600')}>
+      <Building2 className="h-3 w-3 shrink-0" />
+      <span className="truncate">{lead.center.name}</span>
+    </span>
+  ) : null;
+
+  const secondaryStatusBadge = lead.teacherApprovedAt ? (
+    <span className={cn(LEAD_CARD_META_BADGE_CLASS, 'bg-green-100 text-green-800')}>
+      <CheckCircle2 className="h-3 w-3 shrink-0" />
+      {t('approved')}
+    </span>
+  ) : lead.transferFlag ? (
+    <span className={cn(LEAD_CARD_META_BADGE_CLASS, 'bg-amber-100 text-amber-800')}>
+      <ArrowRightLeft className="h-3 w-3 shrink-0" />
+      {t('transfer')}
+    </span>
+  ) : null;
+
+  const hasMetaBadgeRow = Boolean(centerBadge || secondaryStatusBadge);
 
   return (
     <div
@@ -98,43 +96,22 @@ export function LeadCard({
         className
       )}
     >
-      {/* Top section: name + delete */}
-      <div className="flex items-start justify-between gap-2">
+      {/* Top section: name + date/time */}
+      <div className="flex items-center justify-between gap-2">
         <p className="min-w-0 flex-1 font-medium text-slate-900 truncate">{name}</p>
-        {showDelete && onDeleteClick ? (
-          <button
-            type="button"
-            aria-label={t('deleteLead')}
-            title={t('deleteLead')}
-            disabled={deleteDisabled}
-            onClick={(e) => {
-              e.stopPropagation();
-              if (!deleteDisabled) onDeleteClick();
-            }}
-            className={cn(
-              'shrink-0 rounded-lg p-1.5 text-slate-900 transition-colors duration-150 ease-out',
-              'hover:bg-slate-50 hover:text-slate-700',
-              'focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-1',
-              'active:scale-95',
-              'disabled:pointer-events-none disabled:opacity-50'
-            )}
-          >
-            <Trash2 className="h-4 w-4" aria-hidden />
-          </button>
+        {lead.createdAt ? (
+          <>
+            <div className="hidden shrink-0 origin-top-right scale-[0.82] lg:block">
+              <LessonListDateCell dateStr={lead.createdAt} locale={locale} />
+            </div>
+            <div className="shrink-0 origin-top-right scale-[0.75] sm:scale-[0.82] lg:hidden">
+              <LessonListDateCell dateStr={lead.createdAt} locale={locale} />
+            </div>
+          </>
         ) : null}
       </div>
 
       {/* Middle section: lead info */}
-      <p className="mt-1 flex items-center gap-1.5 text-xs text-slate-400">
-        <CalendarDays className="h-3.5 w-3.5 shrink-0" />
-        <span>{createdAt}</span>
-      </p>
-      {recordingTime && (
-        <p className="flex items-center gap-1.5 text-xs text-slate-500">
-          <Clock3 className="h-3.5 w-3.5 shrink-0" />
-          <span>{recordingTime}</span>
-        </p>
-      )}
       {lead.phone && (
         <p className="mt-0.5 flex items-center gap-1.5 text-sm text-slate-500 truncate">
           <Phone className="h-3.5 w-3.5 shrink-0" />
@@ -149,43 +126,40 @@ export function LeadCard({
           />
         </div>
       ) : null}
-      <div className="flex flex-wrap gap-1 mt-2">
-        {lead.center?.name && (
-          <span className="inline-flex items-center rounded bg-slate-100 px-1.5 py-0.5 text-xs text-slate-600">
-            <Building2 className="mr-1 h-3 w-3" />
-            {lead.center.name}
-          </span>
-        )}
-        {lead.teacher?.user && (
-          <span className="inline-flex items-center rounded bg-slate-100 px-1.5 py-0.5 text-xs text-slate-600">
-            <User className="mr-1 h-3 w-3" />
-            {lead.teacher.user.firstName} {lead.teacher.user.lastName}
-          </span>
-        )}
-        {lead.group?.name && (
-          <span className="inline-flex items-center rounded bg-slate-100 px-1.5 py-0.5 text-xs text-slate-600">
-            <Users className="mr-1 h-3 w-3" />
-            {lead.group.name}
-          </span>
-        )}
-        {lead.levelId && (
-          <span className="inline-flex items-center rounded bg-slate-100 px-1.5 py-0.5 text-xs text-slate-600">
-            <GraduationCap className="mr-1 h-3 w-3" />
-            {lead.levelId}
-          </span>
-        )}
-        {lead.teacherApprovedAt ? (
-          <span className="inline-flex items-center rounded bg-green-100 px-1.5 py-0.5 text-xs text-green-800">
-            <CheckCircle2 className="mr-1 h-3 w-3" />
-            {t('approved')}
-          </span>
-        ) : lead.transferFlag ? (
-          <span className="inline-flex items-center rounded bg-amber-100 px-1.5 py-0.5 text-xs text-amber-800">
-            <ArrowRightLeft className="mr-1 h-3 w-3" />
-            {t('transfer')}
-          </span>
-        ) : null}
-      </div>
+      {(lead.teacher?.user || lead.group?.name || lead.levelId) && (
+        <div className="mt-2 flex flex-wrap gap-1.5">
+          {lead.teacher?.user && (
+            <span className="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-1 text-xs text-slate-600">
+              <User className="mr-1 h-3 w-3" />
+              {lead.teacher.user.firstName} {lead.teacher.user.lastName}
+            </span>
+          )}
+          {lead.group?.name && (
+            <span className="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-1 text-xs text-slate-600">
+              <Users className="mr-1 h-3 w-3" />
+              {lead.group.name}
+            </span>
+          )}
+          {lead.levelId && (
+            <span className="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-1 text-xs text-slate-600">
+              <GraduationCap className="mr-1 h-3 w-3" />
+              {lead.levelId}
+            </span>
+          )}
+        </div>
+      )}
+
+      {hasMetaBadgeRow ? (
+        <div
+          className={cn(
+            'mt-3 grid w-full gap-2',
+            centerBadge && secondaryStatusBadge ? 'grid-cols-2' : 'grid-cols-1',
+          )}
+        >
+          {centerBadge}
+          {secondaryStatusBadge}
+        </div>
+      ) : null}
 
       {/* Bottom section: status + branch controls */}
       {(onStatusChange || onBranchChange) && (

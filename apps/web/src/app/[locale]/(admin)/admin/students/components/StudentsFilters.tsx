@@ -3,6 +3,7 @@
 import { useTranslations } from 'next-intl';
 import { Button, FilterDropdown, ListBoardViewToggle } from '@/shared/components/ui';
 import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
+import { cn } from '@/shared/lib/utils';
 import { useEffect } from 'react';
 import { useIsLgViewport } from '@/shared/hooks/useIsLgViewport';
 
@@ -25,6 +26,7 @@ interface StudentsFiltersProps {
   onViewModeChange: (mode: 'list' | 'board') => void;
   onAddStudent: () => void;
   selectedStudentIds: Set<string>;
+  allSelected: boolean;
   onBulkDelete: () => void;
   statusFilterOptions: Array<{ id: string; label: string }>;
   teacherFilterOptions: Array<{ id: string; label: string }>;
@@ -54,6 +56,7 @@ export function StudentsFilters({
   onViewModeChange,
   onAddStudent,
   selectedStudentIds,
+  allSelected,
   onBulkDelete,
   statusFilterOptions,
   teacherFilterOptions,
@@ -71,6 +74,7 @@ export function StudentsFilters({
     label: tc(`months.${month}`),
   }));
   const isLg = useIsLgViewport();
+  const toolbarControlClass = 'h-11 min-h-11 rounded-[15px]';
 
   useEffect(() => {
     if (isLg === false && viewMode !== 'board') {
@@ -95,16 +99,24 @@ export function StudentsFilters({
             placeholder={t('searchPlaceholder')}
             value={searchQuery}
             onChange={onSearchChange}
-            className="w-full pl-10 pr-4 py-3 bg-white border border-[rgba(14,14,16,0.07)] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20 focus:border-[#1010a3]"
+            className={cn(
+              'w-full border border-[rgba(14,14,16,0.07)] bg-white py-0 pl-10 pr-4 text-sm focus:border-[#1010a3] focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20',
+              toolbarControlClass,
+            )}
           />
         </div>
         {selectedStudentIds.size > 0 && (
           <Button
-            className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-xl font-medium"
+            className={cn(
+              toolbarControlClass,
+              'bg-red-600 px-6 py-0 font-medium text-white hover:bg-red-700',
+            )}
             onClick={onBulkDelete}
             disabled={isDeleting}
           >
-            {t('deleteAll', { count: selectedStudentIds.size })}
+            {allSelected
+              ? t('deleteAll', { count: selectedStudentIds.size })
+              : t('deleteSelected', { count: selectedStudentIds.size })}
           </Button>
         )}
         {isLg ? (
@@ -113,11 +125,15 @@ export function StudentsFilters({
             onChange={onViewModeChange}
             listLabel={t('listView')}
             boardLabel={t('boardView')}
-            className="w-full shrink-0 sm:w-auto"
+            className={cn(toolbarControlClass, 'w-full shrink-0 sm:w-auto')}
           />
         ) : null}
-        <Button 
-          className="w-full shrink-0 rounded-xl bg-[#1010a3] px-6 py-3 font-medium text-white hover:bg-[#1010a3]/90 sm:w-auto"
+        <Button
+          size="lg"
+          className={cn(
+            toolbarControlClass,
+            'w-full shrink-0 px-4 py-0 font-medium bg-[#1010a3] text-white hover:bg-[#1010a3]/90 sm:w-auto',
+          )}
           onClick={onAddStudent}
         >
           + {t('addStudent')}
@@ -133,6 +149,7 @@ export function StudentsFilters({
             selectedIds={selectedStatusIds}
             onSelectionChange={onStatusChange}
             placeholder={t('allStatuses')}
+            triggerClassName={toolbarControlClass}
           />
           <FilterDropdown
             label={t('lifecycleFilter')}
@@ -140,6 +157,7 @@ export function StudentsFilters({
             selectedIds={selectedLifecycleIds}
             onSelectionChange={onLifecycleChange}
             placeholder={tc('all')}
+            triggerClassName={toolbarControlClass}
           />
         </div>
 
@@ -152,6 +170,7 @@ export function StudentsFilters({
             onValueChange={(nextValue) => {
               if (nextValue) onMonthChange(Number(nextValue));
             }}
+            triggerClassName={toolbarControlClass}
           />
           <SingleSelectDropdown
             id="students-year-filter-mobile"
@@ -161,6 +180,7 @@ export function StudentsFilters({
             onValueChange={(nextValue) => {
               if (nextValue) onYearChange(Number(nextValue));
             }}
+            triggerClassName={toolbarControlClass}
           />
         </div>
 
@@ -172,6 +192,7 @@ export function StudentsFilters({
             onSelectionChange={onTeacherChange}
             placeholder={t('allTeachers')}
             isLoading={isLoadingTeachers}
+            triggerClassName={toolbarControlClass}
           />
         </div>
 
@@ -182,6 +203,7 @@ export function StudentsFilters({
             selectedIds={selectedGroupIds}
             onSelectionChange={onGroupChange}
             placeholder={t('allGroups')}
+            triggerClassName={toolbarControlClass}
           />
         </div>
 
@@ -194,6 +216,7 @@ export function StudentsFilters({
           selectedIds={selectedStatusIds}
           onSelectionChange={onStatusChange}
           placeholder={t('allStatuses')}
+          triggerClassName={toolbarControlClass}
         />
         <SingleSelectDropdown
           id="students-year-filter"
@@ -203,6 +226,7 @@ export function StudentsFilters({
           onValueChange={(nextValue) => {
             if (nextValue) onYearChange(Number(nextValue));
           }}
+          triggerClassName={toolbarControlClass}
         />
         <SingleSelectDropdown
           id="students-month-filter"
@@ -212,6 +236,7 @@ export function StudentsFilters({
           onValueChange={(nextValue) => {
             if (nextValue) onMonthChange(Number(nextValue));
           }}
+          triggerClassName={toolbarControlClass}
         />
         <FilterDropdown
           label={tc('teacher')}
@@ -220,6 +245,7 @@ export function StudentsFilters({
           onSelectionChange={onTeacherChange}
           placeholder={t('allTeachers')}
           isLoading={isLoadingTeachers}
+          triggerClassName={toolbarControlClass}
         />
         <FilterDropdown
           label={tc('group')}
@@ -227,6 +253,7 @@ export function StudentsFilters({
           selectedIds={selectedGroupIds}
           onSelectionChange={onGroupChange}
           placeholder={t('allGroups')}
+          triggerClassName={toolbarControlClass}
         />
         <FilterDropdown
           label={t('lifecycleFilter')}
@@ -234,6 +261,7 @@ export function StudentsFilters({
           selectedIds={selectedLifecycleIds}
           onSelectionChange={onLifecycleChange}
           placeholder={tc('all')}
+          triggerClassName={toolbarControlClass}
         />
       </div>
     </div>

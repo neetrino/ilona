@@ -7,7 +7,6 @@ interface StudentsMessagesProps {
   bulkDeleteError: string | null;
   deletedCount: number;
   deactivateSuccess: boolean;
-  deactivateError: string | null;
 }
 
 export function StudentsMessages({
@@ -17,7 +16,6 @@ export function StudentsMessages({
   bulkDeleteError,
   deletedCount,
   deactivateSuccess,
-  deactivateError,
 }: StudentsMessagesProps) {
   return (
     <>
@@ -48,11 +46,6 @@ export function StudentsMessages({
       {deactivateSuccess && (
         <div className="fixed bottom-4 right-4 p-4 bg-green-50 border border-green-200 rounded-lg shadow-lg z-50">
           <p className="text-sm text-green-600 font-medium">Student status updated successfully!</p>
-        </div>
-      )}
-      {deactivateError && (
-        <div className="fixed bottom-4 right-4 p-4 bg-red-50 border border-red-200 rounded-lg shadow-lg z-50">
-          <p className="text-sm text-red-600 font-medium">{deactivateError}</p>
         </div>
       )}
     </>

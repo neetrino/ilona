@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@/shared/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -7,8 +8,30 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
-  Button,
-} from '@/shared/components/ui';
+} from '@/shared/components/ui/dialog';
+
+/** Centered delete modal on all breakpoints. */
+export const DELETE_CONFIRMATION_DIALOG_CONTENT_CLASS =
+  'w-[calc(100%-1.5rem)] max-w-md rounded-[15px] p-5 duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] sm:w-full';
+
+/** @deprecated Same as DELETE_CONFIRMATION_DIALOG_CONTENT_CLASS */
+export const DELETE_CONFIRMATION_DIALOG_DESKTOP_CONTENT_CLASS =
+  DELETE_CONFIRMATION_DIALOG_CONTENT_CLASS;
+
+/** @deprecated Delete confirmation is always a centered modal. */
+export const DELETE_CONFIRMATION_DIALOG_MOBILE_CONTENT_CLASS =
+  DELETE_CONFIRMATION_DIALOG_CONTENT_CLASS;
+
+export const DELETE_CONFIRMATION_DIALOG_OVERLAY_CLASS =
+  'duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]';
+
+export function useDeleteConfirmationDialogLayout(open: boolean) {
+  return {
+    sheet: false as const,
+    stackOpen: open,
+    contentClassName: DELETE_CONFIRMATION_DIALOG_CONTENT_CLASS,
+  };
+}
 
 export interface DeleteConfirmationDialogProps {
   open: boolean;
@@ -35,9 +58,16 @@ export function DeleteConfirmationDialog({
   cancelLabel = 'Cancel',
   loadingLabel = 'Deleting...',
 }: DeleteConfirmationDialogProps) {
+  const { sheet, stackOpen, contentClassName } = useDeleteConfirmationDialogLayout(open);
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="lg:max-w-md lg:rounded-[15px] p-5 duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] lg:w-full">
+      <DialogContent
+        sheet={sheet}
+        stackOpen={stackOpen}
+        overlayClassName={DELETE_CONFIRMATION_DIALOG_OVERLAY_CLASS}
+        className={contentClassName}
+      >
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>

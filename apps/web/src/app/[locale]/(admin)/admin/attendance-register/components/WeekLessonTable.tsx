@@ -3,6 +3,7 @@
 import { isToday } from '@/features/attendance/utils/dateUtils';
 import type { Lesson } from '@/features/lessons';
 import { useLocale, useTranslations } from 'next-intl';
+import { ADMIN_ICON_BUTTON_SM_CLASS } from '@/shared/lib/admin-control-theme';
 
 interface WeekLessonTableProps {
   weekDates: Date[];
@@ -31,13 +32,13 @@ export function WeekLessonTable({ weekDates, lessons, weekRangeLabel }: WeekLess
   return (
     <div className="overflow-hidden rounded-2xl border border-[#dde2ee] bg-white">
       <div className="flex items-center justify-between border-b border-[#e6e9f2] bg-[#f9faff] px-5 py-4">
-        <button type="button" className="inline-flex h-8 w-8 items-center justify-center text-[#1e2742]" aria-label={tCommon('previousWeek')}>
+        <button type="button" className={ADMIN_ICON_BUTTON_SM_CLASS} aria-label={tCommon('previousWeek')}>
           <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
             <path d="M15 18l-6-6 6-6" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </button>
         <h3 className="text-[14px] font-semibold text-[#111a3b] md:text-[20px]">{weekRangeLabel}</h3>
-        <button type="button" className="inline-flex h-8 w-8 items-center justify-center text-[#1e2742]" aria-label={tCommon('nextWeek')}>
+        <button type="button" className={ADMIN_ICON_BUTTON_SM_CLASS} aria-label={tCommon('nextWeek')}>
           <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
             <path d="M9 18l6-6-6-6" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round" />
           </svg>

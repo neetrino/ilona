@@ -5,7 +5,10 @@ import { useState, useRef, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { createPortal } from 'react-dom';
 import { cn } from '@/shared/lib/utils';
-import { DATE_PICKER_POPOVER_ATTR } from './date-picker-input';
+import {
+  preventStackedSheetDismiss,
+  stackedSheetDialogHandlers,
+} from '@/shared/lib/sheet-stack';
 import {
   DROPDOWN_CHEVRON_CLASS,
   DROPDOWN_CHEVRON_SELECTED_CLASS,
@@ -31,6 +34,12 @@ type MenuPosition = {
   positionMode: 'fixed' | 'absolute';
 };
 
+const MOBILE_BODY_PORTAL_MAX_WIDTH = 1366;
+
+function shouldPortalMenuToBody(): boolean {
+  return typeof window !== 'undefined' && window.innerWidth <= MOBILE_BODY_PORTAL_MAX_WIDTH;
+}
+
 function resolvePortalContainer(root: HTMLElement | null): HTMLElement {
   if (!root) return document.body;
   const dialog = root.closest('[role="dialog"]');
@@ -48,22 +57,12 @@ export const SINGLE_SELECT_DROPDOWN_MENU_ATTR = 'data-single-select-dropdown-men
 
 /** Spread onto Radix Dialog.Content when the dialog contains portaled SingleSelectDropdown menus. */
 export function preventDialogDismissOnPortaledDropdown(event: Event) {
-  const target = event.target;
-  if (
-    target instanceof Element &&
-    (target.closest(`[${SINGLE_SELECT_DROPDOWN_MENU_ATTR}]`) ||
-      target.closest(`[${SINGLE_SELECT_DROPDOWN_BACKDROP_ATTR}]`) ||
-      target.closest(`[${DATE_PICKER_POPOVER_ATTR}]`))
-  ) {
-    event.preventDefault();
-  }
+  preventStackedSheetDismiss(event);
 }
 
-export const portaledDropdownDialogHandlers = {
-  onPointerDownOutside: preventDialogDismissOnPortaledDropdown,
-  onInteractOutside: preventDialogDismissOnPortaledDropdown,
-  onFocusOutside: preventDialogDismissOnPortaledDropdown,
-};
+export { preventStackedSheetDismiss, stackedSheetDialogHandlers };
+
+export const portaledDropdownDialogHandlers = stackedSheetDialogHandlers;
 
 interface SingleSelectDropdownProps {
   id?: string;
@@ -82,6 +81,7 @@ interface SingleSelectDropdownProps {
   searchable?: boolean;
   searchPlaceholder?: string;
   noSearchResultsMessage?: string;
+  menuMinWidth?: number;
 }
 
 export function SingleSelectDropdown({
@@ -101,6 +101,7 @@ export function SingleSelectDropdown({
   searchable = false,
   searchPlaceholder,
   noSearchResultsMessage,
+  menuMinWidth,
 }: SingleSelectDropdownProps) {
   const t = useTranslations('common');
   const [isOpen, setIsOpen] = useState(false);
@@ -120,7 +121,7 @@ export function SingleSelectDropdown({
   const listboxId = `${triggerId}-listbox`;
 
   const hasSelection = Boolean(value);
-  const selectedOption = options.find((opt) => opt.id === value);
+  const selectedOption = options.find((opt) => (value ?? '') === opt.id);
   const displayText = selectedOption ? selectedOption.label : placeholder;
   const resolvedSearchPlaceholder = searchPlaceholder ?? `${t('search')}...`;
   const resolvedNoSearchResultsMessage = noSearchResultsMessage ?? t('globalSearchEmpty');
@@ -148,12 +149,22 @@ export function SingleSelectDropdown({
     const root = dropdownRef.current;
     if (!trigger) return;
 
-    const portalTarget = resolvePortalContainer(root);
+    const portalTarget = shouldPortalMenuToBody()
+      ? document.body
+      : resolvePortalContainer(root);
     setPortalContainer(portalTarget);
-    const useDialogPortal = portalTarget !== document.body;
+    const useDialogPortal = !shouldPortalMenuToBody() && portalTarget !== document.body;
 
     const rect = trigger.getBoundingClientRect();
+    const menuWidth = menuMinWidth ? Math.max(rect.width, menuMinWidth) : rect.width;
+    let menuLeft = menuMinWidth && menuWidth > rect.width ? rect.right - menuWidth : rect.left;
     const viewportPadding = 12;
+    if (menuMinWidth) {
+      menuLeft = Math.max(
+        viewportPadding,
+        Math.min(menuLeft, window.innerWidth - menuWidth - viewportPadding),
+      );
+    }
     const spaceBelow = window.innerHeight - rect.bottom - viewportPadding;
     const spaceAbove = rect.top - viewportPadding;
     const searchInputHeight = searchable ? 52 : 0;
@@ -169,8 +180,8 @@ export function SingleSelectDropdown({
       const dialogRect = portalTarget.getBoundingClientRect();
       setMenuPosition({
         positionMode: 'absolute',
-        left: rect.left - dialogRect.left,
-        width: rect.width,
+        left: rect.left - dialogRect.left + (menuLeft - rect.left),
+        width: menuWidth,
         maxHeight,
         ...(shouldOpenUpward
           ? { bottom: dialogRect.bottom - rect.top + 6 }
@@ -181,14 +192,14 @@ export function SingleSelectDropdown({
 
     setMenuPosition({
       positionMode: 'fixed',
-      left: rect.left,
-      width: rect.width,
+      left: menuLeft,
+      width: menuWidth,
       maxHeight,
       ...(shouldOpenUpward
         ? { bottom: window.innerHeight - rect.top + 6 }
         : { top: rect.bottom + 6 }),
     });
-  }, [searchable]);
+  }, [searchable, menuMinWidth]);
 
   useEffect(() => {
     if (!isOpen) {
@@ -199,7 +210,7 @@ export function SingleSelectDropdown({
 
     updateMenuPosition();
 
-    const handleClickOutside = (event: Event) => {
+    const handlePointerDownOutside = (event: PointerEvent) => {
       const target = event.target as Node;
       if (
         dropdownRef.current?.contains(target) ||
@@ -211,14 +222,14 @@ export function SingleSelectDropdown({
     };
 
     const timeoutId = setTimeout(() => {
-      document.addEventListener('click', handleClickOutside, true);
+      document.addEventListener('pointerdown', handlePointerDownOutside, true);
     }, 0);
 
     window.addEventListener('resize', updateMenuPosition);
     window.addEventListener('scroll', updateMenuPosition, true);
     return () => {
       clearTimeout(timeoutId);
-      document.removeEventListener('click', handleClickOutside, true);
+      document.removeEventListener('pointerdown', handlePointerDownOutside, true);
       window.removeEventListener('resize', updateMenuPosition);
       window.removeEventListener('scroll', updateMenuPosition, true);
     };
@@ -231,10 +242,29 @@ export function SingleSelectDropdown({
   }, [isOpen, searchable]);
 
   const handleSelect = (optionId: string) => {
-    const nextValue = allowDeselect && optionId === value ? null : optionId;
+    const normalizedOption = optionId === '' ? null : optionId;
+    const nextValue =
+      allowDeselect && normalizedOption === value ? null : normalizedOption;
     onValueChange(nextValue);
     closeMenu();
     triggerRef.current?.focus();
+  };
+
+  const handleTriggerPointerDown = (event: React.PointerEvent<HTMLButtonElement>) => {
+    if (disabled || isLoading) return;
+    if (event.pointerType === 'mouse' && event.button !== 0) return;
+    event.preventDefault();
+    setIsOpen((prev) => {
+      const nextOpen = !prev;
+      if (nextOpen) {
+        const selectedIndex = Math.max(
+          0,
+          filteredOptions.findIndex((option) => option.id === value),
+        );
+        setActiveIndex(selectedIndex);
+      }
+      return nextOpen;
+    });
   };
 
   const handleTriggerKeyDown = (event: React.KeyboardEvent<HTMLButtonElement>) => {
@@ -337,7 +367,7 @@ export function SingleSelectDropdown({
           id={triggerId}
           ref={triggerRef}
           type="button"
-          onClick={() => !disabled && setIsOpen(!isOpen)}
+          onPointerDown={handleTriggerPointerDown}
           onKeyDown={handleTriggerKeyDown}
           disabled={isLoading || disabled}
           aria-haspopup="listbox"
@@ -390,13 +420,8 @@ export function SingleSelectDropdown({
             <>
               <div
                 {...{ [SINGLE_SELECT_DROPDOWN_BACKDROP_ATTR]: '' }}
-                className={cn(backdropPositionClass, 'inset-0 z-[9998]')}
+                className={cn(backdropPositionClass, 'inset-0 z-[9998] pointer-events-none')}
                 aria-hidden="true"
-                onPointerDown={(event) => {
-                  event.preventDefault();
-                  event.stopPropagation();
-                  closeMenu();
-                }}
               />
               <div
                 ref={menuRef}
@@ -463,11 +488,11 @@ export function SingleSelectDropdown({
                     <div className="px-3 py-2 text-sm text-[#8b8b90]">{resolvedNoSearchResultsMessage}</div>
                   ) : (
                     filteredOptions.map((option, index) => {
-                      const isSelected = value === option.id;
+                      const isSelected = (value ?? '') === option.id;
                       return (
                         <button
-                          id={`${listboxId}-option-${option.id}`}
-                          key={option.id}
+                          id={`${listboxId}-option-${option.id || index}`}
+                          key={option.id || `empty-${index}`}
                           ref={(node) => {
                             optionRefs.current[index] = node;
                           }}
@@ -475,7 +500,11 @@ export function SingleSelectDropdown({
                           role="option"
                           aria-selected={isSelected}
                           title={option.label}
-                          onPointerDown={(event) => {
+                          onMouseDown={(event) => {
+                            event.preventDefault();
+                            event.stopPropagation();
+                          }}
+                          onClick={(event) => {
                             event.preventDefault();
                             event.stopPropagation();
                             handleSelect(option.id);

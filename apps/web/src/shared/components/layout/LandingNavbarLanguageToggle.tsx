@@ -1,5 +1,8 @@
 'use client';
 
+import { useLayoutEffect, useRef, useState } from 'react';
+import { useTranslations } from 'next-intl';
+import { type Locale } from '@/config/i18n';
 import { useSwitchLocale } from '@/shared/hooks/useSwitchLocale';
 import { cn } from '@/shared/lib/utils';
 
@@ -8,38 +11,100 @@ type LandingNavbarLanguageToggleProps = {
   className?: string;
 };
 
+const INDICATOR_TRANSITION =
+  'transition-[transform,width,height] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none';
+
+const BUTTON_FOCUS =
+  'focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1010a3]/20 focus-visible:ring-offset-2';
+
 export function LandingNavbarLanguageToggle({
   isCanvasActive = false,
   className,
 }: LandingNavbarLanguageToggleProps) {
+  const t = useTranslations('language');
   const { locale, switchLocale } = useSwitchLocale();
+  const trackRef = useRef<HTMLDivElement>(null);
+  const buttonRefs = useRef<Partial<Record<Locale, HTMLButtonElement | null>>>({});
+  const [indicator, setIndicator] = useState({ x: 0, y: 0, width: 0, height: 0, ready: false });
+  const [animateIndicator, setAnimateIndicator] = useState(false);
+
+  useLayoutEffect(() => {
+    const syncIndicator = () => {
+      const activeEl = buttonRefs.current[locale];
+      const trackEl = trackRef.current;
+      if (!activeEl || !trackEl) {
+        setIndicator((prev) => ({ ...prev, ready: false }));
+        return;
+      }
+      setIndicator({
+        x: activeEl.offsetLeft,
+        y: activeEl.offsetTop,
+        width: activeEl.offsetWidth,
+        height: activeEl.offsetHeight,
+        ready: true,
+      });
+    };
+
+    syncIndicator();
+    window.addEventListener('resize', syncIndicator);
+    return () => window.removeEventListener('resize', syncIndicator);
+  }, [locale, isCanvasActive]);
+
+  useLayoutEffect(() => {
+    const frameId = requestAnimationFrame(() => setAnimateIndicator(true));
+    return () => cancelAnimationFrame(frameId);
+  }, []);
+
+  const buttonClass = cn(
+    'relative z-10 rounded-full px-2 py-1 font-medium transition-colors duration-300 motion-reduce:transition-none',
+    BUTTON_FOCUS,
+    isCanvasActive ? 'min-w-[42px] text-[12px]' : 'min-w-[38px] text-[11px] sm:min-w-[42px] sm:text-[12px]',
+  );
 
   return (
     <div
+      ref={trackRef}
+      role="group"
+      aria-label={t('selectLanguage')}
       className={cn(
-        'inline-flex items-center rounded-full border border-[rgba(14,14,16,0.07)] bg-[#f3f3f4] p-[3px]',
+        'relative inline-flex items-center rounded-full border border-[rgba(14,14,16,0.07)] bg-[#f3f3f4] p-[3px]',
         className,
       )}
     >
+      <span
+        aria-hidden
+        className={cn(
+          'pointer-events-none absolute left-0 top-0 z-0 rounded-full bg-[#1010a3] shadow-sm',
+          animateIndicator ? INDICATOR_TRANSITION : 'transition-none',
+        )}
+        style={{
+          width: `${indicator.width}px`,
+          height: `${indicator.height}px`,
+          transform: `translate(${indicator.x}px, ${indicator.y}px)`,
+          opacity: indicator.ready ? 1 : 0,
+        }}
+      />
       <button
         type="button"
+        ref={(node) => {
+          buttonRefs.current.hy = node;
+        }}
         onClick={() => switchLocale('hy')}
-        className={cn(
-          'rounded-full px-2 py-1 font-medium transition-colors',
-          isCanvasActive ? 'min-w-[42px] text-[12px]' : 'min-w-[38px] text-[11px] sm:min-w-[42px] sm:text-[12px]',
-          locale === 'hy' ? 'bg-[#093394] text-white' : 'text-[#5b5b62]/80',
-        )}
+        aria-label={t('switchToArmenian')}
+        aria-pressed={locale === 'hy'}
+        className={cn(buttonClass, locale === 'hy' ? 'text-white' : 'text-[#3b3b40] hover:text-[#1010a3]')}
       >
         ՀԱՅ
       </button>
       <button
         type="button"
+        ref={(node) => {
+          buttonRefs.current.en = node;
+        }}
         onClick={() => switchLocale('en')}
-        className={cn(
-          'rounded-full px-2 py-1 font-medium transition-colors',
-          isCanvasActive ? 'min-w-[42px] text-[12px]' : 'min-w-[38px] text-[11px] sm:min-w-[42px] sm:text-[12px]',
-          locale === 'en' ? 'bg-[#093394] text-white' : 'text-[#5b5b62]/80',
-        )}
+        aria-label={t('switchToEnglish')}
+        aria-pressed={locale === 'en'}
+        className={cn(buttonClass, locale === 'en' ? 'text-white' : 'text-[#3b3b40] hover:text-[#1010a3]')}
       >
         EN
       </button>

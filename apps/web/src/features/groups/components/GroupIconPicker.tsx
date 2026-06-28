@@ -10,6 +10,7 @@ interface GroupIconPickerProps {
   /** When true, the Default tile picks a random icon instead of clearing selection. */
   defaultSelectsRandom?: boolean;
   disabled?: boolean;
+  adminControls?: boolean;
   id?: string;
   'aria-labelledby'?: string;
 }
@@ -30,6 +31,7 @@ export function GroupIconPicker({
   onChange,
   defaultSelectsRandom = false,
   disabled,
+  adminControls = false,
   id,
   'aria-labelledby': ariaLabelledBy,
 }: GroupIconPickerProps) {
@@ -42,6 +44,7 @@ export function GroupIconPicker({
   };
 
   const isDefaultSelected = !defaultSelectsRandom && value === null;
+  const tileRadiusClass = adminControls ? 'rounded-[15px]' : 'rounded-lg';
 
   return (
     <div
@@ -57,7 +60,8 @@ export function GroupIconPicker({
         disabled={disabled}
         onClick={handleDefaultClick}
         className={cn(
-          'flex aspect-square items-center justify-center rounded-lg border text-xs font-medium transition-colors focus:outline-none',
+          'flex aspect-square items-center justify-center border text-xs font-medium transition-colors focus:outline-none',
+          tileRadiusClass,
           isDefaultSelected
             ? 'border-2 border-primary bg-primary/10 text-primary'
             : 'border border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50',
@@ -80,7 +84,8 @@ export function GroupIconPicker({
             disabled={disabled || !Icon}
             onClick={() => onChange(def.key)}
             className={cn(
-              'flex aspect-square items-center justify-center rounded-lg border transition-colors focus:outline-none',
+              'flex aspect-square items-center justify-center border transition-colors focus:outline-none',
+              tileRadiusClass,
               selected
                 ? 'border-2 border-primary bg-primary/10'
                 : 'border border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50',
