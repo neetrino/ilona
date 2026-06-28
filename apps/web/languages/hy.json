@@ -1574,6 +1574,8 @@
     "lessons": "Դասեր",
     "searchPaymentsPlaceholder": "Որոնել խմբեր, աշակերտներ, վճարումներ...",
     "searchSalariesPlaceholder": "Որոնել ուսուցիչներ, աշխատավարձ, ժամանակաշրջաններ...",
+    "deleteAll": "Ջնջել բոլորը ({count})",
+    "deleteSelected": "Ջնջել ({count})",
     "studentPaymentsTab": "Աշակերտի վճարումներ ({count})",
     "teacherSalariesTab": "Ուսուցչի աշխատավարձ ({count})",
     "allStatuses": "Բոլոր կարգավիճակները",

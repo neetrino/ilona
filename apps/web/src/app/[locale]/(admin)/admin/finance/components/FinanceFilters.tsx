@@ -12,6 +12,7 @@ interface FinanceFiltersProps {
   paymentStatus: PaymentStatus | '';
   salaryStatus: SalaryStatus | '';
   selectedSalaryIds: Set<string>;
+  allSalariesSelected?: boolean;
   selectedPaymentIds?: Set<string>;
   onSearchChange: (value: string) => void;
   onPaymentStatusChange: (status: PaymentStatus | '') => void;
@@ -35,6 +36,7 @@ export function FinanceFilters({
   paymentStatus,
   salaryStatus,
   selectedSalaryIds,
+  allSalariesSelected = false,
   selectedPaymentIds,
   onSearchChange,
   onPaymentStatusChange,
@@ -134,7 +136,9 @@ export function FinanceFilters({
                 disabled={isDeleting}
               >
                 <Trash2 className="w-4 h-4" />
-                Delete ({selectedSalaryIds.size})
+                {allSalariesSelected
+                  ? t('deleteAll', { count: selectedSalaryIds.size })
+                  : t('deleteSelected', { count: selectedSalaryIds.size })}
               </Button>
             )}
           </div>

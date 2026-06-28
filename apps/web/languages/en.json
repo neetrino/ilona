@@ -1575,6 +1575,8 @@
     "lessons": "Lessons",
     "searchPaymentsPlaceholder": "Search groups, students, payments...",
     "searchSalariesPlaceholder": "Search teachers, salaries, periods...",
+    "deleteAll": "Delete All ({count})",
+    "deleteSelected": "Delete ({count})",
     "studentPaymentsTab": "Student Payments ({count})",
     "teacherSalariesTab": "Teacher Salaries ({count})",
     "allStatuses": "All statuses",
