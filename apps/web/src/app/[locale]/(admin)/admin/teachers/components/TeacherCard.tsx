@@ -23,6 +23,16 @@ function statusBadgeVariant(status: UserStatus | undefined): 'success' | 'warnin
   return 'warning';
 }
 
+function getRateDigitCount(rate: number): number {
+  return Math.floor(Math.abs(rate)).toString().length;
+}
+
+function getDesktopStatsGridClass(digitCount: number): string | undefined {
+  if (digitCount >= 6) return 'sm:grid-cols-[minmax(0,0.5fr)_minmax(0,1.5fr)]';
+  if (digitCount >= 5) return 'sm:grid-cols-[minmax(0,0.58fr)_minmax(0,1.42fr)]';
+  return undefined;
+}
+
 function InfoRow({
   icon,
   value,
@@ -83,6 +93,10 @@ export function TeacherCard({
           .join(' ');
   const firstCenterName = centers[0]?.name ?? t('noBranchAssigned');
   const remainingCentersCount = Math.max(0, centers.length - 1);
+  const formattedRate = formatCurrency(hourlyRate);
+  const rateDigits = getRateDigitCount(hourlyRate);
+  const desktopWideRateGrid = getDesktopStatsGridClass(rateDigits);
+  const desktopRateFlex = sidebarExpanded || rateDigits >= 5;
 
   return (
     <TeacherShowcaseCard
@@ -131,8 +145,13 @@ export function TeacherCard({
               {statusLabel}
             </Badge>
           </div>
-          <div className="grid grid-cols-2 gap-3 rounded-2xl bg-[#f5f6fb] p-3">
-            <div className="min-w-0 border-r border-[rgba(14,14,16,0.08)] pr-3">
+          <div className={cn('grid grid-cols-2 gap-3 rounded-2xl bg-[#f5f6fb] p-3', desktopWideRateGrid)}>
+            <div
+              className={cn(
+                'min-w-0 border-r border-[rgba(14,14,16,0.08)] pr-3',
+                desktopWideRateGrid && 'sm:pr-2',
+              )}
+            >
               <div className="text-[11px] uppercase tracking-wide text-[#8b8b90]">{t('students')}</div>
               <div className="mt-1 text-2xl font-semibold leading-none text-[#1010a3]">{studentCount}</div>
             </div>
@@ -140,22 +159,28 @@ export function TeacherCard({
               <div className="text-[11px] uppercase tracking-wide text-[#8b8b90]">{t('rate')}</div>
               <div
                 className={cn(
-                  'mt-1 font-semibold leading-none text-[#1f2937]',
-                  sidebarExpanded
-                    ? cn(
-                        'truncate text-xl',
-                        'sm:flex sm:min-w-0 sm:items-baseline sm:overflow-visible sm:whitespace-nowrap sm:tabular-nums sm:text-base lg:sm:text-lg',
-                      )
-                    : 'truncate text-xl',
+                  'mt-1 truncate text-xl font-semibold leading-none text-[#1f2937]',
+                  desktopRateFlex &&
+                    cn(
+                      'sm:flex sm:min-w-0 sm:items-baseline sm:overflow-visible sm:whitespace-nowrap sm:tabular-nums',
+                      sidebarExpanded ? 'sm:text-base lg:sm:text-lg' : 'sm:text-xl',
+                    ),
                 )}
               >
-                <span className={cn(sidebarExpanded && 'sm:shrink-0')}>
-                  {formatCurrency(hourlyRate)}
+                <span
+                  className={cn(
+                    rateDigits >= 5 && 'sm:min-w-0 sm:truncate',
+                    sidebarExpanded && rateDigits < 5 && 'sm:shrink-0',
+                  )}
+                  title={formattedRate}
+                >
+                  {formattedRate}
                 </span>
                 <span
                   className={cn(
                     'ml-1 text-sm font-medium text-[#3b3b40]',
-                    sidebarExpanded && 'sm:shrink-0 sm:text-xs lg:sm:text-sm',
+                    desktopRateFlex && 'sm:shrink-0',
+                    sidebarExpanded && 'sm:text-xs lg:sm:text-sm',
                   )}
                 >
                   /hr
