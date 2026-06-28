@@ -201,6 +201,7 @@ export default function StudentsPage() {
           onViewModeChange={handleViewModeChange}
           onAddStudent={() => setIsAddStudentOpen(true)}
           selectedStudentIds={selectedStudentIds}
+          allSelected={allSelected}
           onBulkDelete={handleBulkDeleteClick}
           statusFilterOptions={statusFilterOptions}
           teacherFilterOptions={teacherFilterOptions}
@@ -334,10 +335,14 @@ export default function StudentsPage() {
           handleStudentDetailsClose();
           handleEditClick(student);
         }}
-        onDelete={(student) => {
-          handleStudentDetailsClose();
-          handleDeleteClick(student);
-        }}
+        onDelete={
+          viewMode === 'board'
+            ? (student) => {
+                handleStudentDetailsClose();
+                handleDeleteClick(student);
+              }
+            : undefined
+        }
         onDeactivate={handleDeactivateClick}
         actionsDisabled={deleteStudent.isPending || updateStudent.isPending}
       />

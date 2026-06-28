@@ -665,6 +665,7 @@
     "listView": "List",
     "boardView": "Board",
     "deleteAll": "Delete All ({count})",
+    "deleteSelected": "Delete ({count})",
     "statusFilter": "Status",
     "lifecycleFilter": "Lifecycle",
     "lifecycleNew": "New",

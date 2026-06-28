@@ -664,6 +664,7 @@
     "listView": "Ցուցակ",
     "boardView": "Տախտակ",
     "deleteAll": "Ջնջել բոլորը ({count})",
+    "deleteSelected": "Ջնջել ({count})",
     "statusFilter": "Կարգավիճակ",
     "lifecycleFilter": "Կյանքի ցիկլ",
     "lifecycleNew": "Նոր",

@@ -25,6 +25,7 @@ interface StudentsFiltersProps {
   onViewModeChange: (mode: 'list' | 'board') => void;
   onAddStudent: () => void;
   selectedStudentIds: Set<string>;
+  allSelected: boolean;
   onBulkDelete: () => void;
   statusFilterOptions: Array<{ id: string; label: string }>;
   teacherFilterOptions: Array<{ id: string; label: string }>;
@@ -54,6 +55,7 @@ export function StudentsFilters({
   onViewModeChange,
   onAddStudent,
   selectedStudentIds,
+  allSelected,
   onBulkDelete,
   statusFilterOptions,
   teacherFilterOptions,
@@ -104,7 +106,9 @@ export function StudentsFilters({
             onClick={onBulkDelete}
             disabled={isDeleting}
           >
-            {t('deleteAll', { count: selectedStudentIds.size })}
+            {allSelected
+              ? t('deleteAll', { count: selectedStudentIds.size })
+              : t('deleteSelected', { count: selectedStudentIds.size })}
           </Button>
         )}
         {isLg ? (
