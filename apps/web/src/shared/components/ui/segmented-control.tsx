@@ -73,7 +73,7 @@ export function SegmentedControl({
             disabled={disabled}
             className={cn(
               SEGMENTED_TOGGLE_BUTTON_CLASS,
-              'h-full min-w-0 px-0.5 text-center font-semibold leading-none tabular-nums whitespace-nowrap',
+              'min-w-0 px-0.5 font-semibold tabular-nums whitespace-nowrap',
               compact ? 'text-xs' : 'text-sm',
               isSelected ? SEGMENTED_TOGGLE_BUTTON_ACTIVE_CLASS : SEGMENTED_TOGGLE_BUTTON_INACTIVE_CLASS,
               !isSelected && 'hover:text-[#1010a3]',

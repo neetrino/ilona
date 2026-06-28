@@ -12,10 +12,10 @@ export const SEGMENTED_TOGGLE_INDICATOR_CLASS =
 export const SEGMENTED_TOGGLE_TWO_SEGMENT_WIDTH_CLASS = 'w-[calc(50%-0.25rem)]';
 
 export const SEGMENTED_TOGGLE_BUTTON_CLASS =
-  'relative z-10 flex min-w-0 flex-1 items-center justify-center rounded-[11px] px-4 py-0 text-center text-sm font-semibold leading-none transition-colors focus:outline-none focus-visible:outline-none focus-visible:ring-0 h-9';
+  'relative z-10 inline-flex h-8 min-h-8 min-w-0 flex-1 items-center justify-center rounded-[11px] border-0 bg-transparent px-4 py-0 text-center text-sm font-semibold leading-none transition-colors focus:outline-none focus-visible:outline-none focus-visible:ring-0';
 
 export const SEGMENTED_TOGGLE_GRID_BUTTON_CLASS =
-  'relative z-10 flex min-w-0 items-center justify-center rounded-[11px] px-4 py-0 text-center text-sm font-semibold leading-none transition-colors focus:outline-none focus-visible:outline-none focus-visible:ring-0 h-full min-h-0';
+  'relative z-10 grid h-full min-h-0 w-full min-w-0 place-items-center rounded-[11px] border-0 bg-transparent px-4 py-0 text-center text-sm font-semibold leading-none transition-colors focus:outline-none focus-visible:outline-none focus-visible:ring-0';
 
 export const SEGMENTED_TOGGLE_BUTTON_ACTIVE_CLASS = 'text-white';
 
@@ -27,10 +27,13 @@ export function getSegmentedIndicatorStyle(
   paddingPx = SEGMENTED_TOGGLE_TRACK_PADDING_PX,
 ): { top: number; bottom: number; left: string; width: string } {
   const segmentShare = 100 / optionCount;
+  const leftPaddingAdjust = paddingPx * (1 - (2 * selectedIndex) / optionCount);
+  const widthPaddingAdjust = (paddingPx * 2) / optionCount;
+
   return {
     top: paddingPx,
     bottom: paddingPx,
-    left: `calc(${selectedIndex * segmentShare}% + ${paddingPx}px)`,
-    width: `calc(${segmentShare}% - ${paddingPx * 2}px)`,
+    left: `calc(${selectedIndex * segmentShare}% + ${leftPaddingAdjust}px)`,
+    width: `calc(${segmentShare}% - ${widthPaddingAdjust}px)`,
   };
 }
