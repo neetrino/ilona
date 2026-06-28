@@ -131,7 +131,7 @@ export function TeachersBoard({
         ) : (
           <div className="space-y-4">
             <div ref={mobileTeachersStartRef} className="sm:hidden" />
-            <div className="grid w-full min-w-0 grid-cols-1 gap-4 sm:hidden">
+            <div className="grid w-full min-w-0 grid-cols-1 items-stretch gap-4 sm:hidden">
               {paginatedTeachers.map((teacher) => (
                 <TeacherCard
                   key={teacher.id}
@@ -143,7 +143,7 @@ export function TeachersBoard({
             </div>
             <div
               className={cn(
-                'hidden w-full min-w-0 grid-cols-1 gap-4 sm:grid sm:grid-cols-2',
+                'hidden w-full min-w-0 grid-cols-1 items-stretch gap-4 sm:grid sm:grid-cols-2',
                 isIPad
                   ? 'lg:grid-cols-2 xl:grid-cols-2'
                   : 'lg:grid-cols-4 xl:grid-cols-4',

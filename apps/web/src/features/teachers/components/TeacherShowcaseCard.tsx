@@ -183,7 +183,9 @@ export function TeacherShowcaseCard({
             />
             <span className="truncate">{experienceLabel}</span>
           </p>
-        ) : null}
+        ) : (
+          <div className="mt-2 h-8" aria-hidden />
+        )}
       </div>
 
       {afterExperience ? (
