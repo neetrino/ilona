@@ -125,7 +125,7 @@ export function StudentAccountFormFieldsCrmLeadLayout({
     <div className="space-y-6">
       <section className="space-y-4">
         <h3 className={sectionHeading}>{tCrm('basicInfo')}</h3>
-        <div className="grid grid-cols-1 gap-4 min-[1367px]:grid-cols-3">
+        <div className="grid grid-cols-2 gap-4 min-[1367px]:grid-cols-3">
           <div className="min-w-0 space-y-2">
             <Label htmlFor={p('firstName')}>
               {tCommon('firstName')} <span className="text-red-500">*</span>
@@ -156,7 +156,7 @@ export function StudentAccountFormFieldsCrmLeadLayout({
               <p className="text-sm text-red-600">{errors.lastName.message}</p>
             ) : null}
           </div>
-          <div className="min-w-0 space-y-2">
+          <div className="col-span-2 min-w-0 space-y-2 min-[1367px]:col-span-1">
             <Label htmlFor={p('phone')}>{tForm('phoneNumber')}</Label>
             <Input
               id={p('phone')}
@@ -181,8 +181,8 @@ export function StudentAccountFormFieldsCrmLeadLayout({
 
       <section className="space-y-4">
         <h3 className={sectionHeading}>{tForm('account')}</h3>
-        <div className="grid grid-cols-1 gap-4 min-[1367px]:grid-cols-3">
-          <div className="min-w-0 space-y-2">
+        <div className="grid grid-cols-2 gap-4 min-[1367px]:grid-cols-3">
+          <div className="col-span-2 min-w-0 space-y-2 min-[1367px]:col-span-1">
             <Label htmlFor={p('email')}>
               {tCommon('email')} <span className="text-red-500">*</span>
             </Label>
@@ -230,7 +230,7 @@ export function StudentAccountFormFieldsCrmLeadLayout({
 
       <section className="space-y-4">
         <h3 className={sectionHeading}>{tCrm('additionalInfo')}</h3>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <div className="grid grid-cols-2 gap-4 min-[1367px]:grid-cols-3">
           <div className="min-w-0 space-y-2">
             <Label htmlFor={p('dateOfBirth')}>{t('dateOfBirth')}</Label>
             <Input
@@ -284,7 +284,7 @@ export function StudentAccountFormFieldsCrmLeadLayout({
               </>
             )}
           </div>
-          <div className="min-w-0 space-y-2">
+          <div className="col-span-2 min-w-0 space-y-2 min-[1367px]:col-span-1">
             <Label htmlFor={p('firstLessonDate')}>{tForm('firstLessonDate')}</Label>
             <Input
               id={p('firstLessonDate')}
@@ -399,8 +399,8 @@ export function StudentAccountFormFieldsCrmLeadLayout({
 
       <section className="space-y-4">
         <h3 className={sectionHeading}>{tCrm('academicInfo')}</h3>
-        <div className="grid grid-cols-1 gap-4 min-[1367px]:grid-cols-3">
-          <div className="min-w-0 space-y-2">
+        <div className="grid grid-cols-2 gap-4 min-[1367px]:grid-cols-3">
+          <div className="col-span-2 min-w-0 space-y-2 min-[1367px]:col-span-1">
             <Label>{tCommon('level')}</Label>
             <input type="hidden" {...register('levelId')} />
             <SegmentedControl
