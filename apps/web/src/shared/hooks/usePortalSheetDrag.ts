@@ -8,7 +8,7 @@ type UsePortalSheetDragOptions = {
   enabled?: boolean;
 };
 
-type PortalSheetDragHandleProps = {
+export type PortalSheetDragHandleProps = {
   onTouchStart: (event: TouchEvent<HTMLDivElement>) => void;
   onTouchMove: (event: TouchEvent<HTMLDivElement>) => void;
   onTouchEnd: (event: TouchEvent<HTMLDivElement>) => void;
