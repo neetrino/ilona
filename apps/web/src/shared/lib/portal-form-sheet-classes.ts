@@ -44,4 +44,4 @@ export const PORTAL_FORM_SHEET_DRAG_HANDLE_CLASS =
   'relative flex h-9 w-full items-center justify-center bg-[#f8f9fb] min-[1367px]:hidden';
 
 export const PORTAL_FORM_SHEET_CLOSE_BUTTON_CLASS =
-  'hidden h-8 w-8 shrink-0 items-center justify-center rounded-[15px] text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 min-[1367px]:inline-flex';
+  'hidden h-8 w-8 shrink-0 items-center justify-center rounded-[15px] border-0 border-transparent bg-transparent text-slate-500 outline-none transition hover:bg-slate-100 hover:text-slate-700 focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 min-[1367px]:inline-flex';

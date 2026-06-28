@@ -352,7 +352,7 @@ export function StudentDetailsModal({
                 onClick={() => setActionsMenuOpen((prev) => !prev)}
                 className={cn(
                   ADMIN_ICON_BUTTON_SM_CLASS,
-                  'text-[#3b3b40] hover:bg-[#f3f3f4] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1010a3]/20',
+                  'text-[#3b3b40] hover:bg-[#f3f3f4]',
                   actionsDisabled && 'cursor-not-allowed opacity-50',
                 )}
               >

@@ -18,8 +18,8 @@ export const ADMIN_DATE_INPUT_CLASS =
 
 /** Square icon buttons with hover fill (36px, 15px radius). */
 export const ADMIN_ICON_BUTTON_CLASS =
-  'inline-flex h-9 w-9 items-center justify-center rounded-[15px] transition-colors';
+  'inline-flex h-9 w-9 items-center justify-center rounded-[15px] border-0 border-transparent bg-transparent transition-colors outline-none focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0';
 
 /** Smaller square icon buttons (32px, 15px radius). */
 export const ADMIN_ICON_BUTTON_SM_CLASS =
-  'inline-flex h-8 w-8 items-center justify-center rounded-[15px] transition-colors';
+  'inline-flex h-8 w-8 items-center justify-center rounded-[15px] border-0 border-transparent bg-transparent transition-colors outline-none focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0';

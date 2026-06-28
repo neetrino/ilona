@@ -218,7 +218,7 @@ export function GroupCardOverflowMenu({
         aria-haspopup="menu"
         aria-expanded={open}
         onClick={() => setOpen((prev) => !prev)}
-        className={`${ADMIN_ICON_BUTTON_SM_CLASS} border-0 text-[#3b3b40] outline-none hover:bg-[#f3f3f4] focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0`}
+        className={`${ADMIN_ICON_BUTTON_SM_CLASS} text-[#3b3b40] hover:bg-[#f3f3f4]`}
       >
         <MoreVertical className="h-4 w-4" aria-hidden="true" />
       </button>

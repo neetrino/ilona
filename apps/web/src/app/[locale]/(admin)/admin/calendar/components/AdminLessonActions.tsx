@@ -75,7 +75,7 @@ export function AdminLessonActions({
             aria-haspopup="menu"
             aria-expanded={menuOpen}
             onClick={() => setMenuOpen((prev) => !prev)}
-            className={`${ADMIN_ICON_BUTTON_SM_CLASS} text-[#3b3b40] hover:bg-[#f3f3f4] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1010a3]/20`}
+            className={`${ADMIN_ICON_BUTTON_SM_CLASS} text-[#3b3b40] hover:bg-[#f3f3f4]`}
           >
             <MoreVertical className="h-4 w-4" aria-hidden />
           </button>
