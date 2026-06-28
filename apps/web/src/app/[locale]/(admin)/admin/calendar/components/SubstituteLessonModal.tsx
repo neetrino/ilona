@@ -1,17 +1,24 @@
 'use client';
 
 import * as DialogPrimitive from '@radix-ui/react-dialog';
-import { X } from 'lucide-react';
-import { useCallback, useEffect, useRef, useState, type TouchEvent } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
-import {
-  DialogFooter,
-} from '@/shared/components/ui/dialog';
 import { Button } from '@/shared/components/ui/button';
 import { Label } from '@/shared/components/ui/label';
-import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
+import {
+  SingleSelectDropdown,
+  portaledDropdownDialogHandlers,
+} from '@/shared/components/ui/single-select-dropdown';
 import { useLesson, useUpdateLesson } from '@/features/lessons';
+import { PortalFormSheetDragHandle } from '@/shared/components/ui/portal-form-sheet-drag-handle';
+import { usePortalSheetDrag } from '@/shared/hooks/usePortalSheetDrag';
 import { cn } from '@/shared/lib/utils';
+import {
+  PORTAL_FORM_SHEET_HEADER_CLASS,
+  PORTAL_FORM_SHEET_OVERLAY_CLASS,
+  PORTAL_FORM_SHEET_SCROLL_CLASS,
+  portalFormSheetContentClass,
+} from '@/shared/lib/portal-form-sheet-classes';
 
 export interface SubstituteTeacherOption {
   id: string;
@@ -37,12 +44,6 @@ export function SubstituteLessonModal({
   const updateLesson = useUpdateLesson();
   const [selectedId, setSelectedId] = useState<string>('');
   const [isDialogOpen, setIsDialogOpen] = useState(open);
-  const [dragOffsetY, setDragOffsetY] = useState(0);
-  const [isDragging, setIsDragging] = useState(false);
-  const [isSettling, setIsSettling] = useState(false);
-  const touchStartYRef = useRef<number | null>(null);
-  const touchStartXRef = useRef<number | null>(null);
-  const settleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     setIsDialogOpen(open);
@@ -56,91 +57,25 @@ export function SubstituteLessonModal({
     }
   }, [lesson?.substituteTeacherId, lesson?.id]);
 
-  useEffect(() => {
-    if (!open) {
-      setDragOffsetY(0);
-      setIsDragging(false);
-      setIsSettling(false);
-    }
-  }, [open]);
-
-  useEffect(() => {
-    return () => {
-      if (settleTimerRef.current) {
-        clearTimeout(settleTimerRef.current);
-      }
-    };
-  }, []);
-
-  const mainName = lesson?.teacher?.user
-    ? `${lesson.teacher.user.firstName} ${lesson.teacher.user.lastName}`.trim()
-    : '—';
-
   const requestClose = useCallback(() => {
     setIsDialogOpen(false);
     onOpenChange(false);
   }, [onOpenChange]);
 
-  const isMobileViewport = () =>
-    typeof window !== 'undefined' && window.matchMedia('(max-width: 1366px)').matches;
+  const { dragStyle, dragHandleProps, resetDrag } = usePortalSheetDrag({
+    onClose: requestClose,
+    enabled: isDialogOpen,
+  });
 
-  const resetDragRefs = () => {
-    touchStartYRef.current = null;
-    touchStartXRef.current = null;
-    setIsDragging(false);
-  };
-
-  const handleDragStart = (event: TouchEvent<HTMLDivElement>) => {
-    if (!isMobileViewport()) return;
-    const firstTouch = event.touches[0];
-    if (!firstTouch) return;
-    if (settleTimerRef.current) {
-      clearTimeout(settleTimerRef.current);
-      settleTimerRef.current = null;
+  useEffect(() => {
+    if (!open) {
+      resetDrag();
     }
-    touchStartYRef.current = firstTouch.clientY;
-    touchStartXRef.current = firstTouch.clientX;
-    setIsSettling(false);
-    setIsDragging(true);
-  };
+  }, [open, resetDrag]);
 
-  const handleDragMove = (event: TouchEvent<HTMLDivElement>) => {
-    if (!isMobileViewport()) return;
-    if (!isDragging || touchStartYRef.current === null || touchStartXRef.current === null) return;
-    const firstTouch = event.touches[0];
-    if (!firstTouch) return;
-    const deltaY = firstTouch.clientY - touchStartYRef.current;
-    const deltaX = Math.abs(firstTouch.clientX - touchStartXRef.current);
-    if (deltaY <= 0 || deltaY <= deltaX) return;
-    event.preventDefault();
-    setDragOffsetY(Math.min(deltaY * 0.95, 340));
-  };
-
-  const handleDragEnd = () => {
-    if (!isMobileViewport()) return;
-    if (!isDragging) return;
-    const shouldClose = dragOffsetY > 110;
-    resetDragRefs();
-    if (shouldClose) {
-      setDragOffsetY(0);
-      requestClose();
-      return;
-    }
-    setIsSettling(true);
-    setDragOffsetY(0);
-    settleTimerRef.current = setTimeout(() => {
-      setIsSettling(false);
-      settleTimerRef.current = null;
-    }, 280);
-  };
-
-  const dragStyle =
-    dragOffsetY > 0 || isSettling
-      ? {
-          transform: `translateY(${dragOffsetY}px)`,
-          transition: isDragging ? 'none' : 'transform 280ms cubic-bezier(0.22, 1, 0.36, 1)',
-        }
-      : undefined;
+  const mainName = lesson?.teacher?.user
+    ? `${lesson.teacher.user.firstName} ${lesson.teacher.user.lastName}`.trim()
+    : '—';
 
   const handleSave = async () => {
     if (!lessonId) return;
@@ -167,54 +102,31 @@ export function SubstituteLessonModal({
   return (
     <DialogPrimitive.Root open={isDialogOpen} onOpenChange={(nextOpen) => !nextOpen && requestClose()}>
       <DialogPrimitive.Portal>
-        <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/60 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
+        <DialogPrimitive.Overlay className={cn(PORTAL_FORM_SHEET_OVERLAY_CLASS, 'z-[60]')} />
         <DialogPrimitive.Content
           style={dragStyle}
-          onPointerDownOutside={(event) => {
-            const target = event.target;
-            if (target instanceof Element && target.closest('[data-single-select-dropdown-menu]')) {
-              event.preventDefault();
-            }
-          }}
-          className={cn(
-            'fixed inset-x-0 bottom-[7px] top-auto z-50 flex w-full max-h-[min(88dvh,28rem)] translate-y-0 flex-col overflow-hidden lg:bottom-0',
-            'duration-700 ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out min-[1367px]:duration-350 min-[1367px]:ease-[cubic-bezier(0.22,1,0.36,1)]',
-            'data-[state=open]:slide-in-from-bottom-full data-[state=closed]:slide-out-to-bottom-full',
-            'rounded-t-[22px] border border-slate-200 bg-[#f8f9fb] shadow-xl',
-            'min-[1367px]:inset-0 min-[1367px]:m-auto min-[1367px]:h-auto min-[1367px]:max-h-[90vh] min-[1367px]:w-[95vw] min-[1367px]:max-w-md min-[1367px]:translate-x-0 min-[1367px]:translate-y-0 min-[1367px]:rounded-2xl',
-            'min-[1367px]:data-[state=open]:fade-in-0 min-[1367px]:data-[state=closed]:fade-out-0 min-[1367px]:data-[state=open]:slide-in-from-bottom-0 min-[1367px]:data-[state=closed]:slide-out-to-bottom-0',
-          )}
+          {...portaledDropdownDialogHandlers}
+          className={cn(portalFormSheetContentClass('xl'), 'z-[60]')}
           aria-describedby={undefined}
         >
-          <div className="relative flex h-9 w-full shrink-0 items-center justify-center bg-[#f8f9fb] min-[1367px]:hidden">
-            <div
-              className="absolute inset-x-0 -top-2 h-14"
-              onTouchStart={handleDragStart}
-              onTouchMove={handleDragMove}
-              onTouchEnd={handleDragEnd}
-              onTouchCancel={handleDragEnd}
-            />
-            <div className="h-1.5 w-14 rounded-full bg-slate-400" />
-          </div>
+          <PortalFormSheetDragHandle dragHandleProps={dragHandleProps} />
 
-          <div className="flex shrink-0 items-start justify-between gap-3 border-b border-slate-200/80 px-4 py-3 min-[1367px]:px-5 min-[1367px]:py-4">
-            <DialogPrimitive.Title className="pr-2 text-base font-semibold leading-snug text-[#3b3b40] sm:text-lg">
+          <div className={cn(PORTAL_FORM_SHEET_HEADER_CLASS, 'pb-3 pt-2 min-[1367px]:pb-5 min-[1367px]:pt-6')}>
+            <DialogPrimitive.Title className="break-words text-xl font-semibold leading-snug text-[#1010a3] min-[1367px]:text-lg min-[1367px]:text-[#3b3b40]">
               {t('substituteTeacherLesson')}
             </DialogPrimitive.Title>
-            <DialogPrimitive.Close
-              type="button"
-              className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-slate-500 transition hover:bg-slate-100 hover:text-slate-700"
-              aria-label={tCommon('close')}
-            >
-              <X className="h-4 w-4" />
-            </DialogPrimitive.Close>
           </div>
 
-          <div className="min-h-0 overflow-y-auto px-4 py-3 min-[1367px]:px-5 min-[1367px]:py-4">
+          <div
+            className={cn(
+              PORTAL_FORM_SHEET_SCROLL_CLASS,
+              'min-h-0 flex-1 pb-[calc(5.5rem+env(safe-area-inset-bottom))] min-[1367px]:pb-6',
+            )}
+          >
             {isLoading || !lesson ? (
               <p className="text-sm text-[#3b3b40]">{t('loadingLesson')}</p>
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <p className="text-sm text-[#3b3b40]">
                   <span className="font-medium text-[#1010a3]">{t('groupLabel')}</span>{' '}
                   {lesson.group?.name ?? '—'}
@@ -237,34 +149,46 @@ export function SubstituteLessonModal({
                   />
                 </div>
                 {lesson.substituteTeacher?.user && (
-                  <p className="text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-md px-2 py-1.5">
+                  <p className="rounded-md border border-amber-200 bg-amber-50 px-2 py-1.5 text-xs text-amber-800">
                     {t('currentlyAssignedSubstitute')}{' '}
                     <span className="font-medium">
                       {lesson.substituteTeacher.user.firstName} {lesson.substituteTeacher.user.lastName}
                     </span>
                   </p>
                 )}
+                {lesson.substituteTeacherId ? (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full rounded-[15px] sm:w-auto"
+                    onClick={handleRemove}
+                    disabled={updateLesson.isPending}
+                  >
+                    {t('removeSubstitute')}
+                  </Button>
+                ) : null}
+                <div className="flex flex-col gap-2 pt-4 sm:flex-row sm:justify-end">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full rounded-[15px] sm:w-auto"
+                    onClick={requestClose}
+                    disabled={updateLesson.isPending}
+                  >
+                    {tCommon('cancel')}
+                  </Button>
+                  <Button
+                    type="button"
+                    className="w-full rounded-[15px] bg-primary text-primary-foreground hover:bg-primary/90 sm:w-auto"
+                    onClick={handleSave}
+                    disabled={updateLesson.isPending || !lessonId || isLoading || !lesson}
+                  >
+                    {updateLesson.isPending ? tCommon('saving') : tCommon('save')}
+                  </Button>
+                </div>
               </div>
             )}
           </div>
-
-          <DialogFooter className="shrink-0 gap-2 border-t border-slate-200/80 px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] min-[1367px]:px-5 min-[1367px]:py-4 min-[1367px]:pb-4 sm:flex-row sm:justify-end">
-            {lesson?.substituteTeacherId ? (
-              <Button type="button" variant="outline" onClick={handleRemove} disabled={updateLesson.isPending}>
-                {t('removeSubstitute')}
-              </Button>
-            ) : null}
-            <Button type="button" variant="secondary" onClick={requestClose}>
-              {tCommon('cancel')}
-            </Button>
-            <Button
-              type="button"
-              onClick={handleSave}
-              disabled={updateLesson.isPending || !lessonId || isLoading || !lesson}
-            >
-              {tCommon('save')}
-            </Button>
-          </DialogFooter>
         </DialogPrimitive.Content>
       </DialogPrimitive.Portal>
     </DialogPrimitive.Root>

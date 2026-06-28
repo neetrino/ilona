@@ -20,6 +20,7 @@ import { CalendarMonthGrid } from '@/shared/components/calendar/CalendarMonthGri
 import { useTeachers } from '@/features/teachers';
 import { CalendarFilters } from './components/CalendarFilters';
 import { SubstituteLessonModal } from './components/SubstituteLessonModal';
+import { AdminLessonDetailSheet } from './components/AdminLessonDetailSheet';
 import { useLocale, useTranslations } from 'next-intl';
 import { useRouter } from '@/config/navigation';
 import { useAuthStore } from '@/features/auth/store/auth.store';
@@ -115,6 +116,11 @@ export default function CalendarPage() {
   const [pendingSingleDeleteId, setPendingSingleDeleteId] = useState<string | null>(null);
   const [isSingleDeleteDialogOpen, setIsSingleDeleteDialogOpen] = useState(false);
   const [singleDeleteError, setSingleDeleteError] = useState<string | null>(null);
+  const [lessonDetailSheetOpen, setLessonDetailSheetOpen] = useState(false);
+  const [lessonDetailSheetId, setLessonDetailSheetId] = useState<string | null>(null);
+  const [lessonDetailSheetTab, setLessonDetailSheetTab] = useState<
+    'absence' | 'feedback' | 'voice' | 'text' | 'dailyPlan'
+  >('absence');
 
   const [deleteNotice, setDeleteNotice] = useState<{ variant: 'success' | 'error'; text: string } | null>(
     null,
@@ -231,6 +237,34 @@ export default function CalendarPage() {
     },
     [updateSubstituteLessonModalInUrl],
   );
+
+  const handleOpenLessonDetail = useCallback(
+    (lessonId: string, tab?: string) => {
+      const query = tab ? `?tab=${tab}` : '';
+      router.push(`/${locale}${portalBasePath}/calendar/${lessonId}${query}`);
+    },
+    [locale, portalBasePath, router],
+  );
+
+  const handleMobileLessonCardClick = useCallback(
+    (
+      lessonId: string,
+      tab: 'absence' | 'feedback' | 'voice' | 'text' | 'dailyPlan' = 'absence',
+    ) => {
+      setLessonDetailSheetId(lessonId);
+      setLessonDetailSheetTab(tab);
+      setLessonDetailSheetOpen(true);
+    },
+    [],
+  );
+
+  const handleLessonDetailSheetOpenChange = useCallback((open: boolean) => {
+    setLessonDetailSheetOpen(open);
+    if (!open) {
+      setLessonDetailSheetId(null);
+      setLessonDetailSheetTab('absence');
+    }
+  }, []);
   
   // Handle sort toggle
   const handleSort = (key: string) => {
@@ -737,8 +771,9 @@ export default function CalendarPage() {
                 hideActionsColumn
                 listReferenceDate={listReferenceDate}
                 onBulkDelete={handleBulkDeleteClick}
+                onMobileCardClick={handleMobileLessonCardClick}
                 onObligationClick={(lessonId, obligation) => {
-                  router.push(`/${locale}${portalBasePath}/calendar/${lessonId}?tab=${obligation}`);
+                  handleOpenLessonDetail(lessonId, obligation);
                 }}
                 onDelete={handleSingleDeleteClick}
                 onAssignSubstitute={handleAssignSubstitute}
@@ -758,6 +793,14 @@ export default function CalendarPage() {
         open={substituteLessonModalOpen}
         onOpenChange={handleSubstituteLessonOpenChange}
         lessonId={substituteLessonId}
+        teacherOptions={teacherOptions}
+      />
+
+      <AdminLessonDetailSheet
+        open={lessonDetailSheetOpen}
+        onOpenChange={handleLessonDetailSheetOpenChange}
+        lessonId={lessonDetailSheetId}
+        initialTab={lessonDetailSheetTab}
         teacherOptions={teacherOptions}
       />
 

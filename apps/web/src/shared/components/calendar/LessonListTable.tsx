@@ -55,6 +55,8 @@ interface LessonListTableProps {
   listReferenceDate?: Date;
   /** Desktop table: hide actions column and open lesson detail on row click. */
   hideActionsColumn?: boolean;
+  /** Mobile cards: open lesson in a sheet instead of navigating. */
+  onMobileCardClick?: (lessonId: string, tab?: LessonActionId) => void;
 }
 
 const MOBILE_CARD_PAGE_SIZE = 5;
@@ -79,6 +81,7 @@ export function LessonListTable({
   useMobileCards = false,
   listReferenceDate,
   hideActionsColumn = false,
+  onMobileCardClick,
 }: LessonListTableProps) {
   const locale = useLocale();
   const tCal = useTranslations('calendar');
@@ -297,6 +300,7 @@ export function LessonListTable({
   const showBulkBar = onBulkDelete && (showBulkBarWhenEmpty || selectedLessons.size > 0);
   const hasSelectedLessons = selectedLessons.size > 0;
   const obligationIds: LessonActionId[] = ['absence', 'feedback', 'voice', 'text', 'dailyPlan'];
+  const mobileCardOpensSheet = Boolean(onMobileCardClick);
 
   const handleView = (lessonId: string) => {
     const currentPath = window.location.pathname;
@@ -389,14 +393,39 @@ export function LessonListTable({
                       : tCal('sectionCompleted')}
                 </p>
               ) : null}
-              <article className="overflow-hidden rounded-2xl border border-[rgba(14,14,16,0.09)] bg-white shadow-[0_1px_2px_rgba(14,14,16,0.03)]">
+              <article
+                role={mobileCardOpensSheet ? 'button' : undefined}
+                tabIndex={mobileCardOpensSheet ? 0 : undefined}
+                onClick={
+                  mobileCardOpensSheet
+                    ? () => onMobileCardClick?.(lesson.id)
+                    : undefined
+                }
+                onKeyDown={
+                  mobileCardOpensSheet
+                    ? (event) => {
+                        if (event.key === 'Enter' || event.key === ' ') {
+                          event.preventDefault();
+                          onMobileCardClick?.(lesson.id);
+                        }
+                      }
+                    : undefined
+                }
+                className={cn(
+                  'overflow-hidden rounded-2xl border border-[rgba(14,14,16,0.09)] bg-white shadow-[0_1px_2px_rgba(14,14,16,0.03)]',
+                  mobileCardOpensSheet &&
+                    'cursor-pointer transition-shadow hover:shadow-[0_4px_14px_rgba(14,14,16,0.08)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1010a3]/25',
+                )}
+              >
                 <div className="p-4">
                   <div className="flex items-start gap-2.5">
-                    <Checkbox
-                      checked={selectedLessons.has(lesson.id)}
-                      onCheckedChange={(checked) => handleSelectLesson(lesson.id, checked === true)}
-                      className="relative -top-[1px] h-5 w-5 rounded-md"
-                    />
+                    <div onPointerDown={(event) => event.stopPropagation()}>
+                      <Checkbox
+                        checked={selectedLessons.has(lesson.id)}
+                        onCheckedChange={(checked) => handleSelectLesson(lesson.id, checked === true)}
+                        className="relative -top-[1px] h-5 w-5 rounded-md"
+                      />
+                    </div>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center justify-between gap-2">
                         <p className="whitespace-normal break-words text-[1.2rem] leading-tight font-semibold text-[#111827]">
@@ -453,16 +482,23 @@ export function LessonListTable({
                     </div>
                   </div>
                   <div className="my-3 border-t border-dashed border-[rgba(14,14,16,0.14)]" />
-                  <div className="grid grid-cols-3 gap-2">
+                  <div className="grid grid-cols-3 gap-2" onPointerDown={(event) => event.stopPropagation()}>
                     {obligationIds.map((id) => (
                       <CalendarListActionPill
                         key={id}
                         action={actionMap.get(id)!}
-                        onActivate={() => onObligationClick?.(lesson.id, id)}
+                        onActivate={() => {
+                          if (mobileCardOpensSheet) {
+                            onMobileCardClick?.(lesson.id, id);
+                            return;
+                          }
+                          onObligationClick?.(lesson.id, id);
+                        }}
                       />
                     ))}
                   </div>
                 </div>
+                {!mobileCardOpensSheet ? (
                 <div className="flex items-center justify-around gap-2 border-t border-[rgba(14,14,16,0.08)] bg-[#fbfbfc] px-4 py-2.5">
                   {!isTeacher && onAssignSubstitute ? (
                     <Button
@@ -517,6 +553,7 @@ export function LessonListTable({
                     </Button>
                   ) : null}
                 </div>
+                ) : null}
               </article>
             </div>
           );

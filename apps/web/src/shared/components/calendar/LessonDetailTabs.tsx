@@ -28,6 +28,8 @@ interface LessonDetailTabsProps {
   lesson: Lesson;
   activeTab?: Tab;
   onTabChange?: (tab: Tab) => void;
+  /** fill: tab body scrolls inside fixed height; flow: content grows for outer scroll */
+  layout?: 'fill' | 'flow';
   children: {
     absence?: React.ReactNode;
     feedback?: React.ReactNode;
@@ -90,7 +92,13 @@ function LockStatusIcon({
   return <LockOpen className={cn('h-4 w-4', colorClass)} aria-label={label} />;
 }
 
-export function LessonDetailTabs({ lesson, activeTab: initialTab, onTabChange, children }: LessonDetailTabsProps) {
+export function LessonDetailTabs({
+  lesson,
+  activeTab: initialTab,
+  onTabChange,
+  layout = 'fill',
+  children,
+}: LessonDetailTabsProps) {
   const t = useTranslations('calendar');
   const [activeTab, setActiveTab] = useState<Tab>(initialTab || 'absence');
 
@@ -114,7 +122,7 @@ export function LessonDetailTabs({ lesson, activeTab: initialTab, onTabChange, c
   const tabs: Tab[] = ['absence', 'feedback', 'voice', 'text', 'dailyPlan'];
 
   return (
-    <div className="flex flex-col h-full min-h-0">
+    <div className={cn('flex flex-col', layout === 'fill' && 'h-full min-h-0')}>
       <div className="shrink-0 border-b border-slate-200 bg-gradient-to-b from-slate-50/80 to-white px-3 py-3 sm:px-4 sm:py-4">
         {showEmergency && (
           <div
@@ -201,7 +209,7 @@ export function LessonDetailTabs({ lesson, activeTab: initialTab, onTabChange, c
         </div>
       </div>
 
-      <div className="flex-1 min-h-0 overflow-y-auto">
+      <div className={cn(layout === 'fill' && 'min-h-0 flex-1 overflow-y-auto')}>
         {activeTab === 'absence' && children.absence}
         {activeTab === 'feedback' && children.feedback}
         {activeTab === 'voice' && children.voice}

@@ -80,7 +80,10 @@ export function CalendarListActionPill({
   return (
     <button
       type="button"
-      onClick={onActivate}
+      onClick={(event) => {
+        event.stopPropagation();
+        onActivate();
+      }}
       disabled={action.locked}
       title={title}
       aria-label={title}
