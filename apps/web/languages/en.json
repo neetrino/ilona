@@ -882,6 +882,8 @@
     "deleteCenterWithName": "Are you sure you want to delete {name}? This action cannot be undone and will permanently remove the center and all associated data.",
     "deleteCenterGeneric": "Are you sure you want to delete this center? This action cannot be undone and will permanently remove the center and all associated data.",
     "deleting": "Deleting...",
+    "deactivating": "Deactivating...",
+    "activating": "Activating...",
     "groupStatusDeactivateTitle": "Deactivate group",
     "groupStatusActivateTitle": "Activate group",
     "groupStatusDeactivateWithName": "Are you sure you want to deactivate \"{name}\"?",
