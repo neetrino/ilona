@@ -5,6 +5,11 @@ import { useTranslations } from 'next-intl';
 import type { DailyPlan, DailyPlanResourceKind } from './types';
 import { DailyPlanCard } from './DailyPlanCard';
 import { useIsIPad } from '@/shared/hooks/useIsIPad';
+import {
+  ADMIN_PRIMARY_BUTTON_CLASS,
+  ADMIN_SEARCH_INPUT_CLASS,
+} from '@/shared/lib/admin-control-theme';
+import { cn } from '@/shared/lib/utils';
 
 interface DailyPlanListSectionProps {
   search: string;
@@ -89,14 +94,14 @@ export function DailyPlanListSection({
       <div className="flex flex-col md:flex-row md:items-center gap-3">
         <div className="flex-1 relative">
           <input
-            type="text"
+            type="search"
             value={search}
             onChange={(event) => onSearchChange(event.target.value)}
             placeholder={t('searchPlaceholder')}
-            className="w-full h-11 pl-10 pr-3 bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+            className={ADMIN_SEARCH_INPUT_CLASS}
           />
           <svg
-            className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400"
+            className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#8b8b90]"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -114,7 +119,10 @@ export function DailyPlanListSection({
         <button
           type="button"
           onClick={onCreate}
-          className="h-11 px-4 bg-primary text-white rounded-lg font-medium hover:bg-primary/90 transition-colors"
+          className={cn(
+            ADMIN_PRIMARY_BUTTON_CLASS,
+            'shrink-0 bg-[#1010a3] text-white transition-colors hover:bg-[#1010a3]/90',
+          )}
         >
           {createLabel}
         </button>
