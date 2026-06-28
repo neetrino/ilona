@@ -6,7 +6,13 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useTranslations } from 'next-intl';
-import { Button, Input, Label, Checkbox } from '@/shared/components/ui';
+import { Button, Input, Label, Checkbox, SegmentedControl } from '@/shared/components/ui';
+import {
+  ADMIN_FORM_INPUT_CLASS,
+  ADMIN_ICON_BUTTON_SM_CLASS,
+  ADMIN_OUTLINE_BUTTON_CLASS,
+  ADMIN_PRIMARY_BUTTON_CLASS,
+} from '@/shared/lib/admin-control-theme';
 import { useCreateGroup, type CreateGroupDto } from '@/features/groups';
 import type { GroupScheduleEntry } from '../types';
 import { useCenters } from '@/features/centers';
@@ -22,23 +28,26 @@ import {
   portalSheetLayerProps,
   stackedSheetDialogHandlers,
   useSheetStackZIndex,
-  stackedSheetOverlayClassName,
 } from '@/shared/lib/sheet-stack';
 import { PORTAL_DESKTOP_SIDE_SHEET_CLASS } from '@/shared/lib/portal-form-sheet-classes';
 import { X } from 'lucide-react';
-import { SingleSelectDropdown, portaledDropdownDialogHandlers } from '@/shared/components/ui/single-select-dropdown';
+import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
 import {
   filterTeachersForCenter,
   teacherOptionLabel,
 } from '../lib/center-scoped-teachers';
+import { DEFAULT_GROUP_LEVEL, GROUP_LEVEL_SEGMENT_OPTIONS } from '../lib/group-level-options';
 
 type CreateGroupFormData = {
   name: string;
   level?: string;
+  description?: string;
   centerId: string;
   teacherId: string;
   secondTeacherId: string;
 };
+
+const ADMIN_TEXTAREA_CLASS = cn(ADMIN_FORM_INPUT_CLASS, 'h-auto min-h-[5.5rem] resize-none py-2');
 
 function translateScheduleSlotError(
   err: string | null,
@@ -66,6 +75,7 @@ export function CreateGroupForm({ open, onOpenChange }: CreateGroupFormProps) {
         .object({
           name: z.string().min(2, tVal('nameMin')).max(100, tVal('nameMax')),
           level: z.string().max(50, tVal('levelMax')).optional().or(z.literal('')),
+          description: z.string().max(500, tVal('descriptionMax')).optional().or(z.literal('')),
           centerId: z.string().min(1, tVal('selectCenter')),
           teacherId: z.string().min(1, tForm('selectBothTeachers')),
           secondTeacherId: z.string().min(1, tForm('selectBothTeachers')),
@@ -102,7 +112,8 @@ export function CreateGroupForm({ open, onOpenChange }: CreateGroupFormProps) {
   });
   const { data: teachersData, isLoading: isLoadingTeachers } = useTeachers({ status: 'ACTIVE' });
   
-  const centers = centersData?.items || [];
+  const centers = useMemo(() => centersData?.items ?? [], [centersData?.items]);
+  const defaultCenterId = centers[0]?.id ?? '';
   const teachers = useMemo(() => teachersData?.items ?? [], [teachersData?.items]);
 
   const {
@@ -112,19 +123,57 @@ export function CreateGroupForm({ open, onOpenChange }: CreateGroupFormProps) {
     reset,
     setValue,
     watch,
+    getValues,
   } = useForm<CreateGroupFormData>({
     resolver,
     defaultValues: {
       name: '',
-      level: '',
-      centerId: '',
+      level: DEFAULT_GROUP_LEVEL,
+      description: '',
+      centerId: defaultCenterId,
       teacherId: '',
       secondTeacherId: '',
     },
   });
+  const isFormBusy = isSubmitting || createGroup.isPending;
   const watchedTeacherId = watch('teacherId');
   const watchedCenterId = watch('centerId');
   const watchedSecondTeacherId = watch('secondTeacherId');
+  const watchedLevel = watch('level') ?? DEFAULT_GROUP_LEVEL;
+
+  const centerSegmentOptions = useMemo(
+    () =>
+      centers.map((center) => ({
+        id: center.id,
+        label: center.name,
+      })),
+    [centers],
+  );
+
+  const handleCenterChange = useCallback(
+    (nextCenterId: string) => {
+      const prevCenterId = watchedCenterId;
+      setValue('centerId', nextCenterId, {
+        shouldDirty: true,
+        shouldValidate: true,
+      });
+      if (prevCenterId && prevCenterId !== nextCenterId) {
+        setValue('teacherId', '', { shouldDirty: true, shouldValidate: true });
+        setValue('secondTeacherId', '', { shouldDirty: true, shouldValidate: true });
+      }
+    },
+    [watchedCenterId, setValue],
+  );
+
+  useEffect(() => {
+    if (!open || isLoadingCenters || !defaultCenterId) return;
+    if (!getValues('centerId')) {
+      setValue('centerId', defaultCenterId, {
+        shouldDirty: false,
+        shouldValidate: true,
+      });
+    }
+  }, [open, isLoadingCenters, defaultCenterId, getValues, setValue]);
 
   const hasCenterSelected = Boolean(watchedCenterId);
   const teachersForCenter = useMemo(
@@ -145,8 +194,9 @@ export function CreateGroupForm({ open, onOpenChange }: CreateGroupFormProps) {
     if (open) {
       reset({
         name: '',
-        level: '',
-        centerId: '',
+        level: DEFAULT_GROUP_LEVEL,
+        description: '',
+        centerId: defaultCenterId,
         teacherId: '',
         secondTeacherId: '',
       });
@@ -275,6 +325,7 @@ export function CreateGroupForm({ open, onOpenChange }: CreateGroupFormProps) {
       const payload: CreateGroupDto = {
         name: data.name,
         level: data.level || undefined,
+        description: data.description || undefined,
         centerId: data.centerId,
         teacherId: data.teacherId,
         secondTeacherId: data.secondTeacherId,
@@ -293,8 +344,9 @@ export function CreateGroupForm({ open, onOpenChange }: CreateGroupFormProps) {
       // Reset form and close modal after a brief delay
       reset({
         name: '',
-        level: '',
-        centerId: '',
+        level: DEFAULT_GROUP_LEVEL,
+        description: '',
+        centerId: defaultCenterId,
         teacherId: '',
         secondTeacherId: '',
       });
@@ -315,18 +367,25 @@ export function CreateGroupForm({ open, onOpenChange }: CreateGroupFormProps) {
       setSuccessMessage(null);
     }
   };
-  const { overlayStyle, contentStyle, isBaseLayer } = useSheetStackZIndex(isDialogOpen);
+  const { overlayStyle, contentStyle } = useSheetStackZIndex(isDialogOpen);
 
   return (
     <DialogPrimitive.Root open={isDialogOpen} onOpenChange={(nextOpen) => !nextOpen && requestClose()}>
       <DialogPrimitive.Portal>
-        <DialogPrimitive.Overlay style={overlayStyle} {...portalSheetLayerProps} className={stackedSheetOverlayClassName('fixed inset-0 z-50 bg-black/60 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0', isBaseLayer)} />
-        <DialogPrimitive.Content style={{ ...dragStyle, ...contentStyle }} {...stackedSheetDialogHandlers} {...portalSheetLayerProps}
+        <DialogPrimitive.Overlay
+          style={overlayStyle}
+          {...portalSheetLayerProps}
+          className="fixed inset-0 z-50 bg-black/60 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0"
+        />
+        <DialogPrimitive.Content
+          style={{ ...dragStyle, ...contentStyle }}
+          {...stackedSheetDialogHandlers}
+          {...portalSheetLayerProps}
           className={cn(
             'fixed inset-x-0 bottom-[7px] top-auto z-50 grid w-full translate-y-0 lg:bottom-0 [@media(min-width:1024px)_and_(max-width:1366px)_and_(min-height:1000px)]:bottom-0',
             'duration-700 ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out min-[1367px]:duration-350 min-[1367px]:ease-[cubic-bezier(0.22,1,0.36,1)]',
             'data-[state=open]:slide-in-from-bottom-full data-[state=closed]:slide-out-to-bottom-full',
-            'h-[calc(94dvh+7px)] [@media(min-width:1024px)_and_(max-width:1366px)_and_(min-height:1000px)]:h-[56dvh] grid-rows-[auto_1fr] gap-0 overflow-hidden rounded-t-[22px] border border-slate-200 bg-[#f8f9fb] shadow-xl',
+            'h-[calc(94dvh+7px)] [@media(min-width:1024px)_and_(max-width:1366px)_and_(min-height:1000px)]:h-[56dvh] grid-rows-[auto_auto_1fr] gap-0 overflow-hidden rounded-t-[22px] border border-slate-200 bg-[#f8f9fb] shadow-xl',
             PORTAL_DESKTOP_SIDE_SHEET_CLASS,
           )}
           aria-describedby={undefined}
@@ -342,210 +401,234 @@ export function CreateGroupForm({ open, onOpenChange }: CreateGroupFormProps) {
             <div className="h-1.5 w-14 rounded-full bg-slate-400" />
           </div>
           <DialogPrimitive.Title className="sr-only">{tForm('addTitle')}</DialogPrimitive.Title>
-          <div className="min-h-0 overflow-y-auto overscroll-y-contain [touch-action:pan-y] [-webkit-overflow-scrolling:touch] px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-4 min-[1367px]:p-6">
-            <div className="mb-4">
+          <div className="shrink-0 bg-[#f8f9fb] px-4 pb-4 pt-3 min-[1367px]:px-6 min-[1367px]:pb-5 min-[1367px]:pt-6">
+            <div className="flex items-start justify-between gap-4">
+              <div className="min-w-0 flex-1">
+                <h2 className="text-lg font-semibold text-[#3b3b40]">{tForm('addTitle')}</h2>
+              </div>
               <DialogPrimitive.Close
-                className="absolute right-4 top-4 hidden h-8 w-8 items-center justify-center rounded-full text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 min-[1367px]:inline-flex"
+                className={cn(
+                  ADMIN_ICON_BUTTON_SM_CLASS,
+                  'hidden text-slate-500 hover:bg-slate-100 hover:text-slate-700 min-[1367px]:inline-flex',
+                )}
                 aria-label={tCommon('close')}
               >
                 <X className="h-4 w-4" />
               </DialogPrimitive.Close>
-              <h2 className="text-lg font-semibold text-[#3b3b40]">{tForm('addTitle')}</h2>
-              <p className="mt-1 text-sm text-[#8b8b90]">{tForm('addDescription')}</p>
             </div>
-
+          </div>
+          <div className="min-h-0 overflow-y-auto overscroll-y-contain [touch-action:pan-y] [-webkit-overflow-scrolling:touch] px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] min-[1367px]:px-6 min-[1367px]:pb-6">
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          {successMessage && (
-            <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
-              <p className="text-sm text-green-600">{successMessage}</p>
-            </div>
-          )}
-          {errorMessage && (
-            <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
-              <p className="text-sm text-red-600">{errorMessage}</p>
-            </div>
-          )}
+              {successMessage && (
+                <div className="rounded-[15px] border border-green-200 bg-green-50 p-3">
+                  <p className="text-sm text-green-600">{successMessage}</p>
+                </div>
+              )}
+              {errorMessage && (
+                <div className="rounded-[15px] border border-red-200 bg-red-50 p-3">
+                  <p className="text-sm text-red-600">{errorMessage}</p>
+                </div>
+              )}
 
-          <div className="space-y-2">
-            <Label htmlFor="name">
-              {tForm('groupName')} <span className="text-red-500">*</span>
-            </Label>
-            <Input
-              id="name"
-              {...register('name')}
-              error={errors.name?.message}
-              placeholder={tForm('namePlaceholder')}
-              disabled={isSubmitting}
-            />
-          </div>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div className="min-w-0 space-y-2">
+                  <Label htmlFor="name">
+                    {tForm('groupName')} <span className="text-red-500">*</span>
+                  </Label>
+                  <Input
+                    id="name"
+                    className={ADMIN_FORM_INPUT_CLASS}
+                    {...register('name')}
+                    error={errors.name?.message}
+                    placeholder={tForm('namePlaceholder')}
+                    disabled={isSubmitting}
+                  />
+                </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="level">{tCommon('level')}</Label>
-            <Input
-              id="level"
-              {...register('level')}
-              error={errors.level?.message}
-              placeholder={tForm('levelPlaceholder')}
-              disabled={isSubmitting}
-            />
-          </div>
+                <div className="min-w-0 space-y-2">
+                  <Label>{tCommon('level')}</Label>
+                  <SegmentedControl
+                    options={GROUP_LEVEL_SEGMENT_OPTIONS}
+                    value={watchedLevel}
+                    onChange={(nextValue) =>
+                      setValue('level', nextValue, { shouldDirty: true, shouldValidate: true })
+                    }
+                    disabled={isSubmitting}
+                    aria-label={tCommon('level')}
+                  />
+                  {errors.level?.message ? (
+                    <p className="text-sm text-red-600">{errors.level.message}</p>
+                  ) : null}
+                </div>
+              </div>
 
-          <div className="space-y-2">
-            <Label id="group-icon-label">{tForm('groupIcon')}</Label>
-            <p className="text-xs text-slate-500">{tForm('iconHintCreate')}</p>
-            <GroupIconPicker
-              value={iconKey}
-              onChange={setIconKey}
-              defaultSelectsRandom
-              disabled={isSubmitting}
-              aria-labelledby="group-icon-label"
-            />
-          </div>
+              <div className="space-y-2">
+                <Label id="create-group-icon-label">{tForm('groupIcon')}</Label>
+                <p className="text-xs text-slate-500">{tForm('iconHintEdit')}</p>
+                <GroupIconPicker
+                  value={iconKey}
+                  onChange={setIconKey}
+                  defaultSelectsRandom
+                  disabled={isSubmitting}
+                  adminControls
+                  aria-labelledby="create-group-icon-label"
+                />
+              </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="centerId">
-              {tCommon('center')} <span className="text-red-500">*</span>
-            </Label>
-            <input type="hidden" {...register('centerId')} />
-            <SingleSelectDropdown
-              id="centerId"
-              options={centers.map((center) => ({
-                id: center.id,
-                label: center.name,
-              }))}
-              value={watchedCenterId || null}
-              onValueChange={(nextValue) => {
-                const nextCenterId = nextValue ?? '';
-                const prevCenterId = watchedCenterId;
-                setValue('centerId', nextCenterId, {
-                  shouldDirty: true,
-                  shouldValidate: true,
-                });
-                if (prevCenterId && prevCenterId !== nextCenterId) {
-                  setValue('teacherId', '', { shouldDirty: true, shouldValidate: true });
-                  setValue('secondTeacherId', '', { shouldDirty: true, shouldValidate: true });
-                }
-              }}
-              placeholder={tForm('selectCenter')}
-              isLoading={isLoadingCenters}
-              error={errors.centerId?.message ?? null}
-              disabled={isSubmitting || isLoadingCenters || centers.length === 0}
-            />
-            {isLoadingCenters && (
-              <p className="text-sm text-slate-500">{tForm('loadingCenters')}</p>
-            )}
-            {!isLoadingCenters && centers.length === 0 && (
-              <p className="text-sm text-amber-600">{tForm('noCentersAvailable')}</p>
-            )}
-          </div>
+              <div className="space-y-2">
+                <Label htmlFor="description">{tForm('description')}</Label>
+                <textarea
+                  id="description"
+                  {...register('description')}
+                  rows={3}
+                  placeholder={tForm('descriptionPlaceholder')}
+                  disabled={isSubmitting}
+                  className={cn(
+                    ADMIN_TEXTAREA_CLASS,
+                    errors.description ? 'border-red-300' : '',
+                    isSubmitting ? 'cursor-not-allowed bg-slate-100' : '',
+                  )}
+                />
+                {errors.description && (
+                  <p className="text-sm text-red-600">{errors.description.message}</p>
+                )}
+              </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="teacherId">
-              {tForm('teacher1Main')} <span className="text-red-500">*</span>
-            </Label>
-            <input type="hidden" {...register('teacherId')} />
-            <SingleSelectDropdown
-              id="teacherId"
-              options={teachersForCenter.map((teacher) => ({
-                id: teacher.id,
-                label: teacherOptionLabel(teacher),
-              }))}
-              value={watchedTeacherId || null}
-              onValueChange={(nextValue) => {
-                const nextTeacherId = nextValue ?? '';
-                setValue('teacherId', nextTeacherId, {
-                  shouldDirty: true,
-                  shouldValidate: true,
-                });
-                if (watchedSecondTeacherId && watchedSecondTeacherId === nextTeacherId) {
-                  setValue('secondTeacherId', '', {
-                    shouldDirty: true,
-                    shouldValidate: true,
-                  });
-                }
-              }}
-              placeholder={teacherPlaceholder}
-              isLoading={isLoadingTeachers}
-              error={errors.teacherId?.message ?? null}
-              disabled={teacherDropdownDisabled}
-            />
-            {isLoadingTeachers && (
-              <p className="text-sm text-slate-500">{tForm('loadingTeachers')}</p>
-            )}
-          </div>
+              <div className="space-y-2">
+                <Label>
+                  {tCommon('center')} <span className="text-red-500">*</span>
+                </Label>
+                {isLoadingCenters ? (
+                  <p className="text-sm text-slate-500">{tForm('loadingCenters')}</p>
+                ) : centers.length === 0 ? (
+                  <p className="text-sm text-amber-600">{tForm('noCentersAvailable')}</p>
+                ) : (
+                  <SegmentedControl
+                    options={centerSegmentOptions}
+                    value={watchedCenterId}
+                    onChange={handleCenterChange}
+                    disabled={isSubmitting || isLoadingCenters}
+                    aria-label={tCommon('center')}
+                  />
+                )}
+                {errors.centerId?.message ? (
+                  <p className="text-sm text-red-600">{errors.centerId.message}</p>
+                ) : null}
+              </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="secondTeacherId">
-              {tForm('teacher2')} <span className="text-red-500">*</span>
-            </Label>
-            <input type="hidden" {...register('secondTeacherId')} />
-            <SingleSelectDropdown
-              id="secondTeacherId"
-              options={teachersForCenter
-                .filter((teacher) => teacher.id !== watchedTeacherId)
-                .map((teacher) => ({
-                  id: teacher.id,
-                  label: teacherOptionLabel(teacher),
-                }))}
-              value={watchedSecondTeacherId || null}
-              onValueChange={(nextValue) =>
-                setValue('secondTeacherId', nextValue ?? '', {
-                  shouldDirty: true,
-                  shouldValidate: true,
-                })
-              }
-              placeholder={teacherPlaceholder}
-              isLoading={isLoadingTeachers}
-              error={errors.secondTeacherId?.message ?? null}
-              disabled={teacherDropdownDisabled}
-            />
-            <label className="flex cursor-pointer select-none items-start gap-2 pt-1">
-              <Checkbox
-                checked={secondTeacherStartsFirstWeek}
-                onCheckedChange={setSecondTeacherStartsFirstWeek}
-                disabled={isSubmitting || createGroup.isPending}
-                className="mt-0.5"
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div className="min-w-0 space-y-2">
+                  <Label htmlFor="teacherId">
+                    {tForm('teacher1Main')} <span className="text-red-500">*</span>
+                  </Label>
+                  <input type="hidden" {...register('teacherId')} />
+                  <SingleSelectDropdown
+                    id="teacherId"
+                    triggerClassName={ADMIN_FORM_INPUT_CLASS}
+                    options={teachersForCenter.map((teacher) => ({
+                      id: teacher.id,
+                      label: teacherOptionLabel(teacher),
+                    }))}
+                    value={watchedTeacherId || null}
+                    onValueChange={(nextValue) => {
+                      const nextTeacherId = nextValue ?? '';
+                      setValue('teacherId', nextTeacherId, {
+                        shouldDirty: true,
+                        shouldValidate: true,
+                      });
+                      if (watchedSecondTeacherId && watchedSecondTeacherId === nextTeacherId) {
+                        setValue('secondTeacherId', '', {
+                          shouldDirty: true,
+                          shouldValidate: true,
+                        });
+                      }
+                    }}
+                    placeholder={teacherPlaceholder}
+                    isLoading={isLoadingTeachers}
+                    error={errors.teacherId?.message ?? null}
+                    disabled={teacherDropdownDisabled}
+                  />
+                </div>
+
+                <div className="min-w-0 space-y-2">
+                  <Label htmlFor="secondTeacherId">
+                    {tForm('teacher2')} <span className="text-red-500">*</span>
+                  </Label>
+                  <input type="hidden" {...register('secondTeacherId')} />
+                  <SingleSelectDropdown
+                    id="secondTeacherId"
+                    triggerClassName={ADMIN_FORM_INPUT_CLASS}
+                    options={teachersForCenter
+                      .filter((teacher) => teacher.id !== watchedTeacherId)
+                      .map((teacher) => ({
+                        id: teacher.id,
+                        label: teacherOptionLabel(teacher),
+                      }))}
+                    value={watchedSecondTeacherId || null}
+                    onValueChange={(nextValue) =>
+                      setValue('secondTeacherId', nextValue ?? '', {
+                        shouldDirty: true,
+                        shouldValidate: true,
+                      })
+                    }
+                    placeholder={teacherPlaceholder}
+                    isLoading={isLoadingTeachers}
+                    error={errors.secondTeacherId?.message ?? null}
+                    disabled={teacherDropdownDisabled}
+                  />
+                  <label className="flex cursor-pointer select-none items-start gap-2 pt-1">
+                    <Checkbox
+                      checked={secondTeacherStartsFirstWeek}
+                      onCheckedChange={setSecondTeacherStartsFirstWeek}
+                      disabled={isFormBusy}
+                      className="mt-0.5"
+                    />
+                    <span className="text-sm text-slate-600">{tForm('teacher2StartsFirstWeek')}</span>
+                  </label>
+                </div>
+              </div>
+
+              {isLoadingTeachers && (
+                <p className="text-sm text-slate-500">{tForm('loadingTeachers')}</p>
+              )}
+
+              <p className="text-xs text-slate-500">{tForm('teacherRotationHint')}</p>
+
+              <GroupCalendarScheduleSection
+                schedule={schedule}
+                onScheduleChange={setSchedule}
+                dateFrom={dateFrom}
+                dateTo={dateTo}
+                onDateFromChange={setDateFrom}
+                onDateToChange={setDateTo}
+                disabled={isFormBusy}
+                adminControls
               />
-              <span className="text-sm text-slate-600">{tForm('teacher2StartsFirstWeek')}</span>
-            </label>
-          </div>
 
-          <p className="text-xs text-slate-500">{tForm('teacherRotationHint')}</p>
-
-          <GroupCalendarScheduleSection
-            schedule={schedule}
-            onScheduleChange={setSchedule}
-            dateFrom={dateFrom}
-            dateTo={dateTo}
-            onDateFromChange={setDateFrom}
-            onDateToChange={setDateTo}
-            disabled={isSubmitting || createGroup.isPending}
-          />
-
-          <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end">
-            <Button
-              type="button"
-              variant="ghost"
-              onClick={requestClose}
-              disabled={isSubmitting || createGroup.isPending}
-            >
-              {tCommon('cancel')}
-            </Button>
-            <Button
-              type="submit"
-              disabled={
-                isSubmitting ||
-                createGroup.isPending ||
-                isLoadingCenters ||
-                isLoadingTeachers ||
-                centers.length === 0
-              }
-              className="bg-[#1010a3] hover:bg-[#0d0d85] text-white"
-            >
-              {isSubmitting || createGroup.isPending ? tForm('creating') : tForm('createGroup')}
-            </Button>
-          </div>
-        </form>
+              <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className={cn(ADMIN_OUTLINE_BUTTON_CLASS, 'border-[rgba(14,14,16,0.07)] hover:bg-slate-50')}
+                  onClick={requestClose}
+                  disabled={isFormBusy}
+                >
+                  {tCommon('cancel')}
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={
+                    isFormBusy ||
+                    isLoadingCenters ||
+                    isLoadingTeachers ||
+                    centers.length === 0
+                  }
+                  className={cn(ADMIN_PRIMARY_BUTTON_CLASS, 'bg-primary text-primary-foreground hover:bg-primary/90')}
+                >
+                  {isSubmitting || createGroup.isPending ? tForm('creating') : tForm('createGroup')}
+                </Button>
+              </div>
+            </form>
           </div>
         </DialogPrimitive.Content>
       </DialogPrimitive.Portal>
