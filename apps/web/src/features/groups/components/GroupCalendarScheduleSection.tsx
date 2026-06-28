@@ -59,8 +59,8 @@ export function GroupCalendarScheduleSection({
         </p>
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2">
-        <div className="space-y-1">
+      <div className="grid grid-cols-2 gap-2 sm:gap-3">
+        <div className="min-w-0 space-y-1">
           <Label htmlFor="schedule-date-from">{tCalendar('startDate')}</Label>
           <DatePickerInput
             id="schedule-date-from"
@@ -73,7 +73,7 @@ export function GroupCalendarScheduleSection({
             )}
           />
         </div>
-        <div className="space-y-1">
+        <div className="min-w-0 space-y-1">
           <Label htmlFor="schedule-date-to">{tCalendar('endDate')}</Label>
           <DatePickerInput
             id="schedule-date-to"
