@@ -6,8 +6,8 @@ import { useTranslations } from 'next-intl';
 import {
   getSegmentedIndicatorStyle,
   SEGMENTED_TOGGLE_BUTTON_ACTIVE_CLASS,
-  SEGMENTED_TOGGLE_BUTTON_CLASS,
   SEGMENTED_TOGGLE_BUTTON_INACTIVE_CLASS,
+  SEGMENTED_TOGGLE_GRID_BUTTON_CLASS,
   SEGMENTED_TOGGLE_GRID_TRACK_CLASS,
   SEGMENTED_TOGGLE_INDICATOR_CLASS,
   SEGMENTED_TOGGLE_TRACK_PADDING_PX,
@@ -53,7 +53,7 @@ export function ViewModeSelector({
       aria-label={tc('viewMode')}
       className={cn(
         isTeacher
-          ? 'relative grid min-w-[190px] rounded-lg border border-[rgba(14,14,16,0.12)] bg-[#f6f6f7] p-1 shadow-sm sm:min-w-[220px] lg:h-11 lg:items-center lg:rounded-[15px]'
+          ? 'relative grid min-w-[190px] items-stretch rounded-lg border border-[rgba(14,14,16,0.12)] bg-[#f6f6f7] p-1 shadow-sm sm:min-w-[220px] lg:h-11 lg:rounded-[15px]'
           : cn(SEGMENTED_TOGGLE_GRID_TRACK_CLASS, 'min-w-[190px] sm:min-w-[220px]'),
       )}
       style={{ gridTemplateColumns: `repeat(${optionCount}, minmax(0, 1fr))` }}
@@ -76,7 +76,7 @@ export function ViewModeSelector({
           onClick={() => !disabled && onChange(mode.id)}
           disabled={disabled}
           className={cn(
-            SEGMENTED_TOGGLE_BUTTON_CLASS,
+            SEGMENTED_TOGGLE_GRID_BUTTON_CLASS,
             'whitespace-nowrap duration-300',
             isTeacher ? 'px-3 sm:px-4' : 'px-3 sm:px-4',
             value === mode.id

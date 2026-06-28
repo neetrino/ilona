@@ -9,8 +9,8 @@ import { StudentAnimatedPillSwitcher, StudentDatePicker } from '@/features/stude
 import {
   getSegmentedIndicatorStyle,
   SEGMENTED_TOGGLE_BUTTON_ACTIVE_CLASS,
-  SEGMENTED_TOGGLE_BUTTON_CLASS,
   SEGMENTED_TOGGLE_BUTTON_INACTIVE_CLASS,
+  SEGMENTED_TOGGLE_GRID_BUTTON_CLASS,
   SEGMENTED_TOGGLE_GRID_TRACK_CLASS,
   SEGMENTED_TOGGLE_INDICATOR_CLASS,
   SEGMENTED_TOGGLE_TRACK_PADDING_PX,
@@ -160,7 +160,7 @@ export function AnalyticsTimeFilterBar({
             type="button"
             onClick={() => onModeChange(m.id)}
             className={cn(
-              SEGMENTED_TOGGLE_BUTTON_CLASS,
+              SEGMENTED_TOGGLE_GRID_BUTTON_CLASS,
               mode === m.id
                 ? SEGMENTED_TOGGLE_BUTTON_ACTIVE_CLASS
                 : SEGMENTED_TOGGLE_BUTTON_INACTIVE_CLASS,
