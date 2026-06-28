@@ -128,7 +128,6 @@ export default function TeacherSchedulePage() {
     >
       <ScheduleBoard
         variant="student"
-        rectangularViewToggle
         lessons={lessons}
         isLoading={!isAuthReady || isGroupsLoading || isLessonsLoading}
         highlightPastLessonCards

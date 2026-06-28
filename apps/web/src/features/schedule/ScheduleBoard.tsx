@@ -1,15 +1,21 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import type { Lesson } from '@/features/lessons';
 import { WeekLessonGrid, MonthLessonGrid } from '@/features/schedule/ScheduleLessonViews';
 import { scheduleDateKeyFromIso, type ScheduleViewMode } from '@/features/schedule/schedule-dates';
 import type { ReactNode } from 'react';
 import { useIsIPad } from '@/shared/hooks/useIsIPad';
-import { ListBoardViewToggle } from '@/shared/components/ui';
+import { ListBoardViewToggle, SegmentedControl } from '@/shared/components/ui';
 import { ADMIN_CONTROL_CLASS } from '@/shared/lib/admin-control-theme';
 import { cn } from '@/shared/lib/utils';
+
+function capitalizeLabel(value: string, locale: string): string {
+  const trimmed = value.trim();
+  if (!trimmed) return trimmed;
+  return trimmed.charAt(0).toLocaleUpperCase(locale) + trimmed.slice(1);
+}
 
 function buildLessonsByDate(lessons: Lesson[]): Record<string, Lesson[]> {
   return lessons.reduce<Record<string, Lesson[]>>((acc, lesson) => {
@@ -44,8 +50,6 @@ export type ScheduleBoardProps = {
   variant?: 'default' | 'student';
   /** Hide month toggle on mobile screens only. */
   hideMonthOnMobile?: boolean;
-  /** Rectangular week/month toggle (teacher calendar styling). */
-  rectangularViewToggle?: boolean;
 };
 
 export function ScheduleBoard({
@@ -64,11 +68,11 @@ export function ScheduleBoard({
   highlightPastLessonCards = false,
   variant = 'default',
   hideMonthOnMobile = false,
-  rectangularViewToggle = false,
 }: ScheduleBoardProps) {
   const tCommon = useTranslations('common');
+  const tCalendar = useTranslations('calendar');
+  const locale = useLocale();
   const isStudent = variant === 'student';
-  const useRectangularToggle = rectangularViewToggle && isStudent;
   const isIPad = useIsIPad();
   const [isIPadMini, setIsIPadMini] = useState(false);
   const isIPadAirLayout = isIPad && !isIPadMini;
@@ -171,7 +175,7 @@ export function ScheduleBoard({
                   : 'ml-2 h-11 rounded-[15px] border border-slate-200 px-3 text-sm text-slate-700 hover:bg-slate-50'
               }
             >
-              Today
+              {tCalendar('today')}
             </button>
           </div>
 
@@ -193,7 +197,7 @@ export function ScheduleBoard({
             </div>
           ) : null}
 
-          {!isStudent && !useRectangularToggle ? (
+          {!isStudent ? (
             <div className={mobileToggleVisibilityClass}>
               <ListBoardViewToggle
                 value={viewMode === 'week' ? 'list' : 'board'}
@@ -204,65 +208,19 @@ export function ScheduleBoard({
               />
             </div>
           ) : (
-          <div
-            className={
-              useRectangularToggle
-                ? `${mobileToggleVisibilityClass}relative items-center self-start rounded-lg border border-[rgba(14,14,16,0.12)] bg-[#f6f6f7] p-1 shadow-sm md:self-auto`
-                : isStudent
-                  ? `${mobileToggleVisibilityClass}relative items-center self-start rounded-full border border-[rgba(14,14,16,0.07)] bg-[#f6f6f7] p-1 md:self-auto`
-                  : `${mobileToggleVisibilityClass}relative items-center self-start rounded-lg border border-slate-200 bg-slate-50 p-1 md:self-auto`
-            }
-          >
-            <span
-              className={
-                viewMode === 'week'
-                  ? useRectangularToggle || !isStudent
-                    ? 'pointer-events-none absolute z-0 h-8 w-[92px] rounded-md bg-[#1010a3] shadow-sm transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] translate-x-0'
-                    : 'pointer-events-none absolute z-0 h-8 w-[92px] rounded-full bg-[#1010a3] transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] translate-x-0'
-                  : useRectangularToggle || !isStudent
-                    ? 'pointer-events-none absolute z-0 h-8 w-[92px] rounded-md bg-[#1010a3] shadow-sm transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] translate-x-[92px]'
-                    : 'pointer-events-none absolute z-0 h-8 w-[92px] rounded-full bg-[#1010a3] transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] translate-x-[92px]'
-              }
+            <SegmentedControl
+              options={[
+                { id: 'week', label: capitalizeLabel(tCalendar('week'), locale) },
+                { id: 'month', label: capitalizeLabel(tCalendar('month'), locale) },
+              ]}
+              value={viewMode}
+              onChange={(mode) => onViewModeChange(mode as ScheduleViewMode)}
+              className={cn(
+                'w-full sm:w-[184px] self-start md:self-auto',
+                hideMonthOnMobile && '[&>button:last-child]:hidden sm:[&>button:last-child]:grid',
+              )}
+              aria-label={tCalendar('viewMode')}
             />
-            <button
-              type="button"
-              onClick={() => onViewModeChange('week')}
-              className={
-                viewMode === 'week'
-                  ? useRectangularToggle
-                    ? 'relative z-10 inline-flex h-8 w-[92px] items-center justify-center rounded-md px-3 text-sm font-semibold text-white transition-colors duration-300'
-                    : isStudent
-                      ? 'relative z-10 inline-flex h-8 w-[92px] items-center justify-center rounded-full px-3 text-sm font-medium text-white transition-colors duration-300'
-                      : 'relative z-10 inline-flex h-8 w-[92px] items-center justify-center rounded-md px-3 text-center text-sm text-white transition-colors duration-300'
-                  : useRectangularToggle
-                    ? 'relative z-10 inline-flex h-8 w-[92px] items-center justify-center rounded-md px-3 text-sm font-semibold text-[#3b3b40] transition-colors duration-300 hover:text-[#1010a3]'
-                    : isStudent
-                      ? 'relative z-10 inline-flex h-8 w-[92px] items-center justify-center rounded-full px-3 text-sm font-medium text-[#3b3b40] transition-colors duration-300 hover:text-[#1010a3]'
-                      : 'relative z-10 inline-flex h-8 w-[92px] items-center justify-center rounded-md px-3 text-center text-sm text-slate-600 transition-colors duration-300 hover:text-slate-800'
-              }
-            >
-              Week
-            </button>
-            <button
-              type="button"
-              onClick={() => onViewModeChange('month')}
-              className={`${mobileToggleVisibilityClass}${
-                viewMode === 'month'
-                  ? useRectangularToggle
-                    ? 'relative z-10 inline-flex h-8 w-[92px] items-center justify-center rounded-md px-3 text-sm font-semibold text-white transition-colors duration-300'
-                    : isStudent
-                      ? 'relative z-10 inline-flex h-8 w-[92px] items-center justify-center rounded-full px-3 text-sm font-medium text-white transition-colors duration-300'
-                      : 'relative z-10 inline-flex h-8 w-[92px] items-center justify-center rounded-md px-3 text-center text-sm text-white transition-colors duration-300'
-                  : useRectangularToggle
-                    ? 'relative z-10 inline-flex h-8 w-[92px] items-center justify-center rounded-md px-3 text-sm font-semibold text-[#3b3b40] transition-colors duration-300 hover:text-[#1010a3]'
-                    : isStudent
-                      ? 'relative z-10 inline-flex h-8 w-[92px] items-center justify-center rounded-full px-3 text-sm font-medium text-[#3b3b40] transition-colors duration-300 hover:text-[#1010a3]'
-                      : 'relative z-10 inline-flex h-8 w-[92px] items-center justify-center rounded-md px-3 text-center text-sm text-slate-600 transition-colors duration-300 hover:text-slate-800'
-              }`}
-            >
-              Month
-            </button>
-          </div>
           )}
         </div>
 

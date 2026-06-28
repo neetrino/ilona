@@ -367,58 +367,62 @@ export default function TeacherRecordingsPage() {
     >
       <StudentPageStack>
       <StudentCard>
-      <div className="grid w-full min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-[repeat(auto-fit,minmax(min(100%,11rem),1fr))]">
+      <div className="grid w-full min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 lg:items-end">
         <div className="min-w-0 sm:col-span-2 lg:col-span-1">
+          <StudentFieldLabel>{tCommon('group')}</StudentFieldLabel>
           <MultiSelectChipsDropdown
-            label={tCommon('group')}
             options={groupMultiOptions}
             selectedIds={selectedGroupIds}
             onSelectionChange={setSelectedGroupIds}
+            showSelectedChipsOnlyWhenOpen
+            hideSelectedLabelsInTrigger
             placeholder={t('allGroups')}
             searchPlaceholder={t('searchGroups')}
             emptyOptionsHint={t('noGroups')}
             noResultsHint={t('noGroupsMatch')}
             isLoading={isLoadingDirectory}
+            maxChipsHeightClassName="max-h-28"
           />
         </div>
         <div className="min-w-0 sm:col-span-2 lg:col-span-1">
+          <StudentFieldLabel>{tCommon('searchTypeStudent')}</StudentFieldLabel>
           <MultiSelectChipsDropdown
-            label={tCommon('searchTypeStudent')}
             options={studentMultiOptions}
             selectedIds={selectedStudentUserIds}
             onSelectionChange={setSelectedStudentUserIds}
+            showSelectedChipsOnlyWhenOpen
+            hideSelectedLabelsInTrigger
             placeholder={t('allStudents')}
             searchPlaceholder={t('searchStudents')}
             emptyOptionsHint={t('noStudents')}
             noResultsHint={t('noStudentsMatch')}
             isLoading={isLoadingDirectory}
+            maxChipsHeightClassName="max-h-28"
           />
         </div>
-        <div className="grid min-w-0 grid-cols-2 gap-3 sm:contents">
-          <div className="min-w-0">
-            <StudentFieldLabel htmlFor="recordings-from">{tCommon('from')}</StudentFieldLabel>
-            <DatePickerInput
-              id="recordings-from"
-              value={dateFrom}
-              max={dateTo || undefined}
-              onValueChange={setDateFrom}
-              className={studentInputClass}
-            />
-          </div>
-          <div className="min-w-0">
-            <StudentFieldLabel htmlFor="recordings-to">{tCommon('to')}</StudentFieldLabel>
-            <DatePickerInput
-              id="recordings-to"
-              value={dateTo}
-              min={dateFrom || undefined}
-              onValueChange={setDateTo}
-              className={studentInputClass}
-            />
-          </div>
+        <div className="min-w-0">
+          <StudentFieldLabel htmlFor="recordings-from">{tCommon('from')}</StudentFieldLabel>
+          <DatePickerInput
+            id="recordings-from"
+            value={dateFrom}
+            max={dateTo || undefined}
+            onValueChange={setDateFrom}
+            className={studentInputClass}
+          />
+        </div>
+        <div className="min-w-0">
+          <StudentFieldLabel htmlFor="recordings-to">{tCommon('to')}</StudentFieldLabel>
+          <DatePickerInput
+            id="recordings-to"
+            value={dateTo}
+            min={dateFrom || undefined}
+            onValueChange={setDateTo}
+            className={studentInputClass}
+          />
         </div>
       </div>
 
-      <div className="mt-4 flex flex-col gap-4 md:flex-row md:items-end">
+      <div className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-end">
         <div className="min-w-0 flex-1">
           <StudentFieldLabel htmlFor="recordings-search">{tCommon('search')}</StudentFieldLabel>
           <StudentInput
@@ -428,7 +432,11 @@ export default function TeacherRecordingsPage() {
             placeholder={t('searchPlaceholder')}
           />
         </div>
-        <StudentGhostButton type="button" onClick={resetFilters} className="shrink-0">
+        <StudentGhostButton
+          type="button"
+          onClick={resetFilters}
+          className="h-11 w-full shrink-0 justify-center sm:w-auto"
+        >
           {t('clearAll')}
         </StudentGhostButton>
       </div>

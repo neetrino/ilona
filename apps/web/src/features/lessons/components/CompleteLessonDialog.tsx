@@ -29,6 +29,8 @@ export function CompleteLessonDialog({
   error,
 }: CompleteLessonDialogProps) {
   const t = useTranslations('lessons');
+  const tCommon = useTranslations('common');
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
@@ -36,8 +38,8 @@ export function CompleteLessonDialog({
           <DialogTitle>{t('markLessonCompleted')}</DialogTitle>
           <DialogDescription>
             {lessonName
-              ? `Are you sure you want to mark "${lessonName}" as completed? This action will update the lesson status.`
-              : 'Are you sure you want to mark this lesson as completed? This action will update the lesson status.'}
+              ? t('markLessonCompletedConfirmWithName', { name: lessonName })
+              : t('markLessonCompletedConfirm')}
           </DialogDescription>
         </DialogHeader>
         {error && (
@@ -52,7 +54,7 @@ export function CompleteLessonDialog({
             onClick={() => onOpenChange(false)}
             disabled={isLoading}
           >
-            Cancel
+            {tCommon('cancel')}
           </Button>
           <Button
             type="button"
@@ -60,11 +62,10 @@ export function CompleteLessonDialog({
             isLoading={isLoading}
             className="bg-green-600 hover:bg-green-700 text-white"
           >
-            {isLoading ? 'Completing...' : 'Mark as Completed'}
+            {isLoading ? t('completing') : t('markAsCompleted')}
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
   );
 }
-
