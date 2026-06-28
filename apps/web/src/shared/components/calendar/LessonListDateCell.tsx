@@ -1,5 +1,7 @@
 'use client';
 
+import { Clock } from 'lucide-react';
+
 function formatTime(dateStr: string, locale: string): string {
   const date = new Date(dateStr);
   return date.toLocaleTimeString(locale === 'hy' ? 'hy-AM' : 'en-US', {
@@ -28,13 +30,18 @@ export function LessonListDateCell({ dateStr, locale }: LessonListDateCellProps)
   const { weekday, day, month } = getDateParts(dateStr, locale);
 
   return (
-    <div className="flex items-center gap-3">
-      <div className="flex w-10 flex-col items-center text-center leading-none text-[#1a1a1a]">
-        <span className="text-[10px] font-bold tracking-wider">{weekday}</span>
-        <span className="text-xl font-semibold leading-none py-0.5">{day}</span>
-        <span className="text-[10px] font-bold tracking-wider">{month}</span>
+    <div className="inline-flex items-stretch">
+      <div className="relative z-[2] flex min-w-[3.25rem] flex-col items-center justify-center rounded-xl bg-[#1010a3] px-3 py-2 leading-none text-white shadow-[0_2px_10px_rgba(14,14,16,0.1)]">
+        <span className="text-[9px] font-bold tracking-wider">{weekday}</span>
+        <span className="py-0.5 text-lg font-bold">{day}</span>
+        <span className="text-[9px] font-bold tracking-wider">{month}</span>
       </div>
-      <span className="text-sm tabular-nums text-slate-600">{formatTime(dateStr, locale)}</span>
+      <div className="relative z-[1] -ml-2.5 flex min-w-[3.25rem] flex-col items-center justify-center gap-[5px] rounded-r-lg border border-[rgba(14,14,16,0.08)] bg-white py-1.5 pl-3.5 pr-2.5 shadow-[0_2px_10px_rgba(14,14,16,0.06)]">
+        <Clock className="h-4 w-4 text-[#8b8b90]" strokeWidth={1.75} aria-hidden />
+        <span className="text-sm font-bold tabular-nums leading-none text-[#1010a3]">
+          {formatTime(dateStr, locale)}
+        </span>
+      </div>
     </div>
   );
 }
