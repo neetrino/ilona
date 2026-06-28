@@ -724,7 +724,7 @@ export function GroupsTab({
           </div>
 
           <div
-            className="p-4 sm:p-5"
+            className="bg-[#f2f2f7] p-3 sm:bg-white sm:p-5"
             role="tabpanel"
             aria-label={activeBranchTabId ? t('tabpanelGroupsForBranch') : t('tabpanelSelectBranch')}
           >
@@ -741,7 +741,7 @@ export function GroupsTab({
                 {searchQuery ? t('noGroupsMatch') : t('noGroupsInBranch')}
               </div>
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-3 sm:space-y-4">
                 <div ref={mobileBoardStartRef} className={isCompactIPad ? '' : 'sm:hidden'} />
                 <div ref={desktopBoardStartRef} className={cn('hidden sm:block', isCompactIPad && 'sm:hidden')} />
                 <div
