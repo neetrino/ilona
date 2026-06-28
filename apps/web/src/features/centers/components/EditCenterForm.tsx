@@ -15,10 +15,14 @@ import {
   portalSheetLayerProps,
   stackedSheetDialogHandlers,
   useSheetStackZIndex,
-  stackedSheetOverlayClassName,
 } from '@/shared/lib/sheet-stack';
 import { PORTAL_DESKTOP_SIDE_SHEET_CLASS } from '@/shared/lib/portal-form-sheet-classes';
-import { ADMIN_ICON_BUTTON_SM_CLASS } from '@/shared/lib/admin-control-theme';
+import {
+  ADMIN_FORM_INPUT_CLASS,
+  ADMIN_ICON_BUTTON_SM_CLASS,
+  ADMIN_OUTLINE_BUTTON_CLASS,
+  ADMIN_PRIMARY_BUTTON_CLASS,
+} from '@/shared/lib/admin-control-theme';
 import { X, Trash2 } from 'lucide-react';
 
 type UpdateCenterFormData = {
@@ -39,6 +43,8 @@ interface EditCenterFormProps {
   onDelete?: () => void;
   isStatusTogglePending?: boolean;
 }
+
+const ADMIN_TEXTAREA_CLASS = cn(ADMIN_FORM_INPUT_CLASS, 'h-auto min-h-[5.5rem] resize-none py-2');
 
 export function EditCenterForm({
   open,
@@ -145,7 +151,7 @@ export function EditCenterForm({
     };
   }, []);
 
-  const { overlayStyle, contentStyle, isBaseLayer } = useSheetStackZIndex(isDialogOpen);
+  const { overlayStyle, contentStyle } = useSheetStackZIndex(isDialogOpen);
 
   const requestClose = useCallback(() => {
     setIsDialogOpen(false);
@@ -301,7 +307,11 @@ export function EditCenterForm({
     return (
       <DialogPrimitive.Root open={isDialogOpen} onOpenChange={(nextOpen) => !nextOpen && requestClose()}>
         <DialogPrimitive.Portal>
-          <DialogPrimitive.Overlay style={overlayStyle} {...portalSheetLayerProps} className={stackedSheetOverlayClassName('fixed inset-0 z-50 bg-black/60 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0', isBaseLayer)} />
+          <DialogPrimitive.Overlay
+            style={overlayStyle}
+            {...portalSheetLayerProps}
+            className="fixed inset-0 z-50 bg-black/60 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0"
+          />
           <DialogPrimitive.Content style={{ ...dragStyle, ...contentStyle }} {...stackedSheetDialogHandlers} {...portalSheetLayerProps}
             className={cn(
               'fixed inset-x-0 bottom-[7px] top-auto z-50 grid w-full translate-y-0 lg:bottom-0 [@media(min-width:1024px)_and_(max-width:1366px)_and_(min-height:1000px)]:bottom-0',
@@ -346,8 +356,15 @@ export function EditCenterForm({
   return (
     <DialogPrimitive.Root open={isDialogOpen} onOpenChange={(nextOpen) => !nextOpen && requestClose()}>
       <DialogPrimitive.Portal>
-        <DialogPrimitive.Overlay style={overlayStyle} {...portalSheetLayerProps} className="fixed inset-0 z-50 bg-black/60 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
-        <DialogPrimitive.Content style={{ ...dragStyle, ...contentStyle }} {...stackedSheetDialogHandlers} {...portalSheetLayerProps}
+        <DialogPrimitive.Overlay
+          style={overlayStyle}
+          {...portalSheetLayerProps}
+          className="fixed inset-0 z-50 bg-black/60 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0"
+        />
+        <DialogPrimitive.Content
+          style={{ ...dragStyle, ...contentStyle }}
+          {...stackedSheetDialogHandlers}
+          {...portalSheetLayerProps}
           className={cn(
             'fixed inset-x-0 bottom-[7px] top-auto z-50 grid w-full translate-y-0 lg:bottom-0 [@media(min-width:1024px)_and_(max-width:1366px)_and_(min-height:1000px)]:bottom-0',
             'duration-700 ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out min-[1367px]:duration-350 min-[1367px]:ease-[cubic-bezier(0.22,1,0.36,1)]',
@@ -379,12 +396,12 @@ export function EditCenterForm({
           <div className="min-h-0 overflow-y-auto overscroll-y-contain [touch-action:pan-y] [-webkit-overflow-scrolling:touch] px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] min-[1367px]:px-6 min-[1367px]:pb-6">
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               {successMessage && (
-                <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+                <div className="rounded-[15px] border border-green-200 bg-green-50 p-3">
                   <p className="text-sm text-green-600">{successMessage}</p>
                 </div>
               )}
               {errorMessage && (
-                <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+                <div className="rounded-[15px] border border-red-200 bg-red-50 p-3">
                   <p className="text-sm text-red-600">{errorMessage}</p>
                 </div>
               )}
@@ -396,9 +413,11 @@ export function EditCenterForm({
                   </Label>
                   <Input
                     id="name"
+                    className={ADMIN_FORM_INPUT_CLASS}
                     {...register('name')}
                     error={errors.name?.message}
                     placeholder={tForm('namePlaceholder')}
+                    disabled={isFormBusy}
                   />
                 </div>
 
@@ -406,21 +425,25 @@ export function EditCenterForm({
                   <Label htmlFor="address">{tForm('address')}</Label>
                   <Input
                     id="address"
+                    className={ADMIN_FORM_INPUT_CLASS}
                     {...register('address')}
                     error={errors.address?.message}
                     placeholder={tForm('addressPlaceholder')}
+                    disabled={isFormBusy}
                   />
                 </div>
               </div>
               
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
                   <Label htmlFor="phone">{tForm('phone')}</Label>
                   <Input
                     id="phone"
+                    className={ADMIN_FORM_INPUT_CLASS}
                     {...register('phone')}
                     error={errors.phone?.message}
                     placeholder={tForm('phonePlaceholder')}
+                    disabled={isFormBusy}
                   />
                 </div>
                 
@@ -429,9 +452,11 @@ export function EditCenterForm({
                   <Input
                     id="email"
                     type="email"
+                    className={ADMIN_FORM_INPUT_CLASS}
                     {...register('email')}
                     error={errors.email?.message}
                     placeholder={tForm('emailPlaceholder')}
+                    disabled={isFormBusy}
                   />
                 </div>
               </div>
@@ -441,9 +466,14 @@ export function EditCenterForm({
                 <textarea
                   id="description"
                   {...register('description')}
-                  rows={4}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm"
+                  rows={3}
                   placeholder={tForm('descriptionPlaceholder')}
+                  disabled={isFormBusy}
+                  className={cn(
+                    ADMIN_TEXTAREA_CLASS,
+                    errors.description ? 'border-red-300' : '',
+                    isFormBusy ? 'cursor-not-allowed bg-slate-100' : '',
+                  )}
                 />
                 {errors.description && (
                   <p className="text-sm text-red-600">{errors.description.message}</p>
@@ -467,13 +497,15 @@ export function EditCenterForm({
                         const newValue = e.target.value;
                         setValue('colorHex', newValue, { shouldValidate: true });
                       }}
-                      className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+                      disabled={isFormBusy}
+                      className="absolute inset-0 h-full w-full cursor-pointer opacity-0 disabled:cursor-not-allowed"
                       aria-label={tForm('centerColor')}
                     />
                   </div>
                   <div className="flex-1">
                     <Input
                       id="colorHexText"
+                      className={cn(ADMIN_FORM_INPUT_CLASS, 'font-mono')}
                       value={watch('colorHex') || ''}
                       onChange={(e) => {
                         const newValue = e.target.value;
@@ -489,43 +521,45 @@ export function EditCenterForm({
                       }}
                       error={errors.colorHex?.message}
                       placeholder={tForm('colorPlaceholder')}
-                      className="font-mono"
+                      disabled={isFormBusy}
                     />
                   </div>
-                  {watch('colorHex') && (
+                  {watch('colorHex') ? (
                     <Button
                       type="button"
-                      variant="ghost"
+                      variant="outline"
                       onClick={() => {
                         reset({
                           ...watch(),
                           colorHex: '',
                         });
                       }}
-                      className="text-sm"
+                      disabled={isFormBusy}
+                      className={cn(ADMIN_OUTLINE_BUTTON_CLASS, 'border-[rgba(14,14,16,0.07)] hover:bg-slate-50')}
                     >
                       {tForm('resetToDefault')}
                     </Button>
-                  )}
+                  ) : null}
                 </div>
-                <p className="text-sm text-slate-500">{tForm('colorHint')}</p>
+                <p className="text-xs text-slate-500">{tForm('colorHint')}</p>
               </div>
               
               <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end">
                 <Button
                   type="button"
                   variant="outline"
+                  className={cn(ADMIN_OUTLINE_BUTTON_CLASS, 'border-[rgba(14,14,16,0.07)] hover:bg-slate-50')}
                   onClick={requestClose}
-                  disabled={isSubmitting}
+                  disabled={isFormBusy}
                 >
                   {tCommon('cancel')}
                 </Button>
                 <Button
                   type="submit"
-                  disabled={isSubmitting}
-                  className="bg-primary hover:bg-primary/90 text-primary-foreground"
+                  disabled={isFormBusy}
+                  className={cn(ADMIN_PRIMARY_BUTTON_CLASS, 'bg-primary text-primary-foreground hover:bg-primary/90')}
                 >
-                  {isSubmitting ? tForm('saving') : tForm('saveChanges')}
+                  {isSubmitting || updateCenter.isPending ? tForm('saving') : tForm('saveChanges')}
                 </Button>
               </div>
             </form>

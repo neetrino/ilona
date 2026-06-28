@@ -7,6 +7,12 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useTranslations } from 'next-intl';
 import { Button, Input, Label } from '@/shared/components/ui';
+import {
+  ADMIN_FORM_INPUT_CLASS,
+  ADMIN_ICON_BUTTON_SM_CLASS,
+  ADMIN_OUTLINE_BUTTON_CLASS,
+  ADMIN_PRIMARY_BUTTON_CLASS,
+} from '@/shared/lib/admin-control-theme';
 import { useCreateCenter, type CreateCenterDto } from '@/features/centers';
 import { useState, useEffect, useMemo, useCallback, useRef, type TouchEvent } from 'react';
 import { getErrorMessage } from '@/shared/lib/api';
@@ -15,7 +21,6 @@ import {
   portalSheetLayerProps,
   stackedSheetDialogHandlers,
   useSheetStackZIndex,
-  stackedSheetOverlayClassName,
 } from '@/shared/lib/sheet-stack';
 import { PORTAL_DESKTOP_SIDE_SHEET_CLASS } from '@/shared/lib/portal-form-sheet-classes';
 import { X } from 'lucide-react';
@@ -33,6 +38,8 @@ interface CreateCenterFormProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
+
+const ADMIN_TEXTAREA_CLASS = cn(ADMIN_FORM_INPUT_CLASS, 'h-auto min-h-[5.5rem] resize-none py-2');
 
 export function CreateCenterForm({ open, onOpenChange }: CreateCenterFormProps) {
   const tForm = useTranslations('centers.form');
@@ -212,18 +219,25 @@ export function CreateCenterForm({ open, onOpenChange }: CreateCenterFormProps) 
       setSuccessMessage(null);
     }
   };
-  const { overlayStyle, contentStyle, isBaseLayer } = useSheetStackZIndex(isDialogOpen);
+  const { overlayStyle, contentStyle } = useSheetStackZIndex(isDialogOpen);
 
   return (
     <DialogPrimitive.Root open={isDialogOpen} onOpenChange={(nextOpen) => !nextOpen && requestClose()}>
       <DialogPrimitive.Portal>
-        <DialogPrimitive.Overlay style={overlayStyle} {...portalSheetLayerProps} className={stackedSheetOverlayClassName('fixed inset-0 z-50 bg-black/60 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0', isBaseLayer)} />
-        <DialogPrimitive.Content style={{ ...dragStyle, ...contentStyle }} {...stackedSheetDialogHandlers} {...portalSheetLayerProps}
+        <DialogPrimitive.Overlay
+          style={overlayStyle}
+          {...portalSheetLayerProps}
+          className="fixed inset-0 z-50 bg-black/60 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0"
+        />
+        <DialogPrimitive.Content
+          style={{ ...dragStyle, ...contentStyle }}
+          {...stackedSheetDialogHandlers}
+          {...portalSheetLayerProps}
           className={cn(
             'fixed inset-x-0 bottom-[7px] top-auto z-50 grid w-full translate-y-0 lg:bottom-0 [@media(min-width:1024px)_and_(max-width:1366px)_and_(min-height:1000px)]:bottom-0',
             'duration-700 ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out min-[1367px]:duration-350 min-[1367px]:ease-[cubic-bezier(0.22,1,0.36,1)]',
             'data-[state=open]:slide-in-from-bottom-full data-[state=closed]:slide-out-to-bottom-full',
-            'h-[calc(94dvh+7px)] [@media(min-width:1024px)_and_(max-width:1366px)_and_(min-height:1000px)]:h-[56dvh] grid-rows-[auto_1fr] gap-0 overflow-hidden rounded-t-[22px] border border-slate-200 bg-[#f8f9fb] shadow-xl',
+            'h-[calc(94dvh+7px)] [@media(min-width:1024px)_and_(max-width:1366px)_and_(min-height:1000px)]:h-[56dvh] grid-rows-[auto_auto_1fr] gap-0 overflow-hidden rounded-t-[22px] border border-slate-200 bg-[#f8f9fb] shadow-xl',
             PORTAL_DESKTOP_SIDE_SHEET_CLASS,
           )}
           aria-describedby={undefined}
@@ -239,159 +253,176 @@ export function CreateCenterForm({ open, onOpenChange }: CreateCenterFormProps) 
             <div className="h-1.5 w-14 rounded-full bg-slate-400" />
           </div>
           <DialogPrimitive.Title className="sr-only">{tForm('addTitle')}</DialogPrimitive.Title>
-          <DialogPrimitive.Close
-            className="absolute right-4 top-4 hidden h-8 w-8 items-center justify-center rounded-full text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 min-[1367px]:inline-flex"
-            aria-label={tCommon('close')}
-          >
-            <X className="h-4 w-4" />
-          </DialogPrimitive.Close>
-
-          <div className="min-h-0 overflow-y-auto overscroll-y-contain [touch-action:pan-y] [-webkit-overflow-scrolling:touch] px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-4 min-[1367px]:p-6">
-            <div className="mb-4">
-              <h2 className="text-lg font-semibold text-[#3b3b40]">{tForm('addTitle')}</h2>
-              <p className="mt-1 text-sm text-[#8b8b90]">{tForm('addDescription')}</p>
+          <div className="shrink-0 bg-[#f8f9fb] px-4 pb-4 pt-3 min-[1367px]:px-6 min-[1367px]:pb-5 min-[1367px]:pt-6">
+            <div className="flex items-start justify-between gap-4">
+              <div className="min-w-0 flex-1">
+                <h2 className="text-lg font-semibold text-[#3b3b40]">{tForm('addTitle')}</h2>
+              </div>
+              <DialogPrimitive.Close
+                className={cn(
+                  ADMIN_ICON_BUTTON_SM_CLASS,
+                  'hidden text-slate-500 hover:bg-slate-100 hover:text-slate-700 min-[1367px]:inline-flex',
+                )}
+                aria-label={tCommon('close')}
+              >
+                <X className="h-4 w-4" />
+              </DialogPrimitive.Close>
             </div>
-
+          </div>
+          <div className="min-h-0 overflow-y-auto overscroll-y-contain [touch-action:pan-y] [-webkit-overflow-scrolling:touch] px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] min-[1367px]:px-6 min-[1367px]:pb-6">
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          {successMessage && (
-            <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
-              <p className="text-sm text-green-600">{successMessage}</p>
-            </div>
-          )}
-          {errorMessage && (
-            <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
-              <p className="text-sm text-red-600">{errorMessage}</p>
-            </div>
-          )}
+              {successMessage && (
+                <div className="rounded-[15px] border border-green-200 bg-green-50 p-3">
+                  <p className="text-sm text-green-600">{successMessage}</p>
+                </div>
+              )}
+              {errorMessage && (
+                <div className="rounded-[15px] border border-red-200 bg-red-50 p-3">
+                  <p className="text-sm text-red-600">{errorMessage}</p>
+                </div>
+              )}
 
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div className="min-w-0 space-y-2">
-              <Label htmlFor="name">
-                {tForm('centerName')} <span className="text-red-500">*</span>
-              </Label>
-              <Input
-                id="name"
-                {...register('name')}
-                error={errors.name?.message}
-                placeholder={tForm('namePlaceholder')}
-              />
-            </div>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div className="min-w-0 space-y-2">
+                  <Label htmlFor="name">
+                    {tForm('centerName')} <span className="text-red-500">*</span>
+                  </Label>
+                  <Input
+                    id="name"
+                    className={ADMIN_FORM_INPUT_CLASS}
+                    {...register('name')}
+                    error={errors.name?.message}
+                    placeholder={tForm('namePlaceholder')}
+                    disabled={isSubmitting}
+                  />
+                </div>
 
-            <div className="min-w-0 space-y-2">
-              <Label htmlFor="address">{tForm('address')}</Label>
-              <Input
-                id="address"
-                {...register('address')}
-                error={errors.address?.message}
-                placeholder={tForm('addressPlaceholder')}
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="phone">{tForm('phone')}</Label>
-              <Input
-                id="phone"
-                {...register('phone')}
-                error={errors.phone?.message}
-                placeholder={tForm('phonePlaceholder')}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="email">{tForm('email')}</Label>
-              <Input
-                id="email"
-                type="email"
-                {...register('email')}
-                error={errors.email?.message}
-                placeholder={tForm('emailPlaceholder')}
-              />
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="description">{tForm('description')}</Label>
-            <textarea
-              id="description"
-              {...register('description')}
-              rows={4}
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm"
-              placeholder={tForm('descriptionPlaceholder')}
-            />
-            {errors.description && (
-              <p className="text-sm text-red-600">{errors.description.message}</p>
-            )}
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="colorHex">{tForm('centerColorOptional')}</Label>
-            <div className="flex items-center gap-3">
-              <div className="group relative h-11 w-11 shrink-0">
-                <span
-                  className="pointer-events-none block h-full w-full rounded-full shadow-[0_2px_10px_rgba(15,23,42,0.18)] transition-transform group-hover:scale-105"
-                  style={{ backgroundColor: watch('colorHex') || '#253046' }}
-                  aria-hidden
-                />
-                <input
-                  type="color"
-                  id="colorHex"
-                  value={watch('colorHex') || '#253046'}
-                  onChange={(e) => {
-                    const newValue = e.target.value;
-                    setValue('colorHex', newValue, { shouldValidate: true });
-                  }}
-                  className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
-                  aria-label={tForm('centerColorOptional')}
-                />
+                <div className="min-w-0 space-y-2">
+                  <Label htmlFor="address">{tForm('address')}</Label>
+                  <Input
+                    id="address"
+                    className={ADMIN_FORM_INPUT_CLASS}
+                    {...register('address')}
+                    error={errors.address?.message}
+                    placeholder={tForm('addressPlaceholder')}
+                    disabled={isSubmitting}
+                  />
+                </div>
               </div>
-              <div className="flex-1">
-                <Input
-                  id="colorHexText"
-                  value={watch('colorHex') || ''}
-                  onChange={(e) => {
-                    const newValue = e.target.value;
-                    setValue('colorHex', newValue, { shouldValidate: true });
-                  }}
-                  onBlur={() => {
-                    // Normalize hex color on blur
-                    const value = watch('colorHex');
-                    if (value && value.startsWith('#')) {
-                      // Already has #, just validate
-                      return;
-                    } else if (value && !value.startsWith('#')) {
-                      // Add # if missing
-                      setValue('colorHex', `#${value}`, { shouldValidate: true });
-                    }
-                  }}
-                  error={errors.colorHex?.message}
-                  placeholder={tForm('colorPlaceholder')}
-                  className="font-mono"
-                />
-              </div>
-            </div>
-            <p className="text-sm text-slate-500">{tForm('colorHint')}</p>
-          </div>
 
-          <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={requestClose}
-              disabled={isSubmitting}
-            >
-              {tCommon('cancel')}
-            </Button>
-            <Button
-              type="submit"
-              disabled={isSubmitting}
-              className="bg-primary hover:bg-primary/90 text-primary-foreground"
-            >
-              {isSubmitting ? tForm('creating') : tForm('createCenter')}
-            </Button>
-          </div>
-        </form>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="phone">{tForm('phone')}</Label>
+                  <Input
+                    id="phone"
+                    className={ADMIN_FORM_INPUT_CLASS}
+                    {...register('phone')}
+                    error={errors.phone?.message}
+                    placeholder={tForm('phonePlaceholder')}
+                    disabled={isSubmitting}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="email">{tForm('email')}</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    className={ADMIN_FORM_INPUT_CLASS}
+                    {...register('email')}
+                    error={errors.email?.message}
+                    placeholder={tForm('emailPlaceholder')}
+                    disabled={isSubmitting}
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="description">{tForm('description')}</Label>
+                <textarea
+                  id="description"
+                  {...register('description')}
+                  rows={3}
+                  placeholder={tForm('descriptionPlaceholder')}
+                  disabled={isSubmitting}
+                  className={cn(
+                    ADMIN_TEXTAREA_CLASS,
+                    errors.description ? 'border-red-300' : '',
+                    isSubmitting ? 'cursor-not-allowed bg-slate-100' : '',
+                  )}
+                />
+                {errors.description && (
+                  <p className="text-sm text-red-600">{errors.description.message}</p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="colorHex">{tForm('centerColorOptional')}</Label>
+                <div className="flex items-center gap-3">
+                  <div className="group relative h-11 w-11 shrink-0">
+                    <span
+                      className="pointer-events-none block h-full w-full rounded-full shadow-[0_2px_10px_rgba(15,23,42,0.18)] transition-transform group-hover:scale-105"
+                      style={{ backgroundColor: watch('colorHex') || '#253046' }}
+                      aria-hidden
+                    />
+                    <input
+                      type="color"
+                      id="colorHex"
+                      value={watch('colorHex') || '#253046'}
+                      onChange={(e) => {
+                        const newValue = e.target.value;
+                        setValue('colorHex', newValue, { shouldValidate: true });
+                      }}
+                      disabled={isSubmitting}
+                      className="absolute inset-0 h-full w-full cursor-pointer opacity-0 disabled:cursor-not-allowed"
+                      aria-label={tForm('centerColorOptional')}
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <Input
+                      id="colorHexText"
+                      className={cn(ADMIN_FORM_INPUT_CLASS, 'font-mono')}
+                      value={watch('colorHex') || ''}
+                      onChange={(e) => {
+                        const newValue = e.target.value;
+                        setValue('colorHex', newValue, { shouldValidate: true });
+                      }}
+                      onBlur={() => {
+                        const value = watch('colorHex');
+                        if (value && value.startsWith('#')) {
+                          return;
+                        } else if (value && !value.startsWith('#')) {
+                          setValue('colorHex', `#${value}`, { shouldValidate: true });
+                        }
+                      }}
+                      error={errors.colorHex?.message}
+                      placeholder={tForm('colorPlaceholder')}
+                      disabled={isSubmitting}
+                    />
+                  </div>
+                </div>
+                <p className="text-xs text-slate-500">{tForm('colorHint')}</p>
+              </div>
+
+              <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className={cn(ADMIN_OUTLINE_BUTTON_CLASS, 'border-[rgba(14,14,16,0.07)] hover:bg-slate-50')}
+                  onClick={requestClose}
+                  disabled={isSubmitting}
+                >
+                  {tCommon('cancel')}
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className={cn(ADMIN_PRIMARY_BUTTON_CLASS, 'bg-primary text-primary-foreground hover:bg-primary/90')}
+                >
+                  {isSubmitting ? tForm('creating') : tForm('createCenter')}
+                </Button>
+              </div>
+            </form>
           </div>
         </DialogPrimitive.Content>
       </DialogPrimitive.Portal>
