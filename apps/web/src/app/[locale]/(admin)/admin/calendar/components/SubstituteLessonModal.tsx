@@ -7,7 +7,6 @@ import { Button } from '@/shared/components/ui/button';
 import { Label } from '@/shared/components/ui/label';
 import {
   SingleSelectDropdown,
-  portaledDropdownDialogHandlers,
 } from '@/shared/components/ui/single-select-dropdown';
 import { useLesson, useUpdateLesson } from '@/features/lessons';
 import { PortalFormSheetDragHandle } from '@/shared/components/ui/portal-form-sheet-drag-handle';

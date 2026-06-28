@@ -26,7 +26,6 @@ export default function TeachersPage() {
   const {
     // Translations
     t,
-    tCommon,
     tStatus,
     
     // State
@@ -37,7 +36,6 @@ export default function TeachersPage() {
     viewMode,
     selectedStatus,
     selectedTeacherIds,
-    selectedTeacher,
     selectedTeacherIdForDetails,
     selectedTeacherIdForEdit,
     isAddTeacherOpen,
@@ -100,8 +98,6 @@ export default function TeachersPage() {
     setIsEditTeacherOpen,
     setIsBulkDeleteDialogOpen,
     setSelectedTeacher,
-    setDeleteError,
-    setDeleteSuccess,
     setBulkDeleteError,
     setBulkDeleteSuccess,
   } = useTeachersPage();

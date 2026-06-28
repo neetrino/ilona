@@ -21,7 +21,6 @@ import { useModalClose } from '@/shared/hooks/useModalClose';
 import { cn } from '@/shared/lib/utils';
 import {
   portalSheetLayerProps,
-  stackedSheetDialogHandlers,
   useSheetStackZIndex,
   stackedSheetOverlayClassName,
 } from '@/shared/lib/sheet-stack';

@@ -5,7 +5,6 @@ import { useTranslations } from 'next-intl';
 import { cn } from '@/shared/lib/utils';
 import {
   portalSheetLayerProps,
-  stackedSheetDialogHandlers,
   useSheetStackZIndex,
   stackedSheetOverlayClassName,
 } from '@/shared/lib/sheet-stack';
@@ -52,8 +51,9 @@ export function VocabularyModal({
     }
   };
 
+  const { contentStyle, isBaseLayer } = useSheetStackZIndex(isOpen);
+
   if (!isOpen) return null;
-  const { overlayStyle, contentStyle, isBaseLayer } = useSheetStackZIndex(isOpen);
 
   return (
     <>

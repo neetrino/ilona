@@ -17,7 +17,6 @@ import { ADMIN_ICON_BUTTON_CLASS } from '@/shared/lib/admin-control-theme';
 import { cn } from '@/shared/lib/utils';
 import {
   portalSheetLayerProps,
-  stackedSheetDialogHandlers,
   useSheetStackZIndex,
   stackedSheetOverlayClassName,
 } from '@/shared/lib/sheet-stack';
@@ -246,8 +245,9 @@ export function VoiceLeadDetailModal({
     setSaveError(null);
   };
 
+  const { contentStyle, isBaseLayer } = useSheetStackZIndex(open);
+
   if (!open) return null;
-  const { overlayStyle, contentStyle, isBaseLayer } = useSheetStackZIndex(open);
 
   return (
     <>

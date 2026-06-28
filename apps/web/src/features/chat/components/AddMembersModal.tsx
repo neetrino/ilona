@@ -2,7 +2,6 @@
 
 import {
   portalSheetLayerProps,
-  stackedSheetDialogHandlers,
   useSheetStackZIndex,
   stackedSheetOverlayClassName,
 } from '@/shared/lib/sheet-stack';
@@ -68,8 +67,9 @@ export function AddMembersModal({
     }
   };
 
+  const { contentStyle, isBaseLayer } = useSheetStackZIndex(isOpen);
+
   if (!isOpen) return null;
-  const { overlayStyle, contentStyle, isBaseLayer } = useSheetStackZIndex(isOpen);
 
   return (
     <>

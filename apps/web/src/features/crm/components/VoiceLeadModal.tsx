@@ -7,7 +7,6 @@ import type { CrmLead } from '@/features/crm/types';
 import { cn } from '@/shared/lib/utils';
 import {
   portalSheetLayerProps,
-  stackedSheetDialogHandlers,
   useSheetStackZIndex,
   stackedSheetOverlayClassName,
 } from '@/shared/lib/sheet-stack';
@@ -157,8 +156,9 @@ export function VoiceLeadModal({ open, onClose, onCreated, centerId }: VoiceLead
     onClose();
   }, [isRecording, onClose, previewUrl]);
 
+  const { contentStyle, isBaseLayer } = useSheetStackZIndex(open);
+
   if (!open) return null;
-  const { overlayStyle, contentStyle, isBaseLayer } = useSheetStackZIndex(open);
 
   return (
     <>

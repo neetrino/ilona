@@ -209,7 +209,7 @@ export function CreateGroupForm({ open, onOpenChange }: CreateGroupFormProps) {
       setDateFrom(r.from);
       setDateTo(r.to);
     }
-  }, [open, reset]);
+  }, [open, reset, defaultCenterId]);
 
   useEffect(() => {
     if (!open) {

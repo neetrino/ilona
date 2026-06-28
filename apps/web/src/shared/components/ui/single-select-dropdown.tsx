@@ -9,7 +9,6 @@ import {
   preventStackedSheetDismiss,
   stackedSheetDialogHandlers,
 } from '@/shared/lib/sheet-stack';
-import { DATE_PICKER_POPOVER_ATTR } from './date-picker-input';
 import {
   DROPDOWN_CHEVRON_CLASS,
   DROPDOWN_CHEVRON_SELECTED_CLASS,

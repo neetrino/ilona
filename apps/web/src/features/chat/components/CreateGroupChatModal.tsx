@@ -35,10 +35,10 @@ interface CreateGroupChatModalProps {
 }
 
 const SHEET_CONTENT_CLASS = cn(
-  'fixed inset-x-0 bottom-[7px] top-auto z-50 flex w-full translate-y-0 flex-col lg:bottom-0 [@media(min-width:1024px)_and_(max-width:1366px)_and_(min-height:1000px)]:bottom-0',
+  'fixed inset-x-0 bottom-[7px] top-auto z-50 grid w-full translate-y-0 lg:bottom-0 [@media(min-width:1024px)_and_(max-width:1366px)_and_(min-height:1000px)]:bottom-0',
   'duration-700 ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out min-[1367px]:duration-350 min-[1367px]:ease-[cubic-bezier(0.22,1,0.36,1)]',
   'data-[state=open]:slide-in-from-bottom-full data-[state=closed]:slide-out-to-bottom-full',
-  'h-[calc(94dvh+7px)] [@media(min-width:1024px)_and_(max-width:1366px)_and_(min-height:1000px)]:h-[56dvh] gap-0 overflow-hidden rounded-t-[22px] border border-slate-200 bg-[#f8f9fb] shadow-xl',
+  'h-[calc(94dvh+7px)] [@media(min-width:1024px)_and_(max-width:1366px)_and_(min-height:1000px)]:h-[56dvh] grid-rows-[auto_auto_1fr_auto] gap-0 overflow-hidden rounded-t-[22px] border border-slate-200 bg-[#f8f9fb] shadow-xl',
   PORTAL_DESKTOP_SIDE_SHEET_CLASS,
 );
 
@@ -235,83 +235,82 @@ export function CreateGroupChatModal({
 
           <DialogPrimitive.Title className="sr-only">{tChat('createGroupChat')}</DialogPrimitive.Title>
 
-          <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-            <div
-              className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain bg-[#f8f9fb] [touch-action:pan-y] [-webkit-overflow-scrolling:touch] px-4 min-[1367px]:px-6"
-            >
-              <div className="pt-3 min-[1367px]:pt-6">
-                <div className="flex items-start justify-between gap-4">
-                  <h2 className="text-lg font-semibold text-[#3b3b40]">{tChat('createGroupChat')}</h2>
-                  <DialogPrimitive.Close
-                    className={cn(
-                      ADMIN_ICON_BUTTON_SM_CLASS,
-                      'hidden text-slate-500 hover:bg-slate-100 hover:text-slate-700 min-[1367px]:inline-flex',
-                    )}
-                    aria-label={tCommon('close')}
-                  >
-                    <X className="h-4 w-4" />
-                  </DialogPrimitive.Close>
-                </div>
+          <div className="shrink-0 bg-[#f8f9fb] px-4 pb-4 pt-3 min-[1367px]:px-6 min-[1367px]:pb-5 min-[1367px]:pt-6">
+            <div className="flex items-start justify-between gap-4">
+              <div className="min-w-0 flex-1">
+                <h2 className="text-lg font-semibold text-[#3b3b40]">{tChat('createGroupChat')}</h2>
+              </div>
+              <DialogPrimitive.Close
+                className={cn(
+                  ADMIN_ICON_BUTTON_SM_CLASS,
+                  'hidden text-slate-500 hover:bg-slate-100 hover:text-slate-700 min-[1367px]:inline-flex',
+                )}
+                aria-label={tCommon('close')}
+              >
+                <X className="h-4 w-4" />
+              </DialogPrimitive.Close>
+            </div>
+          </div>
 
-                <div className="mt-4 space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="group-chat-name">
-                      {tChat('groupName')} <span className="text-red-500">*</span>
-                    </Label>
-                    <Input
-                      id="group-chat-name"
-                      type="text"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      placeholder={tChat('groupNamePlaceholder')}
-                      disabled={createChat.isPending}
-                      className={ADMIN_FORM_INPUT_CLASS}
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between gap-2">
-                      <Label htmlFor="group-chat-member-search">{tChat('members')}</Label>
-                      {teacherIds.length > 0 && (
-                        <button
-                          type="button"
-                          onClick={toggleAllTeachers}
-                          className="rounded-[15px] px-2 py-1 text-xs font-medium text-[#1010a3] hover:bg-[#f0f0fc]"
-                        >
-                          {allTeachersSelected ? tChat('removeAllTeachers') : tChat('addAllTeachers')}
-                        </button>
-                      )}
-                    </div>
-                    <div className="relative">
-                      <svg
-                        className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#8b8b90]"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                        aria-hidden
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                        />
-                      </svg>
-                      <Input
-                        id="group-chat-member-search"
-                        type="search"
-                        placeholder={tChat('searchByNameEmailPhone')}
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                        className={ADMIN_SEARCH_INPUT_CLASS}
-                        disabled={createChat.isPending}
-                      />
-                    </div>
-                  </div>
-                </div>
+          <div className="min-h-0 overflow-y-auto overscroll-y-contain bg-[#f8f9fb] [touch-action:pan-y] [-webkit-overflow-scrolling:touch] px-4 min-[1367px]:px-6">
+            <div className="space-y-4 pb-2">
+              <div className="space-y-2">
+                <Label htmlFor="group-chat-name">
+                  {tChat('groupName')} <span className="text-red-500">*</span>
+                </Label>
+                <Input
+                  id="group-chat-name"
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder={tChat('groupNamePlaceholder')}
+                  disabled={createChat.isPending}
+                  className={ADMIN_FORM_INPUT_CLASS}
+                />
               </div>
 
-              <div className="mt-4 pb-2">
+              <div className="space-y-2">
+                <div className="flex items-center justify-between gap-2">
+                  <Label htmlFor="group-chat-member-search">{tChat('members')}</Label>
+                  {teacherIds.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={toggleAllTeachers}
+                      className="rounded-[15px] px-2 py-1 text-xs font-medium text-[#1010a3] hover:bg-[#f0f0fc]"
+                    >
+                      {allTeachersSelected ? tChat('removeAllTeachers') : tChat('addAllTeachers')}
+                    </button>
+                  )}
+                </div>
+                <div className="relative">
+                  <svg
+                    className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#8b8b90]"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    aria-hidden
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                    />
+                  </svg>
+                  <Input
+                    id="group-chat-member-search"
+                    type="search"
+                    placeholder={tChat('searchByNameEmailPhone')}
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    className={ADMIN_SEARCH_INPUT_CLASS}
+                    disabled={createChat.isPending}
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-4 pb-2">
               {isLoading ? (
                 <div className="space-y-3 py-2">
                   {[1, 2, 3, 4].map((i) => (
@@ -387,10 +386,10 @@ export function CreateGroupChatModal({
                   })}
                 </div>
               )}
-              </div>
             </div>
+          </div>
 
-            <div className="shrink-0 space-y-3 border-t border-[rgba(14,14,16,0.07)] bg-[#f8f9fb] px-4 pt-3 pb-[calc(4.5rem+env(safe-area-inset-bottom))] min-[1367px]:px-6 min-[1367px]:py-6 min-[1367px]:pb-6">
+          <div className="shrink-0 space-y-3 border-t border-[rgba(14,14,16,0.07)] bg-[#f8f9fb] px-4 pt-3 pb-[calc(4.5rem+env(safe-area-inset-bottom))] min-[1367px]:px-6 min-[1367px]:py-6 min-[1367px]:pb-6">
               {createChat.isError && (
                 <div className="rounded-[15px] border border-red-200 bg-red-50 p-3">
                   <p className="text-sm text-red-600">
@@ -421,7 +420,6 @@ export function CreateGroupChatModal({
                 </Button>
               </div>
             </div>
-          </div>
         </DialogPrimitive.Content>
       </DialogPrimitive.Portal>
     </DialogPrimitive.Root>

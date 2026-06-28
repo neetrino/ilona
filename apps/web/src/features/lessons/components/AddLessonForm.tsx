@@ -9,7 +9,7 @@ import {
   Button,
   Label,
 } from '@/shared/components/ui';
-import { SingleSelectDropdown, portaledDropdownDialogHandlers } from '@/shared/components/ui/single-select-dropdown';
+import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
 import {
   useCreateRecurringLessons,
   type CreateRecurringLessonsDto,

@@ -50,7 +50,7 @@ export function useModalClose({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [closeOnEscape, onClose, open]);
+  }, [closeOnEscape, containerRef, onClose, open]);
 
   useEffect(() => {
     if (!open || !closeOnOutsideClick) return;

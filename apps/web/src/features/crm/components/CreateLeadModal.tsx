@@ -11,7 +11,6 @@ import { useQuery } from '@tanstack/react-query';
 import { cn } from '@/shared/lib/utils';
 import {
   portalSheetLayerProps,
-  stackedSheetDialogHandlers,
   useSheetStackZIndex,
   stackedSheetOverlayClassName,
 } from '@/shared/lib/sheet-stack';

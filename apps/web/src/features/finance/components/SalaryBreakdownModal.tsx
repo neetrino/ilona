@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, Button, DeleteConfirmationDialog } from '@/shared/components/ui';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Button, DeleteConfirmationDialog } from '@/shared/components/ui';
 import { DataTable } from '@/shared/components/ui';
 import { useSalaryBreakdown, useExcludeLessonsFromSalary, financeKeys } from '../hooks/useFinance';
 import type { SalaryBreakdownLesson } from '../types';

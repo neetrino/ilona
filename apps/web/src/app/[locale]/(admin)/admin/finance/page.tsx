@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl';
 import { useParams } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
-import { Button, DeleteConfirmationDialog } from '@/shared/components/ui';
+import { DeleteConfirmationDialog } from '@/shared/components/ui';
 import { SalaryDetailsModal } from '@/features/finance/components/SalaryDetailsModal';
 import {
   useFinanceDashboard,
