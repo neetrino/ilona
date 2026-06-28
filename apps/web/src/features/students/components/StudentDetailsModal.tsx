@@ -327,8 +327,8 @@ export function StudentDetailsModal({
         <div className="h-1.5 w-14 rounded-full bg-slate-400" />
       </div>
       <DialogPrimitive.Title className="sr-only">{t('studentDetails')}</DialogPrimitive.Title>
-      <div className="flex items-center border-b border-slate-200 bg-white px-4 py-3 min-[1367px]:justify-between min-[1367px]:px-6">
-        <div className="flex min-w-0 items-center gap-2">
+      <div className="relative z-40 flex w-full shrink-0 items-center justify-between gap-2 border-b border-slate-200 bg-white px-4 py-3 min-[1367px]:px-6">
+        <div className="flex min-w-0 flex-1 items-center gap-2">
           <Image
             src="/students-logo.webp"
             alt=""
@@ -421,7 +421,10 @@ export function StudentDetailsModal({
           <button
             type="button"
             onClick={requestClose}
-            className="rounded-lg p-2 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900 min-[1367px]:inline-flex"
+            className={cn(
+              ADMIN_ICON_BUTTON_SM_CLASS,
+              'hidden shrink-0 text-slate-500 hover:bg-slate-100 hover:text-slate-900 min-[1367px]:inline-flex',
+            )}
             aria-label={tCommon('close')}
           >
             <X className="h-4 w-4" />

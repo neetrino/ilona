@@ -40,6 +40,7 @@ export function DeleteConfirmationDialog({
       <DialogContent
         sheet={sheet}
         stackOpen={stackOpen}
+        hideCloseButton
         overlayClassName={DELETE_CONFIRMATION_DIALOG_OVERLAY_CLASS}
         className={contentClassName}
       >

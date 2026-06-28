@@ -13,41 +13,42 @@ import {
   useDeleteConfirmationDialogLayout,
 } from '@/shared/components/ui';
 
-export type GroupStatusDialogAction = 'activate' | 'deactivate';
+export type StudentStatusDialogAction = 'activate' | 'deactivate';
 
-interface GroupStatusConfirmationDialogProps {
+interface StudentStatusConfirmationDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onConfirm: () => void;
-  action: GroupStatusDialogAction;
-  groupName?: string;
+  action: StudentStatusDialogAction;
+  studentName?: string;
   isLoading?: boolean;
-  error?: string;
+  error?: string | null;
 }
 
-export function GroupStatusConfirmationDialog({
+export function StudentStatusConfirmationDialog({
   open,
   onOpenChange,
   onConfirm,
   action,
-  groupName,
+  studentName,
   isLoading = false,
   error,
-}: GroupStatusConfirmationDialogProps) {
-  const t = useTranslations('groups');
+}: StudentStatusConfirmationDialogProps) {
+  const t = useTranslations('students');
   const tCommon = useTranslations('common');
+  const tTeachers = useTranslations('teachers');
   const isDeactivate = action === 'deactivate';
-  const title = isDeactivate ? t('groupStatusDeactivateTitle') : t('groupStatusActivateTitle');
+  const title = isDeactivate ? t('studentStatusDeactivateTitle') : t('studentStatusActivateTitle');
   const message =
-    groupName && groupName.trim().length > 0
+    studentName && studentName.trim().length > 0
       ? isDeactivate
-        ? t('groupStatusDeactivateWithName', { name: groupName })
-        : t('groupStatusActivateWithName', { name: groupName })
+        ? t('studentStatusDeactivateWithName', { name: studentName })
+        : t('studentStatusActivateWithName', { name: studentName })
       : isDeactivate
-        ? t('groupStatusDeactivateGeneric')
-        : t('groupStatusActivateGeneric');
-  const confirmLabel = isDeactivate ? t('deactivateGroup') : t('activateGroup');
-  const loadingLabel = isDeactivate ? t('deactivating') : t('activating');
+        ? t('studentStatusDeactivateGeneric')
+        : t('studentStatusActivateGeneric');
+  const confirmLabel = isDeactivate ? tTeachers('deactivate') : tTeachers('activate');
+  const loadingLabel = isDeactivate ? t('deactivatingStudent') : t('activatingStudent');
   const { sheet, stackOpen, contentClassName } = useDeleteConfirmationDialogLayout(open);
 
   return (
@@ -63,11 +64,11 @@ export function GroupStatusConfirmationDialog({
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{message}</DialogDescription>
         </DialogHeader>
-        {error && (
+        {error ? (
           <div className="rounded-[15px] border border-red-200 bg-red-50 p-3">
             <p className="text-sm text-red-600">{error}</p>
           </div>
-        )}
+        ) : null}
         <DialogFooter className="gap-2">
           <Button
             type="button"
