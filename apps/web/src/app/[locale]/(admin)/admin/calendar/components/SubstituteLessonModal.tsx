@@ -1,6 +1,7 @@
 'use client';
 
 import * as DialogPrimitive from '@radix-ui/react-dialog';
+import { X } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState, type TouchEvent } from 'react';
 import { useTranslations } from 'next-intl';
 import {
@@ -176,16 +177,16 @@ export function SubstituteLessonModal({
             }
           }}
           className={cn(
-            'fixed inset-x-0 bottom-[7px] top-auto z-50 grid w-full translate-y-0 lg:bottom-0 [@media(min-width:1024px)_and_(max-width:1366px)_and_(min-height:1000px)]:bottom-0',
+            'fixed inset-x-0 bottom-[7px] top-auto z-50 flex w-full max-h-[min(88dvh,28rem)] translate-y-0 flex-col overflow-hidden lg:bottom-0',
             'duration-700 ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out min-[1367px]:duration-350 min-[1367px]:ease-[cubic-bezier(0.22,1,0.36,1)]',
             'data-[state=open]:slide-in-from-bottom-full data-[state=closed]:slide-out-to-bottom-full',
-            'h-[calc(94dvh+7px)] [@media(min-width:1024px)_and_(max-width:1366px)_and_(min-height:1000px)]:h-[56dvh] grid-rows-[auto_1fr] gap-0 overflow-hidden rounded-t-[22px] border border-slate-200 bg-[#f8f9fb] shadow-xl',
-            'min-[1367px]:inset-0 min-[1367px]:m-auto min-[1367px]:w-[95vw] min-[1367px]:max-w-md min-[1367px]:h-auto min-[1367px]:max-h-[90vh] min-[1367px]:translate-x-0 min-[1367px]:translate-y-0 min-[1367px]:rounded-2xl',
-            'min-[1367px]:data-[state=open]:fade-in-0 min-[1367px]:data-[state=closed]:fade-out-0 min-[1367px]:data-[state=open]:slide-in-from-bottom-0 min-[1367px]:data-[state=closed]:slide-out-to-bottom-0'
+            'rounded-t-[22px] border border-slate-200 bg-[#f8f9fb] shadow-xl',
+            'min-[1367px]:inset-0 min-[1367px]:m-auto min-[1367px]:h-auto min-[1367px]:max-h-[90vh] min-[1367px]:w-[95vw] min-[1367px]:max-w-md min-[1367px]:translate-x-0 min-[1367px]:translate-y-0 min-[1367px]:rounded-2xl',
+            'min-[1367px]:data-[state=open]:fade-in-0 min-[1367px]:data-[state=closed]:fade-out-0 min-[1367px]:data-[state=open]:slide-in-from-bottom-0 min-[1367px]:data-[state=closed]:slide-out-to-bottom-0',
           )}
           aria-describedby={undefined}
         >
-          <div className="relative flex h-9 w-full items-center justify-center bg-[#f8f9fb] min-[1367px]:hidden">
+          <div className="relative flex h-9 w-full shrink-0 items-center justify-center bg-[#f8f9fb] min-[1367px]:hidden">
             <div
               className="absolute inset-x-0 -top-2 h-14"
               onTouchStart={handleDragStart}
@@ -195,16 +196,25 @@ export function SubstituteLessonModal({
             />
             <div className="h-1.5 w-14 rounded-full bg-slate-400" />
           </div>
-          <DialogPrimitive.Title className="sr-only">{t('substituteTeacherLesson')}</DialogPrimitive.Title>
 
-          <div className="overflow-y-auto px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-4 min-[1367px]:p-6">
-            <div className="mb-4">
-              <h2 className="text-lg font-semibold text-[#3b3b40]">{t('substituteTeacherLesson')}</h2>
-            </div>
+          <div className="flex shrink-0 items-start justify-between gap-3 border-b border-slate-200/80 px-4 py-3 min-[1367px]:px-5 min-[1367px]:py-4">
+            <DialogPrimitive.Title className="pr-2 text-base font-semibold leading-snug text-[#3b3b40] sm:text-lg">
+              {t('substituteTeacherLesson')}
+            </DialogPrimitive.Title>
+            <DialogPrimitive.Close
+              type="button"
+              className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-slate-500 transition hover:bg-slate-100 hover:text-slate-700"
+              aria-label={tCommon('close')}
+            >
+              <X className="h-4 w-4" />
+            </DialogPrimitive.Close>
+          </div>
+
+          <div className="min-h-0 overflow-y-auto px-4 py-3 min-[1367px]:px-5 min-[1367px]:py-4">
             {isLoading || !lesson ? (
               <p className="text-sm text-[#3b3b40]">{t('loadingLesson')}</p>
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-3">
                 <p className="text-sm text-[#3b3b40]">
                   <span className="font-medium text-[#1010a3]">{t('groupLabel')}</span>{' '}
                   {lesson.group?.name ?? '—'}
@@ -236,24 +246,25 @@ export function SubstituteLessonModal({
                 )}
               </div>
             )}
-            <DialogFooter className="gap-2 pt-4 min-[1367px]:gap-0">
-              {lesson?.substituteTeacherId ? (
-                <Button type="button" variant="outline" onClick={handleRemove} disabled={updateLesson.isPending}>
-                  {t('removeSubstitute')}
-                </Button>
-              ) : null}
-              <Button type="button" variant="secondary" onClick={requestClose}>
-                {tCommon('cancel')}
-              </Button>
-              <Button
-                type="button"
-                onClick={handleSave}
-                disabled={updateLesson.isPending || !lessonId || isLoading || !lesson}
-              >
-                {tCommon('save')}
-              </Button>
-            </DialogFooter>
           </div>
+
+          <DialogFooter className="shrink-0 gap-2 border-t border-slate-200/80 px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] min-[1367px]:px-5 min-[1367px]:py-4 min-[1367px]:pb-4 sm:flex-row sm:justify-end">
+            {lesson?.substituteTeacherId ? (
+              <Button type="button" variant="outline" onClick={handleRemove} disabled={updateLesson.isPending}>
+                {t('removeSubstitute')}
+              </Button>
+            ) : null}
+            <Button type="button" variant="secondary" onClick={requestClose}>
+              {tCommon('cancel')}
+            </Button>
+            <Button
+              type="button"
+              onClick={handleSave}
+              disabled={updateLesson.isPending || !lessonId || isLoading || !lesson}
+            >
+              {tCommon('save')}
+            </Button>
+          </DialogFooter>
         </DialogPrimitive.Content>
       </DialogPrimitive.Portal>
     </DialogPrimitive.Root>
