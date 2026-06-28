@@ -1466,7 +1466,6 @@
     "groupChatParticipants": "Group chat · {count} participants",
     "groupDefault": "Group",
     "createGroupChat": "Create Group Chat",
-    "createGroupChatDescription": "Create a standalone chat group and add any registered users. Not linked to classes.",
     "groupName": "Group name",
     "members": "Members",
     "removeAllTeachers": "Remove all teachers",

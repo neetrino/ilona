@@ -1465,7 +1465,6 @@
     "groupChatParticipants": "Խմբային զրույց · {count} մասնակից",
     "groupDefault": "Խումբ",
     "createGroupChat": "Ստեղծել խմբային զրույց",
-    "createGroupChatDescription": "Ստեղծեք առանձին զրույցի խումբ և ավելացրեք ցանկացած գրանցված օգտատեր։ Դասարանների հետ կապված չէ։",
     "groupName": "Խմբի անուն",
     "members": "Անդամներ",
     "removeAllTeachers": "Հեռացնել բոլոր ուսուցիչներին",
