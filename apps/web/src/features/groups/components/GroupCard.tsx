@@ -349,8 +349,8 @@ export function GroupCard({
           </div>
 
           {scheduleSummary ? (
-            <div className="mt-3.5 flex min-w-0 items-start gap-2">
-              <span className="flex h-5 w-5 shrink-0 items-center justify-center self-start" aria-hidden="true">
+            <div className="mt-3.5 flex min-w-0 items-center gap-2">
+              <span className="flex h-5 w-5 shrink-0 items-center justify-center" aria-hidden="true">
                 <Clock className="h-5 w-5 text-[#8b8b90]" />
               </span>
               <GroupCardScheduleSlots slots={scheduleSummary} layout="paired" />
@@ -365,7 +365,7 @@ export function GroupCard({
             <GroupCardStudentList
               students={students}
               onStudentClick={onStudentClick}
-              layout="single"
+              layout="double"
               numberClassName="font-normal text-[#8b8b90]"
             />
           </div>
