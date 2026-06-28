@@ -11,6 +11,7 @@ import {
   Button,
   Input,
   Label,
+  SegmentedControl,
 } from '@/shared/components/ui';
 import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
 import { useCenters } from '@/features/centers';
@@ -25,6 +26,12 @@ import {
   stackedSheetOverlayClassName,
 } from '@/shared/lib/sheet-stack';
 import { PORTAL_DESKTOP_SIDE_SHEET_CLASS } from '@/shared/lib/portal-form-sheet-classes';
+import {
+  ADMIN_FORM_INPUT_CLASS,
+  ADMIN_ICON_BUTTON_SM_CLASS,
+  ADMIN_OUTLINE_BUTTON_CLASS,
+  ADMIN_PRIMARY_BUTTON_CLASS,
+} from '@/shared/lib/admin-control-theme';
 import { X } from 'lucide-react';
 
 const activeManagerSchema = z.object({
@@ -316,13 +323,23 @@ export function EditManagerForm({
   return (
     <DialogPrimitive.Root open={isDialogOpen} onOpenChange={(nextOpen) => !nextOpen && requestClose()}>
       <DialogPrimitive.Portal>
-        <DialogPrimitive.Overlay style={overlayStyle} {...portalSheetLayerProps} className={stackedSheetOverlayClassName('fixed inset-0 z-50 bg-black/60 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0', isBaseLayer)} />
-        <DialogPrimitive.Content style={{ ...dragStyle, ...contentStyle }} {...stackedSheetDialogHandlers} {...portalSheetLayerProps}
+        <DialogPrimitive.Overlay
+          style={overlayStyle}
+          {...portalSheetLayerProps}
+          className={stackedSheetOverlayClassName(
+            'fixed inset-0 z-50 bg-black/60 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0',
+            isBaseLayer,
+          )}
+        />
+        <DialogPrimitive.Content
+          style={{ ...dragStyle, ...contentStyle }}
+          {...stackedSheetDialogHandlers}
+          {...portalSheetLayerProps}
           className={cn(
             'fixed inset-x-0 bottom-[7px] top-auto z-50 grid w-full translate-y-0 lg:bottom-0 [@media(min-width:1024px)_and_(max-width:1366px)_and_(min-height:1000px)]:bottom-0',
             'duration-700 ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out min-[1367px]:duration-350 min-[1367px]:ease-[cubic-bezier(0.22,1,0.36,1)]',
             'data-[state=open]:slide-in-from-bottom-full data-[state=closed]:slide-out-to-bottom-full',
-            'h-[calc(94dvh+7px)] [@media(min-width:1024px)_and_(max-width:1366px)_and_(min-height:1000px)]:h-[56dvh] grid-rows-[auto_1fr] gap-0 overflow-hidden rounded-t-[22px] border border-slate-200 bg-[#f8f9fb] shadow-xl',
+            'h-[calc(94dvh+7px)] [@media(min-width:1024px)_and_(max-width:1366px)_and_(min-height:1000px)]:h-[56dvh] grid-rows-[auto_auto_1fr] gap-0 overflow-hidden rounded-t-[22px] border border-slate-200 bg-[#f8f9fb] shadow-xl',
             PORTAL_DESKTOP_SIDE_SHEET_CLASS,
           )}
           aria-describedby="edit-manager-description"
@@ -341,22 +358,27 @@ export function EditManagerForm({
           <DialogPrimitive.Description id="edit-manager-description" className="sr-only">
             {description}
           </DialogPrimitive.Description>
-          <DialogPrimitive.Close
-            className="absolute right-4 top-4 hidden h-8 w-8 items-center justify-center rounded-full text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 min-[1367px]:inline-flex"
-            aria-label={tCommon('close')}
-          >
-            <X className="h-4 w-4" />
-          </DialogPrimitive.Close>
-          <div className="min-h-0 overflow-y-auto overscroll-y-contain [touch-action:pan-y] [-webkit-overflow-scrolling:touch] px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-4 min-[1367px]:p-6">
-            <div className="mb-4">
-              <h2 className="text-lg font-semibold text-[#3b3b40]">{title}</h2>
-              <p className="mt-1 text-sm text-[#8b8b90]">{description}</p>
+          <div className="shrink-0 bg-[#f8f9fb] px-4 pb-4 pt-3 min-[1367px]:px-6 min-[1367px]:pb-5 min-[1367px]:pt-6">
+            <div className="flex items-start justify-between gap-4">
+              <div className="min-w-0 flex-1">
+                <h2 className="text-lg font-semibold text-[#3b3b40]">{title}</h2>
+              </div>
+              <DialogPrimitive.Close
+                className={cn(
+                  ADMIN_ICON_BUTTON_SM_CLASS,
+                  'hidden text-slate-500 hover:bg-slate-100 hover:text-slate-700 min-[1367px]:inline-flex',
+                )}
+                aria-label={tCommon('close')}
+              >
+                <X className="h-4 w-4" />
+              </DialogPrimitive.Close>
             </div>
-
+          </div>
+          <div className="min-h-0 overflow-y-auto overscroll-y-contain [touch-action:pan-y] [-webkit-overflow-scrolling:touch] px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] min-[1367px]:px-6 min-[1367px]:pb-6">
             {isInactiveVariant ? (
               <form onSubmit={inactiveForm.handleSubmit(onSubmitInactive)} className="space-y-4">
                 {errorMessage && <FormError message={errorMessage} />}
-                <ProfileFields form={inactiveForm as FormLike} t={t} />
+                <ProfileFields form={inactiveForm as FormLike} t={t} disabled={isSubmitting} />
                 <CenterSelect
                   form={inactiveForm as FormLike}
                   t={t}
@@ -365,10 +387,20 @@ export function EditManagerForm({
                   hint={t('managerInactiveEditCenterHint')}
                 />
                 <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end">
-                  <Button type="button" variant="outline" onClick={requestClose}>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className={cn(ADMIN_OUTLINE_BUTTON_CLASS, 'border-[rgba(14,14,16,0.07)] hover:bg-slate-50')}
+                    onClick={requestClose}
+                    disabled={isSubmitting}
+                  >
                     {tCommon('cancel')}
                   </Button>
-                  <Button type="submit" disabled={isSubmitting}>
+                  <Button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className={cn(ADMIN_PRIMARY_BUTTON_CLASS, 'bg-primary text-primary-foreground hover:bg-primary/90')}
+                  >
                     {isSubmitting ? t('saving') : t('saveChanges')}
                   </Button>
                 </div>
@@ -376,8 +408,8 @@ export function EditManagerForm({
             ) : (
               <form onSubmit={activeForm.handleSubmit(onSubmitActive)} className="space-y-4">
                 {errorMessage && <FormError message={errorMessage} />}
-                <ProfileFields form={activeForm as FormLike} t={t} />
-                <div className="grid grid-cols-2 gap-4">
+                <ProfileFields form={activeForm as FormLike} t={t} disabled={isSubmitting} />
+                <div className="grid grid-cols-1 gap-4 min-[1367px]:grid-cols-2">
                   <CenterSelect
                     form={activeForm as FormLike}
                     t={t}
@@ -386,34 +418,39 @@ export function EditManagerForm({
                     hint={watchedStatus === 'INACTIVE' ? t('managerInactiveCenterHint') : undefined}
                     centerError={activeForm.formState.errors.centerId?.message}
                   />
-                  <div className="space-y-2">
-                    <SingleSelectDropdown
-                      id="manager-status"
-                      label={t('managerStatus')}
-                      options={[
-                        { id: 'ACTIVE', label: tStatus('active') },
-                        { id: 'INACTIVE', label: tStatus('inactive') },
-                      ]}
-                      value={watchedStatus ?? 'ACTIVE'}
-                      onValueChange={(value) => {
-                        activeForm.setValue('status', (value as 'ACTIVE' | 'INACTIVE') ?? 'ACTIVE', {
-                          shouldDirty: true,
-                          shouldValidate: true,
-                        });
-                      }}
-                    />
-                    {watchedStatus === 'INACTIVE' && (
-                      <p className="text-xs text-amber-700 bg-amber-50 border border-amber-100 rounded-lg p-2">
-                        {t('managerSetInactiveHint')}
-                      </p>
-                    )}
-                  </div>
+                  <StatusSelect
+                    value={watchedStatus ?? 'ACTIVE'}
+                    onChange={(nextStatus) => {
+                      activeForm.setValue('status', nextStatus, {
+                        shouldDirty: true,
+                        shouldValidate: true,
+                      });
+                    }}
+                    disabled={isSubmitting}
+                    t={t}
+                    tStatus={tStatus}
+                  />
                 </div>
+                {watchedStatus === 'INACTIVE' && (
+                  <p className="rounded-[15px] border border-amber-100 bg-amber-50 p-2 text-xs text-amber-700">
+                    {t('managerSetInactiveHint')}
+                  </p>
+                )}
                 <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end">
-                  <Button type="button" variant="outline" onClick={requestClose}>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className={cn(ADMIN_OUTLINE_BUTTON_CLASS, 'border-[rgba(14,14,16,0.07)] hover:bg-slate-50')}
+                    onClick={requestClose}
+                    disabled={isSubmitting}
+                  >
                     {tCommon('cancel')}
                   </Button>
-                  <Button type="submit" disabled={isSubmitting}>
+                  <Button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className={cn(ADMIN_PRIMARY_BUTTON_CLASS, 'bg-primary text-primary-foreground hover:bg-primary/90')}
+                  >
                     {isSubmitting ? t('saving') : t('saveChanges')}
                   </Button>
                 </div>
@@ -428,15 +465,9 @@ export function EditManagerForm({
 
 function FormError({ message }: { message: string }) {
   return (
-    <MotionErrorContainer>
+    <div className="rounded-[15px] border border-red-200 bg-red-50 p-3">
       <p className="text-sm text-red-600">{message}</p>
-    </MotionErrorContainer>
-  );
-}
-
-function MotionErrorContainer({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="p-3 bg-red-50 border border-red-200 rounded-lg">{children}</div>
+    </div>
   );
 }
 
@@ -452,37 +483,66 @@ type ManagerFormFields = {
 
 type FormLike = Pick<UseFormReturn<ManagerFormFields>, 'register' | 'formState' | 'watch' | 'setValue'>;
 
-function ProfileFields({ form, t }: { form: FormLike; t: (key: string) => string }) {
+function ProfileFields({
+  form,
+  t,
+  disabled = false,
+}: {
+  form: FormLike;
+  t: (key: string) => string;
+  disabled?: boolean;
+}) {
   return (
     <>
       <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
+        <div className="min-w-0 space-y-2">
           <Label htmlFor="manager-firstName">{t('firstName')}</Label>
-          <Input id="manager-firstName" {...form.register('firstName')} />
+          <Input
+            id="manager-firstName"
+            className={ADMIN_FORM_INPUT_CLASS}
+            disabled={disabled}
+            {...form.register('firstName')}
+          />
           {form.formState.errors.firstName && (
-            <p className="text-xs text-red-600">{form.formState.errors.firstName.message}</p>
+            <p className="text-sm text-red-600">{form.formState.errors.firstName.message}</p>
           )}
         </div>
-        <div className="space-y-2">
+        <div className="min-w-0 space-y-2">
           <Label htmlFor="manager-lastName">{t('lastName')}</Label>
-          <Input id="manager-lastName" {...form.register('lastName')} />
+          <Input
+            id="manager-lastName"
+            className={ADMIN_FORM_INPUT_CLASS}
+            disabled={disabled}
+            {...form.register('lastName')}
+          />
           {form.formState.errors.lastName && (
-            <p className="text-xs text-red-600">{form.formState.errors.lastName.message}</p>
+            <p className="text-sm text-red-600">{form.formState.errors.lastName.message}</p>
           )}
         </div>
       </div>
 
       <div className="space-y-2">
         <Label htmlFor="manager-email">{t('emailAddress')}</Label>
-        <Input id="manager-email" type="email" {...form.register('email')} />
+        <Input
+          id="manager-email"
+          type="email"
+          className={ADMIN_FORM_INPUT_CLASS}
+          disabled={disabled}
+          {...form.register('email')}
+        />
         {form.formState.errors.email && (
-          <p className="text-xs text-red-600">{form.formState.errors.email.message}</p>
+          <p className="text-sm text-red-600">{form.formState.errors.email.message}</p>
         )}
       </div>
 
       <div className="space-y-2">
         <Label htmlFor="manager-phone">{t('phoneNumber')}</Label>
-        <Input id="manager-phone" {...form.register('phone')} />
+        <Input
+          id="manager-phone"
+          className={ADMIN_FORM_INPUT_CLASS}
+          disabled={disabled}
+          {...form.register('phone')}
+        />
       </div>
 
       <div className="space-y-2">
@@ -492,10 +552,12 @@ function ProfileFields({ form, t }: { form: FormLike; t: (key: string) => string
           type="password"
           autoComplete="new-password"
           placeholder={t('managerPasswordLeaveBlank')}
+          className={ADMIN_FORM_INPUT_CLASS}
+          disabled={disabled}
           {...form.register('password')}
         />
         {form.formState.errors.password && (
-          <p className="text-xs text-red-600">{form.formState.errors.password.message}</p>
+          <p className="text-sm text-red-600">{form.formState.errors.password.message}</p>
         )}
       </div>
     </>
@@ -520,10 +582,12 @@ function CenterSelect({
   const currentCenterId = form.watch('centerId') ?? '';
 
   return (
-    <div className="space-y-2">
+    <div className="min-w-0 w-full space-y-2">
       <SingleSelectDropdown
         id="manager-center"
         label={t('managerSelectCenter')}
+        className="w-full"
+        triggerClassName={ADMIN_FORM_INPUT_CLASS}
         options={selectableCenters.map((center) => ({ id: center.id, label: center.name }))}
         value={currentCenterId}
         onValueChange={(value) =>
@@ -535,7 +599,37 @@ function CenterSelect({
         placeholder={t('managerSelectCenter')}
       />
       {hint && <p className="text-xs text-slate-500">{hint}</p>}
-      {centerError && <p className="text-xs text-red-600">{centerError}</p>}
+      {centerError && <p className="text-sm text-red-600">{centerError}</p>}
+    </div>
+  );
+}
+
+function StatusSelect({
+  value,
+  onChange,
+  disabled,
+  t,
+  tStatus,
+}: {
+  value: 'ACTIVE' | 'INACTIVE';
+  onChange: (value: 'ACTIVE' | 'INACTIVE') => void;
+  disabled?: boolean;
+  t: (key: string) => string;
+  tStatus: (key: string) => string;
+}) {
+  return (
+    <div className="min-w-0 w-full space-y-2">
+      <Label>{t('managerStatus')}</Label>
+      <SegmentedControl
+        options={[
+          { id: 'ACTIVE', label: tStatus('active') },
+          { id: 'INACTIVE', label: tStatus('inactive') },
+        ]}
+        value={value}
+        onChange={(nextValue) => onChange(nextValue as 'ACTIVE' | 'INACTIVE')}
+        disabled={disabled}
+        aria-label={t('managerStatus')}
+      />
     </div>
   );
 }
