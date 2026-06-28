@@ -64,6 +64,14 @@ export function isStudentPortalSubpage(path: string): boolean {
   return normalized.startsWith('/student') && !isStudentPortalRootPath(path);
 }
 
+export function isStudentProfilePath(path: string): boolean {
+  return stripLocaleFromPath(path) === '/student/profile';
+}
+
+export function isTeacherProfilePath(path: string): boolean {
+  return stripLocaleFromPath(path) === '/teacher/profile';
+}
+
 export function getTeacherPortalHomePath(): string {
   return '/teacher';
 }
