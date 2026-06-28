@@ -4,12 +4,13 @@ import { useState, useEffect, useMemo, useRef, type RefObject } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslations } from 'next-intl';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { X } from 'lucide-react';
+import { X, Trash2 } from 'lucide-react';
 import { fetchLead, updateLead, changeLeadStatus } from '@/features/crm/api/crm.api';
 import type { UpdateLeadDto, CrmLeadStatus } from '@/features/crm/types';
 import { CRM_COLUMN_ORDER } from '@/features/crm/types';
 import { useModalClose } from '@/shared/hooks/useModalClose';
 import { cn } from '@/shared/lib/utils';
+import { ADMIN_ICON_BUTTON_CLASS } from '@/shared/lib/admin-control-theme';
 import { DatePickerInput } from '@/shared/components/ui';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { CrmStatusSelector } from './CrmStatusSelector';
@@ -43,6 +44,9 @@ interface EditLeadModalProps {
   groups: GroupOption[];
   /** All CRM statuses to show in the status selector (must match board columns). Defaults to CRM_COLUMN_ORDER. */
   availableStatuses?: CrmLeadStatus[];
+  canDeleteLead?: boolean;
+  onDeleteRequest?: () => void;
+  deleteDisabled?: boolean;
 }
 
 export function EditLeadModal({
@@ -54,6 +58,9 @@ export function EditLeadModal({
   teachers,
   groups,
   availableStatuses = CRM_COLUMN_ORDER,
+  canDeleteLead,
+  onDeleteRequest,
+  deleteDisabled,
 }: EditLeadModalProps) {
   const t = useTranslations('crm');
   const tc = useTranslations('common');
@@ -263,15 +270,35 @@ export function EditLeadModal({
           <div className="border-b border-slate-200 px-4 py-4 sm:px-6">
             <div className="flex items-center justify-between gap-2">
               <h2 className="text-lg font-semibold text-slate-900">{t('editLead')}</h2>
-              <button
-                type="button"
-                onClick={onClose}
-                className="inline-flex h-9 w-9 items-center justify-center rounded-md text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-700 active:bg-slate-200"
-                aria-label={t('closeEditLeadModal')}
-                title={tc('close')}
-              >
-                <X className="h-5 w-5" />
-              </button>
+              <div className="flex items-center gap-2">
+                {canDeleteLead && onDeleteRequest ? (
+                  <button
+                    type="button"
+                    aria-label={t('deleteLead')}
+                    title={t('deleteLead')}
+                    disabled={deleteDisabled || saving}
+                    onClick={onDeleteRequest}
+                    className={cn(
+                      ADMIN_ICON_BUTTON_CLASS,
+                      'text-slate-500 hover:bg-red-50 hover:text-red-600 active:bg-red-100 disabled:pointer-events-none disabled:opacity-50',
+                    )}
+                  >
+                    <Trash2 className="h-5 w-5" aria-hidden />
+                  </button>
+                ) : null}
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className={cn(
+                    ADMIN_ICON_BUTTON_CLASS,
+                    'text-slate-500 hover:bg-slate-100 hover:text-slate-700 active:bg-slate-200',
+                  )}
+                  aria-label={t('closeEditLeadModal')}
+                  title={tc('close')}
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
             </div>
           </div>
         {isLoading ? (
@@ -316,7 +343,7 @@ export function EditLeadModal({
             </section>
             <section className="space-y-3">
               <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-500">{t('basicInfo')}</h3>
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                 <div>
                   <label className="mb-1 block text-sm font-medium text-slate-700">{t('firstName')}</label>
                   <input
@@ -335,17 +362,17 @@ export function EditLeadModal({
                     className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
                   />
                 </div>
-              </div>
-              <div>
-                <label className="mb-1 block text-sm font-medium text-slate-700">{t('phoneNumber')}</label>
-                <input
-                  type="tel"
-                  inputMode="numeric"
-                  autoComplete="tel"
-                  value={form.phone != null && form.phone !== '' ? `+${form.phone}` : '+'}
-                  onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value.replace(/\D/g, '') }))}
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-                />
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-slate-700">{t('phoneNumber')}</label>
+                  <input
+                    type="tel"
+                    inputMode="numeric"
+                    autoComplete="tel"
+                    value={form.phone != null && form.phone !== '' ? `+${form.phone}` : '+'}
+                    onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value.replace(/\D/g, '') }))}
+                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                  />
+                </div>
               </div>
             </section>
             <section className="space-y-3">
@@ -532,6 +559,7 @@ export function EditLeadModal({
                     value={form.status}
                     options={availableStatuses}
                     portaledMenuRef={crmStatusPortaledMenuRef}
+                    menuPlacement="top"
                     onChange={handleCrmStatusChange}
                     disabled={lead?.status === 'PAID'}
                   />

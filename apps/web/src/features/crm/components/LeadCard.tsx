@@ -112,7 +112,7 @@ export function LeadCard({
               if (!deleteDisabled) onDeleteClick();
             }}
             className={cn(
-              'shrink-0 rounded-lg p-1.5 text-slate-900 transition-colors duration-150 ease-out',
+              'shrink-0 rounded-[15px] p-1.5 text-slate-900 transition-colors duration-150 ease-out',
               'hover:bg-slate-50 hover:text-slate-700',
               'focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-1',
               'active:scale-95',

@@ -10,6 +10,7 @@ import { useUpdateCenter, useCenter, type UpdateCenterDto } from '@/features/cen
 import { useState, useEffect, useMemo, useCallback, useRef, type TouchEvent } from 'react';
 import { getErrorMessage } from '@/shared/lib/api';
 import { cn } from '@/shared/lib/utils';
+import { ADMIN_ICON_BUTTON_SM_CLASS } from '@/shared/lib/admin-control-theme';
 import { X, Trash2 } from 'lucide-react';
 
 type UpdateCenterFormData = {
@@ -251,7 +252,7 @@ export function EditCenterForm({
           title={tCenters('deleteCenter')}
           disabled={isFormBusy}
           onClick={onDelete}
-          className="inline-flex h-8 w-8 items-center justify-center rounded-full text-slate-500 transition hover:bg-red-50 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-50"
+          className={`${ADMIN_ICON_BUTTON_SM_CLASS} text-slate-500 hover:bg-red-50 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-50`}
         >
           <Trash2 className="h-4 w-4" aria-hidden="true" />
         </button>
@@ -278,7 +279,7 @@ export function EditCenterForm({
         </button>
       ) : null}
       <DialogPrimitive.Close
-        className="hidden h-8 w-8 items-center justify-center rounded-full text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 min-[1367px]:inline-flex"
+        className={`${ADMIN_ICON_BUTTON_SM_CLASS} hidden shrink-0 text-slate-500 hover:bg-slate-100 hover:text-slate-700 min-[1367px]:inline-flex`}
         aria-label={tCommon('close')}
       >
         <X className="h-4 w-4" />

@@ -2,17 +2,14 @@
 
 import { useTranslations } from 'next-intl';
 import type { CrmLead } from '@/features/crm/types';
-import { ActionButtons } from '@/shared/components/ui';
 import { useCrmStatusLabels } from '@/features/crm/hooks/useCrmStatusLabels';
-import { cn, formatPhoneForDisplay } from '@/shared/lib/utils';
+import { formatPhoneForDisplay } from '@/shared/lib/utils';
 import { useIsIPad } from '@/shared/hooks/useIsIPad';
 
 interface ListTableProps {
   leads: CrmLead[];
   onRowClick: (lead: CrmLead) => void;
   isLoading?: boolean;
-  canDeleteLead?: boolean;
-  onLeadDeleteRequest?: (lead: CrmLead) => void;
   deleteInProgress?: boolean;
   page: number;
   totalPages: number;
@@ -24,8 +21,6 @@ export function ListTable({
   leads,
   onRowClick,
   isLoading,
-  canDeleteLead,
-  onLeadDeleteRequest,
   deleteInProgress,
   page,
   totalPages,
@@ -53,7 +48,6 @@ export function ListTable({
     t('level'),
     t('created'),
     t('updated'),
-    ...(canDeleteLead ? [tc('actions')] : []),
   ] as const;
 
   if (isLoading) {
@@ -66,10 +60,7 @@ export function ListTable({
               {headers.map((label) => (
                 <th
                   key={label}
-                  className={cn(
-                    'px-4 py-3 text-xs font-medium text-slate-500 uppercase',
-                    label === tc('actions') ? 'text-right' : 'text-left',
-                  )}
+                  className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500"
                 >
                   {label}
                 </th>
@@ -88,9 +79,6 @@ export function ListTable({
                 <td className="px-4 py-3"><div className="h-4 bg-slate-200 rounded w-8" /></td>
                 <td className="px-4 py-3"><div className="h-4 bg-slate-200 rounded w-20" /></td>
                 <td className="px-4 py-3"><div className="h-4 bg-slate-200 rounded w-20" /></td>
-                {canDeleteLead ? (
-                  <td className="px-4 py-3"><div className="ml-auto h-8 w-16 bg-slate-200 rounded" /></td>
-                ) : null}
               </tr>
             ))}
           </tbody>
@@ -109,10 +97,7 @@ export function ListTable({
             {headers.map((label) => (
               <th
                 key={label}
-                className={cn(
-                  'px-4 py-3 text-xs font-medium text-slate-500 uppercase',
-                  label === tc('actions') ? 'text-right' : 'text-left',
-                )}
+                className="px-4 py-3 text-left text-xs font-medium uppercase text-slate-500"
               >
                 {label}
               </th>
@@ -170,18 +155,6 @@ export function ListTable({
                     })
                   : '—'}
               </td>
-              {canDeleteLead && onLeadDeleteRequest ? (
-                <td className="px-4 py-3 text-right" onClick={(e) => e.stopPropagation()}>
-                  <ActionButtons
-                    className="justify-end"
-                    onDelete={() => onLeadDeleteRequest(lead)}
-                    disabled={deleteInProgress}
-                    deleteDisabled={deleteInProgress}
-                    ariaLabels={{ delete: t('deleteLead') }}
-                    titles={{ delete: t('deleteLead') }}
-                  />
-                </td>
-              ) : null}
             </tr>
           ))}
         </tbody>

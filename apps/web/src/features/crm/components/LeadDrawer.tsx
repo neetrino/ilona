@@ -12,6 +12,7 @@ import { fetchGroups } from '@/features/groups/api/groups.api';
 import { useQuery } from '@tanstack/react-query';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
+import { ADMIN_ICON_BUTTON_CLASS } from '@/shared/lib/admin-control-theme';
 
 interface LeadDrawerProps {
   leadId: string | null;
@@ -184,7 +185,7 @@ export function LeadDrawer({ leadId, onClose, onUpdated }: LeadDrawerProps) {
         <button
           type="button"
           onClick={onClose}
-          className="rounded-lg p-1 text-slate-500 hover:bg-slate-100"
+          className={`${ADMIN_ICON_BUTTON_CLASS} text-slate-500 hover:bg-slate-100 hover:text-slate-700`}
           aria-label={tc('close')}
           title={tc('close')}
         >

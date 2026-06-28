@@ -13,6 +13,7 @@ import { useState, useEffect, useMemo, useRef, type TouchEvent } from 'react';
 import type { UserStatus } from '@/types';
 import { getErrorMessage } from '@/shared/lib/api';
 import { cn } from '@/shared/lib/utils';
+import { ADMIN_ICON_BUTTON_SM_CLASS } from '@/shared/lib/admin-control-theme';
 import { X } from 'lucide-react';
 import {
   ensureCurrentGroupInList,
@@ -397,7 +398,7 @@ export function EditStudentForm({ open, onOpenChange, studentId }: EditStudentFo
         <DialogPrimitive.Title className="sr-only">{tForm('editTitle')}</DialogPrimitive.Title>
         <div className="hidden min-[1367px]:flex shrink-0 items-center justify-end bg-[#f8f9fb] px-2 pt-2">
           <DialogPrimitive.Close
-            className="inline-flex h-8 w-8 items-center justify-center rounded-full text-slate-500 transition hover:bg-slate-100 hover:text-slate-700"
+            className={`${ADMIN_ICON_BUTTON_SM_CLASS} text-slate-500 hover:bg-slate-100 hover:text-slate-700`}
             aria-label={tCommon('close')}
           >
             <X className="h-4 w-4" />

@@ -70,7 +70,7 @@ export function PortalSidebarHeader({
         <button
           type="button"
           onClick={onNavigate}
-          className="order-3 ml-auto shrink-0 rounded-lg p-1.5 text-[#8b8b90] transition-colors hover:bg-[#f6f6f7] hover:text-[#242427]"
+          className="order-3 ml-auto shrink-0 rounded-[15px] p-1.5 text-[#8b8b90] transition-colors hover:bg-[#f6f6f7] hover:text-[#242427]"
           aria-label={closeLabel}
         >
           <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>

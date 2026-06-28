@@ -15,3 +15,11 @@ export const ADMIN_OUTLINE_BUTTON_CLASS =
 
 export const ADMIN_DATE_INPUT_CLASS =
   'h-11 min-h-11 w-full rounded-[15px] border border-[rgba(14,14,16,0.07)] bg-white px-3 py-0 text-sm focus:border-[#1010a3] focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20';
+
+/** Square icon buttons with hover fill (36px, 15px radius). */
+export const ADMIN_ICON_BUTTON_CLASS =
+  'inline-flex h-9 w-9 items-center justify-center rounded-[15px] transition-colors';
+
+/** Smaller square icon buttons (32px, 15px radius). */
+export const ADMIN_ICON_BUTTON_SM_CLASS =
+  'inline-flex h-8 w-8 items-center justify-center rounded-[15px] transition-colors';

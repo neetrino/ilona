@@ -18,7 +18,7 @@ import {
   DROPDOWN_TRIGGER_INTERACTIVE_CLASS,
 } from '@/shared/components/ui/dropdown-theme';
 
-type DropdownPosition = { top: number; left: number; width: number };
+type DropdownPosition = { left: number; width: number; top?: number; bottom?: number };
 
 export interface CrmStatusSelectorProps {
   value: CrmLeadStatus | undefined;
@@ -30,6 +30,8 @@ export interface CrmStatusSelectorProps {
   className?: string;
   /** Optional id for the trigger (e.g. for form labels). */
   id?: string;
+  /** Where the menu opens relative to the trigger. Defaults to opening downward. */
+  menuPlacement?: 'bottom' | 'top';
   /**
    * Receives the portaled menu root element while the menu is open (null when closed).
    * Lets parent modals treat this surface as inside the dialog for outside-click handling.
@@ -50,6 +52,7 @@ export function CrmStatusSelector({
   disabledHint,
   className,
   id,
+  menuPlacement = 'bottom',
   portaledMenuRef,
 }: CrmStatusSelectorProps) {
   const t = useTranslations('crm');
@@ -79,10 +82,21 @@ export function CrmStatusSelector({
     function updatePosition() {
       if (!triggerRef.current) return;
       const rect = triggerRef.current.getBoundingClientRect();
+      const width = Math.max(rect.width, 140);
+
+      if (menuPlacement === 'top') {
+        setPosition({
+          bottom: window.innerHeight - rect.top + 4,
+          left: rect.left,
+          width,
+        });
+        return;
+      }
+
       setPosition({
         top: rect.bottom + 4,
         left: rect.left,
-        width: Math.max(rect.width, 140),
+        width,
       });
     }
 
@@ -123,7 +137,7 @@ export function CrmStatusSelector({
         document.removeEventListener('touchstart', handleClickOutside);
       }
     };
-  }, [open]);
+  }, [open, menuPlacement]);
 
   useEffect(() => {
     if (disabled) setOpen(false);
@@ -176,7 +190,8 @@ export function CrmStatusSelector({
             ref={setMenuElement}
             className={cn(DROPDOWN_MENU_PORTAL_SURFACE_CLASS, 'min-w-[140px]')}
             style={{
-              top: `${position.top}px`,
+              ...(position.top !== undefined ? { top: `${position.top}px` } : {}),
+              ...(position.bottom !== undefined ? { bottom: `${position.bottom}px` } : {}),
               left: `${position.left}px`,
               width: `${position.width}px`,
             }}

@@ -579,7 +579,7 @@ export default function AdminCrmPage() {
                   replaceParams({ [ARCHIVE_PARAM]: next ? '1' : null });
                 }}
                 className={cn(
-                  'rounded-lg p-1.5 text-[#3b3b40] transition-colors hover:bg-[#f6f6f7] hover:text-[#1010a3]',
+                  'rounded-[15px] p-1.5 text-[#3b3b40] transition-colors hover:bg-[#f6f6f7] hover:text-[#1010a3]',
                   showArchiveColumn && 'bg-[#3b3b40] text-white hover:bg-[#3b3b40] hover:text-white'
                 )}
                 title={showArchiveColumn ? tCrm('hideArchiveColumn') : tCrm('showArchiveColumn')}
@@ -635,8 +635,6 @@ export default function AdminCrmPage() {
             leads={paginatedListLeads}
             onRowClick={handleCardClick}
             isLoading={isLoading}
-            canDeleteLead={isAdmin}
-            onLeadDeleteRequest={isAdmin ? handleLeadDeleteRequest : undefined}
             deleteInProgress={deleteLeadMutation.isPending}
             page={safeListPage}
             totalPages={totalListPages}
@@ -686,6 +684,13 @@ export default function AdminCrmPage() {
           teachers={teachers}
           groups={groups}
           availableStatuses={adminVisibleStatuses}
+          canDeleteLead={isAdmin}
+          onDeleteRequest={
+            isAdmin && editLeadId
+              ? () => handleLeadDeleteRequest({ id: editLeadId } as CrmLead)
+              : undefined
+          }
+          deleteDisabled={deleteLeadMutation.isPending}
         />
         {isAdmin ? (
           <VoiceLeadModal

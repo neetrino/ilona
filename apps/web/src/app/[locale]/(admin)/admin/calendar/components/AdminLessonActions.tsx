@@ -8,6 +8,7 @@ import { BulkDeleteConfirmationDialog } from '@/features/lessons/components/Bulk
 import { Button } from '@/shared/components/ui/button';
 import { useOutsidePress } from '@/shared/hooks/useOutsidePress';
 import { getErrorMessage } from '@/shared/lib/api';
+import { ADMIN_ICON_BUTTON_SM_CLASS } from '@/shared/lib/admin-control-theme';
 import { SubstituteLessonModal, type SubstituteTeacherOption } from './SubstituteLessonModal';
 
 interface AdminLessonActionsProps {
@@ -74,7 +75,7 @@ export function AdminLessonActions({
             aria-haspopup="menu"
             aria-expanded={menuOpen}
             onClick={() => setMenuOpen((prev) => !prev)}
-            className="inline-flex h-8 w-8 items-center justify-center rounded-full text-[#3b3b40] transition-colors hover:bg-[#f3f3f4] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1010a3]/20"
+            className={`${ADMIN_ICON_BUTTON_SM_CLASS} text-[#3b3b40] hover:bg-[#f3f3f4] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1010a3]/20`}
           >
             <MoreVertical className="h-4 w-4" aria-hidden />
           </button>

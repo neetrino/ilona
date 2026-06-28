@@ -12,6 +12,7 @@ import { VoiceRecorder, RecordingPlayback } from './VoiceRecorder';
 import { useQuery } from '@tanstack/react-query';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
+import { ADMIN_ICON_BUTTON_CLASS } from '@/shared/lib/admin-control-theme';
 
 const LEVEL_OPTIONS = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
 
@@ -260,7 +261,7 @@ export function VoiceLeadDetailModal({
             <button
               type="button"
               onClick={onClose}
-              className="rounded-lg p-1 text-slate-500 hover:bg-slate-100"
+              className={`${ADMIN_ICON_BUTTON_CLASS} text-slate-500 hover:bg-slate-100 hover:text-slate-700`}
             >
               ✕
             </button>

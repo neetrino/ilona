@@ -14,6 +14,7 @@ import { useMyGroups } from '@/features/groups/hooks/useGroups';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { StudentFeedbackModal } from '@/app/[locale]/(admin)/admin/students/components/StudentFeedbackModal';
 import { cn } from '@/shared/lib/utils';
+import { ADMIN_ICON_BUTTON_CLASS } from '@/shared/lib/admin-control-theme';
 import Link from 'next/link';
 import Image from 'next/image';
 
@@ -348,7 +349,7 @@ export default function TeacherStudentsPage() {
                           onClick={() => setFeedbackStudent(student)}
                           title={tTeacherStudents('viewFeedbackHistory')}
                           aria-label={tTeacherStudents('viewFeedbackHistory')}
-                          className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-[#8b8b90] transition-colors hover:bg-primary/10 hover:text-primary"
+                          className={`${ADMIN_ICON_BUTTON_CLASS} text-[#8b8b90] hover:bg-primary/10 hover:text-primary`}
                         >
                           <svg
                             className="h-5 w-5"

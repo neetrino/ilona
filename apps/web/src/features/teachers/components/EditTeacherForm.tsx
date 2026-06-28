@@ -16,6 +16,7 @@ import {
   getExperienceYearsFromHireDate,
 } from '@/features/teachers/utils/experience';
 import { cn } from '@/shared/lib/utils';
+import { ADMIN_ICON_BUTTON_SM_CLASS } from '@/shared/lib/admin-control-theme';
 import { SingleSelectDropdown, portaledDropdownDialogHandlers } from '@/shared/components/ui/single-select-dropdown';
 import { PortalFormSheetDragHandle } from '@/shared/components/ui/portal-form-sheet-drag-handle';
 import { usePortalSheetDrag } from '@/shared/hooks/usePortalSheetDrag';
@@ -215,7 +216,7 @@ export function EditTeacherForm({
           title={tCommon('delete')}
           disabled={isFormBusy}
           onClick={() => onDelete(teacher)}
-          className="inline-flex h-8 w-8 items-center justify-center rounded-full text-slate-500 transition hover:bg-red-50 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-50"
+          className={`${ADMIN_ICON_BUTTON_SM_CLASS} text-slate-500 hover:bg-red-50 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-50`}
         >
           <Trash2 className="h-4 w-4" aria-hidden="true" />
         </button>

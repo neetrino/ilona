@@ -19,6 +19,7 @@ import { resolveAgeFromDobAndManual } from '@/features/students/student-account-
 import { StudentAccountFormFields } from '@/features/students/components/StudentAccountFormFields';
 import { useModalClose } from '@/shared/hooks/useModalClose';
 import { cn } from '@/shared/lib/utils';
+import { ADMIN_ICON_BUTTON_CLASS } from '@/shared/lib/admin-control-theme';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 
 export interface PaidRegistrationModalProps {
@@ -227,7 +228,7 @@ export function PaidRegistrationModal({
               <button
                 type="button"
                 onClick={onClose}
-                className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-700"
+                className={`${ADMIN_ICON_BUTTON_CLASS} shrink-0 text-slate-500 hover:bg-slate-100 hover:text-slate-700`}
                 aria-label={t('closeRegistration')}
               >
                 <X className="h-5 w-5" />

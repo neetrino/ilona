@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { Calendar, Link2, MapPin, Pencil, Trash2, Users } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { getAppDateLocaleTag } from '@/shared/lib/utils';
+import { ADMIN_ICON_BUTTON_SM_CLASS } from '@/shared/lib/admin-control-theme';
 import type { DailyPlan, DailyPlanResourceKind } from './types';
 
 function formatCardDate(value: string, locale: string): string {
@@ -102,7 +103,7 @@ export function DailyPlanCard({
             <button
               type="button"
               onClick={onEdit}
-              className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-[#1010a3] hover:bg-[#eef2ff] disabled:opacity-60"
+              className={`${ADMIN_ICON_BUTTON_SM_CLASS} text-[#1010a3] hover:bg-[#eef2ff] disabled:opacity-60`}
               aria-label={t('editDailyPlan')}
               title={tCommon('edit')}
               disabled={isDeletePending}
@@ -118,7 +119,7 @@ export function DailyPlanCard({
                     await onDelete();
                   }
                 }}
-                className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-red-600 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
+                className={`${ADMIN_ICON_BUTTON_SM_CLASS} text-red-600 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60`}
                 aria-label={t('deleteDailyPlan')}
                 title={tCommon('delete')}
                 disabled={isDeletePending}

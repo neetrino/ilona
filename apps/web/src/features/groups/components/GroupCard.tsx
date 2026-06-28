@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { Clock, MoreVertical } from 'lucide-react';
 import { Badge } from '@/shared/components/ui';
 import { cn } from '@/shared/lib/utils';
+import { ADMIN_ICON_BUTTON_SM_CLASS } from '@/shared/lib/admin-control-theme';
 import { useOutsidePress } from '@/shared/hooks/useOutsidePress';
 import type { Group, GroupScheduleEntry } from '../types';
 import { getGroupOccupancyMeta } from '../occupancy';
@@ -217,7 +218,7 @@ export function GroupCardOverflowMenu({
         aria-haspopup="menu"
         aria-expanded={open}
         onClick={() => setOpen((prev) => !prev)}
-        className="inline-flex h-8 w-8 items-center justify-center rounded-full border-0 text-[#3b3b40] outline-none transition-colors hover:bg-[#f3f3f4] focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0"
+        className={`${ADMIN_ICON_BUTTON_SM_CLASS} border-0 text-[#3b3b40] outline-none hover:bg-[#f3f3f4] focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0`}
       >
         <MoreVertical className="h-4 w-4" aria-hidden="true" />
       </button>
