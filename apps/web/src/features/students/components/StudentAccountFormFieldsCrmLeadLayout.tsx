@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import type { FieldErrors, UseFormRegister, UseFormSetValue, UseFormWatch } from 'react-hook-form';
 import {
@@ -20,6 +20,7 @@ import {
 } from '@/features/groups/lib/group-level-options';
 import { cn } from '@/shared/lib/utils';
 import { formatDmyInputValue } from '../student-dob-date';
+import { computeAgeFromDob } from '../student-account-form.schema';
 import type { CreateStudentWithConfirmFormData } from '../student-account-form.schema';
 import type { GroupAssignmentOption } from '../lib/group-center-assignment';
 
@@ -35,7 +36,6 @@ export interface StudentAccountFormFieldsCrmLeadLayoutProps {
   setValue: UseFormSetValue<CreateStudentWithConfirmFormData>;
   errors: FieldErrors<CreateStudentWithConfirmFormData>;
   watch: UseFormWatch<CreateStudentWithConfirmFormData>;
-  computedAge: number | undefined;
   showParentSection: boolean;
   groupsForCenter: GroupAssignmentOption[];
   centers: Array<{ id: string; name: string }>;
@@ -53,7 +53,6 @@ export function StudentAccountFormFieldsCrmLeadLayout({
   setValue,
   errors,
   watch,
-  computedAge,
   showParentSection,
   groupsForCenter,
   centers,
@@ -80,6 +79,17 @@ export function StudentAccountFormFieldsCrmLeadLayout({
   const parentPhoneDigits = (watch('parentPhone') ?? '').replace(/\D/g, '');
   const watchedDateOfBirth = watch('dateOfBirth') ?? '';
   const watchedFirstLessonDate = watch('firstLessonDate') ?? '';
+  const ageFromDob = useMemo(
+    () => computeAgeFromDob(watchedDateOfBirth.trim() || undefined),
+    [watchedDateOfBirth],
+  );
+  const showManualAgeInput = ageFromDob === undefined;
+
+  useEffect(() => {
+    if (ageFromDob !== undefined) {
+      setValue('manualAge', undefined, { shouldDirty: true, shouldValidate: true });
+    }
+  }, [ageFromDob, setValue]);
 
   const groupPlaceholder = !hasCenterScope
     ? tForm('selectCenterFirst')
@@ -112,7 +122,7 @@ export function StudentAccountFormFieldsCrmLeadLayout({
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <section className="space-y-4">
         <h3 className={sectionHeading}>{tCrm('basicInfo')}</h3>
         <div className="grid grid-cols-1 gap-4 min-[1367px]:grid-cols-3">
@@ -222,24 +232,6 @@ export function StudentAccountFormFieldsCrmLeadLayout({
         <h3 className={sectionHeading}>{tCrm('additionalInfo')}</h3>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <div className="min-w-0 space-y-2">
-            <Label htmlFor={p('manualAge')}>{tForm('ageYears')}</Label>
-            <Input
-              id={p('manualAge')}
-              type="number"
-              min={0}
-              placeholder={tForm('ageExamplePlaceholder')}
-              className={ADMIN_FORM_INPUT_CLASS}
-              {...register('manualAge')}
-              disabled={isSubmitting}
-            />
-            {computedAge !== undefined ? (
-              <p className="text-xs text-slate-500">{tForm('effectiveAge', { age: computedAge })}</p>
-            ) : null}
-            {errors.manualAge ? (
-              <p className="text-sm text-red-600">{errors.manualAge.message}</p>
-            ) : null}
-          </div>
-          <div className="min-w-0 space-y-2">
             <Label htmlFor={p('dateOfBirth')}>{t('dateOfBirth')}</Label>
             <Input
               id={p('dateOfBirth')}
@@ -248,18 +240,49 @@ export function StudentAccountFormFieldsCrmLeadLayout({
               autoComplete="bday"
               placeholder={tForm('dateOfBirthPlaceholder')}
               value={watchedDateOfBirth}
-              onChange={(e) =>
-                setValue('dateOfBirth', formatDmyInputValue(e.target.value, watchedDateOfBirth), {
-                  shouldValidate: true,
-                  shouldDirty: true,
-                })
-              }
+              onChange={(e) => {
+                const next = formatDmyInputValue(e.target.value, watchedDateOfBirth);
+                setValue('dateOfBirth', next, { shouldValidate: true, shouldDirty: true });
+                const fromDob = computeAgeFromDob(next.trim() || undefined);
+                if (fromDob !== undefined) {
+                  setValue('manualAge', undefined, { shouldDirty: true, shouldValidate: true });
+                }
+              }}
               className={ADMIN_FORM_INPUT_CLASS}
               disabled={isSubmitting}
             />
             {errors.dateOfBirth ? (
               <p className="text-sm text-red-600">{errors.dateOfBirth.message}</p>
             ) : null}
+          </div>
+          <div className="min-w-0 space-y-2">
+            <Label htmlFor={p('manualAge')}>{tForm('ageYears')}</Label>
+            {showManualAgeInput ? (
+              <>
+                <Input
+                  id={p('manualAge')}
+                  type="number"
+                  min={0}
+                  placeholder={tForm('ageExamplePlaceholder')}
+                  className={ADMIN_FORM_INPUT_CLASS}
+                  {...register('manualAge')}
+                  disabled={isSubmitting}
+                />
+                {errors.manualAge ? (
+                  <p className="text-sm text-red-600">{errors.manualAge.message}</p>
+                ) : null}
+              </>
+            ) : (
+              <>
+                <p
+                  className="flex h-10 items-center rounded-[15px] border border-[rgba(14,14,16,0.12)] bg-slate-50/80 px-3 text-sm text-[#3b3b40]"
+                  aria-live="polite"
+                >
+                  {ageFromDob}
+                </p>
+                <p className="text-xs text-slate-500">{tForm('ageHint', { age: ageFromDob })}</p>
+              </>
+            )}
           </div>
           <div className="min-w-0 space-y-2">
             <Label htmlFor={p('firstLessonDate')}>{tForm('firstLessonDate')}</Label>
@@ -376,7 +399,7 @@ export function StudentAccountFormFieldsCrmLeadLayout({
 
       <section className="space-y-4">
         <h3 className={sectionHeading}>{tCrm('academicInfo')}</h3>
-        <div className="grid grid-cols-1 gap-4 min-[1367px]:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 min-[1367px]:grid-cols-3">
           <div className="min-w-0 space-y-2">
             <Label>{tCommon('level')}</Label>
             <input type="hidden" {...register('levelId')} />
@@ -417,35 +440,35 @@ export function StudentAccountFormFieldsCrmLeadLayout({
               </p>
             </div>
           ) : null}
-        </div>
 
-        <div className="min-w-0 space-y-2">
-          <input type="hidden" {...register('teacherId')} />
-          <Label htmlFor={p('groupId')}>{tCommon('group')}</Label>
-          <input type="hidden" {...register('groupId')} />
-          <SingleSelectDropdown
-            id={p('groupId')}
-            triggerClassName={ADMIN_FORM_INPUT_CLASS}
-            options={groupOptions}
-            value={watchedGroupId}
-            onValueChange={(nextValue) =>
-              setValue('groupId', nextValue ?? '', { shouldDirty: true, shouldValidate: true })
-            }
-            isLoading={isLoadingGroups}
-            disabled={isLoadingGroups || isSubmitting || !hasCenterScope}
-            error={errors.groupId?.message ?? null}
-          />
-          {errors.groupId ? <p className="text-sm text-red-600">{errors.groupId.message}</p> : null}
-          {hasCenterScope && !isLoadingGroups && groupsForCenter.length === 0 ? (
-            <p className="text-xs text-slate-500">{tForm('noGroupsForCenter')}</p>
-          ) : null}
-          {watchedGroupId ? (
-            <p className="text-xs text-slate-500">
-              {tForm('groupLocation', {
-                name: groupsForCenter.find((g) => g.id === watchedGroupId)?.center?.name ?? '—',
-              })}
-            </p>
-          ) : null}
+          <div className="min-w-0 space-y-2">
+            <input type="hidden" {...register('teacherId')} />
+            <Label htmlFor={p('groupId')}>{tCommon('group')}</Label>
+            <input type="hidden" {...register('groupId')} />
+            <SingleSelectDropdown
+              id={p('groupId')}
+              triggerClassName={ADMIN_FORM_INPUT_CLASS}
+              options={groupOptions}
+              value={watchedGroupId}
+              onValueChange={(nextValue) =>
+                setValue('groupId', nextValue ?? '', { shouldDirty: true, shouldValidate: true })
+              }
+              isLoading={isLoadingGroups}
+              disabled={isLoadingGroups || isSubmitting || !hasCenterScope}
+              error={errors.groupId?.message ?? null}
+            />
+            {errors.groupId ? <p className="text-sm text-red-600">{errors.groupId.message}</p> : null}
+            {hasCenterScope && !isLoadingGroups && groupsForCenter.length === 0 ? (
+              <p className="text-xs text-slate-500">{tForm('noGroupsForCenter')}</p>
+            ) : null}
+            {watchedGroupId ? (
+              <p className="text-xs text-slate-500">
+                {tForm('groupLocation', {
+                  name: groupsForCenter.find((g) => g.id === watchedGroupId)?.center?.name ?? '—',
+                })}
+              </p>
+            ) : null}
+          </div>
         </div>
       </section>
 

@@ -384,7 +384,7 @@ export function AddStudentForm({ open, onOpenChange }: AddStudentFormProps) {
             </div>
           </div>
           <div className="min-h-0 overflow-y-auto overscroll-y-contain [touch-action:pan-y] [-webkit-overflow-scrolling:touch] px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] min-[1367px]:px-6 min-[1367px]:pb-6">
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
               {successMessage && (
                 <div className="rounded-[15px] border border-green-200 bg-green-50 p-3">
                   <p className="text-sm text-green-600">{successMessage}</p>
@@ -401,7 +401,6 @@ export function AddStudentForm({ open, onOpenChange }: AddStudentFormProps) {
             setValue={setValue}
             errors={errors}
             watch={watch}
-            computedAge={computedAge}
             showParentSection={showParentSection}
             groupsForCenter={groupsForCenter}
             centers={centers}
