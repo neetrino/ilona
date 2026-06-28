@@ -20,7 +20,7 @@ export function OnlineStatusDot({
       className={cn(
         'rounded-full',
         variant === 'overlay' && 'absolute bottom-0 right-0 h-3.5 w-3.5 border-2 border-white',
-        variant === 'inline' && 'h-2 w-2 shrink-0',
+        variant === 'inline' && 'h-2.5 w-2.5 shrink-0 self-center',
         isOnline ? 'bg-green-500' : 'bg-slate-400',
         className,
       )}

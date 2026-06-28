@@ -559,7 +559,7 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
       {/* Header */}
       <div
         className={cn(
-          'flex shrink-0 items-center gap-3 border-b p-4',
+          'flex shrink-0 items-center gap-2 border-b p-3 min-[1367px]:gap-3 min-[1367px]:p-4',
           isMobileConversation && 'max-lg:sticky max-lg:top-0 max-lg:z-20',
           ui.border,
           ui.headerBg,
@@ -567,11 +567,15 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
       >
         {/* Back button (mobile) */}
         {onBack ? (
-          <ChatBackButton onClick={onBack} className="lg:hidden" aria-label={tChat('backToChatList')} />
+          <ChatBackButton
+            onClick={onBack}
+            className="shrink-0 lg:hidden"
+            aria-label={tChat('backToChatList')}
+          />
         ) : null}
 
         {/* Avatar */}
-        <div>
+        <div className="shrink-0">
           {getChatAvatarUrl() ? (
             <Image
               src={getChatAvatarUrl() ?? ''}
@@ -596,8 +600,15 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
         </div>
 
         {/* Title */}
-        <div className="flex-1">
-          <h2 className={cn('font-semibold', ui.title)}>{getChatTitle()}</h2>
+        <div className="min-w-0 flex-1">
+          <h2
+            className={cn(
+              'font-semibold leading-snug max-lg:line-clamp-2 max-lg:whitespace-normal max-lg:break-words min-[1367px]:truncate',
+              ui.title,
+            )}
+          >
+            {getChatTitle()}
+          </h2>
           {typingNames.length > 0 ? (
             <p className={cn('text-xs', ui.typing)}>
               {tChat('typing', {
@@ -617,13 +628,13 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
         </div>
 
         {/* Actions */}
-        <div className="flex items-center gap-2">
+        <div className="flex shrink-0 items-center gap-1.5 min-[1367px]:gap-2">
           {/* Add members (Admin only, group chat only) */}
           {isAdminOrManager && isGroupChat && (
             <button
               onClick={() => setShowAddMembersModal(true)}
               className={cn(
-                'flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors',
+                'flex shrink-0 items-center gap-1.5 rounded-[15px] px-2 py-2 text-sm font-medium transition-colors min-[1367px]:px-3 min-[1367px]:py-1.5',
                 ui.ghostBtn,
               )}
               title={tChat('addMembers')}
@@ -645,7 +656,7 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
               <span className="hidden sm:inline">{tChat('vocabulary')}</span>
             </button>
           )}
-          {!isLoading && filteredMessages.length >= 2 && (
+          {!isLoading && filteredMessages.length >= 2 ? (
             <MessageNavigationControls
               variant={isPortalChatRole(user?.role) ? 'student' : 'default'}
               onPrevious={goToPrevious}
@@ -653,27 +664,42 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
               canGoPrevious={canGoPrevious}
               canGoNext={canGoNext}
             />
-          )}
-          {chat.type === 'DIRECT' && onlineStatus !== null ? (
-            <OnlineStatusDot
-              variant="inline"
-              isOnline={onlineStatus}
-              title={onlineStatus ? tChat('online') : tChat('offline')}
-            />
-          ) : (
-            <div
-              className={cn(
-                'h-2 w-2 rounded-full',
-                isConnected ? 'bg-green-500' : 'bg-red-500',
+          ) : null}
+          <div className="flex shrink-0 items-center gap-1">
+            <div className="flex h-9 w-7 shrink-0 items-center justify-center pl-1.5 min-[1367px]:w-9 min-[1367px]:pl-2">
+              {chat.type === 'DIRECT' && onlineStatus !== null ? (
+                <OnlineStatusDot
+                  variant="inline"
+                  isOnline={onlineStatus}
+                  title={onlineStatus ? tChat('online') : tChat('offline')}
+                />
+              ) : (
+                <div
+                  className={cn(
+                    'h-2.5 w-2.5 rounded-full',
+                    isConnected ? 'bg-green-500' : 'bg-red-500',
+                  )}
+                  title={isConnected ? tChat('connected') : tChat('reconnecting')}
+                />
               )}
-              title={isConnected ? tChat('connected') : tChat('reconnecting')}
-            />
-          )}
-          <button className={cn('p-2', ui.iconBtn)}>
-            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
-            </svg>
-          </button>
+            </div>
+            <button
+              type="button"
+              className={cn(
+                'inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-[15px] transition-colors',
+                ui.iconBtn,
+              )}
+            >
+              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"
+                />
+              </svg>
+            </button>
+          </div>
         </div>
       </div>
 
