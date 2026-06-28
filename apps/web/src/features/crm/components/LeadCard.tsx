@@ -18,6 +18,9 @@ import { CrmStatusSelector } from './CrmStatusSelector';
 import { CrmBranchSelector, type CrmBranchOption } from './CrmBranchSelector';
 import { LeadCardVoiceInline } from './LeadCardVoiceInline';
 
+const LEAD_CARD_META_BADGE_CLASS =
+  'flex min-h-7 w-full min-w-0 items-center justify-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium leading-tight';
+
 interface LeadCardProps {
   lead: CrmLead;
   availableStatuses?: CrmLeadStatus[];
@@ -61,6 +64,27 @@ export function LeadCard({
     if ((lead.centerId ?? null) !== centerId) onBranchChange?.(lead.id, centerId);
   };
 
+  const centerBadge = lead.center?.name ? (
+    <span className={cn(LEAD_CARD_META_BADGE_CLASS, 'bg-slate-100 text-slate-600')}>
+      <Building2 className="h-3 w-3 shrink-0" />
+      <span className="truncate">{lead.center.name}</span>
+    </span>
+  ) : null;
+
+  const secondaryStatusBadge = lead.teacherApprovedAt ? (
+    <span className={cn(LEAD_CARD_META_BADGE_CLASS, 'bg-green-100 text-green-800')}>
+      <CheckCircle2 className="h-3 w-3 shrink-0" />
+      {t('approved')}
+    </span>
+  ) : lead.transferFlag ? (
+    <span className={cn(LEAD_CARD_META_BADGE_CLASS, 'bg-amber-100 text-amber-800')}>
+      <ArrowRightLeft className="h-3 w-3 shrink-0" />
+      {t('transfer')}
+    </span>
+  ) : null;
+
+  const hasMetaBadgeRow = Boolean(centerBadge || secondaryStatusBadge);
+
   return (
     <div
       role="button"
@@ -102,43 +126,40 @@ export function LeadCard({
           />
         </div>
       ) : null}
-      <div className="flex flex-wrap gap-1 mt-2">
-        {lead.center?.name && (
-          <span className="inline-flex items-center rounded bg-slate-100 px-1.5 py-0.5 text-xs text-slate-600">
-            <Building2 className="mr-1 h-3 w-3" />
-            {lead.center.name}
-          </span>
-        )}
-        {lead.teacher?.user && (
-          <span className="inline-flex items-center rounded bg-slate-100 px-1.5 py-0.5 text-xs text-slate-600">
-            <User className="mr-1 h-3 w-3" />
-            {lead.teacher.user.firstName} {lead.teacher.user.lastName}
-          </span>
-        )}
-        {lead.group?.name && (
-          <span className="inline-flex items-center rounded bg-slate-100 px-1.5 py-0.5 text-xs text-slate-600">
-            <Users className="mr-1 h-3 w-3" />
-            {lead.group.name}
-          </span>
-        )}
-        {lead.levelId && (
-          <span className="inline-flex items-center rounded bg-slate-100 px-1.5 py-0.5 text-xs text-slate-600">
-            <GraduationCap className="mr-1 h-3 w-3" />
-            {lead.levelId}
-          </span>
-        )}
-        {lead.teacherApprovedAt ? (
-          <span className="inline-flex items-center rounded bg-green-100 px-1.5 py-0.5 text-xs text-green-800">
-            <CheckCircle2 className="mr-1 h-3 w-3" />
-            {t('approved')}
-          </span>
-        ) : lead.transferFlag ? (
-          <span className="inline-flex items-center rounded bg-amber-100 px-1.5 py-0.5 text-xs text-amber-800">
-            <ArrowRightLeft className="mr-1 h-3 w-3" />
-            {t('transfer')}
-          </span>
-        ) : null}
-      </div>
+      {(lead.teacher?.user || lead.group?.name || lead.levelId) && (
+        <div className="mt-2 flex flex-wrap gap-1.5">
+          {lead.teacher?.user && (
+            <span className="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-1 text-xs text-slate-600">
+              <User className="mr-1 h-3 w-3" />
+              {lead.teacher.user.firstName} {lead.teacher.user.lastName}
+            </span>
+          )}
+          {lead.group?.name && (
+            <span className="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-1 text-xs text-slate-600">
+              <Users className="mr-1 h-3 w-3" />
+              {lead.group.name}
+            </span>
+          )}
+          {lead.levelId && (
+            <span className="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-1 text-xs text-slate-600">
+              <GraduationCap className="mr-1 h-3 w-3" />
+              {lead.levelId}
+            </span>
+          )}
+        </div>
+      )}
+
+      {hasMetaBadgeRow ? (
+        <div
+          className={cn(
+            'mt-3 grid w-full gap-2',
+            centerBadge && secondaryStatusBadge ? 'grid-cols-2' : 'grid-cols-1',
+          )}
+        >
+          {centerBadge}
+          {secondaryStatusBadge}
+        </div>
+      ) : null}
 
       {/* Bottom section: status + branch controls */}
       {(onStatusChange || onBranchChange) && (
