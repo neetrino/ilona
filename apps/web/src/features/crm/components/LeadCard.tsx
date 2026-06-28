@@ -12,7 +12,7 @@ import {
   User,
   Users,
 } from 'lucide-react';
-import { cn, getAppDateLocaleTag } from '@/shared/lib/utils';
+import { cn } from '@/shared/lib/utils';
 import { LessonListDateCell } from '@/shared/components/calendar/LessonListDateCell';
 import { CrmStatusSelector } from './CrmStatusSelector';
 import { CrmBranchSelector, type CrmBranchOption } from './CrmBranchSelector';
@@ -80,13 +80,9 @@ export function LeadCard({
             <div className="hidden shrink-0 origin-top-right scale-[0.82] lg:block">
               <LessonListDateCell dateStr={lead.createdAt} locale={locale} />
             </div>
-            <p className="shrink-0 text-xs text-slate-400 lg:hidden">
-              {new Date(lead.createdAt).toLocaleDateString(getAppDateLocaleTag(locale), {
-                month: 'short',
-                day: 'numeric',
-                year: 'numeric',
-              })}
-            </p>
+            <div className="shrink-0 origin-top-right scale-[0.75] sm:scale-[0.82] lg:hidden">
+              <LessonListDateCell dateStr={lead.createdAt} locale={locale} />
+            </div>
           </>
         ) : null}
       </div>

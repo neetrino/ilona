@@ -3,7 +3,7 @@
 import { useTranslations, useLocale } from 'next-intl';
 import type { CrmLead } from '@/features/crm/types';
 import { useCrmStatusLabels } from '@/features/crm/hooks/useCrmStatusLabels';
-import { formatPhoneForDisplay, getAppDateLocaleTag, cn } from '@/shared/lib/utils';
+import { formatPhoneForDisplay, cn } from '@/shared/lib/utils';
 import { useIsIPad } from '@/shared/hooks/useIsIPad';
 import { LessonListDateCell } from '@/shared/components/calendar/LessonListDateCell';
 
@@ -19,18 +19,9 @@ function CrmListDateTimeCell({
   }
 
   return (
-    <>
-      <div className="hidden origin-center scale-[0.82] lg:flex lg:justify-center">
-        <LessonListDateCell dateStr={isoDate} locale={locale} />
-      </div>
-      <span className="text-sm text-slate-500 lg:hidden">
-        {new Date(isoDate).toLocaleDateString(getAppDateLocaleTag(locale), {
-          month: 'short',
-          day: 'numeric',
-          year: 'numeric',
-        })}
-      </span>
-    </>
+    <div className="flex origin-center scale-[0.75] justify-center sm:scale-[0.82]">
+      <LessonListDateCell dateStr={isoDate} locale={locale} />
+    </div>
   );
 }
 
