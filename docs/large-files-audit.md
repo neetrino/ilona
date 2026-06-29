@@ -19,15 +19,16 @@ Goal: gradually split source files so each stays at or below **400 lines**.
 | 2026-06-29 | `apps/api/src/modules/chat/chat-lists.service.ts` | 882 | 37 (facade) | Split into admin/teacher lists, admin contact, unread count + list util |
 | 2026-06-29 | `apps/api/src/modules/lessons/lesson-crud.service.ts` | 860 | 68 (facade) | Split into list, read, create, update, delete + manager access |
 | 2026-06-29 | `apps/api/src/modules/crm/leads.service.ts` | 851 | 135 (facade) | Split into list, read, create, update, delete, status, voice, teacher + access/activity |
+| 2026-06-29 | `apps/web/src/features/calendar/PortalCalendarPage.tsx` | 828 | 108 (orchestrator) | Split into filters, stats, controls, week/month/list views, overlays + 2 hooks + utils |
 
 ## Summary
 
 | Metric | Value |
 | --- | --- |
 | Total source files scanned | 836 |
-| Files over 400 lines | **48** (was 58) |
-| Biggest file | `apps/web/src/features/calendar/PortalCalendarPage.tsx` (828 lines) |
-| Frontend (`apps/web`) | 35 |
+| Files over 400 lines | **47** (was 58) |
+| Biggest file | `apps/web/src/shared/components/calendar/LessonListTable.tsx` (792 lines) |
+| Frontend (`apps/web`) | 34 |
 | Backend (`apps/api`) | 14 |
 | Shared / packages | 0 |
 
@@ -52,7 +53,7 @@ Goal: gradually split source files so each stays at or below **400 lines**.
 | ~~9~~ | ~~`apps/api/src/modules/chat/chat-lists.service.ts`~~ | ~~882~~ | Backend / Chat | **Done** | — |
 | ~~10~~ | ~~`apps/api/src/modules/lessons/lesson-crud.service.ts`~~ | ~~860~~ | Backend / Lessons | **Done** | — |
 | ~~11~~ | ~~`apps/api/src/modules/crm/leads.service.ts`~~ | ~~851~~ | Backend / CRM | **Done** | — |
-| 12 | `apps/web/src/features/calendar/PortalCalendarPage.tsx` | 828 | Frontend / Calendar | Extract toolbar/filters, view switcher, lesson panels, and data-fetch hooks; split page layout from calendar state orchestration | High |
+| ~~12~~ | ~~`apps/web/src/features/calendar/PortalCalendarPage.tsx`~~ | ~~828~~ | Frontend / Calendar | **Done** | — |
 | 13 | `apps/web/src/shared/components/calendar/LessonListTable.tsx` | 792 | Frontend / Calendar (shared) | Extract table columns, row actions, status badges, and sort/filter config; move row click/navigation handlers to hook | High |
 | 14 | `apps/api/src/modules/finance/payments.service.ts` | 776 | Backend / Finance | Split payment recording, reconciliation, refunds/adjustments, and reporting queries; extract amount/date validation | High |
 | 15 | `apps/api/src/modules/settings/settings.service.ts` | 738 | Backend / Settings | Split settings domains (penalties, managers, center config) into focused services; extract settings key mapping and defaults | Medium |
@@ -104,9 +105,9 @@ Goal: gradually split source files so each stays at or below **400 lines**.
 
 ## Recommended first 3 refactors
 
-1. **`apps/web/src/features/calendar/PortalCalendarPage.tsx`** (828 lines) — Extract toolbar/filters, view switcher, lesson panels.
-2. **`apps/web/src/shared/components/calendar/LessonListTable.tsx`** (792 lines) — Extract table columns, row actions, status badges.
-3. **`apps/api/src/modules/finance/payments.service.ts`** (776 lines) — Split payment recording, reconciliation, refunds.
+1. **`apps/web/src/shared/components/calendar/LessonListTable.tsx`** (792 lines) — Extract table columns, row actions, status badges.
+2. **`apps/api/src/modules/finance/payments.service.ts`** (776 lines) — Split payment recording, reconciliation, refunds.
+3. **`apps/api/src/modules/settings/settings.service.ts`** (738 lines) — Split settings domains into focused services.
 
 ---
 
