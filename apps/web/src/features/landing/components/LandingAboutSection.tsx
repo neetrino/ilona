@@ -1,0 +1,231 @@
+'use client';
+
+import Image from 'next/image';
+import { motion } from 'framer-motion';
+import { cn } from '@/shared/lib/utils';
+import { ABOUT_BIG_BEN_IMAGE, ABOUT_FLAG_IMAGE, ABOUT_SUCCESS_ICON, ABOUT_BRANCHES_ICON } from '../landingConstants';
+import type { LandingSectionProps } from '../types';
+
+export function LandingAboutSection({ tr, isHy }: LandingSectionProps) {
+
+  return (
+    <>
+      <section
+        id="about"
+        className="relative scroll-mt-28 overflow-hidden bg-[#dde7ff] max-tablet:z-20 max-tablet:-mt-[200px] max-tablet:pb-0 max-tablet:pt-0 tablet:-mt-[16px] tablet:max-navDesktop:z-10 tablet:max-navDesktop:-mt-[32px] navDesktop:z-auto navDesktop:-mt-[16px] tablet:h-[666px]"
+      >
+        <div className="tablet:hidden">
+        <div
+          className="pointer-events-none absolute inset-0 bg-[#dde7ff]"
+          aria-hidden
+        />
+      
+        <div className="absolute left-5 top-6 z-30 max-w-[237px]">
+          <h2 className="text-[30px] font-extrabold leading-[31px] tracking-[0.35px] text-[#0a0a0a]">
+            {tr('Ilona English Centre', 'Ilona English Centre')}
+          </h2>
+      
+          <div
+            className={cn(
+              'mt-8 space-y-3 tracking-[-0.44px] text-[#4a5565]',
+              isHy ? 'text-[14px] leading-[20px]' : 'text-[17px] leading-[22px]',
+            )}
+          >
+            <p>
+              {tr(
+                'We empower students through exceptional English education. Our mission: provide world-class instruction that opens doors to global opportunities.',
+                'Մենք զարգացնում ենք ուսանողներին բարձրակարգ անգլերենի ուսուցմամբ։ Մեր առաքելությունն է ապահովել համաշխարհային մակարդակի կրթություն, որը բացում է նոր հնարավորություններ։',
+              )}
+            </p>
+            <p>
+              {tr(
+                'A supportive, engaging environment where every student thrives with modern methods and real results.',
+                'Աջակցող և ներգրավող միջավայր, որտեղ յուրաքանչյուր ուսանող առաջադիմում է ժամանակակից մեթոդներով և տեսանելի արդյունքներով։',
+              )}
+            </p>
+          </div>
+        </div>
+      
+        <div className="relative z-10 mx-auto flex min-h-[640px] w-full flex-col bg-[#dde7ff] px-5 pb-0 pt-[200px]">
+          <div className="pointer-events-none absolute right-[-270px] top-[-80px] z-[1] flex h-[900px] w-[440px] items-center justify-center">
+            <div className="-scale-y-100 rotate-[171.43deg]">
+              <div className="relative h-[860px] w-[350px]">
+                <Image
+                  src={ABOUT_BIG_BEN_IMAGE}
+                  alt=""
+                  fill
+                  unoptimized
+                  loading="lazy"
+                  sizes="350px"
+                  className="object-cover object-left"
+                />
+              </div>
+            </div>
+          </div>
+      
+          <div className="absolute right-16 top-[62px] z-10">
+            <div className="rotate-[6deg] rounded-full bg-[#093394] px-4 py-1.5">
+              <span className="text-[12px] font-bold leading-[18px] text-white">
+                {tr('15+ Years', '15+ տարի')}
+              </span>
+            </div>
+          </div>
+      
+          <div className="absolute right-12 top-[180px] z-10">
+            <div className="-rotate-[19deg] rounded-full bg-white px-4 py-1.5">
+              <span className="text-[13px] font-bold leading-[19.5px] text-[#0025db]">
+                {tr('About IEC', 'IEC-ի մասին')}
+              </span>
+            </div>
+          </div>
+      
+          <div className="absolute right-[72px] top-[310px] z-10">
+            <div className="-rotate-6 rounded-full bg-[#fb2c36] px-4 py-1.5">
+              <span className="text-[12px] font-bold leading-[18px] text-white">
+                {tr('Since 2011', '2011-ից')}
+              </span>
+            </div>
+          </div>
+      
+          <div className="min-h-1 flex-1" aria-hidden />
+      
+          <div className="relative z-10 mb-6 grid shrink-0 grid-cols-2 gap-3">
+            <div className="rounded-[20px] bg-white px-5 py-5">
+              <Image src={ABOUT_SUCCESS_ICON} alt="" width={32} height={32} unoptimized />
+              <p className="mt-3 text-[26px] font-bold leading-[39px] tracking-[0.4px] text-[#0a0a0a]">
+                95%
+              </p>
+              <p className="mt-1 text-[13px] leading-6 tracking-[-0.31px] text-[#4a5565]">
+                {tr('Success Rate', 'Հաջողության տոկոս')}
+              </p>
+            </div>
+            <div className="rounded-[20px] bg-white px-5 py-5">
+              <Image src={ABOUT_BRANCHES_ICON} alt="" width={32} height={32} unoptimized />
+              <p className="mt-3 text-[26px] font-bold leading-[39px] tracking-[0.4px] text-[#0a0a0a]">
+                4
+              </p>
+              <p className="mt-1 text-[13px] leading-6 tracking-[-0.31px] text-[#4a5565]">
+                {tr('Branches', 'Մասնաճյուղեր')}
+              </p>
+            </div>
+          </div>
+        </div>
+        </div>
+      
+        <div className="relative z-10 mx-auto max-tablet:hidden h-full w-full max-w-[1280px] px-6">
+          <div className="absolute left-1/2 top-[80px] h-[506px] w-full max-w-[1152px] -translate-x-1/2">
+            <div className="absolute left-[608px] top-0 h-[506px] w-[544px]">
+              <div className="inline-flex h-[36px] items-center rounded-full bg-white px-4">
+                <span className="text-[14px] font-bold leading-[20px] tracking-[-0.1504px] text-[#0025db]">
+                  {tr('About IEC', 'IEC-ի մասին')}
+                </span>
+              </div>
+              <h2 className="mt-[24px] text-[48px] font-extrabold leading-[60px] tracking-[0.3516px] text-[#0a0a0a]">
+                {tr('Ilona English Centre', 'Ilona English Centre')}
+              </h2>
+              <p className="mt-[24px] w-[544px] text-[18px] leading-[29.25px] tracking-[-0.4395px] text-[#4a5565]">
+                {tr(
+                  'We empower students through exceptional English education. Our mission: provide world-class instruction that opens doors to global opportunities.',
+                  'Մենք զարգացնում ենք ուսանողներին բարձրակարգ անգլերենի ուսուցմամբ։ Մեր առաքելությունն է ապահովել համաշխարհային մակարդակի կրթություն, որը բացում է նոր հնարավորություններ։',
+                )}
+              </p>
+              <p className="mt-[24px] w-[544px] text-[18px] leading-[29.25px] tracking-[-0.4395px] text-[#4a5565]">
+                {tr(
+                  'A supportive, engaging environment where every student thrives with modern methods and real results.',
+                  'Աջակցող և ներգրավող միջավայր, որտեղ յուրաքանչյուր ուսանող առաջադիմում է ժամանակակից մեթոդներով և տեսանելի արդյունքներով։',
+                )}
+              </p>
+      
+              <div className="mt-[24px] flex gap-6">
+                <div className="h-[152px] w-[260px] rounded-[24px] bg-white px-6 pt-6">
+                  <Image src={ABOUT_SUCCESS_ICON} alt="" width={32} height={32} unoptimized />
+                  <p className="mt-3 text-[40px] font-bold leading-[36px] tracking-[0.3955px] text-[#0a0a0a]">
+                    95%
+                  </p>
+                  <p className="mt-1 text-[16px] leading-[24px] tracking-[-0.3125px] text-[#4a5565]">
+                    {tr('Success Rate', 'Հաջողության տոկոս')}
+                  </p>
+                </div>
+                <div className="h-[152px] w-[260px] rounded-[24px] bg-white px-6 pt-6">
+                  <Image src={ABOUT_BRANCHES_ICON} alt="" width={32} height={32} unoptimized />
+                  <p className="mt-3 text-[40px] font-bold leading-[36px] tracking-[0.3955px] text-[#0a0a0a]">
+                    4
+                  </p>
+                  <p className="mt-1 text-[16px] leading-[24px] tracking-[-0.3125px] text-[#4a5565]">
+                    {tr('Branches', 'Մասնաճյուղեր')}
+                  </p>
+                </div>
+              </div>
+            </div>
+      
+            <motion.div
+              className="absolute left-[100px] top-[60px]"
+              initial={{ x: -90, opacity: 0 }}
+              whileInView={{ x: 0, opacity: 1 }}
+              transition={{ duration: 0.7, ease: 'easeOut', delay: 0.05 }}
+              viewport={{ once: true, amount: 0.6 }}
+            >
+              <div className="rotate-[-12deg] rounded-full bg-[#fb2c36] px-6 py-3">
+                <span className="text-[16px] font-bold leading-[24px] tracking-[-0.3125px] text-white">
+                  {tr('Since 2011', '2011-ից')}
+                </span>
+              </div>
+            </motion.div>
+          </div>
+      
+          <motion.div
+            className="absolute left-[24px] top-[-59px] h-[985px] w-[535px]"
+            initial={{ x: -36, opacity: 0 }}
+            whileInView={{ x: [-36, 12, -8, 0], opacity: 1 }}
+            transition={{ duration: 1.1, ease: 'easeOut' }}
+            viewport={{ once: true, amount: 0.55 }}
+          >
+            <div className="relative h-full w-full rotate-[-168.83deg] scale-y-[-1]">
+              <Image
+                src={ABOUT_BIG_BEN_IMAGE}
+                alt=""
+                fill
+                className="object-contain"
+                unoptimized
+                loading="lazy"
+                sizes="535px"
+              />
+            </div>
+          </motion.div>
+          <motion.div
+            className="absolute left-[201px] top-[244px] h-[660px] w-[530px]"
+            initial={{ x: 36, opacity: 0 }}
+            whileInView={{ x: [36, -12, 8, 0], opacity: 1 }}
+            transition={{ duration: 1.1, ease: 'easeOut' }}
+            viewport={{ once: true, amount: 0.55 }}
+          >
+            <div className="relative h-full w-full rotate-[-6.86deg]">
+              <Image
+                src={ABOUT_FLAG_IMAGE}
+                alt=""
+                fill
+                className="object-contain scale-[1.36] origin-center"
+                unoptimized
+                loading="lazy"
+                sizes="530px"
+              />
+            </div>
+          </motion.div>
+          <motion.div
+            className="absolute left-[425px] top-[286px]"
+            initial={{ x: 90, opacity: 0 }}
+            whileInView={{ x: 0, opacity: 1 }}
+            transition={{ duration: 0.7, ease: 'easeOut', delay: 0.12 }}
+            viewport={{ once: true, amount: 0.6 }}
+          >
+            <div className="rotate-[12deg] rounded-full bg-[#093394] px-6 py-3">
+              <span className="text-[16px] font-bold leading-[24px] tracking-[-0.3125px] text-white">
+                {tr('15+ Years', '15+ տարի')}
+              </span>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+    </>
+  );
+}
