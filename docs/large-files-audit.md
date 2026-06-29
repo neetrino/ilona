@@ -29,6 +29,8 @@ Goal: gradually split source files so each stays at or below **400 lines**.
 | 2026-06-29 | `apps/web/src/features/groups/components/EditGroupForm.tsx` | 709 | 175 (orchestrator) | Split into fields, regenerate dialog, hook + types/constants |
 | 2026-06-29 | `apps/web/src/features/students/components/EditStudentForm.tsx` | 701 | 88 (orchestrator) | Split into fields, hook + types/constants |
 | 2026-06-29 | `apps/web/src/features/students/components/StudentDetailsModal.tsx` | 695 | 236 (orchestrator) | Split into body, stat card, hook + types/util |
+| 2026-06-29 | `apps/web/src/features/chat/hooks/useChat.ts` | 632 | 53 (facade) | Split into query keys, cache util, queries/mutations/cache/admin/teacher/student hooks + unread counts |
+| 2026-06-29 | `apps/web/src/features/chat/components/TeacherChatList.tsx` | 630 | 79 (orchestrator) | Split into tab bar, search, list items (admin/groups/students), loading/empty + hook + types |
 
 ## Split details (completed refactors)
 
@@ -58,8 +60,10 @@ Goal: gradually split source files so each stays at or below **400 lines**.
 | 19 | `EditGroupForm.tsx` | 709 | 175 | **6** |
 | 20 | `EditStudentForm.tsx` | 701 | 88 | **5** |
 | 21 | `StudentDetailsModal.tsx` | 695 | 236 | **6** |
+| 22 | `useChat.ts` | 632 | 53 | **10** |
+| 23 | `TeacherChatList.tsx` | 630 | 79 | **10** |
 
-**21** մեծ ֆայլ → **155** ֆայլ (21 facade/orchestrator + 134 նոր split ֆայլ)։
+**23** մեծ ֆайլ → **175** ֆայլ (23 facade/orchestrator + 152 նոր split ֆայլ)։
 
 ### 1. `apps/api/src/modules/chat/chat-management.service.ts` (1,195 → 61)
 
@@ -368,6 +372,40 @@ Goal: gradually split source files so each stays at or below **400 lines**.
 | `student-details-modal/student-details-modal.types.ts` | Modal props |
 | `student-details-modal/student-details-modal.util.ts` | Date + lifecycle formatters |
 
+### 22. `apps/web/src/features/chat/hooks/useChat.ts` (632 → 53)
+
+**10 ֆայլ** (1 facade + 9 նոր, `chat/`)
+
+| Ֆայլ | Դեր |
+| --- | --- |
+| `useChat.ts` | Facade re-exports |
+| `chat/chat-query-keys.ts` | React Query key factory |
+| `chat/chat-cache.util.ts` | Optimistic messages + cache read/write helpers |
+| `chat/useChatQueries.ts` | useChats, useChatDetail, useMessages, useCustomGroupChats |
+| `chat/useChatMutations.ts` | Direct/group chat create + member mutations |
+| `chat/useChatCacheHooks.ts` | Cache update hooks (add/update/remove/unread) |
+| `chat/useAdminChatQueries.ts` | Admin list queries |
+| `chat/useTeacherChatQueries.ts` | Teacher list queries |
+| `chat/useStudentChatQueries.ts` | Student admin query |
+| `chat/useChatUnreadCounts.ts` | Admin/teacher/student sidebar badge counts |
+
+### 23. `apps/web/src/features/chat/components/TeacherChatList.tsx` (630 → 79)
+
+**10 ֆայլ** (1 orchestrator + 9 նոր, `teacher-chat-list/`)
+
+| Ֆայլ | Դեր |
+| --- | --- |
+| `TeacherChatList.tsx` | Sticky header + tab content orchestrator |
+| `teacher-chat-list/useTeacherChatList.ts` | Data fetch, sort, click handlers |
+| `teacher-chat-list/TeacherChatListTabBar.tsx` | Groups/students/admin tabs + badges |
+| `teacher-chat-list/TeacherChatListSearch.tsx` | Tab-aware search input |
+| `teacher-chat-list/TeacherChatListAdminItem.tsx` | Admin direct chat row |
+| `teacher-chat-list/TeacherChatListGroupItems.tsx` | Custom + class group rows |
+| `teacher-chat-list/TeacherChatListStudentItems.tsx` | Student DM rows |
+| `teacher-chat-list/TeacherChatListLoadingSkeleton.tsx` | Loading placeholder |
+| `teacher-chat-list/TeacherChatListEmptyState.tsx` | Empty / no-results state |
+| `teacher-chat-list/teacher-chat-list.types.ts` | Props + view-model types |
+
 ---
 
 ## Summary
@@ -375,9 +413,9 @@ Goal: gradually split source files so each stays at or below **400 lines**.
 | Metric | Value |
 | --- | --- |
 | Total source files scanned | 836 |
-| Files over 400 lines | **38** (was 58) |
-| Biggest file | `apps/web/src/features/chat/hooks/useChat.ts` (632 lines) |
-| Frontend (`apps/web`) | 31 |
+| Files over 400 lines | **36** (was 58) |
+| Biggest file | `apps/web/src/shared/components/ui/date-picker-input.tsx` (627 lines) |
+| Frontend (`apps/web`) | 29 |
 | Backend (`apps/api`) | 11 |
 | Shared / packages | 0 |
 
@@ -411,8 +449,8 @@ Goal: gradually split source files so each stays at or below **400 lines**.
 | ~~18~~ | ~~`apps/web/src/features/groups/components/EditGroupForm.tsx`~~ | ~~709~~ | Frontend / Groups | **Done** | — |
 | ~~19~~ | ~~`apps/web/src/features/students/components/EditStudentForm.tsx`~~ | ~~701~~ | Frontend / Students | **Done** | — |
 | ~~20~~ | ~~`apps/web/src/features/students/components/StudentDetailsModal.tsx`~~ | ~~695~~ | Frontend / Students | **Done** | — |
-| 21 | `apps/web/src/features/chat/hooks/useChat.ts` | 632 | Frontend / Chat | Split into focused hooks (messages, socket events, cache updates, navigation); extract shared chat query keys and reducers | Medium |
-| 22 | `apps/web/src/features/chat/components/TeacherChatList.tsx` | 630 | Frontend / Chat | Extract list item, filters, empty/loading states; move list query and selection logic into hook | Medium |
+| ~~21~~ | ~~`apps/web/src/features/chat/hooks/useChat.ts`~~ | ~~632~~ | Frontend / Chat | **Done** | — |
+| ~~22~~ | ~~`apps/web/src/features/chat/components/TeacherChatList.tsx`~~ | ~~630~~ | Frontend / Chat | **Done** | — |
 | 23 | `apps/web/src/shared/components/ui/date-picker-input.tsx` | 627 | Frontend / Shared UI | Split calendar popover, input masking, range/single modes, and locale formatting into subcomponents/utils | Medium |
 | ~~24~~ | ~~`apps/api/src/modules/search/search.service.ts`~~ | ~~623~~ | Backend / Search | **Done** | — |
 | 25 | `apps/web/src/features/crm/components/EditLeadModal.tsx` | 616 | Frontend / CRM | Extract form sections, status/activity UI, and voice/recording blocks; split validation schema and mutation hook | Medium |
@@ -454,9 +492,9 @@ Goal: gradually split source files so each stays at or below **400 lines**.
 
 ## Recommended first 3 refactors
 
-1. **`apps/web/src/features/chat/hooks/useChat.ts`** (632 lines) — Split into focused message/socket/cache hooks.
-2. **`apps/web/src/features/chat/components/TeacherChatList.tsx`** (630 lines) — Extract list item and filters.
-3. **`apps/web/src/shared/components/ui/date-picker-input.tsx`** (627 lines) — Split calendar popover and input masking.
+1. **`apps/web/src/shared/components/ui/date-picker-input.tsx`** (627 lines) — Split calendar popover and input masking.
+2. **`apps/web/src/features/crm/components/EditLeadModal.tsx`** (616 lines) — Extract form sections, status/activity UI, voice blocks.
+3. **`apps/web/src/features/groups/components/CreateGroupForm.tsx`** (611 lines) — Same pattern as EditGroupForm.
 
 ---
 
