@@ -53,7 +53,7 @@ export async function uploadAvatar(file: File): Promise<{ avatarUrl: string }> {
         throw new Error('File size too large. Please upload an image smaller than 5MB.');
       }
       if (error.statusCode === 415) {
-        throw new Error('Invalid file type. Only JPG, PNG, WEBP, and GIF images are allowed.');
+        throw new Error('Invalid file type. Only JPG, PNG, and WEBP images are allowed.');
       }
       if (error.statusCode === 400) {
         throw new Error(error.message || 'Invalid file. Please check the file and try again.');

@@ -1913,7 +1913,7 @@
     "footerIconLinksSavedSuccess": "Footer-ի պատկերակների հղումները հաջողությամբ թարմացվեցին։",
     "footerIconLinksSaveFailed": "Չհաջողվեց թարմացնել footer-ի պատկերակների հղումները։ Խնդրում ենք կրկին փորձել։",
     "remove": "Հեռացնել",
-    "imageFormats": "Աջակցվող ձևաչափեր: JPG, PNG, WEBP, GIF (առավելագույնը 5MB)",
+    "imageFormats": "Աջակցվող ձևաչափեր: JPG, PNG, WEBP (առավելագույնը 5MB)",
     "uploading": "Բեռնվում է...",
     "removing": "Հեռացվում է...",
     "saveChanges": "Պահպանել փոփոխությունները",

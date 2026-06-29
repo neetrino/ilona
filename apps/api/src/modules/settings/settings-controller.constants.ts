@@ -12,5 +12,4 @@ export const IMAGE_CONTENT_TYPE_MAP: Record<string, string> = {
   '.jpeg': 'image/jpeg',
   '.webp': 'image/webp',
   '.svg': 'image/svg+xml',
-  '.gif': 'image/gif',
 };

@@ -36,7 +36,7 @@ const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB for avatars (becomes ~6.7MB base6
 const MAX_FILE_SIZE = 25 * 1024 * 1024; // 25MB
 
 // Allowed MIME types - allow jpg as well as jpeg
-const IMAGE_TYPES = /^image\/(jpeg|jpg|png|gif|webp)$/i;
+const IMAGE_TYPES = /^image\/(jpeg|jpg|png|webp)$/i;
 const FILE_TYPES = /^(image|application|audio|video)\//;
 
 interface PresignedUrlDto {
@@ -84,7 +84,7 @@ export class StorageController {
           }
           if (error.includes('File type')) {
             throw new UnsupportedMediaTypeException(
-              'Invalid file type. Only JPG, PNG, WEBP, and GIF images are allowed.',
+              'Invalid file type. Only JPG, PNG, and WEBP images are allowed.',
             );
           }
           throw new BadRequestException(`File validation failed: ${error}`);
@@ -261,7 +261,6 @@ export class StorageController {
         '.jpeg': 'image/jpeg',
         '.webp': 'image/webp',
         '.svg': 'image/svg+xml',
-        '.gif': 'image/gif',
         '.pdf': 'application/pdf',
         '.txt': 'text/plain',
         // Audio types
@@ -350,7 +349,6 @@ export class StorageController {
         '.jpeg': 'image/jpeg',
         '.webp': 'image/webp',
         '.svg': 'image/svg+xml',
-        '.gif': 'image/gif',
         '.pdf': 'application/pdf',
         '.txt': 'text/plain',
         // Audio types

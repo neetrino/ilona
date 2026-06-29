@@ -1913,7 +1913,7 @@
     "footerIconLinksSavedSuccess": "Footer icon links updated successfully.",
     "footerIconLinksSaveFailed": "Failed to update footer icon links. Please try again.",
     "remove": "Remove",
-    "imageFormats": "Supported formats: JPG, PNG, WEBP, GIF (max 5MB)",
+    "imageFormats": "Supported formats: JPG, PNG, WEBP (max 5MB)",
     "uploading": "Uploading...",
     "removing": "Removing...",
     "saveChanges": "Save Changes",
