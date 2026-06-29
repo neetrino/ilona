@@ -9,7 +9,7 @@ import {
   NotebookPen,
   Check,
   Clock,
-  X,
+  Lock,
 } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
 import type { LessonActionDerived, LessonActionId } from '@/shared/lib/daily-duties/lesson-action-states';
@@ -82,7 +82,7 @@ export function DailyDutiesListActionPill({
     action.state === 'done' || action.state === 'doneLate'
       ? Check
       : action.state === 'missed'
-        ? X
+        ? Lock
         : Clock;
 
   return (

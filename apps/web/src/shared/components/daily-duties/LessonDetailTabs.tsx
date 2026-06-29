@@ -9,8 +9,8 @@ import {
   Type,
   NotebookPen,
   AlertTriangle,
+  Lock,
   LockOpen,
-  X,
 } from 'lucide-react';
 import type { Lesson } from '@/features/lessons';
 import { cn } from '@/shared/lib/utils';
@@ -96,7 +96,7 @@ function LockStatusIcon({
           : 'text-amber-700';
 
   if (action.state === 'missed') {
-    return <X className={cn('h-4 w-4', colorClass)} aria-label={label} />;
+    return <Lock className={cn('h-4 w-4', colorClass)} aria-label={label} />;
   }
 
   return <LockOpen className={cn('h-4 w-4', colorClass)} aria-label={label} />;
