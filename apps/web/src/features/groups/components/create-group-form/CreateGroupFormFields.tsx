@@ -15,10 +15,7 @@ import { ADMIN_TEXTAREA_CLASS } from '../edit-group-form/edit-group-form.constan
 import type { CreateGroupFormData } from './create-group-form.types';
 import type { useCreateGroupForm } from './useCreateGroupForm';
 
-type CreateGroupFormFieldsProps = ReturnType<typeof useCreateGroupForm> & {
-  handleSubmit: ReturnType<typeof useCreateGroupForm>['handleSubmit'];
-  onSubmit: (data: CreateGroupFormData) => Promise<void>;
-};
+type CreateGroupFormFieldsProps = ReturnType<typeof useCreateGroupForm>;
 
 export function CreateGroupFormFields(props: CreateGroupFormFieldsProps) {
   const {
@@ -53,16 +50,16 @@ export function CreateGroupFormFields(props: CreateGroupFormFieldsProps) {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-      {successMessage && (
+      {successMessage ? (
         <div className="rounded-[15px] border border-green-200 bg-green-50 p-3">
           <p className="text-sm text-green-600">{successMessage}</p>
         </div>
-      )}
-      {errorMessage && (
+      ) : null}
+      {errorMessage ? (
         <div className="rounded-[15px] border border-red-200 bg-red-50 p-3">
           <p className="text-sm text-red-600">{errorMessage}</p>
         </div>
-      )}
+      ) : null}
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div className="min-w-0 space-y-2">
@@ -98,7 +95,7 @@ export function CreateGroupFormFields(props: CreateGroupFormFieldsProps) {
 
       <div className="space-y-2">
         <Label id="create-group-icon-label">{tForm('groupIcon')}</Label>
-        <p className="text-xs text-slate-500">{tForm('iconHintEdit')}</p>
+        <p className="text-xs text-slate-500">{tForm('iconHintCreate')}</p>
         <GroupIconPicker
           value={iconKey}
           onChange={setIconKey}
@@ -123,9 +120,9 @@ export function CreateGroupFormFields(props: CreateGroupFormFieldsProps) {
             isSubmitting ? 'cursor-not-allowed bg-slate-100' : '',
           )}
         />
-        {errors.description && (
+        {errors.description ? (
           <p className="text-sm text-red-600">{errors.description.message}</p>
-        )}
+        ) : null}
       </div>
 
       <div className="space-y-2">
@@ -234,9 +231,9 @@ export function CreateGroupFormFields(props: CreateGroupFormFieldsProps) {
         </div>
       </div>
 
-      {isLoadingTeachers && (
+      {isLoadingTeachers ? (
         <p className="text-sm text-slate-500">{tForm('loadingTeachers')}</p>
-      )}
+      ) : null}
 
       <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end">
         <Button
@@ -250,12 +247,7 @@ export function CreateGroupFormFields(props: CreateGroupFormFieldsProps) {
         </Button>
         <Button
           type="submit"
-          disabled={
-            isFormBusy ||
-            isLoadingCenters ||
-            isLoadingTeachers ||
-            centers.length === 0
-          }
+          disabled={isFormBusy || isLoadingCenters || isLoadingTeachers || centers.length === 0}
           className={cn(ADMIN_PRIMARY_BUTTON_CLASS, 'bg-primary text-primary-foreground hover:bg-primary/90')}
         >
           {isSubmitting || createGroup.isPending ? tForm('creating') : tForm('createGroup')}
