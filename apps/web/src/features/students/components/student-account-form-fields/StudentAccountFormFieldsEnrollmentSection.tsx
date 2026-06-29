@@ -1,11 +1,12 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { Input, Label } from '@/shared/components/ui';
+import { Input, Label, SegmentedControl } from '@/shared/components/ui';
+import { cn } from '@/shared/lib/utils';
 import { DmyDateInput } from '@/shared/components/ui/dmy-date-input';
 import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
 import { computeAgeFromDob } from '../../student-account-form.schema';
-import { DMY_INPUT_CLASS_NAME } from './student-account-form-fields.constants';
+import { FORM_INPUT_CLASS_NAME, FORM_READONLY_FIELD_CLASS } from './student-account-form-fields.constants';
 import type { StudentAccountFormFieldsEnrollmentSectionProps } from './student-account-form-fields.types';
 
 export function StudentAccountFormFieldsEnrollmentSection({
@@ -22,17 +23,15 @@ export function StudentAccountFormFieldsEnrollmentSection({
   assignedCenterDisplay = null,
   watchedTeacherId,
   watchedGroupId,
-  watchedLevelId,
   watchedCenterId,
   watchedDateOfBirth,
   watchedFirstLessonDate,
   ageFromDob,
   showManualAgeInput,
   teacherCentersLabel,
-  levelOptions,
   teacherOptions,
   groupOptions,
-  centerOptions,
+  centerSegmentOptions,
 }: StudentAccountFormFieldsEnrollmentSectionProps) {
   const t = useTranslations('students');
   const tForm = useTranslations('students.form');
@@ -54,7 +53,7 @@ export function StudentAccountFormFieldsEnrollmentSection({
                 setValue('manualAge', undefined, { shouldDirty: true, shouldValidate: true });
               }
             }}
-            className={DMY_INPUT_CLASS_NAME}
+            className={FORM_INPUT_CLASS_NAME}
             disabled={isSubmitting}
           />
           {errors.dateOfBirth && (
@@ -68,12 +67,13 @@ export function StudentAccountFormFieldsEnrollmentSection({
               id={p('manualAge')}
               type="number"
               min={0}
+              className={FORM_INPUT_CLASS_NAME}
               {...register('manualAge')}
               error={errors.manualAge?.message}
             />
           ) : (
             <>
-              <p className="flex h-10 items-center rounded-md border border-input bg-muted/40 px-3 text-sm">
+              <p className={FORM_READONLY_FIELD_CLASS}>
                 {ageFromDob}
               </p>
               <p className="text-xs text-slate-500">{tForm('ageHint', { age: ageFromDob! })}</p>
@@ -90,27 +90,13 @@ export function StudentAccountFormFieldsEnrollmentSection({
             onChange={(value) =>
               setValue('firstLessonDate', value, { shouldValidate: true, shouldDirty: true })
             }
-            className={DMY_INPUT_CLASS_NAME}
+            className={FORM_INPUT_CLASS_NAME}
             disabled={isSubmitting}
           />
           {errors.firstLessonDate && (
             <p className="text-sm text-red-600">{errors.firstLessonDate.message}</p>
           )}
         </div>
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor={p('levelId')}>{tForm('levelOptional')}</Label>
-        <input type="hidden" {...register('levelId')} />
-        <SingleSelectDropdown
-          id={p('levelId')}
-          options={levelOptions}
-          value={watchedLevelId}
-          onValueChange={(nextValue) =>
-            setValue('levelId', nextValue ?? '', { shouldDirty: true, shouldValidate: true })
-          }
-          disabled={isSubmitting}
-        />
       </div>
 
       <div className="grid grid-cols-2 gap-4">
@@ -121,6 +107,7 @@ export function StudentAccountFormFieldsEnrollmentSection({
             id={p('teacherId')}
             options={teacherOptions}
             value={watchedTeacherId}
+            triggerClassName={FORM_INPUT_CLASS_NAME}
             onValueChange={(nextValue) =>
               setValue('teacherId', nextValue ?? '', { shouldDirty: true, shouldValidate: true })
             }
@@ -144,6 +131,7 @@ export function StudentAccountFormFieldsEnrollmentSection({
             id={p('groupId')}
             options={groupOptions}
             value={watchedGroupId}
+            triggerClassName={FORM_INPUT_CLASS_NAME}
             onValueChange={(nextValue) =>
               setValue('groupId', nextValue ?? '', { shouldDirty: true, shouldValidate: true })
             }
@@ -163,25 +151,30 @@ export function StudentAccountFormFieldsEnrollmentSection({
 
       {showCenterSelect ? (
         <div className="space-y-2">
-          <Label htmlFor={p('centerId')}>{tCommon('center')}</Label>
+          <Label>{tCommon('center')}</Label>
           <input type="hidden" {...register('centerId')} />
-          <SingleSelectDropdown
-            id={p('centerId')}
-            options={centerOptions}
-            value={watchedCenterId}
-            onValueChange={(nextValue) =>
-              setValue('centerId', nextValue ?? '', { shouldDirty: true, shouldValidate: true })
-            }
-            isLoading={isLoadingCenters}
-            disabled={isLoadingCenters || isSubmitting}
-            error={errors.centerId?.message ?? null}
-          />
+          {isLoadingCenters ? (
+            <p className="text-sm text-slate-500">{tCommon('loading')}</p>
+          ) : centerSegmentOptions.length > 0 ? (
+            <SegmentedControl
+              options={centerSegmentOptions}
+              value={watchedCenterId}
+              onChange={(nextValue) =>
+                setValue('centerId', nextValue, { shouldDirty: true, shouldValidate: true })
+              }
+              allowDeselect
+              disabled={isSubmitting}
+              aria-label={tCommon('center')}
+            />
+          ) : (
+            <p className="text-sm text-slate-500">{tCommon('notAssigned')}</p>
+          )}
           {errors.centerId && <p className="text-sm text-red-600">{errors.centerId.message}</p>}
         </div>
       ) : assignedCenterDisplay ? (
         <div className="space-y-2">
           <Label>{tCommon('center')}</Label>
-          <p className="rounded-md border border-input bg-muted/40 px-3 py-2 text-sm text-slate-700">
+          <p className={cn(FORM_READONLY_FIELD_CLASS, 'h-auto min-h-11 py-2')}>
             {assignedCenterDisplay}
           </p>
         </div>

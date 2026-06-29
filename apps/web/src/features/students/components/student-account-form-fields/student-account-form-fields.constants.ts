@@ -1,9 +1,15 @@
-export const DMY_INPUT_CLASS_NAME =
-  'flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50';
+import { cn } from '@/shared/lib/utils';
+import { ADMIN_FORM_INPUT_CLASS } from '@/shared/lib/admin-control-theme';
 
-export const TEXTAREA_CLASS_NAME = `${DMY_INPUT_CLASS_NAME} min-h-[6rem] resize-y`;
+export const FORM_INPUT_CLASS_NAME = ADMIN_FORM_INPUT_CLASS;
 
-export const LEVEL_FILTER_OPTIONS = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'] as const;
+export const TEXTAREA_CLASS_NAME = cn(
+  ADMIN_FORM_INPUT_CLASS,
+  'h-auto min-h-[6rem] resize-y py-2',
+);
+
+export const FORM_READONLY_FIELD_CLASS =
+  'flex h-11 min-h-11 items-center rounded-[15px] border border-[rgba(14,14,16,0.07)] bg-muted/40 px-4 text-sm';
 
 export function formFieldId(idPrefix: string, id: string): string {
   return idPrefix ? `${idPrefix}-${id}` : id;

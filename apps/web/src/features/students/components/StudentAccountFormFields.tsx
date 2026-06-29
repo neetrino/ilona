@@ -56,20 +56,21 @@ export function StudentAccountFormFields(props: StudentAccountFormFieldsProps) {
         assignedCenterDisplay={assignedCenterDisplay}
         watchedTeacherId={layout.watchedTeacherId}
         watchedGroupId={layout.watchedGroupId}
-        watchedLevelId={layout.watchedLevelId}
         watchedCenterId={layout.watchedCenterId}
         watchedDateOfBirth={layout.watchedDateOfBirth}
         watchedFirstLessonDate={layout.watchedFirstLessonDate}
         ageFromDob={layout.ageFromDob}
         showManualAgeInput={layout.showManualAgeInput}
         teacherCentersLabel={layout.teacherCentersLabel}
-        levelOptions={layout.levelOptions}
         teacherOptions={layout.teacherOptions}
         groupOptions={layout.groupOptions}
-        centerOptions={layout.centerOptions}
+        centerSegmentOptions={layout.centerSegmentOptions}
       />
       {showParentSection ? <StudentAccountFormFieldsParentSection {...shell} /> : null}
-      <StudentAccountFormFieldsBillingSection {...shell} />
+      <StudentAccountFormFieldsBillingSection
+        {...shell}
+        watchedLevelId={layout.watchedLevelId}
+      />
     </div>
   );
 }

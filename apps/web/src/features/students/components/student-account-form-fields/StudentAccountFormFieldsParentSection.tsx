@@ -2,6 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 import { Input, Label } from '@/shared/components/ui';
+import { FORM_INPUT_CLASS_NAME } from './student-account-form-fields.constants';
 import type { StudentAccountFormFieldsParentSectionProps } from './student-account-form-fields.types';
 
 export function StudentAccountFormFieldsParentSection({
@@ -29,6 +30,7 @@ export function StudentAccountFormFieldsParentSection({
           <Input
             id={p('parentName')}
             {...register('parentName')}
+            className={FORM_INPUT_CLASS_NAME}
             error={errors.parentName?.message}
             placeholder={tForm('firstNamePlaceholder')}
           />
@@ -39,6 +41,7 @@ export function StudentAccountFormFieldsParentSection({
           <Input
             id={p('parentSurname')}
             {...register('parentSurname')}
+            className={FORM_INPUT_CLASS_NAME}
             error={errors.parentSurname?.message}
             placeholder={tForm('lastNamePlaceholder')}
           />
@@ -52,6 +55,7 @@ export function StudentAccountFormFieldsParentSection({
             id={p('parentPhone')}
             type="tel"
             {...register('parentPhone')}
+            className={FORM_INPUT_CLASS_NAME}
             error={errors.parentPhone?.message}
             placeholder={t('phonePlaceholder')}
           />
@@ -66,6 +70,7 @@ export function StudentAccountFormFieldsParentSection({
             type="email"
             autoComplete="email"
             {...register('parentEmail')}
+            className={FORM_INPUT_CLASS_NAME}
             error={errors.parentEmail?.message}
             placeholder={tForm('emailPlaceholder')}
           />
@@ -78,6 +83,7 @@ export function StudentAccountFormFieldsParentSection({
           <Input
             id={p('parentPassportInfo')}
             {...register('parentPassportInfo')}
+            className={FORM_INPUT_CLASS_NAME}
             error={errors.parentPassportInfo?.message}
             placeholder={tForm('parentPassportInfo')}
           />

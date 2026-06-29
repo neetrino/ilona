@@ -19,13 +19,18 @@ import { resolveAgeFromDobAndManual } from '@/features/students/student-account-
 import { StudentAccountFormFields } from '@/features/students/components/StudentAccountFormFields';
 import { useModalClose } from '@/shared/hooks/useModalClose';
 import { cn } from '@/shared/lib/utils';
+import { Button } from '@/shared/components/ui';
 import {
   portalSheetLayerProps,
   useSheetStackZIndex,
   stackedSheetOverlayClassName,
 } from '@/shared/lib/sheet-stack';
 import { CUSTOM_MODAL_OVERLAY_CLASS, CUSTOM_MODAL_PANEL_CLASS } from '@/shared/lib/portal-form-sheet-classes';
-import { ADMIN_ICON_BUTTON_CLASS } from '@/shared/lib/admin-control-theme';
+import {
+  ADMIN_ICON_BUTTON_CLASS,
+  ADMIN_OUTLINE_BUTTON_CLASS,
+  ADMIN_PRIMARY_BUTTON_CLASS,
+} from '@/shared/lib/admin-control-theme';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 
 export interface PaidRegistrationModalProps {
@@ -254,7 +259,7 @@ export function PaidRegistrationModal({
             >
               <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-4 py-4 sm:px-6 sm:py-5">
                 {apiError && (
-                  <p className="rounded-lg bg-red-50 p-2 text-sm text-red-600" role="alert">
+                  <p className="rounded-[15px] bg-red-50 p-2 text-sm text-red-600" role="alert">
                     {apiError}
                   </p>
                 )}
@@ -278,24 +283,23 @@ export function PaidRegistrationModal({
                   assignedCenterDisplay={isManager ? managerCenterLabel : null}
                 />
               </div>
-              <div className="flex justify-end gap-2 border-t border-slate-200 px-4 py-3 sm:px-6">
-                <button
+              <div className="flex flex-col-reverse justify-end gap-2 border-t border-slate-200 px-4 py-3 sm:flex-row sm:px-6">
+                <Button
                   type="button"
+                  variant="outline"
                   onClick={onClose}
                   disabled={isSubmitting}
-                  className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:opacity-50"
+                  className={cn(ADMIN_OUTLINE_BUTTON_CLASS, 'border-[rgba(14,14,16,0.07)] hover:bg-slate-50')}
                 >
                   Cancel
-                </button>
-                <button
+                </Button>
+                <Button
                   type="submit"
-                  disabled={isSubmitting}
-                  className={cn(
-                    'rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90 disabled:opacity-50',
-                  )}
+                  isLoading={isSubmitting}
+                  className={cn(ADMIN_PRIMARY_BUTTON_CLASS, 'bg-primary text-primary-foreground hover:bg-primary/90')}
                 >
                   {isSubmitting ? 'Saving…' : 'Save & mark Paid'}
-                </button>
+                </Button>
               </div>
             </form>
           )}

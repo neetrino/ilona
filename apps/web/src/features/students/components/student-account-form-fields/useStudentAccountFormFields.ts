@@ -4,19 +4,19 @@ import { useEffect, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import { formatPhoneForDisplay } from '@/shared/lib/utils';
 import { computeAgeFromDob } from '../../student-account-form.schema';
-import { formFieldId, LEVEL_FILTER_OPTIONS } from './student-account-form-fields.constants';
+import { DEFAULT_GROUP_LEVEL } from '@/features/groups/lib/group-level-options';
+import { formFieldId } from './student-account-form-fields.constants';
 import type { StudentAccountFormFieldsProps } from './student-account-form-fields.types';
 
 export function useStudentAccountFormFields(props: StudentAccountFormFieldsProps) {
   const { watch, setValue, teachers, groupsForTeacher, centers, idPrefix = '' } = props;
   const t = useTranslations('students');
-  const tForm = useTranslations('students.form');
   const tCommon = useTranslations('common');
 
   const p = (id: string) => formFieldId(idPrefix, id);
   const watchedTeacherId = watch('teacherId') || '';
   const watchedGroupId = watch('groupId') || '';
-  const watchedLevelId = watch('levelId') || '';
+  const watchedLevelId = watch('levelId') || DEFAULT_GROUP_LEVEL;
   const watchedCenterId = watch('centerId') || '';
   const watchedDateOfBirth = watch('dateOfBirth') ?? '';
   const watchedFirstLessonDate = watch('firstLessonDate') ?? '';
@@ -41,14 +41,6 @@ export function useStudentAccountFormFields(props: StudentAccountFormFieldsProps
   ];
   const teacherCentersLabel = [...new Set([...centerNamesFromTeacher, ...centerNamesFromGroups])].join(
     ', ',
-  );
-
-  const levelOptions = useMemo(
-    () => [
-      { id: '', label: tForm('anyLevel') },
-      ...LEVEL_FILTER_OPTIONS.map((level) => ({ id: level, label: level })),
-    ],
-    [tForm],
   );
 
   const teacherOptions = useMemo(
@@ -76,12 +68,9 @@ export function useStudentAccountFormFields(props: StudentAccountFormFieldsProps
     [groupPlaceholder, groupsForTeacher],
   );
 
-  const centerOptions = useMemo(
-    () => [
-      { id: '', label: tCommon('notAssigned') },
-      ...centers.map((center) => ({ id: center.id, label: center.name })),
-    ],
-    [centers, tCommon],
+  const centerSegmentOptions = useMemo(
+    () => centers.map((center) => ({ id: center.id, label: center.name })),
+    [centers],
   );
 
   return {
@@ -95,9 +84,8 @@ export function useStudentAccountFormFields(props: StudentAccountFormFieldsProps
     ageFromDob,
     showManualAgeInput,
     teacherCentersLabel,
-    levelOptions,
     teacherOptions,
     groupOptions,
-    centerOptions,
+    centerSegmentOptions,
   };
 }
