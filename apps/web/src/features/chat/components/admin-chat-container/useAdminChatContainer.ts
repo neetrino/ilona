@@ -20,6 +20,7 @@ import {
   getAdminChatContainerLayout,
   resolveAdminReturnToPath,
 } from './admin-chat-container.util';
+import { clearChatDeleteGroupParam } from '../../lib/chat-url-params';
 
 export function useAdminChatContainer({
   emptyTitle,
@@ -104,6 +105,7 @@ export function useAdminChatContainer({
         replaceSearchParams((params) => {
           params.delete('conversationId');
           params.delete('chatId');
+          clearChatDeleteGroupParam(params);
         });
       });
 
@@ -125,6 +127,7 @@ export function useAdminChatContainer({
       replaceSearchParams((params) => {
         params.set('tab', tab);
         params.delete('conversationId');
+        clearChatDeleteGroupParam(params);
       });
       setActiveChat(null);
     },
@@ -160,7 +163,10 @@ export function useAdminChatContainer({
 
       isInitialMount.current = false;
     } else if (!isLoadingChatFromUrl && isChatError) {
-      replaceSearchParams((params) => params.delete('conversationId'));
+      replaceSearchParams((params) => {
+        params.delete('conversationId');
+        clearChatDeleteGroupParam(params);
+      });
       isInitialMount.current = false;
     }
   }, [
@@ -188,7 +194,10 @@ export function useAdminChatContainer({
         });
       }
     } else if (conversationIdInUrl) {
-      replaceSearchParams((params) => params.delete('conversationId'));
+      replaceSearchParams((params) => {
+        params.delete('conversationId');
+        clearChatDeleteGroupParam(params);
+      });
     }
   }, [activeChat, activeTab, replaceSearchParams, searchParams, urlRevision]);
 
@@ -226,6 +235,9 @@ export function useAdminChatContainer({
       replaceSearchParams((params) => {
         params.set('conversationId', chat.id);
         if (activeTab) params.set('tab', activeTab);
+        if (params.get('deleteGroup') !== chat.id) {
+          clearChatDeleteGroupParam(params);
+        }
       });
     },
     [activeTab, queryClient, replaceSearchParams, setActiveChat, setMobileListVisible],
@@ -234,7 +246,10 @@ export function useAdminChatContainer({
   const handleBack = useCallback(() => {
     setMobileListVisible(true);
     setActiveChat(null);
-    replaceSearchParams((params) => params.delete('conversationId'));
+    replaceSearchParams((params) => {
+      params.delete('conversationId');
+      clearChatDeleteGroupParam(params);
+    });
   }, [replaceSearchParams, setActiveChat, setMobileListVisible]);
 
   useEffect(() => {
@@ -248,7 +263,10 @@ export function useAdminChatContainer({
   const finalizeMobileChatClose = useCallback(() => {
     setMobileListVisible(true);
     setActiveChat(null);
-    replaceSearchParams((params) => params.delete('conversationId'));
+    replaceSearchParams((params) => {
+      params.delete('conversationId');
+      clearChatDeleteGroupParam(params);
+    });
   }, [replaceSearchParams, setActiveChat, setMobileListVisible]);
 
   const handleCustomGroupChatCreated = useCallback(
@@ -265,6 +283,7 @@ export function useAdminChatContainer({
       replaceSearchParams((params) => {
         params.set('conversationId', chat.id);
         if (activeTab) params.set('tab', activeTab);
+        clearChatDeleteGroupParam(params);
       });
     },
     [activeTab, queryClient, replaceSearchParams, setActiveChat, setMobileListVisible],

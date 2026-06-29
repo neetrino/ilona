@@ -80,7 +80,7 @@ export function AdminChatList(props: AdminChatListProps) {
           </div>
         </>
       ) : (
-        <div className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain [-webkit-overflow-scrolling:touch] [touch-action:pan-y]">
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain [-webkit-overflow-scrolling:touch] [touch-action:pan-y] [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
           <div className="sticky top-0 z-20 bg-white">
             <div className="overflow-x-hidden border-b border-[rgba(14,14,16,0.07)] px-3 py-3 sm:px-3">
               <AdminChatListTabBar

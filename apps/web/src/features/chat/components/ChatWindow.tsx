@@ -33,6 +33,7 @@ import { useChatWindowComposer } from './chat-window/useChatWindowComposer';
 import { useChatVoiceHandlers } from './chat-window/useChatVoiceHandlers';
 import { useChatMessageDelete } from './chat-window/useChatMessageDelete';
 import { useChatGroupDelete } from './chat-window/useChatGroupDelete';
+import { ChatGroupDeleteDialog } from './chat-window/ChatGroupDeleteDialog';
 
 interface ChatWindowProps {
   chat: Chat;
@@ -213,7 +214,9 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
     isDeletingGroup,
     groupDeleteError,
     groupDeleteDialogTitle,
-    groupDeleteDialogDescription,
+    groupDeleteDialogSubtitle,
+    groupDeleteDialogWarning,
+    groupDeleteName,
     handleOpenGroupDelete,
     handleGroupDeleteDialogOpenChange,
     handleConfirmGroupDelete,
@@ -355,16 +358,18 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
         loadingLabel={tChat('deleting')}
       />
 
-      <DeleteConfirmationDialog
+      <ChatGroupDeleteDialog
         open={isGroupDeleteDialogOpen}
         onOpenChange={handleGroupDeleteDialogOpenChange}
         onConfirm={handleConfirmGroupDelete}
         title={groupDeleteDialogTitle}
-        description={groupDeleteDialogDescription}
+        subtitle={groupDeleteDialogSubtitle}
+        groupName={groupDeleteName}
+        warningText={groupDeleteDialogWarning}
         isLoading={isDeletingGroup}
         error={groupDeleteError}
-        confirmLabel={tCommon('delete')}
         cancelLabel={tCommon('cancel')}
+        confirmLabel={tCommon('delete')}
         loadingLabel={tChat('deleting')}
       />
     </div>
