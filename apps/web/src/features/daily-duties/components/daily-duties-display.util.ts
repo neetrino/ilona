@@ -11,11 +11,18 @@ export function isCalendarToday(date: Date): boolean {
 }
 
 export function getWeekLessonCardClass(lesson: Lesson): string {
-  if (lesson.completionStatus === 'DONE') {
+  const status = lesson.dailyDutiesStatus;
+  if (status === 'DONE') {
     return 'bg-green-50 border-green-500';
   }
-  if (lesson.completionStatus === 'IN_PROCESS') {
-    return 'bg-yellow-50 border-yellow-500';
+  if (status === 'CAUTION') {
+    return 'bg-red-50 border-red-500';
+  }
+  if (status === 'WAITING') {
+    return 'bg-amber-50 border-amber-500';
+  }
+  if (status === 'IN_PROGRESS') {
+    return 'bg-blue-50 border-blue-500';
   }
   if (lesson.status === 'COMPLETED') {
     return 'bg-green-50 border-green-500';

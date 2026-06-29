@@ -6,7 +6,6 @@ import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/shared/components/ui/button';
 import { Checkbox } from '@/shared/components/ui/checkbox';
-import { Badge } from '@/shared/components/ui/badge';
 import { LessonListScheduleCategoryCell } from '@/shared/components/daily-duties/LessonListScheduleCategoryCell';
 import { CheckCircle2, Pencil } from 'lucide-react';
 import type { Lesson } from '@/features/lessons';
@@ -15,6 +14,7 @@ import type { TeacherDailyDutiesRowCategory } from '@/shared/lib/daily-duties/te
 import type { ScheduleCardDayStatus } from '@/features/schedule/schedule-dates';
 import { getLessonActionsDerived, type LessonActionId } from '@/shared/lib/daily-duties/lesson-action-states';
 import { DailyDutiesListActionPill } from '@/shared/components/daily-duties/DailyDutiesListActionPill';
+import { DailyDutiesLessonStatusUnderName } from '@/shared/lib/daily-duties/DailyDutiesLessonStatusBadge';
 import { LessonListDateCell } from '@/shared/components/daily-duties/LessonListDateCell';
 import {
   getAdminDailyDutiesLessonPath,
@@ -84,11 +84,18 @@ export function LessonListTableBodyRow({
     : t('unknownTeacher');
 
   const getRowColor = () => {
-    if (lesson.completionStatus === 'DONE') {
+    const status = lesson.dailyDutiesStatus;
+    if (status === 'DONE') {
       return 'bg-green-50 hover:bg-green-100';
     }
-    if (lesson.completionStatus === 'IN_PROCESS') {
-      return 'bg-yellow-50 hover:bg-yellow-100';
+    if (status === 'CAUTION') {
+      return 'bg-red-50 hover:bg-red-100';
+    }
+    if (status === 'WAITING') {
+      return 'bg-amber-50 hover:bg-amber-100';
+    }
+    if (status === 'IN_PROGRESS') {
+      return 'bg-blue-50 hover:bg-blue-100';
     }
     if (dateStatus === 'today') {
       return 'bg-blue-50 hover:bg-blue-100';
@@ -123,16 +130,12 @@ export function LessonListTableBodyRow({
 
   const obligationIds: LessonActionId[] = ['absence', 'feedback', 'voice', 'text', 'dailyPlan'];
 
-  const statusBadge =
-    lesson.completionStatus === 'DONE' ? (
-      <Badge variant="success" className="bg-green-100 text-green-700 border-green-200">
-        {t('completed')}
-      </Badge>
-    ) : lesson.completionStatus === 'IN_PROCESS' ? (
-      <Badge variant="warning" className="bg-yellow-100 text-yellow-700 border-yellow-200">
-        {t('statusInProcess')}
-      </Badge>
-    ) : null;
+  const leftBorderClass =
+    lesson.dailyDutiesStatus === 'CAUTION'
+      ? 'border-red-300'
+      : lesson.dailyDutiesStatus === 'WAITING'
+        ? 'border-amber-300'
+        : 'border-transparent';
 
   return (
     <tr
@@ -140,10 +143,7 @@ export function LessonListTableBodyRow({
       onClick={onRowClick ? () => onRowClick(lesson.id) : undefined}
     >
       <td
-        className={cn(
-          'border-l-4 px-4 py-3',
-          lesson.completionStatus === 'IN_PROCESS' ? 'border-amber-300' : 'border-transparent',
-        )}
+        className={cn('border-l-4 px-4 py-3', leftBorderClass)}
         onClick={(e) => e.stopPropagation()}
       >
         <Checkbox
@@ -154,7 +154,7 @@ export function LessonListTableBodyRow({
       <td className="px-4 py-3">
         <div>
           <p className="font-semibold text-slate-800">{lesson.group?.name || t('unknownGroupName')}</p>
-          {statusBadge ? <div className="mt-1">{statusBadge}</div> : null}
+          <DailyDutiesLessonStatusUnderName lesson={lesson} />
         </div>
       </td>
       {scheduleCategory !== undefined && (

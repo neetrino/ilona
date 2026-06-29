@@ -2307,6 +2307,13 @@
     },
     "searchLessonsPlaceholder": "Որոնել դասեր բառով, խմբով կամ ուսուցիչով...",
     "allTeachers": "Բոլոր ուսուցիչները",
+    "allStatuses": "Բոլոր կարգավիճակները",
+    "lessonStatus": {
+      "done": "Կատարված",
+      "caution": "Զգուշացում",
+      "inProgress": "Ընթացքում",
+      "waiting": "Սպասում"
+    },
     "substituteTeacher": "Փոխարինող ուսուցիչ",
     "substituteTeacherLesson": "Փոխարինող ուսուցիչ (այս դաս)",
     "substituteForClassOnly": "Փոխարինող միայն այս դասի համար",

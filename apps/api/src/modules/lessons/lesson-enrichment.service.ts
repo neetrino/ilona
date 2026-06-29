@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { LessonStatus } from '@ilona/database';
 import {
   buildDutyActionStatuses,
+  computeDailyDutiesLessonStatus,
   type DutyActionKey,
   type DutyActionStatus,
 } from '@ilona/types';
@@ -126,6 +127,20 @@ export class LessonEnrichmentService {
    */
   enrichLesson<T extends LessonForEnrichment>(lesson: T) {
     const dutyStatuses = this.buildDutyStatuses(lesson);
+    const dailyDutiesStatus = computeDailyDutiesLessonStatus({
+      scheduledAt: lesson.scheduledAt,
+      duration: lesson.duration,
+      absenceMarked: lesson.absenceMarked,
+      absenceMarkedAt: lesson.absenceMarkedAt,
+      feedbacksCompleted: lesson.feedbacksCompleted,
+      feedbacksCompletedAt: lesson.feedbacksCompletedAt,
+      voiceSent: lesson.voiceSent,
+      voiceSentAt: lesson.voiceSentAt,
+      textSent: lesson.textSent,
+      textSentAt: lesson.textSentAt,
+      dailyPlan: lesson.dailyPlan,
+      latestFeedbackAt: lesson.feedbacks?.[0]?.createdAt ?? null,
+    });
     const completionStatus = this.getCompletionStatus({
       scheduledAt: lesson.scheduledAt,
       duration: lesson.duration,
@@ -140,6 +155,7 @@ export class LessonEnrichmentService {
       ...lesson,
       isLockedForTeacher: this.isLockedForTeacher(lesson.scheduledAt),
       completionStatus,
+      dailyDutiesStatus,
       dailyPlanCompleted: Boolean(lesson.dailyPlan),
       isAbsenceLocked: this.isActionLocked(lesson.absenceMarked),
       isFeedbackLocked: this.isActionLocked(lesson.feedbacksCompleted),

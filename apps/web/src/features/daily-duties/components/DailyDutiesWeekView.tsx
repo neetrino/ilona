@@ -6,6 +6,7 @@ import {
   getWeekLessonCardClass,
   isCalendarToday,
 } from './daily-duties-display.util';
+import { DailyDutiesLessonStatusUnderName } from '@/shared/lib/daily-duties/DailyDutiesLessonStatusBadge';
 
 interface DailyDutiesWeekViewProps {
   weekDates: Date[];
@@ -89,6 +90,7 @@ export function DailyDutiesWeekView({
                         <p className="truncate text-[#3b3b40]">
                           {lesson.group?.name || t('lessonUnknown')}
                         </p>
+                        <DailyDutiesLessonStatusUnderName lesson={lesson} />
                         {lesson.substituteTeacher?.user && (
                           <p
                             className="mt-0.5 truncate text-amber-800"

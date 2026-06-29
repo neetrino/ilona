@@ -19,6 +19,12 @@ import {
 import { useLessons, useLessonStatistics, type Lesson } from '@/features/lessons';
 import { useTeachers } from '@/features/teachers';
 import type { LessonActionId } from '@/shared/lib/daily-duties/lesson-action-states';
+import type { DailyDutiesStatusFilter } from '@/shared/lib/daily-duties/filter-by-daily-duties-status';
+import {
+  filterLessonsByDailyDutiesStatus,
+  filterLessonsByDateAndStatus,
+} from '@/shared/lib/daily-duties/filter-by-daily-duties-status';
+import type { DailyDutiesLessonStatus } from '@ilona/types';
 import type { DailyDutiesMode, DailyDutiesViewMode, DailyDutiesLessonDetailTab } from './daily-duties.types';
 import {
   ADD_LESSON_MODAL_QUERY_VALUE,
@@ -63,6 +69,7 @@ export function useDailyDutiesPage(mode: DailyDutiesMode) {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | undefined>(undefined);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedTeacherId, setSelectedTeacherId] = useState<string>('');
+  const [selectedStatus, setSelectedStatus] = useState<DailyDutiesStatusFilter>('');
 
   const [currentDate, setCurrentDate] = useState(new Date());
   const [isAddLessonOpen, setIsAddLessonOpen] = useState(
@@ -108,6 +115,14 @@ export function useDailyDutiesPage(mode: DailyDutiesMode) {
 
     setSearchQuery(readUrlSearchParam('q', searchParams, urlRevision) || '');
     setSelectedTeacherId(readUrlSearchParam('teacherId', searchParams, urlRevision) || '');
+
+    const statusFromUrl = readUrlSearchParam('status', searchParams, urlRevision);
+    const validStatuses: DailyDutiesLessonStatus[] = ['DONE', 'CAUTION', 'IN_PROGRESS', 'WAITING'];
+    setSelectedStatus(
+      validStatuses.includes(statusFromUrl as DailyDutiesLessonStatus)
+        ? (statusFromUrl as DailyDutiesLessonStatus)
+        : '',
+    );
 
     if (!isTeacherMode && !isAddLessonClosingRef.current) {
       setIsAddLessonOpen(isAddLessonModalOpen(searchParams));
@@ -255,17 +270,6 @@ export function useDailyDutiesPage(mode: DailyDutiesMode) {
 
   const lessons = useMemo(() => lessonsData?.items || [], [lessonsData?.items]);
 
-  const listViewLessons = useMemo(() => {
-    if (viewMode !== 'list') {
-      return lessons;
-    }
-    return filterLessonsByLocalDateRange(lessons, weekDates[0], weekDates[6]);
-  }, [lessons, viewMode, weekDates]);
-
-  const listReferenceDate = useMemo(() => getDailyDutiesListReferenceDate(weekDates), [weekDates]);
-
-  const isListLoading = isLoading || isFetching;
-
   const lessonsByDate = useMemo(() => {
     const grouped: Record<string, Lesson[]> = {};
     for (const lesson of lessons) {
@@ -285,6 +289,23 @@ export function useDailyDutiesPage(mode: DailyDutiesMode) {
     }
     return grouped;
   }, [lessons]);
+
+  const listViewLessons = useMemo(() => {
+    if (viewMode !== 'list') {
+      return filterLessonsByDailyDutiesStatus(lessons, selectedStatus);
+    }
+    const ranged = filterLessonsByLocalDateRange(lessons, weekDates[0], weekDates[6]);
+    return filterLessonsByDailyDutiesStatus(ranged, selectedStatus);
+  }, [lessons, viewMode, weekDates, selectedStatus]);
+
+  const filteredLessonsByDate = useMemo(
+    () => filterLessonsByDateAndStatus(lessonsByDate, selectedStatus),
+    [lessonsByDate, selectedStatus],
+  );
+
+  const listReferenceDate = useMemo(() => getDailyDutiesListReferenceDate(weekDates), [weekDates]);
+
+  const isListLoading = isLoading || isFetching;
 
   const navigatePeriod = (direction: 'prev' | 'next') => {
     const delta = direction === 'next' ? 1 : -1;
@@ -320,6 +341,14 @@ export function useDailyDutiesPage(mode: DailyDutiesMode) {
     [replaceParams],
   );
 
+  const handleStatusChange = useCallback(
+    (status: DailyDutiesStatusFilter) => {
+      setSelectedStatus(status);
+      replaceParams({ status: status || null });
+    },
+    [replaceParams],
+  );
+
   return {
     isTeacherMode,
     locale,
@@ -336,16 +365,18 @@ export function useDailyDutiesPage(mode: DailyDutiesMode) {
     stats,
     searchQuery,
     selectedTeacherId,
+    selectedStatus,
     teacherOptions,
     isLoadingTeachers,
     handleSearchChange,
     handleTeacherChange,
+    handleStatusChange,
     isLoading,
     isListLoading,
     lessons,
     listViewLessons,
+    filteredLessonsByDate,
     listReferenceDate,
-    lessonsByDate,
     sortBy,
     sortOrder,
     handleSort,

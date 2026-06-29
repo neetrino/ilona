@@ -221,3 +221,43 @@ export function buildCompletedActions(lesson: LessonDutyTimestamps): CompletedAc
     dailyPlan: Boolean(lesson.dailyPlan),
   };
 }
+
+export type DailyDutiesLessonStatus = 'DONE' | 'CAUTION' | 'IN_PROGRESS' | 'WAITING';
+
+export function isLessonPastEnd(
+  scheduledAt: Date,
+  durationMinutes: number,
+  now: Date = new Date(),
+): boolean {
+  const endMs = scheduledAt.getTime() + durationMinutes * 60 * 1000;
+  return endMs < now.getTime();
+}
+
+/**
+ * Lesson-level Daily Duties status for list/admin views.
+ * DONE = all 5 duties completed before deadline; CAUTION = missed/late duties;
+ * WAITING = lesson ended, deadline not passed; IN_PROGRESS = lesson not ended yet.
+ */
+export function computeDailyDutiesLessonStatus(
+  lesson: LessonDutyTimestamps & { duration: number },
+  now: Date = new Date(),
+): DailyDutiesLessonStatus {
+  if (!isLessonPastEnd(lesson.scheduledAt, lesson.duration, now)) {
+    return 'IN_PROGRESS';
+  }
+
+  const dutyStatuses = buildDutyActionStatuses(lesson, now);
+  const allOnTime = (Object.values(dutyStatuses) as DutyActionStatus[]).every(
+    (s) => s.paymentEligible,
+  );
+
+  if (allOnTime) {
+    return 'DONE';
+  }
+
+  if (!isDutyDeadlinePassed(lesson.scheduledAt, now)) {
+    return 'WAITING';
+  }
+
+  return 'CAUTION';
+}

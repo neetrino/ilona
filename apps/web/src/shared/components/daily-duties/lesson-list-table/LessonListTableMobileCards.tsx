@@ -2,7 +2,7 @@ import { RefObject } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { Button } from '@/shared/components/ui/button';
 import { Checkbox } from '@/shared/components/ui/checkbox';
-import { Badge } from '@/shared/components/ui/badge';
+import { DailyDutiesLessonStatusUnderName } from '@/shared/lib/daily-duties/DailyDutiesLessonStatusBadge';
 import { ChevronLeft, ChevronRight, User } from 'lucide-react';
 import Image from 'next/image';
 import { cn } from '@/shared/lib/utils';
@@ -133,19 +133,7 @@ export function LessonListTableMobileCards({
                     <p className="text-[1.2rem] leading-tight font-semibold whitespace-normal break-words text-[#111827]">
                       {lesson.group?.name || tCal('unknownGroupName')}
                     </p>
-                    {lesson.completionStatus === 'DONE' ? (
-                      <div className="mt-1">
-                        <Badge variant="success" className="border-green-200 bg-green-100 text-green-700">
-                          {tCal('completed')}
-                        </Badge>
-                      </div>
-                    ) : lesson.completionStatus === 'IN_PROCESS' ? (
-                      <div className="mt-1">
-                        <Badge variant="warning" className="border-yellow-200 bg-yellow-100 text-yellow-700">
-                          {tCal('statusInProcess')}
-                        </Badge>
-                      </div>
-                    ) : null}
+                    <DailyDutiesLessonStatusUnderName lesson={lesson} />
                     <div className="mt-5 -ml-[31px] grid grid-cols-2 items-stretch gap-3">
                       <div className="flex items-start gap-2 justify-self-start">
                         <svg

@@ -1,6 +1,8 @@
 export type LessonStatus = 'SCHEDULED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED' | 'MISSED';
 export type CompletionStatus = 'DONE' | 'IN_PROCESS' | null;
 
+export type DailyDutiesLessonStatus = 'DONE' | 'CAUTION' | 'IN_PROGRESS' | 'WAITING';
+
 export interface DutyActionStatusDto {
   completed: boolean;
   paymentEligible: boolean;
@@ -43,6 +45,7 @@ export interface Lesson {
   // Computed fields from backend
   isLockedForTeacher?: boolean;
   completionStatus?: CompletionStatus;
+  dailyDutiesStatus?: DailyDutiesLessonStatus;
   // Action lock states (for red X indicators)
   isAbsenceLocked?: boolean;
   isFeedbackLocked?: boolean;

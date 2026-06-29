@@ -2307,6 +2307,13 @@
     },
     "searchLessonsPlaceholder": "Search lessons by keyword, group, or teacher...",
     "allTeachers": "All teachers",
+    "allStatuses": "All statuses",
+    "lessonStatus": {
+      "done": "Done",
+      "caution": "Caution",
+      "inProgress": "In Progress",
+      "waiting": "Waiting"
+    },
     "substituteTeacher": "Substitute teacher",
     "substituteTeacherLesson": "Substitute teacher (this lesson)",
     "substituteForClassOnly": "Substitute for this class only",
