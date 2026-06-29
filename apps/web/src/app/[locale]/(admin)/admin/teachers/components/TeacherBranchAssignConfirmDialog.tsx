@@ -69,19 +69,13 @@ function resolveDisplayBranches(
   }
 
   const ids = state.selectAllIds ?? [];
-  return ids
-    .map((id) => {
-      const option = optionById.get(id);
-      if (!option) {
-        return null;
-      }
-      return {
-        id,
-        name: option.label,
-        colorHex: option.colorHex,
-      };
-    })
-    .filter((branch): branch is DisplayBranch => branch !== null);
+  return ids.flatMap((id): DisplayBranch[] => {
+    const option = optionById.get(id);
+    if (!option) {
+      return [];
+    }
+    return [{ id, name: option.label, colorHex: option.colorHex }];
+  });
 }
 
 function BranchConfirmChip({ name, colorHex }: { name: string; colorHex?: string | null }) {
