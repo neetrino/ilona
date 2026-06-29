@@ -2,12 +2,12 @@
 
 import { useTranslations } from 'next-intl';
 import { Button } from '@/shared/components/ui/button';
+import { SegmentedControl } from '@/shared/components/ui';
 import { Avatar } from '@/shared/components/ui/avatar';
 import { MultiSelectChipsDropdown } from '@/shared/components/ui/multi-select-chips-dropdown';
-import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
+import { GROUP_LEVEL_SEGMENT_OPTIONS } from '@/features/groups/lib/group-level-options';
 import { cn } from '@/shared/lib/utils';
 import {
-  LEVEL_OPTIONS,
   PARTICIPATION_OPTIONS,
   type StructuredFeedbackFields,
 } from '../lesson-feedback-form-utils';
@@ -27,6 +27,7 @@ interface FeedbacksTabStudentCardProps {
   ) => void;
   onToggleParticipation: () => void;
   onSave: () => void;
+  hideStudentHeader?: boolean;
 }
 
 export function FeedbacksTabStudentCard({
@@ -40,6 +41,7 @@ export function FeedbacksTabStudentCard({
   onUpdateStructured,
   onToggleParticipation,
   onSave,
+  hideStudentHeader = false,
 }: FeedbacksTabStudentCardProps) {
   const t = useTranslations('dailyDuties.feedback');
   const tCommon = useTranslations('common');
@@ -50,7 +52,8 @@ export function FeedbacksTabStudentCard({
   const showSkillsCommentArea = structured.speaking || structured.writing;
 
   return (
-    <div className="space-y-5 rounded-[15px] border border-slate-200/90 bg-white p-5 shadow-sm sm:space-y-6 sm:p-8">
+    <div className="space-y-5 rounded-[15px] border border-slate-200/90 bg-white p-5 shadow-sm sm:space-y-6 sm:p-8 lg:border-0 lg:shadow-none lg:p-6">
+      {!hideStudentHeader && (
       <div className="flex items-center gap-4">
         <div className="relative shrink-0">
           {student.user.avatarUrl ? (
@@ -82,21 +85,22 @@ export function FeedbacksTabStudentCard({
           )}
         </div>
       </div>
+      )}
 
-      <div className="grid grid-cols-1 gap-5 md:grid-cols-2 md:gap-6 lg:gap-8">
-        <div className="space-y-2">
+      <div className="grid grid-cols-1 gap-5 md:grid-cols-3 md:gap-6 lg:gap-8">
+        <div className="min-w-0 space-y-2">
           <label className="block text-sm font-bold text-slate-900">{t('levelLabel')}</label>
-          <SingleSelectDropdown
-            options={LEVEL_OPTIONS.map((level) => ({ id: level, label: level }))}
-            value={structured.level || null}
-            onValueChange={(next) => {
-              onUpdateStructured((current) => ({ ...current, level: next ?? '' }));
+          <SegmentedControl
+            options={GROUP_LEVEL_SEGMENT_OPTIONS}
+            value={structured.level}
+            onChange={(nextValue) => {
+              onUpdateStructured((current) => ({ ...current, level: nextValue }));
             }}
-            placeholder={t('select')}
+            aria-label={t('levelLabel')}
           />
         </div>
 
-        <div className="space-y-2 md:min-w-0">
+        <div className="min-w-0 space-y-2">
           <label className="block text-sm font-bold text-slate-900">{t('grammarLabel')}</label>
           <MultiSelectChipsDropdown
             options={grammarOptions}
@@ -118,10 +122,8 @@ export function FeedbacksTabStudentCard({
             )}
           />
         </div>
-      </div>
 
-      <div className="grid grid-cols-1 gap-5 md:grid-cols-2 md:gap-6 lg:gap-8">
-        <div className="space-y-3">
+        <div className="min-w-0 space-y-3">
           <label className="block text-sm font-bold text-slate-900">{t('skillsLabel')}</label>
           <div className="flex flex-wrap gap-5 text-sm text-slate-800">
             <button
@@ -173,12 +175,12 @@ export function FeedbacksTabStudentCard({
               placeholder={t('skillsCommentOptional')}
               className={cn(FEEDBACK_FIELD_SHELL_CLASS, 'min-h-[100px] resize-y')}
             />
-          ) : (
-            <p className="text-xs text-slate-500">{t('skillsCommentExpandHint')}</p>
-          )}
+          ) : null}
         </div>
+      </div>
 
-        <div className="space-y-2">
+      <div className="grid grid-cols-1 gap-5 md:grid-cols-2 md:gap-6 lg:gap-8">
+        <div className="min-w-0 space-y-2">
           <label className="block text-sm font-bold text-slate-900">{t('commentLabel')}</label>
           <textarea
             rows={4}
@@ -190,66 +192,66 @@ export function FeedbacksTabStudentCard({
             className={cn(FEEDBACK_FIELD_SHELL_CLASS, 'min-h-[100px] resize-y')}
           />
         </div>
-      </div>
 
-      <div className="space-y-3">
-        <button
-          type="button"
-          className="flex w-full items-center justify-between gap-3 rounded-[15px] border border-transparent px-1 py-1.5 text-left transition-colors hover:border-slate-200 hover:bg-slate-50/80 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1010a3]/40 focus-visible:ring-offset-2"
-          aria-expanded={participationOpen}
-          aria-controls={`participation-options-${student.id}`}
-          id={`participation-trigger-${student.id}`}
-          onClick={onToggleParticipation}
-        >
-          <span className="flex items-center gap-2">
-            <FeedbacksTabParticipationTickBox checked={participationOpen} />
-            <span className="text-sm font-bold text-slate-900">{t('participation')}</span>
-          </span>
-          <svg
-            className={cn(
-              'h-5 w-5 shrink-0 text-slate-500 transition-transform',
-              participationOpen && 'rotate-180',
-            )}
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            aria-hidden
+        <div className="min-w-0 space-y-3">
+          <button
+            type="button"
+            className="flex w-full items-center justify-between gap-3 rounded-[15px] border border-transparent px-1 py-1.5 text-left transition-colors hover:border-slate-200 hover:bg-slate-50/80 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1010a3]/40 focus-visible:ring-offset-2"
+            aria-expanded={participationOpen}
+            aria-controls={`participation-options-${student.id}`}
+            id={`participation-trigger-${student.id}`}
+            onClick={onToggleParticipation}
           >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-          </svg>
-        </button>
-        {participationOpen ? (
-          <div
-            id={`participation-options-${student.id}`}
-            role="group"
-            aria-labelledby={`participation-trigger-${student.id}`}
-            className="flex flex-wrap gap-2 pt-1"
-          >
-            {PARTICIPATION_OPTIONS.map((option) => {
-              const selected = structured.participation === option;
-              return (
-                <button
-                  key={option}
-                  type="button"
-                  onClick={() => {
-                    onUpdateStructured((current) => ({
-                      ...current,
-                      participation: selected ? null : option,
-                    }));
-                  }}
-                  className={cn(
-                    'rounded-[15px] border px-3.5 py-2 text-sm font-medium transition-colors',
-                    selected
-                      ? 'border-emerald-500 bg-emerald-50 text-emerald-900'
-                      : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50',
-                  )}
-                >
-                  {option}
-                </button>
-              );
-            })}
-          </div>
-        ) : null}
+            <span className="flex items-center gap-2">
+              <FeedbacksTabParticipationTickBox checked={participationOpen} />
+              <span className="text-sm font-bold text-slate-900">{t('participation')}</span>
+            </span>
+            <svg
+              className={cn(
+                'h-5 w-5 shrink-0 text-slate-500 transition-transform',
+                participationOpen && 'rotate-180',
+              )}
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              aria-hidden
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+          {participationOpen ? (
+            <div
+              id={`participation-options-${student.id}`}
+              role="group"
+              aria-labelledby={`participation-trigger-${student.id}`}
+              className="flex flex-wrap gap-2 pt-1"
+            >
+              {PARTICIPATION_OPTIONS.map((option) => {
+                const selected = structured.participation === option;
+                return (
+                  <button
+                    key={option}
+                    type="button"
+                    onClick={() => {
+                      onUpdateStructured((current) => ({
+                        ...current,
+                        participation: selected ? null : option,
+                      }));
+                    }}
+                    className={cn(
+                      'rounded-[15px] border px-3.5 py-2 text-sm font-medium transition-colors',
+                      selected
+                        ? 'border-emerald-500 bg-emerald-50 text-emerald-900'
+                        : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50',
+                    )}
+                  >
+                    {option}
+                  </button>
+                );
+              })}
+            </div>
+          ) : null}
+        </div>
       </div>
 
       <div className="grid grid-cols-1 gap-5 md:grid-cols-2 md:gap-6 lg:gap-8">

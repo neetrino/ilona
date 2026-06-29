@@ -1,5 +1,6 @@
 'use client';
 
+import type { ReactNode } from 'react';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import {
@@ -32,6 +33,8 @@ interface LessonDetailTabsProps {
   showRequiredActions?: boolean;
   /** fill: tab body scrolls inside fixed height; flow: content grows for outer scroll */
   layout?: 'fill' | 'flow';
+  /** e.g. admin ⋮ menu beside the checklist heading */
+  checklistMenu?: ReactNode;
   children: {
     absence?: React.ReactNode;
     feedback?: React.ReactNode;
@@ -108,6 +111,7 @@ export function LessonDetailTabs({
   onTabChange,
   showRequiredActions = true,
   layout = 'fill',
+  checklistMenu,
   children,
 }: LessonDetailTabsProps) {
   const t = useTranslations('dailyDuties');
@@ -181,7 +185,12 @@ export function LessonDetailTabs({
           </div>
         )}
 
-        <p className="mb-2 text-xs font-medium uppercase tracking-wide text-slate-500">{t('lessonActions.checklistHeading')}</p>
+        <div className="mb-2 flex items-center justify-between gap-2">
+          <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
+            {t('lessonActions.checklistHeading')}
+          </p>
+          {checklistMenu}
+        </div>
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5 lg:gap-2.5">
           {tabs.map((tab) => {
             const action = actions.find((x) => x.id === tab)!;
@@ -238,7 +247,14 @@ export function LessonDetailTabs({
         </div>
       </div>
 
-      <div className={cn(layout === 'fill' && 'min-h-0 flex-1 overflow-y-auto')}>
+      <div
+        className={cn(
+          layout === 'fill' && 'min-h-0 flex-1',
+          layout === 'fill' && activeTab === 'feedback'
+            ? 'flex flex-col overflow-hidden'
+            : layout === 'fill' && 'overflow-y-auto',
+        )}
+      >
         {activeTab === 'absence' && children.absence}
         {activeTab === 'feedback' && children.feedback}
         {activeTab === 'voice' && children.voice}

@@ -97,6 +97,15 @@ export function AdminLessonDetailPanel({
             onTabChange={handleTabChange}
             showRequiredActions={false}
             layout={variant === 'sheet' ? 'flow' : 'fill'}
+            checklistMenu={
+              showAdminActions ? (
+                <AdminLessonActions
+                  lessonId={lessonId}
+                  teacherOptions={teacherOptions}
+                  onDeleted={onDeleted}
+                />
+              ) : null
+            }
           >
             {{
               absence: <AbsenceTab lessonId={lessonId} />,
@@ -107,14 +116,6 @@ export function AdminLessonDetailPanel({
             }}
           </LessonDetailTabs>
         </div>
-        {variant === 'page' && showAdminActions ? (
-          <AdminLessonActions
-            lessonId={lessonId}
-            teacherOptions={teacherOptions}
-            onDeleted={onDeleted}
-            variant="footer"
-          />
-        ) : null}
       </div>
     </>
   );

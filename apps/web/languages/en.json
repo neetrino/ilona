@@ -2412,6 +2412,8 @@
       "lessonNotFound": "Lesson not found",
       "noStudentsInLesson": "No students in this lesson's group",
       "feedbackProvided": "Feedback provided",
+      "notProvidedYet": "Not yet provided",
+      "studentsListAria": "Students in this lesson",
       "editFeedback": "Update Feedback",
       "errorSavingFeedback": "Failed to save feedback. Please try again.",
       "skillsCommentExpandHint": "Click “speaking” or “writing” to open the skills comment field."

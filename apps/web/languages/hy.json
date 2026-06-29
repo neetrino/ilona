@@ -2412,6 +2412,8 @@
       "lessonNotFound": "Դասը չի գտնվել",
       "noStudentsInLesson": "Այս դասի խմբում աշակերտներ չկան",
       "feedbackProvided": "Արձագանք տրամադրված է",
+      "notProvidedYet": "Դեռ չի տրամադրվել",
+      "studentsListAria": "Այս դասի աշակերտներ",
       "editFeedback": "Թարմացնել արձագանքը",
       "errorSavingFeedback": "Չհաջողվեց պահպանել արձագանքը։ Խնդրում ենք կրկին փորձել։",
       "skillsCommentExpandHint": "Սեղմիր «խոսք» կամ «գրել»-ի վրա՝ մեկնաբանության դաշտը բացելու համար։"
