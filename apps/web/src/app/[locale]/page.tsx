@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import Link from 'next/link';
@@ -30,7 +30,6 @@ const WHY_TEACHERS_IMAGE = LANDING_ASSETS.whyTeachers;
 const WHY_SCHEDULE_IMAGE = LANDING_ASSETS.whySchedule;
 const STUDENT_SUCCESS_IMAGE = LANDING_ASSETS.studentSuccess;
 const REGISTER_ARROW_IMAGE = LANDING_ASSETS.registerArrow;
-const REGISTER_SUBMIT_ICON = LANDING_ASSETS.registerSubmitIcon;
 const BRANCH_CLASSROOM_IMAGE = '/branch-classroom-main.webp';
 const BRANCH_SIDE_IMAGE = BRANCH_CLASSROOM_IMAGE;
 const BRANCH_CENTER_IMAGE = BRANCH_CLASSROOM_IMAGE;
@@ -80,28 +79,6 @@ const FAQ_ITEMS_HY = [
   'Ի՞նչ անել, եթե բաց թողնեմ դասը։',
   'Կա՞ն արդյոք զեղչեր։',
   'Ինչպե՞ս կարող եմ հետևել իմ առաջընթացին։',
-] as const;
-const REGISTER_BRANCH_OPTIONS = [
-  { value: 'Andranik 131/8', labelEn: 'Andranik 131/8', labelHy: 'Անդրանիկի 131/8' },
-  { value: 'Andranik 40', labelEn: 'Andranik 40', labelHy: 'Անդրանիկի 40' },
-  { value: 'Ervand Qochar 23/2', labelEn: 'Ervand Qochar 23/2', labelHy: 'Երվանդ Քոչարի 23/2' },
-  {
-    value: 'Hanrapetutyan 67/3',
-    labelEn: 'Hanrapetutyan 67/3',
-    labelHy: 'Հանրապետության 67/3',
-  },
-] as const;
-const REGISTER_BRANCH_COMPACT_MOBILE_HY = new Set(['Hanrapetutyan 67/3']);
-const ENGLISH_LEVEL_OPTIONS = [
-  { value: 'Beginner', labelEn: 'Beginner', labelHy: 'Սկսնակ' },
-  { value: 'Elementary', labelEn: 'Elementary', labelHy: 'Տարրական' },
-  { value: 'Intermediate', labelEn: 'Intermediate', labelHy: 'Միջին' },
-  {
-    value: 'Upper-Intermediate',
-    labelEn: 'Upper-Intermediate',
-    labelHy: 'Միջինից բարձր',
-  },
-  { value: 'Advanced', labelEn: 'Advanced', labelHy: 'Բարձր' },
 ] as const;
 const BRANCH_CAROUSEL_ITEMS = [
   {
@@ -162,11 +139,6 @@ export default function HomePage() {
   const [branchSlideDirection, setBranchSlideDirection] = useState(1);
   const [hasBranchInteracted, setHasBranchInteracted] = useState(false);
   const [activeProgramIndex, setActiveProgramIndex] = useState(0);
-  const [englishLevel, setEnglishLevel] = useState<string>('');
-  const [isEnglishLevelOpen, setIsEnglishLevelOpen] = useState(false);
-  const [preferredBranch, setPreferredBranch] = useState<string>('');
-  const englishLevelDropdownRef = useRef<HTMLDivElement | null>(null);
-  const prefersHoverRef = useRef(false);
   const faqItems = isHy ? FAQ_ITEMS_HY : FAQ_ITEMS_EN;
   const heroIntroVisibilityClass = 'opacity-100';
   const whyChooseMobileIconBase = 'absolute -left-[10px] -top-[10px] object-contain';
@@ -217,26 +189,6 @@ export default function HomePage() {
       router.replace(dashboardPath);
     }
   }, [isAuthenticated, isHydrated, user, router]);
-
-  useEffect(() => {
-    prefersHoverRef.current = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
-  }, []);
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        englishLevelDropdownRef.current &&
-        !englishLevelDropdownRef.current.contains(event.target as Node)
-      ) {
-        setIsEnglishLevelOpen(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, []);
 
   useEffect(() => {
     const storageKey = `scroll-position:${pathname}`;
@@ -1280,196 +1232,6 @@ export default function HomePage() {
           >
             {tr('More', 'Ավելին')}
           </button>
-        </div>
-      </section>
-
-      {/* Register Now — mobile Figma 1:1107, desktop Figma 1:416 */}
-      <section className="bg-[#dde7ff] pb-10 pt-10 tablet:pb-20 tablet:pt-20">
-        <div className="mx-auto flex w-full flex-col items-center gap-6 px-5 tablet:w-[720px] tablet:gap-12 tablet:px-0">
-          <div className="text-center">
-            <div className="inline-flex h-[30px] items-center rounded-full bg-[#093394] px-4 tablet:h-9 tablet:px-6">
-              <span className="text-[12px] font-bold leading-[18px] text-white tablet:text-[14px] tablet:leading-[20px] tablet:tracking-[-0.1504px]">
-                {tr('Start Today', 'Սկսիր այսօր')}
-              </span>
-            </div>
-            <h2 className="mt-3 text-[28px] font-extrabold leading-[42px] tracking-[0.35px] text-[#0a0a0a] tablet:mt-4 tablet:text-[48px] tablet:leading-[48px] tablet:tracking-[0.3516px]">
-              {tr('Register Now', 'Գրանցվել հիմա')}
-            </h2>
-            <p className="mt-2 text-[16px] leading-[24px] tracking-[-0.45px] text-[#4a5565] tablet:mt-4 tablet:text-[20px] tablet:leading-[28px] tablet:tracking-[-0.4492px]">
-              {tr('Begin your English journey', 'Սկսիր քո անգլերենի ճանապարհը')}
-            </p>
-          </div>
-
-          <div className="w-full rounded-[28px] bg-white p-5 tablet:rounded-[40px] tablet:px-8 tablet:pb-8 tablet:pt-8">
-            <div className="grid grid-cols-2 gap-x-3 gap-y-4 tablet:gap-x-6 tablet:gap-y-6">
-              <div>
-                <p className="mb-2 text-[13px] font-bold leading-[19.5px] tracking-[-0.15px] text-[#364153] tablet:text-[14px] tablet:leading-[20px] tablet:tracking-[-0.1504px]">
-                  {tr('First Name', 'Անուն')}
-                </p>
-                <input
-                  type="text"
-                  name="firstName"
-                  className="h-[50px] w-full rounded-[14px] border border-[#e5e7eb] px-4 text-[16px] leading-[24px] tracking-[-0.3125px] text-[#0a0a0a] outline-none transition-colors focus:border-[#093394] tablet:h-[60px] tablet:rounded-[16px] tablet:border-2"
-                />
-              </div>
-              <div>
-                <p className="mb-2 text-[13px] font-bold leading-[19.5px] tracking-[-0.15px] text-[#364153] tablet:text-[14px] tablet:leading-[20px] tablet:tracking-[-0.1504px]">
-                  {tr('Last Name', 'Ազգանուն')}
-                </p>
-                <input
-                  type="text"
-                  name="lastName"
-                  className="h-[50px] w-full rounded-[14px] border border-[#e5e7eb] px-4 text-[16px] leading-[24px] tracking-[-0.3125px] text-[#0a0a0a] outline-none transition-colors focus:border-[#093394] tablet:h-[60px] tablet:rounded-[16px] tablet:border-2"
-                />
-              </div>
-              <div>
-                <p className="mb-2 text-[13px] font-bold leading-[19.5px] tracking-[-0.15px] text-[#364153] tablet:text-[14px] tablet:leading-[20px] tablet:tracking-[-0.1504px]">
-                  {tr('Age', 'Տարիք')}
-                </p>
-                <input
-                  type="number"
-                  name="age"
-                  min={1}
-                  className="h-[50px] w-full rounded-[14px] border border-[#e5e7eb] px-4 text-[16px] leading-[24px] tracking-[-0.3125px] text-[#0a0a0a] outline-none transition-colors focus:border-[#093394] tablet:h-[60px] tablet:rounded-[16px] tablet:border-2"
-                />
-              </div>
-              <div>
-                <p className="mb-2 text-[13px] font-bold leading-[19.5px] tracking-[-0.15px] text-[#364153] tablet:text-[14px] tablet:leading-[20px] tablet:tracking-[-0.1504px]">
-                  {tr('Phone', 'Հեռախոս')}
-                </p>
-                <input
-                  type="tel"
-                  name="phone"
-                  className="h-[50px] w-full rounded-[14px] border border-[#e5e7eb] px-4 text-[16px] leading-[24px] tracking-[-0.3125px] text-[#0a0a0a] outline-none transition-colors focus:border-[#093394] tablet:h-[60px] tablet:rounded-[16px] tablet:border-2"
-                />
-              </div>
-            </div>
-
-            <div className="mt-4 tablet:mt-6">
-              <p className="mb-2 text-[13px] font-bold leading-[19.5px] tracking-[-0.15px] text-[#364153] tablet:text-[14px] tablet:leading-[20px] tablet:tracking-[-0.1504px]">
-                {tr('English Level', 'Անգլերենի մակարդակ')}
-              </p>
-              <div
-                ref={englishLevelDropdownRef}
-                className="relative"
-                onMouseEnter={() => {
-                  if (prefersHoverRef.current) {
-                    setIsEnglishLevelOpen(true);
-                  }
-                }}
-                onMouseLeave={() => {
-                  if (prefersHoverRef.current) {
-                    setIsEnglishLevelOpen(false);
-                  }
-                }}
-              >
-                <button
-                  type="button"
-                  onClick={() => setIsEnglishLevelOpen((prev) => !prev)}
-                  className="relative h-[50px] w-full rounded-[14px] border border-[#e5e7eb] bg-white pl-4 pr-14 text-left text-[16px] leading-[24px] tracking-[-0.3125px] text-[#0a0a0a] outline-none transition-colors hover:border-[#c5d4ff] focus:border-[#093394] tablet:h-[57px] tablet:rounded-[16px] tablet:border-2"
-                >
-                  <span className={cn(englishLevel ? 'text-[#0a0a0a]' : 'text-[#6b7280]')}>
-                    {englishLevel ||
-                      tr('Select level', 'Ընտրել մակարդակը')}
-                  </span>
-                  <span className="pointer-events-none absolute right-5 top-1/2 -translate-y-1/2 text-[#6b7280]">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="16"
-                      height="16"
-                      viewBox="0 0 16 16"
-                      fill="none"
-                      className={cn('transition-transform', isEnglishLevelOpen ? 'rotate-180' : '')}
-                    >
-                      <path
-                        d="M4 6L8 10L12 6"
-                        stroke="currentColor"
-                        strokeWidth="1.5"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                  </span>
-                </button>
-
-                {isEnglishLevelOpen ? (
-                  <div className="absolute left-0 top-full z-20 w-full overflow-hidden rounded-[14px] border border-[#dbe5ff] bg-white p-1 shadow-[0px_12px_30px_rgba(9,51,148,0.12)]">
-                    {ENGLISH_LEVEL_OPTIONS.map((levelOption) => {
-                      const isSelected = englishLevel === levelOption.value;
-
-                      return (
-                        <button
-                          key={levelOption.value}
-                          type="button"
-                          onClick={() => {
-                            setEnglishLevel(levelOption.value);
-                            setIsEnglishLevelOpen(false);
-                          }}
-                          className={cn(
-                            'flex h-11 w-full items-center rounded-[10px] px-3 text-left text-[15px] leading-[22px] transition-colors',
-                            isSelected
-                              ? 'bg-[#edf3ff] font-semibold text-[#093394]'
-                              : 'text-[#111827] hover:bg-[#f4f7ff]',
-                          )}
-                        >
-                          {isHy ? levelOption.labelHy : levelOption.labelEn}
-                        </button>
-                      );
-                    })}
-                  </div>
-                ) : null}
-              </div>
-            </div>
-
-            <div className="mt-4 tablet:mt-6">
-              <p className="mb-2 text-[13px] font-bold leading-[19.5px] tracking-[-0.15px] text-[#364153] tablet:mb-3 tablet:text-[14px] tablet:leading-[20px] tablet:tracking-[-0.1504px]">
-                {tr('Preferred Branch', 'Նախընտրելի մասնաճյուղ')}
-              </p>
-              <div className="grid grid-cols-2 gap-2.5 tablet:gap-3">
-                {REGISTER_BRANCH_OPTIONS.map((branchOption) => {
-                  const isSelected = preferredBranch === branchOption.value;
-
-                  return (
-                    <button
-                      key={branchOption.value}
-                      type="button"
-                      onClick={() => setPreferredBranch(branchOption.value)}
-                      className={cn(
-                        'flex h-[56px] items-center justify-center rounded-[16px] border-2 px-4 font-semibold tracking-[-0.3125px]',
-                        BUTTON_HOVER_CLASS,
-                        REGISTER_BRANCH_COMPACT_MOBILE_HY.has(branchOption.value) && isHy
-                          ? 'text-[16px] leading-[24px] max-tablet:px-2 max-tablet:text-[13px] max-tablet:leading-[18px]'
-                          : 'text-[16px] leading-[24px]',
-                        isSelected
-                          ? 'border-[#093394] bg-white text-[#093394]'
-                          : 'border-[#e5e7eb] bg-white text-[#0a0a0a]',
-                      )}
-                    >
-                      {isHy ? branchOption.labelHy : branchOption.labelEn}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            <button
-              type="button"
-              className={cn(
-                'mt-4 flex h-[56px] w-full items-center justify-center gap-2 rounded-[44px] bg-[#093394] text-[16px] font-bold leading-[24px] text-white tablet:mt-6 tablet:h-[68px] tablet:rounded-[56px] tablet:text-[18px] tablet:leading-[28px] tablet:tracking-[-0.4395px]',
-                BUTTON_HOVER_CLASS,
-              )}
-            >
-              <span>{tr('Submit Registration', 'Ուղարկել գրանցումը')}</span>
-              <Image
-                src={REGISTER_SUBMIT_ICON}
-                alt=""
-                width={16}
-                height={16}
-                unoptimized
-                className="h-4 w-4 object-contain tablet:h-5 tablet:w-5"
-              />
-            </button>
-          </div>
         </div>
       </section>
 
