@@ -1,0 +1,40 @@
+'use client';
+
+import { useEffect, useRef } from 'react';
+
+interface SelectAllCheckboxProps {
+  checked: boolean;
+  indeterminate: boolean;
+  onChange: () => void;
+  disabled?: boolean;
+  ariaLabel: string;
+}
+
+export function SelectAllCheckbox({
+  checked,
+  indeterminate,
+  onChange,
+  disabled,
+  ariaLabel,
+}: SelectAllCheckboxProps) {
+  const checkboxRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (checkboxRef.current) {
+      checkboxRef.current.indeterminate = indeterminate;
+    }
+  }, [indeterminate]);
+
+  return (
+    <input
+      ref={checkboxRef}
+      type="checkbox"
+      className="w-4 h-4 rounded border-[rgba(14,14,16,0.12)] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+      checked={checked}
+      onChange={onChange}
+      onClick={(e) => e.stopPropagation()}
+      disabled={disabled}
+      aria-label={ariaLabel}
+    />
+  );
+}
