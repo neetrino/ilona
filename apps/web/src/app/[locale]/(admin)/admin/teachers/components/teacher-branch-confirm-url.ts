@@ -100,9 +100,24 @@ export function parseBranchConfirmFromUrl(args: {
   }
 
   if (action === 'clear') {
+    const selectAllIds = (branchIdsCsv ?? '')
+      .split(',')
+      .map((id) => id.trim())
+      .filter(Boolean);
+    if (selectAllIds.length === 0) {
+      return {
+        variant: 'clear',
+        teacherName,
+      };
+    }
+    const branchNames = selectAllIds
+      .map((id) => optionById.get(id)?.label)
+      .filter((name): name is string => Boolean(name));
     return {
       variant: 'clear',
       teacherName,
+      selectAllIds,
+      branchNames,
     };
   }
 

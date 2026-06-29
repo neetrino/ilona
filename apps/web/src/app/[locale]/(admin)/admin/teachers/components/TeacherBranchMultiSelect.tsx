@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslations } from 'next-intl';
-import { cn } from '@/shared/lib/utils';
+import { cn, getContrastColor, lightenColor } from '@/shared/lib/utils';
 import { getErrorMessage } from '@/shared/lib/api';
 import { Checkbox } from '@/shared/components/ui/checkbox';
 import {
@@ -22,10 +22,9 @@ interface TeacherBranchMultiSelectProps {
   teacherId: string;
   teacherName: string;
   value: string[];
-  options: Array<{ id: string; label: string }>;
+  options: Array<{ id: string; label: string; colorHex?: string | null }>;
   onChange: (centerIds: string[]) => Promise<void>;
   placeholder?: string;
-  searchPlaceholder?: string;
   disabled?: boolean;
   className?: string;
 }
@@ -49,7 +48,6 @@ export function TeacherBranchMultiSelect({
   options,
   onChange,
   placeholder = 'Assign branch…',
-  searchPlaceholder = 'Search…',
   disabled = false,
   className,
 }: TeacherBranchMultiSelectProps) {
@@ -77,10 +75,8 @@ export function TeacherBranchMultiSelect({
     setDraftIds,
     onConfirmOpen: openForConfirm,
   });
-  const [searchQuery, setSearchQuery] = useState('');
   const buttonRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
-  const searchInputRef = useRef<HTMLInputElement>(null);
   const draftIdsRef = useRef(draftIds);
   const localValueRef = useRef(localValue);
   const [position, setPosition] = useState<{
@@ -104,7 +100,6 @@ export function TeacherBranchMultiSelect({
 
   const closeDropdown = useCallback(async () => {
     setIsOpen(false);
-    setSearchQuery('');
 
     const draft = draftIdsRef.current;
     const committed = new Set(localValueRef.current);
@@ -141,14 +136,6 @@ export function TeacherBranchMultiSelect({
     }
   }, [isOpen]);
 
-  const filteredOptions = useMemo(() => {
-    const query = searchQuery.trim().toLowerCase();
-    if (!query) {
-      return options;
-    }
-    return options.filter((option) => option.label.toLowerCase().includes(query));
-  }, [options, searchQuery]);
-
   useEffect(() => {
     if (!isOpen || !buttonRef.current) {
       setPosition(null);
@@ -169,10 +156,10 @@ export function TeacherBranchMultiSelect({
       const scrollY = window.scrollY;
       const scrollX = window.scrollX;
       const viewportWidth = window.innerWidth;
-      const optionCount = filteredOptions.length === 0 ? 1 : filteredOptions.length;
+      const optionCount = options.length === 0 ? 1 : options.length;
       const menuHeight =
         menuRef.current?.offsetHeight ??
-        120 + optionCount * 42;
+        80 + optionCount * 42;
       const spaceBelow = window.innerHeight - buttonRect.bottom;
       const spaceAbove = buttonRect.top;
       const openBelow = spaceBelow >= menuHeight || spaceBelow >= spaceAbove;
@@ -204,10 +191,6 @@ export function TeacherBranchMultiSelect({
     window.addEventListener('scroll', updatePosition, true);
     window.addEventListener('resize', updatePosition);
 
-    const timeoutId = setTimeout(() => {
-      searchInputRef.current?.focus();
-    }, 0);
-
     function handleClickOutside(event: Event) {
       if (
         buttonRef.current?.contains(event.target as Node) ||
@@ -232,7 +215,6 @@ export function TeacherBranchMultiSelect({
       cancelAnimationFrame(rafId);
       window.removeEventListener('scroll', updatePosition, true);
       window.removeEventListener('resize', updatePosition);
-      clearTimeout(timeoutId);
       clearTimeout(listenerDelay);
       if (supportsPointer) {
         document.removeEventListener('pointerdown', handleClickOutside);
@@ -241,14 +223,14 @@ export function TeacherBranchMultiSelect({
         document.removeEventListener('touchstart', handleClickOutside);
       }
     };
-  }, [isOpen, confirmState, closeDropdown, filteredOptions.length]);
+  }, [isOpen, confirmState, closeDropdown, options.length]);
 
   const displayIds = isOpen ? draftIds : new Set(localValue);
   const selectedChips = useMemo(
     () =>
       Array.from(displayIds)
         .map((id) => optionById.get(id))
-        .filter((option): option is { id: string; label: string } => Boolean(option))
+        .filter((option): option is { id: string; label: string; colorHex?: string | null } => Boolean(option))
         .sort((a, b) => a.label.localeCompare(b.label)),
     [displayIds, optionById],
   );
@@ -278,27 +260,15 @@ export function TeacherBranchMultiSelect({
               width: `${Math.max(position.width, 220)}px`,
             }}
           >
-            <div className="border-b border-slate-200 p-2">
-              <input
-                ref={searchInputRef}
-                type="text"
-                placeholder={searchPlaceholder}
-                value={searchQuery}
-                onChange={(event) => setSearchQuery(event.target.value)}
-                onClick={(event) => event.stopPropagation()}
-                onPointerDown={(event) => event.stopPropagation()}
-                className="w-full rounded-lg border border-slate-200 px-3 py-1.5 text-sm focus:border-[#1010a3]/45 focus:outline-none focus:ring-4 focus:ring-[#1010a3]/10"
-              />
-            </div>
             <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50 px-3 py-2">
               <button
                 type="button"
                 onClick={(event) => {
                   event.stopPropagation();
-                  requestSelectAllVisible(filteredOptions);
+                  requestSelectAllVisible(options);
                 }}
                 className="text-xs font-medium text-[#1010a3] transition-colors hover:text-[#0d0d85]"
-                disabled={filteredOptions.every((option) => draftIds.has(option.id))}
+                disabled={options.every((option) => draftIds.has(option.id))}
               >
                 Select all (visible)
               </button>
@@ -315,11 +285,11 @@ export function TeacherBranchMultiSelect({
               </button>
             </div>
             <div>
-              {filteredOptions.length === 0 ? (
+              {options.length === 0 ? (
                 <div className="p-3 text-sm text-slate-500">{tCommon('globalSearchEmpty')}</div>
               ) : (
                 <div className="space-y-1 px-1 py-1">
-                  {filteredOptions.map((option) => {
+                  {options.map((option) => {
                     const isSelected = draftIds.has(option.id);
                     return (
                       <label
@@ -389,14 +359,27 @@ export function TeacherBranchMultiSelect({
             ) : selectedChips.length === 0 ? (
               <span className="px-1 py-1">{placeholder}</span>
             ) : (
-              selectedChips.map((option) => (
-                <span
-                  key={option.id}
-                  className="inline-flex max-w-full items-center rounded-md border border-slate-200/80 bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-800"
-                >
-                  <span className="truncate max-w-[120px]">{option.label}</span>
-                </span>
-              ))
+              selectedChips.map((option) => {
+                const primaryColor = option.colorHex || '#253046';
+                const softColor = lightenColor(primaryColor, 0.62);
+                const borderColor = lightenColor(primaryColor, 0.35);
+                const textColor =
+                  getContrastColor(primaryColor) === 'white' ? '#1e293b' : '#334155';
+
+                return (
+                  <span
+                    key={option.id}
+                    className="inline-flex max-w-full items-center rounded-xl px-2 py-0.5 text-[11px] font-semibold shadow-[0_1px_4px_rgba(15,23,42,0.05)]"
+                    style={{
+                      backgroundColor: softColor,
+                      color: textColor,
+                      border: `1px solid ${borderColor}`,
+                    }}
+                  >
+                    <span className="max-w-[120px] truncate">{option.label}</span>
+                  </span>
+                );
+              })
             )}
           </div>
           {!isLoading && (
@@ -418,6 +401,7 @@ export function TeacherBranchMultiSelect({
       ) : null}
       <TeacherBranchAssignConfirmDialog
         state={confirmState}
+        branchOptions={options}
         onOpenChange={(open) => {
           if (!open) {
             dismissConfirm();

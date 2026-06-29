@@ -19,7 +19,7 @@ interface TeachersTableColumnsProps {
   onView: (teacher: Teacher) => void;
   onCenterChange: (teacherId: string, centerIds: string[]) => Promise<void>;
   onOpenGroupsModal: (teacher: Teacher, tab: 'groups' | 'subgroups') => void;
-  centerOptions: Array<{ id: string; label: string }>;
+  centerOptions: Array<{ id: string; label: string; colorHex?: string | null }>;
   isDeleting: boolean;
   isUpdating: boolean;
   isLoading: boolean;
@@ -121,7 +121,6 @@ export function createTeachersTableColumns({
                 await onCenterChange(teacher.id, centerIds);
               }}
               placeholder={t('branchQuickAssign')}
-              searchPlaceholder={t('searchPlaceholder')}
               disabled={isUpdating || isDeleting || isLoading}
             />
           </div>

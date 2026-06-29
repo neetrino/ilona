@@ -122,11 +122,16 @@ export function useTeacherBranchConfirm({
       return;
     }
 
+    const assignedIds = [...draftIds];
     openConfirmState({
       variant: 'clear',
       teacherName,
+      selectAllIds: assignedIds,
+      branchNames: assignedIds
+        .map((id) => options.find((option) => option.id === id)?.label)
+        .filter((name): name is string => Boolean(name)),
     });
-  }, [draftIds.size, openConfirmState, teacherName]);
+  }, [draftIds, openConfirmState, options, teacherName]);
 
   const handleConfirm = useCallback(() => {
     if (!confirmState) {

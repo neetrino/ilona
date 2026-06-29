@@ -181,6 +181,7 @@ export default function TeachersPage() {
             centerOptions={(centersData?.items || []).map((center) => ({
               id: center.id,
               label: center.name,
+              colorHex: center.colorHex,
             }))}
             t={t}
             tStatus={tStatus}

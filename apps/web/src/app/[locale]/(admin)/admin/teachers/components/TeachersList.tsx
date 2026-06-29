@@ -37,7 +37,7 @@ interface TeachersListProps {
   totalTeachers: number;
   onPageChange: (page: number) => void;
   searchQuery: string;
-  centerOptions: Array<{ id: string; label: string }>;
+  centerOptions: Array<{ id: string; label: string; colorHex?: string | null }>;
   t: ReturnType<typeof useTranslations<'teachers'>>;
   tStatus: ReturnType<typeof useTranslations<'status'>>;
 }
