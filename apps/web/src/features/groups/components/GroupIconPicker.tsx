@@ -41,7 +41,6 @@ export function GroupIconPicker({
   const selectedDef = value ? GROUP_ICON_DEFINITIONS.find((def) => def.key === value) : null;
   const SelectedIcon = value ? getGroupIconComponent(value) : null;
   const previewLabel = selectedDef?.label ?? 'Default';
-  const tileRadiusClass = adminControls ? 'rounded-[15px]' : 'rounded-lg';
   const isDefaultSelected = !defaultSelectsRandom && value === null;
 
   useEffect(() => {
@@ -92,16 +91,11 @@ export function GroupIconPicker({
         className={cn(triggerClass, disabled && 'cursor-not-allowed opacity-50')}
       >
         <span className="flex min-w-0 items-center gap-2.5">
-          <span
-            className={cn(
-              'flex h-8 w-8 shrink-0 items-center justify-center border border-slate-200 bg-slate-50',
-              tileRadiusClass,
-            )}
-          >
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center">
             {SelectedIcon ? (
-              <SelectedIcon className="text-slate-700" size={16} strokeWidth={1.75} aria-hidden />
+              <SelectedIcon className="text-slate-700" size={18} strokeWidth={1.75} aria-hidden />
             ) : (
-              <span className="text-[10px] font-medium text-slate-500">Def</span>
+              <span className="text-xs font-medium text-slate-500">Default</span>
             )}
           </span>
           <span className="truncate text-sm text-[#3b3b40]">{previewLabel}</span>
@@ -116,7 +110,7 @@ export function GroupIconPicker({
         <div
           role="radiogroup"
           aria-labelledby={ariaLabelledBy}
-          className="grid max-h-48 grid-cols-5 gap-1.5 overflow-y-auto rounded-[15px] border border-slate-200 bg-slate-50/80 p-2 sm:grid-cols-6 md:grid-cols-8"
+          className="grid grid-cols-8 gap-1 rounded-[15px] border border-slate-200 bg-white p-2 sm:grid-cols-10 md:grid-cols-12"
         >
           <button
             type="button"
@@ -125,11 +119,8 @@ export function GroupIconPicker({
             disabled={disabled}
             onClick={handleDefaultClick}
             className={cn(
-              'flex aspect-square items-center justify-center border text-[10px] font-medium transition-colors focus:outline-none',
-              tileRadiusClass,
-              isDefaultSelected
-                ? 'border-2 border-primary bg-primary/10 text-primary'
-                : 'border border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-white',
+              'flex h-9 items-center justify-center text-[10px] font-medium transition-colors focus:outline-none',
+              isDefaultSelected ? 'text-primary' : 'text-slate-600 hover:text-primary',
               disabled && 'cursor-not-allowed opacity-50',
             )}
           >
@@ -149,11 +140,8 @@ export function GroupIconPicker({
                 disabled={disabled || !Icon}
                 onClick={() => selectIcon(def.key)}
                 className={cn(
-                  'flex aspect-square items-center justify-center border transition-colors focus:outline-none',
-                  tileRadiusClass,
-                  selected
-                    ? 'border-2 border-primary bg-primary/10'
-                    : 'border border-slate-200 bg-white hover:border-slate-300 hover:bg-white',
+                  'flex h-9 w-9 items-center justify-center transition-colors focus:outline-none',
+                  selected ? 'text-primary' : 'text-slate-700 hover:text-primary',
                   disabled && 'cursor-not-allowed opacity-50',
                 )}
               >
