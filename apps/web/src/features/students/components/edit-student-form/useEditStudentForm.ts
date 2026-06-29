@@ -10,12 +10,7 @@ import { useCenters } from '@/features/centers';
 import { useState, useEffect, useMemo, useRef, type TouchEvent } from 'react';
 import type { UserStatus } from '@/types';
 import { getErrorMessage } from '@/shared/lib/api';
-import {
-  portalSheetLayerProps,
-  stackedSheetDialogHandlers,
-  useSheetStackZIndex,
-  stackedSheetOverlayClassName,
-} from '@/shared/lib/sheet-stack';
+import { useSheetStackZIndex } from '@/shared/lib/sheet-stack';
 import {
   ensureCurrentGroupInList,
   filterAssignableGroupsByCenter,

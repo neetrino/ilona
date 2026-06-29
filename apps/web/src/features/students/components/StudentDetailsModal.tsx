@@ -28,7 +28,6 @@ export type { StudentDetailsModalProps } from './student-details-modal/student-d
 export function StudentDetailsModal(props: StudentDetailsModalProps) {
   const {
     studentId,
-    open,
     onClose,
     locale,
     onEdit,

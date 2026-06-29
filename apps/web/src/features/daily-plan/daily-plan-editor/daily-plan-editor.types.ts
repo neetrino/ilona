@@ -1,5 +1,4 @@
 import type { DailyPlan, DailyPlanResourceKind } from '../types';
-import { DAILY_PLAN_RESOURCE_KINDS } from './daily-plan-editor.constants';
 
 export interface DailyPlanEditorProps {
   mode: 'create' | 'edit';

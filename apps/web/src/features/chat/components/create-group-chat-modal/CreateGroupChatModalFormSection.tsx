@@ -1,7 +1,5 @@
 'use client';
 
-import Image from 'next/image';
-import { cn } from '@/shared/lib/utils';
 import { ADMIN_FORM_INPUT_CLASS, ADMIN_SEARCH_INPUT_CLASS } from '@/shared/lib/admin-control-theme';
 import { Input, Label } from '@/shared/components/ui';
 import type { CreateGroupChatModalViewModel } from './create-group-chat-modal.types';

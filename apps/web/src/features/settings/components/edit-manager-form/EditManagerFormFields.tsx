@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, Input, Label, SegmentedControl } from '@/shared/components/ui';
+import { Input, Label, SegmentedControl } from '@/shared/components/ui';
 import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
 import { ADMIN_FORM_INPUT_CLASS } from '@/shared/lib/admin-control-theme';
 import type { ManagerFormLike } from './edit-manager-form.types';

@@ -141,7 +141,7 @@ export function useTeacherChatList({ onSelectChat }: TeacherChatListProps): Teac
   );
 
   const handleGroupClick = useCallback(
-    async (groupId: string, chatId: string | null) => {
+    async (groupId: string, _chatId: string | null) => {
       try {
         const chat = await fetchGroupChat(groupId);
         onSelectChat(chat);

@@ -32,7 +32,6 @@ export function StudentAccountCrmEnrollmentSection(props: StudentAccountCrmEnrol
     handleCenterChange,
   } = props;
 
-  const t = useTranslations('students');
   const tForm = useTranslations('students.form');
   const tCrm = useTranslations('crm');
   const tCommon = useTranslations('common');

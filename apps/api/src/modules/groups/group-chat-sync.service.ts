@@ -45,7 +45,7 @@ export class GroupChatSyncService {
     const uniqueTeacherIds = [...new Set(teacherIds.filter(Boolean))] as string[];
     if (uniqueTeacherIds.length === 0) return;
 
-    let chat = await this.prisma.chat.findUnique({ where: { groupId } });
+    const chat = await this.prisma.chat.findUnique({ where: { groupId } });
     if (!chat) {
       await this.createGroupChat(groupId, groupName, uniqueTeacherIds);
       return;

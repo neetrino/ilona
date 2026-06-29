@@ -16,7 +16,7 @@ import {
   normalizeGroupSchedulePayload,
   scheduleSlotsValidationError,
 } from '../../group-schedule-utils';
-import { filterTeachersForCenter, teacherOptionLabel } from '../../lib/center-scoped-teachers';
+import { filterTeachersForCenter } from '../../lib/center-scoped-teachers';
 import { useSheetStackZIndex } from '@/shared/lib/sheet-stack';
 import { translateScheduleSlotError, REGENERATE_CONFIRM_MESSAGE } from './edit-group-form.constants';
 import type { EditGroupFormProps, UpdateGroupFormData } from './edit-group-form.types';

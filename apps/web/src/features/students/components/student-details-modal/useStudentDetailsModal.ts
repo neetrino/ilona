@@ -18,7 +18,6 @@ export function useStudentDetailsModal(props: StudentDetailsModalProps) {
     onDelete,
     onDeactivate,
     onFeedback,
-    actionsDisabled = false,
   } = props;
 
   const { user } = useAuthStore();

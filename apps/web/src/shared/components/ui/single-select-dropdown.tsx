@@ -12,10 +12,7 @@ import {
   SINGLE_SELECT_DROPDOWN_BACKDROP_ATTR,
   SINGLE_SELECT_DROPDOWN_MENU_ATTR,
 } from './single-select-dropdown/single-select-dropdown.constants';
-import type {
-  SingleSelectDropdownProps,
-  SingleSelectOption,
-} from './single-select-dropdown/single-select-dropdown.types';
+import type { SingleSelectDropdownProps } from './single-select-dropdown/single-select-dropdown.types';
 
 export type { SingleSelectOption } from './single-select-dropdown/single-select-dropdown.types';
 export {

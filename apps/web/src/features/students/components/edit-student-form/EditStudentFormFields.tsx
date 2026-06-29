@@ -12,7 +12,6 @@ import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropd
 import { DmyDateInput } from '@/shared/components/ui/dmy-date-input';
 import type { UserStatus } from '@/types';
 import { ADMIN_TEXTAREA_CLASS } from './edit-student-form.constants';
-import type { UpdateStudentFormData } from './edit-student-form.types';
 import type { useEditStudentForm } from './useEditStudentForm';
 
 type EditStudentFormFieldsProps = ReturnType<typeof useEditStudentForm>;
@@ -23,7 +22,6 @@ export function EditStudentFormFields(props: EditStudentFormFieldsProps) {
     tForm,
     tCommon,
     tSettings,
-    tStatus,
     successMessage,
     errorMessage,
     handleSubmit,
