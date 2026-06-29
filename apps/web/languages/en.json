@@ -1260,6 +1260,8 @@
     "errorSavingAttendance": "Error saving attendance",
     "markAllPresent": "Mark All Present",
     "editAttendance": "Edit Attendance",
+    "updateAttendanceHint": "Update attendance marks for students in this lesson",
+    "markAttendanceHint": "Mark attendance for all students in this lesson",
     "confirmSave": "Are you sure you want to save the attendance?",
     "students": "Students",
     "total": "Total",
