@@ -8,6 +8,8 @@ import { GroupsUniqueTotalStat } from './GroupsUniqueTotalStat';
 
 interface GroupsBranchTabsStripProps {
   centers: CenterWithCount[];
+  /** Unfiltered center count — distinguishes "no centers exist" from "search filtered all out". */
+  totalCentersCount?: number;
   activeCenterId: string | null;
   totalGroupsAcrossCenters: number;
   isLoading: boolean;
@@ -18,6 +20,7 @@ interface GroupsBranchTabsStripProps {
 
 export function GroupsBranchTabsStrip({
   centers,
+  totalCentersCount,
   activeCenterId,
   totalGroupsAcrossCenters,
   isLoading,
@@ -30,6 +33,10 @@ export function GroupsBranchTabsStrip({
   }
 
   if (centers.length === 0) {
+    const hasCenters = (totalCentersCount ?? 0) > 0;
+    if (hasCenters) {
+      return null;
+    }
     return <div className="py-4 text-sm text-[#8b8b90]">{t('noBranchesCreateCenter')}</div>;
   }
 

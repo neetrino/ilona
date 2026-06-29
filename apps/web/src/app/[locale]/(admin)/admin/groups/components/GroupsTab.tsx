@@ -232,12 +232,12 @@ export function GroupsTab({
   ]);
 
   const activeBranchTabId = selectedCenterId ?? boardTabCenterId;
-  /** Branch tabs when no group context yet — filter by branch name */
+  /** Branch tabs: filter by branch name only when picking a branch (no tab selected yet). */
   const centersForBranchTabs = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
-    if (!q) return allCenters;
+    if (!q || activeBranchTabId) return allCenters;
     return allCenters.filter((c) => c.name.toLowerCase().includes(q));
-  }, [allCenters, searchQuery]);
+  }, [allCenters, searchQuery, activeBranchTabId]);
   const mobileBoardTotalPages = Math.max(
     1,
     Math.ceil(groups.length / mobileBoardPageSize),
@@ -716,6 +716,7 @@ export function GroupsTab({
             <div className="bg-gradient-to-b from-[#fafafa] to-white px-3 pt-3 sm:border-b sm:border-[rgba(14,14,16,0.07)]">
               <GroupsBranchTabsStrip
                 centers={centersForBranchTabs}
+                totalCentersCount={allCenters.length}
                 activeCenterId={activeBranchTabId}
                 totalGroupsAcrossCenters={totalGroupsAcrossCenters}
                 isLoading={isLoadingBranchTabs}
@@ -890,6 +891,7 @@ export function GroupsTab({
             <div className="border-b border-[rgba(14,14,16,0.07)] bg-gradient-to-b from-[#fafafa] to-white px-3 pt-3">
               <GroupsBranchTabsStrip
                 centers={centersForBranchTabs}
+                totalCentersCount={allCenters.length}
                 activeCenterId={activeBranchTabId}
                 totalGroupsAcrossCenters={totalGroupsAcrossCenters}
                 isLoading={isLoadingBranchTabs}
