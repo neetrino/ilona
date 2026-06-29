@@ -15,8 +15,12 @@ import {
   DROPDOWN_TRIGGER_DISABLED_CLASS,
   DROPDOWN_TRIGGER_INTERACTIVE_CLASS,
 } from '@/shared/components/ui/dropdown-theme';
+import { TeacherBranchAssignConfirmDialog } from './TeacherBranchAssignConfirmDialog';
+import { useTeacherBranchConfirm } from './useTeacherBranchConfirm';
 
 interface TeacherBranchMultiSelectProps {
+  teacherId: string;
+  teacherName: string;
   value: string[];
   options: Array<{ id: string; label: string }>;
   onChange: (centerIds: string[]) => Promise<void>;
@@ -39,6 +43,8 @@ function areIdSetsEqual(a: Set<string>, b: Set<string>): boolean {
 }
 
 export function TeacherBranchMultiSelect({
+  teacherId,
+  teacherName,
   value,
   options,
   onChange,
@@ -53,6 +59,24 @@ export function TeacherBranchMultiSelect({
   const [error, setError] = useState<string | null>(null);
   const [localValue, setLocalValue] = useState<string[]>(value);
   const [draftIds, setDraftIds] = useState<Set<string>>(() => new Set(value));
+  const openForConfirm = useCallback(() => {
+    setIsOpen(true);
+  }, []);
+  const {
+    confirmState,
+    dismissConfirm,
+    requestToggleBranch,
+    requestSelectAllVisible,
+    requestClearSelection,
+    handleConfirm,
+  } = useTeacherBranchConfirm({
+    teacherId,
+    teacherName,
+    options,
+    draftIds,
+    setDraftIds,
+    onConfirmOpen: openForConfirm,
+  });
   const [searchQuery, setSearchQuery] = useState('');
   const buttonRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -117,8 +141,21 @@ export function TeacherBranchMultiSelect({
     }
   }, [isOpen]);
 
+  const filteredOptions = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
+    if (!query) {
+      return options;
+    }
+    return options.filter((option) => option.label.toLowerCase().includes(query));
+  }, [options, searchQuery]);
+
   useEffect(() => {
     if (!isOpen || !buttonRef.current) {
+      setPosition(null);
+      return;
+    }
+
+    if (confirmState) {
       setPosition(null);
       return;
     }
@@ -132,14 +169,17 @@ export function TeacherBranchMultiSelect({
       const scrollY = window.scrollY;
       const scrollX = window.scrollX;
       const viewportWidth = window.innerWidth;
-      const estimatedDropdownHeight = 280;
+      const optionCount = filteredOptions.length === 0 ? 1 : filteredOptions.length;
+      const menuHeight =
+        menuRef.current?.offsetHeight ??
+        120 + optionCount * 42;
       const spaceBelow = window.innerHeight - buttonRect.bottom;
       const spaceAbove = buttonRect.top;
-      const openBelow = spaceBelow >= Math.min(estimatedDropdownHeight, 180) || spaceBelow >= spaceAbove;
+      const openBelow = spaceBelow >= menuHeight || spaceBelow >= spaceAbove;
 
       let top = openBelow
         ? buttonRect.bottom + scrollY + 4
-        : buttonRect.top + scrollY - estimatedDropdownHeight - 4;
+        : buttonRect.top + scrollY - menuHeight - 4;
       if (top < scrollY + 4) {
         top = scrollY + 4;
       }
@@ -160,6 +200,7 @@ export function TeacherBranchMultiSelect({
     }
 
     updatePosition();
+    const rafId = requestAnimationFrame(updatePosition);
     window.addEventListener('scroll', updatePosition, true);
     window.addEventListener('resize', updatePosition);
 
@@ -188,6 +229,7 @@ export function TeacherBranchMultiSelect({
     }, 0);
 
     return () => {
+      cancelAnimationFrame(rafId);
       window.removeEventListener('scroll', updatePosition, true);
       window.removeEventListener('resize', updatePosition);
       clearTimeout(timeoutId);
@@ -199,15 +241,7 @@ export function TeacherBranchMultiSelect({
         document.removeEventListener('touchstart', handleClickOutside);
       }
     };
-  }, [isOpen, closeDropdown]);
-
-  const filteredOptions = useMemo(() => {
-    const query = searchQuery.trim().toLowerCase();
-    if (!query) {
-      return options;
-    }
-    return options.filter((option) => option.label.toLowerCase().includes(query));
-  }, [options, searchQuery]);
+  }, [isOpen, confirmState, closeDropdown, filteredOptions.length]);
 
   const displayIds = isOpen ? draftIds : new Set(localValue);
   const selectedChips = useMemo(
@@ -220,23 +254,24 @@ export function TeacherBranchMultiSelect({
   );
 
   const handleToggle = (optionId: string) => {
-    setDraftIds((prev) => {
-      const next = new Set(prev);
-      if (next.has(optionId)) {
-        next.delete(optionId);
-      } else {
-        next.add(optionId);
-      }
-      return next;
-    });
+    const option = optionById.get(optionId);
+    if (!option) {
+      return;
+    }
+    requestToggleBranch(option);
   };
 
+  const isConfirmOpen = confirmState !== null;
+
   const dropdownMenu =
-    isOpen && !disabled && !isLoading && position && typeof window !== 'undefined'
+    isOpen && !isConfirmOpen && !disabled && !isLoading && position && typeof window !== 'undefined'
       ? createPortal(
           <div
             ref={menuRef}
-            className={cn(DROPDOWN_MENU_PORTAL_SURFACE_CLASS, 'flex max-h-72 flex-col overflow-hidden')}
+            className={cn(
+              DROPDOWN_MENU_PORTAL_SURFACE_CLASS,
+              'flex flex-col !overflow-visible',
+            )}
             style={{
               top: `${position.top}px`,
               left: `${position.left}px`,
@@ -260,10 +295,10 @@ export function TeacherBranchMultiSelect({
                 type="button"
                 onClick={(event) => {
                   event.stopPropagation();
-                  setDraftIds(new Set(filteredOptions.map((option) => option.id)));
+                  requestSelectAllVisible(filteredOptions);
                 }}
                 className="text-xs font-medium text-[#1010a3] transition-colors hover:text-[#0d0d85]"
-                disabled={filteredOptions.length === 0}
+                disabled={filteredOptions.every((option) => draftIds.has(option.id))}
               >
                 Select all (visible)
               </button>
@@ -271,7 +306,7 @@ export function TeacherBranchMultiSelect({
                 type="button"
                 onClick={(event) => {
                   event.stopPropagation();
-                  setDraftIds(new Set());
+                  requestClearSelection();
                 }}
                 className="text-xs font-medium text-slate-600 transition-colors hover:text-slate-800"
                 disabled={draftIds.size === 0}
@@ -279,7 +314,7 @@ export function TeacherBranchMultiSelect({
                 Clear selection
               </button>
             </div>
-            <div className="max-h-52 overflow-y-auto">
+            <div>
               {filteredOptions.length === 0 ? (
                 <div className="p-3 text-sm text-slate-500">{tCommon('globalSearchEmpty')}</div>
               ) : (
@@ -327,7 +362,7 @@ export function TeacherBranchMultiSelect({
         }}
         disabled={disabled || isLoading}
         className={cn(
-          'w-full min-h-11 py-1.5 text-left text-sm px-2',
+          'w-full !h-auto min-h-11 py-2 text-left text-sm px-2',
           DROPDOWN_TRIGGER_BASE_CLASS,
           DROPDOWN_TRIGGER_INTERACTIVE_CLASS,
           DROPDOWN_TRIGGER_DISABLED_CLASS,
@@ -338,7 +373,7 @@ export function TeacherBranchMultiSelect({
         title={error ?? undefined}
       >
         <div className="flex items-start gap-2">
-          <div className="flex max-h-20 flex-1 flex-wrap content-start items-center gap-1 overflow-y-auto">
+          <div className="flex flex-1 flex-wrap content-start items-center gap-1">
             {isLoading ? (
               <span className="flex items-center gap-1 px-1 py-0.5 text-sm">
                 <svg className="h-3 w-3 animate-spin" fill="none" viewBox="0 0 24 24" aria-hidden>
@@ -379,8 +414,17 @@ export function TeacherBranchMultiSelect({
       </button>
       {dropdownMenu}
       {error ? (
-        <div className="absolute -bottom-6 left-0 whitespace-nowrap text-xs text-red-600">{error}</div>
+        <p className="mt-1 text-xs text-red-600">{error}</p>
       ) : null}
+      <TeacherBranchAssignConfirmDialog
+        state={confirmState}
+        onOpenChange={(open) => {
+          if (!open) {
+            dismissConfirm();
+          }
+        }}
+        onConfirm={handleConfirm}
+      />
     </div>
   );
 }

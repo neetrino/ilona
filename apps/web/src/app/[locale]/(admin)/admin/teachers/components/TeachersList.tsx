@@ -130,6 +130,7 @@ export function TeachersList({
       onSort={onSort}
       onRowClick={onRowClick}
       embedInParentCard={hasCenterTabs}
+      tableClassName="[&_tbody_td]:align-top [&_tbody_td]:!py-4"
     />
   );
 

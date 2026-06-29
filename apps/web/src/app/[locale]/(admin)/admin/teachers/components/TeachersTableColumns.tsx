@@ -63,13 +63,13 @@ export function createTeachersTableColumns({
           aria-label={`Select ${teacher.user?.firstName} ${teacher.user?.lastName}`}
         />
       ),
-      className: '!pl-4 !pr-2 !w-12',
+      className: '!pl-4 !pr-2 !w-12 align-top',
     },
     {
       key: 'teacher',
       header: t('title'),
       sortable: true,
-      className: '!pl-4 !pr-4 !w-[170px] !min-w-[170px] !max-w-[170px]',
+      className: '!pl-4 !pr-4 !w-[170px] !min-w-[170px] !max-w-[170px] align-top',
       render: (teacher: Teacher) => {
         const firstName = teacher.user?.firstName || '';
         const lastName = teacher.user?.lastName || '';
@@ -102,14 +102,19 @@ export function createTeachersTableColumns({
     {
       key: 'center',
       header: t('center'),
-      className: '!pl-4 !pr-4 !w-[200px] !min-w-[200px] !max-w-[200px]',
+      className: '!pl-4 !pr-4 !w-[240px] !min-w-[240px] !max-w-[240px] align-top !py-4',
       render: (teacher: Teacher) => {
+        const firstName = teacher.user?.firstName || '';
+        const lastName = teacher.user?.lastName || '';
+        const teacherName = `${firstName} ${lastName}`.trim() || '?';
         const centers = getTeacherCenters(teacher);
         const selectedCenterIds = centers.map((center) => center.id);
 
         return (
           <div onClick={(event) => event.stopPropagation()}>
             <TeacherBranchMultiSelect
+              teacherId={teacher.id}
+              teacherName={teacherName}
               value={selectedCenterIds}
               options={centerOptions}
               onChange={async (centerIds) => {
@@ -127,7 +132,7 @@ export function createTeachersTableColumns({
       key: 'groups',
       header: 'Groups',
       sortable: true,
-      className: '!pl-4 !pr-4 !w-[170px] !min-w-[170px] !max-w-[170px] text-center',
+      className: '!pl-4 !pr-4 !w-[170px] !min-w-[170px] !max-w-[170px] text-center align-top',
       render: (teacher: Teacher) => {
         const count = teacher._count?.groups || 0;
         return (
@@ -151,7 +156,7 @@ export function createTeachersTableColumns({
       key: 'subGroups',
       header: 'Groups (T2)',
       sortable: false,
-      className: '!pl-4 !pr-4 !w-[170px] !min-w-[170px] !max-w-[170px] text-center',
+      className: '!pl-4 !pr-4 !w-[170px] !min-w-[170px] !max-w-[170px] text-center align-top',
       render: (teacher: Teacher) => {
         const count =
           teacher.secondTeacherForGroupsCount ??
@@ -177,7 +182,7 @@ export function createTeachersTableColumns({
     {
       key: 'lessonRate',
       header: 'Per Lesson Rate',
-      className: '!pl-4 !pr-4 !w-[170px] !min-w-[170px] !max-w-[170px] text-center',
+      className: '!pl-4 !pr-4 !w-[170px] !min-w-[170px] !max-w-[170px] text-center align-top',
       render: (teacher: Teacher) => {
         const lessonRate = teacher.lessonRateAMD;
         const fallback =
