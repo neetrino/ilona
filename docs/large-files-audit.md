@@ -31,6 +31,8 @@ Goal: gradually split source files so each stays at or below **400 lines**.
 | 2026-06-29 | `apps/web/src/features/students/components/StudentDetailsModal.tsx` | 695 | 236 (orchestrator) | Split into body, stat card, hook + types/util |
 | 2026-06-29 | `apps/web/src/features/chat/hooks/useChat.ts` | 632 | 53 (facade) | Split into query keys, cache util, queries/mutations/cache/admin/teacher/student hooks + unread counts |
 | 2026-06-29 | `apps/web/src/features/chat/components/TeacherChatList.tsx` | 630 | 79 (orchestrator) | Split into tab bar, search, list items (admin/groups/students), loading/empty + hook + types |
+| 2026-06-29 | `apps/web/src/shared/components/ui/date-picker-input.tsx` | 695 | 83 (orchestrator) | Split into constants, types, utils, popover position, hook, calendar popover, trigger |
+| 2026-06-29 | `apps/web/src/features/groups/components/CreateGroupForm.tsx` | 656 | 82 (orchestrator) | Split into fields, hook + types; reused edit-group-form constants |
 
 ## Split details (completed refactors)
 
@@ -62,8 +64,10 @@ Goal: gradually split source files so each stays at or below **400 lines**.
 | 21 | `StudentDetailsModal.tsx` | 695 | 236 | **6** |
 | 22 | `useChat.ts` | 632 | 53 | **10** |
 | 23 | `TeacherChatList.tsx` | 630 | 79 | **10** |
+| 24 | `date-picker-input.tsx` | 695 | 83 | **8** |
+| 25 | `CreateGroupForm.tsx` | 656 | 82 | **4** |
 
-**23** մեծ ֆайլ → **175** ֆայլ (23 facade/orchestrator + 152 նոր split ֆայլ)։
+**25** մեծ ֆайլ → **181** ֆայլ (25 facade/orchestrator + 156 նոր split ֆայլ)։
 
 ### 1. `apps/api/src/modules/chat/chat-management.service.ts` (1,195 → 61)
 
@@ -406,6 +410,32 @@ Goal: gradually split source files so each stays at or below **400 lines**.
 | `teacher-chat-list/TeacherChatListEmptyState.tsx` | Empty / no-results state |
 | `teacher-chat-list/teacher-chat-list.types.ts` | Props + view-model types |
 
+### 24. `apps/web/src/shared/components/ui/date-picker-input.tsx` (695 → 83)
+
+**8 ֆայլ** (1 orchestrator + 7 նոր, `date-picker-input/`)
+
+| Ֆայլ | Դեր |
+| --- | --- |
+| `date-picker-input.tsx` | Portal shell + hidden ISO input orchestrator |
+| `date-picker-input/date-picker-input.constants.ts` | Weekdays, layout/z-index constants |
+| `date-picker-input/date-picker-input.types.ts` | Props + view-model types |
+| `date-picker-input/date-picker-input.util.ts` | Parse, calendar grid, year bounds helpers |
+| `date-picker-input/date-picker-popover-position.util.ts` | Popover placement (dialog portal + fixed) |
+| `date-picker-input/useDatePickerInput.ts` | State, masking, open/close, cache of position |
+| `date-picker-input/DatePickerCalendarPopover.tsx` | Month grid, year dropdown, clear/today |
+| `date-picker-input/DatePickerInputTrigger.tsx` | Visible text input + calendar button |
+
+### 25. `apps/web/src/features/groups/components/CreateGroupForm.tsx` (656 → 82)
+
+**4 ֆայլ** (1 orchestrator + 3 նոր, `create-group-form/`)
+
+| Ֆայլ | Դեր |
+| --- | --- |
+| `CreateGroupForm.tsx` | Sheet shell orchestrator |
+| `create-group-form/useCreateGroupForm.ts` | Form state, validation, submit, drag-to-close |
+| `create-group-form/CreateGroupFormFields.tsx` | Form fields JSX |
+| `create-group-form/create-group-form.types.ts` | Props + form data types |
+
 ---
 
 ## Summary
@@ -413,9 +443,9 @@ Goal: gradually split source files so each stays at or below **400 lines**.
 | Metric | Value |
 | --- | --- |
 | Total source files scanned | 836 |
-| Files over 400 lines | **36** (was 58) |
-| Biggest file | `apps/web/src/shared/components/ui/date-picker-input.tsx` (627 lines) |
-| Frontend (`apps/web`) | 29 |
+| Files over 400 lines | **34** (was 58) |
+| Biggest file | `apps/web/src/features/crm/components/EditLeadModal.tsx` (616 lines) |
+| Frontend (`apps/web`) | 27 |
 | Backend (`apps/api`) | 11 |
 | Shared / packages | 0 |
 
@@ -451,10 +481,10 @@ Goal: gradually split source files so each stays at or below **400 lines**.
 | ~~20~~ | ~~`apps/web/src/features/students/components/StudentDetailsModal.tsx`~~ | ~~695~~ | Frontend / Students | **Done** | — |
 | ~~21~~ | ~~`apps/web/src/features/chat/hooks/useChat.ts`~~ | ~~632~~ | Frontend / Chat | **Done** | — |
 | ~~22~~ | ~~`apps/web/src/features/chat/components/TeacherChatList.tsx`~~ | ~~630~~ | Frontend / Chat | **Done** | — |
-| 23 | `apps/web/src/shared/components/ui/date-picker-input.tsx` | 627 | Frontend / Shared UI | Split calendar popover, input masking, range/single modes, and locale formatting into subcomponents/utils | Medium |
+| ~~23~~ | ~~`apps/web/src/shared/components/ui/date-picker-input.tsx`~~ | ~~627~~ | Frontend / Shared UI | **Done** | — |
 | ~~24~~ | ~~`apps/api/src/modules/search/search.service.ts`~~ | ~~623~~ | Backend / Search | **Done** | — |
 | 25 | `apps/web/src/features/crm/components/EditLeadModal.tsx` | 616 | Frontend / CRM | Extract form sections, status/activity UI, and voice/recording blocks; split validation schema and mutation hook | Medium |
-| 26 | `apps/web/src/features/groups/components/CreateGroupForm.tsx` | 611 | Frontend / Groups | Same as EditGroupForm: section components, shared group form schema, and create-specific defaults | Medium |
+| ~~26~~ | ~~`apps/web/src/features/groups/components/CreateGroupForm.tsx`~~ | ~~611~~ | Frontend / Groups | **Done** | — |
 | 27 | `apps/api/src/modules/settings/settings.controller.ts` | 607 | Backend / Settings | Thin controller: move business logic to settings sub-services; group endpoints by domain; extract response DTO mapping | Medium |
 | 28 | `apps/api/src/modules/finance/salary-record.service.ts` | 601 | Backend / Finance | Split salary calculation, record CRUD, and period aggregation; extract penalty/bonus adjustment helpers | Medium |
 | 29 | `apps/web/src/features/settings/components/EditManagerForm.tsx` | 589 | Frontend / Settings | Extract manager profile, center assignment, and permissions sections; split validation and API mutation hook | Medium |
@@ -492,9 +522,9 @@ Goal: gradually split source files so each stays at or below **400 lines**.
 
 ## Recommended first 3 refactors
 
-1. **`apps/web/src/shared/components/ui/date-picker-input.tsx`** (627 lines) — Split calendar popover and input masking.
-2. **`apps/web/src/features/crm/components/EditLeadModal.tsx`** (616 lines) — Extract form sections, status/activity UI, voice blocks.
-3. **`apps/web/src/features/groups/components/CreateGroupForm.tsx`** (611 lines) — Same pattern as EditGroupForm.
+1. **`apps/web/src/features/crm/components/EditLeadModal.tsx`** (616 lines) — Extract form sections, status/activity UI, voice blocks.
+2. **`apps/api/src/modules/settings/settings.controller.ts`** (607 lines) — Thin controller; group endpoints by domain.
+3. **`apps/api/src/modules/finance/salary-record.service.ts`** (601 lines) — Split calculation, CRUD, period aggregation.
 
 ---
 
