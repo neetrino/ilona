@@ -39,6 +39,9 @@ Goal: gradually split source files so each stays at or below **400 lines**.
 | 2026-06-29 | `apps/web/src/features/settings/components/EditManagerForm.tsx` | 636 | 175 (orchestrator) | Split into profile/center/status fields, hook + types |
 | 2026-06-29 | `apps/web/src/shared/components/calendar/FeedbacksTab.tsx` | 626 | 55 (orchestrator) | Split into student card, states, tick box, hook + types |
 | 2026-06-29 | `apps/api/src/modules/prisma/prisma.service.ts` | 646 | 232 (core) | Split into connection util, retry middleware, planned-absences bootstrap + types |
+| 2026-06-29 | `apps/api/src/modules/analytics/analytics.service.ts` | 552 | 41 (facade) | Split into teacher, student-risk, revenue, attendance, lessons, dashboard services + util/types |
+| 2026-06-29 | `apps/api/src/modules/finance/finance.controller.ts` | 551 | removed | Split into teacher/student/dashboard/payments/salaries/deductions controllers + scope service |
+| 2026-06-29 | `apps/web/src/features/centers/components/EditCenterForm.tsx` | 541 | 151 (orchestrator) | Split into fields, hook + types/constants |
 
 ## Split details (completed refactors)
 
@@ -79,8 +82,11 @@ Goal: gradually split source files so each stays at or below **400 lines**.
 | 29 | `EditManagerForm.tsx` | 636 | 175 | **4** |
 | 30 | `FeedbacksTab.tsx` | 626 | 55 | **7** |
 | 31 | `prisma.service.ts` | 646 | 232 | **5** |
+| 32 | `analytics.service.ts` | 552 | 41 | **10** |
+| 33 | `finance.controller.ts` | 551 | — | **8** |
+| 34 | `EditCenterForm.tsx` | 541 | 151 | **5** |
 
-**31** մեծ ֆайլ → **211** ֆайլ (30 facade/orchestrator + 181 նոր split ֆայլ)։
+**34** մեծ ֆайլ → **234** ֆайլ (33 facade/orchestrator + 201 նոր split ֆայլ)։
 
 ### 1. `apps/api/src/modules/chat/chat-management.service.ts` (1,195 → 61)
 
@@ -524,6 +530,48 @@ Goal: gradually split source files so each stays at or below **400 lines**.
 | `prisma-planned-absences.util.ts` | Idempotent planned_absences table bootstrap |
 | `prisma.types.ts` | ConnectionError, ErrLike, RetryContext |
 
+### 32. `apps/api/src/modules/analytics/analytics.service.ts` (552 → 41)
+
+**10 ֆայլ** (1 facade + 9 նոր)
+
+| Ֆայլ | Դեր |
+| --- | --- |
+| `analytics.service.ts` | Facade |
+| `analytics-teacher.service.ts` | Teacher performance metrics |
+| `analytics-student-risk.service.ts` | Student risk analytics |
+| `analytics-revenue.service.ts` | Revenue by range / month series |
+| `analytics-attendance.service.ts` | Attendance overview |
+| `analytics-lessons.service.ts` | Lessons overview |
+| `analytics-dashboard.service.ts` | Admin dashboard summary |
+| `analytics.util.ts` | Date window helpers |
+| `analytics.types.ts` | Revenue series + row types |
+
+### 33. `apps/api/src/modules/finance/finance.controller.ts` (551 → split)
+
+**8 ֆայլ** (monolith removed; 6 domain controllers + scope service)
+
+| Ֆայլ | Դեր |
+| --- | --- |
+| `finance-teacher.controller.ts` | Teacher my-salary / my-deductions |
+| `finance-student.controller.ts` | Student my-payments |
+| `finance-dashboard.controller.ts` | Dashboard, report, automation |
+| `finance-payments.controller.ts` | Payments CRUD + stats |
+| `finance-salaries.controller.ts` | Salaries CRUD + breakdown |
+| `finance-deductions.controller.ts` | Deductions CRUD + stats |
+| `finance-controller-scope.service.ts` | Student lookup, manager scope, salary record bootstrap |
+
+### 34. `apps/web/src/features/centers/components/EditCenterForm.tsx` (541 → 151)
+
+**5 ֆայլ** (1 orchestrator + 4 նոր, `edit-center-form/`)
+
+| Ֆայլ | Դեր |
+| --- | --- |
+| `EditCenterForm.tsx` | Sheet shell + header actions orchestrator |
+| `edit-center-form/useEditCenterForm.ts` | Form state, validation, submit, drag-to-close |
+| `edit-center-form/EditCenterFormFields.tsx` | Address, contact, color, description fields |
+| `edit-center-form/edit-center-form.types.ts` | Props + form data types |
+| `edit-center-form/edit-center-form.constants.ts` | Textarea class + sheet grid rows |
+
 ---
 
 ## Summary
@@ -531,10 +579,10 @@ Goal: gradually split source files so each stays at or below **400 lines**.
 | Metric | Value |
 | --- | --- |
 | Total source files scanned | 836 |
-| Files over 400 lines | **28** (was 58) |
-| Biggest file | `apps/api/src/modules/analytics/analytics.service.ts` (552 lines) |
-| Frontend (`apps/web`) | 22 |
-| Backend (`apps/api`) | 8 |
+| Files over 400 lines | **25** (was 58) |
+| Biggest file | `apps/web/src/features/centers/components/CenterDetailsModal.tsx` (537 lines) |
+| Frontend (`apps/web`) | 21 |
+| Backend (`apps/api`) | 6 |
 | Shared / packages | 0 |
 
 **Extensions scanned:** `.ts`, `.tsx`, `.js`, `.jsx`, `.css`, `.scss`, `.module.css`, `.module.scss`
@@ -578,9 +626,9 @@ Goal: gradually split source files so each stays at or below **400 lines**.
 | ~~29~~ | ~~`apps/web/src/features/settings/components/EditManagerForm.tsx`~~ | ~~589~~ | Frontend / Settings | **Done** | — |
 | ~~30~~ | ~~`apps/web/src/shared/components/calendar/FeedbacksTab.tsx`~~ | ~~584~~ | Frontend / Calendar (shared) | **Done** | — |
 | ~~31~~ | ~~`apps/api/src/modules/prisma/prisma.service.ts`~~ | ~~576~~ | Backend / Infrastructure | **Done** | — |
-| 32 | `apps/api/src/modules/analytics/analytics.service.ts` | 552 | Backend / Analytics | Split dashboard metrics by domain (attendance, finance, CRM); extract SQL/Prisma aggregation queries per report | Medium |
-| 33 | `apps/api/src/modules/finance/finance.controller.ts` | 551 | Backend / Finance | Thin controller: delegate to payment/salary services; group routes by resource; extract query DTO parsing | Medium |
-| 34 | `apps/web/src/features/centers/components/EditCenterForm.tsx` | 541 | Frontend / Centers | Extract address, contact, manager, and settings sections; split schema and form state hook | Medium |
+| ~~32~~ | ~~`apps/api/src/modules/analytics/analytics.service.ts`~~ | ~~552~~ | Backend / Analytics | **Done** | — |
+| ~~33~~ | ~~`apps/api/src/modules/finance/finance.controller.ts`~~ | ~~551~~ | Backend / Finance | **Done** | — |
+| ~~34~~ | ~~`apps/web/src/features/centers/components/EditCenterForm.tsx`~~ | ~~541~~ | Frontend / Centers | **Done** | — |
 | 35 | `apps/web/src/features/centers/components/CenterDetailsModal.tsx` | 537 | Frontend / Centers | Split detail sections and action footer; extract stat cards and linked entities lists | Medium |
 | 36 | `apps/web/src/features/crm/components/VoiceLeadDetailModal.tsx` | 534 | Frontend / CRM | Extract audio player, transcript/metadata panel, and action bar; move recording fetch logic to hook | Medium |
 | 37 | `apps/web/src/features/lessons/components/AddLessonForm.tsx` | 521 | Frontend / Lessons | Extract recurrence, teacher/group pickers, and time fields; split validation schema and lesson defaults | Medium |
@@ -610,9 +658,9 @@ Goal: gradually split source files so each stays at or below **400 lines**.
 
 ## Recommended first 3 refactors
 
-1. **`apps/api/src/modules/analytics/analytics.service.ts`** (552 lines) — Split dashboard metrics by domain.
-2. **`apps/api/src/modules/finance/finance.controller.ts`** (551 lines) — Thin controller; delegate to payment/salary services.
-3. **`apps/web/src/features/centers/components/EditCenterForm.tsx`** (541 lines) — Extract address, contact, manager sections + hook.
+1. **`apps/web/src/features/centers/components/CenterDetailsModal.tsx`** (537 lines) — Split detail sections and action footer.
+2. **`apps/web/src/features/crm/components/VoiceLeadDetailModal.tsx`** (534 lines) — Extract audio player, transcript panel, action bar + hook.
+3. **`apps/web/src/features/lessons/components/AddLessonForm.tsx`** (521 lines) — Extract recurrence, pickers, time fields + hook.
 
 ---
 

@@ -1,6 +1,12 @@
 import { Module } from '@nestjs/common';
 import { FinanceService } from './finance.service';
-import { FinanceController } from './finance.controller';
+import { FinanceTeacherController } from './finance-teacher.controller';
+import { FinanceStudentController } from './finance-student.controller';
+import { FinanceDashboardController } from './finance-dashboard.controller';
+import { FinancePaymentsController } from './finance-payments.controller';
+import { FinanceSalariesController } from './finance-salaries.controller';
+import { FinanceDeductionsController } from './finance-deductions.controller';
+import { FinanceControllerScopeService } from './finance-controller-scope.service';
 import { PaymentsService } from './payments.service';
 import { PaymentQueryService } from './payment-query.service';
 import { PaymentWriteService } from './payment-write.service';
@@ -19,8 +25,16 @@ import { SettingsModule } from '../settings/settings.module';
 
 @Module({
   imports: [SettingsModule],
-  controllers: [FinanceController],
+  controllers: [
+    FinanceTeacherController,
+    FinanceStudentController,
+    FinanceDashboardController,
+    FinancePaymentsController,
+    FinanceSalariesController,
+    FinanceDeductionsController,
+  ],
   providers: [
+    FinanceControllerScopeService,
     FinanceService,
     PaymentsService,
     PaymentQueryService,
