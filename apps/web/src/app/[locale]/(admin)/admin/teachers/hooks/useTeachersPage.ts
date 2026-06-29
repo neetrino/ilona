@@ -519,11 +519,11 @@ export function useTeachersPage() {
     }
   };
 
-  const handleCenterChange = async (teacherId: string, centerId: string | null) => {
+  const handleCenterChange = async (teacherId: string, centerIds: string[]) => {
     await updateTeacher.mutateAsync({
       id: teacherId,
       data: {
-        centerIds: centerId ? [centerId] : [],
+        centerIds,
       },
     });
   };

@@ -27,7 +27,7 @@ interface TeachersListProps {
   onSelectAll: () => void;
   onToggleSelect: (teacherId: string) => void;
   onView: (teacher: Teacher) => void;
-  onCenterChange: (teacherId: string, centerId: string | null) => Promise<void>;
+  onCenterChange: (teacherId: string, centerIds: string[]) => Promise<void>;
   onOpenGroupsModal: (teacher: Teacher, tab: 'groups' | 'subgroups') => void;
   isLoading: boolean;
   isDeleting: boolean;
