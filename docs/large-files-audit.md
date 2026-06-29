@@ -42,6 +42,9 @@ Goal: gradually split source files so each stays at or below **400 lines**.
 | 2026-06-29 | `apps/api/src/modules/analytics/analytics.service.ts` | 552 | 41 (facade) | Split into teacher, student-risk, revenue, attendance, lessons, dashboard services + util/types |
 | 2026-06-29 | `apps/api/src/modules/finance/finance.controller.ts` | 551 | removed | Split into teacher/student/dashboard/payments/salaries/deductions controllers + scope service |
 | 2026-06-29 | `apps/web/src/features/centers/components/EditCenterForm.tsx` | 541 | 151 (orchestrator) | Split into fields, hook + types/constants |
+| 2026-06-29 | `apps/web/src/features/centers/components/CenterDetailsModal.tsx` | 537 | 82 (orchestrator) | Split into header, tab bar, tab content, hook + util/types/constants |
+| 2026-06-29 | `apps/web/src/features/crm/components/VoiceLeadDetailModal.tsx` | 534 | 79 (orchestrator) | Split into voice section, form body, status panels, header + hook + util/types |
+| 2026-06-29 | `apps/web/src/features/lessons/components/AddLessonForm.tsx` | 521 | 74 (orchestrator) | Split into fields, teacher row, hook + util/types |
 
 ## Split details (completed refactors)
 
@@ -85,8 +88,11 @@ Goal: gradually split source files so each stays at or below **400 lines**.
 | 32 | `analytics.service.ts` | 552 | 41 | **10** |
 | 33 | `finance.controller.ts` | 551 | — | **8** |
 | 34 | `EditCenterForm.tsx` | 541 | 151 | **5** |
+| 35 | `CenterDetailsModal.tsx` | 537 | 82 | **8** |
+| 36 | `VoiceLeadDetailModal.tsx` | 534 | 79 | **8** |
+| 37 | `AddLessonForm.tsx` | 521 | 74 | **6** |
 
-**34** մեծ ֆайլ → **234** ֆайլ (33 facade/orchestrator + 201 նոր split ֆայլ)։
+**37** մեծ ֆайլ → **256** ֆայլ (36 facade/orchestrator + 220 նոր split ֆայլ)։
 
 ### 1. `apps/api/src/modules/chat/chat-management.service.ts` (1,195 → 61)
 
@@ -572,6 +578,49 @@ Goal: gradually split source files so each stays at or below **400 lines**.
 | `edit-center-form/edit-center-form.types.ts` | Props + form data types |
 | `edit-center-form/edit-center-form.constants.ts` | Textarea class + sheet grid rows |
 
+### 35. `apps/web/src/features/centers/components/CenterDetailsModal.tsx` (537 → 82)
+
+**8 ֆայլ** (1 orchestrator + 7 նոր, `center-details-modal/`)
+
+| Ֆայլ | Դեր |
+| --- | --- |
+| `CenterDetailsModal.tsx` | Sheet shell + tab routing orchestrator |
+| `center-details-modal/useCenterDetailsModal.ts` | Data fetch, drag-to-close, active tab state |
+| `center-details-modal/CenterDetailsModalHeader.tsx` | Center name, color, address header |
+| `center-details-modal/CenterDetailsModalTabBar.tsx` | Teachers/students/groups/schedule/info tabs |
+| `center-details-modal/CenterDetailsModalTabContent.tsx` | Tab panel lists + info + schedule grid |
+| `center-details-modal/center-details-modal.util.ts` | Schedule normalize + group mapping helpers |
+| `center-details-modal/center-details-modal.types.ts` | Props + tab id types |
+| `center-details-modal/center-details-modal.constants.ts` | Tab config with icons |
+
+### 36. `apps/web/src/features/crm/components/VoiceLeadDetailModal.tsx` (534 → 79)
+
+**8 ֆայլ** (1 orchestrator + 7 նոր, `voice-lead-detail-modal/`)
+
+| Ֆայլ | Դեր |
+| --- | --- |
+| `VoiceLeadDetailModal.tsx` | Modal shell + loading/error routing orchestrator |
+| `voice-lead-detail-modal/useVoiceLeadDetailModal.ts` | Lead fetch, form state, save/delete handlers |
+| `voice-lead-detail-modal/VoiceLeadDetailModalHeader.tsx` | Title + delete/close actions |
+| `voice-lead-detail-modal/VoiceLeadDetailModalVoiceSection.tsx` | Playback + admin recorder |
+| `voice-lead-detail-modal/VoiceLeadDetailModalFormBody.tsx` | NEW-status lead form fields |
+| `voice-lead-detail-modal/VoiceLeadDetailModalStatusPanels.tsx` | Approved, transfer, activity panels |
+| `voice-lead-detail-modal/voice-lead-detail-modal.util.ts` | Phone validation + form mapping |
+| `voice-lead-detail-modal/voice-lead-detail-modal.types.ts` | Props + option types |
+
+### 37. `apps/web/src/features/lessons/components/AddLessonForm.tsx` (521 → 74)
+
+**6 ֆայլ** (1 orchestrator + 5 նոր, `add-lesson-form/`)
+
+| Ֆայլ | Դեր |
+| --- | --- |
+| `AddLessonForm.tsx` | Sheet shell orchestrator |
+| `add-lesson-form/useAddLessonForm.ts` | Form state, schedule, recurring submit, drag-to-close |
+| `add-lesson-form/AddLessonFormFields.tsx` | Group/teacher pickers, calendar section, actions |
+| `add-lesson-form/GroupTeacherReadonlyRow.tsx` | Read-only teacher display row |
+| `add-lesson-form/add-lesson-form.util.ts` | Schema, slot grouping, schedule validation |
+| `add-lesson-form/add-lesson-form.types.ts` | Props + form data types |
+
 ---
 
 ## Summary
@@ -579,9 +628,9 @@ Goal: gradually split source files so each stays at or below **400 lines**.
 | Metric | Value |
 | --- | --- |
 | Total source files scanned | 836 |
-| Files over 400 lines | **25** (was 58) |
-| Biggest file | `apps/web/src/features/centers/components/CenterDetailsModal.tsx` (537 lines) |
-| Frontend (`apps/web`) | 21 |
+| Files over 400 lines | **22** (was 58) |
+| Biggest file | `apps/web/src/features/teachers/components/AddTeacherForm.tsx` (515 lines) |
+| Frontend (`apps/web`) | 18 |
 | Backend (`apps/api`) | 6 |
 | Shared / packages | 0 |
 
@@ -629,9 +678,9 @@ Goal: gradually split source files so each stays at or below **400 lines**.
 | ~~32~~ | ~~`apps/api/src/modules/analytics/analytics.service.ts`~~ | ~~552~~ | Backend / Analytics | **Done** | — |
 | ~~33~~ | ~~`apps/api/src/modules/finance/finance.controller.ts`~~ | ~~551~~ | Backend / Finance | **Done** | — |
 | ~~34~~ | ~~`apps/web/src/features/centers/components/EditCenterForm.tsx`~~ | ~~541~~ | Frontend / Centers | **Done** | — |
-| 35 | `apps/web/src/features/centers/components/CenterDetailsModal.tsx` | 537 | Frontend / Centers | Split detail sections and action footer; extract stat cards and linked entities lists | Medium |
-| 36 | `apps/web/src/features/crm/components/VoiceLeadDetailModal.tsx` | 534 | Frontend / CRM | Extract audio player, transcript/metadata panel, and action bar; move recording fetch logic to hook | Medium |
-| 37 | `apps/web/src/features/lessons/components/AddLessonForm.tsx` | 521 | Frontend / Lessons | Extract recurrence, teacher/group pickers, and time fields; split validation schema and lesson defaults | Medium |
+| ~~35~~ | ~~`apps/web/src/features/centers/components/CenterDetailsModal.tsx`~~ | ~~537~~ | Frontend / Centers | **Done** | — |
+| ~~36~~ | ~~`apps/web/src/features/crm/components/VoiceLeadDetailModal.tsx`~~ | ~~534~~ | Frontend / CRM | **Done** | — |
+| ~~37~~ | ~~`apps/web/src/features/lessons/components/AddLessonForm.tsx`~~ | ~~521~~ | Frontend / Lessons | **Done** | — |
 | 38 | `apps/web/src/features/teachers/components/AddTeacherForm.tsx` | 515 | Frontend / Teachers | Extract account, center, and schedule sections; share field components with EditTeacherForm | Medium |
 | 39 | `apps/web/src/shared/lib/api-client.ts` | 511 | Frontend / Shared lib | Split by API domain (auth, chat, students, etc.); extract interceptors, error normalization, and token refresh | Medium |
 | 40 | `apps/web/src/features/students/components/StudentAccountFormFieldsCrmLeadLayout.tsx` | 506 | Frontend / Students | Extract reusable field groups; share base account fields with `StudentAccountFormFields`; move CRM-specific layout wrappers | Medium |
@@ -658,9 +707,9 @@ Goal: gradually split source files so each stays at or below **400 lines**.
 
 ## Recommended first 3 refactors
 
-1. **`apps/web/src/features/centers/components/CenterDetailsModal.tsx`** (537 lines) — Split detail sections and action footer.
-2. **`apps/web/src/features/crm/components/VoiceLeadDetailModal.tsx`** (534 lines) — Extract audio player, transcript panel, action bar + hook.
-3. **`apps/web/src/features/lessons/components/AddLessonForm.tsx`** (521 lines) — Extract recurrence, pickers, time fields + hook.
+1. **`apps/web/src/features/teachers/components/AddTeacherForm.tsx`** (515 lines) — Extract account, center, schedule sections + hook.
+2. **`apps/web/src/shared/lib/api-client.ts`** (511 lines) — Split by API domain; extract interceptors and token refresh.
+3. **`apps/web/src/features/students/components/StudentAccountFormFieldsCrmLeadLayout.tsx`** (506 lines) — Extract field groups; share with `StudentAccountFormFields`.
 
 ---
 
