@@ -68,6 +68,7 @@ export type StudentAccountFormFieldsEnrollmentSectionProps = StudentAccountFormF
     teacherOptions: Array<{ id: string; label: string }>;
     groupOptions: Array<{ id: string; label: string }>;
     centerSegmentOptions: Array<{ id: string; label: string }>;
+    centerDropdownOptions: Array<{ id: string; label: string }>;
   };
 
 export type StudentAccountFormFieldsParentSectionProps = StudentAccountFormFieldShellProps;

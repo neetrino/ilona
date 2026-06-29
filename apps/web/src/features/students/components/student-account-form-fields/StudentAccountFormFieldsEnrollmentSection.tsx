@@ -32,6 +32,7 @@ export function StudentAccountFormFieldsEnrollmentSection({
   teacherOptions,
   groupOptions,
   centerSegmentOptions,
+  centerDropdownOptions,
 }: StudentAccountFormFieldsEnrollmentSectionProps) {
   const t = useTranslations('students');
   const tForm = useTranslations('students.form');
@@ -39,8 +40,8 @@ export function StudentAccountFormFieldsEnrollmentSection({
 
   return (
     <>
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <div className="space-y-2">
+      <div className="grid grid-cols-2 gap-4">
+        <div className="min-w-0 space-y-2">
           <Label htmlFor={p('dateOfBirth')}>{t('dateOfBirth')}</Label>
           <DmyDateInput
             id={p('dateOfBirth')}
@@ -60,7 +61,7 @@ export function StudentAccountFormFieldsEnrollmentSection({
             <p className="text-sm text-red-600">{errors.dateOfBirth.message}</p>
           )}
         </div>
-        <div className="space-y-2">
+        <div className="min-w-0 space-y-2">
           <Label htmlFor={p('manualAge')}>{tForm('ageYears')}</Label>
           {showManualAgeInput ? (
             <Input
@@ -72,31 +73,28 @@ export function StudentAccountFormFieldsEnrollmentSection({
               error={errors.manualAge?.message}
             />
           ) : (
-            <>
-              <p className={FORM_READONLY_FIELD_CLASS}>
-                {ageFromDob}
-              </p>
-              <p className="text-xs text-slate-500">{tForm('ageHint', { age: ageFromDob! })}</p>
-            </>
+            <p className={FORM_READONLY_FIELD_CLASS}>
+              {ageFromDob}
+            </p>
           )}
         </div>
+      </div>
 
-        <div className="space-y-2">
-          <Label htmlFor={p('firstLessonDate')}>{tForm('firstLessonDate')}</Label>
-          <DmyDateInput
-            id={p('firstLessonDate')}
-            value={watchedFirstLessonDate}
-            placeholder={tForm('firstLessonDatePlaceholder')}
-            onChange={(value) =>
-              setValue('firstLessonDate', value, { shouldValidate: true, shouldDirty: true })
-            }
-            className={FORM_INPUT_CLASS_NAME}
-            disabled={isSubmitting}
-          />
-          {errors.firstLessonDate && (
-            <p className="text-sm text-red-600">{errors.firstLessonDate.message}</p>
-          )}
-        </div>
+      <div className="space-y-2">
+        <Label htmlFor={p('firstLessonDate')}>{tForm('firstLessonDate')}</Label>
+        <DmyDateInput
+          id={p('firstLessonDate')}
+          value={watchedFirstLessonDate}
+          placeholder={tForm('firstLessonDatePlaceholder')}
+          onChange={(value) =>
+            setValue('firstLessonDate', value, { shouldValidate: true, shouldDirty: true })
+          }
+          className={FORM_INPUT_CLASS_NAME}
+          disabled={isSubmitting}
+        />
+        {errors.firstLessonDate && (
+          <p className="text-sm text-red-600">{errors.firstLessonDate.message}</p>
+        )}
       </div>
 
       <div className="grid grid-cols-2 gap-4">
@@ -156,16 +154,33 @@ export function StudentAccountFormFieldsEnrollmentSection({
           {isLoadingCenters ? (
             <p className="text-sm text-slate-500">{tCommon('loading')}</p>
           ) : centerSegmentOptions.length > 0 ? (
-            <SegmentedControl
-              options={centerSegmentOptions}
-              value={watchedCenterId}
-              onChange={(nextValue) =>
-                setValue('centerId', nextValue, { shouldDirty: true, shouldValidate: true })
-              }
-              allowDeselect
-              disabled={isSubmitting}
-              aria-label={tCommon('center')}
-            />
+            <>
+              <div className="min-[1367px]:hidden">
+                <SingleSelectDropdown
+                  id={p('centerId')}
+                  options={centerDropdownOptions}
+                  value={watchedCenterId}
+                  triggerClassName={FORM_INPUT_CLASS_NAME}
+                  onValueChange={(nextValue) =>
+                    setValue('centerId', nextValue ?? '', { shouldDirty: true, shouldValidate: true })
+                  }
+                  disabled={isSubmitting}
+                  error={errors.centerId?.message ?? null}
+                />
+              </div>
+              <div className="hidden min-[1367px]:block">
+                <SegmentedControl
+                  options={centerSegmentOptions}
+                  value={watchedCenterId}
+                  onChange={(nextValue) =>
+                    setValue('centerId', nextValue, { shouldDirty: true, shouldValidate: true })
+                  }
+                  allowDeselect
+                  disabled={isSubmitting}
+                  aria-label={tCommon('center')}
+                />
+              </div>
+            </>
           ) : (
             <p className="text-sm text-slate-500">{tCommon('notAssigned')}</p>
           )}

@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect, useMemo, useRef, useId } from 'react';
+import { useState, useEffect, useMemo, useRef, useId, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
-import { createPortal } from 'react-dom';
+import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useQuery } from '@tanstack/react-query';
@@ -17,20 +17,21 @@ import { createStudentSchema, type CreateStudentFormData } from '@/features/stud
 import { formDataToCreateStudentDto } from '@/features/students/student-account-form.payload';
 import { resolveAgeFromDobAndManual } from '@/features/students/student-account-form.age';
 import { StudentAccountFormFields } from '@/features/students/components/StudentAccountFormFields';
-import { useModalClose } from '@/shared/hooks/useModalClose';
 import { cn } from '@/shared/lib/utils';
 import { Button } from '@/shared/components/ui';
+import { PortalFormSheetDragHandle } from '@/shared/components/ui/portal-form-sheet-drag-handle';
+import { PortalSheetPortal } from '@/shared/components/ui/portal-sheet-portal';
 import {
-  portalSheetLayerProps,
-  useSheetStackZIndex,
-  stackedSheetOverlayClassName,
-} from '@/shared/lib/sheet-stack';
-import { CUSTOM_MODAL_OVERLAY_CLASS, CUSTOM_MODAL_PANEL_CLASS } from '@/shared/lib/portal-form-sheet-classes';
+  PORTAL_FORM_SHEET_CLOSE_BUTTON_CLASS,
+  PORTAL_FORM_SHEET_HEADER_CLASS,
+  PORTAL_FORM_SHEET_SCROLL_CLASS,
+  portalFormSheetContentClass,
+} from '@/shared/lib/portal-form-sheet-classes';
 import {
-  ADMIN_ICON_BUTTON_CLASS,
   ADMIN_OUTLINE_BUTTON_CLASS,
   ADMIN_PRIMARY_BUTTON_CLASS,
 } from '@/shared/lib/admin-control-theme';
+import { usePortalSheetDrag } from '@/shared/hooks/usePortalSheetDrag';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 
 export interface PaidRegistrationModalProps {
@@ -49,19 +50,28 @@ export function PaidRegistrationModal({
   formPrefill,
 }: PaidRegistrationModalProps) {
   const t = useTranslations('crm');
-  const modalContainerRef = useRef<HTMLDivElement>(null);
+  const tCommon = useTranslations('common');
   const fieldIdPrefix = useId().replace(/:/g, '');
-  const { onOverlayMouseDown, onOverlayClick } = useModalClose({
-    open,
-    onClose,
-    containerRef: modalContainerRef,
-  });
   const submitGuardRef = useRef(false);
-  const [mounted, setMounted] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
 
   const user = useAuthStore((s) => s.user);
   const isManager = user?.role === 'MANAGER';
+
+  const requestClose = useCallback(() => {
+    onClose();
+  }, [onClose]);
+
+  const { dragStyle, dragHandleProps, resetDrag } = usePortalSheetDrag({
+    enabled: open,
+    onClose: requestClose,
+  });
+
+  useEffect(() => {
+    if (!open) {
+      resetDrag();
+    }
+  }, [open, resetDrag]);
 
   const { data: groupsData, isLoading: isLoadingGroups } = useGroups({ isActive: true }, open);
   const { data: teachersData, isLoading: isLoadingTeachers } = useTeachers({ status: 'ACTIVE' }, open);
@@ -144,11 +154,6 @@ export function PaidRegistrationModal({
   const showParentSection = computedAge !== undefined && computedAge < 18;
 
   useEffect(() => {
-    setMounted(true);
-    return () => setMounted(false);
-  }, []);
-
-  useEffect(() => {
     if (!open) {
       reset();
       setApiError(null);
@@ -214,80 +219,75 @@ export function PaidRegistrationModal({
     }
   };
 
-  const { overlayStyle, contentStyle, isBaseLayer } = useSheetStackZIndex(open && mounted);
-
-  if (!open || !mounted) return null;
-
-  return createPortal(
-    <>
-      <div
-        className={stackedSheetOverlayClassName(CUSTOM_MODAL_OVERLAY_CLASS, isBaseLayer)} style={overlayStyle} {...portalSheetLayerProps}
-        onMouseDown={onOverlayMouseDown}
-        onClick={onOverlayClick}
-      />
-      <div
-        ref={modalContainerRef}
-        style={contentStyle} {...portalSheetLayerProps} className={cn(CUSTOM_MODAL_PANEL_CLASS, 'max-w-2xl max-h-[90vh] sm:max-h-[calc(100vh-2rem)]')}
+  return (
+    <DialogPrimitive.Root open={open} onOpenChange={(nextOpen) => !nextOpen && requestClose()}>
+      <PortalSheetPortal
+        open={open}
+        dragStyle={dragStyle}
+        contentClassName={portalFormSheetContentClass('2xl')}
+        contentProps={{ 'aria-describedby': undefined }}
       >
-          <div className="border-b border-slate-200 px-4 py-4 sm:px-6">
-            <div className="flex items-start justify-between gap-2">
-              <div>
-                <h2 className="text-lg font-semibold text-slate-900">{t('studentRegistration')}</h2>
-                <p className="mt-1 text-sm text-slate-600">
-                  Same details as Add New Student. Save to mark this lead Paid and create the account. Cancel leaves
-                  the lead status unchanged.
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={onClose}
-                className={`${ADMIN_ICON_BUTTON_CLASS} shrink-0 text-slate-500 hover:bg-slate-100 hover:text-slate-700`}
-                aria-label={t('closeRegistration')}
-              >
-                <X className="h-5 w-5" />
-              </button>
+        <PortalFormSheetDragHandle dragHandleProps={dragHandleProps} />
+        <DialogPrimitive.Title className="sr-only">{t('studentRegistration')}</DialogPrimitive.Title>
+        <div className={PORTAL_FORM_SHEET_HEADER_CLASS}>
+          <div className="flex items-start justify-between gap-4">
+            <div className="min-w-0 flex-1">
+              <h2 className="text-lg font-semibold text-[#3b3b40]">{t('studentRegistration')}</h2>
+              <p className="mt-1 text-sm text-slate-600">
+                Same details as Add New Student. Save to mark this lead Paid and create the account. Cancel
+                leaves the lead status unchanged.
+              </p>
             </div>
-          </div>
-
-          {isLoadingLead || !lead ? (
-            <div className="p-8 text-center text-slate-500">Loading…</div>
-          ) : (
-            <form
-              onSubmit={handleSubmit(onValidSubmit)}
-              className="flex min-h-0 flex-1 flex-col"
-              noValidate
+            <DialogPrimitive.Close
+              className={PORTAL_FORM_SHEET_CLOSE_BUTTON_CLASS}
+              aria-label={t('closeRegistration')}
             >
-              <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-4 py-4 sm:px-6 sm:py-5">
-                {apiError && (
-                  <p className="rounded-[15px] bg-red-50 p-2 text-sm text-red-600" role="alert">
-                    {apiError}
-                  </p>
-                )}
+              <X className="h-4 w-4" />
+            </DialogPrimitive.Close>
+          </div>
+        </div>
 
-                <StudentAccountFormFields
-                  idPrefix={fieldIdPrefix}
-                  register={register}
-                  errors={errors}
-                  watch={watch}
-                  setValue={setValue}
-                  computedAge={computedAge}
-                  showParentSection={showParentSection}
-                  groupsForTeacher={groupsForTeacher}
-                  teachers={teachers}
-                  centers={centers}
-                  isLoadingGroups={isLoadingGroups}
-                  isLoadingTeachers={isLoadingTeachers}
-                  isLoadingCenters={isLoadingCenters}
-                  isSubmitting={isSubmitting}
-                  showCenterSelect={!isManager}
-                  assignedCenterDisplay={isManager ? managerCenterLabel : null}
-                />
-              </div>
-              <div className="flex flex-col-reverse justify-end gap-2 border-t border-slate-200 px-4 py-3 sm:flex-row sm:px-6">
+        {isLoadingLead || !lead ? (
+          <div className={cn(PORTAL_FORM_SHEET_SCROLL_CLASS, 'p-8 text-center text-slate-500')}>
+            {tCommon('loading')}
+          </div>
+        ) : (
+          <form
+            onSubmit={handleSubmit(onValidSubmit)}
+            className="flex min-h-0 flex-1 flex-col overflow-hidden"
+            noValidate
+          >
+            <div className={cn(PORTAL_FORM_SHEET_SCROLL_CLASS, 'flex-1 pt-4 sm:pt-5')}>
+              {apiError ? (
+                <p className="mb-4 rounded-[15px] bg-red-50 p-2 text-sm text-red-600" role="alert">
+                  {apiError}
+                </p>
+              ) : null}
+
+              <StudentAccountFormFields
+                idPrefix={fieldIdPrefix}
+                register={register}
+                errors={errors}
+                watch={watch}
+                setValue={setValue}
+                computedAge={computedAge}
+                showParentSection={showParentSection}
+                groupsForTeacher={groupsForTeacher}
+                teachers={teachers}
+                centers={centers}
+                isLoadingGroups={isLoadingGroups}
+                isLoadingTeachers={isLoadingTeachers}
+                isLoadingCenters={isLoadingCenters}
+                isSubmitting={isSubmitting}
+                showCenterSelect={!isManager}
+                assignedCenterDisplay={isManager ? managerCenterLabel : null}
+              />
+
+              <div className="flex flex-col-reverse gap-2 pt-4 sm:flex-row sm:justify-end min-[1367px]:pt-6">
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={onClose}
+                  onClick={requestClose}
                   disabled={isSubmitting}
                   className={cn(ADMIN_OUTLINE_BUTTON_CLASS, 'border-[rgba(14,14,16,0.07)] hover:bg-slate-50')}
                 >
@@ -301,10 +301,10 @@ export function PaidRegistrationModal({
                   {isSubmitting ? 'Saving…' : 'Save & mark Paid'}
                 </Button>
               </div>
-            </form>
-          )}
-      </div>
-    </>,
-    document.body,
+            </div>
+          </form>
+        )}
+      </PortalSheetPortal>
+    </DialogPrimitive.Root>
   );
 }

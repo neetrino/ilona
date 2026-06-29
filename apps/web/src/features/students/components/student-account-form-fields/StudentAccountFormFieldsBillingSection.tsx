@@ -20,7 +20,7 @@ export function StudentAccountFormFieldsBillingSection({
 
   return (
     <>
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4 min-[1367px]:grid-cols-2">
         <div className="min-w-0 space-y-2">
           <Label>{tCommon('level')}</Label>
           <input type="hidden" {...register('levelId')} />

@@ -73,6 +73,14 @@ export function useStudentAccountFormFields(props: StudentAccountFormFieldsProps
     [centers],
   );
 
+  const centerDropdownOptions = useMemo(
+    () => [
+      { id: '', label: tCommon('notAssigned') },
+      ...centers.map((center) => ({ id: center.id, label: center.name })),
+    ],
+    [centers, tCommon],
+  );
+
   return {
     p,
     watchedTeacherId,
@@ -87,5 +95,6 @@ export function useStudentAccountFormFields(props: StudentAccountFormFieldsProps
     teacherOptions,
     groupOptions,
     centerSegmentOptions,
+    centerDropdownOptions,
   };
 }

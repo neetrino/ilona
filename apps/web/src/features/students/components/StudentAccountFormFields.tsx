@@ -65,6 +65,7 @@ export function StudentAccountFormFields(props: StudentAccountFormFieldsProps) {
         teacherOptions={layout.teacherOptions}
         groupOptions={layout.groupOptions}
         centerSegmentOptions={layout.centerSegmentOptions}
+        centerDropdownOptions={layout.centerDropdownOptions}
       />
       {showParentSection ? <StudentAccountFormFieldsParentSection {...shell} /> : null}
       <StudentAccountFormFieldsBillingSection
