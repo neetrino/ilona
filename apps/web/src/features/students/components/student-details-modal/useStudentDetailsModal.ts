@@ -197,5 +197,6 @@ export function useStudentDetailsModal(props: StudentDetailsModalProps) {
     overlayStyle,
     contentStyle,
     isBaseLayer,
+    avatarUrl,
   };
 }

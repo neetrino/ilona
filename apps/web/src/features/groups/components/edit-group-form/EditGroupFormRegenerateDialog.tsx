@@ -18,7 +18,7 @@ export function EditGroupFormRegenerateDialog({
   onConfirmRegenerate,
 }: EditGroupFormRegenerateDialogProps) {
   return (
-    <Dialog open={regenerateDialogOpen} onOpenChange={setRegenerateDialogOpen}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent sheet={false} className="max-w-md rounded-[15px]">
         <DialogHeader>
           <DialogTitle>{tForm('replaceLessonsTitle')}</DialogTitle>
@@ -29,7 +29,7 @@ export function EditGroupFormRegenerateDialog({
             type="button"
             variant="outline"
             className={cn(ADMIN_OUTLINE_BUTTON_CLASS, 'border-[rgba(14,14,16,0.07)] hover:bg-slate-50')}
-            onClick={() => setRegenerateDialogOpen(false)}
+            onClick={() => onOpenChange(false)}
           >
             {tForm('goBack')}
           </Button>

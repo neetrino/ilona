@@ -273,6 +273,8 @@ export function useEditStudentForm({ open, onOpenChange, studentId }: EditStuden
         }
       : undefined;
 
+  const { overlayStyle, contentStyle, isBaseLayer } = useSheetStackZIndex(open);
+
   const onSubmit = async (data: UpdateStudentFormData) => {
     setErrorMessage(null);
 

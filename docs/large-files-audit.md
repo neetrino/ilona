@@ -26,6 +26,9 @@ Goal: gradually split source files so each stays at or below **400 lines**.
 | 2026-06-29 | `apps/api/src/modules/users/users.service.ts` | 729 | 77 (facade) | Split into read, manager, write + util |
 | 2026-06-29 | `apps/api/src/modules/teachers/teacher-crud.service.ts` | 715 | 45 (facade) | Split into list, read, write, access + util/constants |
 | 2026-06-29 | `apps/api/src/modules/search/search.service.ts` | 623 | 60 (facade) | Split into staff query, role query + filter util |
+| 2026-06-29 | `apps/web/src/features/groups/components/EditGroupForm.tsx` | 709 | 175 (orchestrator) | Split into fields, regenerate dialog, hook + types/constants |
+| 2026-06-29 | `apps/web/src/features/students/components/EditStudentForm.tsx` | 701 | 88 (orchestrator) | Split into fields, hook + types/constants |
+| 2026-06-29 | `apps/web/src/features/students/components/StudentDetailsModal.tsx` | 695 | 236 (orchestrator) | Split into body, stat card, hook + types/util |
 
 ## Split details (completed refactors)
 
@@ -52,8 +55,11 @@ Goal: gradually split source files so each stays at or below **400 lines**.
 | 16 | `users.service.ts` | 729 | 77 | **5** |
 | 17 | `teacher-crud.service.ts` | 715 | 45 | **7** |
 | 18 | `search.service.ts` | 623 | 60 | **4** |
+| 19 | `EditGroupForm.tsx` | 709 | 175 | **6** |
+| 20 | `EditStudentForm.tsx` | 701 | 88 | **5** |
+| 21 | `StudentDetailsModal.tsx` | 695 | 236 | **6** |
 
-**18** մեծ ֆайլ → **130** ֆайլ (18 facade/orchestrator + 112 նոր split ֆայլ)։
+**21** մեծ ֆայլ → **155** ֆայլ (21 facade/orchestrator + 134 նոր split ֆայլ)։
 
 ### 1. `apps/api/src/modules/chat/chat-management.service.ts` (1,195 → 61)
 
@@ -324,6 +330,44 @@ Goal: gradually split source files so each stays at or below **400 lines**.
 | `search-role-query.service.ts` | Teacher/student portal search |
 | `search-filter.util.ts` | Prisma where builders + limits |
 
+### 19. `apps/web/src/features/groups/components/EditGroupForm.tsx` (709 → 175)
+
+**6 ֆայլ** (1 orchestrator + 5 նոր, `edit-group-form/`)
+
+| Ֆայլ | Դեր |
+| --- | --- |
+| `EditGroupForm.tsx` | Sheet shell + loading state orchestrator |
+| `edit-group-form/useEditGroupForm.ts` | Form state, validation, submit, drag-to-close |
+| `edit-group-form/EditGroupFormFields.tsx` | Form fields JSX |
+| `edit-group-form/EditGroupFormRegenerateDialog.tsx` | Replace-lessons confirm dialog |
+| `edit-group-form/edit-group-form.types.ts` | Props + form data types |
+| `edit-group-form/edit-group-form.constants.ts` | Schedule error translation, shared classes |
+
+### 20. `apps/web/src/features/students/components/EditStudentForm.tsx` (701 → 88)
+
+**5 ֆայլ** (1 orchestrator + 4 նոր, `edit-student-form/`)
+
+| Ֆայլ | Դեր |
+| --- | --- |
+| `EditStudentForm.tsx` | Sheet shell orchestrator |
+| `edit-student-form/useEditStudentForm.ts` | Form state, validation, submit, drag-to-close |
+| `edit-student-form/EditStudentFormFields.tsx` | Form fields JSX |
+| `edit-student-form/edit-student-form.types.ts` | Props + form data types |
+| `edit-student-form/edit-student-form.constants.ts` | Shared textarea class |
+
+### 21. `apps/web/src/features/students/components/StudentDetailsModal.tsx` (695 → 236)
+
+**6 ֆայլ** (1 orchestrator + 5 նոր, `student-details-modal/`)
+
+| Ֆայլ | Դեր |
+| --- | --- |
+| `StudentDetailsModal.tsx` | Lightbox + sheet shell + header actions |
+| `student-details-modal/useStudentDetailsModal.ts` | Data fetch, drag-to-close, actions menu state |
+| `student-details-modal/StudentDetailsModalBody.tsx` | Scrollable profile / enrollment / stats content |
+| `student-details-modal/StudentDetailsModalStatCard.tsx` | Attendance / payments stat card |
+| `student-details-modal/student-details-modal.types.ts` | Modal props |
+| `student-details-modal/student-details-modal.util.ts` | Date + lifecycle formatters |
+
 ---
 
 ## Summary
@@ -331,9 +375,9 @@ Goal: gradually split source files so each stays at or below **400 lines**.
 | Metric | Value |
 | --- | --- |
 | Total source files scanned | 836 |
-| Files over 400 lines | **41** (was 58) |
-| Biggest file | `apps/web/src/features/groups/components/EditGroupForm.tsx` (709 lines) |
-| Frontend (`apps/web`) | 34 |
+| Files over 400 lines | **38** (was 58) |
+| Biggest file | `apps/web/src/features/chat/hooks/useChat.ts` (632 lines) |
+| Frontend (`apps/web`) | 31 |
 | Backend (`apps/api`) | 11 |
 | Shared / packages | 0 |
 
@@ -364,9 +408,9 @@ Goal: gradually split source files so each stays at or below **400 lines**.
 | ~~15~~ | ~~`apps/api/src/modules/settings/settings.service.ts`~~ | ~~738~~ | Backend / Settings | **Done** | — |
 | ~~16~~ | ~~`apps/api/src/modules/users/users.service.ts`~~ | ~~729~~ | Backend / Users | **Done** | — |
 | ~~17~~ | ~~`apps/api/src/modules/teachers/teacher-crud.service.ts`~~ | ~~715~~ | Backend / Teachers | **Done** | — |
-| 18 | `apps/web/src/features/groups/components/EditGroupForm.tsx` | 709 | Frontend / Groups | Extract form sections (basic info, teacher, schedule, capacity); split validation schema; extract submit/mutation hook | Medium |
-| 19 | `apps/web/src/features/students/components/EditStudentForm.tsx` | 701 | Frontend / Students | Extract account, group, parent/CRM, and payment sections into subcomponents; move Zod/schema and defaults to separate files | Medium |
-| 20 | `apps/web/src/features/students/components/StudentDetailsModal.tsx` | 695 | Frontend / Students | Split tabs/sections (profile, attendance, payments, notes); extract read-only field groups and action buttons | Medium |
+| ~~18~~ | ~~`apps/web/src/features/groups/components/EditGroupForm.tsx`~~ | ~~709~~ | Frontend / Groups | **Done** | — |
+| ~~19~~ | ~~`apps/web/src/features/students/components/EditStudentForm.tsx`~~ | ~~701~~ | Frontend / Students | **Done** | — |
+| ~~20~~ | ~~`apps/web/src/features/students/components/StudentDetailsModal.tsx`~~ | ~~695~~ | Frontend / Students | **Done** | — |
 | 21 | `apps/web/src/features/chat/hooks/useChat.ts` | 632 | Frontend / Chat | Split into focused hooks (messages, socket events, cache updates, navigation); extract shared chat query keys and reducers | Medium |
 | 22 | `apps/web/src/features/chat/components/TeacherChatList.tsx` | 630 | Frontend / Chat | Extract list item, filters, empty/loading states; move list query and selection logic into hook | Medium |
 | 23 | `apps/web/src/shared/components/ui/date-picker-input.tsx` | 627 | Frontend / Shared UI | Split calendar popover, input masking, range/single modes, and locale formatting into subcomponents/utils | Medium |
@@ -410,9 +454,9 @@ Goal: gradually split source files so each stays at or below **400 lines**.
 
 ## Recommended first 3 refactors
 
-1. **`apps/web/src/features/groups/components/EditGroupForm.tsx`** (709 lines) — Extract form sections and validation schema.
-2. **`apps/web/src/features/students/components/EditStudentForm.tsx`** (701 lines) — Extract account, group, parent sections.
-3. **`apps/web/src/features/students/components/StudentDetailsModal.tsx`** (695 lines) — Split tabs/sections.
+1. **`apps/web/src/features/chat/hooks/useChat.ts`** (632 lines) — Split into focused message/socket/cache hooks.
+2. **`apps/web/src/features/chat/components/TeacherChatList.tsx`** (630 lines) — Extract list item and filters.
+3. **`apps/web/src/shared/components/ui/date-picker-input.tsx`** (627 lines) — Split calendar popover and input masking.
 
 ---
 

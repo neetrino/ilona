@@ -1,11 +1,4 @@
-import type { UserStatus } from '@/types';
-
-const ADMIN_TEXTAREA_CLASS = cn(
-  ADMIN_FORM_INPUT_CLASS,
-  'h-auto min-h-[5.5rem] resize-none py-2',
-);
-
-type UpdateStudentFormData = {
+export type UpdateStudentFormData = {
   firstName: string;
   lastName: string;
   phone?: string;
@@ -25,7 +18,7 @@ type UpdateStudentFormData = {
   registerDate?: string;
 };
 
-interface EditStudentFormProps {
+export interface EditStudentFormProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   studentId: string;
