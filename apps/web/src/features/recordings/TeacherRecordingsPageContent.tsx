@@ -24,7 +24,7 @@ import type { useTeacherRecordingsPage } from './useTeacherRecordingsPage';
 
 type TeacherRecordingsPageState = ReturnType<typeof useTeacherRecordingsPage>;
 
-export interface TeacherRecordingsPageContentProps extends TeacherRecordingsPageState {}
+export type TeacherRecordingsPageContentProps = TeacherRecordingsPageState;
 
 export function TeacherRecordingsPageContent({
   t,
