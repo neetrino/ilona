@@ -51,7 +51,7 @@ export function SingleSelectDropdownMenu({
   useDialogPortal,
   listboxId,
   labelId,
-  error,
+  error: _error,
   options,
   filteredOptions,
   searchable,

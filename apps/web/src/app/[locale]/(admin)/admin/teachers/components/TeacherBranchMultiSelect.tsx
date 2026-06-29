@@ -225,15 +225,13 @@ export function TeacherBranchMultiSelect({
     };
   }, [isOpen, confirmState, closeDropdown, options.length]);
 
-  const displayIds = isOpen ? draftIds : new Set(localValue);
-  const selectedChips = useMemo(
-    () =>
-      Array.from(displayIds)
-        .map((id) => optionById.get(id))
-        .filter((option): option is { id: string; label: string; colorHex?: string | null } => Boolean(option))
-        .sort((a, b) => a.label.localeCompare(b.label)),
-    [displayIds, optionById],
-  );
+  const selectedChips = useMemo(() => {
+    const displayIds = isOpen ? draftIds : new Set(localValue);
+    return Array.from(displayIds)
+      .map((id) => optionById.get(id))
+      .filter((option): option is { id: string; label: string; colorHex?: string | null } => Boolean(option))
+      .sort((a, b) => a.label.localeCompare(b.label));
+  }, [draftIds, isOpen, localValue, optionById]);
 
   const handleToggle = (optionId: string) => {
     const option = optionById.get(optionId);

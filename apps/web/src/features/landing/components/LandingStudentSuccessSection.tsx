@@ -6,7 +6,7 @@ import { cn } from '@/shared/lib/utils';
 import { BUTTON_HOVER_CLASS, STUDENT_SUCCESS_IMAGE } from '../landingConstants';
 import type { LandingSectionProps } from '../types';
 
-export function LandingStudentSuccessSection({ tr, isHy }: LandingSectionProps) {
+export function LandingStudentSuccessSection({ tr }: LandingSectionProps) {
 
   return (
     <>
