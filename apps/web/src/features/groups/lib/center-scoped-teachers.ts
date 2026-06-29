@@ -11,19 +11,9 @@ export function isTeacherAtCenter(teacher: Teacher, centerId: string): boolean {
 export function filterTeachersForCenter(
   teachers: Teacher[],
   centerId: string | undefined,
-  preserveTeacherIds: string[] = [],
 ): Teacher[] {
   if (!centerId) return [];
-
-  let list = teachers.filter((t) => isTeacherAtCenter(t, centerId));
-
-  for (const id of preserveTeacherIds) {
-    if (!id || list.some((t) => t.id === id)) continue;
-    const current = teachers.find((t) => t.id === id);
-    if (current) list = [current, ...list];
-  }
-
-  return list;
+  return teachers.filter((t) => isTeacherAtCenter(t, centerId));
 }
 
 export function teacherOptionLabel(teacher: Teacher): string {

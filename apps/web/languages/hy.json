@@ -945,6 +945,7 @@
       "teacherRotationHint": "Teacher 1 Main-ը լռելյայնորեն դասեր է տալիս schedule start date-ը պարունակող ISO շաբաթը (երկ–կիր), Teacher 2-ը՝ հաջորդ շաբաթը, ապա շաբաթական հերթափոխվում են (generated lesson-ների համար)։ Նշեք վերևի checkbox-ը, եթե առաջին շաբաթը պետք է սկսի Teacher 2-ը։",
       "optional": "(Ընտրովի)",
       "noTeacherAssigned": "Ընտրել ուսուցիչ",
+      "searchTeachers": "Որոնել ուսուցիչներ...",
       "loadingCenters": "Կենտրոնները բեռնվում են...",
       "noCentersAvailable": "Ակտիվ կենտրոններ չկան։ Նախ ստեղծեք կենտրոն։",
       "loadingTeachers": "Ուսուցիչները բեռնվում են...",

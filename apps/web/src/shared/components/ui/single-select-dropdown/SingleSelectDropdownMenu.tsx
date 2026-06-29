@@ -113,14 +113,9 @@ export function SingleSelectDropdownMenu({
         {options.length === 0 ? (
           <div className="p-3 text-sm text-[#8b8b90]">{t('noOptionsAvailable')}</div>
         ) : (
-          <div className="min-h-0 flex-1 space-y-1 overflow-y-auto p-1">
+          <>
             {searchable && (
-              <div
-                className={cn(
-                  DROPDOWN_OPTION_BASE_CLASS,
-                  'cursor-text p-0 ring-2 ring-inset ring-[#1010a3]/10',
-                )}
-              >
+              <div className="shrink-0 border-b border-[rgba(14,14,16,0.08)] p-2">
                 <input
                   ref={searchInputRef}
                   type="text"
@@ -141,56 +136,58 @@ export function SingleSelectDropdownMenu({
                       optionRefs.current[0]?.focus();
                     }
                   }}
-                  className="h-full w-full rounded-lg border-0 bg-transparent px-3 py-2.5 text-sm text-[#3b3b40] placeholder:font-normal placeholder:text-slate-400 focus:outline-none"
+                  className="w-full rounded-lg border border-[rgba(14,14,16,0.12)] bg-transparent px-3 py-2.5 text-sm text-[#3b3b40] placeholder:font-normal placeholder:text-slate-400 focus:border-[#1010a3] focus:outline-none focus:ring-1 focus:ring-[#1010a3]"
                 />
               </div>
             )}
-            {searchable && searchQuery.trim() && filteredOptions.length === 0 ? (
-              <div className="px-3 py-2 text-sm text-[#8b8b90]">{resolvedNoSearchResultsMessage}</div>
-            ) : (
-              filteredOptions.map((option, index) => {
-                const isSelected = (value ?? '') === option.id;
-                return (
-                  <button
-                    id={`${listboxId}-option-${option.id || index}`}
-                    key={option.id || `empty-${index}`}
-                    ref={(node) => {
-                      optionRefs.current[index] = node;
-                    }}
-                    type="button"
-                    role="option"
-                    aria-selected={isSelected}
-                    title={option.label}
-                    onMouseDown={(event) => {
-                      event.preventDefault();
-                      event.stopPropagation();
-                    }}
-                    onClick={(event) => {
-                      event.preventDefault();
-                      event.stopPropagation();
-                      onSelect(option.id);
-                    }}
-                    onMouseEnter={() => onActiveIndexChange(index)}
-                    className={cn(
-                      DROPDOWN_OPTION_BASE_CLASS,
-                      DROPDOWN_OPTION_INTERACTIVE_CLASS,
-                      isSelected && DROPDOWN_OPTION_SELECTED_CLASS,
-                      activeIndex === index && 'bg-slate-50 text-[#1010a3]',
-                    )}
-                  >
-                    <span
+            <div className="min-h-0 flex-1 space-y-1 overflow-y-auto p-1">
+              {searchable && searchQuery.trim() && filteredOptions.length === 0 ? (
+                <div className="px-3 py-2 text-sm text-[#8b8b90]">{resolvedNoSearchResultsMessage}</div>
+              ) : (
+                filteredOptions.map((option, index) => {
+                  const isSelected = (value ?? '') === option.id;
+                  return (
+                    <button
+                      id={`${listboxId}-option-${option.id || index}`}
+                      key={option.id || `empty-${index}`}
+                      ref={(node) => {
+                        optionRefs.current[index] = node;
+                      }}
+                      type="button"
+                      role="option"
+                      aria-selected={isSelected}
+                      title={option.label}
+                      onMouseDown={(event) => {
+                        event.preventDefault();
+                        event.stopPropagation();
+                      }}
+                      onClick={(event) => {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        onSelect(option.id);
+                      }}
+                      onMouseEnter={() => onActiveIndexChange(index)}
                       className={cn(
-                        'block',
-                        wrapText ? 'whitespace-normal break-words text-left' : 'truncate',
+                        DROPDOWN_OPTION_BASE_CLASS,
+                        DROPDOWN_OPTION_INTERACTIVE_CLASS,
+                        isSelected && DROPDOWN_OPTION_SELECTED_CLASS,
+                        activeIndex === index && 'bg-slate-50 text-[#1010a3]',
                       )}
                     >
-                      {option.label}
-                    </span>
-                  </button>
-                );
-              })
-            )}
-          </div>
+                      <span
+                        className={cn(
+                          'block',
+                          wrapText ? 'whitespace-normal break-words text-left' : 'truncate',
+                        )}
+                      >
+                        {option.label}
+                      </span>
+                    </button>
+                  );
+                })
+              )}
+            </div>
+          </>
         )}
       </div>
     </>,

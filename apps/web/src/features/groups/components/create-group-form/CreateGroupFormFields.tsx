@@ -204,6 +204,8 @@ export function CreateGroupFormFields(props: CreateGroupFormFieldsProps) {
               }
             }}
             placeholder={teacherPlaceholder}
+            searchable
+            searchPlaceholder={tForm('searchTeachers')}
             isLoading={isLoadingTeachers}
             error={errors.teacherId?.message ?? null}
             disabled={teacherDropdownDisabled}
@@ -232,6 +234,8 @@ export function CreateGroupFormFields(props: CreateGroupFormFieldsProps) {
               })
             }
             placeholder={teacherPlaceholder}
+            searchable
+            searchPlaceholder={tForm('searchTeachers')}
             isLoading={isLoadingTeachers}
             error={errors.secondTeacherId?.message ?? null}
             disabled={teacherDropdownDisabled}

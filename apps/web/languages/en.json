@@ -945,6 +945,7 @@
       "teacherRotationHint": "Teacher 1 Main leads the calendar week that contains the schedule start date (Mon–Sun) by default; Teacher 2 leads the next week; they then alternate weekly for generated lessons. Check the box above to have Teacher 2 start the first week instead.",
       "optional": "(Optional)",
       "noTeacherAssigned": "Select a teacher",
+      "searchTeachers": "Search teachers...",
       "loadingCenters": "Loading centers...",
       "noCentersAvailable": "No active centers available. Please create a center first.",
       "loadingTeachers": "Loading teachers...",

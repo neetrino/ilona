@@ -111,12 +111,8 @@ export function useEditGroupForm({
 
   const hasCenterSelected = Boolean(watchedCenterId);
   const teachersForCenter = useMemo(
-    () =>
-      filterTeachersForCenter(teachers, watchedCenterId, [
-        watchedTeacherId ?? '',
-        watchedSecondTeacherId ?? '',
-      ]),
-    [teachers, watchedCenterId, watchedTeacherId, watchedSecondTeacherId],
+    () => filterTeachersForCenter(teachers, watchedCenterId),
+    [teachers, watchedCenterId],
   );
   const teacherDropdownDisabled =
     isSubmitting || updateGroup.isPending || isLoadingTeachers || !hasCenterSelected;

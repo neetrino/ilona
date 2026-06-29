@@ -211,14 +211,19 @@ export function useSingleSelectDropdown({
 
   useEffect(() => {
     if (!isOpen) return;
+    if (searchable) {
+      setActiveIndex(-1);
+      return;
+    }
     const selectedIndex = filteredOptions.findIndex((option) => option.id === value);
     setActiveIndex(selectedIndex >= 0 ? selectedIndex : filteredOptions.length > 0 ? 0 : -1);
-  }, [isOpen, filteredOptions, value]);
+  }, [isOpen, filteredOptions, value, searchable]);
 
   useEffect(() => {
     if (!isOpen || activeIndex < 0) return;
+    if (searchable && document.activeElement === searchInputRef.current) return;
     optionRefs.current[activeIndex]?.focus();
-  }, [isOpen, activeIndex]);
+  }, [isOpen, activeIndex, searchable]);
 
   const useDialogPortal = portalContainer !== null && portalContainer !== document.body;
 

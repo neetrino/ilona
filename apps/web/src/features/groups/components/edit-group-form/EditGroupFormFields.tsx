@@ -194,6 +194,8 @@ export function EditGroupFormFields(props: EditGroupFormFieldsProps) {
                   }
                 }}
                 placeholder={teacherPlaceholder}
+                searchable
+                searchPlaceholder={tForm('searchTeachers')}
                 isLoading={isLoadingTeachers}
                 error={errors.teacherId?.message ?? null}
                 disabled={teacherDropdownDisabled}
@@ -222,6 +224,8 @@ export function EditGroupFormFields(props: EditGroupFormFieldsProps) {
                   })
                 }
                 placeholder={teacherPlaceholder}
+                searchable
+                searchPlaceholder={tForm('searchTeachers')}
                 isLoading={isLoadingTeachers}
                 error={errors.secondTeacherId?.message ?? null}
                 disabled={teacherDropdownDisabled}
