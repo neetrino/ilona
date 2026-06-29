@@ -48,6 +48,12 @@ Goal: gradually split source files so each stays at or below **400 lines**.
 | 2026-06-29 | `apps/web/src/features/teachers/components/AddTeacherForm.tsx` | 515 | 74 (orchestrator) | Split into fields, hook + types/constants |
 | 2026-06-29 | `apps/web/src/shared/lib/api-client.ts` | 511 | 4 (re-export) | Split into core client, refresh coordinator, token/error utils + types |
 | 2026-06-29 | `apps/web/src/features/students/components/StudentAccountFormFieldsCrmLeadLayout.tsx` | 506 | 65 (orchestrator) | Split into identity/profile/enrollment/billing sections + hook + types/constants |
+| 2026-06-29 | `apps/web/src/features/chat/components/AdminChatList.tsx` | 494 | 101 (orchestrator) | Split into tab bar, search, student/teacher/group items, empty state + hook + types; reused loading skeleton |
+| 2026-06-29 | `apps/web/src/shared/components/ui/single-select-dropdown.tsx` | 492 | 84 (orchestrator) | Split into trigger, menu, hook + position util/types/constants |
+| 2026-06-29 | `apps/web/src/features/daily-plan/DailyPlanEditor.tsx` | 487 | 74 (orchestrator) | Split into form body, topic section, auto-resize textarea + hook + util/types/constants |
+| 2026-06-29 | `apps/web/src/features/chat/components/ChatContainer.tsx` | 520 | 77 (orchestrator) | Split into header, list pane, desktop pane, loading shell + hook + util/types |
+| 2026-06-29 | `apps/web/src/features/schedule/ScheduleLessonViews.tsx` | 505 | 7 (re-export) | Split into week/month grids, mobile day view, desktop table, lesson card + hook + util/types/constants |
+| 2026-06-29 | `apps/web/src/features/chat/components/VoiceMessagePlayer.tsx` | 508 | 20 (orchestrator) | Split into controls, error state + hook + util/types/constants |
 
 ## Split details (completed refactors)
 
@@ -97,8 +103,14 @@ Goal: gradually split source files so each stays at or below **400 lines**.
 | 38 | `AddTeacherForm.tsx` | 515 | 74 | **5** |
 | 39 | `api-client.ts` | 511 | 4 | **6** |
 | 40 | `StudentAccountFormFieldsCrmLeadLayout.tsx` | 506 | 65 | **8** |
+| 41 | `AdminChatList.tsx` | 494 | 101 | **9** |
+| 42 | `single-select-dropdown.tsx` | 492 | 84 | **7** |
+| 43 | `DailyPlanEditor.tsx` | 487 | 74 | **9** |
+| 44 | `ChatContainer.tsx` | 520 | 77 | **8** |
+| 45 | `ScheduleLessonViews.tsx` | 505 | 7 | **10** |
+| 46 | `VoiceMessagePlayer.tsx` | 508 | 20 | **7** |
 
-**40** մեծ ֆайլ → **272** ֆայլ (39 facade/orchestrator + 233 նոր split ֆայլ)։
+**46** մեծ ֆայլ → **301** ֆայլ (45 facade/orchestrator/re-export + 256 նոր split ֆայլ)։
 
 ### 1. `apps/api/src/modules/chat/chat-management.service.ts` (1,195 → 61)
 
@@ -667,6 +679,98 @@ Goal: gradually split source files so each stays at or below **400 lines**.
 | `student-account-crm-layout/student-account-crm-layout.types.ts` | Props types |
 | `student-account-crm-layout/student-account-crm-layout.constants.ts` | Section classes + field id helper |
 
+### 41. `apps/web/src/features/chat/components/AdminChatList.tsx` (494 → 101)
+
+**9 ֆայլ** (1 orchestrator + 7 նոր, `admin-chat-list/`; loading skeleton reused from `teacher-chat-list/`)
+
+| Ֆայլ | Դեր |
+| --- | --- |
+| `AdminChatList.tsx` | Tab routing + category empty state orchestrator |
+| `admin-chat-list/useAdminChatList.ts` | Data fetch, sort, unread/online helpers, select handlers |
+| `admin-chat-list/AdminChatListTabBar.tsx` | Groups/teachers/students tabs + badges |
+| `admin-chat-list/AdminChatListSearch.tsx` | Tab-aware search input |
+| `admin-chat-list/AdminChatListStudentItems.tsx` | Student DM rows |
+| `admin-chat-list/AdminChatListTeacherItems.tsx` | Teacher DM rows |
+| `admin-chat-list/AdminChatListGroupItems.tsx` | Custom + class group rows |
+| `admin-chat-list/AdminChatListEmptyState.tsx` | Tab-specific empty state |
+| `admin-chat-list/admin-chat-list.types.ts` | Props + view-model types |
+
+### 42. `apps/web/src/shared/components/ui/single-select-dropdown.tsx` (492 → 84)
+
+**7 ֆայլ** (1 orchestrator + 5 նոր, `single-select-dropdown/`)
+
+| Ֆայլ | Դեր |
+| --- | --- |
+| `single-select-dropdown.tsx` | Shell + re-exports orchestrator |
+| `single-select-dropdown/useSingleSelectDropdown.ts` | Open state, keyboard nav, filtering, positioning |
+| `single-select-dropdown/SingleSelectDropdownTrigger.tsx` | Label + trigger button |
+| `single-select-dropdown/SingleSelectDropdownMenu.tsx` | Portaled listbox, search, options |
+| `single-select-dropdown/single-select-dropdown-position.util.ts` | Portal target + menu placement |
+| `single-select-dropdown/single-select-dropdown.types.ts` | Props + menu position types |
+| `single-select-dropdown/single-select-dropdown.constants.ts` | Data attributes + mobile portal breakpoint |
+
+### 43. `apps/web/src/features/daily-plan/DailyPlanEditor.tsx` (487 → 74)
+
+**9 ֆայլ** (1 orchestrator + 7 նոր, `daily-plan-editor/`)
+
+| Ֆայլ | Դեր |
+| --- | --- |
+| `DailyPlanEditor.tsx` | Sheet shell + header orchestrator |
+| `daily-plan-editor/useDailyPlanEditor.ts` | Form state, mutations, topic/resource handlers |
+| `daily-plan-editor/DailyPlanEditorFormBody.tsx` | Date/group pickers, topics list, actions |
+| `daily-plan-editor/DailyPlanEditorTopicSection.tsx` | Single topic + resource grid |
+| `daily-plan-editor/DailyPlanAutoResizeTextarea.tsx` | Session-persisted description textarea |
+| `daily-plan-editor/daily-plan-editor.util.ts` | emptyTopic + toDrafts mappers |
+| `daily-plan-editor/daily-plan-editor.types.ts` | Props + draft types |
+| `daily-plan-editor/daily-plan-editor.constants.ts` | Resource kind list |
+| `daily-plan-editor/daily-plan-editor.styles.ts` | Shared textarea class |
+
+### 44. `apps/web/src/features/chat/components/ChatContainer.tsx` (520 → 77)
+
+**8 ֆայլ** (1 orchestrator + 7 նոր, `chat-container/`)
+
+| Ֆայլ | Դեր |
+| --- | --- |
+| `ChatContainer.tsx` | Hydration shell + layout orchestrator |
+| `chat-container/useChatContainer.ts` | URL sync, selection, mobile panel, account key |
+| `chat-container/ChatContainerHeader.tsx` | Back navigation + title bar |
+| `chat-container/ChatContainerListPane.tsx` | Role-aware chat list sidebar |
+| `chat-container/ChatContainerDesktopPane.tsx` | Desktop window or empty state |
+| `chat-container/ChatContainerLoadingShell.tsx` | Pre-hydration loading spinner |
+| `chat-container/chat-container.util.ts` | Layout calc + safe returnTo path |
+| `chat-container/chat-container.types.ts` | Props + view-model types |
+
+### 45. `apps/web/src/features/schedule/ScheduleLessonViews.tsx` (505 → 7 re-export)
+
+**10 ֆայլ** (1 re-export + 9 նոր, `schedule-lesson-views/`)
+
+| Ֆայլ | Դեր |
+| --- | --- |
+| `ScheduleLessonViews.tsx` | Re-exports week/month grids |
+| `schedule-lesson-views/WeekLessonGrid.tsx` | Week view orchestrator |
+| `schedule-lesson-views/MonthLessonGrid.tsx` | Month calendar wrapper |
+| `schedule-lesson-views/WeekLessonGridMobileDayView.tsx` | Mobile day picker + timeline |
+| `schedule-lesson-views/WeekLessonGridDesktopTable.tsx` | Desktop time-grid table |
+| `schedule-lesson-views/ScheduleLessonCard.tsx` | Shared lesson card |
+| `schedule-lesson-views/useWeekLessonGrid.ts` | Slot grouping + day selection hook |
+| `schedule-lesson-views/schedule-lesson-views.util.ts` | Time format, bounds, card tone |
+| `schedule-lesson-views/schedule-lesson-views.constants.ts` | Schedule hours + card classes |
+| `schedule-lesson-views/schedule-lesson-views.types.ts` | Props + variant types |
+
+### 46. `apps/web/src/features/chat/components/VoiceMessagePlayer.tsx` (508 → 20)
+
+**7 ֆայլ** (1 orchestrator + 6 նոր, `voice-message-player/`)
+
+| Ֆայլ | Դեր |
+| --- | --- |
+| `VoiceMessagePlayer.tsx` | Error vs controls routing orchestrator |
+| `voice-message-player/useVoiceMessagePlayer.ts` | Audio lifecycle, scrubbing, speed hook |
+| `voice-message-player/VoiceMessagePlayerControls.tsx` | Play/pause, progress bar, speed, duration |
+| `voice-message-player/VoiceMessagePlayerErrorState.tsx` | Error UI + retry |
+| `voice-message-player/voice-message-player.util.ts` | Storage, active audio singleton, duration helpers |
+| `voice-message-player/voice-message-player.constants.ts` | Speed options + storage keys |
+| `voice-message-player/voice-message-player.types.ts` | Props + playback speed type |
+
 ---
 
 ## Summary
@@ -674,9 +778,9 @@ Goal: gradually split source files so each stays at or below **400 lines**.
 | Metric | Value |
 | --- | --- |
 | Total source files scanned | 836 |
-| Files over 400 lines | **19** (was 58) |
-| Biggest file | `apps/web/src/features/chat/components/AdminChatList.tsx` (494 lines) |
-| Frontend (`apps/web`) | 15 |
+| Files over 400 lines | **13** (was 58) |
+| Biggest file | `apps/api/src/modules/feedback/feedback.service.ts` (465 lines) |
+| Frontend (`apps/web`) | 9 |
 | Shared / packages | 1 |
 
 **Extensions scanned:** `.ts`, `.tsx`, `.js`, `.jsx`, `.css`, `.scss`, `.module.css`, `.module.scss`
@@ -729,12 +833,12 @@ Goal: gradually split source files so each stays at or below **400 lines**.
 | ~~38~~ | ~~`apps/web/src/features/teachers/components/AddTeacherForm.tsx`~~ | ~~515~~ | Frontend / Teachers | **Done** | — |
 | ~~39~~ | ~~`apps/web/src/shared/lib/api-client.ts`~~ | ~~511~~ | Frontend / Shared lib | **Done** | — |
 | ~~40~~ | ~~`apps/web/src/features/students/components/StudentAccountFormFieldsCrmLeadLayout.tsx`~~ | ~~506~~ | Frontend / Students | **Done** | — |
-| 41 | `apps/web/src/features/chat/components/AdminChatList.tsx` | 494 | Frontend / Chat | Extract list filters, conversation row, and bulk actions; share list item with TeacherChatList where possible | Low |
-| 42 | `apps/web/src/shared/components/ui/single-select-dropdown.tsx` | 492 | Frontend / Shared UI | Split trigger, options list, search/filter, and keyboard navigation; extract positioning and selection utils | Low |
-| 43 | `apps/web/src/features/daily-plan/DailyPlanEditor.tsx` | 487 | Frontend / Daily plan | Extract editor toolbar, block list, and individual block types; move document state/reducer to hook | Low |
-| 44 | `apps/web/src/features/chat/components/ChatContainer.tsx` | 485 | Frontend / Chat | Extract sidebar/list pane vs window layout; move chat selection and responsive breakpoint logic to hook | Low |
-| 45 | `apps/web/src/features/schedule/ScheduleLessonViews.tsx` | 478 | Frontend / Schedule | Split day/week/month views into separate components; extract shared lesson card and time-grid utils | Low |
-| 46 | `apps/web/src/features/chat/components/VoiceMessagePlayer.tsx` | 465 | Frontend / Chat | Extract waveform/progress UI, playback controls, and download logic; move audio element lifecycle to hook | Low |
+| ~~41~~ | ~~`apps/web/src/features/chat/components/AdminChatList.tsx`~~ | ~~494~~ | Frontend / Chat | **Done** | — |
+| ~~42~~ | ~~`apps/web/src/shared/components/ui/single-select-dropdown.tsx`~~ | ~~492~~ | Frontend / Shared UI | **Done** | — |
+| ~~43~~ | ~~`apps/web/src/features/daily-plan/DailyPlanEditor.tsx`~~ | ~~487~~ | Frontend / Daily plan | **Done** | — |
+| ~~44~~ | ~~`apps/web/src/features/chat/components/ChatContainer.tsx`~~ | ~~485~~ | Frontend / Chat | **Done** | — |
+| ~~45~~ | ~~`apps/web/src/features/schedule/ScheduleLessonViews.tsx`~~ | ~~478~~ | Frontend / Schedule | **Done** | — |
+| ~~46~~ | ~~`apps/web/src/features/chat/components/VoiceMessagePlayer.tsx`~~ | ~~465~~ | Frontend / Chat | **Done** | — |
 | 47 | `apps/api/src/modules/feedback/feedback.service.ts` | 465 | Backend / Feedback | Split create/update/query paths; extract lesson/student validation and notification side-effects | Low |
 | 48 | `apps/web/src/features/chat/components/VoiceRecorder.tsx` | 464 | Frontend / Chat | Extract recording UI, permission handling, and upload flow; move MediaRecorder lifecycle to hook | Low |
 | 49 | `apps/web/src/features/crm/components/LeadDrawer.tsx` | 462 | Frontend / CRM | Split drawer header, activity timeline, and quick actions; extract lead fetch/update hooks | Low |
@@ -752,9 +856,9 @@ Goal: gradually split source files so each stays at or below **400 lines**.
 
 ## Recommended first 3 refactors
 
-1. **`apps/web/src/features/chat/components/AdminChatList.tsx`** (494 lines) — Extract filters, row, bulk actions; share with TeacherChatList.
-2. **`apps/web/src/shared/components/ui/single-select-dropdown.tsx`** (492 lines) — Split trigger, options list, search, keyboard navigation.
-3. **`apps/web/src/features/daily-plan/DailyPlanEditor.tsx`** (487 lines) — Extract toolbar, block list, block types + hook.
+1. **`apps/api/src/modules/feedback/feedback.service.ts`** (465 lines) — Split create/update/query paths; extract validation + notification side-effects.
+2. **`apps/web/src/features/chat/components/VoiceRecorder.tsx`** (464 lines) — Extract recording UI, permission handling, upload flow + MediaRecorder hook.
+3. **`apps/web/src/features/crm/components/LeadDrawer.tsx`** (462 lines) — Split drawer header, activity timeline, quick actions + fetch/update hooks.
 
 ---
 
