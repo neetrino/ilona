@@ -1,6 +1,7 @@
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { Logger } from '@nestjs/common';
+import { assertSafeStorageKey } from './storage-key.util';
 
 const LOCAL_SUBDIRECTORIES = ['avatars', 'chat', 'documents', 'settings'] as const;
 
@@ -9,7 +10,16 @@ export function resolveLocalStoragePath(basePath?: string): string {
 }
 
 export function getLocalFilePath(localStoragePath: string, key: string): string {
-  return path.join(localStoragePath, key);
+  const safeKey = assertSafeStorageKey(key);
+  const basePath = path.resolve(localStoragePath);
+  const filePath = path.resolve(basePath, safeKey);
+  const relativePath = path.relative(basePath, filePath);
+
+  if (relativePath.startsWith('..') || path.isAbsolute(relativePath)) {
+    throw new Error('Invalid storage key path');
+  }
+
+  return filePath;
 }
 
 export async function ensureLocalStorageDirectory(

@@ -28,6 +28,11 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { StorageService } from './storage.service';
 import { CurrentUser, Public } from '../../common/decorators';
 import { JwtPayload } from '../../common/types/auth.types';
+import {
+  assertSafeStorageKey,
+  extractStorageKeyFromProxyUrl,
+  InvalidStorageKeyError,
+} from './storage-key.util';
 
 // Max file sizes
 // Note: Base64 encoding increases size by ~33%, so 5MB file becomes ~6.7MB base64
@@ -244,7 +249,7 @@ export class StorageController {
   ) {
     try {
       // Decode the key (it may be URL encoded)
-      const decodedKey = decodeURIComponent(key);
+      const decodedKey = assertSafeStorageKey(decodeURIComponent(key));
       
       // Get file from storage service
       const fileBuffer = await this.storageService.getFile(decodedKey);
@@ -286,7 +291,10 @@ export class StorageController {
       res.setHeader('Cache-Control', 'public, max-age=31536000'); // Cache for 1 year
       res.send(fileBuffer);
     } catch (error) {
-      if (error instanceof NotFoundException) {
+      if (error instanceof NotFoundException || error instanceof InvalidStorageKeyError) {
+        if (error instanceof InvalidStorageKeyError) {
+          throw new BadRequestException(error.message);
+        }
         throw error;
       }
       this.logger.error(`Failed to get file: ${error instanceof Error ? error.message : String(error)}`);
@@ -313,26 +321,7 @@ export class StorageController {
 
       // Decode the URL in case it's encoded
       const decodedUrl = decodeURIComponent(fileUrl);
-
-      // Extract key from R2 URL
-      // R2 URLs format: https://pub-xxx.r2.dev/chat/filename.webm
-      // or: https://pub-xxx.r2.dev/chat/voice/filename.webm
-      let key: string;
-      
-      try {
-        const url = new URL(decodedUrl);
-        // Extract path after domain (e.g., /chat/filename.webm)
-        key = url.pathname.startsWith('/') ? url.pathname.substring(1) : url.pathname;
-      } catch {
-        // If URL parsing fails, try to extract key manually
-        // Look for patterns like /chat/ or /chat/voice/
-        const match = decodedUrl.match(/\/(chat|avatars|documents)(\/.*)?$/);
-        if (match) {
-          key = match[0].startsWith('/') ? match[0].substring(1) : match[0];
-        } else {
-          throw new BadRequestException('Invalid file URL format');
-        }
-      }
+      const key = extractStorageKeyFromProxyUrl(decodedUrl);
       
       // Get file from storage service
       const fileBuffer = await this.storageService.getFile(key);
@@ -374,7 +363,14 @@ export class StorageController {
       res.setHeader('Cache-Control', 'public, max-age=31536000'); // Cache for 1 year
       res.send(fileBuffer);
     } catch (error) {
-      if (error instanceof NotFoundException || error instanceof BadRequestException) {
+      if (
+        error instanceof NotFoundException ||
+        error instanceof BadRequestException ||
+        error instanceof InvalidStorageKeyError
+      ) {
+        if (error instanceof InvalidStorageKeyError) {
+          throw new BadRequestException(error.message);
+        }
         throw error;
       }
       this.logger.error(`Failed to proxy file: ${error instanceof Error ? error.message : String(error)}`);
@@ -392,7 +388,7 @@ export class StorageController {
     @CurrentUser() _user: JwtPayload,
   ) {
     // Decode the key (it may be URL encoded)
-    const decodedKey = decodeURIComponent(key);
+    const decodedKey = assertSafeStorageKey(decodeURIComponent(key));
 
     await this.storageService.delete(decodedKey);
 

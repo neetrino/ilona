@@ -8,6 +8,7 @@ import {
   type StorageConfig,
 } from './storage-client.util';
 import { getLocalFilePath } from './storage-local.util';
+import { assertSafeStorageKey } from './storage-key.util';
 import { StorageUploadService } from './storage-upload.service';
 
 @Injectable()
@@ -20,8 +21,10 @@ export class StorageReadService {
   ) {}
 
   async getPresignedDownloadUrl(key: string, expiresIn = 3600): Promise<string> {
+    const safeKey = assertSafeStorageKey(key);
+
     if (this.config.useLocalStorage) {
-      return this.uploadService.getPublicUrl(key);
+      return this.uploadService.getPublicUrl(safeKey);
     }
 
     assertS3Configured(this.config);
@@ -29,7 +32,7 @@ export class StorageReadService {
     try {
       const command = new GetObjectCommand({
         Bucket: this.config.bucket,
-        Key: key,
+        Key: safeKey,
       });
 
       return await getSignedUrl(this.config.s3Client, command, { expiresIn });
@@ -42,9 +45,11 @@ export class StorageReadService {
   }
 
   async getFile(key: string): Promise<Buffer | null> {
+    const safeKey = assertSafeStorageKey(key);
+
     if (this.config.useLocalStorage) {
       try {
-        const filePath = getLocalFilePath(this.config.localStoragePath, key);
+        const filePath = getLocalFilePath(this.config.localStoragePath, safeKey);
         return await fs.readFile(filePath);
       } catch (error) {
         this.logger.error(
@@ -61,13 +66,13 @@ export class StorageReadService {
     try {
       const command = new GetObjectCommand({
         Bucket: this.config.bucket,
-        Key: key,
+        Key: safeKey,
       });
 
       const response = await this.config.s3Client.send(command);
 
       if (!response.Body) {
-        this.logger.warn(`File found in R2 but has no body: ${key}`);
+        this.logger.warn(`File found in R2 but has no body: ${safeKey}`);
         return null;
       }
 
@@ -90,7 +95,7 @@ export class StorageReadService {
         (error.message &&
           (error.message.includes('does not exist') || error.message.includes('NoSuchKey')))
       ) {
-        this.logger.warn(`File not found in R2: ${key}`);
+        this.logger.warn(`File not found in R2: ${safeKey}`);
       } else {
         this.logger.error(
           `Failed to get file from R2: ${err instanceof Error ? err.message : String(err)}`,
@@ -102,9 +107,11 @@ export class StorageReadService {
   }
 
   async exists(key: string): Promise<boolean> {
+    const safeKey = assertSafeStorageKey(key);
+
     if (this.config.useLocalStorage) {
       try {
-        const filePath = getLocalFilePath(this.config.localStoragePath, key);
+        const filePath = getLocalFilePath(this.config.localStoragePath, safeKey);
         await fs.access(filePath);
         return true;
       } catch {
@@ -120,7 +127,7 @@ export class StorageReadService {
       await this.config.s3Client.send(
         new HeadObjectCommand({
           Bucket: this.config.bucket,
-          Key: key,
+          Key: safeKey,
         }),
       );
       return true;
