@@ -12,6 +12,7 @@ import { useLesson } from '@/features/lessons';
 import { AdminLessonActions } from './AdminLessonActions';
 import type { SubstituteTeacherOption } from './SubstituteLessonModal';
 import { cn } from '@/shared/lib/utils';
+import { DAILY_DUTIES_RADIUS_CLASS } from '@/shared/lib/daily-duties/daily-duties-theme';
 
 export type AdminLessonTab = 'absence' | 'feedback' | 'voice' | 'text' | 'dailyPlan';
 
@@ -84,7 +85,7 @@ export function AdminLessonDetailPanel({
       >
         {subTeacherName && (
           <div className="shrink-0 border-b border-[rgba(14,14,16,0.07)] px-4 py-3 text-sm text-[#3b3b40]">
-            <p className="inline-block rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-amber-900">
+            <p className={cn('inline-block border border-amber-200 bg-amber-50 px-3 py-2 text-amber-900', DAILY_DUTIES_RADIUS_CLASS)}>
               <span className="font-medium">{t('substituteThisDay')}</span> {subTeacherName}
             </p>
           </div>
@@ -94,6 +95,7 @@ export function AdminLessonDetailPanel({
             lesson={lesson}
             activeTab={activeTab}
             onTabChange={handleTabChange}
+            showRequiredActions={false}
             layout={variant === 'sheet' ? 'flow' : 'fill'}
           >
             {{

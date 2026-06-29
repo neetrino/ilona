@@ -8,5 +8,11 @@ export type { VoiceRecorderProps } from './voice-recorder/voice-recorder.types';
 
 export function VoiceRecorder(props: VoiceRecorderProps) {
   const vm = useVoiceRecorder(props);
-  return <VoiceRecorderControls vm={vm} variant={props.variant} />;
+  return (
+    <VoiceRecorderControls
+      vm={vm}
+      variant={props.variant}
+      buttonRadius={props.buttonRadius}
+    />
+  );
 }

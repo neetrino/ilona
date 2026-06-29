@@ -34,13 +34,13 @@ export function DailyDutiesControls({
   const locale = useLocale();
 
   return (
-    <div className="flex w-full min-w-0 flex-col gap-3 rounded-xl border border-[rgba(14,14,16,0.07)] bg-white p-4 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+    <div className="flex w-full min-w-0 flex-col gap-3 rounded-[15px] border border-[rgba(14,14,16,0.07)] bg-white p-4 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
       <div className="w-full min-w-0 space-y-2 sm:flex sm:w-auto sm:min-w-0 sm:flex-wrap sm:items-center sm:gap-4 sm:space-y-0">
         <div className="grid grid-cols-[auto_1fr_auto] items-center gap-2 sm:contents">
           <button
             type="button"
             onClick={() => onNavigatePeriod('prev')}
-            className="rounded-lg p-2 hover:bg-[#f6f6f7]"
+            className="rounded-[15px] p-2 hover:bg-[#f6f6f7]"
           >
             <svg className="h-5 w-5 text-[#3b3b40]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -50,7 +50,7 @@ export function DailyDutiesControls({
           <button
             type="button"
             onClick={() => onNavigatePeriod('next')}
-            className="justify-self-end rounded-lg p-2 hover:bg-[#f6f6f7]"
+            className="justify-self-end rounded-[15px] p-2 hover:bg-[#f6f6f7]"
           >
             <svg className="h-5 w-5 text-[#3b3b40]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />

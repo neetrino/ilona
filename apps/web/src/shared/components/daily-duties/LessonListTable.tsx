@@ -47,7 +47,7 @@ export function LessonListTable({
 
   if (isLoading) {
     return (
-      <div className="rounded-xl border border-slate-200 bg-white p-12">
+      <div className="rounded-[15px] border border-slate-200 bg-white p-12">
         <div className="flex items-center justify-center">
           <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-blue-600" />
         </div>
@@ -57,7 +57,7 @@ export function LessonListTable({
 
   if (lessons.length === 0) {
     return (
-      <div className="rounded-xl border border-slate-200 bg-white p-12 text-center">
+      <div className="rounded-[15px] border border-slate-200 bg-white p-12 text-center">
         <p className="text-slate-500">{tCal('noLessons')}</p>
       </div>
     );
@@ -66,7 +66,7 @@ export function LessonListTable({
   const mobileCardOpensSheet = Boolean(onMobileCardClick);
 
   return (
-    <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+    <div className="overflow-hidden rounded-[15px] border border-slate-200 bg-white">
       {table.showBulkBar && (
         <LessonListTableBulkBar
           selectedCount={table.selectedLessons.size}

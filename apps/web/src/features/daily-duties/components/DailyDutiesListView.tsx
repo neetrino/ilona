@@ -38,11 +38,11 @@ export function DailyDutiesListView({
 
   if (isLoading) {
     return (
-      <div className="rounded-xl border border-[rgba(14,14,16,0.07)] bg-white p-8">
+      <div className="rounded-[15px] border border-[rgba(14,14,16,0.07)] bg-white p-8">
         <div className="animate-pulse space-y-4">
-          <div className="h-12 rounded-lg bg-[#f1f1f2]" />
-          <div className="h-12 rounded-lg bg-[#f1f1f2]" />
-          <div className="h-12 rounded-lg bg-[#f1f1f2]" />
+          <div className="h-12 rounded-[15px] bg-[#f1f1f2]" />
+          <div className="h-12 rounded-[15px] bg-[#f1f1f2]" />
+          <div className="h-12 rounded-[15px] bg-[#f1f1f2]" />
         </div>
       </div>
     );
@@ -50,7 +50,7 @@ export function DailyDutiesListView({
 
   if (lessons.length === 0) {
     return (
-      <div className="rounded-xl border border-[rgba(14,14,16,0.07)] bg-white p-8 text-center">
+      <div className="rounded-[15px] border border-[rgba(14,14,16,0.07)] bg-white p-8 text-center">
         <p className="text-[#8b8b90]">
           {hasActiveFilters
             ? isTeacherMode

@@ -25,7 +25,7 @@ export function DailyDutiesFiltersSection({
   onStatusChange,
 }: DailyDutiesFiltersSectionProps) {
   return (
-    <div className="rounded-xl border border-[rgba(14,14,16,0.07)] bg-white p-4">
+    <div className="rounded-[15px] border border-[rgba(14,14,16,0.07)] bg-white p-4">
       <DailyDutiesFilters
         searchQuery={searchQuery}
         selectedTeacherId={selectedTeacherId}

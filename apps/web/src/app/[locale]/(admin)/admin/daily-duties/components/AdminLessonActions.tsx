@@ -82,13 +82,13 @@ export function AdminLessonActions({
           {menuOpen ? (
             <div
               role="menu"
-              className="absolute right-0 top-full z-30 mt-1 min-w-[11rem] overflow-hidden rounded-xl border border-[rgba(14,14,16,0.08)] bg-white p-1 shadow-[0_16px_40px_rgba(15,23,42,0.14)] ring-1 ring-black/5"
+              className="absolute right-0 top-full z-30 mt-1 min-w-[11rem] overflow-hidden rounded-[15px] border border-[rgba(14,14,16,0.08)] bg-white p-1 shadow-[0_16px_40px_rgba(15,23,42,0.14)] ring-1 ring-black/5"
             >
               <button
                 type="button"
                 role="menuitem"
                 onClick={openSubstitute}
-                className="w-full rounded-lg px-3 py-2 text-left text-sm text-[#3b3b40] transition-colors hover:bg-[#f6f6f7]"
+                className="w-full rounded-[15px] px-3 py-2 text-left text-sm text-[#3b3b40] transition-colors hover:bg-[#f6f6f7]"
               >
                 {t('substituteTeacherButton')}
               </button>
@@ -96,7 +96,7 @@ export function AdminLessonActions({
                 type="button"
                 role="menuitem"
                 onClick={openDelete}
-                className="w-full rounded-lg px-3 py-2 text-left text-sm text-red-600 transition-colors hover:bg-red-50"
+                className="w-full rounded-[15px] px-3 py-2 text-left text-sm text-red-600 transition-colors hover:bg-red-50"
               >
                 {tCommon('delete')}
               </button>

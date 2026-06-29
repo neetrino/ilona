@@ -28,6 +28,8 @@ interface LessonDetailTabsProps {
   lesson: Lesson;
   activeTab?: Tab;
   onTabChange?: (tab: Tab) => void;
+  /** Amber "required actions" checklist above lesson tabs. */
+  showRequiredActions?: boolean;
   /** fill: tab body scrolls inside fixed height; flow: content grows for outer scroll */
   layout?: 'fill' | 'flow';
   children: {
@@ -104,6 +106,7 @@ export function LessonDetailTabs({
   lesson,
   activeTab: initialTab,
   onTabChange,
+  showRequiredActions = true,
   layout = 'fill',
   children,
 }: LessonDetailTabsProps) {
@@ -123,7 +126,9 @@ export function LessonDetailTabs({
   );
 
   const showEmergency =
-    incomplete.length > 0 && (lesson.completionStatus === 'IN_PROCESS' || isLessonPastEnd(lesson));
+    showRequiredActions &&
+    incomplete.length > 0 &&
+    (lesson.completionStatus === 'IN_PROCESS' || isLessonPastEnd(lesson));
 
   const handleTabChange = (tab: Tab) => {
     setActiveTab(tab);
@@ -137,13 +142,13 @@ export function LessonDetailTabs({
       <div className="shrink-0 border-b border-slate-200 bg-gradient-to-b from-slate-50/80 to-white px-3 py-3 sm:px-4 sm:py-4">
         {showEmergency && (
           <div
-            className="mb-3 rounded-xl border border-amber-200/90 bg-gradient-to-br from-amber-50 via-orange-50/90 to-rose-50/40 px-3 py-3 shadow-sm sm:px-4 sm:py-3.5"
+            className="mb-3 rounded-[15px] border border-amber-200/90 bg-gradient-to-br from-amber-50 via-orange-50/90 to-rose-50/40 px-3 py-3 shadow-sm sm:px-4 sm:py-3.5"
             role="region"
             aria-label={t('lessonActions.emergencyAria')}
           >
             <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
               <div className="flex gap-2.5">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-amber-100/90 text-amber-800">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[15px] bg-amber-100/90 text-amber-800">
                   <AlertTriangle className="h-5 w-5" aria-hidden />
                 </div>
                 <div>
@@ -158,7 +163,7 @@ export function LessonDetailTabs({
               {incomplete.map((a) => (
                 <li
                   key={a.id}
-                  className="flex flex-col gap-2 rounded-lg border border-white/60 bg-white/70 px-3 py-2.5 backdrop-blur-sm sm:flex-row sm:items-center sm:justify-between"
+                  className="flex flex-col gap-2 rounded-[15px] border border-white/60 bg-white/70 px-3 py-2.5 backdrop-blur-sm sm:flex-row sm:items-center sm:justify-between"
                 >
                   <p className="text-sm text-slate-800">{t(reminderKey(a.id))}</p>
                   <Button
@@ -189,7 +194,7 @@ export function LessonDetailTabs({
                 onClick={() => handleTabChange(tab)}
                 aria-pressed={isActive}
                 className={cn(
-                  'flex items-start gap-2 rounded-xl border p-2.5 text-left transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 sm:p-3',
+                  'flex items-start gap-2 rounded-[15px] border p-2.5 text-left transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 sm:p-3',
                   isActive
                     ? 'border-2 border-blue-300 bg-blue-50/90 shadow-sm'
                     : 'border-slate-200/90 bg-white hover:border-slate-300 hover:bg-slate-50/80',
@@ -202,7 +207,7 @@ export function LessonDetailTabs({
               >
                 <span
                   className={cn(
-                    'flex h-8 w-8 shrink-0 self-center items-center justify-center rounded-lg sm:h-9 sm:w-9',
+                    'flex h-8 w-8 shrink-0 self-center items-center justify-center rounded-[15px] sm:h-9 sm:w-9',
                     (action.state === 'done' || action.state === 'doneLate') &&
                       'bg-emerald-100 text-emerald-800',
                     action.state === 'pending' && 'bg-amber-100 text-amber-900',

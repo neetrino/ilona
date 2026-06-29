@@ -23,7 +23,7 @@ export function DailyDutiesMonthView({
   const locale = useLocale();
 
   return (
-    <div className="w-full min-w-0 overflow-x-auto rounded-xl border border-[rgba(14,14,16,0.07)] bg-white [-webkit-overflow-scrolling:touch]">
+    <div className="w-full min-w-0 overflow-x-auto rounded-[15px] border border-[rgba(14,14,16,0.07)] bg-white [-webkit-overflow-scrolling:touch]">
       <div className="min-w-[36rem]">
         <div className="h-[min(70vh,720px)] min-h-0 overflow-hidden">
           <CalendarMonthGrid<Lesson>

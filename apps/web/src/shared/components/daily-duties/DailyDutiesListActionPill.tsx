@@ -95,7 +95,7 @@ export function DailyDutiesListActionPill({
       title={title}
       aria-label={title}
       className={cn(
-        'relative inline-flex w-full max-w-[5.5rem] flex-col items-center gap-0.5 rounded-lg border px-1 py-1.5 text-center transition-colors',
+        'relative inline-flex w-full max-w-[5.5rem] flex-col items-center gap-0.5 rounded-[15px] border px-1 py-1.5 text-center transition-colors',
         'focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-1',
         (action.state === 'done' || action.state === 'doneLate') &&
           'border-emerald-200 bg-emerald-50 text-emerald-900 hover:bg-emerald-100',

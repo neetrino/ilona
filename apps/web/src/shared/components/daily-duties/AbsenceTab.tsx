@@ -14,6 +14,7 @@ import type { AbsenceType } from '@/features/attendance';
 import type { AutoDismissToastVariant } from '@/shared/components/ui';
 import { cn } from '@/shared/lib/utils';
 import { ADMIN_PRIMARY_BUTTON_CLASS } from '@/shared/lib/admin-control-theme';
+import { DAILY_DUTIES_RADIUS_CLASS } from '@/shared/lib/daily-duties/daily-duties-theme';
 
 interface AbsenceTabProps {
   lessonId: string;
@@ -226,7 +227,10 @@ export function AbsenceTab({ lessonId }: AbsenceTabProps) {
           return (
             <div
               key={student.id}
-              className="p-4 border border-slate-200 rounded-lg hover:bg-slate-50"
+              className={cn(
+                'border border-slate-200 p-4 hover:bg-slate-50',
+                DAILY_DUTIES_RADIUS_CLASS,
+              )}
             >
               <div className="flex items-center justify-between gap-4">
                 <div className="flex items-center gap-3">

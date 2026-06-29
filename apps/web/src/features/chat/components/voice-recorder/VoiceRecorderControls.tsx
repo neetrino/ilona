@@ -7,9 +7,16 @@ import type { VoiceRecorderViewModel } from './voice-recorder.types';
 interface VoiceRecorderControlsProps {
   vm: VoiceRecorderViewModel;
   variant?: 'default' | 'student';
+  buttonRadius?: 'default' | '15px';
 }
 
-export function VoiceRecorderControls({ vm, variant = 'default' }: VoiceRecorderControlsProps) {
+export function VoiceRecorderControls({
+  vm,
+  variant = 'default',
+  buttonRadius = 'default',
+}: VoiceRecorderControlsProps) {
+  const actionRadiusClass = buttonRadius === '15px' ? 'rounded-[15px]' : 'rounded-lg';
+  const recordRadiusClass = buttonRadius === '15px' ? 'rounded-[15px]' : 'rounded-full';
   const tChat = useTranslations('chat');
   const tCommon = useTranslations('common');
   const {
@@ -37,7 +44,10 @@ export function VoiceRecorderControls({ vm, variant = 'default' }: VoiceRecorder
         {!isRecording && !recordedBlob && (
           <button
             onClick={() => void startRecording()}
-            className="p-3 bg-red-600 text-white rounded-full hover:bg-red-700 transition-colors flex-shrink-0"
+            className={cn(
+              'flex-shrink-0 p-3 bg-red-600 text-white transition-colors hover:bg-red-700',
+              recordRadiusClass,
+            )}
             title={tChat('startRecording')}
           >
             <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
@@ -51,7 +61,8 @@ export function VoiceRecorderControls({ vm, variant = 'default' }: VoiceRecorder
             <button
               onClick={stopRecording}
               className={cn(
-                'flex-shrink-0 rounded-full p-3 text-white transition-colors',
+                'flex-shrink-0 p-3 text-white transition-colors',
+                recordRadiusClass,
                 variant === 'student' ? 'bg-[#3b3b40] hover:bg-[#1010a3]' : 'bg-slate-600 hover:bg-slate-700',
               )}
               title={tChat('stopRecording')}
@@ -104,7 +115,8 @@ export function VoiceRecorderControls({ vm, variant = 'default' }: VoiceRecorder
                 onClick={onCancel}
                 disabled={isSending}
                 className={cn(
-                  'rounded-lg px-4 py-2 text-sm transition-colors disabled:cursor-not-allowed disabled:opacity-50',
+                  'px-4 py-2 text-sm transition-colors disabled:cursor-not-allowed disabled:opacity-50',
+                  actionRadiusClass,
                   ui.ghostBtn,
                 )}
               >
@@ -114,7 +126,8 @@ export function VoiceRecorderControls({ vm, variant = 'default' }: VoiceRecorder
                 onClick={() => void handleSend()}
                 disabled={!canSend || isSending}
                 className={cn(
-                  'rounded-lg px-4 py-2 text-sm font-medium transition-all',
+                  'px-4 py-2 text-sm font-medium transition-all',
+                  actionRadiusClass,
                   isSending && 'cursor-wait opacity-90',
                   canSend && !isSending ? ui.primaryBtn : ui.primaryBtnDisabled,
                 )}
@@ -127,11 +140,13 @@ export function VoiceRecorderControls({ vm, variant = 'default' }: VoiceRecorder
       </div>
 
       {micWarning && (
-        <div className="mt-2 text-sm text-yellow-700 bg-yellow-50 px-3 py-2 rounded-lg">{micWarning}</div>
+        <div className={cn('mt-2 bg-yellow-50 px-3 py-2 text-sm text-yellow-700', actionRadiusClass)}>
+          {micWarning}
+        </div>
       )}
 
       {error && (
-        <div className="mt-2 text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">{error}</div>
+        <div className={cn('mt-2 bg-red-50 px-3 py-2 text-sm text-red-600', actionRadiusClass)}>{error}</div>
       )}
     </div>
   );

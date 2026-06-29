@@ -14,6 +14,9 @@ import { lessonKeys } from '@/features/lessons/hooks/useLessons';
 import { Button } from '@/shared/components/ui/button';
 import { AutoDismissToast } from '@/shared/components/ui';
 import { useAuthStore } from '@/features/auth/store/auth.store';
+import { DAILY_DUTIES_RADIUS_CLASS } from '@/shared/lib/daily-duties/daily-duties-theme';
+import { ADMIN_PRIMARY_BUTTON_CLASS } from '@/shared/lib/admin-control-theme';
+import { cn } from '@/shared/lib/utils';
 
 interface VoiceTabProps {
   lessonId: string;
@@ -186,17 +189,23 @@ export function VoiceTab({ lessonId }: VoiceTabProps) {
       </div>
 
       {!isRecording ? (
-        <div className="flex flex-col items-center justify-center p-12 border-2 border-dashed border-slate-300 rounded-lg">
+        <div
+          className={cn(
+            'flex flex-col items-center justify-center border-2 border-dashed border-slate-300 p-12',
+            DAILY_DUTIES_RADIUS_CLASS,
+          )}
+        >
           <Button
             onClick={() => setIsRecording(true)}
             disabled={isUploading}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3"
+            className={cn(ADMIN_PRIMARY_BUTTON_CLASS, 'bg-blue-600 px-6 py-3 text-white hover:bg-blue-700')}
           >
             {isUploading ? 'Uploading...' : 'Start Recording'}
           </Button>
         </div>
       ) : (
         <VoiceRecorder
+          buttonRadius="15px"
           onRecorded={handleRecorded}
           onCancel={handleCancel}
           conversationId={lesson.group.id}
@@ -204,7 +213,12 @@ export function VoiceTab({ lessonId }: VoiceTabProps) {
       )}
 
       {lesson.voiceSent && (
-        <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+        <div
+          className={cn(
+            'mt-6 border border-green-200 bg-green-50 p-4',
+            DAILY_DUTIES_RADIUS_CLASS,
+          )}
+        >
           <p className="text-sm text-green-700">
             ✓ Voice message has been sent to the group chat
           </p>
