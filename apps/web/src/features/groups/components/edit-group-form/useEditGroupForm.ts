@@ -5,20 +5,13 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useTranslations } from 'next-intl';
 import { useUpdateGroup, useGroup, type UpdateGroupDto } from '@/features/groups';
-import type { GroupScheduleEntry } from '../../types';
 import { useCenters } from '@/features/centers';
 import { useTeachers } from '@/features/teachers';
 import { useState, useEffect, useMemo, useCallback, useRef, type TouchEvent } from 'react';
-import { ApiError, getErrorMessage } from '@/shared/lib/api';
+import { getErrorMessage } from '@/shared/lib/api';
 import { isGroupIconKey, type GroupIconKey } from '@ilona/types';
-import {
-  defaultMonthDateRange,
-  normalizeGroupSchedulePayload,
-  scheduleSlotsValidationError,
-} from '../../group-schedule-utils';
 import { filterTeachersForCenter } from '../../lib/center-scoped-teachers';
 import { useSheetStackZIndex } from '@/shared/lib/sheet-stack';
-import { translateScheduleSlotError, REGENERATE_CONFIRM_MESSAGE } from './edit-group-form.constants';
 import type { EditGroupFormProps, UpdateGroupFormData } from './edit-group-form.types';
 
 export function useEditGroupForm({
@@ -63,23 +56,16 @@ export function useEditGroupForm({
   const touchStartYRef = useRef<number | null>(null);
   const touchStartXRef = useRef<number | null>(null);
   const settleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const [schedule, setSchedule] = useState<GroupScheduleEntry[]>([]);
-  const [hadCalendarOnLoad, setHadCalendarOnLoad] = useState(false);
-  const [dateFrom, setDateFrom] = useState('');
-  const [dateTo, setDateTo] = useState('');
-  const [regenerateDialogOpen, setRegenerateDialogOpen] = useState(false);
-  const [secondTeacherStartsFirstWeek, setSecondTeacherStartsFirstWeek] = useState(false);
   const [iconKey, setIconKey] = useState<GroupIconKey | null>(null);
   const updateGroup = useUpdateGroup();
   const { data: group, isLoading } = useGroup(groupId, open);
 
-  // Fetch centers and teachers for dropdowns
-  const { data: centersData, isLoading: isLoadingCenters } = useCenters({ 
-    isActive: undefined, // Get all centers (active and inactive)
-    take: 100, // API max is 100, ensures we get all centers
+  const { data: centersData, isLoading: isLoadingCenters } = useCenters({
+    isActive: undefined,
+    take: 100,
   });
   const { data: teachersData, isLoading: isLoadingTeachers } = useTeachers({ status: 'ACTIVE' });
-  
+
   const centers = centersData?.items || [];
   const teachers = useMemo(() => teachersData?.items ?? [], [teachersData?.items]);
 
@@ -89,7 +75,6 @@ export function useEditGroupForm({
     formState: { errors, isSubmitting },
     reset,
     watch,
-    getValues,
     setValue,
   } = useForm<UpdateGroupFormData>({
     resolver,
@@ -118,7 +103,6 @@ export function useEditGroupForm({
     isSubmitting || updateGroup.isPending || isLoadingTeachers || !hasCenterSelected;
   const teacherPlaceholder = hasCenterSelected ? tForm('noTeacherAssigned') : tForm('selectCenterFirst');
 
-  // Update form when group data loads
   useEffect(() => {
     if (group) {
       reset({
@@ -129,28 +113,14 @@ export function useEditGroupForm({
         teacherId: group.teacherId || '',
         secondTeacherId: group.secondTeacherId || '',
       });
-      const normalized = normalizeGroupSchedulePayload(group.schedule);
-      setSchedule(normalized.weeklySlots);
-      setHadCalendarOnLoad(!!normalized.calendar);
-      if (normalized.calendar) {
-        setDateFrom(normalized.calendar.dateFrom);
-        setDateTo(normalized.calendar.dateTo);
-      } else {
-        const r = defaultMonthDateRange();
-        setDateFrom(r.from);
-        setDateTo(r.to);
-      }
       setIconKey(isGroupIconKey(group.iconKey) ? group.iconKey : null);
-      setSecondTeacherStartsFirstWeek(group.secondTeacherStartsFirstWeek ?? false);
     }
   }, [group, reset]);
 
-  // Reset form when dialog closes
   useEffect(() => {
     setIsDialogOpen(open);
   }, [open]);
 
-  // Reset form when dialog closes
   useEffect(() => {
     if (!open) {
       setErrorMessage(null);
@@ -237,103 +207,39 @@ export function useEditGroupForm({
         }
       : undefined;
 
-  const buildPayload = (
-    data: UpdateGroupFormData,
-    confirmReplaceGeneratedLessons: boolean,
-  ): UpdateGroupDto => {
-    let calendarPlan: UpdateGroupDto['calendarPlan'];
-    if (schedule.length > 0) {
-      calendarPlan = {
-        dateFrom,
-        dateTo,
-      };
-    } else if (hadCalendarOnLoad) {
-      calendarPlan = null;
-    } else {
-      calendarPlan = undefined;
-    }
+  const buildPayload = (data: UpdateGroupFormData): UpdateGroupDto => ({
+    name: data.name,
+    level: data.level || undefined,
+    description: data.description || undefined,
+    centerId: data.centerId && data.centerId.trim() !== '' ? data.centerId : undefined,
+    teacherId: data.teacherId || undefined,
+    secondTeacherId: data.secondTeacherId ? data.secondTeacherId : null,
+    iconKey,
+  });
 
-    return {
-      name: data.name,
-      level: data.level || undefined,
-      description: data.description || undefined,
-      centerId: data.centerId && data.centerId.trim() !== '' ? data.centerId : undefined,
-      teacherId: data.teacherId || undefined,
-      secondTeacherId: data.secondTeacherId ? data.secondTeacherId : null,
-      secondTeacherStartsFirstWeek,
-      schedule: schedule.length > 0 ? schedule : null,
-      calendarPlan,
-      ...(confirmReplaceGeneratedLessons ? { confirmReplaceGeneratedLessons: true } : {}),
-      iconKey,
-    };
-  };
+  const onSubmit = async (data: UpdateGroupFormData) => {
+    setErrorMessage(null);
 
-  const persistGroup = async (data: UpdateGroupFormData, confirmReplace: boolean) => {
     if (data.teacherId && data.secondTeacherId && data.teacherId === data.secondTeacherId) {
       setErrorMessage(tForm('teachersMustDiffer'));
       return;
     }
 
-    if (schedule.length > 0) {
-      if (!data.teacherId?.trim() || !data.secondTeacherId?.trim()) {
-        setErrorMessage(tForm('selectBothTeachersForCalendar'));
-        return;
-      }
-      const slotErr = translateScheduleSlotError(scheduleSlotsValidationError(schedule), tVal);
-      if (slotErr) {
-        setErrorMessage(slotErr);
-        return;
-      }
-      if (!dateFrom || !dateTo) {
-        setErrorMessage(tForm('chooseCalendarDateRange'));
-        return;
-      }
-      if (dateTo < dateFrom) {
-        setErrorMessage(tForm('endDateOnOrAfterStart'));
-        return;
-      }
-    }
-
-    const payload = buildPayload(data, confirmReplace);
-    await updateGroup.mutateAsync({ id: groupId, data: payload });
-    setSuccessMessage(tForm('updatedSuccess'));
-    setErrorMessage(null);
-    setTimeout(() => {
-      onOpenChange(false);
-      setSuccessMessage(null);
-    }, 1500);
-  };
-
-  const onSubmit = async (data: UpdateGroupFormData) => {
-    setErrorMessage(null);
     try {
-      await persistGroup(data, false);
-    } catch (error: unknown) {
-      if (
-        error instanceof ApiError &&
-        error.statusCode === 409 &&
-        error.message === REGENERATE_CONFIRM_MESSAGE
-      ) {
-        setRegenerateDialogOpen(true);
-        return;
-      }
-      const message = getErrorMessage(error, tForm('failedUpdate'));
-      setErrorMessage(message);
-      setSuccessMessage(null);
-    }
-  };
-
-  const onConfirmRegenerate = async () => {
-    setRegenerateDialogOpen(false);
-    setErrorMessage(null);
-    try {
-      await persistGroup(getValues(), true);
+      await updateGroup.mutateAsync({ id: groupId, data: buildPayload(data) });
+      setSuccessMessage(tForm('updatedSuccess'));
+      setErrorMessage(null);
+      setTimeout(() => {
+        onOpenChange(false);
+        setSuccessMessage(null);
+      }, 1500);
     } catch (error: unknown) {
       const message = getErrorMessage(error, tForm('failedUpdate'));
       setErrorMessage(message);
       setSuccessMessage(null);
     }
   };
+
   return {
     tForm,
     tGroups,
@@ -350,17 +256,6 @@ export function useEditGroupForm({
     dragOffsetY,
     isDragging,
     isSettling,
-    schedule,
-    setSchedule,
-    hadCalendarOnLoad,
-    dateFrom,
-    setDateFrom,
-    dateTo,
-    setDateTo,
-    regenerateDialogOpen,
-    setRegenerateDialogOpen,
-    secondTeacherStartsFirstWeek,
-    setSecondTeacherStartsFirstWeek,
     iconKey,
     setIconKey,
     updateGroup,
@@ -374,7 +269,6 @@ export function useEditGroupForm({
     isSubmitting,
     reset,
     watch,
-    getValues,
     setValue,
     isGroupActive,
     isFormBusy,
@@ -396,7 +290,6 @@ export function useEditGroupForm({
     handleDragEnd,
     dragStyle,
     onSubmit,
-    onConfirmRegenerate,
     onToggleActive,
     isStatusTogglePending,
   };

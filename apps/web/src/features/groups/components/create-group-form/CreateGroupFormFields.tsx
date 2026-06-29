@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, Input, Label, Checkbox, SegmentedControl } from '@/shared/components/ui';
+import { Button, Input, Label, SegmentedControl } from '@/shared/components/ui';
 import { cn } from '@/shared/lib/utils';
 import {
   ADMIN_FORM_INPUT_CLASS,
@@ -8,7 +8,6 @@ import {
   ADMIN_PRIMARY_BUTTON_CLASS,
 } from '@/shared/lib/admin-control-theme';
 import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
-import { GroupCalendarScheduleSection } from '../GroupCalendarScheduleSection';
 import { GroupIconPicker } from '../GroupIconPicker';
 import { teacherOptionLabel } from '../../lib/center-scoped-teachers';
 import { GROUP_LEVEL_SEGMENT_OPTIONS } from '../../lib/group-level-options';
@@ -35,12 +34,6 @@ export function CreateGroupFormFields(props: CreateGroupFormFieldsProps) {
     setValue,
     iconKey,
     setIconKey,
-    schedule,
-    setSchedule,
-    dateFrom,
-    setDateFrom,
-    dateTo,
-    setDateTo,
     createGroup,
     centers,
     centerSegmentOptions,
@@ -55,8 +48,6 @@ export function CreateGroupFormFields(props: CreateGroupFormFieldsProps) {
     isLoadingCenters,
     isLoadingTeachers,
     isFormBusy,
-    secondTeacherStartsFirstWeek,
-    setSecondTeacherStartsFirstWeek,
     requestClose,
   } = props;
 
@@ -240,34 +231,12 @@ export function CreateGroupFormFields(props: CreateGroupFormFieldsProps) {
             error={errors.secondTeacherId?.message ?? null}
             disabled={teacherDropdownDisabled}
           />
-          <label className="flex cursor-pointer select-none items-start gap-2 pt-1">
-            <Checkbox
-              checked={secondTeacherStartsFirstWeek}
-              onCheckedChange={setSecondTeacherStartsFirstWeek}
-              disabled={isFormBusy}
-              className="mt-0.5"
-            />
-            <span className="text-sm text-slate-600">{tForm('teacher2StartsFirstWeek')}</span>
-          </label>
         </div>
       </div>
 
       {isLoadingTeachers && (
         <p className="text-sm text-slate-500">{tForm('loadingTeachers')}</p>
       )}
-
-      <p className="text-xs text-slate-500">{tForm('teacherRotationHint')}</p>
-
-      <GroupCalendarScheduleSection
-        schedule={schedule}
-        onScheduleChange={setSchedule}
-        dateFrom={dateFrom}
-        dateTo={dateTo}
-        onDateFromChange={setDateFrom}
-        onDateToChange={setDateTo}
-        disabled={isFormBusy}
-        adminControls
-      />
 
       <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end">
         <Button

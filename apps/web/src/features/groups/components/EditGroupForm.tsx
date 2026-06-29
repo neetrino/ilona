@@ -1,7 +1,6 @@
 'use client';
 
 import * as DialogPrimitive from '@radix-ui/react-dialog';
-import { Fragment } from 'react';
 import { useTranslations } from 'next-intl';
 import { cn } from '@/shared/lib/utils';
 import { ADMIN_ICON_BUTTON_SM_CLASS } from '@/shared/lib/admin-control-theme';
@@ -14,7 +13,6 @@ import { PORTAL_DESKTOP_SIDE_SHEET_CLASS } from '@/shared/lib/portal-form-sheet-
 import { X } from 'lucide-react';
 import { useEditGroupForm } from './edit-group-form/useEditGroupForm';
 import { EditGroupFormFields } from './edit-group-form/EditGroupFormFields';
-import { EditGroupFormRegenerateDialog } from './edit-group-form/EditGroupFormRegenerateDialog';
 import type { EditGroupFormProps } from './edit-group-form/edit-group-form.types';
 
 export type { EditGroupFormProps } from './edit-group-form/edit-group-form.types';
@@ -84,8 +82,7 @@ export function EditGroupForm(props: EditGroupFormProps) {
   }
 
   return (
-    <Fragment>
-      <DialogPrimitive.Root open={form.isDialogOpen} onOpenChange={(nextOpen) => !nextOpen && form.requestClose()}>
+    <DialogPrimitive.Root open={form.isDialogOpen} onOpenChange={(nextOpen) => !nextOpen && form.requestClose()}>
         <DialogPrimitive.Portal>
           <DialogPrimitive.Overlay
             style={form.overlayStyle}
@@ -162,14 +159,6 @@ export function EditGroupForm(props: EditGroupFormProps) {
             </div>
           </DialogPrimitive.Content>
         </DialogPrimitive.Portal>
-      </DialogPrimitive.Root>
-
-      <EditGroupFormRegenerateDialog
-        open={form.regenerateDialogOpen}
-        onOpenChange={form.setRegenerateDialogOpen}
-        tForm={form.tForm}
-        onConfirmRegenerate={form.onConfirmRegenerate}
-      />
-    </Fragment>
+    </DialogPrimitive.Root>
   );
 }
