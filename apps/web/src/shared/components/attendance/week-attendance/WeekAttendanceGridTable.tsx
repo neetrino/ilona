@@ -57,11 +57,13 @@ export function WeekAttendanceGridTable({
       className="flex flex-col overflow-hidden rounded-lg border-2 border-slate-300 bg-white shadow-sm"
       style={{ height: 'calc(100vh - 500px)', minHeight: '400px', maxHeight: '600px' }}
     >
-      <div className="flex-1 overflow-auto">
-        <table className="min-w-full border-collapse">
-          <thead className="sticky top-0 z-20 bg-slate-100 shadow-sm">
+      <div className="relative flex-1 overflow-auto">
+        <table className="min-w-full border-separate border-spacing-0">
+          <thead>
             <tr>
-              <th className="sticky left-0 z-30 min-w-[180px] border-b-2 border-r-2 border-slate-400 bg-slate-100 px-4 py-3 text-left text-sm font-bold uppercase tracking-wide text-slate-900 shadow-sm md:min-w-[220px] md:px-5">
+              <th
+                className="sticky left-0 top-0 z-40 min-w-[180px] border-b-2 border-r-2 border-slate-400 bg-slate-100 px-4 py-3 text-left text-sm font-bold uppercase tracking-wide text-slate-900 shadow-[0_2px_6px_rgba(15,23,42,0.08)] md:min-w-[220px] md:px-5"
+              >
                 <div className="flex items-center gap-2">
                   <span>{t('studentColumn')}</span>
                 </div>
@@ -78,7 +80,7 @@ export function WeekAttendanceGridTable({
                 return (
                   <th
                     key={dateStr}
-                    className="min-w-[100px] border-b-2 border-r-2 border-slate-400 bg-slate-100 px-2 py-3 text-center md:min-w-[120px] md:px-3"
+                    className="sticky top-0 z-30 min-w-[100px] border-b-2 border-r-2 border-slate-400 bg-slate-100 px-2 py-3 text-center shadow-[0_2px_6px_rgba(15,23,42,0.08)] md:min-w-[120px] md:px-3"
                   >
                     <div className="flex flex-col items-center gap-1">
                       <div
@@ -135,7 +137,7 @@ export function WeekAttendanceGridTable({
                 `${student.user.firstName[0] || ''}${student.user.lastName[0] || ''}` || '?';
               return (
                 <tr key={student.id} className="transition-colors hover:bg-slate-50">
-                  <td className="sticky left-0 z-20 whitespace-nowrap border-b-2 border-r-2 border-slate-400 bg-white px-4 py-4 shadow-sm md:px-5">
+                  <td className="sticky left-0 z-10 whitespace-nowrap border-b-2 border-r-2 border-slate-400 bg-white px-4 py-4 shadow-[2px_0_6px_rgba(15,23,42,0.06)] md:px-5">
                     <div className="flex items-center gap-3">
                       <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-primary text-sm font-bold text-white shadow-md md:h-10 md:w-10">
                         {initials}
