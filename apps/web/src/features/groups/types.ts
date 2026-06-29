@@ -95,7 +95,7 @@ export interface CreateGroupDto {
   description?: string;
   centerId: string;
   teacherId: string;
-  secondTeacherId: string;
+  secondTeacherId?: string;
   secondTeacherStartsFirstWeek?: boolean;
   schedule?: GroupScheduleEntry[];
   calendarPlan?: GroupCalendarPlanDto;

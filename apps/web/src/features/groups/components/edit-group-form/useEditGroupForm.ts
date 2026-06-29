@@ -35,13 +35,16 @@ export function useEditGroupForm({
           level: z.string().max(50, tVal('levelMax')).optional().or(z.literal('')),
           description: z.string().max(500, tVal('descriptionMax')).optional().or(z.literal('')),
           centerId: z.string().min(1, tVal('centerRequired')).optional().or(z.literal('')),
-          teacherId: z.string().min(1, tForm('selectBothTeachers')),
-          secondTeacherId: z.string().min(1, tForm('selectBothTeachers')),
+          teacherId: z.string().min(1, tForm('noTeacherAssigned')),
+          secondTeacherId: z.string().optional().or(z.literal('')),
         })
-        .refine((data) => data.teacherId !== data.secondTeacherId, {
-          message: tForm('teachersMustDiffer'),
-          path: ['secondTeacherId'],
-        }),
+        .refine(
+          (data) => !data.secondTeacherId?.trim() || data.teacherId !== data.secondTeacherId,
+          {
+            message: tForm('teachersMustDiffer'),
+            path: ['secondTeacherId'],
+          },
+        ),
     [tVal, tForm],
   );
 
@@ -220,7 +223,11 @@ export function useEditGroupForm({
   const onSubmit = async (data: UpdateGroupFormData) => {
     setErrorMessage(null);
 
-    if (data.teacherId && data.secondTeacherId && data.teacherId === data.secondTeacherId) {
+    if (
+      data.secondTeacherId?.trim() &&
+      data.teacherId &&
+      data.teacherId === data.secondTeacherId
+    ) {
       setErrorMessage(tForm('teachersMustDiffer'));
       return;
     }

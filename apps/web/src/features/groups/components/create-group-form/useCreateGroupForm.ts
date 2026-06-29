@@ -28,13 +28,16 @@ export function useCreateGroupForm({ open, onOpenChange }: CreateGroupFormProps)
           level: z.string().max(50, tVal('levelMax')).optional().or(z.literal('')),
           description: z.string().max(500, tVal('descriptionMax')).optional().or(z.literal('')),
           centerId: z.string().min(1, tVal('selectCenter')),
-          teacherId: z.string().min(1, tForm('selectBothTeachers')),
-          secondTeacherId: z.string().min(1, tForm('selectBothTeachers')),
+          teacherId: z.string().min(1, tForm('noTeacherAssigned')),
+          secondTeacherId: z.string().optional().or(z.literal('')),
         })
-        .refine((data) => data.teacherId !== data.secondTeacherId, {
-          message: tForm('teachersMustDiffer'),
-          path: ['secondTeacherId'],
-        }),
+        .refine(
+          (data) => !data.secondTeacherId?.trim() || data.teacherId !== data.secondTeacherId,
+          {
+            message: tForm('teachersMustDiffer'),
+            path: ['secondTeacherId'],
+          },
+        ),
     [tVal, tForm],
   );
 
@@ -238,7 +241,7 @@ export function useCreateGroupForm({ open, onOpenChange }: CreateGroupFormProps)
   const onSubmit = async (data: CreateGroupFormData) => {
     setErrorMessage(null);
 
-    if (data.teacherId === data.secondTeacherId) {
+    if (data.secondTeacherId?.trim() && data.teacherId === data.secondTeacherId) {
       setErrorMessage(tForm('teachersMustDiffer'));
       return;
     }
@@ -250,7 +253,7 @@ export function useCreateGroupForm({ open, onOpenChange }: CreateGroupFormProps)
         description: data.description || undefined,
         centerId: data.centerId,
         teacherId: data.teacherId,
-        secondTeacherId: data.secondTeacherId,
+        secondTeacherId: data.secondTeacherId?.trim() || undefined,
         ...(iconKey ? { iconKey } : {}),
       };
 

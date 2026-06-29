@@ -202,12 +202,13 @@ export function CreateGroupFormFields(props: CreateGroupFormFieldsProps) {
 
         <div className="min-w-0 space-y-2">
           <Label htmlFor="secondTeacherId">
-            {tForm('teacher2')} <span className="text-red-500">*</span>
+            {tForm('teacher2')} <span className="text-slate-400">{tForm('optional')}</span>
           </Label>
           <input type="hidden" {...register('secondTeacherId')} />
           <SingleSelectDropdown
             id="secondTeacherId"
             triggerClassName={ADMIN_FORM_INPUT_CLASS}
+            allowDeselect
             options={teachersForCenter
               .filter((teacher) => teacher.id !== watchedTeacherId)
               .map((teacher) => ({
