@@ -14,7 +14,7 @@ import { Badge } from '@/shared/components/ui/badge';
 import { CalendarListActionPill } from '@/shared/components/calendar/CalendarListActionPill';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { isAdminPortalPath } from '@/shared/lib/role-routes';
+import { isAdminPortalPath, getTeacherDailyDutiesLessonPath } from '@/shared/lib/role-routes';
 import { getLessonActionsDerived, type LessonActionId } from '@/shared/lib/calendar/lesson-action-states';
 import {
   buildTeacherCalendarOrderedRows,
@@ -310,7 +310,7 @@ export function LessonListTable({
       return;
     }
     if (currentPath.includes('/teacher/')) {
-      router.push(`/teacher/calendar/${lessonId}`);
+      router.push(getTeacherDailyDutiesLessonPath(lessonId));
       return;
     }
     router.push(`/calendar/${lessonId}`);

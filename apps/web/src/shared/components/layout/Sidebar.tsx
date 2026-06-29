@@ -163,7 +163,7 @@ function getNavItems(role: string, t: (key: string) => string): NavItem[] {
         { label: t('dashboard'), href: '/teacher/dashboard', icon: icons.dashboard },
         { label: t('myStudents'), href: '/teacher/students', icon: icons.students },
         { label: t('schedule'), href: '/teacher/schedule', icon: icons.schedule },
-        { label: t('calendar'), href: '/teacher/calendar', icon: icons.calendar },
+        { label: t('dailyDuties'), href: '/teacher/daily-duties', icon: icons.calendar },
         { label: t('dailyPlan'), href: '/teacher/daily-plan', icon: icons.dailyPlan },
         { label: t('recordings'), href: '/teacher/recordings', icon: icons.recordings },
         { label: t('attendanceRegister'), href: '/teacher/attendance-register', icon: icons.attendanceRegister },

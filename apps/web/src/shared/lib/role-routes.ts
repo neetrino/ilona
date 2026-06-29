@@ -76,6 +76,12 @@ export function getTeacherPortalHomePath(): string {
   return '/teacher';
 }
 
+export const TEACHER_DAILY_DUTIES_BASE_PATH = '/teacher/daily-duties';
+
+export function getTeacherDailyDutiesLessonPath(lessonId: string): string {
+  return `${TEACHER_DAILY_DUTIES_BASE_PATH}/${lessonId}`;
+}
+
 export function getStudentPortalHomePath(): string {
   return '/student';
 }

@@ -149,12 +149,12 @@ const ROWS: QuickPageRow[] = [
     synonyms: ['timetable'],
   },
   {
-    id: 'page-teacher-calendar',
-    href: '/teacher/calendar',
-    navKey: 'calendar',
-    titleEn: 'Calendar',
+    id: 'page-teacher-daily-duties',
+    href: '/teacher/daily-duties',
+    navKey: 'dailyDuties',
+    titleEn: 'Daily Duties',
     roles: [UserRole.TEACHER],
-    synonyms: ['lessons'],
+    synonyms: ['calendar', 'lessons', 'obligations'],
   },
   {
     id: 'page-teacher-daily-plan',

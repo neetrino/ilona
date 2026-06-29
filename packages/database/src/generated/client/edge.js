@@ -701,7 +701,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "/Users/lianayengoyan/Documents/ilona/packages/database/src/generated/client",
+      "value": "D:\\Neetrino\\ilonaaaaaaaaaaaaa\\ilona-english-center-gugo\\packages\\database\\src\\generated\\client",
       "fromEnvVar": null
     },
     "config": {
@@ -710,12 +710,12 @@ const config = {
     "binaryTargets": [
       {
         "fromEnvVar": null,
-        "value": "darwin-arm64",
+        "value": "windows",
         "native": true
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "/Users/lianayengoyan/Documents/ilona/packages/database/prisma/schema.prisma",
+    "sourceFilePath": "D:\\Neetrino\\ilonaaaaaaaaaaaaa\\ilona-english-center-gugo\\packages\\database\\prisma\\schema.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {

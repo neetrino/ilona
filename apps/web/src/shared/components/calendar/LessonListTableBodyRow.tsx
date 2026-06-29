@@ -16,7 +16,7 @@ import type { ScheduleCardDayStatus } from '@/features/schedule/schedule-dates';
 import { getLessonActionsDerived, type LessonActionId } from '@/shared/lib/calendar/lesson-action-states';
 import { CalendarListActionPill } from '@/shared/components/calendar/CalendarListActionPill';
 import { LessonListDateCell } from '@/shared/components/calendar/LessonListDateCell';
-import { isAdminPortalPath } from '@/shared/lib/role-routes';
+import { isAdminPortalPath, getTeacherDailyDutiesLessonPath } from '@/shared/lib/role-routes';
 
 export type LessonListTableBodyRowProps = {
   lesson: Lesson;
@@ -108,7 +108,7 @@ export function LessonListTableBodyRow({
       const portalRoot = currentPath.includes('/manager/') ? '/manager' : '/admin';
       router.push(`${portalRoot}/calendar/${lessonId}`);
     } else if (currentPath.includes('/teacher/')) {
-      router.push(`/teacher/calendar/${lessonId}`);
+      router.push(getTeacherDailyDutiesLessonPath(lessonId));
     } else {
       router.push(`/calendar/${lessonId}`);
     }

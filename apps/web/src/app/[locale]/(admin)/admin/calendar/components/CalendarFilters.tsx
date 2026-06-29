@@ -12,6 +12,7 @@ interface CalendarFiltersProps {
   isLoadingTeachers?: boolean;
   onSearchChange: (value: string) => void;
   onTeacherChange: (teacherId: string) => void;
+  hideTeacherFilter?: boolean;
 }
 
 export function CalendarFilters({
@@ -21,6 +22,7 @@ export function CalendarFilters({
   isLoadingTeachers = false,
   onSearchChange,
   onTeacherChange,
+  hideTeacherFilter = false,
 }: CalendarFiltersProps) {
   const t = useTranslations('calendar');
   const tc = useTranslations('common');
@@ -85,18 +87,19 @@ export function CalendarFilters({
         )}
       </div>
 
-      {/* Teacher Filter */}
-      <div className="w-full shrink-0 sm:w-auto sm:min-w-[11rem]">
-        <SingleSelectDropdown
-          id="calendar-teacher-filter"
-          options={teacherSelectOptions}
-          value={selectedTeacherId}
-          onValueChange={(nextValue) => onTeacherChange(nextValue ?? '')}
-          isLoading={isLoadingTeachers}
-          className="sm:min-w-[11rem]"
-          triggerClassName={ADMIN_CONTROL_CLASS}
-        />
-      </div>
+      {!hideTeacherFilter ? (
+        <div className="w-full shrink-0 sm:w-auto sm:min-w-[11rem]">
+          <SingleSelectDropdown
+            id="calendar-teacher-filter"
+            options={teacherSelectOptions}
+            value={selectedTeacherId}
+            onValueChange={(nextValue) => onTeacherChange(nextValue ?? '')}
+            isLoading={isLoadingTeachers}
+            className="sm:min-w-[11rem]"
+            triggerClassName={ADMIN_CONTROL_CLASS}
+          />
+        </div>
+      ) : null}
     </div>
   );
 }

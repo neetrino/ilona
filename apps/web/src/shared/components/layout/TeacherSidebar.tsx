@@ -54,7 +54,7 @@ export function TeacherSidebar({
     { labelKey: 'dashboard', href: '/teacher/dashboard', icon: 'iconDashboard' },
     { labelKey: 'myStudents', href: '/teacher/students', icon: 'iconTeachers' },
     { labelKey: 'schedule', href: '/teacher/schedule', icon: 'iconSchedule' },
-    { labelKey: 'calendar', href: '/teacher/calendar', icon: 'iconSchedule' },
+    { labelKey: 'dailyDuties', href: '/teacher/daily-duties', icon: 'iconCalendar' },
     { labelKey: 'dailyPlan', href: '/teacher/daily-plan', icon: 'iconFeedbacks' },
     { labelKey: 'recordings', href: '/teacher/recordings', icon: 'iconRecordings' },
     { labelKey: 'attendanceRegister', href: '/teacher/attendance-register', icon: 'iconAttendance' },
@@ -124,7 +124,11 @@ export function TeacherSidebar({
               icon={item.icon}
               active={isActive(item.href)}
               collapsed={!showLabels}
-              label={t(item.labelKey)}
+              label={
+                isArmenianLocale && item.labelKey === 'dailyDuties' && isDrawer
+                  ? t('dailyDutiesMobile')
+                  : t(item.labelKey)
+              }
               onNavigate={onNavigate}
               isArmenianLocale={isArmenianLocale}
             />

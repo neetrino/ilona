@@ -22,6 +22,7 @@ interface AdminLessonDetailPanelProps {
   onTabChange?: (tab: AdminLessonTab) => void;
   onDeleted?: () => void;
   variant?: 'page' | 'sheet';
+  showAdminActions?: boolean;
 }
 
 export function AdminLessonDetailPanel({
@@ -31,6 +32,7 @@ export function AdminLessonDetailPanel({
   onTabChange,
   onDeleted,
   variant = 'page',
+  showAdminActions = true,
 }: AdminLessonDetailPanelProps) {
   const t = useTranslations('calendar');
   const [internalTab, setInternalTab] = useState<AdminLessonTab>('absence');
@@ -103,7 +105,7 @@ export function AdminLessonDetailPanel({
             }}
           </LessonDetailTabs>
         </div>
-        {variant === 'page' ? (
+        {variant === 'page' && showAdminActions ? (
           <AdminLessonActions
             lessonId={lessonId}
             teacherOptions={teacherOptions}

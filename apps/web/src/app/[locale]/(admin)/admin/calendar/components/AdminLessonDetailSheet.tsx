@@ -23,6 +23,7 @@ interface AdminLessonDetailSheetProps {
   lessonId: string | null;
   initialTab?: AdminLessonTab;
   teacherOptions: SubstituteTeacherOption[];
+  showAdminActions?: boolean;
 }
 
 export function AdminLessonDetailSheet({
@@ -31,6 +32,7 @@ export function AdminLessonDetailSheet({
   lessonId,
   initialTab = 'absence',
   teacherOptions,
+  showAdminActions = true,
 }: AdminLessonDetailSheetProps) {
   const t = useTranslations('calendar');
   const [isDialogOpen, setIsDialogOpen] = useState(open);
@@ -80,7 +82,7 @@ export function AdminLessonDetailSheet({
               <DialogPrimitive.Title className="min-w-0 flex-1 break-words text-xl font-semibold leading-snug text-[#1010a3] min-[1367px]:text-lg min-[1367px]:text-[#3b3b40]">
                 {title}
               </DialogPrimitive.Title>
-              {lessonId ? (
+              {lessonId && showAdminActions ? (
                 <AdminLessonActions
                   lessonId={lessonId}
                   teacherOptions={teacherOptions}
@@ -106,6 +108,7 @@ export function AdminLessonDetailSheet({
                 onTabChange={setActiveTab}
                 onDeleted={requestClose}
                 variant="sheet"
+                showAdminActions={showAdminActions}
               />
             ) : null}
           </div>

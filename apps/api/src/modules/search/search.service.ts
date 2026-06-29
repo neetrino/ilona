@@ -567,7 +567,7 @@ export class SearchService {
       title: lesson.topic?.trim() || lesson.group?.name || 'Lesson',
       subtitle: lesson.group?.name,
       description: lesson.scheduledAt.toISOString(),
-      href: `/teacher/calendar/${encodeURIComponent(lesson.id)}`,
+      href: `/teacher/daily-duties/${encodeURIComponent(lesson.id)}`,
       badge: 'Lesson',
     }));
 
