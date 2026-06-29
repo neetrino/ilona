@@ -510,7 +510,7 @@ export function StudentAccountFormFieldsCrmLeadLayout({
         </div>
         <label className="flex cursor-pointer select-none items-start gap-2">
           <Checkbox
-            checked={watch('receiveReports')}
+            checked={watch('receiveReports') ?? true}
             onCheckedChange={(checked) =>
               setValue('receiveReports', checked === true, { shouldDirty: true })
             }
