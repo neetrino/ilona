@@ -52,7 +52,7 @@ export function FeedbacksTabStudentCard({
   const showSkillsCommentArea = structured.speaking || structured.writing;
 
   return (
-    <div className="space-y-5 rounded-[15px] border border-slate-200/90 bg-white p-5 shadow-sm sm:space-y-6 sm:p-8 lg:border-0 lg:shadow-none lg:p-6">
+    <div className="space-y-5 rounded-[15px] border border-slate-200/90 bg-white p-5 shadow-sm sm:space-y-6 sm:p-8 lg:rounded-none lg:border-0 lg:shadow-none lg:p-6">
       {!hideStudentHeader && (
       <div className="flex items-center gap-4">
         <FeedbacksTabStudentAvatar

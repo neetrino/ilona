@@ -70,9 +70,7 @@ export function FeedbacksTab({ lessonId }: FeedbacksTabProps) {
     <div className="flex h-full min-h-0 flex-col overflow-hidden">
       {/* Desktop: chat-style master–detail with independent scroll regions */}
       <div className="hidden min-h-0 flex-1 overflow-hidden lg:flex">
-        <aside
-          className="flex w-80 shrink-0 min-h-0 flex-col overflow-hidden border-r border-slate-200 bg-slate-50/40"
-        >
+        <aside className="relative z-[1] flex min-h-0 w-80 shrink-0 flex-col overflow-hidden rounded-r-[30px] border-r border-slate-200/80 bg-white shadow-[4px_0_24px_rgba(14,14,16,0.08)]">
           <FeedbacksTabStudentList
             students={students}
             selectedStudentId={selectedStudentId}
@@ -80,12 +78,14 @@ export function FeedbacksTab({ lessonId }: FeedbacksTabProps) {
             onSelectStudent={setSelectedStudentId}
           />
         </aside>
-        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
-          {selectedStudent ? (
-            <FeedbacksTabStudentCard
-              {...buildStudentCardProps(selectedStudent, ctx, true)}
-            />
-          ) : null}
+        <div className="min-h-0 flex-1 overflow-hidden bg-white">
+          <div className="h-full min-h-0 overflow-y-auto overscroll-contain [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            {selectedStudent ? (
+              <FeedbacksTabStudentCard
+                {...buildStudentCardProps(selectedStudent, ctx, true)}
+              />
+            ) : null}
+          </div>
         </div>
       </div>
 
