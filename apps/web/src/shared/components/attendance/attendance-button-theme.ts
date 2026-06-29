@@ -35,9 +35,21 @@ export const ATTENDANCE_CARD_RADIUS_CLASS = 'rounded-[20px]';
 export const ATTENDANCE_PAGE_SHELL_CLASS =
   'overflow-hidden rounded-[20px] border border-[rgba(14,14,16,0.07)] bg-white p-4 shadow-sm sm:p-6';
 
+/** Controls panel on attendance register (separate from day/week group cards). */
+export const ATTENDANCE_CONTROLS_CARD_CLASS = cn(
+  ATTENDANCE_RADIUS_CLASS,
+  'border border-[rgba(14,14,16,0.07)] bg-white p-6',
+);
+
 /** Inner group section shell on attendance register views. */
 export const ATTENDANCE_GROUP_CARD_CLASS = cn(
-  ATTENDANCE_CARD_RADIUS_CLASS,
+  ATTENDANCE_RADIUS_CLASS,
+  'overflow-hidden border border-[rgba(14,14,16,0.08)] bg-white p-6 shadow-[0_2px_12px_rgba(19,28,71,0.06)] md:border-2 md:border-[rgba(14,14,16,0.12)] md:p-6 md:shadow-sm',
+);
+
+/** Day & week view group cards — 30px corners. */
+export const ATTENDANCE_GROUP_CARD_30_CLASS = cn(
+  'rounded-[30px]',
   'overflow-hidden border border-[rgba(14,14,16,0.08)] bg-white p-6 shadow-[0_2px_12px_rgba(19,28,71,0.06)] md:border-2 md:border-[rgba(14,14,16,0.12)] md:p-6 md:shadow-sm',
 );
 

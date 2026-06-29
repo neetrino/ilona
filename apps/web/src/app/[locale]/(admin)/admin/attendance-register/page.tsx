@@ -1,8 +1,6 @@
 'use client';
 
 import { portalPageStackClass } from '@/shared/lib/portal-theme';
-import { ATTENDANCE_PAGE_SHELL_CLASS } from '@/shared/components/attendance/attendance-button-theme';
-import { cn } from '@/shared/lib/utils';
 import { useState, useMemo, useEffect, useRef, startTransition } from 'react';
 import { useTranslations } from 'next-intl';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
@@ -121,7 +119,6 @@ export default function AdminAttendanceRegisterPage() {
   return (
     <DashboardLayout title={t('attendanceRegister')} subtitle={t('subtitle')}>
       <div className={portalPageStackClass}>
-        <div className={cn(ATTENDANCE_PAGE_SHELL_CLASS, 'flex flex-col gap-4 sm:gap-6')}>
         {/* Save messages */}
         <SaveMessages saveMessages={saveMessages} />
 
@@ -253,7 +250,6 @@ export default function AdminAttendanceRegisterPage() {
 
         {/* Empty State */}
         {nav.selectedGroupIds.length === 0 && <AttendanceEmptyGroupState />}
-        </div>
       </div>
     </DashboardLayout>
   );

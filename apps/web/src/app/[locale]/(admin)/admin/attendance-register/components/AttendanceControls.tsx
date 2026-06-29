@@ -10,6 +10,7 @@ import {
   ADMIN_OUTLINE_BUTTON_CLASS,
   ADMIN_PRIMARY_BUTTON_CLASS,
 } from '@/shared/lib/admin-control-theme';
+import { ATTENDANCE_CONTROLS_CARD_CLASS } from '@/shared/components/attendance/attendance-button-theme';
 import { cn } from '@/shared/lib/utils';
 import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
@@ -130,7 +131,7 @@ export function AttendanceControls({
   );
 
   return (
-    <div className="space-y-4">
+    <div className={cn(ATTENDANCE_CONTROLS_CARD_CLASS, 'space-y-4')}>
       <div className="mb-4 flex items-center justify-between">
         <label className="block text-sm font-medium text-[#3b3b40]">{tc('viewMode')}</label>
         <ViewModeSelector

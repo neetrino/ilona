@@ -3,8 +3,6 @@
 import { useState, useMemo, useEffect, useRef, startTransition } from 'react';
 import { useTranslations } from 'next-intl';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
-import { ATTENDANCE_PAGE_SHELL_CLASS } from '@/shared/components/attendance/attendance-button-theme';
-import { cn } from '@/shared/lib/utils';
 import { getWeekDates } from '@/features/attendance/utils/dateUtils';
 import { useTeacherAttendanceData } from './hooks/useTeacherAttendanceData';
 import { useTeacherAttendanceNavigation } from './hooks/useTeacherAttendanceNavigation';
@@ -121,7 +119,7 @@ export default function TeacherAttendanceRegisterPage() {
 
   return (
     <DashboardLayout title={t('attendanceRegister')} subtitle={t('subtitle')}>
-      <div className={cn(ATTENDANCE_PAGE_SHELL_CLASS, 'flex flex-col gap-4 sm:gap-6')}>
+      <div className="space-y-6">
         {/* Save messages */}
         <SaveMessages saveMessages={saveMessages} />
 

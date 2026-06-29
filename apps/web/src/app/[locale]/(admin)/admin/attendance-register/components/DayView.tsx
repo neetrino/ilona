@@ -15,7 +15,7 @@ import { toAttendanceRow } from '../hooks/useAttendanceData';
 import type { AbsenceType } from '@/features/attendance';
 import { useIsIPad } from '@/shared/hooks/useIsIPad';
 import { AdminListPagination } from '@/shared/components/ui';
-import { ATTENDANCE_GROUP_CARD_CLASS } from '@/shared/components/attendance/attendance-button-theme';
+import { ATTENDANCE_GROUP_CARD_30_CLASS } from '@/shared/components/attendance/attendance-button-theme';
 
 const MOBILE_GROUP_CARDS_PAGE_SIZE = 5;
 const IPAD_GROUP_CARDS_PAGE_SIZE = 10;
@@ -161,7 +161,7 @@ export function DayView({
   // If only one group or no multi-select, show single view (backward compatibility)
   if (selectedGroups.length <= 1) {
     return (
-      <div className={ATTENDANCE_GROUP_CARD_CLASS}>
+      <div className={ATTENDANCE_GROUP_CARD_30_CLASS}>
         <AttendanceContextHeader
           group={group || null}
           date={currentDate}
@@ -216,7 +216,7 @@ export function DayView({
         });
 
         return (
-          <div key={selectedGroup.id} className={ATTENDANCE_GROUP_CARD_CLASS}>
+          <div key={selectedGroup.id} className={ATTENDANCE_GROUP_CARD_30_CLASS}>
             <AttendanceContextHeader
               group={selectedGroup}
               date={currentDate}
@@ -277,7 +277,7 @@ export function DayView({
         });
 
         return (
-          <div key={selectedGroup.id} className={ATTENDANCE_GROUP_CARD_CLASS}>
+          <div key={selectedGroup.id} className={ATTENDANCE_GROUP_CARD_30_CLASS}>
             <AttendanceContextHeader
               group={selectedGroup}
               date={currentDate}

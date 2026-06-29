@@ -15,7 +15,7 @@ import type { AttendanceCell } from '../hooks/useAttendanceData';
 import { toAttendanceRow } from '../hooks/useAttendanceData';
 import type { AbsenceType } from '@/features/attendance';
 import { AdminListPagination } from '@/shared/components/ui';
-import { ATTENDANCE_GROUP_CARD_CLASS } from '@/shared/components/attendance/attendance-button-theme';
+import { ATTENDANCE_GROUP_CARD_30_CLASS } from '@/shared/components/attendance/attendance-button-theme';
 
 const WEEK_GROUP_CARDS_PAGE_SIZE = 5;
 
@@ -156,7 +156,7 @@ export function WeekView({
   // If only one group or no multi-select, show single view (backward compatibility)
   if (selectedGroups.length <= 1) {
     return (
-      <div className={ATTENDANCE_GROUP_CARD_CLASS}>
+      <div className={ATTENDANCE_GROUP_CARD_30_CLASS}>
         <AttendanceContextHeader
           group={group || null}
           weekRange={formatWeekRange(currentDate)}
@@ -213,7 +213,7 @@ export function WeekView({
           });
 
           return (
-            <div key={selectedGroup.id} className={ATTENDANCE_GROUP_CARD_CLASS}>
+            <div key={selectedGroup.id} className={ATTENDANCE_GROUP_CARD_30_CLASS}>
               <AttendanceContextHeader
                 group={selectedGroup}
                 weekRange={formatWeekRange(currentDate)}
@@ -278,7 +278,7 @@ export function WeekView({
         });
 
         return (
-          <div key={selectedGroup.id} className={ATTENDANCE_GROUP_CARD_CLASS}>
+          <div key={selectedGroup.id} className={ATTENDANCE_GROUP_CARD_30_CLASS}>
             <AttendanceContextHeader
               group={selectedGroup}
               weekRange={formatWeekRange(currentDate)}
