@@ -2,7 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 import { cn } from '@/shared/lib/utils';
-import { ATTENDANCE_RADIUS_CLASS } from '@/shared/components/attendance/attendance-button-theme';
+import { ATTENDANCE_CARD_RADIUS_CLASS } from '@/shared/components/attendance/attendance-button-theme';
 
 interface AttendanceStatsProps {
   stats: {
@@ -29,7 +29,7 @@ export function AttendanceStats({ stats }: AttendanceStatsProps) {
       {items.map((item) => (
         <div
           key={item.label}
-          className={cn('border border-[rgba(14,14,16,0.07)] bg-white p-4', ATTENDANCE_RADIUS_CLASS)}
+          className={cn('border border-[rgba(14,14,16,0.07)] bg-white p-4', ATTENDANCE_CARD_RADIUS_CLASS)}
         >
           <div className="text-sm text-[#3b3b40]">{item.label}</div>
           <div className={`text-2xl font-bold mt-1 ${item.className}`}>{item.value}</div>

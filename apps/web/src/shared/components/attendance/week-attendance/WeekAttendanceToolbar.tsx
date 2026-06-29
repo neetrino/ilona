@@ -4,6 +4,7 @@ import { cn } from '@/shared/lib/utils';
 import { Button } from '@/shared/components/ui/button';
 import { Pencil, X } from 'lucide-react';
 import {
+  ATTENDANCE_CARD_RADIUS_CLASS,
   ATTENDANCE_EDIT_ICON_BUTTON_CLASS,
   ATTENDANCE_PRIMARY_BUTTON_CLASS,
   ATTENDANCE_RADIUS_CLASS,
@@ -43,7 +44,7 @@ export function WeekAttendanceToolbar({
       <div
         className={cn(
           'flex items-center justify-between border-2 px-5 py-4 text-sm transition-all',
-          ATTENDANCE_RADIUS_CLASS,
+          ATTENDANCE_CARD_RADIUS_CLASS,
           totalPendingChanges > 0
             ? 'border-amber-300 bg-amber-50'
             : hasAnySaving

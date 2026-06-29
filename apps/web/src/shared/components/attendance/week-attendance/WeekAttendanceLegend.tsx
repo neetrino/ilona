@@ -1,6 +1,9 @@
 'use client';
 
-import { ATTENDANCE_RADIUS_CLASS } from '@/shared/components/attendance/attendance-button-theme';
+import {
+  ATTENDANCE_CARD_RADIUS_CLASS,
+  ATTENDANCE_RADIUS_CLASS,
+} from '@/shared/components/attendance/attendance-button-theme';
 
 interface WeekAttendanceLegendProps {
   t: (key: string) => string;
@@ -11,7 +14,7 @@ export function WeekAttendanceLegend({ t }: WeekAttendanceLegendProps) {
 
   return (
     <div
-      className={`flex flex-wrap items-center gap-4 border-2 border-slate-300 bg-slate-100 px-5 py-4 text-sm md:gap-6 ${ATTENDANCE_RADIUS_CLASS}`}
+      className={`flex flex-wrap items-center gap-4 border-2 border-slate-300 bg-slate-100 px-5 py-4 text-sm md:gap-6 ${ATTENDANCE_CARD_RADIUS_CLASS}`}
     >
       <span className="text-base font-bold text-slate-900">{t('legend')}</span>
       <div className="flex items-center gap-2">

@@ -12,6 +12,15 @@ import {
   DialogFooter,
 } from '@/shared/components/ui';
 import { ATTENDANCE_PRIMARY_BUTTON_CLASS } from '@/shared/components/attendance/attendance-button-theme';
+import {
+  JUSTIFICATION_DIALOG_BODY_CLASS,
+  JUSTIFICATION_DIALOG_COMMENT_BOX_CLASS,
+  JUSTIFICATION_DIALOG_CONTENT_CLASS,
+  JUSTIFICATION_DIALOG_HEADER_CLASS,
+  JUSTIFICATION_DIALOG_INPUT_CLASS,
+  JUSTIFICATION_DIALOG_STUDENT_NAME_CLASS,
+} from '@/shared/components/attendance/justification-dialog-theme';
+import { DELETE_CONFIRMATION_DIALOG_OVERLAY_CLASS } from '@/shared/components/ui/DeleteConfirmationDialog';
 import type { Lesson } from '@/features/lessons';
 import type { AttendanceCell, WeekAttendanceStudent } from './types';
 
@@ -70,14 +79,18 @@ export function WeekAttendanceDialogs({
   return (
     <>
       <Dialog open={!!justificationDialog} onOpenChange={onJustificationDialogChange}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
+        <DialogContent
+          sheet={false}
+          stackOpen={!!justificationDialog}
+          overlayClassName={DELETE_CONFIRMATION_DIALOG_OVERLAY_CLASS}
+          className={JUSTIFICATION_DIALOG_CONTENT_CLASS}
+        >
+          <DialogHeader className={JUSTIFICATION_DIALOG_HEADER_CLASS}>
             <DialogTitle>{t('justificationRequired')}</DialogTitle>
-            <DialogDescription>{t('addJustificationReason')}</DialogDescription>
           </DialogHeader>
           {justificationDialog && (
-            <div className="space-y-2">
-              <div className="text-sm text-slate-600">
+            <div className={JUSTIFICATION_DIALOG_BODY_CLASS}>
+              <div className={JUSTIFICATION_DIALOG_STUDENT_NAME_CLASS}>
                 {students.find((s) => s.id === justificationDialog.studentId)?.user.firstName}{' '}
                 {students.find((s) => s.id === justificationDialog.studentId)?.user.lastName}
               </div>
@@ -98,13 +111,14 @@ export function WeekAttendanceDialogs({
                 placeholder={t('justificationPlaceholder')}
                 maxLength={500}
                 autoFocus
+                className={JUSTIFICATION_DIALOG_INPUT_CLASS}
               />
               {!justificationNote ? (
                 <p className="text-xs text-red-600">{t('justificationFieldRequired')}</p>
               ) : null}
             </div>
           )}
-          <DialogFooter>
+          <DialogFooter className="pt-1">
             <Button
               onClick={() => onJustificationDialogChange(false)}
               disabled={!justificationNote}
@@ -117,18 +131,23 @@ export function WeekAttendanceDialogs({
       </Dialog>
 
       <Dialog open={!!commentPreviewDialog} onOpenChange={onCommentPreviewDialogChange}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
+        <DialogContent
+          sheet={false}
+          stackOpen={!!commentPreviewDialog}
+          overlayClassName={DELETE_CONFIRMATION_DIALOG_OVERLAY_CLASS}
+          className={JUSTIFICATION_DIALOG_CONTENT_CLASS}
+        >
+          <DialogHeader className={JUSTIFICATION_DIALOG_HEADER_CLASS}>
             <DialogTitle>{t('justificationCommentTitle')}</DialogTitle>
             <DialogDescription>{t('justificationSavedDescription')}</DialogDescription>
           </DialogHeader>
           {commentPreviewDialog && (
-            <div className="space-y-2">
+            <div className={JUSTIFICATION_DIALOG_BODY_CLASS}>
               <div className="text-sm font-medium text-slate-700">
                 {students.find((s) => s.id === commentPreviewDialog.studentId)?.user.firstName}{' '}
                 {students.find((s) => s.id === commentPreviewDialog.studentId)?.user.lastName}
               </div>
-              <div className="rounded-[15px] border border-slate-200 bg-slate-50 p-3 text-sm text-slate-800">
+              <div className={JUSTIFICATION_DIALOG_COMMENT_BOX_CLASS}>
                 {getCellNote(
                   lessonsByDate,
                   attendanceData,

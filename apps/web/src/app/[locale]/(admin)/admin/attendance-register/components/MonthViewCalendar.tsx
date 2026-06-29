@@ -9,7 +9,10 @@ import {
 import type { Group } from '@/features/groups';
 import type { Lesson } from '@/features/lessons';
 import { useLocale, useTranslations } from 'next-intl';
-import { ATTENDANCE_RADIUS_CLASS } from '@/shared/components/attendance/attendance-button-theme';
+import {
+  ATTENDANCE_CARD_RADIUS_CLASS,
+  ATTENDANCE_RADIUS_CLASS,
+} from '@/shared/components/attendance/attendance-button-theme';
 
 interface MonthViewCalendarProps {
   currentDate: Date;
@@ -39,7 +42,7 @@ export function MonthViewCalendar({
   const groupLabel = selectedGroup?.name || t('notAvailable');
 
   return (
-    <div className={cn('border border-[rgba(14,14,16,0.07)] bg-white p-6', ATTENDANCE_RADIUS_CLASS)}>
+    <div className={cn('border border-[rgba(14,14,16,0.07)] bg-white p-6', ATTENDANCE_CARD_RADIUS_CLASS)}>
       <div className="mb-4 hidden md:block">
         <h3 className="mb-2 text-lg font-semibold text-[#1010a3]">
           {groupLabel} - {monthLabel}
@@ -52,7 +55,7 @@ export function MonthViewCalendar({
         )}
       </div>
 
-      <div className={cn('mb-4 border border-[rgba(14,14,16,0.08)] bg-white px-5 py-4 md:hidden', ATTENDANCE_RADIUS_CLASS)}>
+      <div className={cn('mb-4 border border-[rgba(14,14,16,0.08)] bg-white px-5 py-4 md:hidden', ATTENDANCE_CARD_RADIUS_CLASS)}>
         <div className="grid grid-cols-[32px_1fr_32px] items-center">
           <span className="inline-flex h-8 w-8 items-center justify-center text-[#1010a3]" aria-hidden>
             <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -164,7 +167,7 @@ export function MonthViewCalendar({
         })}
       </div>
       {selectedDayForMonthView && (
-        <div className={cn('mt-4 border border-[rgba(14,14,16,0.07)] bg-[#fafafa] p-4', ATTENDANCE_RADIUS_CLASS)}>
+        <div className={cn('mt-4 border border-[rgba(14,14,16,0.07)] bg-[#fafafa] p-4', ATTENDANCE_CARD_RADIUS_CLASS)}>
           <p className="text-sm text-[#3b3b40] mb-2">
             {t('monthSelectHint')}
           </p>

@@ -23,18 +23,21 @@ export const ATTENDANCE_SMALL_OUTLINE_BUTTON_CLASS = cn(
 export const ATTENDANCE_NOTE_BUTTON_CLASS =
   'rounded-[15px] bg-slate-800 px-2.5 py-1 text-xs font-bold tracking-wide text-white shadow-md hover:bg-slate-700';
 
-/** Shared 15px corner radius for attendance register cards, panels, cells, and controls. */
+/** Shared 15px corner radius for attendance cells, badges, and small controls. */
 export const ATTENDANCE_RADIUS_CLASS = 'rounded-[15px]';
 
 export const ATTENDANCE_CELL_RADIUS_CLASS = ATTENDANCE_RADIUS_CLASS;
 
+/** 20px corner radius for attendance register card shells and panels. */
+export const ATTENDANCE_CARD_RADIUS_CLASS = 'rounded-[20px]';
+
 /** Outermost page surface wrapping controls + attendance views. */
 export const ATTENDANCE_PAGE_SHELL_CLASS =
-  'overflow-hidden rounded-[15px] border border-[rgba(14,14,16,0.07)] bg-white p-4 shadow-sm sm:p-6';
+  'overflow-hidden rounded-[20px] border border-[rgba(14,14,16,0.07)] bg-white p-4 shadow-sm sm:p-6';
 
 /** Inner group section shell on attendance register views. */
 export const ATTENDANCE_GROUP_CARD_CLASS = cn(
-  ATTENDANCE_RADIUS_CLASS,
+  ATTENDANCE_CARD_RADIUS_CLASS,
   'overflow-hidden border border-[rgba(14,14,16,0.08)] bg-white p-6 shadow-[0_2px_12px_rgba(19,28,71,0.06)] md:border-2 md:border-[rgba(14,14,16,0.12)] md:p-6 md:shadow-sm',
 );
 
