@@ -168,7 +168,7 @@ export class SearchStaffService {
       title: lesson.topic?.trim() || lesson.group?.name || 'Lesson',
       subtitle: lesson.group?.name,
       description: lesson.scheduledAt.toISOString(),
-      href: `/admin/calendar/${encodeURIComponent(lesson.id)}`,
+      href: `/admin/daily-duties/${encodeURIComponent(lesson.id)}`,
       badge: 'Lesson',
     }));
   }

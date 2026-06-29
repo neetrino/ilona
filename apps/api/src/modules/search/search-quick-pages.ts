@@ -69,12 +69,12 @@ const ROWS: QuickPageRow[] = [
     synonyms: ['lesson plan', 'teachers plans', 'branch plans'],
   },
   {
-    id: 'page-admin-calendar',
-    href: '/admin/calendar',
-    navKey: 'calendar',
-    titleEn: 'Calendar',
+    id: 'page-admin-daily-duties',
+    href: '/admin/daily-duties',
+    navKey: 'dailyDuties',
+    titleEn: 'Daily Duties',
     roles: [UserRole.ADMIN, UserRole.MANAGER],
-    synonyms: ['lessons', 'classes'],
+    synonyms: ['lessons', 'classes', 'calendar'],
   },
   {
     id: 'page-admin-attendance-register',

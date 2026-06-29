@@ -140,7 +140,7 @@ function getNavItems(role: string, t: (key: string) => string): NavItem[] {
         { label: t('dailyPlan'), href: '/admin/daily-plan', icon: icons.dailyPlan },
         { label: t('recordings'), href: '/admin/recording', icon: icons.recordings },
         { label: t('finance'), href: '/admin/finance', icon: icons.finance },
-        { label: t('dailyDuties'), href: '/admin/calendar', icon: icons.calendar },
+        { label: t('dailyDuties'), href: '/admin/daily-duties', icon: icons.calendar },
         { label: t('attendanceRegister'), href: '/admin/attendance-register', icon: icons.attendanceRegister },
         { label: t('analytics'), href: '/admin/analytics', icon: icons.analytics },
         { label: t('settings'), href: '/admin/settings', icon: icons.settings },
@@ -154,7 +154,7 @@ function getNavItems(role: string, t: (key: string) => string): NavItem[] {
         { label: t('students'), href: '/admin/students', icon: icons.students },
         { label: t('schedule'), href: '/admin/schedule', icon: icons.schedule },
         { label: t('dailyPlan'), href: '/admin/daily-plan', icon: icons.dailyPlan },
-        { label: t('dailyDuties'), href: '/admin/calendar', icon: icons.calendar },
+        { label: t('dailyDuties'), href: '/admin/daily-duties', icon: icons.calendar },
         { label: t('attendanceRegister'), href: '/admin/attendance-register', icon: icons.attendanceRegister },
         { label: t('settings'), href: '/admin/settings', icon: icons.settings },
       ].map((item) => ({ ...item, href: toRolePortalPath(item.href, 'MANAGER') }));

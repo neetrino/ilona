@@ -77,9 +77,19 @@ export function getTeacherPortalHomePath(): string {
 }
 
 export const TEACHER_DAILY_DUTIES_BASE_PATH = '/teacher/daily-duties';
+export const ADMIN_DAILY_DUTIES_BASE_PATH = '/admin/daily-duties';
+export const MANAGER_DAILY_DUTIES_BASE_PATH = '/manager/daily-duties';
+
+export function getAdminDailyDutiesBasePath(role?: UserRole | null): typeof ADMIN_DAILY_DUTIES_BASE_PATH | typeof MANAGER_DAILY_DUTIES_BASE_PATH {
+  return role === 'MANAGER' ? MANAGER_DAILY_DUTIES_BASE_PATH : ADMIN_DAILY_DUTIES_BASE_PATH;
+}
 
 export function getTeacherDailyDutiesLessonPath(lessonId: string): string {
   return `${TEACHER_DAILY_DUTIES_BASE_PATH}/${lessonId}`;
+}
+
+export function getAdminDailyDutiesLessonPath(lessonId: string, role?: UserRole | null): string {
+  return `${getAdminDailyDutiesBasePath(role)}/${lessonId}`;
 }
 
 export function getStudentPortalHomePath(): string {

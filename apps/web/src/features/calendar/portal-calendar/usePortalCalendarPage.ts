@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { useLocale } from 'next-intl';
 import { useRouter } from '@/config/navigation';
 import { useAuthStore } from '@/features/auth/store/auth.store';
-import { getAdminPortalBasePath, TEACHER_DAILY_DUTIES_BASE_PATH } from '@/shared/lib/role-routes';
+import { getAdminDailyDutiesBasePath, TEACHER_DAILY_DUTIES_BASE_PATH } from '@/shared/lib/role-routes';
 import { readUrlSearchParam } from '@/shared/lib/url-search-params';
 import { useAppSearchUrl } from '@/shared/hooks/useAppSearchUrl';
 import {
@@ -37,7 +37,7 @@ export function usePortalCalendarPage(mode: PortalCalendarMode) {
   const { user } = useAuthStore();
   const portalBasePath = isTeacherMode
     ? TEACHER_DAILY_DUTIES_BASE_PATH
-    : getAdminPortalBasePath(user?.role);
+    : getAdminDailyDutiesBasePath(user?.role);
 
   const readViewModeFromUrl = useCallback((): PortalCalendarViewMode => {
     const viewFromUrl = readUrlSearchParam('view', searchParams, urlRevision);
@@ -193,7 +193,7 @@ export function usePortalCalendarPage(mode: PortalCalendarMode) {
   const handleOpenLessonDetail = useCallback(
     (lessonId: string, tab?: string) => {
       const query = tab ? `?tab=${tab}` : '';
-      router.push(`/${locale}${portalBasePath}/calendar/${lessonId}${query}`);
+      router.push(`/${locale}${portalBasePath}/${lessonId}${query}`);
     },
     [locale, portalBasePath, router],
   );

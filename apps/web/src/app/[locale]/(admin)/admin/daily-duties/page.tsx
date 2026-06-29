@@ -2,6 +2,6 @@
 
 import { PortalCalendarPage } from '@/features/calendar/PortalCalendarPage';
 
-export default function CalendarPage() {
+export default function AdminDailyDutiesPage() {
   return <PortalCalendarPage mode="admin" />;
 }

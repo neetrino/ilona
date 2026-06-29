@@ -1,10 +1,14 @@
-import { isAdminPortalPath, getTeacherDailyDutiesLessonPath } from '@/shared/lib/role-routes';
+import {
+  getAdminDailyDutiesLessonPath,
+  getTeacherDailyDutiesLessonPath,
+  isAdminPortalPath,
+} from '@/shared/lib/role-routes';
 
 export function navigateToLessonDetail(lessonId: string, router: { push: (href: string) => void }) {
   const currentPath = window.location.pathname;
   if (isAdminPortalPath(currentPath.replace(/^\/[a-z]{2}\//, '/'))) {
-    const portalRoot = currentPath.includes('/manager/') ? '/manager' : '/admin';
-    router.push(`${portalRoot}/calendar/${lessonId}`);
+    const role = currentPath.includes('/manager/') ? 'MANAGER' : 'ADMIN';
+    router.push(getAdminDailyDutiesLessonPath(lessonId, role));
     return;
   }
   if (currentPath.includes('/teacher/')) {

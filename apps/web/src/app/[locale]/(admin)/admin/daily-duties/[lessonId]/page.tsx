@@ -10,11 +10,11 @@ import { useLesson } from '@/features/lessons';
 import { useTeachers } from '@/features/teachers';
 import { readUrlSearchParam } from '@/shared/lib/url-search-params';
 import { useAuthStore } from '@/features/auth/store/auth.store';
-import { getAdminPortalBasePath } from '@/shared/lib/role-routes';
+import { getAdminDailyDutiesBasePath } from '@/shared/lib/role-routes';
 import {
   AdminLessonDetailPanel,
   type AdminLessonTab,
-} from '../components/AdminLessonDetailPanel';
+} from '../../calendar/components/AdminLessonDetailPanel';
 
 function parseLessonTab(value: string | null): AdminLessonTab {
   if (
@@ -29,13 +29,17 @@ function parseLessonTab(value: string | null): AdminLessonTab {
   return 'absence';
 }
 
-export default function AdminLessonDetailPage({ params }: { params: Promise<{ lessonId: string }> }) {
+export default function AdminDailyDutiesLessonPage({
+  params,
+}: {
+  params: Promise<{ lessonId: string }>;
+}) {
   const t = useTranslations('calendar');
   const tCommon = useTranslations('common');
   const resolvedParams = use(params);
   const router = useRouter();
   const { user } = useAuthStore();
-  const portalBasePath = getAdminPortalBasePath(user?.role);
+  const portalBasePath = getAdminDailyDutiesBasePath(user?.role);
   const { searchParams, urlRevision, replaceParams } = useAppSearchUrl();
   const [pendingTab, setPendingTab] = useState<AdminLessonTab | null>(null);
 
@@ -71,7 +75,7 @@ export default function AdminLessonDetailPage({ params }: { params: Promise<{ le
   };
 
   const handleDeleted = useCallback(() => {
-    router.push(`${portalBasePath}/calendar`);
+    router.push(portalBasePath);
   }, [portalBasePath, router]);
 
   if (isLoading) {

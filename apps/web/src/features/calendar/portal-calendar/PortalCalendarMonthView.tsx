@@ -35,7 +35,7 @@ export function PortalCalendarMonthView({
             renderLesson={({ lesson, variant }) => (
               <button
                 type="button"
-                onClick={() => router.push(`/${locale}${portalBasePath}/calendar/${lesson.id}`)}
+                onClick={() => router.push(`/${locale}${portalBasePath}/${lesson.id}`)}
                 className={cn(
                   'w-full min-w-0 max-w-full truncate rounded border border-blue-100/90 bg-blue-50/90 text-left text-[#3b3b40] transition hover:border-blue-200 hover:bg-blue-100/80',
                   variant === 'cell'
