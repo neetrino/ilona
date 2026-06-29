@@ -34,10 +34,7 @@ interface GroupsBoardViewProps {
   onMobileBoardPageChange: (page: number) => void;
   onDesktopBoardPageChange: (page: number) => void;
   onEditGroup: (groupId: string) => void;
-  onDeleteGroup: (groupId: string) => void;
-  onToggleActive: (groupId: string, wasActive: boolean) => void;
   onStudentClick: (studentId: string) => void;
-  isStatusTogglePending: boolean;
   t: GroupsTabState['t'];
 }
 
@@ -67,10 +64,7 @@ export function GroupsBoardView({
   onMobileBoardPageChange,
   onDesktopBoardPageChange,
   onEditGroup,
-  onDeleteGroup,
-  onToggleActive,
   onStudentClick,
-  isStatusTogglePending,
   t,
 }: GroupsBoardViewProps) {
   return (
@@ -135,10 +129,7 @@ export function GroupsBoardView({
                   key={group.id}
                   group={group}
                   onEdit={() => onEditGroup(group.id)}
-                  onDelete={() => onDeleteGroup(group.id)}
-                  onToggleActive={() => onToggleActive(group.id, group.isActive)}
                   onStudentClick={onStudentClick}
-                  isStatusTogglePending={isStatusTogglePending}
                 />
               ))}
             </div>
@@ -154,10 +145,7 @@ export function GroupsBoardView({
                   key={group.id}
                   group={group}
                   onEdit={() => onEditGroup(group.id)}
-                  onDelete={() => onDeleteGroup(group.id)}
-                  onToggleActive={() => onToggleActive(group.id, group.isActive)}
                   onStudentClick={onStudentClick}
-                  isStatusTogglePending={isStatusTogglePending}
                 />
               ))}
             </div>

@@ -354,13 +354,9 @@ export default function StudentsPage() {
         onEdit={(student) => {
           handleEditClick(student);
         }}
-        onDelete={
-          viewMode === 'board'
-            ? (student) => {
-                handleDeleteClick(student);
-              }
-            : undefined
-        }
+        onDelete={(student) => {
+          handleDeleteClick(student);
+        }}
         onDeactivate={handleDeactivateClick}
         onFeedback={handleShowFeedback}
         actionsDisabled={deleteStudent.isPending || updateStudent.isPending}

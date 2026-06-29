@@ -17,8 +17,8 @@ interface GroupsTabModalsProps {
   editGroupId: string | null;
   onEditGroupOpenChange: (open: boolean) => void;
   groups: Group[];
-  viewMode: 'list' | 'board';
   onToggleActiveFromEdit: () => void;
+  onDeleteFromEdit: () => void;
   isStatusTogglePending: boolean;
   statusDialog: { groupId: string; wasActive: boolean } | null;
   onStatusDialogOpenChange: (open: boolean) => void;
@@ -53,8 +53,8 @@ export function GroupsTabModals({
   editGroupId,
   onEditGroupOpenChange,
   groups,
-  viewMode,
   onToggleActiveFromEdit,
+  onDeleteFromEdit,
   isStatusTogglePending,
   statusDialog,
   onStatusDialogOpenChange,
@@ -91,7 +91,8 @@ export function GroupsTabModals({
           open={!!editGroupId}
           onOpenChange={onEditGroupOpenChange}
           groupId={editGroupId}
-          onToggleActive={viewMode === 'list' ? onToggleActiveFromEdit : undefined}
+          onToggleActive={onToggleActiveFromEdit}
+          onDelete={onDeleteFromEdit}
           isStatusTogglePending={isStatusTogglePending}
         />
       )}

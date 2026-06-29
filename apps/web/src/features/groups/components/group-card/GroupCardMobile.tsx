@@ -9,17 +9,13 @@ import {
   GROUP_CARD_INTERACTIVE_CLASS,
   GROUP_CARD_STUDENT_LIST_BLOCK_CLASS,
 } from './group-card.constants';
-import { GroupCardOverflowMenu } from './GroupCardOverflowMenu';
 import { GroupCardScheduleSlots } from './GroupCardScheduleSlots';
 import { GroupCardStudentList } from './GroupCardStudentList';
 import type { GroupCardLayoutProps } from './group-card.types';
 
 export function GroupCardMobile({
   group,
-  onDelete,
-  onToggleActive,
   onStudentClick,
-  isStatusTogglePending = false,
   teachersDisplay,
   scheduleSummary,
   occupancy,
@@ -57,12 +53,6 @@ export function GroupCardMobile({
               ) : null}
             </div>
           </div>
-          <GroupCardOverflowMenu
-            isActive={group.isActive}
-            onToggleActive={onToggleActive}
-            onDelete={onDelete}
-            isStatusTogglePending={isStatusTogglePending}
-          />
         </div>
 
         <div className="mt-1.4 flex min-w-0 items-center gap-2">

@@ -12,5 +12,6 @@ export interface EditGroupFormProps {
   onOpenChange: (open: boolean) => void;
   groupId: string;
   onToggleActive?: () => void;
+  onDelete?: () => void;
   isStatusTogglePending?: boolean;
 }

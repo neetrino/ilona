@@ -5,10 +5,7 @@ import type { getGroupOccupancyMeta } from '../../occupancy';
 export interface GroupCardProps {
   group: Group;
   onEdit: () => void;
-  onDelete: () => void;
-  onToggleActive: () => void;
   onStudentClick?: (studentId: string) => void;
-  isStatusTogglePending?: boolean;
 }
 
 export interface GroupCardScheduleSlotsProps {
