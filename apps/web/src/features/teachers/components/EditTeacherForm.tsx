@@ -18,7 +18,7 @@ import type { EditTeacherFormProps } from './edit-teacher-form/edit-teacher-form
 export type { EditTeacherFormProps } from './edit-teacher-form/edit-teacher-form.types';
 
 export function EditTeacherForm(props: EditTeacherFormProps) {
-  const { onDelete, onDeactivate } = props;
+  const { open, onDelete, onDeactivate } = props;
   const form = useEditTeacherForm(props);
   const t = useTranslations('teachers');
   const tCommon = useTranslations('common');
@@ -68,9 +68,9 @@ export function EditTeacherForm(props: EditTeacherFormProps) {
   );
 
   return (
-    <DialogPrimitive.Root open={form.isDialogOpen} onOpenChange={(nextOpen) => !nextOpen && form.requestClose()}>
+    <DialogPrimitive.Root open={open} onOpenChange={(nextOpen) => !nextOpen && form.requestClose()}>
       <PortalSheetPortal
-        open={form.isDialogOpen}
+        open={open}
         dragStyle={form.dragStyle}
         contentClassName={portalFormSheetContentClass('2xl')}
         contentProps={{ 'aria-describedby': undefined }}

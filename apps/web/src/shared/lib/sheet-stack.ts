@@ -23,6 +23,16 @@ const MOBILE_SHEET_MAX_CONTENT_Z_INDEX = PORTAL_MOBILE_BOTTOM_NAV_Z_INDEX - 1;
 export const STACKED_SHEET_OVERLAY_DIM_SUPPRESS_CLASS = '!bg-transparent';
 
 let openLayerCount = 0;
+const stackListeners = new Set<() => void>();
+
+function notifyStackChange(): void {
+  stackListeners.forEach((listener) => listener());
+}
+
+function subscribeStackChange(listener: () => void): () => void {
+  stackListeners.add(listener);
+  return () => stackListeners.delete(listener);
+}
 
 export function stackedSheetOverlayClassName(
   baseClassName: string,
@@ -150,7 +160,10 @@ export function useSheetStackZIndex(active: boolean): {
   overlayDimClassName: string | undefined;
 } {
   const [layer, setLayer] = useState<number | null>(null);
+  const [, setStackRevision] = useState(0);
   const isMobileSheet = useMobileSheetViewport();
+
+  useEffect(() => subscribeStackChange(() => setStackRevision((revision) => revision + 1)), []);
 
   useEffect(() => {
     if (!active) {
@@ -161,15 +174,19 @@ export function useSheetStackZIndex(active: boolean): {
     openLayerCount += 1;
     const acquiredLayer = openLayerCount;
     setLayer(acquiredLayer);
+    notifyStackChange();
 
     return () => {
       openLayerCount = Math.max(0, openLayerCount - 1);
       setLayer(null);
+      notifyStackChange();
     };
   }, [active]);
 
   const { overlayZIndex, contentZIndex } = resolveSheetStackZIndexes(layer, isMobileSheet);
-  const isBaseLayer = layer === null || layer === 1;
+  // Dim only the bottom sheet when stacked. If upper layers close (e.g. details → edit),
+  // the remaining sheet must dim again even when it acquired a higher layer number.
+  const isBaseLayer = layer === null || layer === 1 || openLayerCount === 1;
 
   return {
     layer,
