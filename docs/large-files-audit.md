@@ -23,6 +23,9 @@ Goal: gradually split source files so each stays at or below **400 lines**.
 | 2026-06-29 | `apps/web/src/shared/components/calendar/LessonListTable.tsx` | 792 | 125 (orchestrator) | Split into bulk bar, mobile cards, desktop table + hook + utils |
 | 2026-06-29 | `apps/api/src/modules/finance/payments.service.ts` | 776 | 83 (facade) | Split into query, write, summary, lifecycle + util/types/include |
 | 2026-06-29 | `apps/api/src/modules/settings/settings.service.ts` | 738 | 74 (facade) | Split into core, branding, footer, percents, penalties + util/types |
+| 2026-06-29 | `apps/api/src/modules/users/users.service.ts` | 729 | 77 (facade) | Split into read, manager, write + util |
+| 2026-06-29 | `apps/api/src/modules/teachers/teacher-crud.service.ts` | 715 | 45 (facade) | Split into list, read, write, access + util/constants |
+| 2026-06-29 | `apps/api/src/modules/search/search.service.ts` | 623 | 60 (facade) | Split into staff query, role query + filter util |
 
 ## Split details (completed refactors)
 
@@ -46,7 +49,11 @@ Goal: gradually split source files so each stays at or below **400 lines**.
 | 14 | `payments.service.ts` | 776 | 83 | **9** |
 | 15 | `settings.service.ts` | 738 | 74 | **8** |
 
-**15** մեծ ֆайլ → **125** ֆайլ (15 facade/orchestrator + 110 նոր split ֆайլ)։
+| 16 | `users.service.ts` | 729 | 77 | **5** |
+| 17 | `teacher-crud.service.ts` | 715 | 45 | **7** |
+| 18 | `search.service.ts` | 623 | 60 | **4** |
+
+**18** մեծ ֆайլ → **130** ֆайլ (18 facade/orchestrator + 112 նոր split ֆայլ)։
 
 ### 1. `apps/api/src/modules/chat/chat-management.service.ts` (1,195 → 61)
 
@@ -280,6 +287,43 @@ Goal: gradually split source files so each stays at or below **400 lines**.
 | `settings.util.ts` | URL key extract, text normalize |
 | `settings.types.ts` | Shared types + cache key |
 
+### 16. `apps/api/src/modules/users/users.service.ts` (729 → 77)
+
+**5 ֆайլ** (1 facade + 4 նոր)
+
+| Ֆайл | Դեր |
+| --- | --- |
+| `users.service.ts` | Facade |
+| `user-read.service.ts` | findById, findAll, findManagers, auth lookups |
+| `user-manager.service.ts` | createManager, updateManager |
+| `user-write.service.ts` | update, updatePassword, updateLastLogin |
+| `user.util.ts` | Cache keys, DB error check, invalidate |
+
+### 17. `apps/api/src/modules/teachers/teacher-crud.service.ts` (715 → 45)
+
+**7 ֆайլ** (1 facade + 6 նոր)
+
+| Ֆайл | Դեր |
+| --- | --- |
+| `teacher-crud.service.ts` | Facade |
+| `teacher-list.service.ts` | findAll with obligations/stats |
+| `teacher-read.service.ts` | findById, findByUserId |
+| `teacher-write.service.ts` | create, update, delete, deleteMany |
+| `teacher-access.service.ts` | Manager scope checks |
+| `teacher.util.ts` | Hire date from experience |
+| `teacher-crud.constants.ts` | Deduction / experience constants |
+
+### 18. `apps/api/src/modules/search/search.service.ts` (623 → 60)
+
+**4 ֆайլ** (1 facade + 3 նոր)
+
+| Ֆайл | Դեր |
+| --- | --- |
+| `search.service.ts` | Facade + globalSearch orchestration |
+| `search-staff.service.ts` | Admin/manager entity search |
+| `search-role-query.service.ts` | Teacher/student portal search |
+| `search-filter.util.ts` | Prisma where builders + limits |
+
 ---
 
 ## Summary
@@ -287,10 +331,10 @@ Goal: gradually split source files so each stays at or below **400 lines**.
 | Metric | Value |
 | --- | --- |
 | Total source files scanned | 836 |
-| Files over 400 lines | **44** (was 58) |
-| Biggest file | `apps/api/src/modules/users/users.service.ts` (729 lines) |
+| Files over 400 lines | **41** (was 58) |
+| Biggest file | `apps/web/src/features/groups/components/EditGroupForm.tsx` (709 lines) |
 | Frontend (`apps/web`) | 34 |
-| Backend (`apps/api`) | 14 |
+| Backend (`apps/api`) | 11 |
 | Shared / packages | 0 |
 
 **Extensions scanned:** `.ts`, `.tsx`, `.js`, `.jsx`, `.css`, `.scss`, `.module.css`, `.module.scss`
@@ -318,15 +362,15 @@ Goal: gradually split source files so each stays at or below **400 lines**.
 | ~~13~~ | ~~`apps/web/src/shared/components/calendar/LessonListTable.tsx`~~ | ~~792~~ | Frontend / Calendar (shared) | **Done** | — |
 | ~~14~~ | ~~`apps/api/src/modules/finance/payments.service.ts`~~ | ~~776~~ | Backend / Finance | **Done** | — |
 | ~~15~~ | ~~`apps/api/src/modules/settings/settings.service.ts`~~ | ~~738~~ | Backend / Settings | **Done** | — |
-| 16 | `apps/api/src/modules/users/users.service.ts` | 729 | Backend / Users | Split user CRUD, role/profile provisioning, and status management; extract password hashing and duplicate-email checks | Medium |
-| 17 | `apps/api/src/modules/teachers/teacher-crud.service.ts` | 715 | Backend / Teachers | Split create/update/delete, center assignment, and schedule linkage; extract manager-scope and profile sync helpers | Medium |
+| ~~16~~ | ~~`apps/api/src/modules/users/users.service.ts`~~ | ~~729~~ | Backend / Users | **Done** | — |
+| ~~17~~ | ~~`apps/api/src/modules/teachers/teacher-crud.service.ts`~~ | ~~715~~ | Backend / Teachers | **Done** | — |
 | 18 | `apps/web/src/features/groups/components/EditGroupForm.tsx` | 709 | Frontend / Groups | Extract form sections (basic info, teacher, schedule, capacity); split validation schema; extract submit/mutation hook | Medium |
 | 19 | `apps/web/src/features/students/components/EditStudentForm.tsx` | 701 | Frontend / Students | Extract account, group, parent/CRM, and payment sections into subcomponents; move Zod/schema and defaults to separate files | Medium |
 | 20 | `apps/web/src/features/students/components/StudentDetailsModal.tsx` | 695 | Frontend / Students | Split tabs/sections (profile, attendance, payments, notes); extract read-only field groups and action buttons | Medium |
 | 21 | `apps/web/src/features/chat/hooks/useChat.ts` | 632 | Frontend / Chat | Split into focused hooks (messages, socket events, cache updates, navigation); extract shared chat query keys and reducers | Medium |
 | 22 | `apps/web/src/features/chat/components/TeacherChatList.tsx` | 630 | Frontend / Chat | Extract list item, filters, empty/loading states; move list query and selection logic into hook | Medium |
 | 23 | `apps/web/src/shared/components/ui/date-picker-input.tsx` | 627 | Frontend / Shared UI | Split calendar popover, input masking, range/single modes, and locale formatting into subcomponents/utils | Medium |
-| 24 | `apps/api/src/modules/search/search.service.ts` | 623 | Backend / Search | Split entity-specific search handlers (students, teachers, groups, lessons); extract shared full-text/filter builders | Medium |
+| ~~24~~ | ~~`apps/api/src/modules/search/search.service.ts`~~ | ~~623~~ | Backend / Search | **Done** | — |
 | 25 | `apps/web/src/features/crm/components/EditLeadModal.tsx` | 616 | Frontend / CRM | Extract form sections, status/activity UI, and voice/recording blocks; split validation schema and mutation hook | Medium |
 | 26 | `apps/web/src/features/groups/components/CreateGroupForm.tsx` | 611 | Frontend / Groups | Same as EditGroupForm: section components, shared group form schema, and create-specific defaults | Medium |
 | 27 | `apps/api/src/modules/settings/settings.controller.ts` | 607 | Backend / Settings | Thin controller: move business logic to settings sub-services; group endpoints by domain; extract response DTO mapping | Medium |
@@ -366,9 +410,9 @@ Goal: gradually split source files so each stays at or below **400 lines**.
 
 ## Recommended first 3 refactors
 
-1. **`apps/api/src/modules/users/users.service.ts`** (729 lines) — Split user CRUD, role provisioning, status management.
-2. **`apps/api/src/modules/teachers/teacher-crud.service.ts`** (715 lines) — Split create/update/delete and center assignment.
-3. **`apps/web/src/features/groups/components/EditGroupForm.tsx`** (709 lines) — Extract form sections and validation schema.
+1. **`apps/web/src/features/groups/components/EditGroupForm.tsx`** (709 lines) — Extract form sections and validation schema.
+2. **`apps/web/src/features/students/components/EditStudentForm.tsx`** (701 lines) — Extract account, group, parent sections.
+3. **`apps/web/src/features/students/components/StudentDetailsModal.tsx`** (695 lines) — Split tabs/sections.
 
 ---
 
