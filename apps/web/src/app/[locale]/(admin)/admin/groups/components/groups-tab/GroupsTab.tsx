@@ -124,10 +124,7 @@ export function GroupsTab(props: GroupsTabProps) {
           onMobileBoardPageChange={state.goToMobileBoardPage}
           onDesktopBoardPageChange={state.goToDesktopBoardPage}
           onEditGroup={state.handleEditGroupIdChange}
-          onDeleteGroup={state.handleDeleteClick}
-          onToggleActive={state.openGroupStatusDialog}
           onStudentClick={state.openStudentFromGroupCard}
-          isStatusTogglePending={state.isGroupStatusTogglePending}
           t={state.t}
         />
       )}
@@ -167,11 +164,15 @@ export function GroupsTab(props: GroupsTabProps) {
           if (!open) state.handleEditGroupIdChange(null);
         }}
         groups={state.groups}
-        viewMode={state.viewMode}
         onToggleActiveFromEdit={() => {
           const editingGroup = state.groups.find((group) => group.id === state.editGroupId);
           if (state.editGroupId) {
             state.openGroupStatusDialog(state.editGroupId, editingGroup?.isActive ?? true);
+          }
+        }}
+        onDeleteFromEdit={() => {
+          if (state.editGroupId) {
+            state.handleDeleteClick(state.editGroupId);
           }
         }}
         isStatusTogglePending={state.isGroupStatusTogglePending}

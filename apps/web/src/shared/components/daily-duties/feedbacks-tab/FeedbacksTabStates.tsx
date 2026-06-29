@@ -43,7 +43,7 @@ export function FeedbacksTabEmptyStudents() {
   const t = useTranslations('dailyDuties.feedback');
 
   return (
-    <div className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 p-16">
+    <div className="flex flex-col items-center justify-center rounded-[15px] border-2 border-dashed border-slate-200 bg-slate-50 p-16">
       <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-slate-200">
         <svg className="h-8 w-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path

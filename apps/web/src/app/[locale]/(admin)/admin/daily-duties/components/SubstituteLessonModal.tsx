@@ -153,7 +153,7 @@ export function SubstituteLessonModal({
                   />
                 </div>
                 {lesson.substituteTeacher?.user && (
-                  <p className="rounded-md border border-amber-200 bg-amber-50 px-2 py-1.5 text-xs text-amber-800">
+                  <p className="rounded-[15px] border border-amber-200 bg-amber-50 px-2 py-1.5 text-xs text-amber-800">
                     {t('currentlyAssignedSubstitute')}{' '}
                     <span className="font-medium">
                       {lesson.substituteTeacher.user.firstName} {lesson.substituteTeacher.user.lastName}

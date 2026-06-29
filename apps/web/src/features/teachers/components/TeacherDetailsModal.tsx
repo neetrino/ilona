@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { useTranslations } from 'next-intl';
 import { Pencil, X } from 'lucide-react';
@@ -70,15 +70,9 @@ export function TeacherDetailsModal({
   const t = useTranslations('teachers');
   const tCommon = useTranslations('common');
   const tStatus = useTranslations('status');
-  const [isDialogOpen, setIsDialogOpen] = useState(open);
   const { data: teacher, isLoading, error } = useTeacher(teacherId ?? '', open && !!teacherId);
 
-  useEffect(() => {
-    setIsDialogOpen(open);
-  }, [open]);
-
   const requestClose = useCallback(() => {
-    setIsDialogOpen(false);
     onClose();
   }, [onClose]);
 
@@ -115,8 +109,8 @@ export function TeacherDetailsModal({
   const experienceLabel = getExperienceLabelFromHireDate(teacher?.hireDate);
 
   return (
-    <DialogPrimitive.Root open={isDialogOpen} onOpenChange={(nextOpen) => !nextOpen && requestClose()}>
-      <PortalSheetPortal open={isDialogOpen} dragStyle={dragStyle} contentClassName={portalFormSheetContentClass('xl')} contentProps={{ 'aria-describedby': undefined }}>
+    <DialogPrimitive.Root open={open} onOpenChange={(nextOpen) => !nextOpen && requestClose()}>
+      <PortalSheetPortal open={open} dragStyle={dragStyle} contentClassName={portalFormSheetContentClass('xl')} contentProps={{ 'aria-describedby': undefined }}>
           <PortalFormSheetDragHandle dragHandleProps={dragHandleProps} />
 
           <DialogPrimitive.Title className="sr-only">

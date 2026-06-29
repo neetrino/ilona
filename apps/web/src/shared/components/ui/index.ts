@@ -10,6 +10,8 @@ export type { SegmentedControlOption } from './segmented-control';
 export { StatCard } from './stat-card';
 export { PublicAssetImage } from './public-asset-image';
 export { DataTable } from './data-table';
+export { AdminListPagination } from './AdminListPagination';
+export type { AdminListPaginationProps } from './AdminListPagination';
 export { Badge } from './badge';
 export { Checkbox } from './checkbox';
 export { FilterDropdown } from './filter-dropdown';

@@ -76,7 +76,7 @@ export function DailyDutiesLessonsTable({
 
   if (isLoading) {
     return (
-      <div className="bg-white rounded-xl border border-slate-200 p-12">
+      <div className="bg-white rounded-[15px] border border-slate-200 p-12">
         <div className="flex items-center justify-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
         </div>
@@ -85,7 +85,7 @@ export function DailyDutiesLessonsTable({
   }
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+    <div className="bg-white rounded-[15px] border border-slate-200 overflow-hidden">
       <table className="w-full">
         <thead className="bg-slate-50 border-b border-slate-200">
           <tr>
@@ -234,7 +234,7 @@ export function DailyDutiesLessonsTable({
                   </td>
                   {/* Obligations */}
                   <td className="px-4 py-4 text-center">
-                    <div className="inline-flex items-center justify-center px-2 py-1 rounded-md bg-slate-100 text-slate-700 text-sm font-medium">
+                    <div className="inline-flex items-center justify-center px-2 py-1 rounded-[15px] bg-slate-100 text-slate-700 text-sm font-medium">
                       {obligationsCount}/4
                     </div>
                   </td>
@@ -245,7 +245,7 @@ export function DailyDutiesLessonsTable({
                         <button
                           type="button"
                           onClick={() => onView(lesson.id)}
-                          className="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
+                          className="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-[15px] transition-colors"
                           aria-label={`View lesson ${lesson.lessonName}`}
                           title={tCommon('view')}
                         >

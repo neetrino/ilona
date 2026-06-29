@@ -115,7 +115,7 @@ export function LessonListTableMobileCards({
                   : undefined
               }
               className={cn(
-                'overflow-hidden rounded-2xl border border-[rgba(14,14,16,0.09)] bg-white shadow-[0_1px_2px_rgba(14,14,16,0.03)]',
+                'overflow-hidden rounded-[15px] border border-[rgba(14,14,16,0.09)] bg-white shadow-[0_1px_2px_rgba(14,14,16,0.03)]',
                 mobileCardOpensSheet &&
                   'cursor-pointer transition-shadow hover:shadow-[0_4px_14px_rgba(14,14,16,0.08)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1010a3]/25',
               )}
@@ -126,7 +126,7 @@ export function LessonListTableMobileCards({
                     <Checkbox
                       checked={selectedLessons.has(lesson.id)}
                       onCheckedChange={(checked) => onSelectLesson(lesson.id, checked === true)}
-                      className="relative -top-[1px] h-5 w-5 rounded-md"
+                      className="relative -top-[1px] h-5 w-5 rounded-[15px]"
                     />
                   </div>
                   <div className="min-w-0 flex-1">
@@ -290,7 +290,7 @@ export function LessonListTableMobileCards({
           <div className="flex items-center gap-3">
             <button
               type="button"
-              className={`inline-flex h-9 w-9 items-center justify-center rounded-full border transition-colors ${
+              className={`inline-flex h-9 w-9 items-center justify-center rounded-[15px] border transition-colors ${
                 safeMobileCardsPage <= 1
                   ? 'border-[#d9dde8] bg-[#f1f1f4] text-[#9aa3b5]'
                   : 'border-[rgba(14,14,16,0.12)] bg-white text-[#3b3b40] hover:bg-[#f6f6f7]'
@@ -301,12 +301,12 @@ export function LessonListTableMobileCards({
             >
               <ChevronLeft className="h-4 w-4" aria-hidden />
             </button>
-            <span className="inline-flex h-9 min-w-9 items-center justify-center rounded-full bg-[#1010a3] px-3 text-xs font-semibold text-white">
+            <span className="inline-flex h-9 min-w-9 items-center justify-center rounded-[15px] bg-[#1010a3] px-3 text-xs font-semibold text-white">
               {safeMobileCardsPage}
             </span>
             <button
               type="button"
-              className={`inline-flex h-9 w-9 items-center justify-center rounded-full border transition-colors ${
+              className={`inline-flex h-9 w-9 items-center justify-center rounded-[15px] border transition-colors ${
                 safeMobileCardsPage >= mobileCardsTotalPages
                   ? 'border-[#d9dde8] bg-[#f1f1f4] text-[#9aa3b5]'
                   : 'border-[rgba(14,14,16,0.12)] bg-white text-[#3b3b40] hover:bg-[#f6f6f7]'

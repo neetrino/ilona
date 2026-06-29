@@ -133,7 +133,7 @@ export function useDailyDutiesPage(mode: DailyDutiesMode) {
       setSubstituteLessonModalOpen(substituteFromUrl.open);
       setSubstituteLessonId(substituteFromUrl.lessonId);
     }
-  }, [searchParams, urlRevision]);
+  }, [searchParams, urlRevision, isTeacherMode]);
 
   const updateAddLessonModalInUrl = useCallback(
     (open: boolean) => {

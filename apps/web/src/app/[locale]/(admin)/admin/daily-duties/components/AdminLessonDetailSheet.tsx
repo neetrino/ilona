@@ -14,7 +14,6 @@ import {
   portalFormSheetContentClass,
 } from '@/shared/lib/portal-form-sheet-classes';
 import { AdminLessonDetailPanel, type AdminLessonTab } from './AdminLessonDetailPanel';
-import { AdminLessonActions } from './AdminLessonActions';
 import type { SubstituteTeacherOption } from './SubstituteLessonModal';
 
 interface AdminLessonDetailSheetProps {
@@ -82,14 +81,6 @@ export function AdminLessonDetailSheet({
               <DialogPrimitive.Title className="min-w-0 flex-1 break-words text-xl font-semibold leading-snug text-[#1010a3] min-[1367px]:text-lg min-[1367px]:text-[#3b3b40]">
                 {title}
               </DialogPrimitive.Title>
-              {lessonId && showAdminActions ? (
-                <AdminLessonActions
-                  lessonId={lessonId}
-                  teacherOptions={teacherOptions}
-                  onDeleted={requestClose}
-                  variant="menu"
-                />
-              ) : null}
             </div>
             <p className="mt-1 hidden text-sm text-[#8b8b90] min-[1367px]:block">{subtitle}</p>
           </div>

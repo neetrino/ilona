@@ -14,14 +14,10 @@ import type { TeacherAssignedItem } from '@/features/students';
 import type { AttendanceCell } from '../hooks/useAttendanceData';
 import { toAttendanceRow } from '../hooks/useAttendanceData';
 import type { AbsenceType } from '@/features/attendance';
-import { useIsIPad } from '@/shared/hooks/useIsIPad';
-import {
-  ATTENDANCE_PAGER_INDICATOR_CLASS,
-  attendancePagerButtonClass,
-} from '@/shared/components/attendance/attendance-button-theme';
+import { AdminListPagination } from '@/shared/components/ui';
+import { ATTENDANCE_GROUP_CARD_30_CLASS } from '@/shared/components/attendance/attendance-button-theme';
 
-const MOBILE_GROUP_CARDS_PAGE_SIZE = 5;
-const IPAD_GROUP_CARDS_PAGE_SIZE = 10;
+const WEEK_GROUP_CARDS_PAGE_SIZE = 5;
 
 interface WeekViewProps {
   group: Group | undefined;
@@ -95,10 +91,11 @@ export function WeekView({
   const selectedGroups = safeSelectedGroupIds
     .map(id => safeGroups.find(g => g.id === id))
     .filter((g): g is Group => g !== undefined);
-  const isIPad = useIsIPad();
-  const mobileCardsPageSize = isIPad ? IPAD_GROUP_CARDS_PAGE_SIZE : MOBILE_GROUP_CARDS_PAGE_SIZE;
+  const mobileCardsPageSize = WEEK_GROUP_CARDS_PAGE_SIZE;
   const [mobileCardPage, setMobileCardPage] = useState(0);
+  const [desktopCardPage, setDesktopCardPage] = useState(0);
   const mobileCardsStartRef = useRef<HTMLDivElement | null>(null);
+  const desktopCardsStartRef = useRef<HTMLDivElement | null>(null);
   const totalMobileCardPages = Math.max(
     1,
     Math.ceil(selectedGroups.length / mobileCardsPageSize),
@@ -112,11 +109,28 @@ export function WeekView({
       ),
     [safeMobileCardPage, selectedGroups, mobileCardsPageSize],
   );
+  const totalDesktopCardPages = Math.max(
+    1,
+    Math.ceil(selectedGroups.length / WEEK_GROUP_CARDS_PAGE_SIZE),
+  );
+  const safeDesktopCardPage = Math.min(desktopCardPage, totalDesktopCardPages - 1);
+  const desktopPaginatedGroups = useMemo(
+    () =>
+      selectedGroups.slice(
+        safeDesktopCardPage * WEEK_GROUP_CARDS_PAGE_SIZE,
+        safeDesktopCardPage * WEEK_GROUP_CARDS_PAGE_SIZE + WEEK_GROUP_CARDS_PAGE_SIZE,
+      ),
+    [safeDesktopCardPage, selectedGroups],
+  );
 
   const selectedGroupIdsKey = safeSelectedGroupIds.join(',');
 
   useEffect(() => {
     setMobileCardPage(0);
+  }, [currentDate, selectedGroups.length, selectedGroupIdsKey]);
+
+  useEffect(() => {
+    setDesktopCardPage(0);
   }, [currentDate, selectedGroups.length, selectedGroupIdsKey]);
 
   const goToMobileCardsPage = (nextPage: number) => {
@@ -129,10 +143,20 @@ export function WeekView({
     });
   };
 
+  const goToDesktopCardsPage = (nextPage: number) => {
+    setDesktopCardPage(nextPage);
+    requestAnimationFrame(() => {
+      desktopCardsStartRef.current?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+      });
+    });
+  };
+
   // If only one group or no multi-select, show single view (backward compatibility)
   if (selectedGroups.length <= 1) {
     return (
-      <div className="rounded-[30px] border border-[rgba(14,14,16,0.08)] bg-white p-6 shadow-[0_2px_12px_rgba(19,28,71,0.06)] md:rounded-xl md:border-2 md:border-[rgba(14,14,16,0.12)] md:p-6 md:shadow-sm">
+      <div className={ATTENDANCE_GROUP_CARD_30_CLASS}>
         <AttendanceContextHeader
           group={group || null}
           weekRange={formatWeekRange(currentDate)}
@@ -189,7 +213,7 @@ export function WeekView({
           });
 
           return (
-            <div key={selectedGroup.id} className="rounded-[30px] border border-[rgba(14,14,16,0.08)] bg-white p-6 shadow-[0_2px_12px_rgba(19,28,71,0.06)] md:rounded-xl md:border-2 md:border-[rgba(14,14,16,0.12)] md:p-6 md:shadow-sm">
+            <div key={selectedGroup.id} className={ATTENDANCE_GROUP_CARD_30_CLASS}>
               <AttendanceContextHeader
                 group={selectedGroup}
                 weekRange={formatWeekRange(currentDate)}
@@ -228,51 +252,20 @@ export function WeekView({
           );
         })}
 
-        {selectedGroups.length > mobileCardsPageSize && (
-          <div className="flex items-center justify-between text-sm text-[#8b8b90]">
-            <span>
-              {safeMobileCardPage * mobileCardsPageSize + 1}-
-              {Math.min((safeMobileCardPage + 1) * mobileCardsPageSize, selectedGroups.length)} / {selectedGroups.length}
-            </span>
-            <div className="flex items-center gap-3">
-              <button
-                type="button"
-                className={attendancePagerButtonClass(safeMobileCardPage !== 0)}
-                disabled={safeMobileCardPage === 0}
-                onClick={() =>
-                  goToMobileCardsPage(Math.max(0, safeMobileCardPage - 1))
-                }
-                aria-label={tCommon('previousCardsPage')}
-              >
-                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                </svg>
-              </button>
-              <span className={ATTENDANCE_PAGER_INDICATOR_CLASS}>
-                {safeMobileCardPage + 1}
-              </span>
-              <button
-                type="button"
-                className={attendancePagerButtonClass(safeMobileCardPage < totalMobileCardPages - 1)}
-                disabled={safeMobileCardPage >= totalMobileCardPages - 1}
-                onClick={() =>
-                  goToMobileCardsPage(
-                    Math.min(totalMobileCardPages - 1, safeMobileCardPage + 1),
-                  )
-                }
-                aria-label={tCommon('nextCardsPage')}
-              >
-                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </button>
-            </div>
-          </div>
-        )}
+        <AdminListPagination
+          page={safeMobileCardPage}
+          pageSize={mobileCardsPageSize}
+          totalItems={selectedGroups.length}
+          onPageChange={goToMobileCardsPage}
+          previousLabel={tCommon('previousCardsPage')}
+          nextLabel={tCommon('nextCardsPage')}
+          align="between"
+        />
       </div>
 
       <div className="hidden space-y-6 md:block">
-      {selectedGroups.map((selectedGroup) => {
+      <div ref={desktopCardsStartRef} />
+      {desktopPaginatedGroups.map((selectedGroup) => {
         const groupLessons = lessonsByGroup[selectedGroup.id] || [];
         const groupStudents = studentsByGroup[selectedGroup.id] || [];
         
@@ -285,7 +278,7 @@ export function WeekView({
         });
 
         return (
-          <div key={selectedGroup.id} className="rounded-[30px] border border-[rgba(14,14,16,0.08)] bg-white p-6 shadow-[0_2px_12px_rgba(19,28,71,0.06)] md:rounded-xl md:border-2 md:border-[rgba(14,14,16,0.12)] md:p-6 md:shadow-sm">
+          <div key={selectedGroup.id} className={ATTENDANCE_GROUP_CARD_30_CLASS}>
             <AttendanceContextHeader
               group={selectedGroup}
               weekRange={formatWeekRange(currentDate)}
@@ -323,6 +316,14 @@ export function WeekView({
           </div>
         );
       })}
+      <AdminListPagination
+        page={safeDesktopCardPage}
+        pageSize={WEEK_GROUP_CARDS_PAGE_SIZE}
+        totalItems={selectedGroups.length}
+        onPageChange={goToDesktopCardsPage}
+        previousLabel={tCommon('previousCardsPage')}
+        nextLabel={tCommon('nextCardsPage')}
+      />
       </div>
     </div>
   );

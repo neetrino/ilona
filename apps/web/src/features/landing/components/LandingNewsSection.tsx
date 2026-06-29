@@ -2,9 +2,8 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { motion } from 'framer-motion';
 import { cn } from '@/shared/lib/utils';
-import { BUTTON_HOVER_CLASS, NEWS_IMAGE_1, NEWS_IMAGE_1_OVERLAY, NEWS_IMAGE_2, NEWS_IMAGE_2_OVERLAY, NEWS_IMAGE_3, NEWS_IMAGE_3_OVERLAY, NEWS_ARROW_ICON } from '../landingConstants';
+import { NEWS_IMAGE_1, NEWS_IMAGE_1_OVERLAY, NEWS_IMAGE_2, NEWS_IMAGE_2_OVERLAY, NEWS_IMAGE_3, NEWS_IMAGE_3_OVERLAY, NEWS_ARROW_ICON } from '../landingConstants';
 import type { LandingSectionProps } from '../types';
 
 export function LandingNewsSection({ tr }: LandingSectionProps) {

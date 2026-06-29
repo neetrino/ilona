@@ -123,7 +123,7 @@ export function LessonListTableDesktopTable({
                     type="button"
                     onClick={() => onSort('scheduledAt')}
                     className={cn(
-                      'mx-auto flex items-center justify-center gap-1.5 rounded-md px-0 py-0.5 text-xs font-semibold uppercase transition-colors hover:bg-slate-50 focus:ring-2 focus:ring-slate-400 focus:ring-offset-1 focus:outline-none',
+                      'mx-auto flex items-center justify-center gap-1.5 rounded-[15px] px-0 py-0.5 text-xs font-semibold uppercase transition-colors hover:bg-slate-50 focus:ring-2 focus:ring-slate-400 focus:ring-offset-1 focus:outline-none',
                       sortBy === 'scheduledAt' && 'text-slate-700',
                     )}
                     aria-label={

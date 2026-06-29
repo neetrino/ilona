@@ -32,7 +32,7 @@ const EDIT_TEACHER_URL_PARAM = 'editTeacherId';
 export function useTeachersPage() {
   const params = useParams();
   const router = useRouter();
-  const { searchParams, urlRevision, replaceParams } = useAppSearchUrl();
+  const { searchParams, urlRevision, replaceParams, setParams, removeParams } = useAppSearchUrl();
   const locale = params.locale as string;
   const t = useTranslations('teachers');
   const tCommon = useTranslations('common');
@@ -150,16 +150,18 @@ export function useTeachersPage() {
 
   const setIsEditTeacherOpen = useCallback(
     (open: boolean) => {
-      if (!open) {
-        isEditTeacherClosingRef.current = true;
-        setSelectedTeacherIdForEdit(null);
-        replaceParams({ [EDIT_TEACHER_URL_PARAM]: null });
-        setTimeout(() => {
-          isEditTeacherClosingRef.current = false;
-        }, 100);
+      if (open) {
+        isEditTeacherClosingRef.current = false;
+        return;
       }
+      isEditTeacherClosingRef.current = true;
+      setSelectedTeacherIdForEdit(null);
+      removeParams([EDIT_TEACHER_URL_PARAM], { mode: 'replace' });
+      setTimeout(() => {
+        isEditTeacherClosingRef.current = false;
+      }, 100);
     },
-    [replaceParams],
+    [removeParams],
   );
 
   // Debounce search query (300ms delay). Use startTransition to avoid "setTimeout handler took Xms" violations.
@@ -406,13 +408,16 @@ export function useTeachersPage() {
   };
 
   const handleEditClick = (teacher: Teacher) => {
+    isEditTeacherClosingRef.current = false;
     setSelectedTeacher(teacher);
     setSelectedTeacherIdForEdit(teacher.id);
-    replaceParams({
-      [EDIT_TEACHER_URL_PARAM]: teacher.id,
-      [ADD_TEACHER_URL_PARAM]: null,
-      teacherId: null,
-    });
+    setParams(
+      {
+        [EDIT_TEACHER_URL_PARAM]: teacher.id,
+        [ADD_TEACHER_URL_PARAM]: null,
+      },
+      { mode: 'push' },
+    );
   };
 
   const handleDeleteClick = (teacher: Teacher) => {
@@ -529,15 +534,23 @@ export function useTeachersPage() {
   };
 
   const handleRowClick = (teacher: Teacher) => {
-    replaceParams({
-      teacherId: teacher.id,
-      [ADD_TEACHER_URL_PARAM]: null,
-      [EDIT_TEACHER_URL_PARAM]: null,
-    });
+    setParams(
+      {
+        teacherId: teacher.id,
+        [ADD_TEACHER_URL_PARAM]: null,
+        [EDIT_TEACHER_URL_PARAM]: null,
+      },
+      { mode: 'push' },
+    );
   };
 
   const handleDetailsDrawerClose = () => {
-    replaceParams({ teacherId: null });
+    isEditTeacherClosingRef.current = true;
+    setSelectedTeacherIdForEdit(null);
+    removeParams(['teacherId', EDIT_TEACHER_URL_PARAM], { mode: 'replace' });
+    setTimeout(() => {
+      isEditTeacherClosingRef.current = false;
+    }, 100);
   };
 
   const handleTotalTeachersClick = useCallback(() => {

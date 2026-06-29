@@ -15,7 +15,7 @@ const EDIT_TEACHER_URL_PARAM = 'editTeacherId';
 export function useAllTeachersPage() {
   const params = useParams();
   const router = useRouter();
-  const { searchParams, urlRevision, replaceParams } = useAppSearchUrl();
+  const { searchParams, urlRevision, replaceParams, setParams, removeParams } = useAppSearchUrl();
   const locale = params.locale as string;
   const t = useTranslations('teachers');
   const tStatus = useTranslations('status');
@@ -81,16 +81,18 @@ export function useAllTeachersPage() {
 
   const setIsEditTeacherOpen = useCallback(
     (open: boolean) => {
-      if (!open) {
-        isEditTeacherClosingRef.current = true;
-        setSelectedTeacherIdForEdit(null);
-        replaceParams({ [EDIT_TEACHER_URL_PARAM]: null });
-        setTimeout(() => {
-          isEditTeacherClosingRef.current = false;
-        }, 100);
+      if (open) {
+        isEditTeacherClosingRef.current = false;
+        return;
       }
+      isEditTeacherClosingRef.current = true;
+      setSelectedTeacherIdForEdit(null);
+      removeParams([EDIT_TEACHER_URL_PARAM], { mode: 'replace' });
+      setTimeout(() => {
+        isEditTeacherClosingRef.current = false;
+      }, 100);
     },
-    [replaceParams],
+    [removeParams],
   );
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -103,23 +105,29 @@ export function useAllTeachersPage() {
   };
 
   const handleEditClick = (teacher: Teacher) => {
+    isEditTeacherClosingRef.current = false;
     setSelectedTeacher(teacher);
     setSelectedTeacherIdForEdit(teacher.id);
-    replaceParams({
-      [EDIT_TEACHER_URL_PARAM]: teacher.id,
-      teacherId: null,
-    });
+    setParams({ [EDIT_TEACHER_URL_PARAM]: teacher.id }, { mode: 'push' });
   };
 
   const handleRowClick = (teacher: Teacher) => {
-    replaceParams({
-      teacherId: teacher.id,
-      [EDIT_TEACHER_URL_PARAM]: null,
-    });
+    setParams(
+      {
+        teacherId: teacher.id,
+        [EDIT_TEACHER_URL_PARAM]: null,
+      },
+      { mode: 'push' },
+    );
   };
 
   const handleDetailsDrawerClose = () => {
-    replaceParams({ teacherId: null });
+    isEditTeacherClosingRef.current = true;
+    setSelectedTeacherIdForEdit(null);
+    removeParams(['teacherId', EDIT_TEACHER_URL_PARAM], { mode: 'replace' });
+    setTimeout(() => {
+      isEditTeacherClosingRef.current = false;
+    }, 100);
   };
 
   const handleBackToTeachers = useCallback(() => {

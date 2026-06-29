@@ -41,35 +41,41 @@ export function createTeachersTableColumns({
   isUpdating,
   isLoading,
 }: TeachersTableColumnsProps) {
+  const centerColumnWidthClass = '!w-[360px] !min-w-[360px] !max-w-[360px]';
+
   return [
     {
       key: 'checkbox',
       header: (
-        <SelectAllCheckbox
-          checked={allSelected}
-          indeterminate={someSelected}
-          onChange={onSelectAll}
-          disabled={isDeleting || isUpdating || isLoading}
-        />
+        <div className="flex justify-center">
+          <SelectAllCheckbox
+            checked={allSelected}
+            indeterminate={someSelected}
+            onChange={onSelectAll}
+            disabled={isDeleting || isUpdating || isLoading}
+          />
+        </div>
       ),
       render: (teacher: Teacher) => (
-        <input
-          type="checkbox"
-          className="w-4 h-4 rounded border-[rgba(14,14,16,0.12)] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-          checked={selectedTeacherIds.has(teacher.id)}
-          onChange={() => onToggleSelect(teacher.id)}
-          onClick={(e) => e.stopPropagation()}
-          disabled={isDeleting || isUpdating || isLoading}
-          aria-label={`Select ${teacher.user?.firstName} ${teacher.user?.lastName}`}
-        />
+        <div className="flex justify-center">
+          <input
+            type="checkbox"
+            className="h-4 w-4 cursor-pointer rounded border-[rgba(14,14,16,0.12)] disabled:cursor-not-allowed disabled:opacity-50"
+            checked={selectedTeacherIds.has(teacher.id)}
+            onChange={() => onToggleSelect(teacher.id)}
+            onClick={(e) => e.stopPropagation()}
+            disabled={isDeleting || isUpdating || isLoading}
+            aria-label={`Select ${teacher.user?.firstName} ${teacher.user?.lastName}`}
+          />
+        </div>
       ),
-      className: '!pl-4 !pr-2 !w-12 align-top',
+      className: '!px-2 !w-12 align-middle text-center',
     },
     {
       key: 'teacher',
       header: t('title'),
       sortable: true,
-      className: '!pl-4 !pr-4 !w-[170px] !min-w-[170px] !max-w-[170px] align-top',
+      className: '!-ml-[15px] !pl-4 !pr-2 !w-[220px] !min-w-[220px] !max-w-[220px] align-middle',
       render: (teacher: Teacher) => {
         const firstName = teacher.user?.firstName || '';
         const lastName = teacher.user?.lastName || '';
@@ -77,23 +83,37 @@ export function createTeachersTableColumns({
         const phone = formatPhoneForDisplay(teacher.user?.phone, t('noPhoneNumber'));
         const isActive = teacher.user?.status === 'ACTIVE';
         return (
-          <div className={cn("flex items-center gap-3", !isActive && "opacity-60")}>
+          <div className={cn('flex min-w-0 items-center gap-3', !isActive && 'opacity-60')}>
             <Avatar
               src={teacher.user?.avatarUrl}
               name={fullName}
               size="md"
               alt={fullName}
+              className="shrink-0"
             />
-            <div className="min-w-0">
-              <div className="flex items-center gap-2">
-                <p className={cn("font-semibold text-[#3b3b40]", !isActive && "text-[#8b8b90]")}>
+            <div className="min-w-0 flex-1">
+              <div className="flex min-w-0 items-center gap-1.5">
+                <p
+                  className={cn(
+                    'min-w-0 truncate font-semibold text-[#3b3b40]',
+                    !isActive && 'text-[#8b8b90]',
+                  )}
+                  title={fullName}
+                >
                   {firstName} {lastName}
                 </p>
-                {!isActive && (
-                  <span className="text-xs text-[#8b8b90] font-normal">({tStatus('inactive')})</span>
-                )}
+                {!isActive ? (
+                  <span className="shrink-0 text-xs font-normal text-[#8b8b90]">
+                    ({tStatus('inactive')})
+                  </span>
+                ) : null}
               </div>
-              <p className={cn("text-sm text-[#8b8b90]", !isActive && "text-[#8b8b90]")}>{phone}</p>
+              <p
+                className={cn('truncate text-sm text-[#8b8b90]', !isActive && 'text-[#8b8b90]')}
+                title={phone}
+              >
+                {phone}
+              </p>
             </div>
           </div>
         );
@@ -101,8 +121,8 @@ export function createTeachersTableColumns({
     },
     {
       key: 'center',
-      header: t('center'),
-      className: '!pl-4 !pr-4 !w-[240px] !min-w-[240px] !max-w-[240px] align-top !py-4',
+      header: <span className="ml-6 block">{t('center')}</span>,
+      className: cn('!pl-8 !pr-4 align-top !py-4', centerColumnWidthClass),
       render: (teacher: Teacher) => {
         const firstName = teacher.user?.firstName || '';
         const lastName = teacher.user?.lastName || '';
@@ -111,7 +131,7 @@ export function createTeachersTableColumns({
         const selectedCenterIds = centers.map((center) => center.id);
 
         return (
-          <div onClick={(event) => event.stopPropagation()}>
+          <div className="ml-6" onClick={(event) => event.stopPropagation()}>
             <TeacherBranchMultiSelect
               teacherId={teacher.id}
               teacherName={teacherName}
@@ -131,11 +151,11 @@ export function createTeachersTableColumns({
       key: 'groups',
       header: 'Groups',
       sortable: true,
-      className: '!pl-4 !pr-4 !w-[170px] !min-w-[170px] !max-w-[170px] text-center align-top',
+      className: '!pl-8 !pr-4 !w-[150px] !min-w-[150px] !max-w-[150px] align-middle text-center',
       render: (teacher: Teacher) => {
         const count = teacher._count?.groups || 0;
         return (
-          <div className="flex justify-center">
+          <div className="ml-4 flex justify-center">
             <button
               type="button"
               onClick={(event) => {
@@ -155,14 +175,14 @@ export function createTeachersTableColumns({
       key: 'subGroups',
       header: 'Groups (T2)',
       sortable: false,
-      className: '!pl-4 !pr-4 !w-[170px] !min-w-[170px] !max-w-[170px] text-center align-top',
+      className: '!pl-8 !pr-4 !w-[150px] !min-w-[150px] !max-w-[150px] align-middle text-center',
       render: (teacher: Teacher) => {
         const count =
           teacher.secondTeacherForGroupsCount ??
           teacher._count?.secondTeacherForGroups ??
           0;
         return (
-          <div className="flex justify-center">
+          <div className="ml-4 flex justify-center">
             <button
               type="button"
               onClick={(event) => {
@@ -181,7 +201,7 @@ export function createTeachersTableColumns({
     {
       key: 'lessonRate',
       header: 'Per Lesson Rate',
-      className: '!pl-4 !pr-4 !w-[170px] !min-w-[170px] !max-w-[170px] text-center align-top',
+      className: '!pl-4 !pr-4 !w-[170px] !min-w-[170px] !max-w-[170px] align-middle text-center',
       render: (teacher: Teacher) => {
         const lessonRate = teacher.lessonRateAMD;
         const fallback =

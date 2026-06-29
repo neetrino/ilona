@@ -6,7 +6,7 @@ export function FeedbacksTabParticipationTickBox({ checked }: { checked: boolean
   return (
     <span
       className={cn(
-        'flex h-5 w-5 shrink-0 items-center justify-center rounded-md border-2 transition-colors',
+        'flex h-5 w-5 shrink-0 items-center justify-center rounded-[15px] border-2 transition-colors',
         checked ? 'border-emerald-600 bg-emerald-500' : 'border-slate-300 bg-white',
       )}
       aria-hidden

@@ -225,15 +225,13 @@ export function TeacherBranchMultiSelect({
     };
   }, [isOpen, confirmState, closeDropdown, options.length]);
 
-  const displayIds = isOpen ? draftIds : new Set(localValue);
-  const selectedChips = useMemo(
-    () =>
-      Array.from(displayIds)
-        .map((id) => optionById.get(id))
-        .filter((option): option is { id: string; label: string; colorHex?: string | null } => Boolean(option))
-        .sort((a, b) => a.label.localeCompare(b.label)),
-    [displayIds, optionById],
-  );
+  const selectedChips = useMemo(() => {
+    const displayIds = isOpen ? draftIds : new Set(localValue);
+    return Array.from(displayIds)
+      .map((id) => optionById.get(id))
+      .filter((option): option is { id: string; label: string; colorHex?: string | null } => Boolean(option))
+      .sort((a, b) => a.label.localeCompare(b.label));
+  }, [draftIds, isOpen, localValue, optionById]);
 
   const handleToggle = (optionId: string) => {
     const option = optionById.get(optionId);
@@ -244,6 +242,7 @@ export function TeacherBranchMultiSelect({
   };
 
   const isConfirmOpen = confirmState !== null;
+  const useBranchChipGrid = selectedChips.length >= 2;
 
   const dropdownMenu =
     isOpen && !isConfirmOpen && !disabled && !isLoading && position && typeof window !== 'undefined'
@@ -343,7 +342,14 @@ export function TeacherBranchMultiSelect({
         title={error ?? undefined}
       >
         <div className="flex items-start gap-2">
-          <div className="flex flex-1 flex-wrap content-start items-center gap-1">
+          <div
+            className={cn(
+              'flex-1',
+              useBranchChipGrid
+                ? 'grid grid-cols-2 gap-1.5'
+                : 'flex flex-wrap content-start items-center gap-1',
+            )}
+          >
             {isLoading ? (
               <span className="flex items-center gap-1 px-1 py-0.5 text-sm">
                 <svg className="h-3 w-3 animate-spin" fill="none" viewBox="0 0 24 24" aria-hidden>
@@ -369,14 +375,28 @@ export function TeacherBranchMultiSelect({
                 return (
                   <span
                     key={option.id}
-                    className="inline-flex max-w-full items-center rounded-xl px-2 py-0.5 text-[11px] font-semibold shadow-[0_1px_4px_rgba(15,23,42,0.05)]"
+                    title={option.label}
+                    className={cn(
+                      'inline-flex max-w-full items-center rounded-xl text-[11px] font-semibold shadow-[0_1px_4px_rgba(15,23,42,0.05)]',
+                      useBranchChipGrid
+                        ? 'h-full min-h-[28px] w-full min-w-0 justify-center px-1.5 py-1'
+                        : 'px-2 py-0.5',
+                    )}
                     style={{
                       backgroundColor: softColor,
                       color: textColor,
                       border: `1px solid ${borderColor}`,
                     }}
                   >
-                    <span className="max-w-[120px] truncate">{option.label}</span>
+                    <span
+                      className={cn(
+                        useBranchChipGrid
+                          ? 'w-full min-w-0 truncate text-center leading-none'
+                          : 'max-w-[200px] truncate',
+                      )}
+                    >
+                      {option.label}
+                    </span>
                   </span>
                 );
               })

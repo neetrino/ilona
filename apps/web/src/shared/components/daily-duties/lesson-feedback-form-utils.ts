@@ -1,4 +1,4 @@
-export const LEVEL_OPTIONS = ['A1', 'A2', 'B1', 'B2', 'C1'] as const;
+export const LEVEL_OPTIONS = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'] as const;
 
 export const GRAMMAR_OPTIONS = [
   'Tenses',
@@ -30,9 +30,11 @@ export interface StructuredFeedbackFields {
   encouragement: string;
 }
 
+export const DEFAULT_FEEDBACK_LEVEL = 'A1';
+
 export function emptyStructuredFeedback(): StructuredFeedbackFields {
   return {
-    level: '',
+    level: DEFAULT_FEEDBACK_LEVEL,
     grammar: [],
     speaking: false,
     writing: false,
@@ -94,7 +96,7 @@ export function structuredFromSavedFeedback(saved: SavedFeedbackSlice): Structur
   }
   return {
     ...parsed,
-    level: (saved.level ?? parsed.level) || '',
+    level: (saved.level ?? parsed.level) || DEFAULT_FEEDBACK_LEVEL,
     grammar: saved.grammarTopics?.length ? [...saved.grammarTopics] : parsed.grammar,
     speaking,
     writing,
@@ -179,7 +181,7 @@ export function parseLessonFeedbackContent(
 
   return {
     ...base,
-    level,
+    level: level || DEFAULT_FEEDBACK_LEVEL,
     grammar,
     ...skills,
     comment,

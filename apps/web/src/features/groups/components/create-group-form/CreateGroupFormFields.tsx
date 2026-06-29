@@ -12,7 +12,6 @@ import { GroupIconPicker } from '../GroupIconPicker';
 import { teacherOptionLabel } from '../../lib/center-scoped-teachers';
 import { GROUP_LEVEL_SEGMENT_OPTIONS } from '../../lib/group-level-options';
 import { ADMIN_TEXTAREA_CLASS } from '../edit-group-form/edit-group-form.constants';
-import type { CreateGroupFormData } from './create-group-form.types';
 import type { useCreateGroupForm } from './useCreateGroupForm';
 
 type CreateGroupFormFieldsProps = ReturnType<typeof useCreateGroupForm>;

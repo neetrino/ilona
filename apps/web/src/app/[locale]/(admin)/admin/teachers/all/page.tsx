@@ -78,23 +78,21 @@ export default function AllTeachersPage() {
         </div>
       </div>
 
-      {selectedTeacherIdForEdit ? (
-        <EditTeacherForm
-          open={isEditTeacherOpen}
-          onOpenChange={(open) => {
-            setIsEditTeacherOpen(open);
-            if (!open) {
-              setSelectedTeacher(null);
-            }
-          }}
-          teacherId={selectedTeacherIdForEdit}
-        />
-      ) : null}
-
       <TeacherDetailsModal
         teacherId={selectedTeacherIdForDetails}
         open={isDetailsDrawerOpen}
         onClose={handleDetailsDrawerClose}
+      />
+
+      <EditTeacherForm
+        open={isEditTeacherOpen}
+        onOpenChange={(open) => {
+          setIsEditTeacherOpen(open);
+          if (!open) {
+            setSelectedTeacher(null);
+          }
+        }}
+        teacherId={selectedTeacherIdForEdit ?? ''}
       />
     </DashboardLayout>
   );

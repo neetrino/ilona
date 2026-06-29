@@ -25,9 +25,8 @@ export function useEditTeacherForm({
   const tVal = useTranslations('teachers.validation');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const [isDialogOpen, setIsDialogOpen] = useState(open);
   const updateTeacher = useUpdateTeacher();
-  const { data: teacher, isLoading: isQueryLoading } = useTeacher(teacherId, open);
+  const { data: teacher, isLoading: isQueryLoading } = useTeacher(teacherId, open && Boolean(teacherId));
   const isLoadingTeacher =
     isQueryLoading || Boolean(teacher && teacher.id !== teacherId);
   const { data: centersData } = useCenters({ isActive: true, take: 100 }, open);
@@ -108,10 +107,6 @@ export function useEditTeacherForm({
   }, [teacher, teacherId, open, setValue]);
 
   useEffect(() => {
-    setIsDialogOpen(open);
-  }, [open]);
-
-  useEffect(() => {
     if (!open) {
       reset();
       setErrorMessage(null);
@@ -120,7 +115,6 @@ export function useEditTeacherForm({
   }, [open, reset]);
 
   const requestClose = useCallback(() => {
-    setIsDialogOpen(false);
     onOpenChange(false);
   }, [onOpenChange]);
 
@@ -178,7 +172,7 @@ export function useEditTeacherForm({
     t,
     tForm,
     teacher,
-    isDialogOpen,
+    open,
     requestClose,
     dragStyle,
     dragHandleProps,

@@ -67,7 +67,7 @@ export function SubstituteByGroupDayModal({
             <Label htmlFor="sub-day-date">{tCommon('date')}</Label>
             <DatePickerInput
               id="sub-day-date"
-              className="w-full rounded-md border border-[rgba(14,14,16,0.12)] bg-white px-3 py-2 text-sm"
+              className="w-full rounded-[15px] border border-[rgba(14,14,16,0.12)] bg-white px-3 py-2 text-sm"
               value={date}
               onValueChange={setDate}
             />

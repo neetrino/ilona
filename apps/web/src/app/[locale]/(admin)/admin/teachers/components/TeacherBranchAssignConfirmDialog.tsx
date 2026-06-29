@@ -116,7 +116,6 @@ export function TeacherBranchAssignConfirmDialog({
     }
 
     const branches = resolveDisplayBranches(state, branchOptions);
-    const isDestructive = state.variant === 'remove' || state.variant === 'clear';
 
     switch (state.variant) {
       case 'add':

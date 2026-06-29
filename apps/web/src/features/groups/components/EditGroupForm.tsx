@@ -10,7 +10,7 @@ import {
   stackedSheetOverlayClassName,
 } from '@/shared/lib/sheet-stack';
 import { PORTAL_DESKTOP_SIDE_SHEET_CLASS } from '@/shared/lib/portal-form-sheet-classes';
-import { X } from 'lucide-react';
+import { X, Trash2 } from 'lucide-react';
 import { useEditGroupForm } from './edit-group-form/useEditGroupForm';
 import { EditGroupFormFields } from './edit-group-form/EditGroupFormFields';
 import type { EditGroupFormProps } from './edit-group-form/edit-group-form.types';
@@ -18,8 +18,61 @@ import type { EditGroupFormProps } from './edit-group-form/edit-group-form.types
 export type { EditGroupFormProps } from './edit-group-form/edit-group-form.types';
 
 export function EditGroupForm(props: EditGroupFormProps) {
+  const { onToggleActive, onDelete } = props;
   const form = useEditGroupForm(props);
   const tCommon = useTranslations('common');
+
+  const renderHeaderActions = () => (
+    <div className="flex shrink-0 items-center gap-3">
+      {onDelete ? (
+        <button
+          type="button"
+          aria-label={form.tGroups('deleteGroup')}
+          title={form.tGroups('deleteGroup')}
+          disabled={form.isFormBusy}
+          onClick={onDelete}
+          className={cn(
+            ADMIN_ICON_BUTTON_SM_CLASS,
+            'text-slate-500 hover:bg-red-50 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-50',
+          )}
+        >
+          <Trash2 className="h-4 w-4" aria-hidden="true" />
+        </button>
+      ) : null}
+      {onToggleActive ? (
+        <button
+          type="button"
+          role="switch"
+          aria-checked={form.isGroupActive}
+          aria-label={
+            form.isGroupActive ? form.tGroups('deactivateGroup') : form.tGroups('activateGroup')
+          }
+          disabled={form.isFormBusy}
+          onClick={onToggleActive}
+          className={cn(
+            'relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full transition-colors focus:outline-none focus:ring-4 focus:ring-green-500/20 disabled:cursor-not-allowed disabled:opacity-50',
+            form.isGroupActive ? 'bg-green-500' : 'bg-[#f1f1f2]',
+          )}
+        >
+          <span
+            className={cn(
+              'pointer-events-none inline-block h-5 w-5 rounded-full border border-gray-300 bg-white transition-transform',
+              form.isGroupActive ? 'translate-x-5 border-white' : 'translate-x-0.5',
+            )}
+          />
+        </button>
+      ) : null}
+      <DialogPrimitive.Close
+        className={cn(
+          ADMIN_ICON_BUTTON_SM_CLASS,
+          'hidden text-slate-500 hover:bg-slate-100 hover:text-slate-700 min-[1367px]:inline-flex',
+        )}
+        aria-label={tCommon('close')}
+      >
+        <X className="h-4 w-4" />
+      </DialogPrimitive.Close>
+    </div>
+  );
 
   if (form.isLoading) {
     return (
@@ -118,40 +171,7 @@ export function EditGroupForm(props: EditGroupFormProps) {
                 <div className="min-w-0 flex-1">
                   <h2 className="text-lg font-semibold text-[#3b3b40]">{form.tForm('editTitle')}</h2>
                 </div>
-                <div className="flex shrink-0 items-center gap-3">
-                  {props.onToggleActive ? (
-                    <button
-                      type="button"
-                      role="switch"
-                      aria-checked={form.isGroupActive}
-                      aria-label={
-                        form.isGroupActive ? form.tGroups('deactivateGroup') : form.tGroups('activateGroup')
-                      }
-                      disabled={form.isFormBusy}
-                      onClick={props.onToggleActive}
-                      className={cn(
-                        'relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full transition-colors focus:outline-none focus:ring-4 focus:ring-green-500/20 disabled:cursor-not-allowed disabled:opacity-50',
-                        form.isGroupActive ? 'bg-green-500' : 'bg-[#f1f1f2]',
-                      )}
-                    >
-                      <span
-                        className={cn(
-                          'pointer-events-none inline-block h-5 w-5 rounded-full border border-gray-300 bg-white transition-transform',
-                          form.isGroupActive ? 'translate-x-5 border-white' : 'translate-x-0.5',
-                        )}
-                      />
-                    </button>
-                  ) : null}
-                  <DialogPrimitive.Close
-                    className={cn(
-                      ADMIN_ICON_BUTTON_SM_CLASS,
-                      'hidden text-slate-500 hover:bg-slate-100 hover:text-slate-700 min-[1367px]:inline-flex',
-                    )}
-                    aria-label={tCommon('close')}
-                  >
-                    <X className="h-4 w-4" />
-                  </DialogPrimitive.Close>
-                </div>
+                {renderHeaderActions()}
               </div>
             </div>
             <div className="min-h-0 overflow-y-auto overscroll-y-contain [touch-action:pan-y] [-webkit-overflow-scrolling:touch] px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] min-[1367px]:px-6 min-[1367px]:pb-6">

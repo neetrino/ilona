@@ -113,7 +113,7 @@ export function DailyDutiesOverlays({
       {deleteNotice && (
         <div
           className={cn(
-            'fixed right-4 bottom-4 z-50 max-w-sm rounded-lg border p-4 shadow-lg',
+            'fixed right-4 bottom-4 z-50 max-w-sm rounded-[15px] border p-4 shadow-lg',
             deleteNotice.variant === 'success'
               ? 'border-green-200 bg-green-50 text-green-800'
               : 'border-red-200 bg-red-50 text-red-800',

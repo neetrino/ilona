@@ -221,21 +221,36 @@ export default function TeachersPage() {
         onOpenChange={setIsAddTeacherOpen} 
       />
 
+      {/* Teacher Details Modal — base sheet layer; edit stacks on top in list view */}
+      <TeacherDetailsModal
+        teacherId={selectedTeacherIdForDetails}
+        open={isDetailsDrawerOpen}
+        onClose={handleDetailsDrawerClose}
+        onEdit={
+          viewMode === 'list'
+            ? () => {
+                const teacher = teachers.find((item) => item.id === selectedTeacherIdForDetails);
+                if (teacher) {
+                  handleEditClick(teacher);
+                }
+              }
+            : undefined
+        }
+      />
+
       {/* Edit Teacher Modal — `editTeacherId` in URL keeps dialog open after refresh */}
-      {selectedTeacherIdForEdit ? (
-        <EditTeacherForm
-          open={isEditTeacherOpen}
-          onOpenChange={(open) => {
-            setIsEditTeacherOpen(open);
-            if (!open) {
-              setSelectedTeacher(null);
-            }
-          }}
-          teacherId={selectedTeacherIdForEdit}
-          onDelete={handleDeleteClick}
-          onDeactivate={handleDeactivateClick}
-        />
-      ) : null}
+      <EditTeacherForm
+        open={isEditTeacherOpen}
+        onOpenChange={(open) => {
+          setIsEditTeacherOpen(open);
+          if (!open) {
+            setSelectedTeacher(null);
+          }
+        }}
+        teacherId={selectedTeacherIdForEdit ?? ''}
+        onDelete={handleDeleteClick}
+        onDeactivate={handleDeactivateClick}
+      />
 
       {/* Delete Confirmation Dialog */}
       <DeleteConfirmationDialog
@@ -264,22 +279,6 @@ export default function TeachersPage() {
         title={t('deleteTeachersTitle')}
       />
 
-      {/* Teacher Details Modal — edit action in header for list view only */}
-      <TeacherDetailsModal
-        teacherId={selectedTeacherIdForDetails}
-        open={isDetailsDrawerOpen}
-        onClose={handleDetailsDrawerClose}
-        onEdit={
-          viewMode === 'list'
-            ? () => {
-                const teacher = teachers.find((item) => item.id === selectedTeacherIdForDetails);
-                if (teacher) {
-                  handleEditClick(teacher);
-                }
-              }
-            : undefined
-        }
-      />
       <TeacherGroupsModal
         teacher={groupsModalTeacher}
         initialTab={groupsModalTab}

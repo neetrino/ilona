@@ -59,19 +59,20 @@ export type StudentAccountFormFieldsEnrollmentSectionProps = StudentAccountFormF
   > & {
     watchedTeacherId: string;
     watchedGroupId: string;
-    watchedLevelId: string;
     watchedCenterId: string;
     watchedDateOfBirth: string;
     watchedFirstLessonDate: string;
     ageFromDob: number | undefined;
     showManualAgeInput: boolean;
     teacherCentersLabel: string;
-    levelOptions: Array<{ id: string; label: string }>;
     teacherOptions: Array<{ id: string; label: string }>;
     groupOptions: Array<{ id: string; label: string }>;
-    centerOptions: Array<{ id: string; label: string }>;
+    centerSegmentOptions: Array<{ id: string; label: string }>;
+    centerDropdownOptions: Array<{ id: string; label: string }>;
   };
 
 export type StudentAccountFormFieldsParentSectionProps = StudentAccountFormFieldShellProps;
 
-export type StudentAccountFormFieldsBillingSectionProps = StudentAccountFormFieldShellProps;
+export type StudentAccountFormFieldsBillingSectionProps = StudentAccountFormFieldShellProps & {
+  watchedLevelId: string;
+};

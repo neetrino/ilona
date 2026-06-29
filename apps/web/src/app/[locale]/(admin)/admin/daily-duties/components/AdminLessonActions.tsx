@@ -5,7 +5,6 @@ import { MoreVertical } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useDeleteLesson, useLesson } from '@/features/lessons';
 import { BulkDeleteConfirmationDialog } from '@/features/lessons/components/BulkDeleteConfirmationDialog';
-import { Button } from '@/shared/components/ui/button';
 import { useOutsidePress } from '@/shared/hooks/useOutsidePress';
 import { getErrorMessage } from '@/shared/lib/api';
 import { ADMIN_ICON_BUTTON_SM_CLASS } from '@/shared/lib/admin-control-theme';
@@ -15,14 +14,12 @@ interface AdminLessonActionsProps {
   lessonId: string;
   teacherOptions: SubstituteTeacherOption[];
   onDeleted?: () => void;
-  variant: 'footer' | 'menu';
 }
 
 export function AdminLessonActions({
   lessonId,
   teacherOptions,
   onDeleted,
-  variant,
 }: AdminLessonActionsProps) {
   const t = useTranslations('dailyDuties');
   const tCommon = useTranslations('common');
@@ -67,62 +64,41 @@ export function AdminLessonActions({
 
   return (
     <>
-      {variant === 'menu' ? (
-        <div ref={menuRef} className="relative shrink-0">
-          <button
-            type="button"
-            aria-label={tCommon('actions')}
-            aria-haspopup="menu"
-            aria-expanded={menuOpen}
-            onClick={() => setMenuOpen((prev) => !prev)}
-            className={`${ADMIN_ICON_BUTTON_SM_CLASS} text-[#3b3b40] hover:bg-[#f3f3f4]`}
+      <div ref={menuRef} className="relative shrink-0 -mt-1">
+        <button
+          type="button"
+          aria-label={tCommon('actions')}
+          aria-haspopup="menu"
+          aria-expanded={menuOpen}
+          onClick={() => setMenuOpen((prev) => !prev)}
+          className={`${ADMIN_ICON_BUTTON_SM_CLASS} text-[#3b3b40] hover:bg-[#f3f3f4]`}
+        >
+          <MoreVertical className="h-4 w-4" aria-hidden />
+        </button>
+        {menuOpen ? (
+          <div
+            role="menu"
+            className="absolute right-0 top-full z-30 mt-1 min-w-[11rem] overflow-hidden rounded-[15px] border border-[rgba(14,14,16,0.08)] bg-white p-1 shadow-[0_16px_40px_rgba(15,23,42,0.14)] ring-1 ring-black/5"
           >
-            <MoreVertical className="h-4 w-4" aria-hidden />
-          </button>
-          {menuOpen ? (
-            <div
-              role="menu"
-              className="absolute right-0 top-full z-30 mt-1 min-w-[11rem] overflow-hidden rounded-xl border border-[rgba(14,14,16,0.08)] bg-white p-1 shadow-[0_16px_40px_rgba(15,23,42,0.14)] ring-1 ring-black/5"
+            <button
+              type="button"
+              role="menuitem"
+              onClick={openSubstitute}
+              className="w-full rounded-[15px] px-3 py-2 text-left text-sm text-[#3b3b40] transition-colors hover:bg-[#f6f6f7]"
             >
-              <button
-                type="button"
-                role="menuitem"
-                onClick={openSubstitute}
-                className="w-full rounded-lg px-3 py-2 text-left text-sm text-[#3b3b40] transition-colors hover:bg-[#f6f6f7]"
-              >
-                {t('substituteTeacherButton')}
-              </button>
-              <button
-                type="button"
-                role="menuitem"
-                onClick={openDelete}
-                className="w-full rounded-lg px-3 py-2 text-left text-sm text-red-600 transition-colors hover:bg-red-50"
-              >
-                {tCommon('delete')}
-              </button>
-            </div>
-          ) : null}
-        </div>
-      ) : (
-        <div className="flex shrink-0 flex-wrap items-center justify-start gap-2 border-t border-[rgba(14,14,16,0.07)] px-4 py-3">
-          <Button
-            type="button"
-            variant="outline"
-            className="rounded-[15px] transition-transform duration-200 hover:-translate-y-px"
-            onClick={openSubstitute}
-          >
-            {t('substituteTeacherButton')}
-          </Button>
-          <Button
-            type="button"
-            variant="destructive"
-            className="rounded-[15px] transition-transform duration-200 hover:-translate-y-px"
-            onClick={openDelete}
-          >
-            {tCommon('delete')}
-          </Button>
-        </div>
-      )}
+              {t('substituteTeacherButton')}
+            </button>
+            <button
+              type="button"
+              role="menuitem"
+              onClick={openDelete}
+              className="w-full rounded-[15px] px-3 py-2 text-left text-sm text-red-600 transition-colors hover:bg-red-50"
+            >
+              {tCommon('delete')}
+            </button>
+          </div>
+        ) : null}
+      </div>
 
       <SubstituteLessonModal
         open={substituteOpen}

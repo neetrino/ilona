@@ -26,7 +26,7 @@ export function DailyDutiesWeekView({
   const t = useTranslations('dailyDuties');
 
   return (
-    <div className="w-full min-w-0 overflow-x-auto rounded-xl border border-[rgba(14,14,16,0.07)] bg-white [-webkit-overflow-scrolling:touch]">
+    <div className="w-full min-w-0 overflow-x-auto rounded-[15px] border border-[rgba(14,14,16,0.07)] bg-white [-webkit-overflow-scrolling:touch]">
       <div className="min-w-[42rem]">
         <div className="grid grid-cols-7 border-b border-[rgba(14,14,16,0.07)]">
           {weekDates.map((date, i) => (
@@ -64,8 +64,8 @@ export function DailyDutiesWeekView({
               >
                 {isLoading ? (
                   <div className="animate-pulse space-y-2">
-                    <div className="h-16 rounded-lg bg-[#f1f1f2]" />
-                    <div className="h-16 rounded-lg bg-[#f1f1f2]" />
+                    <div className="h-16 rounded-[15px] bg-[#f1f1f2]" />
+                    <div className="h-16 rounded-[15px] bg-[#f1f1f2]" />
                   </div>
                 ) : dayLessons.length === 0 ? (
                   <p className="py-4 text-center text-xs text-[#8b8b90]">
@@ -82,7 +82,7 @@ export function DailyDutiesWeekView({
                     {dayLessons.map((lesson) => (
                       <div
                         key={lesson.id}
-                        className={`rounded-lg border-l-4 p-2 text-xs ${getWeekLessonCardClass(lesson)}`}
+                        className={`rounded-[15px] border-l-4 p-2 text-xs ${getWeekLessonCardClass(lesson)}`}
                       >
                         <p className="truncate font-medium text-[#3b3b40]">
                           {formatDailyDutiesLessonTime(lesson.scheduledAt)}

@@ -13,11 +13,9 @@ import type { TeacherAssignedItem } from '@/features/students';
 import type { AttendanceCell } from '../hooks/useAttendanceData';
 import { toAttendanceRow } from '../hooks/useAttendanceData';
 import type { AbsenceType } from '@/features/attendance';
+import { ATTENDANCE_GROUP_CARD_CLASS } from '@/shared/components/attendance/attendance-button-theme';
 import { useIsIPad } from '@/shared/hooks/useIsIPad';
-import {
-  ATTENDANCE_PAGER_INDICATOR_CLASS,
-  attendancePagerButtonClass,
-} from '@/shared/components/attendance/attendance-button-theme';
+import { AdminListPagination } from '@/shared/components/ui';
 
 const MOBILE_GROUP_CARDS_PAGE_SIZE = 5;
 const IPAD_GROUP_CARDS_PAGE_SIZE = 10;
@@ -149,7 +147,7 @@ export function MonthView({
       {selectedDayForMonthView && (
         <>
           {showSingleView ? (
-            <div className="bg-white rounded-xl border-2 border-[rgba(14,14,16,0.12)] p-6 shadow-sm">
+            <div className={ATTENDANCE_GROUP_CARD_CLASS}>
               <AttendanceContextHeader
                 group={group || null}
                 date={new Date(selectedDayForMonthView)}
@@ -195,7 +193,7 @@ export function MonthView({
                 });
 
                 return (
-                  <div key={selectedGroup.id} className="bg-white rounded-xl border-2 border-[rgba(14,14,16,0.12)] p-6 shadow-sm">
+                  <div key={selectedGroup.id} className={ATTENDANCE_GROUP_CARD_CLASS}>
                     <AttendanceContextHeader
                       group={selectedGroup}
                       date={new Date(selectedDayForMonthView)}
@@ -226,47 +224,15 @@ export function MonthView({
                   </div>
                 );
               })}
-              {selectedGroups.length > mobileCardsPageSize && (
-                <div className="flex items-center justify-between text-sm text-[#8b8b90]">
-                  <span>
-                    {safeMobileCardPage * mobileCardsPageSize + 1}-
-                    {Math.min((safeMobileCardPage + 1) * mobileCardsPageSize, selectedGroups.length)} / {selectedGroups.length}
-                  </span>
-                  <div className="flex items-center gap-3">
-                    <button
-                      type="button"
-                      className={attendancePagerButtonClass(safeMobileCardPage !== 0)}
-                      disabled={safeMobileCardPage === 0}
-                      onClick={() =>
-                        goToMobileCardsPage(Math.max(0, safeMobileCardPage - 1))
-                      }
-                      aria-label={tCommon('previousCardsPage')}
-                    >
-                      <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                      </svg>
-                    </button>
-                    <span className={ATTENDANCE_PAGER_INDICATOR_CLASS}>
-                      {safeMobileCardPage + 1}
-                    </span>
-                    <button
-                      type="button"
-                      className={attendancePagerButtonClass(safeMobileCardPage < totalMobileCardPages - 1)}
-                      disabled={safeMobileCardPage >= totalMobileCardPages - 1}
-                      onClick={() =>
-                        goToMobileCardsPage(
-                          Math.min(totalMobileCardPages - 1, safeMobileCardPage + 1),
-                        )
-                      }
-                      aria-label={tCommon('nextCardsPage')}
-                    >
-                      <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
-                    </button>
-                  </div>
-                </div>
-              )}
+              <AdminListPagination
+                page={safeMobileCardPage}
+                pageSize={mobileCardsPageSize}
+                totalItems={selectedGroups.length}
+                onPageChange={goToMobileCardsPage}
+                previousLabel={tCommon('previousCardsPage')}
+                nextLabel={tCommon('nextCardsPage')}
+                align="between"
+              />
               </div>
               <div className="hidden space-y-6 md:block">
               {selectedGroups.map((selectedGroup) => {
@@ -282,7 +248,7 @@ export function MonthView({
                 });
 
                 return (
-                  <div key={selectedGroup.id} className="bg-white rounded-xl border-2 border-[rgba(14,14,16,0.12)] p-6 shadow-sm">
+                  <div key={selectedGroup.id} className={ATTENDANCE_GROUP_CARD_CLASS}>
                     <AttendanceContextHeader
                       group={selectedGroup}
                       date={new Date(selectedDayForMonthView)}
