@@ -1,12 +1,11 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { useTranslations, useLocale } from 'next-intl';
+import { useTranslations } from 'next-intl';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
-import { Button, Badge } from '@/shared/components/ui';
+import { Button } from '@/shared/components/ui';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { useUploadAvatar, useDeleteAvatar, useUpdateProfile } from '@/features/settings/hooks/useSettings';
-import { Locale } from '@/config/i18n';
 import {
   portalCardClass,
   portalInnerCardClass,
@@ -25,8 +24,6 @@ export default function AdminProfilePage() {
   const [uploadSuccess, setUploadSuccess] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const t = useTranslations('settings');
-  const tCommon = useTranslations('common');
-  const _locale = useLocale() as Locale;
 
   const uploadAvatarMutation = useUploadAvatar();
   const deleteAvatarMutation = useDeleteAvatar();
@@ -278,14 +275,6 @@ export default function AdminProfilePage() {
                 placeholder="+1 234 567 8900"
                 className={portalInputClass}
               />
-            </div>
-
-            <div className={portalInnerCardClass}>
-              <label className={portalLabelClass}>{tCommon('status')}</label>
-              <div className="flex flex-wrap items-center gap-2">
-                <Badge variant="info">{user?.role || 'ADMIN'}</Badge>
-                <span className="text-sm text-[#8b8b90]">{t('assignedBySystem')}</span>
-              </div>
             </div>
 
             <div className="flex justify-end pt-2">

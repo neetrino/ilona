@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { Button, Badge } from '@/shared/components/ui';
+import { Button } from '@/shared/components/ui';
 
 interface SecurityTabProps {
   isSaving: boolean;
@@ -89,27 +89,6 @@ export function SecurityTab({ isSaving, onSave }: SecurityTabProps) {
             </Button>
           </div>
         </form>
-      </div>
-
-      <div className="rounded-3xl border border-[rgba(14,14,16,0.07)] bg-white p-6">
-        <h2 className="text-lg font-semibold text-[#3b3b40] mb-4">{t('sessions')}</h2>
-        <p className="text-sm text-[#8b8b90] mb-4">
-          {t('manageActiveSessions')}
-        </p>
-        <div className="p-4 bg-[#fafafa] rounded-xl flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-green-100 rounded-lg">
-              <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-              </svg>
-            </div>
-            <div>
-              <p className="font-medium text-[#3b3b40]">{t('currentSession')}</p>
-              <p className="text-xs text-[#8b8b90]">{t('thisDevice')} • {t('activeNow')}</p>
-            </div>
-          </div>
-          <Badge variant="success">{t('active')}</Badge>
-        </div>
       </div>
     </div>
   );
