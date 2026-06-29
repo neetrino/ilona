@@ -7,8 +7,8 @@ import { MultiSelectChipsDropdown } from '@/shared/components/ui/multi-select-ch
 import { cn } from '@/shared/lib/utils';
 import {
   ADMIN_DATE_INPUT_CLASS,
-  ADMIN_FORM_INPUT_CLASS,
   ADMIN_OUTLINE_BUTTON_CLASS,
+  ADMIN_SEARCH_INPUT_CLASS,
 } from '@/shared/lib/admin-control-theme';
 import { formatDateTime, formatIsoDay } from './admin-recordings.utils';
 import type { AdminRecordingsPageViewProps } from './useAdminRecordingsPage';
@@ -125,17 +125,34 @@ export function AdminRecordingsPageView({
         <div className="flex-1">
           <label
             htmlFor="rec-search"
-            className="block text-sm font-medium text-[#3b3b40] mb-1.5"
+            className="mb-1.5 block text-sm font-medium text-[#8b8b90]"
           >
             {tCommon('search')}
           </label>
-          <input
-            id="rec-search"
-            value={search}
-            onChange={(event) => setSearch(event.target.value)}
-            placeholder={t('searchPlaceholder')}
-            className={ADMIN_FORM_INPUT_CLASS}
-          />
+          <div className="relative">
+            <svg
+              className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-[#8b8b90]"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              aria-hidden
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+              />
+            </svg>
+            <input
+              id="rec-search"
+              type="search"
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              placeholder={t('searchPlaceholder')}
+              className={ADMIN_SEARCH_INPUT_CLASS}
+            />
+          </div>
         </div>
         <button
           type="button"
