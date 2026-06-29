@@ -1,7 +1,9 @@
 'use client';
 
+import { useEffect, useMemo, useState } from 'react';
 import { cn } from '@/shared/lib/utils';
 import { Button } from '@/shared/components/ui/button';
+import { AdminListPagination } from '@/shared/components/ui';
 import {
   ATTENDANCE_CELL_RADIUS_CLASS,
   ATTENDANCE_NOTE_BUTTON_CLASS,
@@ -11,6 +13,8 @@ import type { Lesson } from '@/features/lessons';
 import { formatDateString, formatDateDisplay, isToday } from '@/features/attendance/utils/dateUtils';
 import type { AttendanceCell, AttendanceStatus, WeekAttendanceStudent } from './types';
 import { formatDayHeader, getStatusIcon, getStatusStyles } from './attendance-status';
+
+const STUDENTS_PAGE_SIZE = 5;
 
 interface WeekAttendanceGridTableProps {
   gridRef: React.RefObject<HTMLDivElement | null>;
@@ -51,6 +55,23 @@ export function WeekAttendanceGridTable({
   t,
   tCommon,
 }: WeekAttendanceGridTableProps) {
+  const [studentPage, setStudentPage] = useState(0);
+
+  useEffect(() => {
+    setStudentPage(0);
+  }, [students]);
+
+  const totalStudentPages = Math.max(1, Math.ceil(students.length / STUDENTS_PAGE_SIZE));
+  const safeStudentPage = Math.min(studentPage, totalStudentPages - 1);
+  const paginatedStudents = useMemo(
+    () =>
+      students.slice(
+        safeStudentPage * STUDENTS_PAGE_SIZE,
+        safeStudentPage * STUDENTS_PAGE_SIZE + STUDENTS_PAGE_SIZE,
+      ),
+    [students, safeStudentPage],
+  );
+
   return (
     <div
       ref={gridRef}
@@ -132,7 +153,7 @@ export function WeekAttendanceGridTable({
             </tr>
           </thead>
           <tbody className="divide-y-2 divide-slate-200 bg-white">
-            {students.map((student) => {
+            {paginatedStudents.map((student) => {
               const initials =
                 `${student.user.firstName[0] || ''}${student.user.lastName[0] || ''}` || '?';
               return (
@@ -251,6 +272,16 @@ export function WeekAttendanceGridTable({
           </tbody>
         </table>
       </div>
+      <AdminListPagination
+        page={safeStudentPage}
+        pageSize={STUDENTS_PAGE_SIZE}
+        totalItems={students.length}
+        onPageChange={setStudentPage}
+        previousLabel={tCommon('previousCardsPage')}
+        nextLabel={tCommon('nextCardsPage')}
+        withFooter
+        className="shrink-0 bg-white"
+      />
     </div>
   );
 }
