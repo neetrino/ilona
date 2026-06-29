@@ -33,6 +33,8 @@ Goal: gradually split source files so each stays at or below **400 lines**.
 | 2026-06-29 | `apps/web/src/features/chat/components/TeacherChatList.tsx` | 630 | 79 (orchestrator) | Split into tab bar, search, list items (admin/groups/students), loading/empty + hook + types |
 | 2026-06-29 | `apps/web/src/shared/components/ui/date-picker-input.tsx` | 695 | 83 (orchestrator) | Split into constants, types, utils, popover position, hook, calendar popover, trigger |
 | 2026-06-29 | `apps/web/src/features/groups/components/CreateGroupForm.tsx` | 656 | 82 (orchestrator) | Split into fields, hook + types; reused edit-group-form constants |
+| 2026-06-29 | `apps/web/src/features/crm/components/EditLeadModal.tsx` | 637 | 95 (orchestrator) | Split into form body, hook + types/constants |
+| 2026-06-29 | `apps/api/src/modules/settings/settings.controller.ts` | 659 | removed | Split into logo, dashboard-banner, footer, penalties controllers + image util/constants |
 
 ## Split details (completed refactors)
 
@@ -67,7 +69,10 @@ Goal: gradually split source files so each stays at or below **400 lines**.
 | 24 | `date-picker-input.tsx` | 695 | 83 | **8** |
 | 25 | `CreateGroupForm.tsx` | 656 | 82 | **4** |
 
-**25** մեծ ֆайլ → **181** ֆայլ (25 facade/orchestrator + 156 նոր split ֆայլ)։
+| 26 | `EditLeadModal.tsx` | 637 | 95 | **5** |
+| 27 | `settings.controller.ts` | 659 | — | **6** |
+
+**27** մեծ ֆайլ → **192** ֆայլ (26 facade/orchestrator + 166 նոր split ֆայլ)։
 
 ### 1. `apps/api/src/modules/chat/chat-management.service.ts` (1,195 → 61)
 
@@ -436,6 +441,31 @@ Goal: gradually split source files so each stays at or below **400 lines**.
 | `create-group-form/CreateGroupFormFields.tsx` | Form fields JSX |
 | `create-group-form/create-group-form.types.ts` | Props + form data types |
 
+### 26. `apps/web/src/features/crm/components/EditLeadModal.tsx` (637 → 95)
+
+**5 ֆայլ** (1 orchestrator + 4 նոր, `edit-lead-modal/`)
+
+| Ֆայլ | Դեր |
+| --- | --- |
+| `EditLeadModal.tsx` | Sheet shell + header actions orchestrator |
+| `edit-lead-modal/useEditLeadModal.ts` | Form state, fetch, submit, paid registration flow |
+| `edit-lead-modal/EditLeadModalFormBody.tsx` | Voice, basic/academic/parent/status form sections |
+| `edit-lead-modal/edit-lead-modal.types.ts` | Props + form state types |
+| `edit-lead-modal/edit-lead-modal.constants.ts` | Level options + field class |
+
+### 27. `apps/api/src/modules/settings/settings.controller.ts` (659 → split)
+
+**6 ֆайլ** (monolith removed; 4 domain controllers + 2 shared utils)
+
+| Ֆայլ | Դեր |
+| --- | --- |
+| `settings-logo.controller.ts` | Logo get/serve/upload/delete |
+| `settings-dashboard-banner.controller.ts` | Banner get/serve/upload/delete/text |
+| `settings-footer.controller.ts` | Footer icon links get/update |
+| `settings-penalties.controller.ts` | Action percents + penalty amounts |
+| `settings-controller.constants.ts` | Upload size/MIME limits |
+| `settings-image.util.ts` | Cache buster, content-type, image response helpers |
+
 ---
 
 ## Summary
@@ -443,10 +473,10 @@ Goal: gradually split source files so each stays at or below **400 lines**.
 | Metric | Value |
 | --- | --- |
 | Total source files scanned | 836 |
-| Files over 400 lines | **34** (was 58) |
-| Biggest file | `apps/web/src/features/crm/components/EditLeadModal.tsx` (616 lines) |
-| Frontend (`apps/web`) | 27 |
-| Backend (`apps/api`) | 11 |
+| Files over 400 lines | **32** (was 58) |
+| Biggest file | `apps/api/src/modules/finance/salary-record.service.ts` (601 lines) |
+| Frontend (`apps/web`) | 26 |
+| Backend (`apps/api`) | 10 |
 | Shared / packages | 0 |
 
 **Extensions scanned:** `.ts`, `.tsx`, `.js`, `.jsx`, `.css`, `.scss`, `.module.css`, `.module.scss`
@@ -483,9 +513,9 @@ Goal: gradually split source files so each stays at or below **400 lines**.
 | ~~22~~ | ~~`apps/web/src/features/chat/components/TeacherChatList.tsx`~~ | ~~630~~ | Frontend / Chat | **Done** | — |
 | ~~23~~ | ~~`apps/web/src/shared/components/ui/date-picker-input.tsx`~~ | ~~627~~ | Frontend / Shared UI | **Done** | — |
 | ~~24~~ | ~~`apps/api/src/modules/search/search.service.ts`~~ | ~~623~~ | Backend / Search | **Done** | — |
-| 25 | `apps/web/src/features/crm/components/EditLeadModal.tsx` | 616 | Frontend / CRM | Extract form sections, status/activity UI, and voice/recording blocks; split validation schema and mutation hook | Medium |
+| ~~25~~ | ~~`apps/web/src/features/crm/components/EditLeadModal.tsx`~~ | ~~616~~ | Frontend / CRM | **Done** | — |
 | ~~26~~ | ~~`apps/web/src/features/groups/components/CreateGroupForm.tsx`~~ | ~~611~~ | Frontend / Groups | **Done** | — |
-| 27 | `apps/api/src/modules/settings/settings.controller.ts` | 607 | Backend / Settings | Thin controller: move business logic to settings sub-services; group endpoints by domain; extract response DTO mapping | Medium |
+| ~~27~~ | ~~`apps/api/src/modules/settings/settings.controller.ts`~~ | ~~607~~ | Backend / Settings | **Done** | — |
 | 28 | `apps/api/src/modules/finance/salary-record.service.ts` | 601 | Backend / Finance | Split salary calculation, record CRUD, and period aggregation; extract penalty/bonus adjustment helpers | Medium |
 | 29 | `apps/web/src/features/settings/components/EditManagerForm.tsx` | 589 | Frontend / Settings | Extract manager profile, center assignment, and permissions sections; split validation and API mutation hook | Medium |
 | 30 | `apps/web/src/shared/components/calendar/FeedbacksTab.tsx` | 584 | Frontend / Calendar (shared) | Extract feedback list, form, and rating UI; move fetch/submit hooks and empty states out of main tab | Medium |
@@ -522,9 +552,9 @@ Goal: gradually split source files so each stays at or below **400 lines**.
 
 ## Recommended first 3 refactors
 
-1. **`apps/web/src/features/crm/components/EditLeadModal.tsx`** (616 lines) — Extract form sections, status/activity UI, voice blocks.
-2. **`apps/api/src/modules/settings/settings.controller.ts`** (607 lines) — Thin controller; group endpoints by domain.
-3. **`apps/api/src/modules/finance/salary-record.service.ts`** (601 lines) — Split calculation, CRUD, period aggregation.
+1. **`apps/api/src/modules/finance/salary-record.service.ts`** (601 lines) — Split calculation, CRUD, period aggregation.
+2. **`apps/web/src/features/settings/components/EditManagerForm.tsx`** (589 lines) — Extract profile, center, permissions sections.
+3. **`apps/web/src/shared/components/calendar/FeedbacksTab.tsx`** (584 lines) — Extract list, form, rating UI + hooks.
 
 ---
 

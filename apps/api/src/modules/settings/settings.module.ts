@@ -1,5 +1,8 @@
 import { Module } from '@nestjs/common';
-import { SettingsController } from './settings.controller';
+import { SettingsLogoController } from './settings-logo.controller';
+import { SettingsDashboardBannerController } from './settings-dashboard-banner.controller';
+import { SettingsFooterController } from './settings-footer.controller';
+import { SettingsPenaltiesController } from './settings-penalties.controller';
 import { SettingsService } from './settings.service';
 import { SettingsCoreService } from './settings-core.service';
 import { SettingsBrandingService } from './settings-branding.service';
@@ -10,7 +13,12 @@ import { StorageModule } from '../storage/storage.module';
 
 @Module({
   imports: [StorageModule],
-  controllers: [SettingsController],
+  controllers: [
+    SettingsLogoController,
+    SettingsDashboardBannerController,
+    SettingsFooterController,
+    SettingsPenaltiesController,
+  ],
   providers: [
     SettingsService,
     SettingsCoreService,
@@ -22,5 +30,3 @@ import { StorageModule } from '../storage/storage.module';
   exports: [SettingsService],
 })
 export class SettingsModule {}
-
-
