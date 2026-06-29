@@ -8,7 +8,6 @@ import type { Teacher } from '@/features/teachers';
 import type { Center } from '@ilona/types';
 import { useTranslations as useTranslationsRuntime, type useTranslations } from 'next-intl';
 import { useIsIPad } from '@/shared/hooks/useIsIPad';
-import { usePortalSidebarCollapsed } from '@/shared/context/portal-shell-context';
 
 interface TeachersListProps {
   centers: Center[];
@@ -79,7 +78,6 @@ export function TeachersList({
 }: TeachersListProps) {
   const tc = useTranslationsRuntime('common');
   const isIPad = useIsIPad();
-  const sidebarCollapsed = usePortalSidebarCollapsed();
   const safeTotalPages = Math.max(1, totalPages);
   const safePage = Math.min(Math.max(0, page), safeTotalPages - 1);
   const hasTeachers = totalTeachers > 0;
@@ -100,7 +98,6 @@ export function TeachersList({
     isUpdating,
     isLoading,
     centerOptions,
-    sidebarCollapsed,
   });
 
   const hasCenterTabs =
