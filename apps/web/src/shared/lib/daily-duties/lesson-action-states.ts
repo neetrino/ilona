@@ -1,8 +1,10 @@
 import type { Lesson, LessonDutyActionStatusDto } from '@/features/lessons';
+import { getDutyDeadline, isDutyDeadlinePassed } from '@ilona/types';
 
 export type LessonActionId = 'absence' | 'feedback' | 'voice' | 'text' | 'dailyPlan';
 
-export type LessonActionUiState = 'done' | 'doneLate' | 'pending';
+/** pending = before deadline; missed = after deadline, not done; done / doneLate = completed */
+export type LessonActionUiState = 'done' | 'doneLate' | 'pending' | 'missed';
 
 export interface LessonActionDerived {
   id: LessonActionId;
@@ -22,20 +24,38 @@ const ACTION_STATUS_KEY: Record<LessonActionId, keyof LessonDutyActionStatusDto>
   dailyPlan: 'dailyPlan',
 };
 
-function deriveState(completed: boolean, completedLate: boolean): LessonActionUiState {
-  if (!completed) return 'pending';
-  if (completedLate) return 'doneLate';
-  return 'done';
+function deriveState(
+  completed: boolean,
+  completedLate: boolean,
+  overdueUnpaid: boolean,
+): LessonActionUiState {
+  if (completed) {
+    return completedLate ? 'doneLate' : 'done';
+  }
+  if (overdueUnpaid) {
+    return 'missed';
+  }
+  return 'pending';
 }
 
 function getActionStatus(
   lesson: Lesson,
   actionId: LessonActionId,
-): { completed: boolean; completedLate: boolean; paymentEligible: boolean } {
+): {
+  completed: boolean;
+  completedLate: boolean;
+  paymentEligible: boolean;
+  overdueUnpaid: boolean;
+} {
   const key = ACTION_STATUS_KEY[actionId];
   const fromApi = lesson.dutyActionStatus?.[key];
   if (fromApi) {
-    return fromApi;
+    return {
+      completed: fromApi.completed,
+      completedLate: fromApi.completedLate,
+      paymentEligible: fromApi.paymentEligible,
+      overdueUnpaid: fromApi.overdueUnpaid ?? false,
+    };
   }
 
   const completed = (() => {
@@ -55,7 +75,11 @@ function getActionStatus(
     }
   })();
 
-  return { completed, completedLate: false, paymentEligible: completed };
+  const scheduledAt = new Date(lesson.scheduledAt);
+  const overdueUnpaid =
+    !completed && !Number.isNaN(scheduledAt.getTime()) && isDutyDeadlinePassed(scheduledAt);
+
+  return { completed, completedLate: false, paymentEligible: completed, overdueUnpaid };
 }
 
 /** True when lesson end time (scheduledAt + duration) is in the past. */
@@ -83,12 +107,22 @@ export function getLessonActionsDerived(lesson: Lesson): LessonActionDerived[] {
       completedLate: status.completedLate,
       paymentEligible: status.paymentEligible,
       locked: false,
-      state: deriveState(status.completed, status.completedLate),
+      state: deriveState(status.completed, status.completedLate, status.overdueUnpaid),
       feedbackCount,
     };
   });
 }
 
 export function countPendingActions(actions: LessonActionDerived[]): number {
-  return actions.filter((a) => a.state === 'pending').length;
+  return actions.filter((a) => a.state === 'pending' || a.state === 'missed').length;
+}
+
+export function isDutyDeadlinePassedForLesson(lesson: Lesson): boolean {
+  const scheduledAt = new Date(lesson.scheduledAt);
+  if (Number.isNaN(scheduledAt.getTime())) return false;
+  return isDutyDeadlinePassed(scheduledAt);
+}
+
+export function getDutyDeadlineForLesson(lesson: Lesson): Date {
+  return getDutyDeadline(new Date(lesson.scheduledAt));
 }

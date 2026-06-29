@@ -9,6 +9,7 @@ import {
   NotebookPen,
   Check,
   Clock,
+  X,
 } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
 import type { LessonActionDerived, LessonActionId } from '@/shared/lib/daily-duties/lesson-action-states';
@@ -66,15 +67,23 @@ export function DailyDutiesListActionPill({
   const full = t(labelKey(action.id));
   const statusDone = t('lessonActions.statusDone');
   const statusLateUnpaid = t('lessonActions.statusLateUnpaid');
+  const statusMissedUnpaid = t('lessonActions.statusMissedUnpaid');
 
   const title =
     action.state === 'done'
       ? `${full}: ${statusDone}`
       : action.state === 'doneLate'
         ? `${full}: ${statusLateUnpaid}`
-        : `${full} — ${t(reminderKey(action.id))}`;
+        : action.state === 'missed'
+          ? `${full}: ${statusMissedUnpaid}`
+          : `${full} — ${t(reminderKey(action.id))}`;
 
-  const StatusIcon = action.state === 'pending' ? Clock : Check;
+  const StatusIcon =
+    action.state === 'done' || action.state === 'doneLate'
+      ? Check
+      : action.state === 'missed'
+        ? X
+        : Clock;
 
   return (
     <button
@@ -91,9 +100,10 @@ export function DailyDutiesListActionPill({
         (action.state === 'done' || action.state === 'doneLate') &&
           'border-emerald-200 bg-emerald-50 text-emerald-900 hover:bg-emerald-100',
         action.state === 'pending' && 'border-amber-200 bg-amber-50 text-amber-950 hover:bg-amber-100',
+        action.state === 'missed' && 'border-red-200 bg-red-50 text-red-900 hover:bg-red-100',
       )}
     >
-      <span className="absolute right-0.5 top-0.5 text-slate-600" aria-hidden>
+      <span className="absolute right-0.5 top-0.5 text-current opacity-80" aria-hidden>
         <StatusIcon className="h-2.5 w-2.5" />
       </span>
       <Icon className="h-3.5 w-3.5 shrink-0 text-current opacity-90" aria-hidden />
@@ -103,6 +113,11 @@ export function DailyDutiesListActionPill({
       {action.state === 'doneLate' && (
         <span className="w-full px-0.5 text-[7px] font-semibold leading-tight text-amber-800 sm:text-[8px]">
           {t('lessonActions.lateUnpaidBadge')}
+        </span>
+      )}
+      {action.state === 'missed' && (
+        <span className="w-full px-0.5 text-[7px] font-semibold leading-tight text-red-800 sm:text-[8px]">
+          {t('lessonActions.missedUnpaidBadge')}
         </span>
       )}
       {action.id === 'feedback' && action.feedbackCount !== undefined && action.feedbackCount > 0 && (

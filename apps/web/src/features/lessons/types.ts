@@ -5,6 +5,7 @@ export interface DutyActionStatusDto {
   completed: boolean;
   paymentEligible: boolean;
   completedLate: boolean;
+  overdueUnpaid?: boolean;
 }
 
 export interface LessonDutyActionStatusDto {

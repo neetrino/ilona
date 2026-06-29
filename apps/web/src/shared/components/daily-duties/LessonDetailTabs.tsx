@@ -10,6 +10,7 @@ import {
   NotebookPen,
   AlertTriangle,
   LockOpen,
+  X,
 } from 'lucide-react';
 import type { Lesson } from '@/features/lessons';
 import { cn } from '@/shared/lib/utils';
@@ -80,13 +81,21 @@ function LockStatusIcon({
       ? t('lessonActions.statusDone')
       : action.state === 'doneLate'
         ? t('lessonActions.statusLateUnpaid')
-        : t('lessonActions.statusPending');
+        : action.state === 'missed'
+          ? t('lessonActions.statusMissedUnpaid')
+          : t('lessonActions.statusPending');
   const colorClass =
     action.state === 'done'
       ? 'text-emerald-700'
       : action.state === 'doneLate'
         ? 'text-amber-700'
-        : 'text-amber-700';
+        : action.state === 'missed'
+          ? 'text-red-700'
+          : 'text-amber-700';
+
+  if (action.state === 'missed') {
+    return <X className={cn('h-4 w-4', colorClass)} aria-label={label} />;
+  }
 
   return <LockOpen className={cn('h-4 w-4', colorClass)} aria-label={label} />;
 }
@@ -108,10 +117,13 @@ export function LessonDetailTabs({
   }, [initialTab]);
 
   const actions = useMemo(() => getLessonActionsDerived(lesson), [lesson]);
-  const pending = useMemo(() => actions.filter((a) => a.state === 'pending'), [actions]);
+  const incomplete = useMemo(
+    () => actions.filter((a) => a.state === 'pending' || a.state === 'missed'),
+    [actions],
+  );
 
   const showEmergency =
-    pending.length > 0 && (lesson.completionStatus === 'IN_PROCESS' || isLessonPastEnd(lesson));
+    incomplete.length > 0 && (lesson.completionStatus === 'IN_PROCESS' || isLessonPastEnd(lesson));
 
   const handleTabChange = (tab: Tab) => {
     setActiveTab(tab);
@@ -143,7 +155,7 @@ export function LessonDetailTabs({
               </div>
             </div>
             <ul className="mt-3 flex list-none flex-col gap-2 p-0 sm:mt-3.5">
-              {pending.map((a) => (
+              {incomplete.map((a) => (
                 <li
                   key={a.id}
                   className="flex flex-col gap-2 rounded-lg border border-white/60 bg-white/70 px-3 py-2.5 backdrop-blur-sm sm:flex-row sm:items-center sm:justify-between"
@@ -185,6 +197,7 @@ export function LessonDetailTabs({
                     !isActive &&
                     'border-emerald-200/70 bg-emerald-50/30',
                   action.state === 'pending' && !isActive && 'border-amber-200/80 bg-amber-50/20',
+                  action.state === 'missed' && !isActive && 'border-red-200/80 bg-red-50/25',
                 )}
               >
                 <span
@@ -193,6 +206,7 @@ export function LessonDetailTabs({
                     (action.state === 'done' || action.state === 'doneLate') &&
                       'bg-emerald-100 text-emerald-800',
                     action.state === 'pending' && 'bg-amber-100 text-amber-900',
+                    action.state === 'missed' && 'bg-red-100 text-red-800',
                   )}
                 >
                   <Icon className="h-4 w-4 sm:h-[18px] sm:w-[18px]" aria-hidden />
@@ -202,6 +216,11 @@ export function LessonDetailTabs({
                   {action.state === 'doneLate' && (
                     <span className="mt-0.5 block text-[10px] font-medium text-amber-800">
                       {t('lessonActions.lateUnpaidBadge')}
+                    </span>
+                  )}
+                  {action.state === 'missed' && (
+                    <span className="mt-0.5 block text-[10px] font-medium text-red-800">
+                      {t('lessonActions.missedUnpaidBadge')}
                     </span>
                   )}
                 </span>

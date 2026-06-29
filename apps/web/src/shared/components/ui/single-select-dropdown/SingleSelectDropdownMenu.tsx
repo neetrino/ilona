@@ -110,9 +110,7 @@ export function SingleSelectDropdownMenu({
           openUpward ? 'origin-bottom' : 'origin-top',
         )}
       >
-        {error ? (
-          <div className="p-3 text-sm text-red-600">{error}</div>
-        ) : options.length === 0 ? (
+        {options.length === 0 ? (
           <div className="p-3 text-sm text-[#8b8b90]">{t('noOptionsAvailable')}</div>
         ) : (
           <div className="min-h-0 flex-1 space-y-1 overflow-y-auto p-1">

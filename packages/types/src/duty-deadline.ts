@@ -13,6 +13,8 @@ export interface DutyActionStatus {
   completed: boolean;
   paymentEligible: boolean;
   completedLate: boolean;
+  /** Incomplete and past the 23:59 duty-day deadline (unpaid forever if never completed on time). */
+  overdueUnpaid: boolean;
 }
 
 export interface LessonDutyTimestamps {
@@ -115,6 +117,14 @@ export function isCompletedOnTime(
   return completedAt.getTime() <= deadline.getTime();
 }
 
+export function isDutyDeadlinePassed(
+  scheduledAt: Date,
+  now: Date = new Date(),
+  timeZone = APP_TIMEZONE,
+): boolean {
+  return now.getTime() > getDutyDeadline(scheduledAt, timeZone).getTime();
+}
+
 function resolveFeedbackCompletedAt(lesson: LessonDutyTimestamps): Date | null {
   if (lesson.feedbacksCompletedAt) {
     return lesson.feedbacksCompletedAt;
@@ -133,14 +143,25 @@ function buildActionStatus(
   completed: boolean,
   completedAt: Date | null | undefined,
   scheduledAt: Date,
+  now: Date,
 ): DutyActionStatus {
   if (!completed) {
-    return { completed: false, paymentEligible: false, completedLate: false };
+    return {
+      completed: false,
+      paymentEligible: false,
+      completedLate: false,
+      overdueUnpaid: isDutyDeadlinePassed(scheduledAt, now),
+    };
   }
 
   if (!completedAt) {
     // Legacy rows without timestamps — treat as on-time to avoid retroactive penalties.
-    return { completed: true, paymentEligible: true, completedLate: false };
+    return {
+      completed: true,
+      paymentEligible: true,
+      completedLate: false,
+      overdueUnpaid: false,
+    };
   }
 
   const onTime = isCompletedOnTime(completedAt, scheduledAt);
@@ -148,29 +169,34 @@ function buildActionStatus(
     completed: true,
     paymentEligible: onTime,
     completedLate: !onTime,
+    overdueUnpaid: false,
   };
 }
 
 export function buildDutyActionStatuses(
   lesson: LessonDutyTimestamps,
+  now: Date = new Date(),
 ): Record<DutyActionKey, DutyActionStatus> {
   return {
     absence: buildActionStatus(
       lesson.absenceMarked,
       lesson.absenceMarkedAt,
       lesson.scheduledAt,
+      now,
     ),
     feedbacks: buildActionStatus(
       lesson.feedbacksCompleted,
       resolveFeedbackCompletedAt(lesson),
       lesson.scheduledAt,
+      now,
     ),
-    voice: buildActionStatus(lesson.voiceSent, lesson.voiceSentAt, lesson.scheduledAt),
-    text: buildActionStatus(lesson.textSent, lesson.textSentAt, lesson.scheduledAt),
+    voice: buildActionStatus(lesson.voiceSent, lesson.voiceSentAt, lesson.scheduledAt, now),
+    text: buildActionStatus(lesson.textSent, lesson.textSentAt, lesson.scheduledAt, now),
     dailyPlan: buildActionStatus(
       Boolean(lesson.dailyPlan),
       resolveDailyPlanCompletedAt(lesson),
       lesson.scheduledAt,
+      now,
     ),
   };
 }
