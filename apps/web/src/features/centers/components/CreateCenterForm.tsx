@@ -1,243 +1,44 @@
 'use client';
 
-
 import * as DialogPrimitive from '@radix-ui/react-dialog';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 import { useTranslations } from 'next-intl';
-import { Button, Input, Label } from '@/shared/components/ui';
-import {
-  ADMIN_FORM_INPUT_CLASS,
-  ADMIN_ICON_BUTTON_SM_CLASS,
-  ADMIN_OUTLINE_BUTTON_CLASS,
-  ADMIN_PRIMARY_BUTTON_CLASS,
-} from '@/shared/lib/admin-control-theme';
-import { useCreateCenter, type CreateCenterDto } from '@/features/centers';
-import { useState, useEffect, useMemo, useCallback, useRef, type TouchEvent } from 'react';
-import { getErrorMessage } from '@/shared/lib/api';
 import { cn } from '@/shared/lib/utils';
 import {
   portalSheetLayerProps,
   stackedSheetDialogHandlers,
-  useSheetStackZIndex,
 } from '@/shared/lib/sheet-stack';
 import { PORTAL_DESKTOP_SIDE_SHEET_CLASS } from '@/shared/lib/portal-form-sheet-classes';
+import { ADMIN_ICON_BUTTON_SM_CLASS } from '@/shared/lib/admin-control-theme';
+import { EDIT_CENTER_DIALOG_GRID_ROWS } from './edit-center-form/edit-center-form.constants';
 import { X } from 'lucide-react';
+import { useCreateCenterForm } from './create-center-form/useCreateCenterForm';
+import { CreateCenterFormFields } from './create-center-form/CreateCenterFormFields';
+import type { CreateCenterFormProps } from './create-center-form/create-center-form.types';
 
-type CreateCenterFormData = {
-  name: string;
-  address?: string;
-  phone?: string;
-  email?: string;
-  description?: string;
-  colorHex?: string;
-};
+export type { CreateCenterFormProps } from './create-center-form/create-center-form.types';
 
-interface CreateCenterFormProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-}
-
-const ADMIN_TEXTAREA_CLASS = cn(ADMIN_FORM_INPUT_CLASS, 'h-auto min-h-[5.5rem] resize-none py-2');
-
-export function CreateCenterForm({ open, onOpenChange }: CreateCenterFormProps) {
+export function CreateCenterForm(props: CreateCenterFormProps) {
+  const form = useCreateCenterForm(props);
   const tForm = useTranslations('centers.form');
-  const tVal = useTranslations('centers.validation');
   const tCommon = useTranslations('common');
 
-  const createCenterSchema = useMemo(
-    () =>
-      z.object({
-        name: z.string().min(2, tVal('nameMin')).max(100, tVal('nameMax')),
-        address: z.string().max(255, tVal('addressMax')).optional().or(z.literal('')),
-        phone: z.string().max(50, tVal('phoneMax')).optional().or(z.literal('')),
-        email: z.union([z.string().email(tVal('invalidEmail')), z.literal('')]).optional(),
-        description: z.string().max(500, tVal('descriptionMax')).optional().or(z.literal('')),
-        colorHex: z
-          .union([
-            z.string().regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/, tVal('invalidHexColor')),
-            z.literal(''),
-          ])
-          .optional()
-          .or(z.literal('')),
-      }),
-    [tVal],
-  );
-
-  const resolver = useMemo(() => zodResolver(createCenterSchema), [createCenterSchema]);
-
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const [isDialogOpen, setIsDialogOpen] = useState(open);
-  const [dragOffsetY, setDragOffsetY] = useState(0);
-  const [isDragging, setIsDragging] = useState(false);
-  const [isSettling, setIsSettling] = useState(false);
-  const touchStartYRef = useRef<number | null>(null);
-  const touchStartXRef = useRef<number | null>(null);
-  const settleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const createCenter = useCreateCenter();
-
-  const {
-    register,
-    handleSubmit,
-    formState: { errors, isSubmitting },
-    reset,
-    watch,
-    setValue,
-  } = useForm<CreateCenterFormData>({
-    resolver,
-    defaultValues: {
-      name: '',
-      address: '',
-      phone: '',
-      email: '',
-      description: '',
-      colorHex: '',
-    },
-  });
-
-  useEffect(() => {
-    setIsDialogOpen(open);
-  }, [open]);
-
-  // Reset form when dialog closes
-  useEffect(() => {
-    if (!open) {
-      reset();
-      setErrorMessage(null);
-      setSuccessMessage(null);
-      setDragOffsetY(0);
-      setIsDragging(false);
-      setIsSettling(false);
-    }
-  }, [open, reset]);
-
-  useEffect(() => {
-    return () => {
-      if (settleTimerRef.current) {
-        clearTimeout(settleTimerRef.current);
-      }
-    };
-  }, []);
-
-  const requestClose = useCallback(() => {
-    setIsDialogOpen(false);
-    onOpenChange(false);
-  }, [onOpenChange]);
-
-  const isMobileViewport = () =>
-    typeof window !== 'undefined' && window.matchMedia('(max-width: 1366px)').matches;
-
-  const resetDragRefs = () => {
-    touchStartYRef.current = null;
-    touchStartXRef.current = null;
-    setIsDragging(false);
-  };
-
-  const handleDragStart = (event: TouchEvent<HTMLDivElement>) => {
-    if (!isMobileViewport()) return;
-    const firstTouch = event.touches[0];
-    if (!firstTouch) return;
-    if (settleTimerRef.current) {
-      clearTimeout(settleTimerRef.current);
-      settleTimerRef.current = null;
-    }
-    touchStartYRef.current = firstTouch.clientY;
-    touchStartXRef.current = firstTouch.clientX;
-    setIsSettling(false);
-    setIsDragging(true);
-  };
-
-  const handleDragMove = (event: TouchEvent<HTMLDivElement>) => {
-    if (!isMobileViewport()) return;
-    if (!isDragging || touchStartYRef.current === null || touchStartXRef.current === null) return;
-    const firstTouch = event.touches[0];
-    if (!firstTouch) return;
-    const deltaY = firstTouch.clientY - touchStartYRef.current;
-    const deltaX = Math.abs(firstTouch.clientX - touchStartXRef.current);
-    if (deltaY <= 0 || deltaY <= deltaX) return;
-    event.preventDefault();
-    setDragOffsetY(Math.min(deltaY * 0.95, 340));
-  };
-
-  const handleDragEnd = () => {
-    if (!isMobileViewport()) return;
-    if (!isDragging) return;
-    const shouldClose = dragOffsetY > 110;
-    resetDragRefs();
-    if (shouldClose) {
-      setDragOffsetY(0);
-      requestClose();
-      return;
-    }
-    setIsSettling(true);
-    setDragOffsetY(0);
-    settleTimerRef.current = setTimeout(() => {
-      setIsSettling(false);
-      settleTimerRef.current = null;
-    }, 280);
-  };
-
-  const dragStyle =
-    dragOffsetY > 0 || isSettling
-      ? {
-          transform: `translateY(${dragOffsetY}px)`,
-          transition: isDragging ? 'none' : 'transform 280ms cubic-bezier(0.22, 1, 0.36, 1)',
-        }
-      : undefined;
-
-  const onSubmit = async (data: CreateCenterFormData) => {
-    setErrorMessage(null);
-    
-    try {
-      const payload: CreateCenterDto = {
-        name: data.name,
-        address: data.address || undefined,
-        phone: data.phone || undefined,
-        email: data.email || undefined,
-        description: data.description || undefined,
-        colorHex: data.colorHex && data.colorHex.trim() !== '' ? data.colorHex : undefined,
-      };
-
-      await createCenter.mutateAsync(payload);
-      
-      // Show success message
-      setSuccessMessage(tForm('createdSuccess'));
-      setErrorMessage(null);
-      
-      // Reset form and close modal after a brief delay
-      reset();
-      setTimeout(() => {
-        requestClose();
-        setSuccessMessage(null);
-      }, 1500);
-    } catch (error: unknown) {
-      // Handle error
-      const message = getErrorMessage(error, tForm('failedCreate'));
-      setErrorMessage(message);
-      setSuccessMessage(null);
-    }
-  };
-  const { overlayStyle, contentStyle } = useSheetStackZIndex(isDialogOpen);
-
   return (
-    <DialogPrimitive.Root open={isDialogOpen} onOpenChange={(nextOpen) => !nextOpen && requestClose()}>
+    <DialogPrimitive.Root open={form.isDialogOpen} onOpenChange={(nextOpen) => !nextOpen && form.requestClose()}>
       <DialogPrimitive.Portal>
         <DialogPrimitive.Overlay
-          style={overlayStyle}
+          style={form.overlayStyle}
           {...portalSheetLayerProps}
           className="fixed inset-0 z-50 bg-black/60 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0"
         />
         <DialogPrimitive.Content
-          style={{ ...dragStyle, ...contentStyle }}
+          style={{ ...form.dragStyle, ...form.contentStyle }}
           {...stackedSheetDialogHandlers}
           {...portalSheetLayerProps}
           className={cn(
             'fixed inset-x-0 bottom-[7px] top-auto z-50 grid w-full translate-y-0 lg:bottom-0 [@media(min-width:1024px)_and_(max-width:1366px)_and_(min-height:1000px)]:bottom-0',
             'duration-700 ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out min-[1367px]:duration-350 min-[1367px]:ease-[cubic-bezier(0.22,1,0.36,1)]',
             'data-[state=open]:slide-in-from-bottom-full data-[state=closed]:slide-out-to-bottom-full',
-            'h-[calc(94dvh+7px)] [@media(min-width:1024px)_and_(max-width:1366px)_and_(min-height:1000px)]:h-[56dvh] grid-rows-[auto_auto_1fr] gap-0 overflow-hidden rounded-t-[22px] border border-slate-200 bg-[#f8f9fb] shadow-xl',
+            EDIT_CENTER_DIALOG_GRID_ROWS,
             PORTAL_DESKTOP_SIDE_SHEET_CLASS,
           )}
           aria-describedby={undefined}
@@ -245,10 +46,10 @@ export function CreateCenterForm({ open, onOpenChange }: CreateCenterFormProps) 
           <div className="relative flex h-9 w-full items-center justify-center bg-[#f8f9fb] min-[1367px]:hidden">
             <div
               className="absolute inset-x-0 -top-2 h-14"
-              onTouchStart={handleDragStart}
-              onTouchMove={handleDragMove}
-              onTouchEnd={handleDragEnd}
-              onTouchCancel={handleDragEnd}
+              onTouchStart={form.handleDragStart}
+              onTouchMove={form.handleDragMove}
+              onTouchEnd={form.handleDragEnd}
+              onTouchCancel={form.handleDragEnd}
             />
             <div className="h-1.5 w-14 rounded-full bg-slate-400" />
           </div>
@@ -270,163 +71,10 @@ export function CreateCenterForm({ open, onOpenChange }: CreateCenterFormProps) 
             </div>
           </div>
           <div className="min-h-0 overflow-y-auto overscroll-y-contain [touch-action:pan-y] [-webkit-overflow-scrolling:touch] px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] min-[1367px]:px-6 min-[1367px]:pb-6">
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-              {successMessage && (
-                <div className="rounded-[15px] border border-green-200 bg-green-50 p-3">
-                  <p className="text-sm text-green-600">{successMessage}</p>
-                </div>
-              )}
-              {errorMessage && (
-                <div className="rounded-[15px] border border-red-200 bg-red-50 p-3">
-                  <p className="text-sm text-red-600">{errorMessage}</p>
-                </div>
-              )}
-
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <div className="min-w-0 space-y-2">
-                  <Label htmlFor="name">
-                    {tForm('centerName')} <span className="text-red-500">*</span>
-                  </Label>
-                  <Input
-                    id="name"
-                    className={ADMIN_FORM_INPUT_CLASS}
-                    {...register('name')}
-                    error={errors.name?.message}
-                    placeholder={tForm('namePlaceholder')}
-                    disabled={isSubmitting}
-                  />
-                </div>
-
-                <div className="min-w-0 space-y-2">
-                  <Label htmlFor="address">{tForm('address')}</Label>
-                  <Input
-                    id="address"
-                    className={ADMIN_FORM_INPUT_CLASS}
-                    {...register('address')}
-                    error={errors.address?.message}
-                    placeholder={tForm('addressPlaceholder')}
-                    disabled={isSubmitting}
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="phone">{tForm('phone')}</Label>
-                  <Input
-                    id="phone"
-                    className={ADMIN_FORM_INPUT_CLASS}
-                    {...register('phone')}
-                    error={errors.phone?.message}
-                    placeholder={tForm('phonePlaceholder')}
-                    disabled={isSubmitting}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="email">{tForm('email')}</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    className={ADMIN_FORM_INPUT_CLASS}
-                    {...register('email')}
-                    error={errors.email?.message}
-                    placeholder={tForm('emailPlaceholder')}
-                    disabled={isSubmitting}
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="description">{tForm('description')}</Label>
-                <textarea
-                  id="description"
-                  {...register('description')}
-                  rows={3}
-                  placeholder={tForm('descriptionPlaceholder')}
-                  disabled={isSubmitting}
-                  className={cn(
-                    ADMIN_TEXTAREA_CLASS,
-                    errors.description ? 'border-red-300' : '',
-                    isSubmitting ? 'cursor-not-allowed bg-slate-100' : '',
-                  )}
-                />
-                {errors.description && (
-                  <p className="text-sm text-red-600">{errors.description.message}</p>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="colorHex">{tForm('centerColorOptional')}</Label>
-                <div className="flex items-center gap-3">
-                  <div className="group relative h-11 w-11 shrink-0">
-                    <span
-                      className="pointer-events-none block h-full w-full rounded-full shadow-[0_2px_10px_rgba(15,23,42,0.18)] transition-transform group-hover:scale-105"
-                      style={{ backgroundColor: watch('colorHex') || '#253046' }}
-                      aria-hidden
-                    />
-                    <input
-                      type="color"
-                      id="colorHex"
-                      value={watch('colorHex') || '#253046'}
-                      onChange={(e) => {
-                        const newValue = e.target.value;
-                        setValue('colorHex', newValue, { shouldValidate: true });
-                      }}
-                      disabled={isSubmitting}
-                      className="absolute inset-0 h-full w-full cursor-pointer opacity-0 disabled:cursor-not-allowed"
-                      aria-label={tForm('centerColorOptional')}
-                    />
-                  </div>
-                  <div className="flex-1">
-                    <Input
-                      id="colorHexText"
-                      className={cn(ADMIN_FORM_INPUT_CLASS, 'font-mono')}
-                      value={watch('colorHex') || ''}
-                      onChange={(e) => {
-                        const newValue = e.target.value;
-                        setValue('colorHex', newValue, { shouldValidate: true });
-                      }}
-                      onBlur={() => {
-                        const value = watch('colorHex');
-                        if (value && value.startsWith('#')) {
-                          return;
-                        } else if (value && !value.startsWith('#')) {
-                          setValue('colorHex', `#${value}`, { shouldValidate: true });
-                        }
-                      }}
-                      error={errors.colorHex?.message}
-                      placeholder={tForm('colorPlaceholder')}
-                      disabled={isSubmitting}
-                    />
-                  </div>
-                </div>
-                <p className="text-xs text-slate-500">{tForm('colorHint')}</p>
-              </div>
-
-              <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end">
-                <Button
-                  type="button"
-                  variant="outline"
-                  className={cn(ADMIN_OUTLINE_BUTTON_CLASS, 'border-[rgba(14,14,16,0.07)] hover:bg-slate-50')}
-                  onClick={requestClose}
-                  disabled={isSubmitting}
-                >
-                  {tCommon('cancel')}
-                </Button>
-                <Button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className={cn(ADMIN_PRIMARY_BUTTON_CLASS, 'bg-primary text-primary-foreground hover:bg-primary/90')}
-                >
-                  {isSubmitting ? tForm('creating') : tForm('createCenter')}
-                </Button>
-              </div>
-            </form>
+            <CreateCenterFormFields {...form} />
           </div>
         </DialogPrimitive.Content>
       </DialogPrimitive.Portal>
     </DialogPrimitive.Root>
   );
 }
-

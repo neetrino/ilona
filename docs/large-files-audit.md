@@ -54,6 +54,21 @@ Goal: gradually split source files so each stays at or below **400 lines**.
 | 2026-06-29 | `apps/web/src/features/chat/components/ChatContainer.tsx` | 520 | 77 (orchestrator) | Split into header, list pane, desktop pane, loading shell + hook + util/types |
 | 2026-06-29 | `apps/web/src/features/schedule/ScheduleLessonViews.tsx` | 505 | 7 (re-export) | Split into week/month grids, mobile day view, desktop table, lesson card + hook + util/types/constants |
 | 2026-06-29 | `apps/web/src/features/chat/components/VoiceMessagePlayer.tsx` | 508 | 20 (orchestrator) | Split into controls, error state + hook + util/types/constants |
+| 2026-06-29 | `apps/api/src/modules/feedback/feedback.service.ts` | 465 | 37 (facade) | Split into query, write, completion side-effects + util |
+| 2026-06-29 | `apps/web/src/features/chat/components/VoiceRecorder.tsx` | 464 | 9 (orchestrator) | Split into controls + hook + util/types/constants |
+| 2026-06-29 | `apps/web/src/features/crm/components/LeadDrawer.tsx` | 462 | 64 (orchestrator) | Split into header, voice section, form body + hook; reused status panels |
+| 2026-06-29 | `apps/web/src/features/chat/components/AdminChatContainer.tsx` | 449 | 68 (orchestrator) | Split into header, list pane, desktop pane, loading shell + hook + util/types |
+| 2026-06-29 | `apps/web/src/features/finance/components/SalaryBreakdownModal.tsx` | 447 | 2 (re-export) | Split into view, columns, totals, checkbox + hook + util/types |
+| 2026-06-29 | `apps/web/src/features/students/components/StudentAccountFormFields.tsx` | 443 | 70 (orchestrator) | Split into identity/enrollment/parent/billing sections + hook + types/constants |
+| 2026-06-29 | `apps/web/src/features/groups/components/GroupCard.tsx` | 433 | 17 (orchestrator) | Split into mobile/desktop layouts, student list, schedule, overflow menu + hook + util |
+| 2026-06-29 | `apps/web/src/features/teachers/components/EditTeacherForm.tsx` | 428 | 95 (orchestrator) | Split into fields, hook + types/constants |
+| 2026-06-29 | `apps/web/src/features/students/components/AddStudentForm.tsx` | 412 | 74 (orchestrator) | Split into fields wrapper, hook + types/constants; reused CRM layout fields |
+| 2026-06-29 | `apps/api/src/modules/storage/storage.service.ts` | 412 | 55 (facade) | Split into upload, read, delete services + client/local util + types |
+| 2026-06-29 | `apps/web/src/features/chat/api/chat.api.ts` | 404 | 47 (re-export) | Split into core/admin/teacher/student API modules + types/constants |
+| 2026-06-29 | `apps/web/src/features/centers/components/CreateCenterForm.tsx` | 401 | 76 (orchestrator) | Split into fields, hook + types; reused edit-center-form constants |
+| 2026-06-29 | `apps/web/src/shared/components/attendance/lesson-attendance/useAttendanceGrid.ts` | 466 | 330 (core hook) | Split save + keyboard sub-hooks + shared util/types (follow-up from AttendanceGrid) |
+| 2026-06-29 | `apps/web/src/features/chat/components/CreateGroupChatModal.tsx` | 396 | 79 (orchestrator) | Split into form section, member list, footer + hook + types/constants |
+| 2026-06-29 | `apps/web/src/shared/components/attendance/week-attendance/useWeekAttendanceGrid.ts` | 394 | 275 (core hook) | Split save sub-hook + shared util/types (follow-up from WeekAttendanceGrid) |
 
 ## Split details (completed refactors)
 
@@ -109,8 +124,23 @@ Goal: gradually split source files so each stays at or below **400 lines**.
 | 44 | `ChatContainer.tsx` | 520 | 77 | **8** |
 | 45 | `ScheduleLessonViews.tsx` | 505 | 7 | **10** |
 | 46 | `VoiceMessagePlayer.tsx` | 508 | 20 | **7** |
+| 47 | `feedback.service.ts` | 465 | 37 | **5** |
+| 48 | `VoiceRecorder.tsx` | 464 | 9 | **5** |
+| 49 | `LeadDrawer.tsx` | 462 | 64 | **8** |
+| 50 | `AdminChatContainer.tsx` | 449 | 68 | **8** |
+| 51 | `SalaryBreakdownModal.tsx` | 447 | 2 | **9** |
+| 52 | `StudentAccountFormFields.tsx` | 443 | 70 | **8** |
+| 53 | `GroupCard.tsx` | 433 | 17 | **10** |
+| 54 | `EditTeacherForm.tsx` | 428 | 95 | **5** |
+| 55 | `AddStudentForm.tsx` | 412 | 74 | **5** |
+| 56 | `storage.service.ts` | 412 | 55 | **8** |
+| 57 | `chat.api.ts` | 404 | 47 | **7** |
+| 58 | `CreateCenterForm.tsx` | 401 | 76 | **4** |
+| 59 | `useAttendanceGrid.ts` | 466 | 330 | **4** |
+| 60 | `CreateGroupChatModal.tsx` | 396 | 79 | **7** |
+| 61 | `useWeekAttendanceGrid.ts` | 394 | 275 | **3** |
 
-**46** մեծ ֆայլ → **301** ֆայլ (45 facade/orchestrator/re-export + 256 նոր split ֆայլ)։
+**61** մեծ ֆայլ → **406** ֆայլ (60 facade/orchestrator/re-export + 346 նոր split ֆայլ)։
 
 ### 1. `apps/api/src/modules/chat/chat-management.service.ts` (1,195 → 61)
 
@@ -771,6 +801,206 @@ Goal: gradually split source files so each stays at or below **400 lines**.
 | `voice-message-player/voice-message-player.constants.ts` | Speed options + storage keys |
 | `voice-message-player/voice-message-player.types.ts` | Props + playback speed type |
 
+### 47. `apps/api/src/modules/feedback/feedback.service.ts` (465 → 37)
+
+**5 ֆայլ** (1 facade + 4 նոր)
+
+| Ֆайл | Դեր |
+| --- | --- |
+| `feedback.service.ts` | Facade |
+| `feedback-query.service.ts` | getByLesson, getByStudent |
+| `feedback-write.service.ts` | createOrUpdate, update, delete |
+| `feedback-completion.service.ts` | feedbacksCompleted sync + salary recalc |
+| `feedback.util.ts` | buildStructuredFields |
+
+### 48. `apps/web/src/features/chat/components/VoiceRecorder.tsx` (464 → 9)
+
+**5 ֆайլ** (1 orchestrator + 4 նոր, `voice-recorder/`)
+
+| Ֆайл | Դեր |
+| --- | --- |
+| `VoiceRecorder.tsx` | Orchestrator |
+| `voice-recorder/useVoiceRecorder.ts` | MediaRecorder lifecycle hook |
+| `voice-recorder/VoiceRecorderControls.tsx` | Recording UI |
+| `voice-recorder/voice-recorder.util.ts` | Mime, duration, silence helpers |
+| `voice-recorder/voice-recorder.types.ts` + `.constants.ts` | Props + limits |
+
+### 49. `apps/web/src/features/crm/components/LeadDrawer.tsx` (462 → 64)
+
+**8 ֆայլ** (1 orchestrator + 7 նոր, `lead-drawer/`; status panels reused from `voice-lead-detail-modal/`)
+
+| Ֆайл | Դեր |
+| --- | --- |
+| `LeadDrawer.tsx` | Sheet orchestrator |
+| `lead-drawer/useLeadDrawer.ts` | Fetch, form state, save/comment handlers |
+| `lead-drawer/LeadDrawerHeader.tsx` | Title + close |
+| `lead-drawer/LeadDrawerVoiceSection.tsx` | Playback + admin recorder |
+| `lead-drawer/LeadDrawerFormBody.tsx` | Non-voice lead fields |
+| `lead-drawer/lead-drawer.types.ts` | Props + view-model |
+| `lead-drawer/lead-drawer.util.ts` | Payload builder + voice check |
+| `lead-drawer/lead-drawer.constants.ts` | Level options |
+
+### 50. `apps/web/src/features/chat/components/AdminChatContainer.tsx` (449 → 68)
+
+**8 ֆայլ** (1 orchestrator + 7 նոր, `admin-chat-container/`)
+
+| Ֆайл | Դեր |
+| --- | --- |
+| `AdminChatContainer.tsx` | Hydration shell + layout orchestrator |
+| `admin-chat-container/useAdminChatContainer.ts` | URL sync, tabs, selection, mobile panel |
+| `admin-chat-container/AdminChatContainerHeader.tsx` | Back + create group chat |
+| `admin-chat-container/AdminChatContainerListPane.tsx` | AdminChatList sidebar |
+| `admin-chat-container/AdminChatContainerDesktopPane.tsx` | ChatWindow / empty state |
+| `admin-chat-container/AdminChatContainerLoadingShell.tsx` | Pre-hydration spinner |
+| `admin-chat-container/admin-chat-container.util.ts` | Layout + returnTo helpers |
+| `admin-chat-container/admin-chat-container.types.ts` | Props + view-model |
+
+### 51. `apps/web/src/features/finance/components/SalaryBreakdownModal.tsx` (447 → 2 re-export)
+
+**9 ֆայլ** (1 re-export + 8 նոր, `salary-breakdown-modal/`)
+
+| Ֆайл | Դեր |
+| --- | --- |
+| `SalaryBreakdownModal.tsx` | Re-export |
+| `salary-breakdown-modal/SalaryBreakdownModal.tsx` | Orchestrator |
+| `salary-breakdown-modal/SalaryBreakdownModalView.tsx` | Dialog + modals shell |
+| `salary-breakdown-modal/useSalaryBreakdownModal.ts` | State, handlers, columns |
+| `salary-breakdown-modal/SalaryBreakdownTableColumns.tsx` | DataTable column defs |
+| `salary-breakdown-modal/SalaryBreakdownTotalsRow.tsx` | Footer totals |
+| `salary-breakdown-modal/SelectAllCheckbox.tsx` | Header checkbox |
+| `salary-breakdown-modal/salary-breakdown-modal.util.ts` | Format/sort helpers |
+| `salary-breakdown-modal/salary-breakdown-modal.types.ts` | Props + column types |
+
+### 52. `apps/web/src/features/students/components/StudentAccountFormFields.tsx` (443 → 70)
+
+**8 ֆայլ** (1 orchestrator + 7 նոր, `student-account-form-fields/`)
+
+| Ֆайл | Դեր |
+| --- | --- |
+| `StudentAccountFormFields.tsx` | Section composition orchestrator |
+| `student-account-form-fields/useStudentAccountFormFields.ts` | Derived options + age state |
+| `student-account-form-fields/StudentAccountFormFieldsIdentitySection.tsx` | Name, email, password, phone |
+| `student-account-form-fields/StudentAccountFormFieldsEnrollmentSection.tsx` | DOB, level, teacher, group, center |
+| `student-account-form-fields/StudentAccountFormFieldsParentSection.tsx` | Parent fields |
+| `student-account-form-fields/StudentAccountFormFieldsBillingSection.tsx` | Fee, notes, reports |
+| `student-account-form-fields/student-account-form-fields.types.ts` | Props + option types |
+| `student-account-form-fields/student-account-form-fields.constants.ts` | Level options + classes |
+
+### 53. `apps/web/src/features/groups/components/GroupCard.tsx` (433 → 17)
+
+**10 ֆայլ** (1 orchestrator + 9 նոր, `group-card/`)
+
+| Ֆайл | Դեր |
+| --- | --- |
+| `GroupCard.tsx` | Mobile/desktop routing orchestrator |
+| `group-card/useGroupCard.ts` | Derived display values |
+| `group-card/GroupCardMobile.tsx` | Mobile card layout |
+| `group-card/GroupCardDesktop.tsx` | Desktop card layout |
+| `group-card/GroupCardStudentList.tsx` | Student rows |
+| `group-card/GroupCardScheduleSlots.tsx` | Schedule pills |
+| `group-card/GroupCardOverflowMenu.tsx` | Action menu (re-exported) |
+| `group-card/group-card.util.ts` | Schedule summary + occupancy dot |
+| `group-card/group-card.types.ts` | Props types |
+| `group-card/group-card.constants.ts` | Day labels + layout limits |
+
+### 54. `apps/web/src/features/teachers/components/EditTeacherForm.tsx` (428 → 95)
+
+**5 ֆայլ** (1 orchestrator + 4 նոր, `edit-teacher-form/`)
+
+| Ֆайл | Դեր |
+| --- | --- |
+| `EditTeacherForm.tsx` | Sheet shell + header actions |
+| `edit-teacher-form/useEditTeacherForm.ts` | Form state, validation, submit |
+| `edit-teacher-form/EditTeacherFormFields.tsx` | Form sections JSX |
+| `edit-teacher-form/edit-teacher-form.types.ts` | Props + form data |
+| `edit-teacher-form/edit-teacher-form.constants.ts` | Shared classes |
+
+### 55. `apps/web/src/features/students/components/AddStudentForm.tsx` (412 → 74)
+
+**5 ֆայլ** (1 orchestrator + 4 նոր, `add-student-form/`)
+
+| Ֆайл | Դեր |
+| --- | --- |
+| `AddStudentForm.tsx` | Sheet shell orchestrator |
+| `add-student-form/useAddStudentForm.ts` | Form state, defaults, submit, drag-to-close |
+| `add-student-form/AddStudentFormFields.tsx` | Wraps CRM layout fields |
+| `add-student-form/add-student-form.types.ts` | Props |
+| `add-student-form/add-student-form.constants.ts` | Default values helper |
+
+### 56. `apps/api/src/modules/storage/storage.service.ts` (412 → 55)
+
+**8 ֆայլ** (1 facade + 7 նոր)
+
+| Ֆайл | Դեր |
+| --- | --- |
+| `storage.service.ts` | Facade |
+| `storage-upload.service.ts` | upload, presigned upload, avatar/chat/document |
+| `storage-read.service.ts` | getFile, exists, presigned download |
+| `storage-delete.service.ts` | delete |
+| `storage-client.util.ts` | S3 config + public URL |
+| `storage-local.util.ts` | Local path bootstrap |
+| `storage.types.ts` | UploadResult, PresignedUrlResult |
+
+### 57. `apps/web/src/features/chat/api/chat.api.ts` (404 → 47 re-export)
+
+**7 ֆայլ** (1 re-export + 6 նոր, `chat-api/`)
+
+| Ֆайл | Դեր |
+| --- | --- |
+| `chat.api.ts` | Re-exports all endpoints |
+| `chat-api/chat-core.api.ts` | Chats, messages, group chat |
+| `chat-api/chat-admin.api.ts` | Admin lists, members, recordings |
+| `chat-api/chat-teacher.api.ts` | Teacher lists + recordings |
+| `chat-api/chat-student.api.ts` | Student admin + voice recordings |
+| `chat-api/chat-api.types.ts` | Shared API types |
+| `chat-api/chat-api.constants.ts` | CHAT_ENDPOINT |
+
+### 58. `apps/web/src/features/centers/components/CreateCenterForm.tsx` (401 → 76)
+
+**4 ֆայլ** (1 orchestrator + 3 նոր, `create-center-form/`)
+
+| Ֆайլ | Դեր |
+| --- | --- |
+| `CreateCenterForm.tsx` | Sheet shell orchestrator |
+| `create-center-form/useCreateCenterForm.ts` | Form state, validation, submit |
+| `create-center-form/CreateCenterFormFields.tsx` | Address, contact, color fields |
+| `create-center-form/create-center-form.types.ts` | Props + form data |
+
+### 59. `apps/web/src/shared/components/attendance/lesson-attendance/useAttendanceGrid.ts` (466 → 330)
+
+**4 ֆайլ** (follow-up from `AttendanceGrid` split)
+
+| Ֆайл | Դեր |
+| --- | --- |
+| `useAttendanceGrid.ts` | Core state + cell toggling hook |
+| `useAttendanceGridSave.ts` | Manual/save-all handlers |
+| `useAttendanceGridKeyboard.ts` | Grid keyboard navigation |
+| `use-attendance-grid.util.ts` | Types + pending-change merge helpers |
+
+### 60. `apps/web/src/features/chat/components/CreateGroupChatModal.tsx` (396 → 79)
+
+**7 ֆայլ** (1 orchestrator + 6 նոր, `create-group-chat-modal/`)
+
+| Ֆайл | Դեր |
+| --- | --- |
+| `CreateGroupChatModal.tsx` | Sheet dialog orchestrator |
+| `create-group-chat-modal/useCreateGroupChatModal.ts` | State, drag-to-close, submit, selection |
+| `create-group-chat-modal/CreateGroupChatModalFormSection.tsx` | Name + member search |
+| `create-group-chat-modal/CreateGroupChatModalMemberList.tsx` | Selectable user rows |
+| `create-group-chat-modal/CreateGroupChatModalFooter.tsx` | Cancel/create actions |
+| `create-group-chat-modal/create-group-chat-modal.types.ts` | Props + view-model |
+| `create-group-chat-modal/create-group-chat-modal.constants.ts` | Sheet class + drag thresholds |
+
+### 61. `apps/web/src/shared/components/attendance/week-attendance/useWeekAttendanceGrid.ts` (394 → 275)
+
+**3 ֆայլ** (follow-up from `WeekAttendanceGrid` split)
+
+| Ֆайл | Դեր |
+| --- | --- |
+| `useWeekAttendanceGrid.ts` | Core state + cell toggling hook |
+| `useWeekAttendanceGridSave.ts` | Day save + save-all handlers |
+| `use-week-attendance-grid.util.ts` | Types + pending-change merge helpers |
+
 ---
 
 ## Summary
@@ -778,10 +1008,10 @@ Goal: gradually split source files so each stays at or below **400 lines**.
 | Metric | Value |
 | --- | --- |
 | Total source files scanned | 836 |
-| Files over 400 lines | **13** (was 58) |
-| Biggest file | `apps/api/src/modules/feedback/feedback.service.ts` (465 lines) |
-| Frontend (`apps/web`) | 9 |
-| Shared / packages | 1 |
+| Files over 400 lines | **0** (was 58) |
+| Biggest file (non-generated) | under 400 lines |
+| Frontend (`apps/web`) | 0 |
+| Backend (`apps/api`) | 0 |
 
 **Extensions scanned:** `.ts`, `.tsx`, `.js`, `.jsx`, `.css`, `.scss`, `.module.css`, `.module.scss`
 
@@ -839,26 +1069,34 @@ Goal: gradually split source files so each stays at or below **400 lines**.
 | ~~44~~ | ~~`apps/web/src/features/chat/components/ChatContainer.tsx`~~ | ~~485~~ | Frontend / Chat | **Done** | — |
 | ~~45~~ | ~~`apps/web/src/features/schedule/ScheduleLessonViews.tsx`~~ | ~~478~~ | Frontend / Schedule | **Done** | — |
 | ~~46~~ | ~~`apps/web/src/features/chat/components/VoiceMessagePlayer.tsx`~~ | ~~465~~ | Frontend / Chat | **Done** | — |
-| 47 | `apps/api/src/modules/feedback/feedback.service.ts` | 465 | Backend / Feedback | Split create/update/query paths; extract lesson/student validation and notification side-effects | Low |
-| 48 | `apps/web/src/features/chat/components/VoiceRecorder.tsx` | 464 | Frontend / Chat | Extract recording UI, permission handling, and upload flow; move MediaRecorder lifecycle to hook | Low |
-| 49 | `apps/web/src/features/crm/components/LeadDrawer.tsx` | 462 | Frontend / CRM | Split drawer header, activity timeline, and quick actions; extract lead fetch/update hooks | Low |
-| 50 | `apps/web/src/features/chat/components/AdminChatContainer.tsx` | 449 | Frontend / Chat | Extract admin-specific filters and layout; share base container logic with `ChatContainer` | Low |
-| 51 | `apps/web/src/features/finance/components/SalaryBreakdownModal.tsx` | 447 | Frontend / Finance | Extract breakdown table, summary cards, and adjustment rows; move salary fetch/formatting to hook | Low |
-| 52 | `apps/web/src/features/students/components/StudentAccountFormFields.tsx` | 443 | Frontend / Students | Extract field groups (credentials, contact, status); share constants and validation with CRM layout variant | Low |
-| 53 | `apps/web/src/features/groups/components/GroupCard.tsx` | 433 | Frontend / Groups | Extract card header, stats row, and action menu; move derived display values to small utils | Low |
-| 54 | `apps/web/src/features/teachers/components/EditTeacherForm.tsx` | 428 | Frontend / Teachers | Reuse AddTeacherForm section components; extract edit-only fields and update mutation hook | Low |
-| 55 | `apps/web/src/features/students/components/AddStudentForm.tsx` | 412 | Frontend / Students | Share sections with EditStudentForm; extract create defaults and enrollment-specific validation | Low |
-| 56 | `apps/api/src/modules/storage/storage.service.ts` | 412 | Backend / Storage | Split upload, delete, signed URL, and retention logic; extract provider-specific adapters | Low |
-| 57 | `apps/web/src/features/chat/api/chat.api.ts` | 404 | Frontend / Chat API | Split endpoints by resource (chats, messages, voice); extract shared request/response types | Low |
-| 58 | `apps/web/src/features/centers/components/CreateCenterForm.tsx` | 401 | Frontend / Centers | Share sections with EditCenterForm; extract create defaults and validation schema | Low |
+| ~~47~~ | ~~`apps/api/src/modules/feedback/feedback.service.ts`~~ | ~~465~~ | Backend / Feedback | **Done** | — |
+| ~~48~~ | ~~`apps/web/src/features/chat/components/VoiceRecorder.tsx`~~ | ~~464~~ | Frontend / Chat | **Done** | — |
+| ~~49~~ | ~~`apps/web/src/features/crm/components/LeadDrawer.tsx`~~ | ~~462~~ | Frontend / CRM | **Done** | — |
+| ~~50~~ | ~~`apps/web/src/features/chat/components/AdminChatContainer.tsx`~~ | ~~449~~ | Frontend / Chat | **Done** | — |
+| ~~51~~ | ~~`apps/web/src/features/finance/components/SalaryBreakdownModal.tsx`~~ | ~~447~~ | Frontend / Finance | **Done** | — |
+| ~~52~~ | ~~`apps/web/src/features/students/components/StudentAccountFormFields.tsx`~~ | ~~443~~ | Frontend / Students | **Done** | — |
+| ~~53~~ | ~~`apps/web/src/features/groups/components/GroupCard.tsx`~~ | ~~433~~ | Frontend / Groups | **Done** | — |
+| ~~54~~ | ~~`apps/web/src/features/teachers/components/EditTeacherForm.tsx`~~ | ~~428~~ | Frontend / Teachers | **Done** | — |
+| ~~55~~ | ~~`apps/web/src/features/students/components/AddStudentForm.tsx`~~ | ~~412~~ | Frontend / Students | **Done** | — |
+| ~~56~~ | ~~`apps/api/src/modules/storage/storage.service.ts`~~ | ~~412~~ | Backend / Storage | **Done** | — |
+| ~~57~~ | ~~`apps/web/src/features/chat/api/chat.api.ts`~~ | ~~404~~ | Frontend / Chat API | **Done** | — |
+| ~~58~~ | ~~`apps/web/src/features/centers/components/CreateCenterForm.tsx`~~ | ~~401~~ | Frontend / Centers | **Done** | — |
 
 ---
 
 ## Recommended first 3 refactors
 
-1. **`apps/api/src/modules/feedback/feedback.service.ts`** (465 lines) — Split create/update/query paths; extract validation + notification side-effects.
-2. **`apps/web/src/features/chat/components/VoiceRecorder.tsx`** (464 lines) — Extract recording UI, permission handling, upload flow + MediaRecorder hook.
-3. **`apps/web/src/features/crm/components/LeadDrawer.tsx`** (462 lines) — Split drawer header, activity timeline, quick actions + fetch/update hooks.
+Backlog complete — all originally flagged files are at or below 400 lines. Re-run this audit after future growth.
+
+### Watch list (largest files, still under 400)
+
+| File | Lines | Note |
+| --- | ---: | --- |
+| `apps/web/src/features/lessons/components/AddCourseForm.tsx` | ~382 | Next candidate if it grows |
+| `apps/api/src/modules/storage/storage.controller.ts` | ~380 | Consider split if endpoints grow |
+| `apps/web/src/features/groups/components/edit-group-form/useEditGroupForm.ts` | ~378 | Hook-only; monitor |
+| `apps/api/src/modules/users/user-manager.service.ts` | ~379 | Backend service |
+| `apps/web/src/features/chat/hooks/useSocket.ts` | ~367 | Chat realtime hook |
 
 ---
 

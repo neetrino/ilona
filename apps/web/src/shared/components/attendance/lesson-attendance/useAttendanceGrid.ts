@@ -1,37 +1,19 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import type { Lesson } from '@/features/lessons';
-import type { AbsenceType } from '@/features/attendance';
 import {
   ATTENDANCE_STATUSES,
   type AttendanceCell,
   type AttendanceStatus,
-  type WeekAttendanceStudent,
 } from '../week-attendance/types';
 import { createStatusLabelHelpers } from '../week-attendance/attendance-status';
+import type { UseAttendanceGridOptions } from './use-attendance-grid.util';
+import {
+  clonePendingChanges,
+  mergeAttendanceWithPendingChanges,
+} from './use-attendance-grid.util';
+import { useAttendanceGridSave } from './useAttendanceGridSave';
+import { useAttendanceGridKeyboard } from './useAttendanceGridKeyboard';
 
-interface UseAttendanceGridOptions {
-  students: WeekAttendanceStudent[];
-  lessons: Lesson[];
-  initialAttendance?: Record<string, Record<string, AttendanceCell>>;
-  onCellChange?: (studentId: string, lessonId: string, status: AttendanceStatus) => void;
-  onLessonSave?: (
-    lessonId: string,
-    attendances: Array<{
-      studentId: string;
-      isPresent: boolean;
-      absenceType?: AbsenceType;
-      note?: string;
-    }>,
-  ) => Promise<void>;
-  isSaving?: Record<string, boolean>;
-  dateRange?: { from: string; to: string };
-  onSaveSuccess?: (lessonId: string) => void;
-  onSaveError?: (lessonId: string, error: string) => void;
-  onUnsavedChangesChange?: (hasUnsavedChanges: boolean) => void;
-  t: (key: string, values?: Record<string, string | number>) => string;
-  locale: string;
-  isLoading?: boolean;
-}
+export type { UseAttendanceGridOptions } from './use-attendance-grid.util';
 
 export function useAttendanceGrid({
   students,
@@ -77,14 +59,6 @@ export function useAttendanceGrid({
     pendingChanges: Record<string, Set<string>>;
   } | null>(null);
 
-  const clonePendingChanges = useCallback((source: Record<string, Set<string>>) => {
-    const cloned: Record<string, Set<string>> = {};
-    Object.entries(source).forEach(([lessonId, studentsSet]) => {
-      cloned[lessonId] = new Set(studentsSet);
-    });
-    return cloned;
-  }, []);
-
   useEffect(() => {
     pendingChangesRef.current = pendingChanges;
   }, [pendingChanges]);
@@ -101,48 +75,37 @@ export function useAttendanceGrid({
   useEffect(() => {
     if (isInitialMountRef.current) return;
 
-    if (Object.keys(initialAttendance).length > 0) {
-      const hasAnyPendingChanges = Object.values(pendingChangesRef.current).some((set) => set.size > 0);
-      const prevInitial = prevInitialAttendanceRef.current;
-      const currentLessonIds = Object.keys(initialAttendance).sort();
-      const prevLessonIds = Object.keys(prevInitial).sort();
-      const hasStructuralChange =
-        currentLessonIds.length !== prevLessonIds.length ||
-        currentLessonIds.some((id, idx) => id !== prevLessonIds[idx]);
+    if (Object.keys(initialAttendance).length === 0) return;
 
-      if (!hasAnyPendingChanges) {
-        setAttendanceData(initialAttendance);
-        initialDataRef.current = initialAttendance;
-        prevInitialAttendanceRef.current = initialAttendance;
-      } else if (hasStructuralChange) {
-        setAttendanceData(initialAttendance);
-        initialDataRef.current = initialAttendance;
-        prevInitialAttendanceRef.current = initialAttendance;
-        setPendingChanges({});
-        setSaveError({});
-        setSaveSuccess({});
-      } else {
-        setAttendanceData((prev) => {
-          const merged: Record<string, Record<string, AttendanceCell>> = {};
-          Object.keys(initialAttendance).forEach((lessonId) => {
-            merged[lessonId] = { ...initialAttendance[lessonId] };
-          });
-          Object.keys(pendingChangesRef.current).forEach((lessonId) => {
-            const lessonPendingChanges = pendingChangesRef.current[lessonId];
-            if (lessonPendingChanges && lessonPendingChanges.size > 0 && prev[lessonId]) {
-              if (!merged[lessonId]) merged[lessonId] = {};
-              lessonPendingChanges.forEach((studentId) => {
-                if (prev[lessonId]?.[studentId]) {
-                  merged[lessonId][studentId] = prev[lessonId][studentId];
-                }
-              });
-            }
-          });
-          return merged;
-        });
-        prevInitialAttendanceRef.current = initialAttendance;
-      }
+    const hasAnyPendingChanges = Object.values(pendingChangesRef.current).some((set) => set.size > 0);
+    const prevInitial = prevInitialAttendanceRef.current;
+    const currentLessonIds = Object.keys(initialAttendance).sort();
+    const prevLessonIds = Object.keys(prevInitial).sort();
+    const hasStructuralChange =
+      currentLessonIds.length !== prevLessonIds.length ||
+      currentLessonIds.some((id, idx) => id !== prevLessonIds[idx]);
+
+    if (!hasAnyPendingChanges) {
+      setAttendanceData(initialAttendance);
+      initialDataRef.current = initialAttendance;
+      prevInitialAttendanceRef.current = initialAttendance;
+      return;
     }
+
+    if (hasStructuralChange) {
+      setAttendanceData(initialAttendance);
+      initialDataRef.current = initialAttendance;
+      prevInitialAttendanceRef.current = initialAttendance;
+      setPendingChanges({});
+      setSaveError({});
+      setSaveSuccess({});
+      return;
+    }
+
+    setAttendanceData((prev) =>
+      mergeAttendanceWithPendingChanges(initialAttendance, prev, pendingChangesRef.current),
+    );
+    prevInitialAttendanceRef.current = initialAttendance;
   }, [initialAttendance]);
 
   const hasUnsavedChanges = useMemo(
@@ -253,93 +216,19 @@ export function useAttendanceGrid({
     [getCellStatus, onCellChange, justificationDialog],
   );
 
-  const handleManualSave = useCallback(
-    async (lessonId: string) => {
-      if (!onLessonSave || !pendingChanges[lessonId] || pendingChanges[lessonId].size === 0) return;
-
-      const attendances: Array<{
-        studentId: string;
-        isPresent: boolean;
-        absenceType?: AbsenceType;
-        note?: string;
-      }> = [];
-      const studentsMissingJustification: string[] = [];
-
-      pendingChanges[lessonId].forEach((studentId) => {
-        const cell = attendanceData[lessonId]?.[studentId];
-        if (cell) {
-          const trimmedNote = cell.note?.trim();
-          if (cell.status === 'absent_justified' && !trimmedNote) {
-            studentsMissingJustification.push(studentId);
-            return;
-          }
-          attendances.push({
-            studentId,
-            isPresent: cell.isPresent,
-            absenceType: cell.absenceType,
-            note: trimmedNote || undefined,
-          });
-        }
-      });
-
-      if (studentsMissingJustification.length > 0) {
-        const firstStudentId = studentsMissingJustification[0];
-        setFocusedCell({ studentId: firstStudentId, lessonId });
-        setJustificationDialog({ studentId: firstStudentId, lessonId });
-        setSaveError((prev) => ({ ...prev, [lessonId]: t('justificationBeforeSave') }));
-        return;
-      }
-
-      if (attendances.length > 0) {
-        try {
-          setSaveError((prev) => {
-            const next = { ...prev };
-            delete next[lessonId];
-            return next;
-          });
-          setSaveSuccess((prev) => {
-            const next = { ...prev };
-            delete next[lessonId];
-            return next;
-          });
-
-          await onLessonSave(lessonId, attendances);
-
-          setPendingChanges((prev) => {
-            const next = { ...prev };
-            delete next[lessonId];
-            return next;
-          });
-          setSaveSuccess((prev) => ({ ...prev, [lessonId]: true }));
-          onSaveSuccess?.(lessonId);
-
-          setTimeout(() => {
-            setSaveSuccess((prev) => {
-              const next = { ...prev };
-              delete next[lessonId];
-              return next;
-            });
-          }, 3000);
-        } catch (error) {
-          const errorMessage =
-            error instanceof Error ? error.message : t('failedToSaveAttendanceDefault');
-          setSaveError((prev) => ({ ...prev, [lessonId]: errorMessage }));
-          onSaveError?.(lessonId, errorMessage);
-          console.error('Save failed:', error);
-        }
-      }
-    },
-    [onLessonSave, pendingChanges, attendanceData, onSaveSuccess, onSaveError, t],
-  );
-
-  const handleSaveAll = useCallback(async () => {
-    const lessonsWithChanges = Object.keys(pendingChanges).filter(
-      (lessonId) => pendingChanges[lessonId] && pendingChanges[lessonId].size > 0,
-    );
-    for (const lessonId of lessonsWithChanges) {
-      await handleManualSave(lessonId);
-    }
-  }, [pendingChanges, handleManualSave]);
+  const { handleManualSave, handleSaveAll } = useAttendanceGridSave({
+    onLessonSave,
+    pendingChanges,
+    attendanceData,
+    setPendingChanges,
+    setSaveError,
+    setSaveSuccess,
+    setFocusedCell,
+    setJustificationDialog,
+    onSaveSuccess,
+    onSaveError,
+    t,
+  });
 
   const handleStartEditMode = useCallback(() => {
     editSnapshotRef.current = {
@@ -352,7 +241,7 @@ export function useAttendanceGrid({
     setSaveError({});
     setSaveSuccess({});
     setIsEditMode(true);
-  }, [attendanceData, pendingChanges, clonePendingChanges]);
+  }, [attendanceData, pendingChanges]);
 
   const handleCancelEditMode = useCallback(() => {
     if (editSnapshotRef.current) {
@@ -363,7 +252,7 @@ export function useAttendanceGrid({
     setSaveError({});
     setSaveSuccess({});
     setIsEditMode(false);
-  }, [clonePendingChanges]);
+  }, []);
 
   const handleConfirmEditMode = useCallback(async () => {
     if (Object.values(pendingChanges).some((set) => set.size > 0)) {
@@ -402,48 +291,15 @@ export function useAttendanceGrid({
     [filteredLessons],
   );
 
-  const handleKeyDown = useCallback(
-    (e: React.KeyboardEvent, studentId: string, lessonId: string) => {
-      if (isLoading || isSaving) return;
-
-      const studentIndex = students.findIndex((s) => s.id === studentId);
-      const lessonIndex = sortedLessons.findIndex((l) => l.id === lessonId);
-
-      switch (e.key) {
-        case 'Enter':
-        case ' ':
-          e.preventDefault();
-          if (isEditMode) toggleCellStatus(studentId, lessonId);
-          break;
-        case 'ArrowUp':
-          e.preventDefault();
-          if (studentIndex > 0) {
-            setFocusedCell({ studentId: students[studentIndex - 1].id, lessonId });
-          }
-          break;
-        case 'ArrowDown':
-          e.preventDefault();
-          if (studentIndex < students.length - 1) {
-            setFocusedCell({ studentId: students[studentIndex + 1].id, lessonId });
-          }
-          break;
-        case 'ArrowLeft':
-          e.preventDefault();
-          if (lessonIndex > 0) {
-            setFocusedCell({ studentId, lessonId: sortedLessons[lessonIndex - 1].id });
-          }
-          break;
-        case 'ArrowRight':
-        case 'Tab':
-          e.preventDefault();
-          if (lessonIndex < sortedLessons.length - 1) {
-            setFocusedCell({ studentId, lessonId: sortedLessons[lessonIndex + 1].id });
-          }
-          break;
-      }
-    },
-    [students, sortedLessons, toggleCellStatus, isLoading, isSaving, isEditMode],
-  );
+  const handleKeyDown = useAttendanceGridKeyboard({
+    students,
+    sortedLessons,
+    isLoading,
+    isSaving,
+    isEditMode,
+    toggleCellStatus,
+    setFocusedCell,
+  });
 
   const formatDate = useCallback(
     (dateString: string) => {
