@@ -8,17 +8,19 @@ Goal: gradually split source files so each stays at or below **400 lines**.
 
 | Date | File | Before | After | Notes |
 | --- | --- | ---: | ---: | --- |
-| 2026-06-29 | `apps/api/src/modules/chat/chat-management.service.ts` | 1,195 | 61 (facade) | Split into `chat-user-chats`, `chat-detail`, `chat-direct`, `chat-group-provision`, `chat-group-conversation`, `chat-custom-group`, `chat-management.util` |
+| 2026-06-29 | `apps/api/src/modules/chat/chat-management.service.ts` | 1,195 | 61 (facade) | Split into 6 domain services + util |
+| 2026-06-29 | `apps/api/src/modules/students/student-crud.service.ts` | 1,092 | 68 (facade) | Split into list/read/create/update/delete + access util |
+| 2026-06-29 | `apps/api/src/modules/attendance/attendance.service.ts` | 1,046 | 68 (facade) | Split into lesson/student query, report, write, planned absence |
 
 ## Summary
 
 | Metric | Value |
 | --- | --- |
 | Total source files scanned | 836 |
-| Files over 400 lines | **57** (was 58) |
-| Biggest file | `apps/api/src/modules/students/student-crud.service.ts` (1,092 lines) |
+| Files over 400 lines | **55** (was 58) |
+| Biggest file | `apps/api/src/modules/students/student-crud.service.ts` → done; now `apps/web/src/features/chat/components/ChatWindow.tsx` (978 lines) |
 | Frontend (`apps/web`) | 38 |
-| Backend (`apps/api`) | 19 |
+| Backend (`apps/api`) | 17 |
 | Shared / packages | 0 |
 
 **Extensions scanned:** `.ts`, `.tsx`, `.js`, `.jsx`, `.css`, `.scss`, `.module.css`, `.module.scss`
@@ -31,9 +33,9 @@ Goal: gradually split source files so each stays at or below **400 lines**.
 
 | # | File path | Lines | Area/module | Suggested refactor approach | Priority |
 | --- | --- | ---: | --- | --- | --- |
-| ~~1~~ | ~~`apps/api/src/modules/chat/chat-management.service.ts`~~ | ~~1,195~~ | Backend / Chat | **Done** — facade + 6 domain services (all ≤ 250 lines) | — |
-| 2 | `apps/api/src/modules/students/student-crud.service.ts` | 1,092 | Backend / Students | Split CRUD, group-history sync, CRM lead linkage, and manager-scope checks into separate services/helpers; extract age/group validation and bcrypt provisioning utilities | High |
-| 3 | `apps/api/src/modules/attendance/attendance.service.ts` | 1,046 | Backend / Attendance | Split lesson/day/week queries, bulk mark, streak updates, and salary side-effects; extract manager-scope and planned-absence fallback helpers | High |
+| ~~1~~ | ~~`apps/api/src/modules/chat/chat-management.service.ts`~~ | ~~1,195~~ | Backend / Chat | **Done** | — |
+| ~~2~~ | ~~`apps/api/src/modules/students/student-crud.service.ts`~~ | ~~1,092~~ | Backend / Students | **Done** | — |
+| ~~3~~ | ~~`apps/api/src/modules/attendance/attendance.service.ts`~~ | ~~1,046~~ | Backend / Attendance | **Done** | — |
 | 4 | `apps/web/src/features/chat/components/ChatWindow.tsx` | 978 | Frontend / Chat | Extract message list, composer, header/actions, delete/voice/vocabulary modals into subcomponents; move scroll/typing/draft logic into hooks | High |
 | 5 | `apps/web/src/shared/components/attendance/WeekAttendanceGrid.tsx` | 931 | Frontend / Attendance (shared) | Extract day column, cell editor, note dialog, and save/status helpers; move grid state machine into a dedicated hook | High |
 | 6 | `apps/web/src/shared/components/attendance/AttendanceGrid.tsx` | 886 | Frontend / Attendance (shared) | Same split as week grid: cell components, edit dialogs, status mapping utils, and attendance state hook | High |
@@ -94,9 +96,9 @@ Goal: gradually split source files so each stays at or below **400 lines**.
 
 ## Recommended first 3 refactors
 
-1. **`apps/api/src/modules/students/student-crud.service.ts`** (1,092 lines) — Core domain with CRM, group history, and auth side-effects; splitting early will simplify many downstream student/CRM form refactors.
-2. **`apps/api/src/modules/attendance/attendance.service.ts`** (1,046 lines) — Tightly coupled to finance/salary; splitting query vs mutation paths will unblock the two large attendance grid components (`WeekAttendanceGrid`, `AttendanceGrid`) on the frontend.
-3. **`apps/web/src/features/chat/components/ChatWindow.tsx`** (978 lines) — Largest remaining frontend file; extract subcomponents and hooks.
+1. **`apps/web/src/features/chat/components/ChatWindow.tsx`** (978 lines) — Largest remaining file; extract subcomponents and hooks.
+2. **`apps/web/src/shared/components/attendance/WeekAttendanceGrid.tsx`** (931 lines) — Split cell editor, dialogs, and state hook.
+3. **`apps/web/src/shared/components/attendance/AttendanceGrid.tsx`** (886 lines) — Same pattern as week grid.
 
 ---
 
