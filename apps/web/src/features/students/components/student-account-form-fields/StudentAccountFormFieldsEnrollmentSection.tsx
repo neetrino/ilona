@@ -40,7 +40,7 @@ export function StudentAccountFormFieldsEnrollmentSection({
 
   return (
     <>
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-4 min-[1367px]:grid-cols-3">
         <div className="min-w-0 space-y-2">
           <Label htmlFor={p('dateOfBirth')}>{t('dateOfBirth')}</Label>
           <DmyDateInput
@@ -78,23 +78,22 @@ export function StudentAccountFormFieldsEnrollmentSection({
             </p>
           )}
         </div>
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor={p('firstLessonDate')}>{tForm('firstLessonDate')}</Label>
-        <DmyDateInput
-          id={p('firstLessonDate')}
-          value={watchedFirstLessonDate}
-          placeholder={tForm('firstLessonDatePlaceholder')}
-          onChange={(value) =>
-            setValue('firstLessonDate', value, { shouldValidate: true, shouldDirty: true })
-          }
-          className={FORM_INPUT_CLASS_NAME}
-          disabled={isSubmitting}
-        />
-        {errors.firstLessonDate && (
-          <p className="text-sm text-red-600">{errors.firstLessonDate.message}</p>
-        )}
+        <div className="col-span-2 min-w-0 space-y-2 min-[1367px]:col-span-1">
+          <Label htmlFor={p('firstLessonDate')}>{tForm('firstLessonDate')}</Label>
+          <DmyDateInput
+            id={p('firstLessonDate')}
+            value={watchedFirstLessonDate}
+            placeholder={tForm('firstLessonDatePlaceholder')}
+            onChange={(value) =>
+              setValue('firstLessonDate', value, { shouldValidate: true, shouldDirty: true })
+            }
+            className={FORM_INPUT_CLASS_NAME}
+            disabled={isSubmitting}
+          />
+          {errors.firstLessonDate && (
+            <p className="text-sm text-red-600">{errors.firstLessonDate.message}</p>
+          )}
+        </div>
       </div>
 
       <div className="grid grid-cols-2 gap-4">
