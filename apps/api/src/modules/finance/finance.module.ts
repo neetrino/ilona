@@ -2,6 +2,10 @@ import { Module } from '@nestjs/common';
 import { FinanceService } from './finance.service';
 import { FinanceController } from './finance.controller';
 import { PaymentsService } from './payments.service';
+import { PaymentQueryService } from './payment-query.service';
+import { PaymentWriteService } from './payment-write.service';
+import { PaymentSummaryService } from './payment-summary.service';
+import { PaymentLifecycleService } from './payment-lifecycle.service';
 import { SalariesService } from './salaries.service';
 import { DeductionsService } from './deductions.service';
 import { SalaryCalculationService } from './salary-calculation.service';
@@ -16,6 +20,10 @@ import { SettingsModule } from '../settings/settings.module';
   providers: [
     FinanceService,
     PaymentsService,
+    PaymentQueryService,
+    PaymentWriteService,
+    PaymentSummaryService,
+    PaymentLifecycleService,
     SalariesService,
     DeductionsService,
     SalaryCalculationService,

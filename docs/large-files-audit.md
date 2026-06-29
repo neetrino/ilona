@@ -20,14 +20,275 @@ Goal: gradually split source files so each stays at or below **400 lines**.
 | 2026-06-29 | `apps/api/src/modules/lessons/lesson-crud.service.ts` | 860 | 68 (facade) | Split into list, read, create, update, delete + manager access |
 | 2026-06-29 | `apps/api/src/modules/crm/leads.service.ts` | 851 | 135 (facade) | Split into list, read, create, update, delete, status, voice, teacher + access/activity |
 | 2026-06-29 | `apps/web/src/features/calendar/PortalCalendarPage.tsx` | 828 | 108 (orchestrator) | Split into filters, stats, controls, week/month/list views, overlays + 2 hooks + utils |
+| 2026-06-29 | `apps/web/src/shared/components/calendar/LessonListTable.tsx` | 792 | 125 (orchestrator) | Split into bulk bar, mobile cards, desktop table + hook + utils |
+| 2026-06-29 | `apps/api/src/modules/finance/payments.service.ts` | 776 | 83 (facade) | Split into query, write, summary, lifecycle + util/types/include |
+| 2026-06-29 | `apps/api/src/modules/settings/settings.service.ts` | 738 | 74 (facade) | Split into core, branding, footer, percents, penalties + util/types |
+
+## Split details (completed refactors)
+
+Յուրաքանչյուր մեծ ֆайլը կրճատվել է vertical split-ով։ Ստորև՝ **նախնական ֆайլ**, **որքան ֆайլ դարձավ** (facade/orchestrator + նոր ֆайլեր), և **նոր ֆайլերի ցանկը**։
+
+| # | Նախնական ֆайլ | Նախկին | Հիմա | Ընդամենը ֆайլ |
+| ---: | --- | ---: | ---: | ---: |
+| 1 | `chat-management.service.ts` | 1,195 | 61 | **7** |
+| 2 | `student-crud.service.ts` | 1,092 | 68 | **6** |
+| 3 | `attendance.service.ts` | 1,046 | 68 | **9** |
+| 4 | `ChatWindow.tsx` | 978 | 341 | **12** |
+| 5 | `WeekAttendanceGrid.tsx` | 931 | 130 | **8** |
+| 6 | `AttendanceGrid.tsx` | 886 | 134 | **4** |
+| 7 | `groups.service.ts` | 886 | 72 | **8** |
+| 8 | `message.service.ts` | 886 | 78 | **8** |
+| 9 | `chat-lists.service.ts` | 882 | 37 | **6** |
+| 10 | `lesson-crud.service.ts` | 860 | 68 | **7** |
+| 11 | `leads.service.ts` | 851 | 135 | **13** |
+| 12 | `PortalCalendarPage.tsx` | 828 | 108 | **13** |
+| 13 | `LessonListTable.tsx` | 792 | 125 | **9** |
+| 14 | `payments.service.ts` | 776 | 83 | **9** |
+| 15 | `settings.service.ts` | 738 | 74 | **8** |
+
+**15** մեծ ֆайլ → **125** ֆайլ (15 facade/orchestrator + 110 նոր split ֆайլ)։
+
+### 1. `apps/api/src/modules/chat/chat-management.service.ts` (1,195 → 61)
+
+**7 ֆайլ** (1 facade + 6 նոր)
+
+| Ֆайл | Դեր |
+| --- | --- |
+| `chat-management.service.ts` | Facade |
+| `chat-user-chats.service.ts` | User chat list |
+| `chat-detail.service.ts` | Chat by id |
+| `chat-direct.service.ts` | Direct chat create |
+| `chat-group-conversation.service.ts` | Group conversation |
+| `chat-custom-group.service.ts` | Custom group chats |
+| `chat-management.util.ts` | Shared helpers |
+
+### 2. `apps/api/src/modules/students/student-crud.service.ts` (1,092 → 68)
+
+**6 ֆайլ** (1 facade + 5 նոր)
+
+| Ֆайл | Դեր |
+| --- | --- |
+| `student-crud.service.ts` | Facade |
+| `student-list.service.ts` | List / search |
+| `student-read.service.ts` | Read by id / userId |
+| `student-create.service.ts` | Create + CRM paid link |
+| `student-update.service.ts` | Update |
+| `student-delete.service.ts` | Delete / deleteMany |
+
+### 3. `apps/api/src/modules/attendance/attendance.service.ts` (1,046 → 68)
+
+**9 ֆайլ** (1 facade + 8 նոր)
+
+| Ֆайл | Դեր |
+| --- | --- |
+| `attendance.service.ts` | Facade |
+| `attendance-lesson-query.service.ts` | Lesson attendance queries |
+| `attendance-student-query.service.ts` | Student attendance queries |
+| `attendance-report.service.ts` | Reports |
+| `attendance-write.service.ts` | Mark / bulk write |
+| `attendance-planned-absence.service.ts` | Planned absences |
+| `attendance-scope.service.ts` | Role / scope checks |
+| `attendance-side-effects.service.ts` | Side effects (finance etc.) |
+| `attendance.util.ts` | Shared helpers |
+
+### 4. `apps/web/src/features/chat/components/ChatWindow.tsx` (978 → 341)
+
+**12 ֆайլ** (1 orchestrator + 11 նոր, `chat-window/`)
+
+| Ֆайл | Դեր |
+| --- | --- |
+| `ChatWindow.tsx` | Orchestrator |
+| `chat-window/ChatWindowHeader.tsx` | Header |
+| `chat-window/ChatMessageList.tsx` | Message list |
+| `chat-window/ChatMessageItem.tsx` | Single message row |
+| `chat-window/ChatComposer.tsx` | Input / send |
+| `chat-window/useChatWindowScroll.ts` | Scroll / pagination hook |
+| `chat-window/useChatWindowComposer.ts` | Composer state hook |
+| `chat-window/useChatVoiceHandlers.ts` | Voice recording hook |
+| `chat-window/useChatMessageDelete.ts` | Delete message hook |
+| `chat-window/chat-window-display.ts` | Title / avatar helpers |
+| `chat-window/chat-message-meta.ts` | Message meta helpers |
+| `chat-window/chat-voice-upload.ts` | Voice upload util |
+
+### 5. `apps/web/src/shared/components/attendance/WeekAttendanceGrid.tsx` (931 → 130)
+
+**8 ֆайլ** (1 orchestrator + 7 նոր, `week-attendance/`)
+
+| Ֆайл | Դեր |
+| --- | --- |
+| `WeekAttendanceGrid.tsx` | Orchestrator |
+| `week-attendance/WeekAttendanceToolbar.tsx` | Toolbar |
+| `week-attendance/WeekAttendanceGridTable.tsx` | Grid table |
+| `week-attendance/WeekAttendanceDialogs.tsx` | Dialogs |
+| `week-attendance/WeekAttendanceLegend.tsx` | Legend |
+| `week-attendance/useWeekAttendanceGrid.ts` | State hook |
+| `week-attendance/attendance-status.ts` | Status utils |
+| `week-attendance/types.ts` | Shared types |
+
+### 6. `apps/web/src/shared/components/attendance/AttendanceGrid.tsx` (886 → 134)
+
+**4 ֆайլ** (1 orchestrator + 3 նոր, `lesson-attendance/`; toolbar/legend reused from `week-attendance/`)
+
+| Ֆайл | Դեր |
+| --- | --- |
+| `AttendanceGrid.tsx` | Orchestrator |
+| `lesson-attendance/AttendanceGridTable.tsx` | Lesson grid table |
+| `lesson-attendance/AttendanceGridDialogs.tsx` | Dialogs |
+| `lesson-attendance/useAttendanceGrid.ts` | State hook |
+
+### 7. `apps/api/src/modules/groups/groups.service.ts` (886 → 72)
+
+**8 ֆайլ** (1 facade + 7 նոր)
+
+| Ֆайл | Դեր |
+| --- | --- |
+| `groups.service.ts` | Facade |
+| `group-query.service.ts` | List / read queries |
+| `group-write.service.ts` | Create / update |
+| `group-membership.service.ts` | Student membership |
+| `group-chat-sync.service.ts` | Chat sync |
+| `group-teacher-validation.service.ts` | Teacher validation |
+| `group-access.service.ts` | Access checks |
+| `group-query-includes.ts` | Prisma includes |
+
+### 8. `apps/api/src/modules/chat/message.service.ts` (886 → 78)
+
+**8 ֆайլ** (1 facade + 7 նոր)
+
+| Ֆайл | Դեր |
+| --- | --- |
+| `message.service.ts` | Facade |
+| `message-query.service.ts` | Get messages |
+| `message-send.service.ts` | Send message |
+| `message-mutation.service.ts` | Edit / delete / read / vocabulary |
+| `message-recording.service.ts` | Voice recordings |
+| `message.types.ts` | Shared types |
+| `message-storage.util.ts` | Storage helpers |
+| `message-recording.util.ts` | Recording helpers |
+
+### 9. `apps/api/src/modules/chat/chat-lists.service.ts` (882 → 37)
+
+**6 ֆайլ** (1 facade + 5 նոր)
+
+| Ֆайл | Դեր |
+| --- | --- |
+| `chat-lists.service.ts` | Facade |
+| `chat-admin-lists.service.ts` | Admin list queries |
+| `chat-teacher-lists.service.ts` | Teacher groups / students |
+| `chat-admin-contact.service.ts` | Admin contact for portal user |
+| `chat-unread-count.service.ts` | Unread count batch helpers |
+| `chat-list.util.ts` | Shared filters / name format |
+
+### 10. `apps/api/src/modules/lessons/lesson-crud.service.ts` (860 → 68)
+
+**7 ֆайլ** (1 facade + 6 նոր)
+
+| Ֆайл | Դեր |
+| --- | --- |
+| `lesson-crud.service.ts` | Facade |
+| `lesson-list.service.ts` | findAll / findByTeacher / upcoming |
+| `lesson-read.service.ts` | findById + access |
+| `lesson-create.service.ts` | create / createBulk |
+| `lesson-update.service.ts` | update / substitute for day |
+| `lesson-delete.service.ts` | delete / deleteBulk |
+| `lesson-manager-access.service.ts` | Manager center scope |
+
+### 11. `apps/api/src/modules/crm/leads.service.ts` (851 → 135)
+
+**13 ֆайլ** (1 facade + 12 նոր)
+
+| Ֆайл | Դեր |
+| --- | --- |
+| `leads.service.ts` | Facade |
+| `lead-list.service.ts` | findAll / findForTeacher |
+| `lead-read.service.ts` | findById |
+| `lead-create.service.ts` | create |
+| `lead-update.service.ts` | update / changeBranch |
+| `lead-delete.service.ts` | delete + R2 cleanup |
+| `lead-status.service.ts` | changeStatus / registerPaid / transitions |
+| `lead-voice.service.ts` | Voice lead / recordings |
+| `lead-teacher.service.ts` | teacherApprove / teacherTransfer |
+| `lead-activity.service.ts` | Activity log / comments |
+| `lead-access.service.ts` | Manager / admin scope |
+| `lead-include.util.ts` | Prisma include |
+| `lead.types.ts` | Shared types |
+
+### 12. `apps/web/src/features/calendar/PortalCalendarPage.tsx` (828 → 108)
+
+**13 ֆайլ** (1 orchestrator + 12 նոր, `portal-calendar/`)
+
+| Ֆайл | Դեր |
+| --- | --- |
+| `PortalCalendarPage.tsx` | Orchestrator |
+| `portal-calendar/usePortalCalendarPage.ts` | Main state / data hook |
+| `portal-calendar/usePortalCalendarDeleteActions.ts` | Delete actions hook |
+| `portal-calendar/PortalCalendarFiltersSection.tsx` | Filters wrapper |
+| `portal-calendar/PortalCalendarStatsGrid.tsx` | Stat cards |
+| `portal-calendar/PortalCalendarControls.tsx` | Navigation + view toggle |
+| `portal-calendar/PortalCalendarWeekView.tsx` | Week grid |
+| `portal-calendar/PortalCalendarMonthView.tsx` | Month grid |
+| `portal-calendar/PortalCalendarListView.tsx` | List view |
+| `portal-calendar/PortalCalendarOverlays.tsx` | Modals / sheets / toasts |
+| `portal-calendar/portal-calendar-display.util.ts` | Time / color helpers |
+| `portal-calendar/portal-calendar-url.util.ts` | URL / modal helpers |
+| `portal-calendar/portal-calendar.types.ts` | Shared types |
+
+### 13. `apps/web/src/shared/components/calendar/LessonListTable.tsx` (792 → 125)
+
+**9 ֆайլ** (1 orchestrator + 8 նոր, `lesson-list-table/`)
+
+| Ֆайл | Դեր |
+| --- | --- |
+| `LessonListTable.tsx` | Orchestrator |
+| `lesson-list-table/useLessonListTable.ts` | Selection, sort, pagination hook |
+| `lesson-list-table/LessonListTableBulkBar.tsx` | Bulk delete bar |
+| `lesson-list-table/LessonListTableMobileCards.tsx` | Mobile / iPad card list |
+| `lesson-list-table/LessonListTableDesktopTable.tsx` | Desktop table |
+| `lesson-list-table/lesson-list-table.types.ts` | Props / row types |
+| `lesson-list-table/lesson-list-table.constants.ts` | Constants |
+| `lesson-list-table/lesson-list-table-sort.util.ts` | Sort helpers |
+| `lesson-list-table/lesson-list-table-navigation.util.ts` | Row navigation |
+
+### 14. `apps/api/src/modules/finance/payments.service.ts` (776 → 83)
+
+**9 ֆайլ** (1 facade + 8 նոր)
+
+| Ֆайл | Դեր |
+| --- | --- |
+| `payments.service.ts` | Facade |
+| `payment-query.service.ts` | findAll, monthly grouped, findById |
+| `payment-write.service.ts` | create, update, process, cancel, delete |
+| `payment-summary.service.ts` | Student summary, revenue stats |
+| `payment-lifecycle.service.ts` | ensure monthly, overdue sync |
+| `payment.util.ts` | Month window / date helpers |
+| `payment.types.ts` | Shared Prisma payload types |
+| `payment-db.util.ts` | Prisma delegate accessor |
+| `payment-include.util.ts` | Student include fragments |
+
+### 15. `apps/api/src/modules/settings/settings.service.ts` (738 → 74)
+
+**8 ֆайլ** (1 facade + 7 նոր)
+
+| Ֆайл | Դեր |
+| --- | --- |
+| `settings.service.ts` | Facade |
+| `settings-core.service.ts` | getSystemSettings + cache |
+| `settings-branding.service.ts` | Logo + dashboard banner |
+| `settings-footer.service.ts` | Footer icon links |
+| `settings-percents.service.ts` | Action percents |
+| `settings-penalties.service.ts` | Penalty amounts |
+| `settings.util.ts` | URL key extract, text normalize |
+| `settings.types.ts` | Shared types + cache key |
+
+---
 
 ## Summary
 
 | Metric | Value |
 | --- | --- |
 | Total source files scanned | 836 |
-| Files over 400 lines | **47** (was 58) |
-| Biggest file | `apps/web/src/shared/components/calendar/LessonListTable.tsx` (792 lines) |
+| Files over 400 lines | **44** (was 58) |
+| Biggest file | `apps/api/src/modules/users/users.service.ts` (729 lines) |
 | Frontend (`apps/web`) | 34 |
 | Backend (`apps/api`) | 14 |
 | Shared / packages | 0 |
@@ -54,9 +315,9 @@ Goal: gradually split source files so each stays at or below **400 lines**.
 | ~~10~~ | ~~`apps/api/src/modules/lessons/lesson-crud.service.ts`~~ | ~~860~~ | Backend / Lessons | **Done** | — |
 | ~~11~~ | ~~`apps/api/src/modules/crm/leads.service.ts`~~ | ~~851~~ | Backend / CRM | **Done** | — |
 | ~~12~~ | ~~`apps/web/src/features/calendar/PortalCalendarPage.tsx`~~ | ~~828~~ | Frontend / Calendar | **Done** | — |
-| 13 | `apps/web/src/shared/components/calendar/LessonListTable.tsx` | 792 | Frontend / Calendar (shared) | Extract table columns, row actions, status badges, and sort/filter config; move row click/navigation handlers to hook | High |
-| 14 | `apps/api/src/modules/finance/payments.service.ts` | 776 | Backend / Finance | Split payment recording, reconciliation, refunds/adjustments, and reporting queries; extract amount/date validation | High |
-| 15 | `apps/api/src/modules/settings/settings.service.ts` | 738 | Backend / Settings | Split settings domains (penalties, managers, center config) into focused services; extract settings key mapping and defaults | Medium |
+| ~~13~~ | ~~`apps/web/src/shared/components/calendar/LessonListTable.tsx`~~ | ~~792~~ | Frontend / Calendar (shared) | **Done** | — |
+| ~~14~~ | ~~`apps/api/src/modules/finance/payments.service.ts`~~ | ~~776~~ | Backend / Finance | **Done** | — |
+| ~~15~~ | ~~`apps/api/src/modules/settings/settings.service.ts`~~ | ~~738~~ | Backend / Settings | **Done** | — |
 | 16 | `apps/api/src/modules/users/users.service.ts` | 729 | Backend / Users | Split user CRUD, role/profile provisioning, and status management; extract password hashing and duplicate-email checks | Medium |
 | 17 | `apps/api/src/modules/teachers/teacher-crud.service.ts` | 715 | Backend / Teachers | Split create/update/delete, center assignment, and schedule linkage; extract manager-scope and profile sync helpers | Medium |
 | 18 | `apps/web/src/features/groups/components/EditGroupForm.tsx` | 709 | Frontend / Groups | Extract form sections (basic info, teacher, schedule, capacity); split validation schema; extract submit/mutation hook | Medium |
@@ -105,9 +366,9 @@ Goal: gradually split source files so each stays at or below **400 lines**.
 
 ## Recommended first 3 refactors
 
-1. **`apps/web/src/shared/components/calendar/LessonListTable.tsx`** (792 lines) — Extract table columns, row actions, status badges.
-2. **`apps/api/src/modules/finance/payments.service.ts`** (776 lines) — Split payment recording, reconciliation, refunds.
-3. **`apps/api/src/modules/settings/settings.service.ts`** (738 lines) — Split settings domains into focused services.
+1. **`apps/api/src/modules/users/users.service.ts`** (729 lines) — Split user CRUD, role provisioning, status management.
+2. **`apps/api/src/modules/teachers/teacher-crud.service.ts`** (715 lines) — Split create/update/delete and center assignment.
+3. **`apps/web/src/features/groups/components/EditGroupForm.tsx`** (709 lines) — Extract form sections and validation schema.
 
 ---
 

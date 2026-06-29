@@ -1,803 +1,90 @@
-import { Injectable, Logger, BadRequestException, Inject } from '@nestjs/common';
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import type { Cache } from 'cache-manager';
-import { PrismaService } from '../prisma/prisma.service';
-import type { ActionPercents, SystemSettingsWithPercents, PenaltyAmounts, FooterIconLinks } from '@ilona/types';
-import {
-  FOOTER_ICON_KEYS,
-  isValidFooterIconLink,
-  normalizeFooterIconLinks,
-} from '@ilona/types';
-import type { SystemSettings } from '@ilona/database';
-import { Prisma } from '@ilona/database';
+import { Injectable } from '@nestjs/common';
+import type { ActionPercents, FooterIconLinks, PenaltyAmounts } from '@ilona/types';
+import { SettingsCoreService } from './settings-core.service';
+import { SettingsBrandingService } from './settings-branding.service';
+import { SettingsFooterService } from './settings-footer.service';
+import { SettingsPercentsService } from './settings-percents.service';
+import { SettingsPenaltiesService } from './settings-penalties.service';
 
-/** Prisma create/update input types (avoids depending on PrismaService delegate at type-check) */
-type SystemSettingsCreateData = Prisma.SystemSettingsCreateInput;
-type SystemSettingsUpdateData = Prisma.SystemSettingsUpdateInput;
-
-/**
- * Type for Prisma error with code and message
- */
-interface PrismaError extends Error {
-  code?: string;
-  message: string;
-}
-
-/**
- * Type for values that can be converted to numbers (Decimal, number, null, undefined)
- */
-type ConvertibleToNumber = Prisma.Decimal | number | null | undefined;
-
-/**
- * Type for SystemSettings with optional penalty fields (for backward compatibility)
- */
-type SystemSettingsWithOptionalPenalties = SystemSettings & {
-  penaltyAbsenceAmd?: Prisma.Decimal | number;
-  penaltyFeedbackAmd?: Prisma.Decimal | number;
-  penaltyVoiceAmd?: Prisma.Decimal | number;
-  penaltyTextAmd?: Prisma.Decimal | number;
-  penaltyDailyPlanAmd?: Prisma.Decimal | number;
-  dashboardBannerUrl?: string | null;
-  dashboardBannerTitle?: string | null;
-  dashboardBannerSubtitle?: string | null;
-  footerIconLinks?: Prisma.JsonValue | null;
-};
-
+/** Facade for system settings — delegates to domain-specific services. */
 @Injectable()
 export class SettingsService {
-  private readonly logger = new Logger(SettingsService.name);
-  private static readonly CACHE_KEY_SYSTEM = 'settings:system';
-
   constructor(
-    private readonly prisma: PrismaService,
-    @Inject(CACHE_MANAGER) private readonly cache: Cache,
+    private readonly coreService: SettingsCoreService,
+    private readonly brandingService: SettingsBrandingService,
+    private readonly footerService: SettingsFooterService,
+    private readonly percentsService: SettingsPercentsService,
+    private readonly penaltiesService: SettingsPenaltiesService,
   ) {}
 
-  /**
-   * Get system settings (singleton - there should only be one record). Cached for 2 minutes.
-   */
-  async getSystemSettings() {
-    try {
-      const cached = await this.cache.get<SystemSettings | null>(SettingsService.CACHE_KEY_SYSTEM);
-      if (cached) {
-        return cached;
-      }
-
-      let settings = await this.prisma.systemSettings.findFirst();
-
-      // If no settings exist, create default settings
-      if (!settings) {
-        try {
-          // Try to create with all fields first
-          try {
-            // Type assertion needed until Prisma client is regenerated after migration
-            settings = await this.prisma.systemSettings.create({
-              data: {
-                vocabDeductionPercent: 10,
-                feedbackDeductionPercent: 5,
-                maxUnjustifiedAbsences: 3,
-                paymentDueDays: 5,
-                lessonReminderHours: 24,
-                absencePercent: 25,
-                feedbacksPercent: 25,
-                voicePercent: 25,
-                textPercent: 25,
-                penaltyAbsenceAmd: 1000,
-                penaltyFeedbackAmd: 500,
-                penaltyVoiceAmd: 1000,
-                penaltyTextAmd: 1000,
-                penaltyDailyPlanAmd: 1000,
-              } as unknown as SystemSettingsCreateData,
-            });
-          } catch (penaltyError: unknown) {
-            // If penalty columns don't exist yet, try creating without them
-            const error = penaltyError as PrismaError;
-            if (error?.message?.includes('penalty') || error?.code === 'P2002') {
-              this.logger.warn('Penalty columns may not exist, trying to create settings without them');
-              settings = await this.prisma.systemSettings.create({
-                data: {
-                  vocabDeductionPercent: 10,
-                  feedbackDeductionPercent: 5,
-                  maxUnjustifiedAbsences: 3,
-                  paymentDueDays: 5,
-                  lessonReminderHours: 24,
-                  absencePercent: 25,
-                  feedbacksPercent: 25,
-                  voicePercent: 25,
-                  textPercent: 25,
-                } as unknown as SystemSettingsCreateData,
-              });
-            } else {
-              throw penaltyError;
-            }
-          }
-        } catch (createError) {
-          this.logger.error(
-            `Failed to create default system settings: ${createError instanceof Error ? createError.message : String(createError)}`,
-            createError instanceof Error ? createError.stack : undefined,
-          );
-          // If creation fails, try to find again (might have been created by another request)
-          settings = await this.prisma.systemSettings.findFirst();
-          if (!settings) {
-            throw createError;
-          }
-        }
-      }
-
-      await this.cache.set(SettingsService.CACHE_KEY_SYSTEM, settings);
-      return settings;
-    } catch (error) {
-      this.logger.error(
-        `Failed to get system settings: ${error instanceof Error ? error.message : String(error)}`,
-        error instanceof Error ? error.stack : undefined,
-      );
-      throw error;
-    }
+  getSystemSettings() {
+    return this.coreService.getSystemSettings();
   }
 
-  /**
-   * Update logo URL in system settings
-   */
-  async updateLogoUrl(logoUrl: string | null): Promise<{ logoUrl: string | null }> {
-    try {
-      let settings = await this.prisma.systemSettings.findFirst();
-
-      if (!settings) {
-        settings = await this.prisma.systemSettings.create({
-          data: { logoUrl },
-        });
-      } else {
-        settings = await this.prisma.systemSettings.update({
-          where: { id: settings.id },
-          data: { logoUrl },
-        });
-      }
-
-      await this.cache.del(SettingsService.CACHE_KEY_SYSTEM);
-      return { logoUrl: settings.logoUrl };
-    } catch (error) {
-      this.logger.error(
-        `Failed to update logo URL: ${error instanceof Error ? error.message : String(error)}`,
-        error instanceof Error ? error.stack : undefined,
-      );
-      throw error;
-    }
+  updateLogoUrl(logoUrl: string | null) {
+    return this.brandingService.updateLogoUrl(logoUrl);
   }
 
-  /**
-   * Extract storage key from URL (for backward compatibility)
-   * Handles both old URL format and new key format
-   */
-  private extractKeyFromUrl(value: string | null): string | null {
-    if (!value) {
-      return null;
-    }
-
-    // If it's already a key (format: "settings/uuid.ext" or "settings/logo.ext")
-    // Keys don't contain "http://" or "https://" or "/api/"
-    if (!value.includes('://') && !value.startsWith('/api/')) {
-      return value;
-    }
-
-    // Extract key from URL patterns:
-    // - http://localhost:4000/api/storage/file/settings/uuid.ext -> settings/uuid.ext
-    // - https://domain.com/api/storage/file/settings/uuid.ext -> settings/uuid.ext
-    // - https://pub-xxx.r2.dev/settings/uuid.ext -> settings/uuid.ext
-    // - https://files.example.com/settings/uuid.ext -> settings/uuid.ext
-    
-    try {
-      // Try to extract from /storage/file/ path
-      const storageFileMatch = value.match(/\/storage\/file\/(.+)$/);
-      if (storageFileMatch) {
-        return decodeURIComponent(storageFileMatch[1]);
-      }
-
-      // Try to extract from R2 public URL (path after domain)
-      const url = new URL(value);
-      const pathname = url.pathname;
-      if (pathname.startsWith('/')) {
-        const key = pathname.substring(1);
-        // Validate it looks like a storage key (starts with settings/, avatars/, etc.)
-        if (key.match(/^(settings|avatars|chat|documents)\//)) {
-          return key;
-        }
-      }
-    } catch {
-      // If URL parsing fails, try manual extraction
-      const parts = value.split('/');
-      const settingsIndex = parts.findIndex(p => p === 'settings');
-      if (settingsIndex >= 0 && settingsIndex < parts.length - 1) {
-        return parts.slice(settingsIndex).join('/');
-      }
-    }
-
-    // If we can't extract, return null (will need to re-upload)
-    this.logger.warn(`Could not extract key from logo URL: ${value}`);
-    return null;
+  getLogoKey() {
+    return this.brandingService.getLogoKey();
   }
 
-  /**
-   * Get logo key (stored in logoUrl column)
-   * Handles backward compatibility with old URL format
-   */
-  async getLogoKey(): Promise<{ logoKey: string | null }> {
-    try {
-      const settings = await this.getSystemSettings();
-      const storedValue = (settings as SystemSettingsWithOptionalPenalties).logoUrl;
-      
-      // Extract key from stored value (handles both URL and key formats)
-      const logoKey = this.extractKeyFromUrl(storedValue);
-      
-      return { logoKey };
-    } catch (error) {
-      this.logger.error(
-        `Failed to get logo key: ${error instanceof Error ? error.message : String(error)}`,
-        error instanceof Error ? error.stack : undefined,
-      );
-      // Return null instead of throwing to prevent 500 errors
-      // This allows the frontend to handle missing logo gracefully
-      this.logger.warn('Returning null logo key due to error');
-      return { logoKey: null };
-    }
+  updateLogoKey(logoKey: string | null) {
+    return this.brandingService.updateLogoKey(logoKey);
   }
 
-  /**
-   * Update logo key (stored in logoUrl column)
-   * Stores the R2/storage key, not a URL
-   */
-  async updateLogoKey(logoKey: string | null): Promise<void> {
-    try {
-      const settings = await this.prisma.systemSettings.findFirst();
-
-      if (!settings) {
-        await this.prisma.systemSettings.create({
-          data: { logoUrl: logoKey },
-        });
-      } else {
-        await this.prisma.systemSettings.update({
-          where: { id: settings.id },
-          data: { logoUrl: logoKey },
-        });
-      }
-
-      await this.cache.del(SettingsService.CACHE_KEY_SYSTEM);
-    } catch (error) {
-      this.logger.error(
-        `Failed to update logo key: ${error instanceof Error ? error.message : String(error)}`,
-        error instanceof Error ? error.stack : undefined,
-      );
-      throw error;
-    }
+  getDashboardBannerKey() {
+    return this.brandingService.getDashboardBannerKey();
   }
 
-  /**
-   * Get dashboard banner key (stored in dashboardBannerUrl column).
-   * Handles backward compatibility with old URL format.
-   */
-  async getDashboardBannerKey(): Promise<{ dashboardBannerKey: string | null }> {
-    try {
-      const settings = await this.getSystemSettings();
-      const storedValue = (settings as SystemSettingsWithOptionalPenalties).dashboardBannerUrl;
-      const dashboardBannerKey = this.extractKeyFromUrl(storedValue ?? null);
-      return { dashboardBannerKey };
-    } catch (error) {
-      this.logger.error(
-        `Failed to get dashboard banner key: ${error instanceof Error ? error.message : String(error)}`,
-        error instanceof Error ? error.stack : undefined,
-      );
-      this.logger.warn('Returning null dashboard banner key due to error');
-      return { dashboardBannerKey: null };
-    }
+  updateDashboardBannerKey(dashboardBannerKey: string | null) {
+    return this.brandingService.updateDashboardBannerKey(dashboardBannerKey);
   }
 
-  /**
-   * Update dashboard banner key (stored in dashboardBannerUrl column).
-   * Stores the storage key, not a URL.
-   */
-  async updateDashboardBannerKey(dashboardBannerKey: string | null): Promise<void> {
-    try {
-      const settings = await this.prisma.systemSettings.findFirst();
-
-      if (!settings) {
-        await this.prisma.systemSettings.create({
-          data: {
-            dashboardBannerUrl: dashboardBannerKey,
-          } as unknown as SystemSettingsCreateData,
-        });
-      } else {
-        await this.prisma.systemSettings.update({
-          where: { id: settings.id },
-          data: {
-            dashboardBannerUrl: dashboardBannerKey,
-          } as unknown as SystemSettingsUpdateData,
-        });
-      }
-
-      await this.cache.del(SettingsService.CACHE_KEY_SYSTEM);
-    } catch (error) {
-      this.logger.error(
-        `Failed to update dashboard banner key: ${error instanceof Error ? error.message : String(error)}`,
-        error instanceof Error ? error.stack : undefined,
-      );
-      throw error;
-    }
+  getDashboardBannerText() {
+    return this.brandingService.getDashboardBannerText();
   }
 
-  private static readonly DASHBOARD_BANNER_TITLE_MAX = 150;
-  private static readonly DASHBOARD_BANNER_SUBTITLE_MAX = 400;
-
-  private normalizeDashboardBannerText(
-    value: string | null | undefined,
-    maxLength: number,
-  ): string | null {
-    if (value == null) return null;
-
-    const trimmed = value.trim();
-    if (!trimmed) return null;
-    if (trimmed.length > maxLength) {
-      throw new BadRequestException(
-        `Dashboard banner text must be at most ${maxLength} characters.`,
-      );
-    }
-
-    return trimmed;
+  updateDashboardBannerText(input: { title?: string | null; subtitle?: string | null }) {
+    return this.brandingService.updateDashboardBannerText(input);
   }
 
-  /**
-   * Get dashboard banner text overrides (stored in system settings).
-   */
-  async getDashboardBannerText(): Promise<{
-    title: string | null;
-    subtitle: string | null;
-  }> {
-    try {
-      const settings = await this.getSystemSettings();
-      const settingsWithBanner = settings as SystemSettingsWithOptionalPenalties;
-
-      return {
-        title: settingsWithBanner.dashboardBannerTitle ?? null,
-        subtitle: settingsWithBanner.dashboardBannerSubtitle ?? null,
-      };
-    } catch (error) {
-      this.logger.error(
-        `Failed to get dashboard banner text: ${error instanceof Error ? error.message : String(error)}`,
-        error instanceof Error ? error.stack : undefined,
-      );
-      this.logger.warn('Returning null dashboard banner text due to error');
-      return { title: null, subtitle: null };
-    }
+  getFooterIconLinks(): Promise<FooterIconLinks> {
+    return this.footerService.getFooterIconLinks();
   }
 
-  /**
-   * Update dashboard banner text overrides.
-   */
-  async updateDashboardBannerText(input: {
-    title?: string | null;
-    subtitle?: string | null;
-  }): Promise<{ title: string | null; subtitle: string | null }> {
-    const title =
-      input.title !== undefined
-        ? this.normalizeDashboardBannerText(
-            input.title,
-            SettingsService.DASHBOARD_BANNER_TITLE_MAX,
-          )
-        : undefined;
-    const subtitle =
-      input.subtitle !== undefined
-        ? this.normalizeDashboardBannerText(
-            input.subtitle,
-            SettingsService.DASHBOARD_BANNER_SUBTITLE_MAX,
-          )
-        : undefined;
-
-    if (title === undefined && subtitle === undefined) {
-      throw new BadRequestException('At least one banner text field must be provided.');
-    }
-
-    try {
-      const settings = await this.prisma.systemSettings.findFirst();
-      const data = {} as SystemSettingsUpdateData;
-
-      if (title !== undefined) {
-        (data as SystemSettingsWithOptionalPenalties).dashboardBannerTitle = title;
-      }
-      if (subtitle !== undefined) {
-        (data as SystemSettingsWithOptionalPenalties).dashboardBannerSubtitle = subtitle;
-      }
-
-      if (!settings) {
-        await this.prisma.systemSettings.create({
-          data: data as unknown as SystemSettingsCreateData,
-        });
-      } else {
-        await this.prisma.systemSettings.update({
-          where: { id: settings.id },
-          data,
-        });
-      }
-
-      await this.cache.del(SettingsService.CACHE_KEY_SYSTEM);
-      return this.getDashboardBannerText();
-    } catch (error) {
-      if (error instanceof BadRequestException) {
-        throw error;
-      }
-
-      this.logger.error(
-        `Failed to update dashboard banner text: ${error instanceof Error ? error.message : String(error)}`,
-        error instanceof Error ? error.stack : undefined,
-      );
-      throw error;
-    }
+  updateFooterIconLinks(input: Partial<Record<string, string | null>>) {
+    return this.footerService.updateFooterIconLinks(input);
   }
 
-  /**
-   * Get footer social icon links for the public landing page.
-   */
-  async getFooterIconLinks(): Promise<FooterIconLinks> {
-    try {
-      const settings = await this.getSystemSettings();
-      const settingsWithFooter = settings as SystemSettingsWithOptionalPenalties;
-      const raw = settingsWithFooter.footerIconLinks;
-
-      if (!raw || typeof raw !== 'object' || Array.isArray(raw)) {
-        return normalizeFooterIconLinks(null);
-      }
-
-      return normalizeFooterIconLinks(raw as Partial<Record<string, string | null>>);
-    } catch (error) {
-      this.logger.error(
-        `Failed to get footer icon links: ${error instanceof Error ? error.message : String(error)}`,
-        error instanceof Error ? error.stack : undefined,
-      );
-      this.logger.warn('Returning empty footer icon links due to error');
-      return normalizeFooterIconLinks(null);
-    }
+  getLogoUrl() {
+    return this.brandingService.getLogoUrl();
   }
 
-  /**
-   * Update footer social icon links (Admin only).
-   */
-  async updateFooterIconLinks(input: Partial<Record<string, string | null>>): Promise<FooterIconLinks> {
-    const normalized = normalizeFooterIconLinks(input);
-
-    for (const key of FOOTER_ICON_KEYS) {
-      const value = normalized[key];
-      if (value && !isValidFooterIconLink(value)) {
-        throw new BadRequestException(`Invalid URL for ${key}. Use http(s), mailto, or tel links only.`);
-      }
-    }
-
-    try {
-      const settings = await this.prisma.systemSettings.findFirst();
-
-      if (!settings) {
-        await this.prisma.systemSettings.create({
-          data: {
-            footerIconLinks: normalized,
-          } as unknown as SystemSettingsCreateData,
-        });
-      } else {
-        await this.prisma.systemSettings.update({
-          where: { id: settings.id },
-          data: {
-            footerIconLinks: normalized,
-          } as unknown as SystemSettingsUpdateData,
-        });
-      }
-
-      await this.cache.del(SettingsService.CACHE_KEY_SYSTEM);
-      return normalized;
-    } catch (error) {
-      if (error instanceof BadRequestException) {
-        throw error;
-      }
-
-      this.logger.error(
-        `Failed to update footer icon links: ${error instanceof Error ? error.message : String(error)}`,
-        error instanceof Error ? error.stack : undefined,
-      );
-      throw error;
-    }
+  getActionPercents(): Promise<ActionPercents> {
+    return this.percentsService.getActionPercents();
   }
 
-  /**
-   * Get logo URL (deprecated - kept for backward compatibility)
-   * Now returns the proxy URL instead of stored URL
-   */
-  async getLogoUrl(): Promise<{ logoUrl: string | null }> {
-    try {
-      const { logoKey } = await this.getLogoKey();
-      // Return proxy URL that works in all environments
-      return { logoUrl: logoKey ? '/api/settings/logo/image' : null };
-    } catch (error) {
-      this.logger.error(
-        `Failed to get logo URL: ${error instanceof Error ? error.message : String(error)}`,
-        error instanceof Error ? error.stack : undefined,
-      );
-      throw error;
-    }
-  }
-
-  /**
-   * Get action percent settings
-   */
-  async getActionPercents(): Promise<ActionPercents> {
-    try {
-      const settings = await this.getSystemSettings();
-      const settingsWithPercents = settings as unknown as SystemSettingsWithPercents;
-      const absencePercent = settingsWithPercents.absencePercent ?? 25;
-      const feedbacksPercent = settingsWithPercents.feedbacksPercent ?? 25;
-      const voicePercent = settingsWithPercents.voicePercent ?? 25;
-      const textPercent = settingsWithPercents.textPercent ?? 25;
-      
-      return {
-        absencePercent,
-        feedbacksPercent,
-        voicePercent,
-        textPercent,
-        total: absencePercent + feedbacksPercent + voicePercent + textPercent,
-      };
-    } catch (error) {
-      this.logger.error(
-        `Failed to get action percents: ${error instanceof Error ? error.message : String(error)}`,
-        error instanceof Error ? error.stack : undefined,
-      );
-      throw error;
-    }
-  }
-
-  /**
-   * Update action percent settings
-   * Validates that the total equals exactly 100
-   */
-  async updateActionPercents(data: {
+  updateActionPercents(data: {
     absencePercent: number;
     feedbacksPercent: number;
     voicePercent: number;
     textPercent: number;
   }) {
-    try {
-      // Validate each percent is between 0 and 100
-      const percents = [
-        { name: 'absencePercent', value: data.absencePercent },
-        { name: 'feedbacksPercent', value: data.feedbacksPercent },
-        { name: 'voicePercent', value: data.voicePercent },
-        { name: 'textPercent', value: data.textPercent },
-      ];
-
-      for (const percent of percents) {
-        if (percent.value < 0 || percent.value > 100) {
-          throw new BadRequestException(
-            `${percent.name} must be between 0 and 100. Received: ${percent.value}`
-          );
-        }
-        // Ensure it's an integer
-        if (!Number.isInteger(percent.value)) {
-          throw new BadRequestException(
-            `${percent.name} must be an integer. Received: ${percent.value}`
-          );
-        }
-      }
-
-      // Validate total equals exactly 100
-      const total = data.absencePercent + data.feedbacksPercent + data.voicePercent + data.textPercent;
-      if (total !== 100) {
-        throw new BadRequestException(
-          `Total must equal exactly 100. Current total: ${total}`
-        );
-      }
-
-      // Get or create settings
-      let settings = await this.prisma.systemSettings.findFirst();
-
-      if (!settings) {
-        // Type assertion needed until Prisma client is regenerated after migration
-        settings = await this.prisma.systemSettings.create({
-          data: {
-            vocabDeductionPercent: 10,
-            feedbackDeductionPercent: 5,
-            maxUnjustifiedAbsences: 3,
-            paymentDueDays: 5,
-            lessonReminderHours: 24,
-            absencePercent: data.absencePercent,
-            feedbacksPercent: data.feedbacksPercent,
-            voicePercent: data.voicePercent,
-            textPercent: data.textPercent,
-          } as unknown as SystemSettingsCreateData,
-        });
-      } else {
-        // Update using transaction for atomicity
-        // Type assertion needed until Prisma client is regenerated after migration
-        settings = await this.prisma.$transaction(async (tx) => {
-          return tx.systemSettings.update({
-            where: { id: settings!.id },
-            data: {
-              absencePercent: data.absencePercent,
-              feedbacksPercent: data.feedbacksPercent,
-              voicePercent: data.voicePercent,
-              textPercent: data.textPercent,
-            } as unknown as SystemSettingsUpdateData,
-          });
-        });
-      }
-
-      await this.cache.del(SettingsService.CACHE_KEY_SYSTEM);
-      const settingsWithPercents = settings as unknown as SystemSettingsWithPercents;
-      return {
-        absencePercent: settingsWithPercents.absencePercent,
-        feedbacksPercent: settingsWithPercents.feedbacksPercent,
-        voicePercent: settingsWithPercents.voicePercent,
-        textPercent: settingsWithPercents.textPercent,
-        total: settingsWithPercents.absencePercent + settingsWithPercents.feedbacksPercent + settingsWithPercents.voicePercent + settingsWithPercents.textPercent,
-      };
-    } catch (error) {
-      if (error instanceof BadRequestException) {
-        throw error;
-      }
-      this.logger.error(
-        `Failed to update action percents: ${error instanceof Error ? error.message : String(error)}`,
-        error instanceof Error ? error.stack : undefined,
-      );
-      throw error;
-    }
+    return this.percentsService.updateActionPercents(data);
   }
 
-  /**
-   * Get penalty amounts from settings
-   */
-  async getPenaltyAmounts(): Promise<PenaltyAmounts> {
-    try {
-      const settings = await this.getSystemSettings();
-      
-      // Convert Decimal to number (Prisma Decimal has toNumber() method)
-      const convertToNumber = (value: ConvertibleToNumber, fallbackValue: number): number => {
-        if (value == null) return fallbackValue;
-        if (typeof value === 'number') return value;
-        if (value instanceof Prisma.Decimal) {
-          return value.toNumber();
-        }
-        // Fallback for other types
-        const num = Number(value);
-        return isNaN(num) ? fallbackValue : num;
-      };
-      
-      // Access the fields directly from the Prisma result
-      // Use optional chaining and type assertion to handle missing fields gracefully
-      const settingsWithPenalties = settings as SystemSettingsWithOptionalPenalties;
-      const penaltyAbsenceAmd = convertToNumber(settingsWithPenalties.penaltyAbsenceAmd, 1000);
-      const penaltyFeedbackAmd = convertToNumber(settingsWithPenalties.penaltyFeedbackAmd, 500);
-      const penaltyVoiceAmd = convertToNumber(settingsWithPenalties.penaltyVoiceAmd, 1000);
-      const penaltyTextAmd = convertToNumber(settingsWithPenalties.penaltyTextAmd, 1000);
-      const penaltyDailyPlanAmd = convertToNumber(settingsWithPenalties.penaltyDailyPlanAmd, 1000);
-
-      return {
-        penaltyAbsenceAmd,
-        penaltyFeedbackAmd,
-        penaltyVoiceAmd,
-        penaltyTextAmd,
-        penaltyDailyPlanAmd,
-      };
-    } catch (error) {
-      this.logger.error(
-        `Failed to get penalty amounts: ${error instanceof Error ? error.message : String(error)}`,
-        error instanceof Error ? error.stack : undefined,
-      );
-      // Return default values instead of throwing to prevent 500 errors
-      // This allows the frontend to still function even if penalty settings aren't configured
-      this.logger.warn('Returning default penalty amounts due to error');
-      return {
-        penaltyAbsenceAmd: 1000,
-        penaltyFeedbackAmd: 500,
-        penaltyVoiceAmd: 1000,
-        penaltyTextAmd: 1000,
-        penaltyDailyPlanAmd: 1000,
-      };
-    }
+  getPenaltyAmounts(): Promise<PenaltyAmounts> {
+    return this.penaltiesService.getPenaltyAmounts();
   }
 
-  /**
-   * Update penalty amounts in settings
-   * Validates that each amount is >= 0
-   */
-  async updatePenaltyAmounts(data: {
+  updatePenaltyAmounts(data: {
     penaltyAbsenceAmd: number;
     penaltyFeedbackAmd: number;
     penaltyVoiceAmd: number;
     penaltyTextAmd: number;
     penaltyDailyPlanAmd: number;
   }) {
-    try {
-      // Validate each penalty is >= 0
-      const penalties = [
-        { name: 'penaltyAbsenceAmd', value: data.penaltyAbsenceAmd },
-        { name: 'penaltyFeedbackAmd', value: data.penaltyFeedbackAmd },
-        { name: 'penaltyVoiceAmd', value: data.penaltyVoiceAmd },
-        { name: 'penaltyTextAmd', value: data.penaltyTextAmd },
-        { name: 'penaltyDailyPlanAmd', value: data.penaltyDailyPlanAmd },
-      ];
-
-      for (const penalty of penalties) {
-        if (penalty.value < 0) {
-          throw new BadRequestException(
-            `${penalty.name} must be >= 0. Received: ${penalty.value}`
-          );
-        }
-      }
-
-      // Get or create settings
-      let settings = await this.prisma.systemSettings.findFirst();
-
-      if (!settings) {
-        // Type assertion needed until Prisma client is regenerated after migration
-        settings = await this.prisma.systemSettings.create({
-          data: {
-            vocabDeductionPercent: 10,
-            feedbackDeductionPercent: 5,
-            maxUnjustifiedAbsences: 3,
-            paymentDueDays: 5,
-            lessonReminderHours: 24,
-            penaltyAbsenceAmd: data.penaltyAbsenceAmd,
-            penaltyFeedbackAmd: data.penaltyFeedbackAmd,
-            penaltyVoiceAmd: data.penaltyVoiceAmd,
-            penaltyTextAmd: data.penaltyTextAmd,
-            penaltyDailyPlanAmd: data.penaltyDailyPlanAmd,
-          } as unknown as SystemSettingsCreateData,
-        });
-      } else {
-        // Update using transaction for atomicity
-        // Type assertion needed until Prisma client is regenerated after migration
-        settings = await this.prisma.$transaction(async (tx) => {
-          return tx.systemSettings.update({
-            where: { id: settings!.id },
-            data: {
-              penaltyAbsenceAmd: data.penaltyAbsenceAmd,
-              penaltyFeedbackAmd: data.penaltyFeedbackAmd,
-              penaltyVoiceAmd: data.penaltyVoiceAmd,
-              penaltyTextAmd: data.penaltyTextAmd,
-              penaltyDailyPlanAmd: data.penaltyDailyPlanAmd,
-            } as unknown as SystemSettingsUpdateData,
-          });
-        });
-      }
-
-      await this.cache.del(SettingsService.CACHE_KEY_SYSTEM);
-      // Convert Decimal to number
-      const convertToNumber = (value: ConvertibleToNumber): number => {
-        if (value == null) return 0;
-        if (typeof value === 'number') return value;
-        if (value instanceof Prisma.Decimal) {
-          return value.toNumber();
-        }
-        // Fallback for other types
-        const num = Number(value);
-        return isNaN(num) ? 0 : num;
-      };
-      
-      const settingsWithPenalties = settings as SystemSettingsWithOptionalPenalties;
-      const penaltyAbsenceAmd = convertToNumber(settingsWithPenalties.penaltyAbsenceAmd);
-      const penaltyFeedbackAmd = convertToNumber(settingsWithPenalties.penaltyFeedbackAmd);
-      const penaltyVoiceAmd = convertToNumber(settingsWithPenalties.penaltyVoiceAmd);
-      const penaltyTextAmd = convertToNumber(settingsWithPenalties.penaltyTextAmd);
-      const penaltyDailyPlanAmd = convertToNumber(settingsWithPenalties.penaltyDailyPlanAmd);
-
-      return {
-        penaltyAbsenceAmd,
-        penaltyFeedbackAmd,
-        penaltyVoiceAmd,
-        penaltyTextAmd,
-        penaltyDailyPlanAmd,
-      };
-    } catch (error) {
-      if (error instanceof BadRequestException) {
-        throw error;
-      }
-      this.logger.error(
-        `Failed to update penalty amounts: ${error instanceof Error ? error.message : String(error)}`,
-        error instanceof Error ? error.stack : undefined,
-      );
-      throw error;
-    }
+    return this.penaltiesService.updatePenaltyAmounts(data);
   }
 }
-
