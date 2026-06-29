@@ -35,6 +35,8 @@ Goal: gradually split source files so each stays at or below **400 lines**.
 | 2026-06-29 | `apps/web/src/features/groups/components/CreateGroupForm.tsx` | 656 | 82 (orchestrator) | Split into fields, hook + types; reused edit-group-form constants |
 | 2026-06-29 | `apps/web/src/features/crm/components/EditLeadModal.tsx` | 637 | 95 (orchestrator) | Split into form body, hook + types/constants |
 | 2026-06-29 | `apps/api/src/modules/settings/settings.controller.ts` | 659 | removed | Split into logo, dashboard-banner, footer, penalties controllers + image util/constants |
+| 2026-06-29 | `apps/api/src/modules/finance/salary-record.service.ts` | 664 | 47 (facade) | Split into list, read, write services + types/db util/enrichment helpers |
+| 2026-06-29 | `apps/web/src/features/settings/components/EditManagerForm.tsx` | 636 | 175 (orchestrator) | Split into profile/center/status fields, hook + types |
 
 ## Split details (completed refactors)
 
@@ -71,8 +73,10 @@ Goal: gradually split source files so each stays at or below **400 lines**.
 
 | 26 | `EditLeadModal.tsx` | 637 | 95 | **5** |
 | 27 | `settings.controller.ts` | 659 | — | **6** |
+| 28 | `salary-record.service.ts` | 664 | 47 | **7** |
+| 29 | `EditManagerForm.tsx` | 636 | 175 | **4** |
 
-**27** մեծ ֆайլ → **192** ֆայլ (26 facade/orchestrator + 166 նոր split ֆայլ)։
+**29** մեծ ֆайլ → **203** ֆайլ (28 facade/orchestrator + 175 նոր split ֆայլ)։
 
 ### 1. `apps/api/src/modules/chat/chat-management.service.ts` (1,195 → 61)
 
@@ -466,6 +470,31 @@ Goal: gradually split source files so each stays at or below **400 lines**.
 | `settings-controller.constants.ts` | Upload size/MIME limits |
 | `settings-image.util.ts` | Cache buster, content-type, image response helpers |
 
+### 28. `apps/api/src/modules/finance/salary-record.service.ts` (664 → 47)
+
+**7 ֆайլ** (1 facade + 6 նոր)
+
+| Ֆայլ | Դեր |
+| --- | --- |
+| `salary-record.service.ts` | Facade delegating to list/read/write |
+| `salary-record-list.service.ts` | findAll, findAllRecordsByTeacher |
+| `salary-record-read.service.ts` | findById + action breakdown |
+| `salary-record-write.service.ts` | create, process, update, delete |
+| `salary-record.types.ts` | Prisma delegate + query param types |
+| `salary-record-db.util.ts` | DB accessor + include fragments |
+| `salary-record.util.ts` | Enrichment, substitute count, action breakdown helpers |
+
+### 29. `apps/web/src/features/settings/components/EditManagerForm.tsx` (636 → 175)
+
+**4 ֆայլ** (1 orchestrator + 3 նոր, `edit-manager-form/`)
+
+| Ֆայլ | Դեր |
+| --- | --- |
+| `EditManagerForm.tsx` | Sheet shell + active/inactive form orchestrator |
+| `edit-manager-form/useEditManagerForm.ts` | Dual forms, center logic, submit, drag-to-close |
+| `edit-manager-form/EditManagerFormFields.tsx` | Profile, center, status field components |
+| `edit-manager-form/edit-manager-form.types.ts` | Schemas + props types |
+
 ---
 
 ## Summary
@@ -473,10 +502,10 @@ Goal: gradually split source files so each stays at or below **400 lines**.
 | Metric | Value |
 | --- | --- |
 | Total source files scanned | 836 |
-| Files over 400 lines | **32** (was 58) |
-| Biggest file | `apps/api/src/modules/finance/salary-record.service.ts` (601 lines) |
-| Frontend (`apps/web`) | 26 |
-| Backend (`apps/api`) | 10 |
+| Files over 400 lines | **30** (was 58) |
+| Biggest file | `apps/web/src/shared/components/calendar/FeedbacksTab.tsx` (584 lines) |
+| Frontend (`apps/web`) | 24 |
+| Backend (`apps/api`) | 9 |
 | Shared / packages | 0 |
 
 **Extensions scanned:** `.ts`, `.tsx`, `.js`, `.jsx`, `.css`, `.scss`, `.module.css`, `.module.scss`
@@ -516,8 +545,8 @@ Goal: gradually split source files so each stays at or below **400 lines**.
 | ~~25~~ | ~~`apps/web/src/features/crm/components/EditLeadModal.tsx`~~ | ~~616~~ | Frontend / CRM | **Done** | — |
 | ~~26~~ | ~~`apps/web/src/features/groups/components/CreateGroupForm.tsx`~~ | ~~611~~ | Frontend / Groups | **Done** | — |
 | ~~27~~ | ~~`apps/api/src/modules/settings/settings.controller.ts`~~ | ~~607~~ | Backend / Settings | **Done** | — |
-| 28 | `apps/api/src/modules/finance/salary-record.service.ts` | 601 | Backend / Finance | Split salary calculation, record CRUD, and period aggregation; extract penalty/bonus adjustment helpers | Medium |
-| 29 | `apps/web/src/features/settings/components/EditManagerForm.tsx` | 589 | Frontend / Settings | Extract manager profile, center assignment, and permissions sections; split validation and API mutation hook | Medium |
+| ~~28~~ | ~~`apps/api/src/modules/finance/salary-record.service.ts`~~ | ~~601~~ | Backend / Finance | **Done** | — |
+| ~~29~~ | ~~`apps/web/src/features/settings/components/EditManagerForm.tsx`~~ | ~~589~~ | Frontend / Settings | **Done** | — |
 | 30 | `apps/web/src/shared/components/calendar/FeedbacksTab.tsx` | 584 | Frontend / Calendar (shared) | Extract feedback list, form, and rating UI; move fetch/submit hooks and empty states out of main tab | Medium |
 | 31 | `apps/api/src/modules/prisma/prisma.service.ts` | 576 | Backend / Infrastructure | Split connection lifecycle, middleware/extensions, and raw-query helpers; keep core client bootstrap minimal | Medium |
 | 32 | `apps/api/src/modules/analytics/analytics.service.ts` | 552 | Backend / Analytics | Split dashboard metrics by domain (attendance, finance, CRM); extract SQL/Prisma aggregation queries per report | Medium |
@@ -552,9 +581,9 @@ Goal: gradually split source files so each stays at or below **400 lines**.
 
 ## Recommended first 3 refactors
 
-1. **`apps/api/src/modules/finance/salary-record.service.ts`** (601 lines) — Split calculation, CRUD, period aggregation.
-2. **`apps/web/src/features/settings/components/EditManagerForm.tsx`** (589 lines) — Extract profile, center, permissions sections.
-3. **`apps/web/src/shared/components/calendar/FeedbacksTab.tsx`** (584 lines) — Extract list, form, rating UI + hooks.
+1. **`apps/web/src/shared/components/calendar/FeedbacksTab.tsx`** (584 lines) — Extract list, form, rating UI + hooks.
+2. **`apps/api/src/modules/prisma/prisma.service.ts`** (576 lines) — Split connection lifecycle, middleware, raw-query helpers.
+3. **`apps/api/src/modules/analytics/analytics.service.ts`** (552 lines) — Split dashboard metrics by domain.
 
 ---
 

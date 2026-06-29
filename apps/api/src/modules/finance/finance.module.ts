@@ -11,6 +11,9 @@ import { DeductionsService } from './deductions.service';
 import { SalaryCalculationService } from './salary-calculation.service';
 import { SalaryGenerationService } from './salary-generation.service';
 import { SalaryRecordService } from './salary-record.service';
+import { SalaryRecordListService } from './salary-record-list.service';
+import { SalaryRecordReadService } from './salary-record-read.service';
+import { SalaryRecordWriteService } from './salary-record-write.service';
 import { SalaryBreakdownService } from './salary-breakdown.service';
 import { SettingsModule } from '../settings/settings.module';
 
@@ -29,6 +32,9 @@ import { SettingsModule } from '../settings/settings.module';
     SalaryCalculationService,
     SalaryGenerationService,
     SalaryRecordService,
+    SalaryRecordListService,
+    SalaryRecordReadService,
+    SalaryRecordWriteService,
     SalaryBreakdownService,
   ],
   exports: [FinanceService, PaymentsService, SalariesService, DeductionsService],
