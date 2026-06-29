@@ -54,7 +54,9 @@ export function PortalCalendarOverlays({
 
   return (
     <>
-      <AddLessonForm open={isAddLessonOpen} onOpenChange={onAddLessonOpenChange} />
+      {!isTeacherMode ? (
+        <AddLessonForm open={isAddLessonOpen} onOpenChange={onAddLessonOpenChange} />
+      ) : null}
 
       {!isTeacherMode ? (
         <SubstituteLessonModal

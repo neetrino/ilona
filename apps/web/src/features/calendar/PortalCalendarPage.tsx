@@ -54,7 +54,11 @@ export function PortalCalendarPage({ mode }: PortalCalendarPageProps) {
           onNavigatePeriod={calendar.navigatePeriod}
           onGoToToday={calendar.goToToday}
           onViewModeChange={calendar.updateViewModeInUrl}
-          onAddLesson={() => calendar.handleAddLessonOpenChange(true)}
+          onAddLesson={
+            calendar.isTeacherMode
+              ? undefined
+              : () => calendar.handleAddLessonOpenChange(true)
+          }
         />
 
         {calendar.viewMode === 'week' && (

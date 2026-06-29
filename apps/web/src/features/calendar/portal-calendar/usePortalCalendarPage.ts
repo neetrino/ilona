@@ -65,7 +65,9 @@ export function usePortalCalendarPage(mode: PortalCalendarMode) {
   const [selectedTeacherId, setSelectedTeacherId] = useState<string>('');
 
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [isAddLessonOpen, setIsAddLessonOpen] = useState(() => isAddLessonModalOpen(searchParams));
+  const [isAddLessonOpen, setIsAddLessonOpen] = useState(
+    () => !isTeacherMode && isAddLessonModalOpen(searchParams),
+  );
   const isAddLessonClosingRef = useRef(false);
   const initialSubstituteModal = readSubstituteLessonModalFromUrl(searchParams);
   const [substituteLessonId, setSubstituteLessonId] = useState<string | null>(initialSubstituteModal.lessonId);
@@ -107,7 +109,7 @@ export function usePortalCalendarPage(mode: PortalCalendarMode) {
     setSearchQuery(readUrlSearchParam('q', searchParams, urlRevision) || '');
     setSelectedTeacherId(readUrlSearchParam('teacherId', searchParams, urlRevision) || '');
 
-    if (!isAddLessonClosingRef.current) {
+    if (!isTeacherMode && !isAddLessonClosingRef.current) {
       setIsAddLessonOpen(isAddLessonModalOpen(searchParams));
     }
 
@@ -129,6 +131,10 @@ export function usePortalCalendarPage(mode: PortalCalendarMode) {
 
   const handleAddLessonOpenChange = useCallback(
     (open: boolean) => {
+      if (isTeacherMode) {
+        return;
+      }
+
       if (open) {
         isAddLessonClosingRef.current = false;
         setIsAddLessonOpen(true);
@@ -142,7 +148,7 @@ export function usePortalCalendarPage(mode: PortalCalendarMode) {
         }, 100);
       }
     },
-    [updateAddLessonModalInUrl],
+    [isTeacherMode, updateAddLessonModalInUrl],
   );
 
   const updateSubstituteLessonModalInUrl = useCallback(

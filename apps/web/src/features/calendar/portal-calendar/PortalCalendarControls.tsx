@@ -18,7 +18,7 @@ interface PortalCalendarControlsProps {
   onNavigatePeriod: (direction: 'prev' | 'next') => void;
   onGoToToday: () => void;
   onViewModeChange: (mode: PortalCalendarViewMode) => void;
-  onAddLesson: () => void;
+  onAddLesson?: () => void;
 }
 
 export function PortalCalendarControls({
@@ -123,18 +123,20 @@ export function PortalCalendarControls({
             {t('month')}
           </button>
         </div>
-        <Button
-          type="button"
-          variant="default"
-          size="lg"
-          onClick={onAddLesson}
-          className={cn(
-            'h-11 min-h-11 rounded-[15px] py-0 font-semibold whitespace-nowrap shadow-sm bg-[#1010a3] text-white hover:bg-[#1010a3]/90',
-            locale === 'hy' ? 'px-3 text-sm sm:px-4' : 'px-4 text-sm',
-          )}
-        >
-          + {tLessons('addLesson')}
-        </Button>
+        {onAddLesson ? (
+          <Button
+            type="button"
+            variant="default"
+            size="lg"
+            onClick={onAddLesson}
+            className={cn(
+              'h-11 min-h-11 rounded-[15px] py-0 font-semibold whitespace-nowrap shadow-sm bg-[#1010a3] text-white hover:bg-[#1010a3]/90',
+              locale === 'hy' ? 'px-3 text-sm sm:px-4' : 'px-4 text-sm',
+            )}
+          >
+            + {tLessons('addLesson')}
+          </Button>
+        ) : null}
       </div>
     </div>
   );
