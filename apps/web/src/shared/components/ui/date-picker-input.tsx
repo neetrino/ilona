@@ -43,6 +43,19 @@ interface PopoverPosition {
 
 export const DATE_PICKER_POPOVER_ATTR = 'data-date-picker-popover';
 
+function isDatePickerEventTarget(target: Node): boolean {
+  if (target instanceof Element && target.closest(`[${DATE_PICKER_POPOVER_ATTR}]`)) {
+    return true;
+  }
+  return false;
+}
+
+function resolvePortalContainer(root: HTMLDivElement | null): HTMLElement {
+  if (!root) return document.body;
+  const dialog = root.closest('[role="dialog"]');
+  return (dialog as HTMLElement | null) ?? document.body;
+}
+
 export interface DatePickerInputProps
   extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'type' | 'onChange'> {
   onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;
@@ -143,6 +156,7 @@ export const DatePickerInput = React.forwardRef<HTMLInputElement, DatePickerInpu
     const [isEditing, setIsEditing] = React.useState(false);
     const [draftText, setDraftText] = React.useState('');
     const [yearDropdownOpen, setYearDropdownOpen] = React.useState(false);
+    const yearDropdownOpenRef = React.useRef(false);
     const [mounted, setMounted] = React.useState(false);
     const rootRef = React.useRef<HTMLDivElement>(null);
     const popoverRef = React.useRef<HTMLDivElement>(null);
@@ -185,15 +199,18 @@ export const DatePickerInput = React.forwardRef<HTMLInputElement, DatePickerInpu
         root.querySelector<HTMLElement>('[data-role="date-trigger"]');
       if (!anchor) return;
 
-      setPortalContainer(document.body);
+      const portalTarget = resolvePortalContainer(root);
+      const useDialogPortal = portalTarget !== document.body;
+      setPortalContainer(portalTarget);
 
       const isDesktop = isDesktopViewport();
       const anchorRect = anchor.getBoundingClientRect();
+      const rootRect = root.getBoundingClientRect();
       const popoverHeight = popoverRef.current?.offsetHeight ?? ESTIMATED_POPOVER_HEIGHT;
       const popoverWidth = popoverExpanded
         ? Math.min(EXPANDED_POPOVER_WIDTH, window.innerWidth - VIEWPORT_PADDING * 2)
         : isDesktop
-          ? anchorRect.width
+          ? root.offsetWidth
           : Math.min(MOBILE_POPOVER_WIDTH, window.innerWidth - VIEWPORT_PADDING * 2);
       const matchFormWidth = popoverExpanded ? false : isDesktop;
 
@@ -202,7 +219,32 @@ export const DatePickerInput = React.forwardRef<HTMLInputElement, DatePickerInpu
       const openBelow = spaceBelow >= popoverHeight || spaceBelow >= spaceAbove;
       const placement: PopoverPosition['placement'] = openBelow ? 'below' : 'above';
 
-      let left = anchorRect.left;
+      if (useDialogPortal) {
+        const dialogRect = portalTarget.getBoundingClientRect();
+        const anchorLeft = isDesktop && !popoverExpanded ? rootRect.left : anchorRect.left;
+        let left = anchorLeft - dialogRect.left;
+        const maxLeft = portalTarget.clientWidth - popoverWidth - VIEWPORT_PADDING;
+        left = Math.max(VIEWPORT_PADDING, Math.min(left, maxLeft));
+
+        const top = openBelow
+          ? anchorRect.bottom - dialogRect.top + POPOVER_GAP
+          : Math.max(
+              VIEWPORT_PADDING,
+              anchorRect.top - dialogRect.top - popoverHeight - POPOVER_GAP
+            );
+
+        setPopoverPosition({
+          left,
+          top,
+          width: popoverWidth,
+          placement,
+          matchFormWidth,
+          positionMode: 'absolute',
+        });
+        return;
+      }
+
+      let left = isDesktop && !popoverExpanded ? rootRect.left : anchorRect.left;
       if (left + popoverWidth > window.innerWidth - VIEWPORT_PADDING) {
         left = Math.max(VIEWPORT_PADDING, window.innerWidth - popoverWidth - VIEWPORT_PADDING);
       }
@@ -233,6 +275,11 @@ export const DatePickerInput = React.forwardRef<HTMLInputElement, DatePickerInpu
           setYearDropdownOpen(false);
           return;
         }
+        if (!isDesktopViewport()) {
+          rootRef.current
+            ?.querySelector<HTMLInputElement>('[data-role="date-trigger"]')
+            ?.blur();
+        }
         updatePopoverPosition();
         setOpen(true);
       },
@@ -259,14 +306,21 @@ export const DatePickerInput = React.forwardRef<HTMLInputElement, DatePickerInpu
       setMonthDate(selectedDate);
     }, [selectedDate]);
 
+    yearDropdownOpenRef.current = yearDropdownOpen;
+
     React.useEffect(() => {
       if (!open) return;
 
+      const isInsideDatePicker = (target: Node): boolean => {
+        if (rootRef.current?.contains(target)) return true;
+        if (popoverRef.current?.contains(target)) return true;
+        return isDatePickerEventTarget(target);
+      };
+
       const onOutsidePress = (event: MouseEvent | TouchEvent | PointerEvent) => {
         const target = event.target as Node;
-        if (rootRef.current?.contains(target)) return;
-        if (popoverRef.current?.contains(target)) return;
-        if (yearDropdownOpen) {
+        if (isInsideDatePicker(target)) return;
+        if (yearDropdownOpenRef.current) {
           setYearDropdownOpen(false);
           return;
         }
@@ -278,7 +332,7 @@ export const DatePickerInput = React.forwardRef<HTMLInputElement, DatePickerInpu
 
       const onEscape = (event: KeyboardEvent) => {
         if (event.key === 'Escape') {
-          if (yearDropdownOpen) {
+          if (yearDropdownOpenRef.current) {
             setYearDropdownOpen(false);
             return;
           }
@@ -287,18 +341,21 @@ export const DatePickerInput = React.forwardRef<HTMLInputElement, DatePickerInpu
       };
 
       updatePopoverPosition();
-      document.addEventListener('pointerdown', onOutsidePress, { capture: true });
+      const timeoutId = window.setTimeout(() => {
+        document.addEventListener('pointerdown', onOutsidePress, { capture: true });
+      }, 0);
       document.addEventListener('keydown', onEscape);
       window.addEventListener('resize', updatePopoverPosition);
       window.addEventListener('scroll', updatePopoverPosition, true);
 
       return () => {
+        window.clearTimeout(timeoutId);
         document.removeEventListener('pointerdown', onOutsidePress, { capture: true });
         document.removeEventListener('keydown', onEscape);
         window.removeEventListener('resize', updatePopoverPosition);
         window.removeEventListener('scroll', updatePopoverPosition, true);
       };
-    }, [handleOpenChange, open, updatePopoverPosition, yearDropdownOpen]);
+    }, [handleOpenChange, open, updatePopoverPosition]);
 
     const monthName = format(monthDate, 'MMM', { locale: dateLocale });
     const visibleYear = monthDate.getFullYear();
@@ -368,19 +425,31 @@ export const DatePickerInput = React.forwardRef<HTMLInputElement, DatePickerInpu
       selectDate(now);
     };
 
-    const handleYearToggle = React.useCallback((event: React.PointerEvent<HTMLButtonElement>) => {
-      event.preventDefault();
-      event.stopPropagation();
+    const handleYearToggle = React.useCallback(() => {
       setYearDropdownOpen((prev) => !prev);
     }, []);
 
     const isMobileLayout = open && popoverPosition ? !popoverPosition.matchFormWidth : false;
+    const useDialogPortal = portalContainer !== null && portalContainer !== document.body;
+    const backdropPositionClass = useDialogPortal ? 'absolute' : 'fixed';
 
     const mobileBackdrop =
       isMobileLayout && open && portalContainer ? (
         <div
-          className={cn('fixed inset-0 bg-transparent pointer-events-none', MOBILE_CALENDAR_BACKDROP_Z_CLASS)}
+          className={cn(
+            backdropPositionClass,
+            'inset-0 bg-transparent',
+            MOBILE_CALENDAR_BACKDROP_Z_CLASS
+          )}
           aria-hidden
+          onPointerDown={(event) => {
+            event.stopPropagation();
+            if (yearDropdownOpenRef.current) {
+              setYearDropdownOpen(false);
+              return;
+            }
+            handleOpenChange(false);
+          }}
         />
       ) : null;
 
@@ -399,15 +468,16 @@ export const DatePickerInput = React.forwardRef<HTMLInputElement, DatePickerInpu
             top: popoverPosition.top,
             width: popoverPosition.width,
             boxSizing: 'border-box',
+            zIndex: 9999,
           }}
           className={cn(
             MOBILE_CALENDAR_Z_CLASS,
-            'relative overflow-visible max-w-[calc(100vw-1rem)] rounded-[1.25rem]',
+            'pointer-events-auto relative overflow-visible max-w-[calc(100vw-1rem)] rounded-[1.25rem]',
             'border border-slate-200 bg-white p-2.5 shadow-[0_20px_48px_rgba(15,23,42,0.16)]',
             popoverPosition.placement === 'below' ? 'origin-top' : 'origin-bottom',
           )}
         >
-          <div className="relative mb-2 flex items-center justify-between gap-1">
+          <div className="relative z-10 mb-2 flex items-center justify-between gap-1">
             <button
               type="button"
               onPointerDown={(event) => event.stopPropagation()}
@@ -427,9 +497,13 @@ export const DatePickerInput = React.forwardRef<HTMLInputElement, DatePickerInpu
               </span>
               <button
                 type="button"
-                onPointerDown={handleYearToggle}
+                onPointerDown={(event) => event.stopPropagation()}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  handleYearToggle();
+                }}
                 className={cn(
-                  'inline-flex shrink-0 touch-manipulation items-center gap-0.5 rounded-md px-2 py-1 text-sm font-semibold tabular-nums text-[#2d329f] hover:bg-slate-100 min-[1367px]:px-1.5 min-[1367px]:py-0.5 min-[1367px]:text-base',
+                  'inline-flex min-h-9 shrink-0 touch-manipulation items-center gap-0.5 rounded-md px-2 py-1 text-sm font-semibold tabular-nums text-[#2d329f] hover:bg-slate-100 min-[1367px]:min-h-0 min-[1367px]:px-1.5 min-[1367px]:py-0.5 min-[1367px]:text-base',
                   yearDropdownOpen && 'bg-slate-100'
                 )}
                 aria-expanded={yearDropdownOpen}
@@ -542,7 +616,7 @@ export const DatePickerInput = React.forwardRef<HTMLInputElement, DatePickerInpu
       ) : null;
 
     return (
-      <div ref={rootRef} className="relative w-full">
+      <div ref={rootRef} className={cn('relative w-full', open && 'z-[10001]')}>
         <input
           name={name}
           value={currentValue}
@@ -572,7 +646,8 @@ export const DatePickerInput = React.forwardRef<HTMLInputElement, DatePickerInpu
             onPointerDown={(event) => {
               if (disabled || isDesktopViewport()) return;
               event.preventDefault();
-              handleOpenChange(!open);
+              if (open) return;
+              handleOpenChange(true);
             }}
             placeholder={placeholder ?? 'DD/MM/YYYY'}
             disabled={disabled}
