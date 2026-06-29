@@ -125,6 +125,10 @@ export class ChatService {
     return this.chatManagementService.addCustomGroupChatMember(chatId, userId, actor);
   }
 
+  async deleteCustomGroupChat(chatId: string, actor: JwtPayload) {
+    return this.chatManagementService.deleteCustomGroupChat(chatId, actor);
+  }
+
   async getTeacherGroups(teacherUserId: string, search?: string) {
     return this.chatListsService.getTeacherGroups(teacherUserId, search);
   }

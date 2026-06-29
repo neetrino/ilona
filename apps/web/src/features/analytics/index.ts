@@ -27,3 +27,4 @@ export { TeacherRatioTable } from './components/TeacherRatioTable';
 export type { TeacherRatioMetric } from './components/TeacherRatioTable';
 export { RevenueBreakdownTable } from './components/RevenueBreakdownTable';
 export { AnalyticsMobilePagination } from './components/AnalyticsMobilePagination';
+export { AdminAnalyticsPage } from './components/admin-analytics/AdminAnalyticsPage';

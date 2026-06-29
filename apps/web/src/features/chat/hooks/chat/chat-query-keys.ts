@@ -1,0 +1,17 @@
+export const chatKeys = {
+  all: ['chats'] as const,
+  lists: () => [...chatKeys.all, 'list'] as const,
+  list: () => [...chatKeys.lists()] as const,
+  details: () => [...chatKeys.all, 'detail'] as const,
+  detail: (id: string) => [...chatKeys.details(), id] as const,
+  messages: (chatId: string) => [...chatKeys.all, 'messages', chatId] as const,
+  adminStudents: (search?: string) => [...chatKeys.all, 'admin', 'students', search] as const,
+  adminTeachers: (search?: string) => [...chatKeys.all, 'admin', 'teachers', search] as const,
+  adminGroups: (search?: string) => [...chatKeys.all, 'admin', 'groups', search] as const,
+  adminUsers: (search?: string) => [...chatKeys.all, 'admin', 'users', search] as const,
+  customGroupChats: () => [...chatKeys.all, 'custom-groups'] as const,
+  teacherGroups: (search?: string) => [...chatKeys.all, 'teacher', 'groups', search] as const,
+  teacherStudents: (search?: string) => [...chatKeys.all, 'teacher', 'students', search] as const,
+  teacherAdmin: () => [...chatKeys.all, 'teacher', 'admin'] as const,
+  studentAdmin: () => [...chatKeys.all, 'student', 'admin'] as const,
+};

@@ -70,7 +70,6 @@ export function ScheduleBoard({
   hideMonthOnMobile = false,
 }: ScheduleBoardProps) {
   const tCommon = useTranslations('common');
-  const tCalendar = useTranslations('calendar');
   const locale = useLocale();
   const isStudent = variant === 'student';
   const isIPad = useIsIPad();
@@ -175,7 +174,7 @@ export function ScheduleBoard({
                   : 'ml-2 h-11 rounded-[15px] border border-slate-200 px-3 text-sm text-slate-700 hover:bg-slate-50'
               }
             >
-              {tCalendar('today')}
+              {tCommon('today')}
             </button>
           </div>
 
@@ -210,8 +209,8 @@ export function ScheduleBoard({
           ) : (
             <SegmentedControl
               options={[
-                { id: 'week', label: capitalizeLabel(tCalendar('week'), locale) },
-                { id: 'month', label: capitalizeLabel(tCalendar('month'), locale) },
+                { id: 'week', label: capitalizeLabel(tCommon('week'), locale) },
+                { id: 'month', label: capitalizeLabel(tCommon('month'), locale) },
               ]}
               value={viewMode}
               onChange={(mode) => onViewModeChange(mode as ScheduleViewMode)}
@@ -219,7 +218,7 @@ export function ScheduleBoard({
                 'w-full sm:w-[184px] self-start md:self-auto',
                 hideMonthOnMobile && '[&>button:last-child]:hidden sm:[&>button:last-child]:grid',
               )}
-              aria-label={tCalendar('viewMode')}
+              aria-label={tCommon('viewMode')}
             />
           )}
         </div>

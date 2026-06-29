@@ -276,6 +276,7 @@ exports.Prisma.LessonScalarFieldEnum = {
   vocabularySent: 'vocabularySent',
   vocabularySentAt: 'vocabularySentAt',
   feedbacksCompleted: 'feedbacksCompleted',
+  feedbacksCompletedAt: 'feedbacksCompletedAt',
   absenceMarked: 'absenceMarked',
   absenceMarkedAt: 'absenceMarkedAt',
   voiceSent: 'voiceSent',

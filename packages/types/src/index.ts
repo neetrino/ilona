@@ -12,4 +12,5 @@ export * from './finance.types';
 export * from './api.types';
 export * from './settings.types';
 export * from './group.types';
+export * from './duty-deadline';
 

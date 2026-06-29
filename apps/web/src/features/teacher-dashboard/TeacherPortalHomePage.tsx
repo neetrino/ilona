@@ -51,7 +51,11 @@ export function TeacherPortalHomePage() {
             <AdminPortalNavCard
               key={item.href}
               href={`/${locale}${item.href}`}
-              label={tNav(item.labelKey)}
+              label={
+                locale === 'hy' && item.labelKey === 'dailyDuties'
+                  ? tNav('dailyDutiesMobile')
+                  : tNav(item.labelKey)
+              }
               icon={{ type: 'sidebar', icon: item.icon }}
             />
           ))}

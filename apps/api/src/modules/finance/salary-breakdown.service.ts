@@ -6,7 +6,11 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { Prisma, SalaryStatus, LessonStatus } from '@ilona/database';
 import { SalaryCalculationService } from './salary-calculation.service';
-import type { CompletedActions, LessonActionData } from '@ilona/types';
+import type { LessonActionData } from '@ilona/types';
+import {
+  getPaymentEligibleActions,
+  lessonDutyPaymentSelect,
+} from './lesson-duty-payment.util';
 import {
   lessonsPayableToTeacherWhere,
   isSubstitutePayeeLesson,
@@ -141,20 +145,12 @@ export class SalaryBreakdownService {
         },
       },
       select: {
-        id: true,
+        ...lessonDutyPaymentSelect,
         teacherId: true,
         substituteTeacherId: true,
         topic: true,
-        scheduledAt: true,
         completedAt: true,
         duration: true,
-        absenceMarked: true,
-        feedbacksCompleted: true,
-        voiceSent: true,
-        textSent: true,
-        dailyPlan: {
-          select: { id: true },
-        },
         teacher: {
           select: {
             user: {
@@ -219,36 +215,33 @@ export class SalaryBreakdownService {
       // Base salary = lessonRateAMD (fixed price per lesson)
       const baseSalary = lessonRate;
 
-      // Calculate completed actions
-      const lessonData = lesson as unknown as LessonActionData & { 
+      const lessonData = lesson as unknown as LessonActionData & {
         id: string;
-        topic?: string | null; 
-        scheduledAt: Date; 
+        topic?: string | null;
+        scheduledAt: Date;
         group?: { name: string } | null;
       };
-      const completedActions: CompletedActions = {
-        absence: lessonData.absenceMarked ?? false,
-        feedbacks: lessonData.feedbacksCompleted ?? false,
-        voice: lessonData.voiceSent ?? false,
-        text: lessonData.textSent ?? false,
-        dailyPlan: Boolean(lessonData.dailyPlan),
-      };
+      const paymentEligibleActions = getPaymentEligibleActions(lesson);
 
-      // Count completed actions for obligations tracking
-      const completedCount = [
-        completedActions.absence,
-        completedActions.feedbacks,
-        completedActions.voice,
-        completedActions.text,
-        completedActions.dailyPlan,
+      const paidActionCount = [
+        paymentEligibleActions.absence,
+        paymentEligibleActions.feedbacks,
+        paymentEligibleActions.voice,
+        paymentEligibleActions.text,
+        paymentEligibleActions.dailyPlan,
       ].filter(Boolean).length;
       const totalActions = 5;
 
-      // Calculate deduction from penalties for missing actions
-      const penaltyDeduction = this.calculationService.calculateDeduction(completedActions, penalties);
+      const penaltyDeduction = this.calculationService.calculateDeduction(
+        paymentEligibleActions,
+        penalties,
+      );
 
-      // Calculate payable amount: lessonRate - penalty deduction
-      const payable = this.calculationService.calculatePayableAmount(baseSalary, completedActions, penalties);
+      const payable = this.calculationService.calculatePayableAmount(
+        baseSalary,
+        paymentEligibleActions,
+        penalties,
+      );
 
       // Get other deductions for this lesson
       const otherDeductionForLesson = deductionsByLessonId.get(lessonData.id) || 0;
@@ -267,7 +260,7 @@ export class SalaryBreakdownService {
         lessonName,
         groupName,
         lessonDate: lessonData.scheduledAt.toISOString(),
-        obligationCompleted: completedCount,
+        obligationCompleted: paidActionCount,
         obligationTotal: totalActions,
         salary: baseSalary,
         deduction: deduction,
@@ -343,17 +336,7 @@ export class SalaryBreakdownService {
     const lesson = await this.db.lesson.findUnique({
       where: { id: lessonId },
       select: {
-        id: true,
-        absenceMarked: true,
-        absenceMarkedAt: true,
-        feedbacksCompleted: true,
-        voiceSent: true,
-        voiceSentAt: true,
-        textSent: true,
-        textSentAt: true,
-        dailyPlan: {
-          select: { id: true },
-        },
+        ...lessonDutyPaymentSelect,
         updatedAt: true,
       },
     });
@@ -362,6 +345,7 @@ export class SalaryBreakdownService {
       throw new NotFoundException(`Lesson with ID ${lessonId} not found`);
     }
 
+    const paymentEligible = getPaymentEligibleActions(lesson);
     const absenceDone = lesson.absenceMarked ?? false;
     const feedbacksDone = lesson.feedbacksCompleted ?? false;
     const voiceDone = lesson.voiceSent ?? false;
@@ -376,6 +360,14 @@ export class SalaryBreakdownService {
       dailyPlanDone,
     ].filter(Boolean).length;
 
+    const paidActionsCount = [
+      paymentEligible.absence,
+      paymentEligible.feedbacks,
+      paymentEligible.voice,
+      paymentEligible.text,
+      paymentEligible.dailyPlan,
+    ].filter(Boolean).length;
+
     return {
       lessonId: lesson.id,
       absenceDone,
@@ -384,6 +376,7 @@ export class SalaryBreakdownService {
       textDone,
       dailyPlanDone,
       completedActionsCount,
+      paidActionsCount,
       totalActions: 5,
       updatedAt: lesson.updatedAt.toISOString(),
     };

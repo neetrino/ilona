@@ -11,7 +11,7 @@ export function getTeacherNavEntries(): TeacherNavEntry[] {
     { labelKey: 'dashboard', href: '/teacher/dashboard', icon: 'iconDashboard' },
     { labelKey: 'myStudents', href: '/teacher/students', icon: 'iconTeachers' },
     { labelKey: 'schedule', href: '/teacher/schedule', icon: 'iconSchedule' },
-    { labelKey: 'calendar', href: '/teacher/calendar', icon: 'iconSchedule' },
+    { labelKey: 'dailyDuties', href: '/teacher/daily-duties', icon: 'iconCalendar' },
     { labelKey: 'dailyPlan', href: '/teacher/daily-plan', icon: 'iconFeedbacks' },
     { labelKey: 'recordings', href: '/teacher/recordings', icon: 'iconRecordings' },
     { labelKey: 'attendanceRegister', href: '/teacher/attendance-register', icon: 'iconAttendance' },

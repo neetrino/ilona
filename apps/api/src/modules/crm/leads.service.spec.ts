@@ -1,9 +1,61 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { BadRequestException } from '@nestjs/common';
 import { LeadsService } from './leads.service';
+import { LeadAccessService } from './lead-access.service';
+import { LeadActivityService } from './lead-activity.service';
+import { LeadListService } from './lead-list.service';
+import { LeadReadService } from './lead-read.service';
+import { LeadCreateService } from './lead-create.service';
+import { LeadUpdateService } from './lead-update.service';
+import { LeadDeleteService } from './lead-delete.service';
+import { LeadStatusService } from './lead-status.service';
+import { LeadVoiceService } from './lead-voice.service';
+import { LeadTeacherService } from './lead-teacher.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { StorageService } from '../storage/storage.service';
 import { StudentsService } from '../students/students.service';
+
+function createLeadsService(
+  prisma: unknown,
+  storage: unknown,
+  studentsService: unknown,
+): LeadsService {
+  const access = new LeadAccessService(prisma as PrismaService);
+  const read = new LeadReadService(prisma as PrismaService);
+  const activity = new LeadActivityService(prisma as PrismaService, read);
+  const list = new LeadListService(prisma as PrismaService, access);
+  const create = new LeadCreateService(prisma as PrismaService, access, activity);
+  const update = new LeadUpdateService(prisma as PrismaService, access, read, activity);
+  const deleteSvc = new LeadDeleteService(
+    prisma as PrismaService,
+    storage as StorageService,
+    read,
+  );
+  const status = new LeadStatusService(
+    prisma as PrismaService,
+    read,
+    studentsService as StudentsService,
+  );
+  const voice = new LeadVoiceService(
+    prisma as PrismaService,
+    storage as StorageService,
+    access,
+    read,
+    activity,
+  );
+  const teacher = new LeadTeacherService(prisma as PrismaService, read, activity);
+  return new LeadsService(
+    list,
+    read,
+    create,
+    update,
+    deleteSvc,
+    status,
+    voice,
+    activity,
+    teacher,
+  );
+}
 
 describe('LeadsService', () => {
   let service: LeadsService;
@@ -32,11 +84,7 @@ describe('LeadsService', () => {
     };
     storage = { getPresignedUploadUrl: vi.fn() };
     studentsService = { createLinkedToCrmPaidLead: vi.fn() };
-    service = new LeadsService(
-      prisma as unknown as PrismaService,
-      storage as unknown as StorageService,
-      studentsService as unknown as StudentsService,
-    );
+    service = createLeadsService(prisma, storage, studentsService);
   });
 
   describe('changeStatus', () => {
@@ -63,7 +111,7 @@ describe('LeadsService', () => {
       });
 
       await expect(
-        service.changeStatus('lead-1', { status: 'PAID' }, 'user-1')
+        service.changeStatus('lead-1', { status: 'PAID' }, 'user-1'),
       ).rejects.toThrow(BadRequestException);
     });
 
@@ -90,7 +138,7 @@ describe('LeadsService', () => {
       });
 
       await expect(
-        service.changeStatus('lead-1', { status: 'FIRST_LESSON' }, 'user-1')
+        service.changeStatus('lead-1', { status: 'FIRST_LESSON' }, 'user-1'),
       ).rejects.toThrow(BadRequestException);
     });
 

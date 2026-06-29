@@ -1,338 +1,50 @@
 'use client';
 
-
 import * as DialogPrimitive from '@radix-ui/react-dialog';
-import { useCallback, useEffect, useMemo, useRef, useState, type TouchEvent } from 'react';
-import { useForm, type UseFormReturn } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { useTranslations } from 'next-intl';
-import {
-  Button,
-  Input,
-  Label,
-  SegmentedControl,
-} from '@/shared/components/ui';
-import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
-import { useCenters } from '@/features/centers';
-import { useManagers, useUpdateManager, type ManagerAccount } from '@/features/settings';
-import { getCentersTakenByActiveManagers } from '@/features/settings/utils/manager-display';
-import { getErrorMessage } from '@/shared/lib/api';
+import { Button } from '@/shared/components/ui';
 import { cn } from '@/shared/lib/utils';
 import {
   portalSheetLayerProps,
   stackedSheetDialogHandlers,
-  useSheetStackZIndex,
   stackedSheetOverlayClassName,
 } from '@/shared/lib/sheet-stack';
 import { PORTAL_DESKTOP_SIDE_SHEET_CLASS } from '@/shared/lib/portal-form-sheet-classes';
 import {
-  ADMIN_FORM_INPUT_CLASS,
   ADMIN_ICON_BUTTON_SM_CLASS,
   ADMIN_OUTLINE_BUTTON_CLASS,
   ADMIN_PRIMARY_BUTTON_CLASS,
 } from '@/shared/lib/admin-control-theme';
 import { X } from 'lucide-react';
+import { useEditManagerForm } from './edit-manager-form/useEditManagerForm';
+import {
+  EditManagerFormCenterSelect,
+  EditManagerFormError,
+  EditManagerFormProfileFields,
+  EditManagerFormStatusSelect,
+} from './edit-manager-form/EditManagerFormFields';
+import type { EditManagerFormProps } from './edit-manager-form/edit-manager-form.types';
 
-const activeManagerSchema = z.object({
-  firstName: z.string().min(2).max(50),
-  lastName: z.string().min(2).max(50),
-  email: z.string().email(),
-  phone: z.string().max(50).optional(),
-  password: z
-    .string()
-    .max(128)
-    .optional()
-    .refine((value) => !value || value.length >= 8, {
-      message: 'Password must be at least 8 characters',
-    }),
-  centerId: z.string().min(1),
-  status: z.enum(['ACTIVE', 'INACTIVE']),
-});
+export type { EditManagerFormProps } from './edit-manager-form/edit-manager-form.types';
 
-const inactiveManagerSchema = z.object({
-  firstName: z.string().min(2).max(50),
-  lastName: z.string().min(2).max(50),
-  email: z.string().email(),
-  phone: z.string().max(50).optional(),
-  password: z
-    .string()
-    .max(128)
-    .optional()
-    .refine((value) => !value || value.length >= 8, {
-      message: 'Password must be at least 8 characters',
-    }),
-  centerId: z.string().optional(),
-});
-
-type ActiveManagerFormData = z.infer<typeof activeManagerSchema>;
-type InactiveManagerFormData = z.infer<typeof inactiveManagerSchema>;
-
-interface EditManagerFormProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  manager: ManagerAccount | null;
-  variant?: 'active' | 'inactive';
-}
-
-export function EditManagerForm({
-  open,
-  onOpenChange,
-  manager,
-  variant = 'active',
-}: EditManagerFormProps) {
-  const isInactiveVariant = variant === 'inactive';
-  const t = useTranslations('settings');
-  const tCommon = useTranslations('common');
-  const tStatus = useTranslations('status');
-  const { data: centersData } = useCenters({ isActive: true, take: 100 });
-  const { data: managers } = useManagers();
-  const updateManager = useUpdateManager();
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [isDialogOpen, setIsDialogOpen] = useState(open);
-  const [dragOffsetY, setDragOffsetY] = useState(0);
-  const [isDragging, setIsDragging] = useState(false);
-  const [isSettling, setIsSettling] = useState(false);
-  const touchStartYRef = useRef<number | null>(null);
-  const touchStartXRef = useRef<number | null>(null);
-  const settleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  const activeForm = useForm<ActiveManagerFormData>({
-    resolver: zodResolver(activeManagerSchema),
-    defaultValues: {
-      firstName: '',
-      lastName: '',
-      email: '',
-      phone: '',
-      password: '',
-      centerId: '',
-      status: 'ACTIVE',
-    },
-  });
-
-  const inactiveForm = useForm<InactiveManagerFormData>({
-    resolver: zodResolver(inactiveManagerSchema),
-    defaultValues: {
-      firstName: '',
-      lastName: '',
-      email: '',
-      phone: '',
-      password: '',
-      centerId: '',
-    },
-  });
-
-  const watchedStatus = activeForm.watch('status');
-
-  const centers = useMemo(() => centersData?.items ?? [], [centersData?.items]);
-
-  const centersTakenByOthers = useMemo(
-    () => getCentersTakenByActiveManagers(managers ?? [], manager?.id),
-    [managers, manager?.id],
-  );
-
-  const selectableCenters = useMemo(() => {
-    if (isInactiveVariant) {
-      return centers.filter((center) => !centersTakenByOthers.has(center.id));
-    }
-
-    const currentCenterId = manager?.managerProfile?.centerId;
-    return centers.filter(
-      (center) => center.id === currentCenterId || !centersTakenByOthers.has(center.id),
-    );
-  }, [centers, centersTakenByOthers, isInactiveVariant, manager?.managerProfile?.centerId]);
-
-  useEffect(() => {
-    if (!isInactiveVariant || !open) return;
-
-    const selected = inactiveForm.getValues('centerId');
-    if (selected && !selectableCenters.some((center) => center.id === selected)) {
-      inactiveForm.setValue('centerId', '');
-    }
-  }, [selectableCenters, isInactiveVariant, open, inactiveForm]);
-
-  useEffect(() => {
-    if (!manager || !open) return;
-
-    const pendingCenterId = manager.managerProfile?.centerId ?? '';
-    const centerIdForForm =
-      isInactiveVariant &&
-      pendingCenterId &&
-      centersTakenByOthers.has(pendingCenterId)
-        ? ''
-        : pendingCenterId;
-
-    const base = {
-      firstName: manager.firstName,
-      lastName: manager.lastName,
-      email: manager.email,
-      phone: manager.phone ?? '',
-      password: '',
-      centerId: centerIdForForm,
-    };
-
-    if (isInactiveVariant) {
-      inactiveForm.reset(base);
-    } else {
-      activeForm.reset({
-        ...base,
-        status: manager.status === 'INACTIVE' ? 'INACTIVE' : 'ACTIVE',
-      });
-    }
-    setErrorMessage(null);
-  }, [manager, open, isInactiveVariant, centersTakenByOthers, activeForm, inactiveForm]);
-
-  useEffect(() => {
-    setIsDialogOpen(open);
-  }, [open]);
-
-  useEffect(() => {
-    if (!open) {
-      setDragOffsetY(0);
-      setIsDragging(false);
-      setIsSettling(false);
-    }
-  }, [open]);
-
-  useEffect(() => {
-    return () => {
-      if (settleTimerRef.current) {
-        clearTimeout(settleTimerRef.current);
-      }
-    };
-  }, []);
-
-  const requestClose = useCallback(() => {
-    setIsDialogOpen(false);
-    onOpenChange(false);
-  }, [onOpenChange]);
-
-  const isMobileViewport = () =>
-    typeof window !== 'undefined' && window.matchMedia('(max-width: 1366px)').matches;
-
-  const resetDragRefs = () => {
-    touchStartYRef.current = null;
-    touchStartXRef.current = null;
-    setIsDragging(false);
-  };
-
-  const handleDragStart = (event: TouchEvent<HTMLDivElement>) => {
-    if (!isMobileViewport()) return;
-    const firstTouch = event.touches[0];
-    if (!firstTouch) return;
-    if (settleTimerRef.current) {
-      clearTimeout(settleTimerRef.current);
-      settleTimerRef.current = null;
-    }
-    touchStartYRef.current = firstTouch.clientY;
-    touchStartXRef.current = firstTouch.clientX;
-    setIsSettling(false);
-    setIsDragging(true);
-  };
-
-  const handleDragMove = (event: TouchEvent<HTMLDivElement>) => {
-    if (!isMobileViewport()) return;
-    if (!isDragging || touchStartYRef.current === null || touchStartXRef.current === null) return;
-    const firstTouch = event.touches[0];
-    if (!firstTouch) return;
-    const deltaY = firstTouch.clientY - touchStartYRef.current;
-    const deltaX = Math.abs(firstTouch.clientX - touchStartXRef.current);
-    if (deltaY <= 0 || deltaY <= deltaX) return;
-    event.preventDefault();
-    setDragOffsetY(Math.min(deltaY * 0.95, 340));
-  };
-
-  const handleDragEnd = () => {
-    if (!isMobileViewport()) return;
-    if (!isDragging) return;
-    const shouldClose = dragOffsetY > 110;
-    resetDragRefs();
-    if (shouldClose) {
-      setDragOffsetY(0);
-      requestClose();
-      return;
-    }
-    setIsSettling(true);
-    setDragOffsetY(0);
-    settleTimerRef.current = setTimeout(() => {
-      setIsSettling(false);
-      settleTimerRef.current = null;
-    }, 280);
-  };
-
-  const dragStyle =
-    dragOffsetY > 0 || isSettling
-      ? {
-          transform: `translateY(${dragOffsetY}px)`,
-          transition: isDragging ? 'none' : 'transform 280ms cubic-bezier(0.22, 1, 0.36, 1)',
-        }
-      : undefined;
-
-  const onSubmitActive = async (values: ActiveManagerFormData) => {
-    if (!manager) return;
-    setErrorMessage(null);
-
-    try {
-      await updateManager.mutateAsync({
-        id: manager.id,
-        data: {
-          firstName: values.firstName.trim(),
-          lastName: values.lastName.trim(),
-          email: values.email.trim(),
-          phone: values.phone?.trim() || undefined,
-          centerId: values.centerId,
-          status: values.status,
-          ...(values.password?.trim() ? { password: values.password.trim() } : {}),
-        },
-      });
-      onOpenChange(false);
-    } catch (err: unknown) {
-      setErrorMessage(getErrorMessage(err, t('failedToUpdateManager')));
-    }
-  };
-
-  const onSubmitInactive = async (values: InactiveManagerFormData) => {
-    if (!manager) return;
-    setErrorMessage(null);
-
-    try {
-      await updateManager.mutateAsync({
-        id: manager.id,
-        data: {
-          firstName: values.firstName.trim(),
-          lastName: values.lastName.trim(),
-          email: values.email.trim(),
-          phone: values.phone?.trim() || undefined,
-          ...(values.centerId ? { centerId: values.centerId } : {}),
-          ...(values.password?.trim() ? { password: values.password.trim() } : {}),
-        },
-      });
-      onOpenChange(false);
-    } catch (err: unknown) {
-      setErrorMessage(getErrorMessage(err, t('failedToUpdateManager')));
-    }
-  };
-
-  const isSubmitting = updateManager.isPending;
-  const title = isInactiveVariant ? t('editInactiveManager') : t('editManager');
-  const description = isInactiveVariant
-    ? t('editInactiveManagerDescription')
-    : t('editManagerDescription');
-  const { overlayStyle, contentStyle, isBaseLayer } = useSheetStackZIndex(isDialogOpen);
+export function EditManagerForm(props: EditManagerFormProps) {
+  const form = useEditManagerForm(props);
 
   return (
-    <DialogPrimitive.Root open={isDialogOpen} onOpenChange={(nextOpen) => !nextOpen && requestClose()}>
+    <DialogPrimitive.Root
+      open={form.isDialogOpen}
+      onOpenChange={(nextOpen) => !nextOpen && form.requestClose()}
+    >
       <DialogPrimitive.Portal>
         <DialogPrimitive.Overlay
-          style={overlayStyle}
+          style={form.overlayStyle}
           {...portalSheetLayerProps}
           className={stackedSheetOverlayClassName(
             'fixed inset-0 z-50 bg-black/60 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0',
-            isBaseLayer,
+            form.isBaseLayer,
           )}
         />
         <DialogPrimitive.Content
-          style={{ ...dragStyle, ...contentStyle }}
+          style={{ ...form.dragStyle, ...form.contentStyle }}
           {...stackedSheetDialogHandlers}
           {...portalSheetLayerProps}
           className={cn(
@@ -347,113 +59,91 @@ export function EditManagerForm({
           <div className="relative flex h-9 w-full items-center justify-center bg-[#f8f9fb] min-[1367px]:hidden">
             <div
               className="absolute inset-x-0 -top-2 h-14"
-              onTouchStart={handleDragStart}
-              onTouchMove={handleDragMove}
-              onTouchEnd={handleDragEnd}
-              onTouchCancel={handleDragEnd}
+              onTouchStart={form.handleDragStart}
+              onTouchMove={form.handleDragMove}
+              onTouchEnd={form.handleDragEnd}
+              onTouchCancel={form.handleDragEnd}
             />
             <div className="h-1.5 w-14 rounded-full bg-slate-400" />
           </div>
-          <DialogPrimitive.Title className="sr-only">{title}</DialogPrimitive.Title>
+          <DialogPrimitive.Title className="sr-only">{form.title}</DialogPrimitive.Title>
           <DialogPrimitive.Description id="edit-manager-description" className="sr-only">
-            {description}
+            {form.description}
           </DialogPrimitive.Description>
           <div className="shrink-0 bg-[#f8f9fb] px-4 pb-4 pt-3 min-[1367px]:px-6 min-[1367px]:pb-5 min-[1367px]:pt-6">
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0 flex-1">
-                <h2 className="text-lg font-semibold text-[#3b3b40]">{title}</h2>
+                <h2 className="text-lg font-semibold text-[#3b3b40]">{form.title}</h2>
               </div>
               <DialogPrimitive.Close
                 className={cn(
                   ADMIN_ICON_BUTTON_SM_CLASS,
                   'hidden text-slate-500 hover:bg-slate-100 hover:text-slate-700 min-[1367px]:inline-flex',
                 )}
-                aria-label={tCommon('close')}
+                aria-label={form.tCommon('close')}
               >
                 <X className="h-4 w-4" />
               </DialogPrimitive.Close>
             </div>
           </div>
           <div className="min-h-0 overflow-y-auto overscroll-y-contain [touch-action:pan-y] [-webkit-overflow-scrolling:touch] px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] min-[1367px]:px-6 min-[1367px]:pb-6">
-            {isInactiveVariant ? (
-              <form onSubmit={inactiveForm.handleSubmit(onSubmitInactive)} className="space-y-4">
-                {errorMessage && <FormError message={errorMessage} />}
-                <ProfileFields form={inactiveForm as FormLike} t={t} disabled={isSubmitting} />
-                <CenterSelect
-                  form={inactiveForm as FormLike}
-                  t={t}
-                  selectableCenters={selectableCenters}
-                  disabled={false}
-                  hint={t('managerInactiveEditCenterHint')}
+            {form.isInactiveVariant ? (
+              <form onSubmit={form.handleSubmitInactive} className="space-y-4">
+                {form.errorMessage && <EditManagerFormError message={form.errorMessage} />}
+                <EditManagerFormProfileFields
+                  form={form.inactiveFormLike}
+                  t={form.t}
+                  disabled={form.isSubmitting}
                 />
-                <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className={cn(ADMIN_OUTLINE_BUTTON_CLASS, 'border-[rgba(14,14,16,0.07)] hover:bg-slate-50')}
-                    onClick={requestClose}
-                    disabled={isSubmitting}
-                  >
-                    {tCommon('cancel')}
-                  </Button>
-                  <Button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className={cn(ADMIN_PRIMARY_BUTTON_CLASS, 'bg-primary text-primary-foreground hover:bg-primary/90')}
-                  >
-                    {isSubmitting ? t('saving') : t('saveChanges')}
-                  </Button>
-                </div>
+                <EditManagerFormCenterSelect
+                  form={form.inactiveFormLike}
+                  t={form.t}
+                  selectableCenters={form.selectableCenters}
+                  disabled={false}
+                  hint={form.t('managerInactiveEditCenterHint')}
+                />
+                <FormActions form={form} />
               </form>
             ) : (
-              <form onSubmit={activeForm.handleSubmit(onSubmitActive)} className="space-y-4">
-                {errorMessage && <FormError message={errorMessage} />}
-                <ProfileFields form={activeForm as FormLike} t={t} disabled={isSubmitting} />
+              <form onSubmit={form.handleSubmitActive} className="space-y-4">
+                {form.errorMessage && <EditManagerFormError message={form.errorMessage} />}
+                <EditManagerFormProfileFields
+                  form={form.activeFormLike}
+                  t={form.t}
+                  disabled={form.isSubmitting}
+                />
                 <div className="grid grid-cols-1 gap-4 min-[1367px]:grid-cols-2">
-                  <CenterSelect
-                    form={activeForm as FormLike}
-                    t={t}
-                    selectableCenters={selectableCenters}
-                    disabled={watchedStatus === 'INACTIVE'}
-                    hint={watchedStatus === 'INACTIVE' ? t('managerInactiveCenterHint') : undefined}
-                    centerError={activeForm.formState.errors.centerId?.message}
+                  <EditManagerFormCenterSelect
+                    form={form.activeFormLike}
+                    t={form.t}
+                    selectableCenters={form.selectableCenters}
+                    disabled={form.watchedStatus === 'INACTIVE'}
+                    hint={
+                      form.watchedStatus === 'INACTIVE'
+                        ? form.t('managerInactiveCenterHint')
+                        : undefined
+                    }
+                    centerError={form.activeForm.formState.errors.centerId?.message}
                   />
-                  <StatusSelect
-                    value={watchedStatus ?? 'ACTIVE'}
+                  <EditManagerFormStatusSelect
+                    value={form.watchedStatus ?? 'ACTIVE'}
                     onChange={(nextStatus) => {
-                      activeForm.setValue('status', nextStatus, {
+                      form.activeForm.setValue('status', nextStatus, {
                         shouldDirty: true,
                         shouldValidate: true,
                       });
                     }}
-                    disabled={isSubmitting}
-                    t={t}
-                    tStatus={tStatus}
+                    disabled={form.isSubmitting}
+                    t={form.t}
+                    tStatus={form.tStatus}
                   />
                 </div>
-                {watchedStatus === 'INACTIVE' && (
+                {form.watchedStatus === 'INACTIVE' && (
                   <p className="rounded-[15px] border border-amber-100 bg-amber-50 p-2 text-xs text-amber-700">
-                    {t('managerSetInactiveHint')}
+                    {form.t('managerSetInactiveHint')}
                   </p>
                 )}
-                <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className={cn(ADMIN_OUTLINE_BUTTON_CLASS, 'border-[rgba(14,14,16,0.07)] hover:bg-slate-50')}
-                    onClick={requestClose}
-                    disabled={isSubmitting}
-                  >
-                    {tCommon('cancel')}
-                  </Button>
-                  <Button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className={cn(ADMIN_PRIMARY_BUTTON_CLASS, 'bg-primary text-primary-foreground hover:bg-primary/90')}
-                  >
-                    {isSubmitting ? t('saving') : t('saveChanges')}
-                  </Button>
-                </div>
+                <FormActions form={form} />
               </form>
             )}
           </div>
@@ -463,173 +153,25 @@ export function EditManagerForm({
   );
 }
 
-function FormError({ message }: { message: string }) {
+function FormActions({ form }: { form: ReturnType<typeof useEditManagerForm> }) {
   return (
-    <div className="rounded-[15px] border border-red-200 bg-red-50 p-3">
-      <p className="text-sm text-red-600">{message}</p>
-    </div>
-  );
-}
-
-type ManagerFormFields = {
-  firstName: string;
-  lastName: string;
-  email: string;
-  phone?: string;
-  password?: string;
-  centerId?: string;
-  status?: 'ACTIVE' | 'INACTIVE';
-};
-
-type FormLike = Pick<UseFormReturn<ManagerFormFields>, 'register' | 'formState' | 'watch' | 'setValue'>;
-
-function ProfileFields({
-  form,
-  t,
-  disabled = false,
-}: {
-  form: FormLike;
-  t: (key: string) => string;
-  disabled?: boolean;
-}) {
-  return (
-    <>
-      <div className="grid grid-cols-2 gap-4">
-        <div className="min-w-0 space-y-2">
-          <Label htmlFor="manager-firstName">{t('firstName')}</Label>
-          <Input
-            id="manager-firstName"
-            className={ADMIN_FORM_INPUT_CLASS}
-            disabled={disabled}
-            {...form.register('firstName')}
-          />
-          {form.formState.errors.firstName && (
-            <p className="text-sm text-red-600">{form.formState.errors.firstName.message}</p>
-          )}
-        </div>
-        <div className="min-w-0 space-y-2">
-          <Label htmlFor="manager-lastName">{t('lastName')}</Label>
-          <Input
-            id="manager-lastName"
-            className={ADMIN_FORM_INPUT_CLASS}
-            disabled={disabled}
-            {...form.register('lastName')}
-          />
-          {form.formState.errors.lastName && (
-            <p className="text-sm text-red-600">{form.formState.errors.lastName.message}</p>
-          )}
-        </div>
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="manager-email">{t('emailAddress')}</Label>
-        <Input
-          id="manager-email"
-          type="email"
-          className={ADMIN_FORM_INPUT_CLASS}
-          disabled={disabled}
-          {...form.register('email')}
-        />
-        {form.formState.errors.email && (
-          <p className="text-sm text-red-600">{form.formState.errors.email.message}</p>
-        )}
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="manager-phone">{t('phoneNumber')}</Label>
-        <Input
-          id="manager-phone"
-          className={ADMIN_FORM_INPUT_CLASS}
-          disabled={disabled}
-          {...form.register('phone')}
-        />
-      </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="manager-password">{t('managerNewPassword')}</Label>
-        <Input
-          id="manager-password"
-          type="password"
-          autoComplete="new-password"
-          placeholder={t('managerPasswordLeaveBlank')}
-          className={ADMIN_FORM_INPUT_CLASS}
-          disabled={disabled}
-          {...form.register('password')}
-        />
-        {form.formState.errors.password && (
-          <p className="text-sm text-red-600">{form.formState.errors.password.message}</p>
-        )}
-      </div>
-    </>
-  );
-}
-
-function CenterSelect({
-  form,
-  t,
-  selectableCenters,
-  disabled,
-  hint,
-  centerError,
-}: {
-  form: FormLike;
-  t: (key: string) => string;
-  selectableCenters: Array<{ id: string; name: string }>;
-  disabled: boolean;
-  hint?: string;
-  centerError?: string;
-}) {
-  const currentCenterId = form.watch('centerId') ?? '';
-
-  return (
-    <div className="min-w-0 w-full space-y-2">
-      <SingleSelectDropdown
-        id="manager-center"
-        label={t('managerSelectCenter')}
-        className="w-full"
-        triggerClassName={ADMIN_FORM_INPUT_CLASS}
-        options={selectableCenters.map((center) => ({ id: center.id, label: center.name }))}
-        value={currentCenterId}
-        onValueChange={(value) =>
-          form.setValue('centerId', value ?? '', { shouldDirty: true, shouldValidate: true })
-        }
-        disabled={disabled}
-        allowDeselect
-        wrapText
-        placeholder={t('managerSelectCenter')}
-      />
-      {hint && <p className="text-xs text-slate-500">{hint}</p>}
-      {centerError && <p className="text-sm text-red-600">{centerError}</p>}
-    </div>
-  );
-}
-
-function StatusSelect({
-  value,
-  onChange,
-  disabled,
-  t,
-  tStatus,
-}: {
-  value: 'ACTIVE' | 'INACTIVE';
-  onChange: (value: 'ACTIVE' | 'INACTIVE') => void;
-  disabled?: boolean;
-  t: (key: string) => string;
-  tStatus: (key: string) => string;
-}) {
-  return (
-    <div className="min-w-0 w-full space-y-2">
-      <Label>{t('managerStatus')}</Label>
-      <SegmentedControl
-        options={[
-          { id: 'ACTIVE', label: tStatus('active') },
-          { id: 'INACTIVE', label: tStatus('inactive') },
-        ]}
-        value={value}
-        onChange={(nextValue) => onChange(nextValue as 'ACTIVE' | 'INACTIVE')}
-        disabled={disabled}
-        aria-label={t('managerStatus')}
-      />
+    <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end">
+      <Button
+        type="button"
+        variant="outline"
+        className={cn(ADMIN_OUTLINE_BUTTON_CLASS, 'border-[rgba(14,14,16,0.07)] hover:bg-slate-50')}
+        onClick={form.requestClose}
+        disabled={form.isSubmitting}
+      >
+        {form.tCommon('cancel')}
+      </Button>
+      <Button
+        type="submit"
+        disabled={form.isSubmitting}
+        className={cn(ADMIN_PRIMARY_BUTTON_CLASS, 'bg-primary text-primary-foreground hover:bg-primary/90')}
+      >
+        {form.isSubmitting ? form.t('saving') : form.t('saveChanges')}
+      </Button>
     </div>
   );
 }

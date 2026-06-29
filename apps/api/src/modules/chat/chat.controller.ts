@@ -69,6 +69,18 @@ export class ChatController {
   }
 
   /**
+   * Delete a custom group chat (standalone, not linked to class groups). Admin only.
+   */
+  @Delete('custom-groups/:chatId')
+  @Roles(UserRole.ADMIN, UserRole.MANAGER)
+  async deleteCustomGroupChat(
+    @Param('chatId') chatId: string,
+    @CurrentUser() user: JwtPayload,
+  ) {
+    return this.chatService.deleteCustomGroupChat(chatId, user);
+  }
+
+  /**
    * Get chat by ID
    */
   @Get(':chatId')

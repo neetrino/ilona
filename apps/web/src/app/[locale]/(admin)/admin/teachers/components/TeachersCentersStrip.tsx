@@ -13,6 +13,7 @@ interface TeachersCentersStripProps {
   onSelectCenter: (centerId: string) => void;
   uniqueTeachersCount: number;
   isLoading: boolean;
+  onTotalClick?: () => void;
   t: ReturnType<typeof useTranslations<'teachers'>>;
   unassignedLabel: string;
 }
@@ -24,6 +25,7 @@ export function TeachersCentersStrip({
   onSelectCenter,
   uniqueTeachersCount,
   isLoading,
+  onTotalClick,
   t,
   unassignedLabel,
 }: TeachersCentersStripProps) {
@@ -33,7 +35,12 @@ export function TeachersCentersStrip({
   return (
     <div className="bg-gradient-to-b from-[#fafafa] to-white px-3 pt-3 sm:border-b sm:border-[rgba(14,14,16,0.07)]">
       <div className="flex flex-col gap-3 pb-3 sm:flex-row sm:items-center sm:gap-3">
-        <TeachersUniqueTotalStat count={uniqueTeachersCount} isLoading={isLoading} t={t} />
+        <TeachersUniqueTotalStat
+          count={uniqueTeachersCount}
+          isLoading={isLoading}
+          onClick={onTotalClick}
+          t={t}
+        />
 
         {hasCenterTabs ? (
           <div className="min-w-0 flex-1 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">

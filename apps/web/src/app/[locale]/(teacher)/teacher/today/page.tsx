@@ -21,7 +21,7 @@ type LessonStatus = 'SCHEDULED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED' | 'M
 
 // Status badge component
 function StatusBadge({ status }: { status: LessonStatus }) {
-  const tCalendar = useTranslations('calendar');
+  const tCalendar = useTranslations('dailyDuties');
   const styles: Record<LessonStatus, { bg: string; text: string; label: string }> = {
     SCHEDULED: { bg: 'bg-primary/20', text: 'text-primary', label: tCalendar('scheduled') },
     IN_PROGRESS: { bg: 'bg-yellow-100', text: 'text-yellow-700', label: tCalendar('inProgress') },
@@ -57,7 +57,7 @@ function LessonCard({
   isCompleting: boolean;
   isSendingVocabulary: boolean;
 }) {
-  const tCalendar = useTranslations('calendar');
+  const tCalendar = useTranslations('dailyDuties');
   const tTeacherToday = useTranslations('teacherToday');
   const tLessons = useTranslations('lessons');
   const tStudents = useTranslations('students');
@@ -181,7 +181,7 @@ function LessonCard({
 export default function TeacherDailyPlanPage() {
   const locale = useLocale();
   const tNav = useTranslations('nav');
-  const tCalendar = useTranslations('calendar');
+  const tCalendar = useTranslations('dailyDuties');
   const tTeacherToday = useTranslations('teacherToday');
   const tCommon = useTranslations('common');
   const dateLocale = locale === 'hy' ? 'hy-AM' : 'en-GB';

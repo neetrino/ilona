@@ -3,6 +3,12 @@ import { LessonsController } from './lessons.controller';
 import { LessonsService } from './lessons.service';
 import { LessonEnrichmentService } from './lesson-enrichment.service';
 import { LessonCrudService } from './lesson-crud.service';
+import { LessonListService } from './lesson-list.service';
+import { LessonReadService } from './lesson-read.service';
+import { LessonCreateService } from './lesson-create.service';
+import { LessonUpdateService } from './lesson-update.service';
+import { LessonDeleteService } from './lesson-delete.service';
+import { LessonManagerAccessService } from './lesson-manager-access.service';
 import { LessonStatusService } from './lesson-status.service';
 import { LessonActionsService } from './lesson-actions.service';
 import { LessonSchedulingService } from './lesson-scheduling.service';
@@ -17,6 +23,12 @@ import { FinanceModule } from '../finance/finance.module';
     LessonsService,
     LessonEnrichmentService,
     LessonCrudService,
+    LessonListService,
+    LessonReadService,
+    LessonCreateService,
+    LessonUpdateService,
+    LessonDeleteService,
+    LessonManagerAccessService,
     LessonStatusService,
     LessonActionsService,
     LessonSchedulingService,

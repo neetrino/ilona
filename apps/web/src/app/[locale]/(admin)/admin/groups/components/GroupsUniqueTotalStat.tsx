@@ -1,25 +1,45 @@
 'use client';
 
 import { Skeleton } from '@/shared/components/ui/Skeleton';
+import { cn } from '@/shared/lib/utils';
 import type { useTranslations } from 'next-intl';
 
 interface GroupsUniqueTotalStatProps {
   count: number;
   isLoading: boolean;
+  isActive?: boolean;
+  onClick?: () => void;
   t: ReturnType<typeof useTranslations<'groups'>>;
 }
 
 export function GroupsUniqueTotalStat({
   count,
   isLoading,
+  isActive = false,
+  onClick,
   t,
 }: GroupsUniqueTotalStatProps) {
   return (
-    <div
-      className="flex shrink-0 items-center gap-3 rounded-2xl border border-[rgba(14,14,16,0.07)] bg-white px-3.5 py-2.5 shadow-[0_2px_8px_rgba(15,23,42,0.06)]"
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={isActive}
+      className={cn(
+        'flex shrink-0 items-center gap-3 rounded-2xl border px-3.5 py-2.5 text-left shadow-[0_2px_8px_rgba(15,23,42,0.06)] transition-all duration-200',
+        'focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1010a3]/30',
+        'hover:-translate-y-px hover:shadow-[0_4px_14px_rgba(15,23,42,0.08)]',
+        isActive
+          ? 'border-[#1010a3] bg-[#1010a3] text-white'
+          : 'border-[rgba(14,14,16,0.07)] bg-white',
+      )}
       aria-label={t('totalGroups')}
     >
-      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#f0f0ff] text-[#1010a3]">
+      <div
+        className={cn(
+          'flex h-9 w-9 shrink-0 items-center justify-center rounded-xl',
+          isActive ? 'bg-white/15 text-white' : 'bg-[#f0f0ff] text-[#1010a3]',
+        )}
+      >
         <svg
           className="h-[1.125rem] w-[1.125rem]"
           fill="none"
@@ -36,17 +56,27 @@ export function GroupsUniqueTotalStat({
         </svg>
       </div>
       <div className="min-w-0">
-        <p className="text-[0.625rem] font-semibold uppercase tracking-[0.12em] text-[#8b8b90]">
+        <p
+          className={cn(
+            'text-[0.625rem] font-semibold uppercase tracking-[0.12em]',
+            isActive ? 'text-white/80' : 'text-[#8b8b90]',
+          )}
+        >
           {t('totalGroups')}
         </p>
         {isLoading ? (
           <Skeleton className="mt-1 h-6 w-10 rounded-md bg-[#ececec]" />
         ) : (
-          <p className="text-xl font-bold leading-none tabular-nums tracking-tight text-[#1010a3]">
+          <p
+            className={cn(
+              'text-xl font-bold leading-none tabular-nums tracking-tight',
+              isActive ? 'text-white' : 'text-[#1010a3]',
+            )}
+          >
             {count}
           </p>
         )}
       </div>
-    </div>
+    </button>
   );
 }

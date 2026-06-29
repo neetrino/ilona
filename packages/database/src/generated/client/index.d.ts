@@ -16324,6 +16324,7 @@ export namespace Prisma {
     vocabularySent: boolean | null
     vocabularySentAt: Date | null
     feedbacksCompleted: boolean | null
+    feedbacksCompletedAt: Date | null
     absenceMarked: boolean | null
     absenceMarkedAt: Date | null
     voiceSent: boolean | null
@@ -16350,6 +16351,7 @@ export namespace Prisma {
     vocabularySent: boolean | null
     vocabularySentAt: Date | null
     feedbacksCompleted: boolean | null
+    feedbacksCompletedAt: Date | null
     absenceMarked: boolean | null
     absenceMarkedAt: Date | null
     voiceSent: boolean | null
@@ -16376,6 +16378,7 @@ export namespace Prisma {
     vocabularySent: number
     vocabularySentAt: number
     feedbacksCompleted: number
+    feedbacksCompletedAt: number
     absenceMarked: number
     absenceMarkedAt: number
     voiceSent: number
@@ -16412,6 +16415,7 @@ export namespace Prisma {
     vocabularySent?: true
     vocabularySentAt?: true
     feedbacksCompleted?: true
+    feedbacksCompletedAt?: true
     absenceMarked?: true
     absenceMarkedAt?: true
     voiceSent?: true
@@ -16438,6 +16442,7 @@ export namespace Prisma {
     vocabularySent?: true
     vocabularySentAt?: true
     feedbacksCompleted?: true
+    feedbacksCompletedAt?: true
     absenceMarked?: true
     absenceMarkedAt?: true
     voiceSent?: true
@@ -16464,6 +16469,7 @@ export namespace Prisma {
     vocabularySent?: true
     vocabularySentAt?: true
     feedbacksCompleted?: true
+    feedbacksCompletedAt?: true
     absenceMarked?: true
     absenceMarkedAt?: true
     voiceSent?: true
@@ -16577,6 +16583,7 @@ export namespace Prisma {
     vocabularySent: boolean
     vocabularySentAt: Date | null
     feedbacksCompleted: boolean
+    feedbacksCompletedAt: Date | null
     absenceMarked: boolean
     absenceMarkedAt: Date | null
     voiceSent: boolean
@@ -16622,6 +16629,7 @@ export namespace Prisma {
     vocabularySent?: boolean
     vocabularySentAt?: boolean
     feedbacksCompleted?: boolean
+    feedbacksCompletedAt?: boolean
     absenceMarked?: boolean
     absenceMarkedAt?: boolean
     voiceSent?: boolean
@@ -16656,6 +16664,7 @@ export namespace Prisma {
     vocabularySent?: boolean
     vocabularySentAt?: boolean
     feedbacksCompleted?: boolean
+    feedbacksCompletedAt?: boolean
     absenceMarked?: boolean
     absenceMarkedAt?: boolean
     voiceSent?: boolean
@@ -16685,6 +16694,7 @@ export namespace Prisma {
     vocabularySent?: boolean
     vocabularySentAt?: boolean
     feedbacksCompleted?: boolean
+    feedbacksCompletedAt?: boolean
     absenceMarked?: boolean
     absenceMarkedAt?: boolean
     voiceSent?: boolean
@@ -16741,6 +16751,7 @@ export namespace Prisma {
       vocabularySent: boolean
       vocabularySentAt: Date | null
       feedbacksCompleted: boolean
+      feedbacksCompletedAt: Date | null
       absenceMarked: boolean
       absenceMarkedAt: Date | null
       voiceSent: boolean
@@ -17164,6 +17175,7 @@ export namespace Prisma {
     readonly vocabularySent: FieldRef<"Lesson", 'Boolean'>
     readonly vocabularySentAt: FieldRef<"Lesson", 'DateTime'>
     readonly feedbacksCompleted: FieldRef<"Lesson", 'Boolean'>
+    readonly feedbacksCompletedAt: FieldRef<"Lesson", 'DateTime'>
     readonly absenceMarked: FieldRef<"Lesson", 'Boolean'>
     readonly absenceMarkedAt: FieldRef<"Lesson", 'DateTime'>
     readonly voiceSent: FieldRef<"Lesson", 'Boolean'>
@@ -36607,6 +36619,7 @@ export namespace Prisma {
     vocabularySent: 'vocabularySent',
     vocabularySentAt: 'vocabularySentAt',
     feedbacksCompleted: 'feedbacksCompleted',
+    feedbacksCompletedAt: 'feedbacksCompletedAt',
     absenceMarked: 'absenceMarked',
     absenceMarkedAt: 'absenceMarkedAt',
     voiceSent: 'voiceSent',
@@ -38338,6 +38351,7 @@ export namespace Prisma {
     vocabularySent?: BoolFilter<"Lesson"> | boolean
     vocabularySentAt?: DateTimeNullableFilter<"Lesson"> | Date | string | null
     feedbacksCompleted?: BoolFilter<"Lesson"> | boolean
+    feedbacksCompletedAt?: DateTimeNullableFilter<"Lesson"> | Date | string | null
     absenceMarked?: BoolFilter<"Lesson"> | boolean
     absenceMarkedAt?: DateTimeNullableFilter<"Lesson"> | Date | string | null
     voiceSent?: BoolFilter<"Lesson"> | boolean
@@ -38371,6 +38385,7 @@ export namespace Prisma {
     vocabularySent?: SortOrder
     vocabularySentAt?: SortOrderInput | SortOrder
     feedbacksCompleted?: SortOrder
+    feedbacksCompletedAt?: SortOrderInput | SortOrder
     absenceMarked?: SortOrder
     absenceMarkedAt?: SortOrderInput | SortOrder
     voiceSent?: SortOrder
@@ -38407,6 +38422,7 @@ export namespace Prisma {
     vocabularySent?: BoolFilter<"Lesson"> | boolean
     vocabularySentAt?: DateTimeNullableFilter<"Lesson"> | Date | string | null
     feedbacksCompleted?: BoolFilter<"Lesson"> | boolean
+    feedbacksCompletedAt?: DateTimeNullableFilter<"Lesson"> | Date | string | null
     absenceMarked?: BoolFilter<"Lesson"> | boolean
     absenceMarkedAt?: DateTimeNullableFilter<"Lesson"> | Date | string | null
     voiceSent?: BoolFilter<"Lesson"> | boolean
@@ -38440,6 +38456,7 @@ export namespace Prisma {
     vocabularySent?: SortOrder
     vocabularySentAt?: SortOrderInput | SortOrder
     feedbacksCompleted?: SortOrder
+    feedbacksCompletedAt?: SortOrderInput | SortOrder
     absenceMarked?: SortOrder
     absenceMarkedAt?: SortOrderInput | SortOrder
     voiceSent?: SortOrder
@@ -38474,6 +38491,7 @@ export namespace Prisma {
     vocabularySent?: BoolWithAggregatesFilter<"Lesson"> | boolean
     vocabularySentAt?: DateTimeNullableWithAggregatesFilter<"Lesson"> | Date | string | null
     feedbacksCompleted?: BoolWithAggregatesFilter<"Lesson"> | boolean
+    feedbacksCompletedAt?: DateTimeNullableWithAggregatesFilter<"Lesson"> | Date | string | null
     absenceMarked?: BoolWithAggregatesFilter<"Lesson"> | boolean
     absenceMarkedAt?: DateTimeNullableWithAggregatesFilter<"Lesson"> | Date | string | null
     voiceSent?: BoolWithAggregatesFilter<"Lesson"> | boolean
@@ -41253,6 +41271,7 @@ export namespace Prisma {
     vocabularySent?: boolean
     vocabularySentAt?: Date | string | null
     feedbacksCompleted?: boolean
+    feedbacksCompletedAt?: Date | string | null
     absenceMarked?: boolean
     absenceMarkedAt?: Date | string | null
     voiceSent?: boolean
@@ -41286,6 +41305,7 @@ export namespace Prisma {
     vocabularySent?: boolean
     vocabularySentAt?: Date | string | null
     feedbacksCompleted?: boolean
+    feedbacksCompletedAt?: Date | string | null
     absenceMarked?: boolean
     absenceMarkedAt?: Date | string | null
     voiceSent?: boolean
@@ -41313,6 +41333,7 @@ export namespace Prisma {
     vocabularySent?: BoolFieldUpdateOperationsInput | boolean
     vocabularySentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     feedbacksCompleted?: BoolFieldUpdateOperationsInput | boolean
+    feedbacksCompletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     absenceMarked?: BoolFieldUpdateOperationsInput | boolean
     absenceMarkedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     voiceSent?: BoolFieldUpdateOperationsInput | boolean
@@ -41346,6 +41367,7 @@ export namespace Prisma {
     vocabularySent?: BoolFieldUpdateOperationsInput | boolean
     vocabularySentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     feedbacksCompleted?: BoolFieldUpdateOperationsInput | boolean
+    feedbacksCompletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     absenceMarked?: BoolFieldUpdateOperationsInput | boolean
     absenceMarkedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     voiceSent?: BoolFieldUpdateOperationsInput | boolean
@@ -41376,6 +41398,7 @@ export namespace Prisma {
     vocabularySent?: boolean
     vocabularySentAt?: Date | string | null
     feedbacksCompleted?: boolean
+    feedbacksCompletedAt?: Date | string | null
     absenceMarked?: boolean
     absenceMarkedAt?: Date | string | null
     voiceSent?: boolean
@@ -41399,6 +41422,7 @@ export namespace Prisma {
     vocabularySent?: BoolFieldUpdateOperationsInput | boolean
     vocabularySentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     feedbacksCompleted?: BoolFieldUpdateOperationsInput | boolean
+    feedbacksCompletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     absenceMarked?: BoolFieldUpdateOperationsInput | boolean
     absenceMarkedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     voiceSent?: BoolFieldUpdateOperationsInput | boolean
@@ -41425,6 +41449,7 @@ export namespace Prisma {
     vocabularySent?: BoolFieldUpdateOperationsInput | boolean
     vocabularySentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     feedbacksCompleted?: BoolFieldUpdateOperationsInput | boolean
+    feedbacksCompletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     absenceMarked?: BoolFieldUpdateOperationsInput | boolean
     absenceMarkedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     voiceSent?: BoolFieldUpdateOperationsInput | boolean
@@ -44335,6 +44360,7 @@ export namespace Prisma {
     vocabularySent?: SortOrder
     vocabularySentAt?: SortOrder
     feedbacksCompleted?: SortOrder
+    feedbacksCompletedAt?: SortOrder
     absenceMarked?: SortOrder
     absenceMarkedAt?: SortOrder
     voiceSent?: SortOrder
@@ -44365,6 +44391,7 @@ export namespace Prisma {
     vocabularySent?: SortOrder
     vocabularySentAt?: SortOrder
     feedbacksCompleted?: SortOrder
+    feedbacksCompletedAt?: SortOrder
     absenceMarked?: SortOrder
     absenceMarkedAt?: SortOrder
     voiceSent?: SortOrder
@@ -44391,6 +44418,7 @@ export namespace Prisma {
     vocabularySent?: SortOrder
     vocabularySentAt?: SortOrder
     feedbacksCompleted?: SortOrder
+    feedbacksCompletedAt?: SortOrder
     absenceMarked?: SortOrder
     absenceMarkedAt?: SortOrder
     voiceSent?: SortOrder
@@ -50799,6 +50827,7 @@ export namespace Prisma {
     vocabularySent?: boolean
     vocabularySentAt?: Date | string | null
     feedbacksCompleted?: boolean
+    feedbacksCompletedAt?: Date | string | null
     absenceMarked?: boolean
     absenceMarkedAt?: Date | string | null
     voiceSent?: boolean
@@ -50830,6 +50859,7 @@ export namespace Prisma {
     vocabularySent?: boolean
     vocabularySentAt?: Date | string | null
     feedbacksCompleted?: boolean
+    feedbacksCompletedAt?: Date | string | null
     absenceMarked?: boolean
     absenceMarkedAt?: Date | string | null
     voiceSent?: boolean
@@ -51273,6 +51303,7 @@ export namespace Prisma {
     vocabularySent?: BoolFilter<"Lesson"> | boolean
     vocabularySentAt?: DateTimeNullableFilter<"Lesson"> | Date | string | null
     feedbacksCompleted?: BoolFilter<"Lesson"> | boolean
+    feedbacksCompletedAt?: DateTimeNullableFilter<"Lesson"> | Date | string | null
     absenceMarked?: BoolFilter<"Lesson"> | boolean
     absenceMarkedAt?: DateTimeNullableFilter<"Lesson"> | Date | string | null
     voiceSent?: BoolFilter<"Lesson"> | boolean
@@ -51667,6 +51698,7 @@ export namespace Prisma {
     vocabularySent?: boolean
     vocabularySentAt?: Date | string | null
     feedbacksCompleted?: boolean
+    feedbacksCompletedAt?: Date | string | null
     absenceMarked?: boolean
     absenceMarkedAt?: Date | string | null
     voiceSent?: boolean
@@ -51698,6 +51730,7 @@ export namespace Prisma {
     vocabularySent?: boolean
     vocabularySentAt?: Date | string | null
     feedbacksCompleted?: boolean
+    feedbacksCompletedAt?: Date | string | null
     absenceMarked?: boolean
     absenceMarkedAt?: Date | string | null
     voiceSent?: boolean
@@ -51735,6 +51768,7 @@ export namespace Prisma {
     vocabularySent?: boolean
     vocabularySentAt?: Date | string | null
     feedbacksCompleted?: boolean
+    feedbacksCompletedAt?: Date | string | null
     absenceMarked?: boolean
     absenceMarkedAt?: Date | string | null
     voiceSent?: boolean
@@ -51766,6 +51800,7 @@ export namespace Prisma {
     vocabularySent?: boolean
     vocabularySentAt?: Date | string | null
     feedbacksCompleted?: boolean
+    feedbacksCompletedAt?: Date | string | null
     absenceMarked?: boolean
     absenceMarkedAt?: Date | string | null
     voiceSent?: boolean
@@ -54741,6 +54776,7 @@ export namespace Prisma {
     vocabularySent?: boolean
     vocabularySentAt?: Date | string | null
     feedbacksCompleted?: boolean
+    feedbacksCompletedAt?: Date | string | null
     absenceMarked?: boolean
     absenceMarkedAt?: Date | string | null
     voiceSent?: boolean
@@ -54773,6 +54809,7 @@ export namespace Prisma {
     vocabularySent?: boolean
     vocabularySentAt?: Date | string | null
     feedbacksCompleted?: boolean
+    feedbacksCompletedAt?: Date | string | null
     absenceMarked?: boolean
     absenceMarkedAt?: Date | string | null
     voiceSent?: boolean
@@ -54935,6 +54972,7 @@ export namespace Prisma {
     vocabularySent?: BoolFieldUpdateOperationsInput | boolean
     vocabularySentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     feedbacksCompleted?: BoolFieldUpdateOperationsInput | boolean
+    feedbacksCompletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     absenceMarked?: BoolFieldUpdateOperationsInput | boolean
     absenceMarkedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     voiceSent?: BoolFieldUpdateOperationsInput | boolean
@@ -54967,6 +55005,7 @@ export namespace Prisma {
     vocabularySent?: BoolFieldUpdateOperationsInput | boolean
     vocabularySentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     feedbacksCompleted?: BoolFieldUpdateOperationsInput | boolean
+    feedbacksCompletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     absenceMarked?: BoolFieldUpdateOperationsInput | boolean
     absenceMarkedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     voiceSent?: BoolFieldUpdateOperationsInput | boolean
@@ -55125,6 +55164,7 @@ export namespace Prisma {
     vocabularySent?: boolean
     vocabularySentAt?: Date | string | null
     feedbacksCompleted?: boolean
+    feedbacksCompletedAt?: Date | string | null
     absenceMarked?: boolean
     absenceMarkedAt?: Date | string | null
     voiceSent?: boolean
@@ -55157,6 +55197,7 @@ export namespace Prisma {
     vocabularySent?: boolean
     vocabularySentAt?: Date | string | null
     feedbacksCompleted?: boolean
+    feedbacksCompletedAt?: Date | string | null
     absenceMarked?: boolean
     absenceMarkedAt?: Date | string | null
     voiceSent?: boolean
@@ -55325,6 +55366,7 @@ export namespace Prisma {
     vocabularySent?: BoolFieldUpdateOperationsInput | boolean
     vocabularySentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     feedbacksCompleted?: BoolFieldUpdateOperationsInput | boolean
+    feedbacksCompletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     absenceMarked?: BoolFieldUpdateOperationsInput | boolean
     absenceMarkedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     voiceSent?: BoolFieldUpdateOperationsInput | boolean
@@ -55357,6 +55399,7 @@ export namespace Prisma {
     vocabularySent?: BoolFieldUpdateOperationsInput | boolean
     vocabularySentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     feedbacksCompleted?: BoolFieldUpdateOperationsInput | boolean
+    feedbacksCompletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     absenceMarked?: BoolFieldUpdateOperationsInput | boolean
     absenceMarkedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     voiceSent?: BoolFieldUpdateOperationsInput | boolean
@@ -56589,6 +56632,7 @@ export namespace Prisma {
     vocabularySent?: boolean
     vocabularySentAt?: Date | string | null
     feedbacksCompleted?: boolean
+    feedbacksCompletedAt?: Date | string | null
     absenceMarked?: boolean
     absenceMarkedAt?: Date | string | null
     voiceSent?: boolean
@@ -56621,6 +56665,7 @@ export namespace Prisma {
     vocabularySent?: boolean
     vocabularySentAt?: Date | string | null
     feedbacksCompleted?: boolean
+    feedbacksCompletedAt?: Date | string | null
     absenceMarked?: boolean
     absenceMarkedAt?: Date | string | null
     voiceSent?: boolean
@@ -56799,6 +56844,7 @@ export namespace Prisma {
     vocabularySent?: BoolFieldUpdateOperationsInput | boolean
     vocabularySentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     feedbacksCompleted?: BoolFieldUpdateOperationsInput | boolean
+    feedbacksCompletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     absenceMarked?: BoolFieldUpdateOperationsInput | boolean
     absenceMarkedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     voiceSent?: BoolFieldUpdateOperationsInput | boolean
@@ -56831,6 +56877,7 @@ export namespace Prisma {
     vocabularySent?: BoolFieldUpdateOperationsInput | boolean
     vocabularySentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     feedbacksCompleted?: BoolFieldUpdateOperationsInput | boolean
+    feedbacksCompletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     absenceMarked?: BoolFieldUpdateOperationsInput | boolean
     absenceMarkedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     voiceSent?: BoolFieldUpdateOperationsInput | boolean
@@ -57265,6 +57312,7 @@ export namespace Prisma {
     vocabularySent?: boolean
     vocabularySentAt?: Date | string | null
     feedbacksCompleted?: boolean
+    feedbacksCompletedAt?: Date | string | null
     absenceMarked?: boolean
     absenceMarkedAt?: Date | string | null
     voiceSent?: boolean
@@ -57297,6 +57345,7 @@ export namespace Prisma {
     vocabularySent?: boolean
     vocabularySentAt?: Date | string | null
     feedbacksCompleted?: boolean
+    feedbacksCompletedAt?: Date | string | null
     absenceMarked?: boolean
     absenceMarkedAt?: Date | string | null
     voiceSent?: boolean
@@ -57471,6 +57520,7 @@ export namespace Prisma {
     vocabularySent?: BoolFieldUpdateOperationsInput | boolean
     vocabularySentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     feedbacksCompleted?: BoolFieldUpdateOperationsInput | boolean
+    feedbacksCompletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     absenceMarked?: BoolFieldUpdateOperationsInput | boolean
     absenceMarkedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     voiceSent?: BoolFieldUpdateOperationsInput | boolean
@@ -57503,6 +57553,7 @@ export namespace Prisma {
     vocabularySent?: BoolFieldUpdateOperationsInput | boolean
     vocabularySentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     feedbacksCompleted?: BoolFieldUpdateOperationsInput | boolean
+    feedbacksCompletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     absenceMarked?: BoolFieldUpdateOperationsInput | boolean
     absenceMarkedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     voiceSent?: BoolFieldUpdateOperationsInput | boolean
@@ -59456,6 +59507,7 @@ export namespace Prisma {
     vocabularySent?: boolean
     vocabularySentAt?: Date | string | null
     feedbacksCompleted?: boolean
+    feedbacksCompletedAt?: Date | string | null
     absenceMarked?: boolean
     absenceMarkedAt?: Date | string | null
     voiceSent?: boolean
@@ -59626,6 +59678,7 @@ export namespace Prisma {
     vocabularySent?: BoolFieldUpdateOperationsInput | boolean
     vocabularySentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     feedbacksCompleted?: BoolFieldUpdateOperationsInput | boolean
+    feedbacksCompletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     absenceMarked?: BoolFieldUpdateOperationsInput | boolean
     absenceMarkedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     voiceSent?: BoolFieldUpdateOperationsInput | boolean
@@ -59657,6 +59710,7 @@ export namespace Prisma {
     vocabularySent?: BoolFieldUpdateOperationsInput | boolean
     vocabularySentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     feedbacksCompleted?: BoolFieldUpdateOperationsInput | boolean
+    feedbacksCompletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     absenceMarked?: BoolFieldUpdateOperationsInput | boolean
     absenceMarkedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     voiceSent?: BoolFieldUpdateOperationsInput | boolean
@@ -59686,6 +59740,7 @@ export namespace Prisma {
     vocabularySent?: BoolFieldUpdateOperationsInput | boolean
     vocabularySentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     feedbacksCompleted?: BoolFieldUpdateOperationsInput | boolean
+    feedbacksCompletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     absenceMarked?: BoolFieldUpdateOperationsInput | boolean
     absenceMarkedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     voiceSent?: BoolFieldUpdateOperationsInput | boolean
@@ -59980,6 +60035,7 @@ export namespace Prisma {
     vocabularySent?: boolean
     vocabularySentAt?: Date | string | null
     feedbacksCompleted?: boolean
+    feedbacksCompletedAt?: Date | string | null
     absenceMarked?: boolean
     absenceMarkedAt?: Date | string | null
     voiceSent?: boolean
@@ -60005,6 +60061,7 @@ export namespace Prisma {
     vocabularySent?: boolean
     vocabularySentAt?: Date | string | null
     feedbacksCompleted?: boolean
+    feedbacksCompletedAt?: Date | string | null
     absenceMarked?: boolean
     absenceMarkedAt?: Date | string | null
     voiceSent?: boolean
@@ -60396,6 +60453,7 @@ export namespace Prisma {
     vocabularySent?: BoolFieldUpdateOperationsInput | boolean
     vocabularySentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     feedbacksCompleted?: BoolFieldUpdateOperationsInput | boolean
+    feedbacksCompletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     absenceMarked?: BoolFieldUpdateOperationsInput | boolean
     absenceMarkedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     voiceSent?: BoolFieldUpdateOperationsInput | boolean
@@ -60427,6 +60485,7 @@ export namespace Prisma {
     vocabularySent?: BoolFieldUpdateOperationsInput | boolean
     vocabularySentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     feedbacksCompleted?: BoolFieldUpdateOperationsInput | boolean
+    feedbacksCompletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     absenceMarked?: BoolFieldUpdateOperationsInput | boolean
     absenceMarkedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     voiceSent?: BoolFieldUpdateOperationsInput | boolean
@@ -60456,6 +60515,7 @@ export namespace Prisma {
     vocabularySent?: BoolFieldUpdateOperationsInput | boolean
     vocabularySentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     feedbacksCompleted?: BoolFieldUpdateOperationsInput | boolean
+    feedbacksCompletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     absenceMarked?: BoolFieldUpdateOperationsInput | boolean
     absenceMarkedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     voiceSent?: BoolFieldUpdateOperationsInput | boolean
@@ -60479,6 +60539,7 @@ export namespace Prisma {
     vocabularySent?: BoolFieldUpdateOperationsInput | boolean
     vocabularySentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     feedbacksCompleted?: BoolFieldUpdateOperationsInput | boolean
+    feedbacksCompletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     absenceMarked?: BoolFieldUpdateOperationsInput | boolean
     absenceMarkedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     voiceSent?: BoolFieldUpdateOperationsInput | boolean
@@ -60510,6 +60571,7 @@ export namespace Prisma {
     vocabularySent?: BoolFieldUpdateOperationsInput | boolean
     vocabularySentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     feedbacksCompleted?: BoolFieldUpdateOperationsInput | boolean
+    feedbacksCompletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     absenceMarked?: BoolFieldUpdateOperationsInput | boolean
     absenceMarkedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     voiceSent?: BoolFieldUpdateOperationsInput | boolean
@@ -60539,6 +60601,7 @@ export namespace Prisma {
     vocabularySent?: BoolFieldUpdateOperationsInput | boolean
     vocabularySentAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     feedbacksCompleted?: BoolFieldUpdateOperationsInput | boolean
+    feedbacksCompletedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     absenceMarked?: BoolFieldUpdateOperationsInput | boolean
     absenceMarkedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     voiceSent?: BoolFieldUpdateOperationsInput | boolean

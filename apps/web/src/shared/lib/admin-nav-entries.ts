@@ -28,7 +28,7 @@ export function getAdminNavEntries(role: string): AdminNavEntry[] {
   ];
 
   const tail: AdminNavEntry[] = [
-    { labelKey: 'dailyDuties', href: '/admin/calendar', icon: { type: 'sidebar', icon: 'iconCalendar' } },
+    { labelKey: 'dailyDuties', href: '/admin/daily-duties', icon: { type: 'sidebar', icon: 'iconCalendar' } },
     {
       labelKey: 'attendanceRegister',
       href: '/admin/attendance-register',

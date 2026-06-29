@@ -17,6 +17,8 @@ interface TeachersFiltersProps {
   viewMode: 'list' | 'board';
   onViewModeChange: (mode: 'list' | 'board') => void;
   onAddTeacher: () => void;
+  hideViewToggle?: boolean;
+  hideAddButton?: boolean;
   t: ReturnType<typeof useTranslations<'teachers'>>;
   tStatus: ReturnType<typeof useTranslations<'status'>>;
   isDeleting: boolean;
@@ -30,6 +32,8 @@ export function TeachersFilters({
   viewMode,
   onViewModeChange,
   onAddTeacher,
+  hideViewToggle = false,
+  hideAddButton = false,
   t,
   tStatus,
   isDeleting,
@@ -105,7 +109,7 @@ export function TeachersFilters({
 
       </div>
 
-      {isLg ? (
+      {isLg && !hideViewToggle ? (
         <div className="flex w-full shrink-0 items-center gap-3 sm:w-auto">
           <ListBoardViewToggle
             value={viewMode}
@@ -114,22 +118,24 @@ export function TeachersFilters({
             boardLabel={tGroups('boardView')}
             className={cn(toolbarControlClass, 'w-full sm:w-auto')}
           />
-          <Button
-            size="lg"
-            className={cn(
-              toolbarControlClass,
-              'whitespace-nowrap px-4 py-0 text-sm font-medium bg-[#1010a3] text-white hover:bg-[#1010a3]/90',
-            )}
-            onClick={onAddTeacher}
-            disabled={isDeleting}
-          >
-            + {t('addTeacher')}
-          </Button>
+          {!hideAddButton ? (
+            <Button
+              size="lg"
+              className={cn(
+                toolbarControlClass,
+                'whitespace-nowrap px-4 py-0 text-sm font-medium bg-[#1010a3] text-white hover:bg-[#1010a3]/90',
+              )}
+              onClick={onAddTeacher}
+              disabled={isDeleting}
+            >
+              + {t('addTeacher')}
+            </Button>
+          ) : null}
         </div>
       ) : null}
 
       {/* Add Teacher Button (mobile + tablet) */}
-      {!isLg ? (
+      {!isLg && !hideAddButton ? (
         <div className="w-full shrink-0">
           <div className="hidden w-full items-center justify-end gap-3 tablet:flex">
             <Button

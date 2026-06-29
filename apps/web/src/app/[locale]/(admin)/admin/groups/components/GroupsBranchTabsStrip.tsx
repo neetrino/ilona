@@ -8,20 +8,27 @@ import { GroupsUniqueTotalStat } from './GroupsUniqueTotalStat';
 
 interface GroupsBranchTabsStripProps {
   centers: CenterWithCount[];
+  /** Unfiltered center count — distinguishes "no centers exist" from "search filtered all out". */
+  totalCentersCount?: number;
   activeCenterId: string | null;
+  allGroupsActive?: boolean;
   totalGroupsAcrossCenters: number;
   isLoading: boolean;
   onCenterSelect: (centerId: string) => void;
+  onTotalGroupsClick?: () => void;
   t: ReturnType<typeof useTranslations<'groups'>>;
   tabIdPrefix?: string;
 }
 
 export function GroupsBranchTabsStrip({
   centers,
+  totalCentersCount,
   activeCenterId,
+  allGroupsActive = false,
   totalGroupsAcrossCenters,
   isLoading,
   onCenterSelect,
+  onTotalGroupsClick,
   t,
   tabIdPrefix = 'branch-tab',
 }: GroupsBranchTabsStripProps) {
@@ -30,6 +37,10 @@ export function GroupsBranchTabsStrip({
   }
 
   if (centers.length === 0) {
+    const hasCenters = (totalCentersCount ?? 0) > 0;
+    if (hasCenters) {
+      return null;
+    }
     return <div className="py-4 text-sm text-[#8b8b90]">{t('noBranchesCreateCenter')}</div>;
   }
 
@@ -38,6 +49,8 @@ export function GroupsBranchTabsStrip({
       <GroupsUniqueTotalStat
         count={totalGroupsAcrossCenters}
         isLoading={isLoading}
+        isActive={allGroupsActive}
+        onClick={onTotalGroupsClick}
         t={t}
       />
       <div className="min-w-0 flex-1 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">

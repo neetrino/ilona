@@ -1,12 +1,11 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { useTranslations, useLocale } from 'next-intl';
+import { useTranslations } from 'next-intl';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
-import { Button, Badge } from '@/shared/components/ui';
+import { Button } from '@/shared/components/ui';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { useUploadAvatar, useDeleteAvatar, useUpdateProfile } from '@/features/settings/hooks/useSettings';
-import { Locale } from '@/config/i18n';
 import {
   portalCardClass,
   portalInnerCardClass,
@@ -25,8 +24,6 @@ export default function AdminProfilePage() {
   const [uploadSuccess, setUploadSuccess] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const t = useTranslations('settings');
-  const tCommon = useTranslations('common');
-  const _locale = useLocale() as Locale;
 
   const uploadAvatarMutation = useUploadAvatar();
   const deleteAvatarMutation = useDeleteAvatar();
@@ -35,6 +32,7 @@ export default function AdminProfilePage() {
   // Profile form state
   const [firstName, setFirstName] = useState(user?.firstName || '');
   const [lastName, setLastName] = useState(user?.lastName || '');
+  const [email, setEmail] = useState(user?.email || '');
   const [phone, setPhone] = useState(user?.phone || '');
 
   // Update form state when user changes
@@ -42,6 +40,7 @@ export default function AdminProfilePage() {
     if (user) {
       setFirstName(user.firstName || '');
       setLastName(user.lastName || '');
+      setEmail(user.email || '');
       setPhone(user.phone || '');
     }
   }, [user]);
@@ -52,10 +51,18 @@ export default function AdminProfilePage() {
     setUploadError(null);
     setUploadSuccess(null);
 
+    const normalizedEmail = email.trim().toLowerCase();
+    if (!normalizedEmail) {
+      setUploadError('Email address is required.');
+      setIsSaving(false);
+      return;
+    }
+
     try {
       await updateProfileMutation.mutateAsync({
         firstName,
         lastName,
+        email: normalizedEmail,
         phone: phone || undefined,
       });
       setUploadSuccess('Profile updated successfully!');
@@ -138,7 +145,6 @@ export default function AdminProfilePage() {
             <h2 className="text-[clamp(1.1rem,1.8vw,1.35rem)] font-semibold tracking-tight text-[#1010a3]">
               {t('profileInformation')}
             </h2>
-            <p className="text-sm text-[#8b8b90]">{t('contactAdminToChangeEmail')}</p>
           </div>
         </section>
 
@@ -253,9 +259,10 @@ export default function AdminProfilePage() {
               <label className={portalLabelClass}>{t('emailAddress')}</label>
               <input
                 type="email"
-                value={user?.email || ''}
-                disabled
-                className={`${portalInputClass} cursor-not-allowed bg-[#f6f6f7] text-[#8b8b90]`}
+                autoComplete="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className={portalInputClass}
               />
             </div>
 
@@ -268,14 +275,6 @@ export default function AdminProfilePage() {
                 placeholder="+1 234 567 8900"
                 className={portalInputClass}
               />
-            </div>
-
-            <div className={portalInnerCardClass}>
-              <label className={portalLabelClass}>{tCommon('status')}</label>
-              <div className="flex flex-wrap items-center gap-2">
-                <Badge variant="info">{user?.role || 'ADMIN'}</Badge>
-                <span className="text-sm text-[#8b8b90]">{t('assignedBySystem')}</span>
-              </div>
             </div>
 
             <div className="flex justify-end pt-2">

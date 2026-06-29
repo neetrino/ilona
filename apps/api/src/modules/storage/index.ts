@@ -1,2 +1,3 @@
 export { StorageModule } from './storage.module';
-export { StorageService, UploadResult, PresignedUrlResult } from './storage.service';
+export { StorageService } from './storage.service';
+export type { UploadResult, PresignedUrlResult } from './storage.types';

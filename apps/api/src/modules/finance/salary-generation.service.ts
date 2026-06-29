@@ -2,8 +2,11 @@ import { Injectable, BadRequestException, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { SalaryStatus, LessonStatus } from '@ilona/database';
 import { SalaryCalculationService } from './salary-calculation.service';
-import type { CompletedActions } from '@ilona/types';
 import { lessonsPayableToTeacherWhere } from '../../common/lesson-instructor';
+import {
+  getPaymentEligibleActions,
+  lessonDutyPaymentSelect,
+} from './lesson-duty-payment.util';
 
 /**
  * Service responsible for salary record generation
@@ -89,16 +92,7 @@ export class SalaryGenerationService {
           not: LessonStatus.CANCELLED,
         },
       },
-      select: { 
-        id: true,
-        feedbacksCompleted: true,
-        absenceMarked: true,
-        voiceSent: true,
-        textSent: true,
-        dailyPlan: {
-          select: { id: true },
-        },
-      },
+      select: lessonDutyPaymentSelect,
     });
 
     const lessonsCount = lessons.length;
@@ -147,43 +141,28 @@ export class SalaryGenerationService {
       const baseSalary = lessonRate;
       totalBaseSalary += baseSalary;
 
-      // Calculate completed actions
-      // Type assertion needed until Prisma client is regenerated
-      const lessonData = lesson as {
-        id: string;
-        absenceMarked: boolean | null;
-        feedbacksCompleted: boolean | null;
-        voiceSent: boolean | null;
-        textSent: boolean | null;
-        dailyPlan: { id: string } | null;
-      };
-      const completedActions: CompletedActions = {
-        absence: lessonData.absenceMarked ?? false,
-        feedbacks: lessonData.feedbacksCompleted ?? false,
-        voice: lessonData.voiceSent ?? false,
-        text: lessonData.textSent ?? false,
-        dailyPlan: Boolean(lessonData.dailyPlan),
-      };
+      const paymentEligibleActions = getPaymentEligibleActions(lesson);
 
-      // Count completed actions for obligations tracking
-      const completedCount = [
-        completedActions.absence,
-        completedActions.feedbacks,
-        completedActions.voice,
-        completedActions.text,
-        completedActions.dailyPlan,
+      const paidActionCount = [
+        paymentEligibleActions.absence,
+        paymentEligibleActions.feedbacks,
+        paymentEligibleActions.voice,
+        paymentEligibleActions.text,
+        paymentEligibleActions.dailyPlan,
       ].filter(Boolean).length;
       
       const totalActions = 5;
       totalObligationsRequired += totalActions;
-      totalObligationsCompleted += completedCount;
+      totalObligationsCompleted += paidActionCount;
 
-      // Calculate deduction from penalties for missing actions
-      const penaltyDeduction = this.calculationService.calculateDeduction(completedActions, penalties);
+      const penaltyDeduction = this.calculationService.calculateDeduction(paymentEligibleActions, penalties);
       totalPenaltyDeduction += penaltyDeduction;
 
-      // Calculate payable amount: lessonRate - penalty deduction
-      const payable = this.calculationService.calculatePayableAmount(baseSalary, completedActions, penalties);
+      const payable = this.calculationService.calculatePayableAmount(
+        baseSalary,
+        paymentEligibleActions,
+        penalties,
+      );
       totalPayable += payable;
 
       // Get other deductions for this lesson

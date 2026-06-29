@@ -1,6 +1,23 @@
 export type LessonStatus = 'SCHEDULED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED' | 'MISSED';
 export type CompletionStatus = 'DONE' | 'IN_PROCESS' | null;
 
+export type DailyDutiesLessonStatus = 'DONE' | 'CAUTION' | 'IN_PROGRESS' | 'WAITING';
+
+export interface DutyActionStatusDto {
+  completed: boolean;
+  paymentEligible: boolean;
+  completedLate: boolean;
+  overdueUnpaid?: boolean;
+}
+
+export interface LessonDutyActionStatusDto {
+  absence: DutyActionStatusDto;
+  feedback: DutyActionStatusDto;
+  voice: DutyActionStatusDto;
+  text: DutyActionStatusDto;
+  dailyPlan: DutyActionStatusDto;
+}
+
 export interface Lesson {
   id: string;
   groupId: string;
@@ -16,6 +33,7 @@ export interface Lesson {
   vocabularySent: boolean;
   vocabularySentAt?: string;
   feedbacksCompleted?: boolean;
+  feedbacksCompletedAt?: string;
   absenceMarked?: boolean;
   absenceMarkedAt?: string;
   voiceSent?: boolean;
@@ -27,12 +45,14 @@ export interface Lesson {
   // Computed fields from backend
   isLockedForTeacher?: boolean;
   completionStatus?: CompletionStatus;
+  dailyDutiesStatus?: DailyDutiesLessonStatus;
   // Action lock states (for red X indicators)
   isAbsenceLocked?: boolean;
   isFeedbackLocked?: boolean;
   isVoiceLocked?: boolean;
   isTextLocked?: boolean;
   isDailyPlanLocked?: boolean;
+  dutyActionStatus?: LessonDutyActionStatusDto;
   group: {
     id: string;
     name: string;

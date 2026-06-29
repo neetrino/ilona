@@ -94,6 +94,7 @@ export default function TeachersPage() {
     handleCenterChange,
     handleRowClick,
     handleDetailsDrawerClose,
+    handleTotalTeachersClick,
     setIsAddTeacherOpen,
     setIsEditTeacherOpen,
     setIsBulkDeleteDialogOpen,
@@ -151,6 +152,7 @@ export default function TeachersPage() {
             activeCenterTabId={activeCenterTabId}
             onSelectCenter={handleActiveCenterTabChange}
             uniqueTeachersCount={uniqueTeachersCount}
+            onTotalClick={handleTotalTeachersClick}
             teachers={teachers}
             sortBy={sortBy}
             sortOrder={sortOrder}
@@ -179,6 +181,7 @@ export default function TeachersPage() {
             centerOptions={(centersData?.items || []).map((center) => ({
               id: center.id,
               label: center.name,
+              colorHex: center.colorHex,
             }))}
             t={t}
             tStatus={tStatus}
@@ -190,6 +193,7 @@ export default function TeachersPage() {
             activeCenterTabId={activeCenterTabId}
             onSelectCenter={handleActiveCenterTabChange}
             uniqueTeachersCount={uniqueTeachersCount}
+            onTotalClick={handleTotalTeachersClick}
             isLoading={isLoading}
             searchQuery={searchQuery}
             onEdit={handleEditClick}

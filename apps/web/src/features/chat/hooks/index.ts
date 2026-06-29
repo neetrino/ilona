@@ -13,6 +13,7 @@ export {
   useAddGroupChatMember,
   useCreateCustomGroupChat,
   useAddCustomGroupChatMember,
+  useDeleteCustomGroupChat,
   useCustomGroupChats,
   useTeacherGroups,
   useTeacherStudents,

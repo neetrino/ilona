@@ -169,11 +169,17 @@ export function normalizeFooterIconLinks(
  */
 export interface LessonActionData {
   id: string;
+  scheduledAt: Date;
   absenceMarked: boolean | null;
+  absenceMarkedAt?: Date | null;
   feedbacksCompleted: boolean | null;
+  feedbacksCompletedAt?: Date | null;
   voiceSent: boolean | null;
+  voiceSentAt?: Date | null;
   textSent: boolean | null;
-  dailyPlan: { id: string } | null;
+  textSentAt?: Date | null;
+  dailyPlan: { id: string; createdAt?: Date | null } | null;
+  feedbacks?: { createdAt: Date }[];
 }
 
 

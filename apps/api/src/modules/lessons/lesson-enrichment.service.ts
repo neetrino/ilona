@@ -1,18 +1,31 @@
 import { Injectable } from '@nestjs/common';
 import { LessonStatus } from '@ilona/database';
+import {
+  buildDutyActionStatuses,
+  computeDailyDutiesLessonStatus,
+  type DutyActionKey,
+  type DutyActionStatus,
+} from '@ilona/types';
 
 /** Minimal lesson shape needed for enrichment */
 export interface LessonForEnrichment {
   scheduledAt: Date;
   duration: number;
   absenceMarked: boolean;
+  absenceMarkedAt?: Date | null;
   feedbacksCompleted: boolean;
+  feedbacksCompletedAt?: Date | null;
   voiceSent: boolean;
+  voiceSentAt?: Date | null;
   textSent: boolean;
-  dailyPlan: { id: string } | null;
+  textSentAt?: Date | null;
+  dailyPlan: { id: string; createdAt?: Date | null } | null;
   status: LessonStatus;
   completedAt?: Date | null;
+  feedbacks?: { createdAt: Date }[];
 }
+
+export type EnrichedDutyActionStatus = DutyActionStatus;
 
 /**
  * Service responsible for enriching lessons with computed fields
@@ -48,7 +61,7 @@ export class LessonEnrichmentService {
     feedbacksCompleted: boolean;
     voiceSent: boolean;
     textSent: boolean;
-      dailyPlan: { id: string } | null;
+    dailyPlan: { id: string } | null;
   }): boolean {
     return (
       lesson.absenceMarked &&
@@ -76,51 +89,58 @@ export class LessonEnrichmentService {
   ): 'DONE' | 'IN_PROCESS' | null {
     const isPast = this.isLessonPast(lesson.scheduledAt, lesson.duration);
     if (!isPast) {
-      return null; // Future lessons don't have completion status
+      return null;
     }
 
-    const actionsComplete = this.areActionsComplete(lesson);
-    const actionsLocked = this.isLockedForTeacher(lesson.scheduledAt);
-
-    if (actionsComplete || actionsLocked) {
+    if (this.areActionsComplete(lesson)) {
       return 'DONE';
     }
     return 'IN_PROCESS';
   }
 
   /**
-   * Determines if an action should be locked (red X)
-   * Priority:
-   * 1. If action is completed → not locked (green checkmark)
-   * 2. Else if lesson is manually completed → locked (red X)
-   * 3. Else if lesson day has passed (00:00) → locked (red X)
-   * 4. Else → not locked (gray X, editable)
+   * Duty actions remain editable after the payment deadline so teachers can complete late duties.
+   * Completed actions are never locked.
    */
-  isActionLocked(
-    actionCompleted: boolean,
-    lessonStatus: LessonStatus,
-    _completedAt: Date | null | undefined,
-    scheduledAt: Date,
-  ): boolean {
-    // If action is completed, it's not locked (shows green checkmark)
-    if (actionCompleted) {
-      return false;
-    }
+  isActionLocked(_actionCompleted: boolean): boolean {
+    return false;
+  }
 
-    // If lesson is manually marked as completed, lock all unfinished actions
-    // Check status first - if COMPLETED, lock regardless of completedAt (it should always exist but be defensive)
-    if (lessonStatus === 'COMPLETED') {
-      return true;
-    }
-
-    // If lesson day has passed (00:00), lock unfinished actions
-    return this.isLockedForTeacher(scheduledAt);
+  private buildDutyStatuses(lesson: LessonForEnrichment): Record<DutyActionKey, DutyActionStatus> {
+    return buildDutyActionStatuses({
+      scheduledAt: lesson.scheduledAt,
+      absenceMarked: lesson.absenceMarked,
+      absenceMarkedAt: lesson.absenceMarkedAt,
+      feedbacksCompleted: lesson.feedbacksCompleted,
+      feedbacksCompletedAt: lesson.feedbacksCompletedAt,
+      voiceSent: lesson.voiceSent,
+      voiceSentAt: lesson.voiceSentAt,
+      textSent: lesson.textSent,
+      textSentAt: lesson.textSentAt,
+      dailyPlan: lesson.dailyPlan,
+      latestFeedbackAt: lesson.feedbacks?.[0]?.createdAt ?? null,
+    });
   }
 
   /**
    * Enriches lesson with computed fields
    */
   enrichLesson<T extends LessonForEnrichment>(lesson: T) {
+    const dutyStatuses = this.buildDutyStatuses(lesson);
+    const dailyDutiesStatus = computeDailyDutiesLessonStatus({
+      scheduledAt: lesson.scheduledAt,
+      duration: lesson.duration,
+      absenceMarked: lesson.absenceMarked,
+      absenceMarkedAt: lesson.absenceMarkedAt,
+      feedbacksCompleted: lesson.feedbacksCompleted,
+      feedbacksCompletedAt: lesson.feedbacksCompletedAt,
+      voiceSent: lesson.voiceSent,
+      voiceSentAt: lesson.voiceSentAt,
+      textSent: lesson.textSent,
+      textSentAt: lesson.textSentAt,
+      dailyPlan: lesson.dailyPlan,
+      latestFeedbackAt: lesson.feedbacks?.[0]?.createdAt ?? null,
+    });
     const completionStatus = this.getCompletionStatus({
       scheduledAt: lesson.scheduledAt,
       duration: lesson.duration,
@@ -135,43 +155,20 @@ export class LessonEnrichmentService {
       ...lesson,
       isLockedForTeacher: this.isLockedForTeacher(lesson.scheduledAt),
       completionStatus,
+      dailyDutiesStatus,
       dailyPlanCompleted: Boolean(lesson.dailyPlan),
-      isAbsenceLocked: this.isActionLocked(
-        lesson.absenceMarked,
-        lesson.status,
-        lesson.completedAt ?? null,
-        lesson.scheduledAt,
-      ),
-      isFeedbackLocked: this.isActionLocked(
-        lesson.feedbacksCompleted,
-        lesson.status,
-        lesson.completedAt ?? null,
-        lesson.scheduledAt,
-      ),
-      isVoiceLocked: this.isActionLocked(
-        lesson.voiceSent,
-        lesson.status,
-        lesson.completedAt ?? null,
-        lesson.scheduledAt,
-      ),
-      isTextLocked: this.isActionLocked(
-        lesson.textSent,
-        lesson.status,
-        lesson.completedAt ?? null,
-        lesson.scheduledAt,
-      ),
-      isDailyPlanLocked: this.isActionLocked(
-        Boolean(lesson.dailyPlan),
-        lesson.status,
-        lesson.completedAt ?? null,
-        lesson.scheduledAt,
-      ),
+      isAbsenceLocked: this.isActionLocked(lesson.absenceMarked),
+      isFeedbackLocked: this.isActionLocked(lesson.feedbacksCompleted),
+      isVoiceLocked: this.isActionLocked(lesson.voiceSent),
+      isTextLocked: this.isActionLocked(lesson.textSent),
+      isDailyPlanLocked: this.isActionLocked(Boolean(lesson.dailyPlan)),
+      dutyActionStatus: {
+        absence: dutyStatuses.absence,
+        feedback: dutyStatuses.feedbacks,
+        voice: dutyStatuses.voice,
+        text: dutyStatuses.text,
+        dailyPlan: dutyStatuses.dailyPlan,
+      },
     };
   }
 }
-
-
-
-
-
-

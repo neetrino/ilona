@@ -5,7 +5,7 @@ import type { CrmLead } from '@/features/crm/types';
 import { useCrmStatusLabels } from '@/features/crm/hooks/useCrmStatusLabels';
 import { formatPhoneForDisplay, cn } from '@/shared/lib/utils';
 import { useIsIPad } from '@/shared/hooks/useIsIPad';
-import { LessonListDateCell } from '@/shared/components/calendar/LessonListDateCell';
+import { LessonListDateCell } from '@/shared/components/daily-duties/LessonListDateCell';
 
 function CrmListDateTimeCell({
   isoDate,

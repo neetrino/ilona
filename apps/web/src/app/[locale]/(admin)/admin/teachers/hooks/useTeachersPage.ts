@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo, useCallback, useRef, startTransition } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { 
   useTeachers, 
@@ -16,6 +16,7 @@ import { readUrlSearchParam } from '@/shared/lib/url-search-params';
 import { useAppSearchUrl } from '@/shared/hooks/useAppSearchUrl';
 import { countUniqueTeachers, filterTeachersByBranches, groupTeachersByCenter } from '../utils';
 import { useAuthStore } from '@/features/auth/store/auth.store';
+import { getAdminPortalBasePath } from '@/shared/lib/role-routes';
 
 type ViewMode = 'list' | 'board';
 
@@ -30,12 +31,14 @@ const EDIT_TEACHER_URL_PARAM = 'editTeacherId';
 
 export function useTeachersPage() {
   const params = useParams();
+  const router = useRouter();
   const { searchParams, urlRevision, replaceParams } = useAppSearchUrl();
   const locale = params.locale as string;
   const t = useTranslations('teachers');
   const tCommon = useTranslations('common');
   const tStatus = useTranslations('status');
   const { user } = useAuthStore();
+  const portalBasePath = getAdminPortalBasePath(user?.role);
   const managerCenterId = user?.role === 'MANAGER' ? user.managerCenterId : undefined;
 
   const readViewModeFromUrl = useCallback((): ViewMode => {
@@ -516,11 +519,11 @@ export function useTeachersPage() {
     }
   };
 
-  const handleCenterChange = async (teacherId: string, centerId: string | null) => {
+  const handleCenterChange = async (teacherId: string, centerIds: string[]) => {
     await updateTeacher.mutateAsync({
       id: teacherId,
       data: {
-        centerIds: centerId ? [centerId] : [],
+        centerIds,
       },
     });
   };
@@ -536,6 +539,10 @@ export function useTeachersPage() {
   const handleDetailsDrawerClose = () => {
     replaceParams({ teacherId: null });
   };
+
+  const handleTotalTeachersClick = useCallback(() => {
+    router.push(`/${locale}${portalBasePath}/teachers/all`);
+  }, [router, locale, portalBasePath]);
 
   const uniqueTeachersCount = useMemo(() => {
     const clientCount = countUniqueTeachers(filteredTeachers);
@@ -635,6 +642,7 @@ export function useTeachersPage() {
     handleCenterChange,
     handleRowClick,
     handleDetailsDrawerClose,
+    handleTotalTeachersClick,
     setIsAddTeacherOpen,
     setIsEditTeacherOpen,
     setIsBulkDeleteDialogOpen,

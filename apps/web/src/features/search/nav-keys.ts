@@ -6,7 +6,7 @@ export const GLOBAL_SEARCH_PAGE_NAV_KEYS = [
   'groups',
   'crm',
   'schedule',
-  'calendar',
+  'dailyDuties',
   'attendanceRegister',
   'recording',
   'settings',

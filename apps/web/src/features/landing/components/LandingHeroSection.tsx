@@ -1,0 +1,224 @@
+'use client';
+
+import Link from 'next/link';
+import Image from 'next/image';
+import { cn } from '@/shared/lib/utils';
+import { BUTTON_HOVER_CLASS, HERO_PERSON_IMAGE, HERO_UK_BADGE_IMAGE, HERO_US_BADGE_IMAGE } from '../landingConstants';
+import { paytoneOne } from '../landingFont';
+import type { LandingSectionProps } from '../types';
+
+export function LandingHeroSection({ tr, isHy }: LandingSectionProps) {
+  const heroIntroVisibilityClass = 'opacity-100';
+
+  return (
+    <>
+      <section
+        id="home"
+        className="relative scroll-mt-28 max-tablet:bg-[#f9fafb] max-tablet:pt-[105px] max-tablet:overflow-x-visible max-tablet:pb-0 tablet:z-0 tablet:h-[810px] tablet:min-h-[810px] tablet:overflow-hidden tablet:bg-white tablet:pt-0 tablet:max-navDesktop:overflow-visible tablet:max-navDesktop:pt-[48px] navDesktop:overflow-hidden"
+      >
+        <div className="relative isolate w-full min-h-[1050px] overflow-visible tablet:hidden">
+          <div
+            className={cn(
+              'absolute left-[14px] top-[20px] z-20 text-[#093394]',
+              isHy ? 'w-[250px]' : 'w-[220px]',
+            )}
+          >
+            <h1
+              className={cn(
+                isHy ? '' : paytoneOne.className,
+                isHy
+                  ? 'text-[1.85rem] font-extrabold leading-[2.5rem] tracking-[0.004rem]'
+                  : 'text-[2.75rem] font-normal leading-[2.55rem] tracking-[0.018rem]',
+              )}
+            >
+              {tr('Learn English', 'Սովորիր անգլերեն')}
+              <br />
+              {tr('with Confidence', 'վստահությամբ')}
+            </h1>
+          </div>
+      
+          <p
+            className={cn(
+              'absolute left-[17px] z-20 w-[150px] text-[14px] leading-[22px] tracking-[0.07px] text-black/50',
+              isHy ? 'top-[198px]' : 'top-[218px]',
+            )}
+          >
+            {tr(
+              'Expert teachers, modern methods, and proven results. Your journey to fluency starts here.',
+              'Փորձառու ուսուցիչներ, ժամանակակից մեթոդներ և իրական արդյունքներ։ Ձեր անգլերենի ճանապարհը սկսվում է այստեղ։',
+            )}
+          </p>
+      
+          <div className="absolute -right-[113px] top-[34px] z-[2] h-[231px] w-[231px] overflow-hidden rounded-full">
+            <Image
+              src={HERO_UK_BADGE_IMAGE}
+              alt="UK flag badge"
+              fill
+              priority
+              loading="eager"
+              fetchPriority="high"
+              sizes="231px"
+              className="object-cover object-center"
+            />
+          </div>
+      
+          <div className="absolute left-[58px] top-[420px] z-[2] h-[236px] w-[236px] overflow-hidden rounded-full">
+            <Image
+              src={HERO_US_BADGE_IMAGE}
+              alt="US flag badge"
+              fill
+              priority
+              loading="eager"
+              fetchPriority="high"
+              sizes="236px"
+              className="object-cover object-[20%_center]"
+            />
+          </div>
+      
+          <div className="pointer-events-none absolute left-[24px] top-[148px] z-10 h-[900px] w-[520px] overflow-visible">
+            <div className="relative h-full w-full overflow-hidden rounded-t-[155px]">
+              <Image
+                src={HERO_PERSON_IMAGE}
+                alt="Hero student illustration"
+                fill
+                priority
+                loading="eager"
+                fetchPriority="high"
+                sizes="520px"
+                className="object-cover object-top"
+              />
+            </div>
+          </div>
+      
+          <Link
+            href="/login"
+            className={cn(
+              'absolute left-3 right-3 top-[615px] z-20 inline-flex h-[56px] items-center justify-center rounded-[999px] bg-white text-[14px] font-semibold text-[#1447e6] shadow-[0px_10px_15px_-3px_rgba(0,0,0,0.1),0px_4px_6px_-4px_rgba(0,0,0,0.1)]',
+              BUTTON_HOVER_CLASS,
+            )}
+          >
+            {tr('Register Now', 'Գրանցվել հիմա')}
+          </Link>
+      
+          <Link
+            href="#branches"
+            className={cn(
+              'absolute left-3 right-3 top-[685px] z-20 inline-flex h-[52px] items-center justify-center rounded-[999px] border border-[#1447e6] bg-white/10 text-[14px] font-normal text-[#1548e6] backdrop-blur-md',
+              BUTTON_HOVER_CLASS,
+            )}
+          >
+            {tr('Choose Branch', 'Ընտրել մասնաճյուղ')}
+          </Link>
+        </div>
+      
+        <div className="relative -top-4 mx-auto max-tablet:hidden h-full w-full max-w-[1280px] overflow-hidden tablet:max-navDesktop:top-0 tablet:max-navDesktop:overflow-visible navDesktop:-top-[16px] navDesktop:overflow-hidden">
+          <div
+            className={cn(
+              'absolute top-[227px] w-[992px] text-[#093394] transition-opacity duration-300',
+              heroIntroVisibilityClass,
+              isHy ? 'left-[33px]' : 'left-[36px]',
+            )}
+          >
+            <h1
+              className={cn(
+                isHy ? '' : paytoneOne.className,
+                isHy
+                  ? 'text-[5.1rem] not-italic font-extrabold leading-[5.7rem] tracking-[0.004rem]'
+                  : 'text-[5.75rem] not-italic font-normal leading-[6.375rem] tracking-[0.00769rem]',
+              )}
+            >
+              {tr('Learn English', 'Սովորիր անգլերեն')}
+              <br />
+              {tr('with Confidence', 'վստահությամբ')}
+            </h1>
+          </div>
+      
+          <p
+            className={cn(
+              'absolute left-[36px] top-[470px] w-[486px] text-[16px] font-normal leading-[24px] tracking-[0.0703px] text-black/50 transition-opacity duration-300',
+              heroIntroVisibilityClass,
+            )}
+          >
+            {tr(
+              'Expert teachers, modern methods, and proven results. Your journey to fluency starts here.',
+              'Փորձառու ուսուցիչներ, ժամանակակից մեթոդներ և իրական արդյունքներ։ Ձեր անգլերենի ճանապարհը սկսվում է այստեղ։',
+            )}
+          </p>
+      
+          <Link
+            href="/login"
+            className={cn(
+              'absolute left-[36px] top-[586px] inline-flex h-[56px] w-[180.633px] items-center justify-center rounded-[16777200px] bg-white text-[16px] font-semibold tracking-[-0.3125px] text-[#1447e6] shadow-[0px_20px_25px_-5px_rgba(0,0,0,0.1),0px_8px_10px_-6px_rgba(0,0,0,0.1)] transition-opacity duration-300',
+              heroIntroVisibilityClass,
+              BUTTON_HOVER_CLASS,
+            )}
+          >
+            {tr('Register Now', 'Գրանցվել հիմա')}
+          </Link>
+          <Link
+            href="#branches"
+            className={cn(
+              'absolute left-[237px] top-[586px] inline-flex h-[60px] w-[199.055px] items-center justify-center rounded-[16777200px] border-2 border-[#1447e6] bg-[rgba(255,255,255,0.1)] text-[16px] font-normal tracking-[-0.3125px] text-[#1548e6] transition-opacity duration-300',
+              heroIntroVisibilityClass,
+              BUTTON_HOVER_CLASS,
+            )}
+          >
+            {tr('Choose Branch', 'Ընտրել մասնաճյուղ')}
+          </Link>
+      
+          <div
+            className={cn(
+              'absolute left-[990px] top-[158px] h-[290px] w-[290px] overflow-hidden rounded-full transition-opacity duration-300',
+              'opacity-100',
+            )}
+          >
+            <Image
+              src={HERO_UK_BADGE_IMAGE}
+              alt="UK flag badge"
+              fill
+              priority
+              loading="eager"
+              fetchPriority="high"
+              sizes="290px"
+              className="object-cover object-[90%_center]"
+            />
+          </div>
+          <div
+            className={cn(
+              'absolute left-[654px] top-[454px] h-[281px] w-[281px] overflow-hidden rounded-full transition-opacity duration-300',
+              'opacity-100',
+            )}
+          >
+            <Image
+              src={HERO_US_BADGE_IMAGE}
+              alt="US flag badge"
+              fill
+              priority
+              loading="eager"
+              fetchPriority="high"
+              sizes="281px"
+              className="object-cover object-[20%_center]"
+            />
+          </div>
+          <div
+            className={cn(
+              'absolute left-[789px] top-[140px] z-20 h-[873px] w-[393px] transition-opacity duration-300 tablet:max-navDesktop:top-[88px] tablet:max-navDesktop:z-[1] navDesktop:top-[140px] navDesktop:z-20',
+              'opacity-100',
+            )}
+          >
+            <Image
+              src={HERO_PERSON_IMAGE}
+              alt="Hero student illustration"
+              fill
+              priority
+              loading="eager"
+              fetchPriority="high"
+              sizes="393px"
+              className="object-cover"
+            />
+          </div>
+        </div>
+      </section>
+    </>
+  );
+}

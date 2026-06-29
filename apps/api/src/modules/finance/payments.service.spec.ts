@@ -2,8 +2,21 @@
 import { NotFoundException, BadRequestException } from '@nestjs/common';
 import { describe, it, expect, beforeEach, vi, Mock } from 'vitest';
 import { PaymentsService } from './payments.service';
+import { PaymentQueryService } from './payment-query.service';
+import { PaymentWriteService } from './payment-write.service';
+import { PaymentSummaryService } from './payment-summary.service';
+import { PaymentLifecycleService } from './payment-lifecycle.service';
+import { PrismaService } from '../prisma/prisma.service';
 import type { ProcessPaymentDto } from './dto/create-payment.dto';
 import { PaymentStatus } from '@ilona/database';
+
+function createPaymentsService(prisma: unknown): PaymentsService {
+  const query = new PaymentQueryService(prisma as PrismaService);
+  const write = new PaymentWriteService(prisma as PrismaService, query);
+  const summary = new PaymentSummaryService(prisma as PrismaService);
+  const lifecycle = new PaymentLifecycleService(prisma as PrismaService);
+  return new PaymentsService(query, write, summary, lifecycle);
+}
 
 describe('PaymentsService', () => {
   let paymentsService: PaymentsService;
@@ -64,7 +77,7 @@ describe('PaymentsService', () => {
       student: { findUnique: vi.fn() },
     };
 
-    paymentsService = new PaymentsService(mockPrismaService as never);
+    paymentsService = createPaymentsService(mockPrismaService);
   });
 
   describe('findAll', () => {

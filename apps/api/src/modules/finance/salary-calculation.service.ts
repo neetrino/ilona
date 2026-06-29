@@ -4,6 +4,10 @@ import { SettingsService } from '../settings/settings.service';
 import { LessonStatus } from '@ilona/database';
 import type { ActionWeights, CompletedActions, PenaltyAmounts } from '@ilona/types';
 import { lessonsPayableToTeacherWhere } from '../../common/lesson-instructor';
+import {
+  getPaymentEligibleActions,
+  lessonDutyPaymentSelect,
+} from './lesson-duty-payment.util';
 
 /**
  * Service responsible for salary calculation logic
@@ -122,16 +126,7 @@ export class SalaryCalculationService {
           not: LessonStatus.CANCELLED,
         },
       },
-      select: {
-        id: true,
-        absenceMarked: true,
-        feedbacksCompleted: true,
-        voiceSent: true,
-        textSent: true,
-        dailyPlan: {
-          select: { id: true },
-        },
-      },
+      select: lessonDutyPaymentSelect,
     });
 
     // Get other deductions for this period (from Deduction table)
@@ -170,23 +165,7 @@ export class SalaryCalculationService {
       // Base salary = lessonRateAMD (fixed price per lesson)
       const baseSalary = lessonRate;
 
-      // Calculate completed actions
-      // Type assertion needed until Prisma client is regenerated
-      const lessonData = lesson as {
-        id: string;
-        absenceMarked: boolean | null;
-        feedbacksCompleted: boolean | null;
-        voiceSent: boolean | null;
-        textSent: boolean | null;
-        dailyPlan: { id: string } | null;
-      };
-      const completedActions = {
-        absence: lessonData.absenceMarked ?? false,
-        feedbacks: lessonData.feedbacksCompleted ?? false,
-        voice: lessonData.voiceSent ?? false,
-        text: lessonData.textSent ?? false,
-        dailyPlan: Boolean(lessonData.dailyPlan),
-      };
+      const completedActions = getPaymentEligibleActions(lesson);
 
       // Calculate payable amount: lessonRate - penalties for missing actions
       const payable = this.calculatePayableAmount(baseSalary, completedActions, penalties);

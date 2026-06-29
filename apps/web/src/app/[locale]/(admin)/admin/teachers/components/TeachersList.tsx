@@ -15,6 +15,7 @@ interface TeachersListProps {
   activeCenterTabId: string | null;
   onSelectCenter: (centerId: string) => void;
   uniqueTeachersCount: number;
+  onTotalClick?: () => void;
   teachers: Teacher[];
   sortBy: string | undefined;
   sortOrder: 'asc' | 'desc';
@@ -26,7 +27,7 @@ interface TeachersListProps {
   onSelectAll: () => void;
   onToggleSelect: (teacherId: string) => void;
   onView: (teacher: Teacher) => void;
-  onCenterChange: (teacherId: string, centerId: string | null) => Promise<void>;
+  onCenterChange: (teacherId: string, centerIds: string[]) => Promise<void>;
   onOpenGroupsModal: (teacher: Teacher, tab: 'groups' | 'subgroups') => void;
   isLoading: boolean;
   isDeleting: boolean;
@@ -36,7 +37,7 @@ interface TeachersListProps {
   totalTeachers: number;
   onPageChange: (page: number) => void;
   searchQuery: string;
-  centerOptions: Array<{ id: string; label: string }>;
+  centerOptions: Array<{ id: string; label: string; colorHex?: string | null }>;
   t: ReturnType<typeof useTranslations<'teachers'>>;
   tStatus: ReturnType<typeof useTranslations<'status'>>;
 }
@@ -49,6 +50,7 @@ export function TeachersList({
   activeCenterTabId,
   onSelectCenter,
   uniqueTeachersCount,
+  onTotalClick,
   teachers,
   sortBy,
   sortOrder,
@@ -128,6 +130,7 @@ export function TeachersList({
       onSort={onSort}
       onRowClick={onRowClick}
       embedInParentCard={hasCenterTabs}
+      tableClassName="[&_tbody_td]:align-top [&_tbody_td]:!py-4"
     />
   );
 
@@ -140,6 +143,7 @@ export function TeachersList({
         onSelectCenter={onSelectCenter}
         uniqueTeachersCount={uniqueTeachersCount}
         isLoading={isLoading}
+        onTotalClick={onTotalClick}
         t={t}
         unassignedLabel={tc('unassigned')}
       />
