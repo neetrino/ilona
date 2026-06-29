@@ -1,6 +1,8 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
+import { cn } from '@/shared/lib/utils';
+import { ATTENDANCE_RADIUS_CLASS } from '@/shared/components/attendance/attendance-button-theme';
 
 /** Teacher: show "No groups assigned" when 0 groups; "Select a group" when groups exist but none selected. Admin: always "Select group(s)". */
 export function AttendanceEmptyGroupState({
@@ -12,7 +14,7 @@ export function AttendanceEmptyGroupState({
   const isNoGroups = variant === 'no_groups';
 
   return (
-    <div className="bg-white rounded-xl border border-[rgba(14,14,16,0.07)] p-12 text-center">
+    <div className={cn('bg-[#fafafa] p-12 text-center', ATTENDANCE_RADIUS_CLASS)}>
       <div className="w-16 h-16 mx-auto mb-4 bg-[#f6f6f7] rounded-full flex items-center justify-center">
         <svg className="w-8 h-8 text-[#8b8b90]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path

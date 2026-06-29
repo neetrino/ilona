@@ -6,6 +6,7 @@ import { Pencil, X } from 'lucide-react';
 import {
   ATTENDANCE_EDIT_ICON_BUTTON_CLASS,
   ATTENDANCE_PRIMARY_BUTTON_CLASS,
+  ATTENDANCE_RADIUS_CLASS,
 } from '@/shared/components/attendance/attendance-button-theme';
 
 interface WeekAttendanceToolbarProps {
@@ -41,7 +42,8 @@ export function WeekAttendanceToolbar({
     <>
       <div
         className={cn(
-          'flex items-center justify-between rounded-lg border-2 px-5 py-4 text-sm transition-all',
+          'flex items-center justify-between border-2 px-5 py-4 text-sm transition-all',
+          ATTENDANCE_RADIUS_CLASS,
           totalPendingChanges > 0
             ? 'border-amber-300 bg-amber-50'
             : hasAnySaving
@@ -93,7 +95,7 @@ export function WeekAttendanceToolbar({
             {isEditMode ? <X className="h-4 w-4" /> : <Pencil className="h-4 w-4" />}
           </Button>
           {Object.keys(saveError).length > 0 && (
-            <span className="rounded bg-red-100 px-3 py-1 text-sm font-medium text-red-700">
+            <span className={cn('bg-red-100 px-3 py-1 text-sm font-medium text-red-700', ATTENDANCE_RADIUS_CLASS)}>
               {Object.values(saveError)[0]}{' '}
               {Object.keys(saveError).length > 1 &&
                 t('errorsMore', { count: Object.keys(saveError).length - 1 })}
@@ -123,7 +125,7 @@ export function WeekAttendanceToolbar({
       </div>
 
       {missingJustificationCount > 0 && (
-        <div className="rounded-lg border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-800">
+        <div className={cn('border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-800', ATTENDANCE_RADIUS_CLASS)}>
           {t('justificationPending', { count: missingJustificationCount })}
         </div>
       )}

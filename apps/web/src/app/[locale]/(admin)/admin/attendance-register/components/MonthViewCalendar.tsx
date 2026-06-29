@@ -9,6 +9,7 @@ import {
 import type { Group } from '@/features/groups';
 import type { Lesson } from '@/features/lessons';
 import { useLocale, useTranslations } from 'next-intl';
+import { ATTENDANCE_RADIUS_CLASS } from '@/shared/components/attendance/attendance-button-theme';
 
 interface MonthViewCalendarProps {
   currentDate: Date;
@@ -38,20 +39,20 @@ export function MonthViewCalendar({
   const groupLabel = selectedGroup?.name || t('notAvailable');
 
   return (
-    <div className="rounded-xl border border-[rgba(14,14,16,0.07)] bg-white p-6">
+    <div className={cn('border border-[rgba(14,14,16,0.07)] bg-white p-6', ATTENDANCE_RADIUS_CLASS)}>
       <div className="mb-4 hidden md:block">
         <h3 className="mb-2 text-lg font-semibold text-[#1010a3]">
           {groupLabel} - {monthLabel}
         </h3>
         {hasUnsavedChanges && (
-          <div className="inline-flex items-center gap-2 rounded-lg border-2 border-amber-400 bg-amber-100 px-4 py-2">
+          <div className={cn('inline-flex items-center gap-2 border-2 border-amber-400 bg-amber-100 px-4 py-2', ATTENDANCE_RADIUS_CLASS)}>
             <div className="h-2 w-2 rounded-full bg-amber-600 animate-pulse"></div>
             <span className="text-sm font-semibold text-amber-800">{t('unsavedChanges')}</span>
           </div>
         )}
       </div>
 
-      <div className="mb-4 rounded-[28px] border border-[rgba(14,14,16,0.08)] bg-white px-5 py-4 md:hidden">
+      <div className={cn('mb-4 border border-[rgba(14,14,16,0.08)] bg-white px-5 py-4 md:hidden', ATTENDANCE_RADIUS_CLASS)}>
         <div className="grid grid-cols-[32px_1fr_32px] items-center">
           <span className="inline-flex h-8 w-8 items-center justify-center text-[#1010a3]" aria-hidden>
             <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -163,7 +164,7 @@ export function MonthViewCalendar({
         })}
       </div>
       {selectedDayForMonthView && (
-        <div className="mt-4 p-4 bg-[#fafafa] rounded-lg border border-[rgba(14,14,16,0.07)]">
+        <div className={cn('mt-4 border border-[rgba(14,14,16,0.07)] bg-[#fafafa] p-4', ATTENDANCE_RADIUS_CLASS)}>
           <p className="text-sm text-[#3b3b40] mb-2">
             {t('monthSelectHint')}
           </p>

@@ -5,6 +5,8 @@ import type { Lesson } from '@/features/lessons';
 import type { TeacherAssignedItem } from '@/features/students';
 import { isOnboardingItem } from '@/features/students';
 import { useLocale, useTranslations } from 'next-intl';
+import { cn } from '@/shared/lib/utils';
+import { ATTENDANCE_RADIUS_CLASS } from '@/shared/components/attendance/attendance-button-theme';
 import type { AttendanceCell } from '../hooks/useAttendanceData';
 import { getItemKey } from '../hooks/useAttendanceData';
 
@@ -79,7 +81,7 @@ export function UnifiedWeekTable({
   }
 
   return (
-    <div className="overflow-x-auto rounded-xl border border-[rgba(14,14,16,0.07)] bg-white">
+    <div className={cn('overflow-x-auto border border-[rgba(14,14,16,0.07)] bg-white', ATTENDANCE_RADIUS_CLASS)}>
       <table className="w-full min-w-[920px] border-collapse">
         <thead>
           <tr>

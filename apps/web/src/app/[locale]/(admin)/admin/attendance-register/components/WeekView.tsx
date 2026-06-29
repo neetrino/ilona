@@ -15,6 +15,7 @@ import type { AttendanceCell } from '../hooks/useAttendanceData';
 import { toAttendanceRow } from '../hooks/useAttendanceData';
 import type { AbsenceType } from '@/features/attendance';
 import { AdminListPagination } from '@/shared/components/ui';
+import { ATTENDANCE_GROUP_CARD_CLASS } from '@/shared/components/attendance/attendance-button-theme';
 
 const WEEK_GROUP_CARDS_PAGE_SIZE = 5;
 
@@ -155,7 +156,7 @@ export function WeekView({
   // If only one group or no multi-select, show single view (backward compatibility)
   if (selectedGroups.length <= 1) {
     return (
-      <div className="rounded-[30px] border border-[rgba(14,14,16,0.08)] bg-white p-6 shadow-[0_2px_12px_rgba(19,28,71,0.06)] md:rounded-xl md:border-2 md:border-[rgba(14,14,16,0.12)] md:p-6 md:shadow-sm">
+      <div className={ATTENDANCE_GROUP_CARD_CLASS}>
         <AttendanceContextHeader
           group={group || null}
           weekRange={formatWeekRange(currentDate)}
@@ -212,7 +213,7 @@ export function WeekView({
           });
 
           return (
-            <div key={selectedGroup.id} className="rounded-[30px] border border-[rgba(14,14,16,0.08)] bg-white p-6 shadow-[0_2px_12px_rgba(19,28,71,0.06)] md:rounded-xl md:border-2 md:border-[rgba(14,14,16,0.12)] md:p-6 md:shadow-sm">
+            <div key={selectedGroup.id} className={ATTENDANCE_GROUP_CARD_CLASS}>
               <AttendanceContextHeader
                 group={selectedGroup}
                 weekRange={formatWeekRange(currentDate)}
@@ -277,7 +278,7 @@ export function WeekView({
         });
 
         return (
-          <div key={selectedGroup.id} className="rounded-[30px] border border-[rgba(14,14,16,0.08)] bg-white p-6 shadow-[0_2px_12px_rgba(19,28,71,0.06)] md:rounded-xl md:border-2 md:border-[rgba(14,14,16,0.12)] md:p-6 md:shadow-sm">
+          <div key={selectedGroup.id} className={ATTENDANCE_GROUP_CARD_CLASS}>
             <AttendanceContextHeader
               group={selectedGroup}
               weekRange={formatWeekRange(currentDate)}

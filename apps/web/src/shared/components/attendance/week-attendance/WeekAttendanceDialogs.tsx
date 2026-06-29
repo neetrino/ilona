@@ -128,7 +128,7 @@ export function WeekAttendanceDialogs({
                 {students.find((s) => s.id === commentPreviewDialog.studentId)?.user.firstName}{' '}
                 {students.find((s) => s.id === commentPreviewDialog.studentId)?.user.lastName}
               </div>
-              <div className="rounded-md border border-slate-200 bg-slate-50 p-3 text-sm text-slate-800">
+              <div className="rounded-[15px] border border-slate-200 bg-slate-50 p-3 text-sm text-slate-800">
                 {getCellNote(
                   lessonsByDate,
                   attendanceData,

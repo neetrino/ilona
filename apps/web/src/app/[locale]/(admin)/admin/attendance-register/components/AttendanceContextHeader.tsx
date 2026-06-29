@@ -48,7 +48,7 @@ export function AttendanceContextHeader({
                 {group?.name || tStudents('notAvailable')}
               </h2>
               {group?.level && (
-                <span className="rounded-xl bg-[#eef0ff] px-3 py-1 text-sm font-semibold text-[#424a75]">
+                <span className="rounded-[15px] bg-[#eef0ff] px-3 py-1 text-sm font-semibold text-[#424a75]">
                   {group.level}
                 </span>
               )}
@@ -63,7 +63,7 @@ export function AttendanceContextHeader({
               {group?.name || tStudents('notAvailable')}
             </h2>
             {group?.level && (
-              <span className="rounded-xl bg-[#eef0ff] px-3 py-1 text-sm font-semibold text-[#424a75]">
+              <span className="rounded-[15px] bg-[#eef0ff] px-3 py-1 text-sm font-semibold text-[#424a75]">
                 {group.level}
               </span>
             )}
@@ -76,13 +76,13 @@ export function AttendanceContextHeader({
               {date ? formatDateDisplay(date) : tStudents('notAvailable')}
             </span>
             {isCurrentDateToday && (
-              <span className="rounded-xl bg-[#e8ebff] px-3 py-1 text-sm font-semibold text-[#424a75]">
+              <span className="rounded-[15px] bg-[#e8ebff] px-3 py-1 text-sm font-semibold text-[#424a75]">
                 {tCommon('today')}
               </span>
             )}
           </div>
           {hasUnsavedChanges && (
-            <div className="flex items-center gap-2 self-start rounded-xl border border-amber-300 bg-amber-50 px-3 py-2">
+            <div className="flex items-center gap-2 self-start rounded-[15px] border border-amber-300 bg-amber-50 px-3 py-2">
               <span className="h-2.5 w-2.5 animate-pulse rounded-full bg-amber-500" />
               <span className="text-sm font-semibold text-amber-800">{tCommon('unsavedChanges')}</span>
             </div>
@@ -103,7 +103,7 @@ export function AttendanceContextHeader({
               {date ? formatDateDisplay(date) : tStudents('notAvailable')}
             </span>
             {isCurrentDateToday && (
-              <span className="rounded-xl bg-[#e8ebff] px-3 py-1 text-sm font-semibold text-[#424a75]">
+              <span className="rounded-[15px] bg-[#e8ebff] px-3 py-1 text-sm font-semibold text-[#424a75]">
                 {tCommon('today')}
               </span>
             )}
@@ -111,11 +111,11 @@ export function AttendanceContextHeader({
         </div>
 
         <div className="grid grid-cols-2 gap-3 md:hidden">
-          <div className="flex items-center gap-2 rounded-2xl border border-[#d9f0df] bg-[#e8f8ed] px-3 py-2 text-[#1f2a37]">
+          <div className="flex items-center gap-2 rounded-[15px] border border-[#d9f0df] bg-[#e8f8ed] px-3 py-2 text-[#1f2a37]">
             <span className="h-3 w-3 rounded-full bg-[#35c759] shadow-[0_0_0_4px_rgba(53,199,89,0.2)]" />
             <span className="text-[16px] font-semibold leading-none">{t('sessionsCount', { count: lessonsCount })}</span>
           </div>
-          <div className="flex items-center gap-2 rounded-2xl border border-[#eceef5] bg-[#f6f7fb] px-3 py-2 text-[#1f2a37]">
+          <div className="flex items-center gap-2 rounded-[15px] border border-[#eceef5] bg-[#f6f7fb] px-3 py-2 text-[#1f2a37]">
             <span className="h-3 w-3 rounded-full bg-[#b7bed3]" />
             <span className="text-[16px] font-semibold leading-none">{t('studentsCount', { count: studentsCount })}</span>
           </div>
@@ -151,7 +151,7 @@ export function AttendanceContextHeader({
                   {group?.name || tStudents('notAvailable')}
                 </span>
                 {group?.level && (
-                  <span className="rounded-xl bg-[#eef0ff] px-2.5 py-0.5 text-xs font-semibold text-[#424a75]">
+                  <span className="rounded-[15px] bg-[#eef0ff] px-2.5 py-0.5 text-xs font-semibold text-[#424a75]">
                     {group.level}
                   </span>
                 )}
@@ -173,7 +173,7 @@ export function AttendanceContextHeader({
             </div>
 
             {hasUnsavedChanges && (
-              <div className="flex items-center gap-2 self-start rounded-xl border border-amber-300 bg-amber-50 px-3 py-2">
+              <div className="flex items-center gap-2 self-start rounded-[15px] border border-amber-300 bg-amber-50 px-3 py-2">
                 <span className="h-2.5 w-2.5 animate-pulse rounded-full bg-amber-500" />
                 <span className="text-sm font-semibold text-amber-800">{tCommon('unsavedChanges')}</span>
               </div>
@@ -229,7 +229,7 @@ export function AttendanceContextHeader({
               </div>
             </div>
             {hasUnsavedChanges && (
-              <div className="flex items-center gap-2 px-4 py-2 bg-amber-100 border-2 border-amber-400 rounded-lg">
+              <div className="flex items-center gap-2 px-4 py-2 bg-amber-100 border-2 border-amber-400 rounded-[15px]">
                 <div className="h-2 w-2 rounded-full bg-amber-600 animate-pulse"></div>
                 <span className="text-sm font-semibold text-amber-800">{tCommon('unsavedChanges')}</span>
               </div>
@@ -277,7 +277,7 @@ export function AttendanceContextHeader({
           </div>
         </div>
         {hasUnsavedChanges && (
-          <div className="flex items-center gap-2 px-4 py-2 bg-amber-100 border-2 border-amber-400 rounded-lg">
+          <div className="flex items-center gap-2 px-4 py-2 bg-amber-100 border-2 border-amber-400 rounded-[15px]">
             <div className="h-2 w-2 rounded-full bg-amber-600 animate-pulse"></div>
             <span className="text-sm font-semibold text-amber-800">{tCommon('unsavedChanges')}</span>
           </div>

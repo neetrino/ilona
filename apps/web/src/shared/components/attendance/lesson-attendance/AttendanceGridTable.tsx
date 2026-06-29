@@ -4,6 +4,7 @@ import { cn } from '@/shared/lib/utils';
 import {
   ATTENDANCE_CELL_RADIUS_CLASS,
   ATTENDANCE_NOTE_BUTTON_CLASS,
+  ATTENDANCE_RADIUS_CLASS,
 } from '@/shared/components/attendance/attendance-button-theme';
 import type { Lesson } from '@/features/lessons';
 import type { AttendanceCell, AttendanceStatus, WeekAttendanceStudent } from '../week-attendance/types';
@@ -53,7 +54,10 @@ export function AttendanceGridTable({
   return (
     <div
       ref={gridRef}
-      className="flex flex-col overflow-hidden rounded-lg border-2 border-slate-300 bg-white shadow-sm"
+      className={cn(
+        'flex flex-col overflow-hidden border-2 border-slate-300 bg-white shadow-sm',
+        ATTENDANCE_RADIUS_CLASS,
+      )}
       style={{ height: 'calc(100vh - 500px)', minHeight: '400px', maxHeight: '600px' }}
     >
       <div className="relative flex-1 overflow-auto">

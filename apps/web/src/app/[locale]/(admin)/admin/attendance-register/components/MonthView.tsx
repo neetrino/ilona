@@ -13,6 +13,7 @@ import type { TeacherAssignedItem } from '@/features/students';
 import type { AttendanceCell } from '../hooks/useAttendanceData';
 import { toAttendanceRow } from '../hooks/useAttendanceData';
 import type { AbsenceType } from '@/features/attendance';
+import { ATTENDANCE_GROUP_CARD_CLASS } from '@/shared/components/attendance/attendance-button-theme';
 import { useIsIPad } from '@/shared/hooks/useIsIPad';
 import { AdminListPagination } from '@/shared/components/ui';
 
@@ -146,7 +147,7 @@ export function MonthView({
       {selectedDayForMonthView && (
         <>
           {showSingleView ? (
-            <div className="bg-white rounded-xl border-2 border-[rgba(14,14,16,0.12)] p-6 shadow-sm">
+            <div className={ATTENDANCE_GROUP_CARD_CLASS}>
               <AttendanceContextHeader
                 group={group || null}
                 date={new Date(selectedDayForMonthView)}
@@ -192,7 +193,7 @@ export function MonthView({
                 });
 
                 return (
-                  <div key={selectedGroup.id} className="bg-white rounded-xl border-2 border-[rgba(14,14,16,0.12)] p-6 shadow-sm">
+                  <div key={selectedGroup.id} className={ATTENDANCE_GROUP_CARD_CLASS}>
                     <AttendanceContextHeader
                       group={selectedGroup}
                       date={new Date(selectedDayForMonthView)}
@@ -247,7 +248,7 @@ export function MonthView({
                 });
 
                 return (
-                  <div key={selectedGroup.id} className="bg-white rounded-xl border-2 border-[rgba(14,14,16,0.12)] p-6 shadow-sm">
+                  <div key={selectedGroup.id} className={ATTENDANCE_GROUP_CARD_CLASS}>
                     <AttendanceContextHeader
                       group={selectedGroup}
                       date={new Date(selectedDayForMonthView)}

@@ -3,7 +3,9 @@
 import { isToday } from '@/features/attendance/utils/dateUtils';
 import type { Lesson } from '@/features/lessons';
 import { useLocale, useTranslations } from 'next-intl';
+import { cn } from '@/shared/lib/utils';
 import { ADMIN_ICON_BUTTON_SM_CLASS } from '@/shared/lib/admin-control-theme';
+import { ATTENDANCE_RADIUS_CLASS } from '@/shared/components/attendance/attendance-button-theme';
 
 interface WeekLessonTableProps {
   weekDates: Date[];
@@ -30,7 +32,7 @@ export function WeekLessonTable({ weekDates, lessons, weekRangeLabel }: WeekLess
   }, {});
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-[#dde2ee] bg-white">
+    <div className={cn('overflow-hidden border border-[#dde2ee] bg-white', ATTENDANCE_RADIUS_CLASS)}>
       <div className="flex items-center justify-between border-b border-[#e6e9f2] bg-[#f9faff] px-5 py-4">
         <button type="button" className={ADMIN_ICON_BUTTON_SM_CLASS} aria-label={tCommon('previousWeek')}>
           <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">

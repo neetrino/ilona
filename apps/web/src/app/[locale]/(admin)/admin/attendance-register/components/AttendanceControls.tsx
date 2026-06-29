@@ -130,7 +130,7 @@ export function AttendanceControls({
   );
 
   return (
-    <div className="rounded-[15px] border border-[rgba(14,14,16,0.07)] bg-white p-6">
+    <div className="space-y-4">
       <div className="mb-4 flex items-center justify-between">
         <label className="block text-sm font-medium text-[#3b3b40]">{tc('viewMode')}</label>
         <ViewModeSelector
