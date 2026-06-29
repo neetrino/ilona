@@ -9,7 +9,6 @@ import {
   Type,
   NotebookPen,
   AlertTriangle,
-  Lock,
   LockOpen,
 } from 'lucide-react';
 import type { Lesson } from '@/features/lessons';
@@ -76,18 +75,18 @@ function LockStatusIcon({
   action: LessonActionDerived;
   t: ReturnType<typeof useTranslations<'dailyDuties'>>;
 }) {
-  if (action.state === 'missed') {
-    return (
-      <Lock
-        className="h-4 w-4 text-slate-500"
-        aria-label={t('lessonActions.statusMissed')}
-      />
-    );
-  }
-
   const label =
-    action.state === 'done' ? t('lessonActions.statusDone') : t('lessonActions.statusPending');
-  const colorClass = action.state === 'done' ? 'text-emerald-700' : 'text-amber-700';
+    action.state === 'done'
+      ? t('lessonActions.statusDone')
+      : action.state === 'doneLate'
+        ? t('lessonActions.statusLateUnpaid')
+        : t('lessonActions.statusPending');
+  const colorClass =
+    action.state === 'done'
+      ? 'text-emerald-700'
+      : action.state === 'doneLate'
+        ? 'text-amber-700'
+        : 'text-amber-700';
 
   return <LockOpen className={cn('h-4 w-4', colorClass)} aria-label={label} />;
 }
@@ -182,23 +181,29 @@ export function LessonDetailTabs({
                   isActive
                     ? 'border-2 border-blue-300 bg-blue-50/90 shadow-sm'
                     : 'border-slate-200/90 bg-white hover:border-slate-300 hover:bg-slate-50/80',
-                  action.state === 'done' && !isActive && 'border-emerald-200/70 bg-emerald-50/30',
+                  (action.state === 'done' || action.state === 'doneLate') &&
+                    !isActive &&
+                    'border-emerald-200/70 bg-emerald-50/30',
                   action.state === 'pending' && !isActive && 'border-amber-200/80 bg-amber-50/20',
-                  action.state === 'missed' && !isActive && 'border-slate-200 bg-slate-50/50',
                 )}
               >
                 <span
                   className={cn(
                     'flex h-8 w-8 shrink-0 self-center items-center justify-center rounded-lg sm:h-9 sm:w-9',
-                    action.state === 'done' && 'bg-emerald-100 text-emerald-800',
+                    (action.state === 'done' || action.state === 'doneLate') &&
+                      'bg-emerald-100 text-emerald-800',
                     action.state === 'pending' && 'bg-amber-100 text-amber-900',
-                    action.state === 'missed' && 'bg-slate-200 text-slate-700',
                   )}
                 >
                   <Icon className="h-4 w-4 sm:h-[18px] sm:w-[18px]" aria-hidden />
                 </span>
                 <span className="min-w-0 flex-1 self-center line-clamp-2 text-xs font-semibold leading-tight text-slate-900 sm:text-[13px]">
                   {t(actionLabelKey(tab))}
+                  {action.state === 'doneLate' && (
+                    <span className="mt-0.5 block text-[10px] font-medium text-amber-800">
+                      {t('lessonActions.lateUnpaidBadge')}
+                    </span>
+                  )}
                 </span>
                 <div className="shrink-0 self-center">
                   <LockStatusIcon action={action} t={t} />

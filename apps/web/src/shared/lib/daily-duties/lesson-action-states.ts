@@ -1,43 +1,61 @@
-import type { Lesson } from '@/features/lessons';
+import type { Lesson, LessonDutyActionStatusDto } from '@/features/lessons';
 
 export type LessonActionId = 'absence' | 'feedback' | 'voice' | 'text' | 'dailyPlan';
 
-export type LessonActionUiState = 'done' | 'pending' | 'missed';
+export type LessonActionUiState = 'done' | 'doneLate' | 'pending';
 
 export interface LessonActionDerived {
   id: LessonActionId;
   completed: boolean;
+  completedLate: boolean;
+  paymentEligible: boolean;
   locked: boolean;
   state: LessonActionUiState;
   feedbackCount?: number;
 }
 
-function deriveState(completed: boolean, lessonCompleted: boolean): LessonActionUiState {
-  if (completed) return 'done';
-  if (lessonCompleted) return 'missed';
-  return 'pending';
+const ACTION_STATUS_KEY: Record<LessonActionId, keyof LessonDutyActionStatusDto> = {
+  absence: 'absence',
+  feedback: 'feedback',
+  voice: 'voice',
+  text: 'text',
+  dailyPlan: 'dailyPlan',
+};
+
+function deriveState(completed: boolean, completedLate: boolean): LessonActionUiState {
+  if (!completed) return 'pending';
+  if (completedLate) return 'doneLate';
+  return 'done';
 }
 
-function absenceLocked(lesson: Lesson): boolean {
-  return Boolean(lesson.isAbsenceLocked || (lesson.status === 'COMPLETED' && !lesson.absenceMarked));
-}
+function getActionStatus(
+  lesson: Lesson,
+  actionId: LessonActionId,
+): { completed: boolean; completedLate: boolean; paymentEligible: boolean } {
+  const key = ACTION_STATUS_KEY[actionId];
+  const fromApi = lesson.dutyActionStatus?.[key];
+  if (fromApi) {
+    return fromApi;
+  }
 
-function feedbackLocked(lesson: Lesson): boolean {
-  return Boolean(lesson.isFeedbackLocked || (lesson.status === 'COMPLETED' && !lesson.feedbacksCompleted));
-}
+  const completed = (() => {
+    switch (actionId) {
+      case 'absence':
+        return Boolean(lesson.absenceMarked);
+      case 'feedback':
+        return Boolean(lesson.feedbacksCompleted);
+      case 'voice':
+        return Boolean(lesson.voiceSent);
+      case 'text':
+        return Boolean(lesson.textSent);
+      case 'dailyPlan':
+        return Boolean(lesson.dailyPlanCompleted);
+      default:
+        return false;
+    }
+  })();
 
-function voiceLocked(lesson: Lesson): boolean {
-  return Boolean(lesson.isVoiceLocked || (lesson.status === 'COMPLETED' && !lesson.voiceSent));
-}
-
-function textLocked(lesson: Lesson): boolean {
-  return Boolean(lesson.isTextLocked || (lesson.status === 'COMPLETED' && !lesson.textSent));
-}
-
-function dailyPlanLocked(lesson: Lesson): boolean {
-  return Boolean(
-    lesson.isDailyPlanLocked || (lesson.status === 'COMPLETED' && !lesson.dailyPlanCompleted),
-  );
+  return { completed, completedLate: false, paymentEligible: completed };
 }
 
 /** True when lesson end time (scheduledAt + duration) is in the past. */
@@ -49,46 +67,26 @@ export function isLessonPastEnd(lesson: Lesson): boolean {
 }
 
 export function getLessonActionsDerived(lesson: Lesson): LessonActionDerived[] {
-  const lessonCompleted = lesson.status === 'COMPLETED' || lesson.completionStatus === 'DONE';
-  const absenceDone = Boolean(lesson.absenceMarked);
-  const feedbackDone = Boolean(lesson.feedbacksCompleted);
-  const voiceDone = Boolean(lesson.voiceSent);
-  const textDone = Boolean(lesson.textSent);
-  const dailyDone = Boolean(lesson.dailyPlanCompleted);
-
-  return [
-    {
-      id: 'absence',
-      completed: absenceDone,
-      locked: absenceLocked(lesson),
-      state: deriveState(absenceDone, lessonCompleted),
-    },
-    {
-      id: 'feedback',
-      completed: feedbackDone,
-      locked: feedbackLocked(lesson),
-      state: deriveState(feedbackDone, lessonCompleted),
-      feedbackCount: lesson._count?.feedbacks,
-    },
-    {
-      id: 'voice',
-      completed: voiceDone,
-      locked: voiceLocked(lesson),
-      state: deriveState(voiceDone, lessonCompleted),
-    },
-    {
-      id: 'text',
-      completed: textDone,
-      locked: textLocked(lesson),
-      state: deriveState(textDone, lessonCompleted),
-    },
-    {
-      id: 'dailyPlan',
-      completed: dailyDone,
-      locked: dailyPlanLocked(lesson),
-      state: deriveState(dailyDone, lessonCompleted),
-    },
+  const defs: { id: LessonActionId; feedbackCount?: number }[] = [
+    { id: 'absence' },
+    { id: 'feedback', feedbackCount: lesson._count?.feedbacks },
+    { id: 'voice' },
+    { id: 'text' },
+    { id: 'dailyPlan' },
   ];
+
+  return defs.map(({ id, feedbackCount }) => {
+    const status = getActionStatus(lesson, id);
+    return {
+      id,
+      completed: status.completed,
+      completedLate: status.completedLate,
+      paymentEligible: status.paymentEligible,
+      locked: false,
+      state: deriveState(status.completed, status.completedLate),
+      feedbackCount,
+    };
+  });
 }
 
 export function countPendingActions(actions: LessonActionDerived[]): number {

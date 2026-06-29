@@ -3,7 +3,13 @@ import { PrismaService } from '../prisma/prisma.service';
 import { LessonStatus } from '@ilona/database';
 import { lessonsPayableToTeacherWhere } from '../../common/lesson-instructor';
 import { getSalaryRecordDb, salaryRecordDetailTeacherInclude } from './salary-record-db.util';
-import { buildActionBreakdown, getMonthBounds, parseObligationsInfo } from './salary-record.util';
+import {
+  buildPaidActionBreakdown,
+  getMonthBounds,
+  parseObligationsInfo,
+} from './salary-record.util';
+import { lessonDutyPaymentSelect, toLessonDutyTimestamps } from './lesson-duty-payment.util';
+import { buildPaymentEligibleActions } from '@ilona/types';
 
 @Injectable()
 export class SalaryRecordReadService {
@@ -35,25 +41,11 @@ export class SalaryRecordReadService {
           not: LessonStatus.CANCELLED,
         },
       },
-      select: {
-        absenceMarked: true,
-        feedbacksCompleted: true,
-        voiceSent: true,
-        textSent: true,
-        dailyPlan: {
-          select: { id: true },
-        },
-      },
+      select: lessonDutyPaymentSelect,
     });
 
-    const actionBreakdown = buildActionBreakdown(
-      lessons as Array<{
-        absenceMarked: boolean | null;
-        feedbacksCompleted: boolean | null;
-        voiceSent: boolean | null;
-        textSent: boolean | null;
-        dailyPlan: { id: string } | null;
-      }>,
+    const actionBreakdown = buildPaidActionBreakdown(
+      lessons.map((lesson) => buildPaymentEligibleActions(toLessonDutyTimestamps(lesson))),
     );
 
     return {

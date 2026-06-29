@@ -133,7 +133,7 @@ export class LessonUpdateService {
           substituteTeacher: {
             include: { user: { select: { id: true, firstName: true, lastName: true } } },
           },
-          dailyPlan: { select: { id: true } },
+          dailyPlan: { select: { id: true, createdAt: true } },
         },
       })
       .then((row) => this.enrichmentService.enrichLesson(row));

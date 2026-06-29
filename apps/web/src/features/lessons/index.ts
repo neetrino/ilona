@@ -24,6 +24,8 @@ export {
 export type {
   LessonStatus,
   Lesson,
+  DutyActionStatusDto,
+  LessonDutyActionStatusDto,
   LessonsResponse,
   LessonFilters,
   CreateLessonDto,

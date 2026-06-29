@@ -244,7 +244,12 @@ export class LessonListService {
             },
           },
           dailyPlan: {
-            select: { id: true },
+            select: { id: true, createdAt: true },
+          },
+          feedbacks: {
+            select: { createdAt: true },
+            orderBy: { createdAt: 'desc' },
+            take: 1,
           },
         },
       }),
@@ -314,7 +319,12 @@ export class LessonListService {
           select: { attendances: true, feedbacks: true },
         },
         dailyPlan: {
-          select: { id: true },
+          select: { id: true, createdAt: true },
+        },
+        feedbacks: {
+          select: { createdAt: true },
+          orderBy: { createdAt: 'desc' },
+          take: 1,
         },
       },
     });

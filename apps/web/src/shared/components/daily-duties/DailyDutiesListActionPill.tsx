@@ -9,7 +9,6 @@ import {
   NotebookPen,
   Check,
   Clock,
-  Lock,
 } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
 import type { LessonActionDerived, LessonActionId } from '@/shared/lib/daily-duties/lesson-action-states';
@@ -66,16 +65,16 @@ export function DailyDutiesListActionPill({
   const Icon = ROW_ICONS[action.id];
   const full = t(labelKey(action.id));
   const statusDone = t('lessonActions.statusDone');
-  const statusMissed = t('lessonActions.statusMissed');
+  const statusLateUnpaid = t('lessonActions.statusLateUnpaid');
 
   const title =
     action.state === 'done'
       ? `${full}: ${statusDone}`
-      : action.state === 'missed'
-        ? `${full}: ${statusMissed}`
+      : action.state === 'doneLate'
+        ? `${full}: ${statusLateUnpaid}`
         : `${full} — ${t(reminderKey(action.id))}`;
 
-  const StatusIcon = action.state === 'done' ? Check : action.state === 'pending' ? Clock : Lock;
+  const StatusIcon = action.state === 'pending' ? Clock : Check;
 
   return (
     <button
@@ -84,16 +83,14 @@ export function DailyDutiesListActionPill({
         event.stopPropagation();
         onActivate();
       }}
-      disabled={action.locked}
       title={title}
       aria-label={title}
       className={cn(
         'relative inline-flex w-full max-w-[5.5rem] flex-col items-center gap-0.5 rounded-lg border px-1 py-1.5 text-center transition-colors',
         'focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-1',
-        action.state === 'done' && 'border-emerald-200 bg-emerald-50 text-emerald-900 hover:bg-emerald-100',
+        (action.state === 'done' || action.state === 'doneLate') &&
+          'border-emerald-200 bg-emerald-50 text-emerald-900 hover:bg-emerald-100',
         action.state === 'pending' && 'border-amber-200 bg-amber-50 text-amber-950 hover:bg-amber-100',
-        action.state === 'missed' && 'cursor-not-allowed border-red-200 bg-red-50 text-red-900',
-        action.locked && 'opacity-90',
       )}
     >
       <span className="absolute right-0.5 top-0.5 text-slate-600" aria-hidden>
@@ -103,6 +100,11 @@ export function DailyDutiesListActionPill({
       <span className="line-clamp-2 w-full px-0.5 text-[8px] font-bold uppercase leading-tight tracking-tight sm:text-[9px]">
         {t(pillShortKey(action.id))}
       </span>
+      {action.state === 'doneLate' && (
+        <span className="w-full px-0.5 text-[7px] font-semibold leading-tight text-amber-800 sm:text-[8px]">
+          {t('lessonActions.lateUnpaidBadge')}
+        </span>
+      )}
       {action.id === 'feedback' && action.feedbackCount !== undefined && action.feedbackCount > 0 && (
         <span className="text-[8px] font-semibold text-current sm:text-[9px]">{action.feedbackCount}</span>
       )}

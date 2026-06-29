@@ -33,7 +33,12 @@ export class FeedbackCompletionService {
 
     await this.prisma.lesson.update({
       where: { id: lessonId },
-      data: { feedbacksCompleted: shouldBeCompleted },
+      data: {
+        feedbacksCompleted: shouldBeCompleted,
+        feedbacksCompletedAt: shouldBeCompleted
+          ? (lessonWithGroup.feedbacksCompletedAt ?? new Date())
+          : null,
+      },
     });
 
     if (lessonWithGroup.scheduledAt) {

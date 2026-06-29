@@ -279,6 +279,7 @@ model Lesson {
   vocabularySent     Boolean      @default(false)
   vocabularySentAt   DateTime?
   feedbacksCompleted Boolean      @default(false)
+  feedbacksCompletedAt DateTime?
   absenceMarked      Boolean      @default(false)
   absenceMarkedAt    DateTime?
   voiceSent          Boolean      @default(false)

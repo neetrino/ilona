@@ -2281,6 +2281,8 @@
       "statusDone": "Done",
       "statusPending": "Pending",
       "statusMissed": "Closed",
+      "statusLateUnpaid": "Completed late, unpaid",
+      "lateUnpaidBadge": "Late, unpaid",
       "reminderAbsence": "Absence is not recorded yet. Open Absence and mark attendance for each student.",
       "reminderFeedback": "Feedback is not completed yet. Open Feedbacks and fill it in for this lesson.",
       "reminderVoice": "Voice summary is missing. Open Voice and send the vocabulary or lesson recap.",

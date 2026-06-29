@@ -97,7 +97,7 @@ export class LessonReadService {
           },
         },
         dailyPlan: {
-          select: { id: true },
+          select: { id: true, createdAt: true },
         },
       },
     });

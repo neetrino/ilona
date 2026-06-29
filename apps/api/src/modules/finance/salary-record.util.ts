@@ -46,6 +46,36 @@ type LessonActionRow = {
   dailyPlan: { id: string } | null;
 };
 
+import type { CompletedActions } from '@ilona/types';
+
+export function buildPaidActionBreakdown(paidActionsPerLesson: CompletedActions[]) {
+  const count = (key: keyof CompletedActions) =>
+    paidActionsPerLesson.filter((actions) => actions[key]).length;
+
+  return {
+    absenceMarked: {
+      completed: count('absence'),
+      required: paidActionsPerLesson.length,
+    },
+    feedbacksCompleted: {
+      completed: count('feedbacks'),
+      required: paidActionsPerLesson.length,
+    },
+    voiceSent: {
+      completed: count('voice'),
+      required: paidActionsPerLesson.length,
+    },
+    textSent: {
+      completed: count('text'),
+      required: paidActionsPerLesson.length,
+    },
+    dailyPlan: {
+      completed: count('dailyPlan'),
+      required: paidActionsPerLesson.length,
+    },
+  };
+}
+
 export function buildActionBreakdown(lessons: LessonActionRow[]) {
   return {
     absenceMarked: {
