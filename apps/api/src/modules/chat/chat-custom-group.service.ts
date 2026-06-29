@@ -238,4 +238,42 @@ export class ChatCustomGroupService {
       participant: { userId: participant.userId, joinedAt: participant.joinedAt },
     };
   }
+
+  async deleteCustomGroupChat(chatId: string, actor: JwtPayload): Promise<{ success: boolean }> {
+    const db = getChatDb(this.prisma);
+
+    const chat = await db.chat.findUnique({
+      where: { id: chatId },
+      select: { id: true, type: true, groupId: true },
+    });
+    if (!chat) {
+      throw new NotFoundException('Chat not found');
+    }
+    if (chat.type !== ChatType.GROUP || chat.groupId !== null) {
+      throw new BadRequestException('This endpoint is only for custom group chats');
+    }
+
+    if (actor.role === UserRole.MANAGER) {
+      const centerId = this.managerScope.managerCenterIdFromJwt(actor);
+      if (!centerId) {
+        throw new ForbiddenException('Manager account is not assigned to a center');
+      }
+      const full = await db.chat.findUnique({
+        where: { id: chatId },
+        include: {
+          participants: { where: { leftAt: null }, select: { userId: true } },
+        },
+      });
+      if (!full) {
+        throw new NotFoundException('Chat not found');
+      }
+      const isMember = full.participants.some((p) => p.userId === actor.sub);
+      if (!isMember) {
+        throw new ForbiddenException('You are not a participant of this chat');
+      }
+    }
+
+    await db.chat.delete({ where: { id: chatId } });
+    return { success: true };
+  }
 }

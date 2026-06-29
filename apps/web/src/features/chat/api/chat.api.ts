@@ -21,6 +21,7 @@ export {
   addCustomGroupChatMember,
   addGroupChatMember,
   createCustomGroupChat,
+  deleteCustomGroupChat,
   fetchAdminAllUsers,
   fetchAdminGroups,
   fetchAdminStudentRecordings,

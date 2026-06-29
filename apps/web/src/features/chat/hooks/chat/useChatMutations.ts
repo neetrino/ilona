@@ -6,8 +6,18 @@ import {
   addGroupChatMember,
   createCustomGroupChat,
   addCustomGroupChatMember,
+  deleteCustomGroupChat,
 } from '../../api/chat.api';
 import { chatKeys } from './chat-query-keys';
+import { groupKeys } from '@/features/groups/hooks/useGroups';
+
+function invalidateChatGroupQueries(queryClient: ReturnType<typeof useQueryClient>) {
+  queryClient.invalidateQueries({ queryKey: chatKeys.list() });
+  queryClient.invalidateQueries({ queryKey: chatKeys.customGroupChats() });
+  queryClient.invalidateQueries({ queryKey: [...chatKeys.all, 'admin'] });
+  queryClient.invalidateQueries({ queryKey: groupKeys.lists() });
+  queryClient.invalidateQueries({ queryKey: chatKeys.teacherGroups() });
+}
 
 export function useCreateDirectChat() {
   const queryClient = useQueryClient();
@@ -61,6 +71,17 @@ export function useAddCustomGroupChatMember() {
       queryClient.invalidateQueries({ queryKey: chatKeys.list() });
       queryClient.invalidateQueries({ queryKey: chatKeys.details() });
       queryClient.invalidateQueries({ queryKey: [...chatKeys.all, 'admin'] });
+    },
+  });
+}
+
+export function useDeleteCustomGroupChat() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (chatId: string) => deleteCustomGroupChat(chatId),
+    onSuccess: () => {
+      invalidateChatGroupQueries(queryClient);
     },
   });
 }

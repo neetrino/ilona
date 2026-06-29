@@ -66,6 +66,10 @@ export class ChatManagementService {
     return this.customGroupService.addCustomGroupChatMember(chatId, userId, actor);
   }
 
+  deleteCustomGroupChat(chatId: string, actor: JwtPayload) {
+    return this.customGroupService.deleteCustomGroupChat(chatId, actor);
+  }
+
   getOnlineUsers(_chatId: string, onlineUserIds: Set<string>): string[] {
     return Array.from(onlineUserIds);
   }

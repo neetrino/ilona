@@ -8,6 +8,7 @@ import type { Chat } from '../../types';
 import { ChatBackButton } from '../ChatBackButton';
 import { MessageNavigationControls } from '../MessageNavigationControls';
 import { OnlineStatusDot } from '../OnlineStatusDot';
+import { ChatWindowHeaderMenu } from './ChatWindowHeaderMenu';
 
 interface ChatWindowHeaderProps {
   chat: Chat;
@@ -27,6 +28,7 @@ interface ChatWindowHeaderProps {
   onBack?: () => void;
   onAddMembers: () => void;
   onOpenVocabulary: () => void;
+  onDeleteGroup?: () => void;
   onPrevious: () => void;
   onNext: () => void;
   canGoPrevious: boolean;
@@ -51,6 +53,7 @@ export function ChatWindowHeader({
   onBack,
   onAddMembers,
   onOpenVocabulary,
+  onDeleteGroup,
   onPrevious,
   onNext,
   canGoPrevious,
@@ -184,22 +187,26 @@ export function ChatWindowHeader({
               />
             )}
           </div>
-          <button
-            type="button"
-            className={cn(
-              'inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-[15px] transition-colors',
-              ui.iconBtn,
-            )}
-          >
-            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"
-              />
-            </svg>
-          </button>
+          {isAdminOrManager && isGroupChat && onDeleteGroup ? (
+            <ChatWindowHeaderMenu ui={ui} onDeleteGroup={onDeleteGroup} />
+          ) : (
+            <button
+              type="button"
+              className={cn(
+                'inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-[15px] transition-colors',
+                ui.iconBtn,
+              )}
+            >
+              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"
+                />
+              </svg>
+            </button>
+          )}
         </div>
       </div>
     </div>

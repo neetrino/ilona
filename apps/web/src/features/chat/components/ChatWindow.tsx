@@ -32,6 +32,7 @@ import { useChatWindowScroll } from './chat-window/useChatWindowScroll';
 import { useChatWindowComposer } from './chat-window/useChatWindowComposer';
 import { useChatVoiceHandlers } from './chat-window/useChatVoiceHandlers';
 import { useChatMessageDelete } from './chat-window/useChatMessageDelete';
+import { useChatGroupDelete } from './chat-window/useChatGroupDelete';
 
 interface ChatWindowProps {
   chat: Chat;
@@ -206,6 +207,22 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
     deleteMessage,
   });
 
+  const {
+    canDeleteGroup,
+    isGroupDeleteDialogOpen,
+    isDeletingGroup,
+    groupDeleteError,
+    groupDeleteDialogTitle,
+    groupDeleteDialogDescription,
+    handleOpenGroupDelete,
+    handleGroupDeleteDialogOpenChange,
+    handleConfirmGroupDelete,
+  } = useChatGroupDelete({
+    chat,
+    isEnabled: isAdminOrManager && isGroupChat,
+    onDeleted: onBack,
+  });
+
   const handleSendVocabulary = async (words: string[]) => {
     setIsSendingVocabulary(true);
     try {
@@ -252,6 +269,7 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
         onBack={onBack}
         onAddMembers={() => setShowAddMembersModal(true)}
         onOpenVocabulary={() => setShowVocabularyModal(true)}
+        onDeleteGroup={canDeleteGroup ? handleOpenGroupDelete : undefined}
         onPrevious={goToPrevious}
         onNext={goToNext}
         canGoPrevious={canGoPrevious}
@@ -332,6 +350,19 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
         description={tChat('deleteMessageDescription')}
         isLoading={isDeletingMessage}
         error={deleteMessageError}
+        confirmLabel={tCommon('delete')}
+        cancelLabel={tCommon('cancel')}
+        loadingLabel={tChat('deleting')}
+      />
+
+      <DeleteConfirmationDialog
+        open={isGroupDeleteDialogOpen}
+        onOpenChange={handleGroupDeleteDialogOpenChange}
+        onConfirm={handleConfirmGroupDelete}
+        title={groupDeleteDialogTitle}
+        description={groupDeleteDialogDescription}
+        isLoading={isDeletingGroup}
+        error={groupDeleteError}
         confirmLabel={tCommon('delete')}
         cancelLabel={tCommon('cancel')}
         loadingLabel={tChat('deleting')}

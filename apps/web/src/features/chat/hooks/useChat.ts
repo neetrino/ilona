@@ -22,6 +22,7 @@ export {
   useAddGroupChatMember,
   useCreateCustomGroupChat,
   useAddCustomGroupChatMember,
+  useDeleteCustomGroupChat,
 } from './chat/useChatMutations';
 
 export {

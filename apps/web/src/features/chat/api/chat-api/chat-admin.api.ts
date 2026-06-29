@@ -71,6 +71,11 @@ export async function addCustomGroupChatMember(
   );
 }
 
+/** Admin-only: Delete a custom group chat (standalone, not linked to classes) */
+export async function deleteCustomGroupChat(chatId: string): Promise<{ success: boolean }> {
+  return api.delete<{ success: boolean }>(`${CHAT_ENDPOINT}/custom-groups/${chatId}`);
+}
+
 /** Admin-only: Get all student voice recordings for Recordings section */
 export async function fetchAdminStudentRecordings(
   filters?: AdminStudentRecordingsFilters,
