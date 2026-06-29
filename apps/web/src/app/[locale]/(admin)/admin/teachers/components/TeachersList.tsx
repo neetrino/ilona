@@ -15,6 +15,7 @@ interface TeachersListProps {
   activeCenterTabId: string | null;
   onSelectCenter: (centerId: string) => void;
   uniqueTeachersCount: number;
+  onTotalClick?: () => void;
   teachers: Teacher[];
   sortBy: string | undefined;
   sortOrder: 'asc' | 'desc';
@@ -49,6 +50,7 @@ export function TeachersList({
   activeCenterTabId,
   onSelectCenter,
   uniqueTeachersCount,
+  onTotalClick,
   teachers,
   sortBy,
   sortOrder,
@@ -140,6 +142,7 @@ export function TeachersList({
         onSelectCenter={onSelectCenter}
         uniqueTeachersCount={uniqueTeachersCount}
         isLoading={isLoading}
+        onTotalClick={onTotalClick}
         t={t}
         unassignedLabel={tc('unassigned')}
       />

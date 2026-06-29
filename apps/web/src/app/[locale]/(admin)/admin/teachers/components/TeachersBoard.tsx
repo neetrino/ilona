@@ -18,6 +18,7 @@ interface TeachersBoardProps {
   uniqueTeachersCount: number;
   isLoading: boolean;
   searchQuery: string;
+  onTotalClick?: () => void;
   onEdit: (teacher: Teacher) => void;
   /** Opens teacher details in CRM-style modal */
   onCardClick?: (teacher: Teacher) => void;
@@ -35,6 +36,7 @@ export function TeachersBoard({
   uniqueTeachersCount,
   isLoading,
   searchQuery,
+  onTotalClick,
   onEdit,
   onCardClick,
   t,
@@ -209,6 +211,7 @@ export function TeachersBoard({
           onSelectCenter={onSelectCenter}
           uniqueTeachersCount={uniqueTeachersCount}
           isLoading={isLoading}
+          onTotalClick={onTotalClick}
           t={t}
           unassignedLabel={tc('unassigned')}
         />
