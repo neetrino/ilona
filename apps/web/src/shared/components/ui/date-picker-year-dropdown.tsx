@@ -26,7 +26,11 @@ export function DatePickerYearDropdown({
         <button
           key={year}
           type="button"
-          onClick={() => onSelectYear(year)}
+          onPointerDown={(event) => event.stopPropagation()}
+          onClick={(event) => {
+            event.stopPropagation();
+            onSelectYear(year);
+          }}
           className={cn(
             'rounded-lg px-2 py-2.5 text-sm font-medium transition-colors touch-manipulation',
             year === selectedYear ? 'bg-[#2d329f] text-white' : 'text-slate-900 hover:bg-slate-100'
