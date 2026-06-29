@@ -17,6 +17,7 @@ import {
 } from '@/shared/components/ui/dropdown-theme';
 import { TeacherBranchAssignConfirmDialog } from './TeacherBranchAssignConfirmDialog';
 import { useTeacherBranchConfirm } from './useTeacherBranchConfirm';
+import { usePortalSidebarCollapsed } from '@/shared/context/portal-shell-context';
 
 interface TeacherBranchMultiSelectProps {
   teacherId: string;
@@ -52,6 +53,7 @@ export function TeacherBranchMultiSelect({
   className,
 }: TeacherBranchMultiSelectProps) {
   const tCommon = useTranslations('common');
+  const sidebarCollapsed = usePortalSidebarCollapsed();
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -244,6 +246,7 @@ export function TeacherBranchMultiSelect({
   };
 
   const isConfirmOpen = confirmState !== null;
+  const useCollapsedBranchGrid = sidebarCollapsed && selectedChips.length >= 2;
 
   const dropdownMenu =
     isOpen && !isConfirmOpen && !disabled && !isLoading && position && typeof window !== 'undefined'
@@ -343,7 +346,14 @@ export function TeacherBranchMultiSelect({
         title={error ?? undefined}
       >
         <div className="flex items-start gap-2">
-          <div className="flex flex-1 flex-wrap content-start items-center gap-1">
+          <div
+            className={cn(
+              'flex-1',
+              useCollapsedBranchGrid
+                ? 'grid grid-cols-2 gap-1.5'
+                : 'flex flex-wrap content-start items-center gap-1',
+            )}
+          >
             {isLoading ? (
               <span className="flex items-center gap-1 px-1 py-0.5 text-sm">
                 <svg className="h-3 w-3 animate-spin" fill="none" viewBox="0 0 24 24" aria-hidden>
@@ -369,14 +379,27 @@ export function TeacherBranchMultiSelect({
                 return (
                   <span
                     key={option.id}
-                    className="inline-flex max-w-full items-center rounded-xl px-2 py-0.5 text-[11px] font-semibold shadow-[0_1px_4px_rgba(15,23,42,0.05)]"
+                    className={cn(
+                      'inline-flex max-w-full items-center rounded-xl text-[11px] font-semibold shadow-[0_1px_4px_rgba(15,23,42,0.05)]',
+                      useCollapsedBranchGrid
+                        ? 'h-full min-h-[28px] w-full min-w-0 justify-center px-1.5 py-1.5'
+                        : 'px-2 py-0.5',
+                    )}
                     style={{
                       backgroundColor: softColor,
                       color: textColor,
                       border: `1px solid ${borderColor}`,
                     }}
                   >
-                    <span className="max-w-[120px] truncate">{option.label}</span>
+                    <span
+                      className={cn(
+                        useCollapsedBranchGrid
+                          ? 'w-full text-center leading-tight break-words'
+                          : 'max-w-[180px] truncate',
+                      )}
+                    >
+                      {option.label}
+                    </span>
                   </span>
                 );
               })

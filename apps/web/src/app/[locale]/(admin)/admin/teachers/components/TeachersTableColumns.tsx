@@ -23,6 +23,7 @@ interface TeachersTableColumnsProps {
   isDeleting: boolean;
   isUpdating: boolean;
   isLoading: boolean;
+  sidebarCollapsed?: boolean;
 }
 
 export function createTeachersTableColumns({
@@ -40,36 +41,45 @@ export function createTeachersTableColumns({
   isDeleting,
   isUpdating,
   isLoading,
+  sidebarCollapsed = false,
 }: TeachersTableColumnsProps) {
+  const centerColumnWidthClass = sidebarCollapsed
+    ? '!w-[300px] !min-w-[300px] !max-w-[300px]'
+    : '!w-[260px] !min-w-[260px] !max-w-[260px]';
+
   return [
     {
       key: 'checkbox',
       header: (
-        <SelectAllCheckbox
-          checked={allSelected}
-          indeterminate={someSelected}
-          onChange={onSelectAll}
-          disabled={isDeleting || isUpdating || isLoading}
-        />
+        <div className="flex justify-center">
+          <SelectAllCheckbox
+            checked={allSelected}
+            indeterminate={someSelected}
+            onChange={onSelectAll}
+            disabled={isDeleting || isUpdating || isLoading}
+          />
+        </div>
       ),
       render: (teacher: Teacher) => (
-        <input
-          type="checkbox"
-          className="w-4 h-4 rounded border-[rgba(14,14,16,0.12)] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-          checked={selectedTeacherIds.has(teacher.id)}
-          onChange={() => onToggleSelect(teacher.id)}
-          onClick={(e) => e.stopPropagation()}
-          disabled={isDeleting || isUpdating || isLoading}
-          aria-label={`Select ${teacher.user?.firstName} ${teacher.user?.lastName}`}
-        />
+        <div className="flex justify-center">
+          <input
+            type="checkbox"
+            className="h-4 w-4 cursor-pointer rounded border-[rgba(14,14,16,0.12)] disabled:cursor-not-allowed disabled:opacity-50"
+            checked={selectedTeacherIds.has(teacher.id)}
+            onChange={() => onToggleSelect(teacher.id)}
+            onClick={(e) => e.stopPropagation()}
+            disabled={isDeleting || isUpdating || isLoading}
+            aria-label={`Select ${teacher.user?.firstName} ${teacher.user?.lastName}`}
+          />
+        </div>
       ),
-      className: '!pl-4 !pr-2 !w-12 align-top',
+      className: '!px-2 !w-12 align-middle text-center',
     },
     {
       key: 'teacher',
       header: t('title'),
       sortable: true,
-      className: '!pl-4 !pr-4 !w-[170px] !min-w-[170px] !max-w-[170px] align-top',
+      className: '!-ml-[15px] !pl-4 !pr-4 !w-[170px] !min-w-[170px] !max-w-[170px] align-middle',
       render: (teacher: Teacher) => {
         const firstName = teacher.user?.firstName || '';
         const lastName = teacher.user?.lastName || '';
@@ -101,8 +111,8 @@ export function createTeachersTableColumns({
     },
     {
       key: 'center',
-      header: t('center'),
-      className: '!pl-4 !pr-4 !w-[240px] !min-w-[240px] !max-w-[240px] align-top !py-4',
+      header: <span className="ml-4 block">{t('center')}</span>,
+      className: cn('!pl-4 !pr-4 align-top !py-4', centerColumnWidthClass),
       render: (teacher: Teacher) => {
         const firstName = teacher.user?.firstName || '';
         const lastName = teacher.user?.lastName || '';
@@ -111,7 +121,7 @@ export function createTeachersTableColumns({
         const selectedCenterIds = centers.map((center) => center.id);
 
         return (
-          <div onClick={(event) => event.stopPropagation()}>
+          <div className="ml-4" onClick={(event) => event.stopPropagation()}>
             <TeacherBranchMultiSelect
               teacherId={teacher.id}
               teacherName={teacherName}
@@ -131,7 +141,7 @@ export function createTeachersTableColumns({
       key: 'groups',
       header: 'Groups',
       sortable: true,
-      className: '!pl-4 !pr-4 !w-[170px] !min-w-[170px] !max-w-[170px] text-center align-top',
+      className: '!pl-4 !pr-4 !w-[170px] !min-w-[170px] !max-w-[170px] align-middle text-center',
       render: (teacher: Teacher) => {
         const count = teacher._count?.groups || 0;
         return (
@@ -155,7 +165,7 @@ export function createTeachersTableColumns({
       key: 'subGroups',
       header: 'Groups (T2)',
       sortable: false,
-      className: '!pl-4 !pr-4 !w-[170px] !min-w-[170px] !max-w-[170px] text-center align-top',
+      className: '!pl-4 !pr-4 !w-[170px] !min-w-[170px] !max-w-[170px] align-middle text-center',
       render: (teacher: Teacher) => {
         const count =
           teacher.secondTeacherForGroupsCount ??
@@ -181,7 +191,7 @@ export function createTeachersTableColumns({
     {
       key: 'lessonRate',
       header: 'Per Lesson Rate',
-      className: '!pl-4 !pr-4 !w-[170px] !min-w-[170px] !max-w-[170px] text-center align-top',
+      className: '!pl-4 !pr-4 !w-[170px] !min-w-[170px] !max-w-[170px] align-middle text-center',
       render: (teacher: Teacher) => {
         const lessonRate = teacher.lessonRateAMD;
         const fallback =
