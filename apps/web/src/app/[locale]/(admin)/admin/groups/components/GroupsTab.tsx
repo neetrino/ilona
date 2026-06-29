@@ -22,6 +22,7 @@ import {
 import { getErrorMessage } from '@/shared/lib/api';
 import { useGroupsManagement } from '../hooks/useGroupsManagement';
 import { readUrlSearchParam, getLiveSearchParams } from '../utils/url';
+import { ALL_GROUPS_BRANCH, isAllGroupsBranch } from '../utils/branch-tabs';
 import { GroupStudentsModal } from './GroupStudentsModal';
 import { StudentDetailsModal } from './StudentDetailsModal';
 import { GroupsBranchTabsStrip } from './GroupsBranchTabsStrip';
@@ -134,9 +135,16 @@ export function GroupsTab({
   useEffect(() => {
     const branch = readUrlSearchParam('branch', searchParams);
     if (!selectedCenterId) {
-      setBoardTabCenterId(branch);
+      if (isAllGroupsBranch(branch)) {
+        setBoardTabCenterId(null);
+      } else {
+        setBoardTabCenterId(branch);
+      }
     }
   }, [searchParams, selectedCenterId, urlRevision]);
+
+  const allGroupsMode =
+    !selectedCenterId && isAllGroupsBranch(readUrlSearchParam('branch', searchParams));
 
   const {
     groups,
@@ -176,7 +184,7 @@ export function GroupsTab({
     deletedCount,
     handleBulkDeleteGroupsClick,
     handleBulkDeleteGroupsConfirm,
-  } = useGroupsManagement(viewMode, searchQuery, page, selectedCenterId, boardTabCenterId);
+  } = useGroupsManagement(viewMode, searchQuery, page, selectedCenterId, boardTabCenterId, allGroupsMode);
 
   const openGroupStatusDialog = useCallback((groupId: string, wasActive: boolean) => {
     setStatusDialogError(null);
@@ -211,6 +219,10 @@ export function GroupsTab({
       return;
     }
 
+    if (isAllGroupsBranch(readUrlSearchParam('branch', searchParams))) {
+      return;
+    }
+
     if (readUrlSearchParam('branch', searchParams) || boardTabCenterId) {
       return;
     }
@@ -232,9 +244,10 @@ export function GroupsTab({
     urlRevision,
   ]);
 
-  const activeBranchTabId = selectedCenterId ?? boardTabCenterId;
+  const activeBranchTabId = allGroupsMode ? null : (selectedCenterId ?? boardTabCenterId);
   const trimmedSearchQuery = searchQuery.trim();
-  const isSearchingBranches = viewMode === 'board' && !activeCenterId && !!trimmedSearchQuery;
+  const isSearchingBranches =
+    viewMode === 'board' && !activeCenterId && !allGroupsMode && !!trimmedSearchQuery;
   const isSearchingGroups = !!trimmedSearchQuery && !isSearchingBranches;
   /** Branch tabs: filter by branch name only when picking a branch (no tab selected yet). */
   const centersForBranchTabs = useMemo(() => {
@@ -311,6 +324,25 @@ export function GroupsTab({
       setBoardTabCenterId(centerId);
       updateUrl({ branch: centerId });
     }
+  };
+
+  const handleTotalGroupsClick = () => {
+    setPage(0);
+    setSelectedGroupIds(new Set());
+    setMobileBoardPage(0);
+    setDesktopBoardPage(0);
+    if (selectedCenterId) {
+      const next = getLiveSearchParams(searchParams);
+      next.set('branch', ALL_GROUPS_BRANCH);
+      router.push(`/${locale}${portalBasePath}/groups?${next.toString()}`);
+      return;
+    }
+    setBoardTabCenterId(null);
+    updateUrl({ branch: ALL_GROUPS_BRANCH });
+    requestAnimationFrame(() => {
+      mobileBoardStartRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      desktopBoardStartRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
   };
 
   // Ref to track edit modal closing to prevent effect from reopening
@@ -637,7 +669,7 @@ export function GroupsTab({
           <input
             type="search"
             placeholder={
-              viewMode === 'board' && !activeCenterId
+              viewMode === 'board' && !activeCenterId && !allGroupsMode
                 ? t('searchBranchesPlaceholder')
                 : t('searchGroupsPlaceholder')
             }
@@ -676,19 +708,25 @@ export function GroupsTab({
                   return;
                 }
 
-                const nextBoardCenterId =
-                  selectedCenterId ??
-                  readUrlSearchParam('branch', searchParams) ??
-                  boardTabCenterId ??
-                  allCenters[0]?.id ??
-                  null;
+                const branchParam = readUrlSearchParam('branch', searchParams);
+                const nextBoardCenterId = isAllGroupsBranch(branchParam)
+                  ? null
+                  : selectedCenterId ??
+                    branchParam ??
+                    boardTabCenterId ??
+                    allCenters[0]?.id ??
+                    null;
 
                 if (!selectedCenterId) {
                   setBoardTabCenterId(nextBoardCenterId);
                 }
 
                 onViewModeChange('board', {
-                  branch: selectedCenterId ? null : nextBoardCenterId,
+                  branch: selectedCenterId
+                    ? null
+                    : isAllGroupsBranch(branchParam)
+                      ? ALL_GROUPS_BRANCH
+                      : nextBoardCenterId,
                 });
               }}
               listLabel={t('listView')}
@@ -741,9 +779,11 @@ export function GroupsTab({
                 centers={centersForBranchTabs}
                 totalCentersCount={allCenters.length}
                 activeCenterId={activeBranchTabId}
+                allGroupsActive={allGroupsMode}
                 totalGroupsAcrossCenters={totalGroupsAcrossCenters}
                 isLoading={isLoadingBranchTabs}
                 onCenterSelect={handleBranchTabClick}
+                onTotalGroupsClick={handleTotalGroupsClick}
                 t={t}
               />
               {centersForBranchTabs.length === 0 && !isLoadingBranchTabs && allCenters.length > 0 && (
@@ -754,7 +794,13 @@ export function GroupsTab({
 
           <div
             role="tabpanel"
-            aria-label={activeBranchTabId ? t('tabpanelGroupsForBranch') : t('tabpanelSelectBranch')}
+            aria-label={
+              allGroupsMode
+                ? t('totalGroups')
+                : activeBranchTabId
+                  ? t('tabpanelGroupsForBranch')
+                  : t('tabpanelSelectBranch')
+            }
             className="min-w-0 sm:p-5"
           >
             {showBoardCenterPicker ? (
@@ -916,9 +962,11 @@ export function GroupsTab({
                 centers={centersForBranchTabs}
                 totalCentersCount={allCenters.length}
                 activeCenterId={activeBranchTabId}
+                allGroupsActive={allGroupsMode}
                 totalGroupsAcrossCenters={totalGroupsAcrossCenters}
                 isLoading={isLoadingBranchTabs}
                 onCenterSelect={handleBranchTabClick}
+                onTotalGroupsClick={handleTotalGroupsClick}
                 t={t}
                 tabIdPrefix="list-branch-tab"
               />
@@ -931,7 +979,7 @@ export function GroupsTab({
           <div className="p-4 sm:p-5">
             <DataTable
               columns={
-                activeCenterId
+                activeCenterId && !allGroupsMode
                   ? groupColumns.filter((col) => col.key !== 'center')
                   : groupColumns
               }

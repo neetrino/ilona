@@ -16,7 +16,9 @@ export function useGroupsManagement(
   /** Center id from `/admin/groups/[centerId]` */
   routeSelectedCenterId: string | null | undefined,
   /** Selected branch tab on main board (no route) */
-  boardTabCenterId: string | null | undefined
+  boardTabCenterId: string | null | undefined,
+  /** Show groups from all branches (no center filter). */
+  allGroupsMode = false,
 ) {
   const t = useTranslations('groups');
   const [createGroupOpen, setCreateGroupOpen] = useState(false);
@@ -32,19 +34,21 @@ export function useGroupsManagement(
   const { user } = useAuthStore();
   const managerCenterId = user?.role === 'MANAGER' ? user.managerCenterId : undefined;
 
-  const activeCenterId = routeSelectedCenterId ?? boardTabCenterId ?? null;
+  const activeCenterId = allGroupsMode ? null : (routeSelectedCenterId ?? boardTabCenterId ?? null);
 
   const showBranchTabs = !routeSelectedCenterId;
   const shouldLoadBranchTabs = showBranchTabs;
 
-  const showBoardCenterPicker = viewMode === 'board' && !activeCenterId;
+  const showBoardCenterPicker = viewMode === 'board' && !activeCenterId && !allGroupsMode;
 
   const shouldFetchGroups =
-    viewMode === 'list' || (viewMode === 'board' && !!activeCenterId);
+    viewMode === 'list' || (viewMode === 'board' && (!!activeCenterId || allGroupsMode));
 
-  const groupCenterFilter = activeCenterId ?? managerCenterId ?? undefined;
+  const groupCenterFilter = allGroupsMode
+    ? (managerCenterId ?? undefined)
+    : (activeCenterId ?? managerCenterId ?? undefined);
 
-  const shouldFetchAll = viewMode === 'board' && !!activeCenterId;
+  const shouldFetchAll = viewMode === 'board' && (!!activeCenterId || allGroupsMode);
 
   const {
     data: groupsData,
@@ -55,7 +59,7 @@ export function useGroupsManagement(
       take: shouldFetchAll ? STATS_FETCH_SIZE : PAGE_SIZE,
       search: searchQuery || undefined,
       centerId: groupCenterFilter,
-      includeStudents: viewMode === 'board',
+      includeStudents: viewMode === 'board' && !!activeCenterId && !allGroupsMode,
     },
     shouldFetchGroups
   );
@@ -99,17 +103,17 @@ export function useGroupsManagement(
   /** Board + branch tab: only show groups for the selected center (filter, not just API trust). */
   const displayGroups = useMemo(() => {
     let result = groups;
-    if (activeCenterId && showBranchTabs) {
+    if (activeCenterId && showBranchTabs && !allGroupsMode) {
       result = groups.filter((g) => g.centerId === activeCenterId);
     }
-    if (viewMode === 'board') {
+    if (viewMode === 'board' && !allGroupsMode) {
       return result.map((group) => ({
         ...group,
         students: group.students ?? [],
       }));
     }
     return result;
-  }, [groups, viewMode, activeCenterId, showBranchTabs]);
+  }, [groups, viewMode, activeCenterId, showBranchTabs, allGroupsMode]);
 
   const statsSourceGroups = useMemo(
     () => (shouldFetchAll ? displayGroups : (statsGroupsData?.items ?? [])),

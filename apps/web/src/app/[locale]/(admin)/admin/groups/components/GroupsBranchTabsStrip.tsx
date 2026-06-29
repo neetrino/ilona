@@ -11,9 +11,11 @@ interface GroupsBranchTabsStripProps {
   /** Unfiltered center count — distinguishes "no centers exist" from "search filtered all out". */
   totalCentersCount?: number;
   activeCenterId: string | null;
+  allGroupsActive?: boolean;
   totalGroupsAcrossCenters: number;
   isLoading: boolean;
   onCenterSelect: (centerId: string) => void;
+  onTotalGroupsClick?: () => void;
   t: ReturnType<typeof useTranslations<'groups'>>;
   tabIdPrefix?: string;
 }
@@ -22,9 +24,11 @@ export function GroupsBranchTabsStrip({
   centers,
   totalCentersCount,
   activeCenterId,
+  allGroupsActive = false,
   totalGroupsAcrossCenters,
   isLoading,
   onCenterSelect,
+  onTotalGroupsClick,
   t,
   tabIdPrefix = 'branch-tab',
 }: GroupsBranchTabsStripProps) {
@@ -45,6 +49,8 @@ export function GroupsBranchTabsStrip({
       <GroupsUniqueTotalStat
         count={totalGroupsAcrossCenters}
         isLoading={isLoading}
+        isActive={allGroupsActive}
+        onClick={onTotalGroupsClick}
         t={t}
       />
       <div className="min-w-0 flex-1 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
