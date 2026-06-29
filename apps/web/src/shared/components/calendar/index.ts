@@ -1,3 +1,2 @@
-export { CalendarLessonsTable } from './CalendarLessonsTable';
-export type { CalendarLessonRow } from './CalendarLessonsTable';
-
+export { CalendarMonthGrid } from './CalendarMonthGrid';
+export { useMaxVisibleInCell } from './useCalendarMonthCellLimit';

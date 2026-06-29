@@ -220,7 +220,6 @@
     "schedule": "Schedule",
     "recording": "Recording",
     "lessons": "Lessons",
-    "calendar": "Calendar",
     "dailyDuties": "Daily Duties",
     "dailyDutiesMobile": "Daily\nDuties",
     "courses": "Courses",
@@ -268,7 +267,9 @@
     "needsImprovement": "Needs improvement",
     "attendedCount": "{count} attended",
     "totalLessons": "Total Lessons",
-    "upcoming": "Upcoming",
+    "upcoming": {
+      "scheduledCount": "{count} sessions scheduled this week"
+    },
     "lessonsScheduled": "lessons scheduled",
     "nextPayment": "Next Payment",
     "none": "None",
@@ -355,9 +356,6 @@
       "today": "Today",
       "week": "Week",
       "month": "Month"
-    },
-    "upcoming": {
-      "scheduledCount": "{count} sessions scheduled this week"
     },
     "progress": {
       "track": "{level} track",
@@ -2176,8 +2174,38 @@
     "unauthorized": "Unauthorized",
     "forbidden": "Access denied"
   },
-  "calendar": {
-    "title": "My Calendar",
+  "schedule": {
+    "noClassesScheduled": "No classes scheduled",
+    "subtitleWeeklyMonthly": "Weekly and monthly schedule for upcoming lessons"
+  },
+  "teacherToday": {
+    "subtitle": "Manage your lessons, mark attendance, and send vocabulary.",
+    "todayTab": "Today",
+    "thisWeekTab": "This Week",
+    "scheduledCount": "{count} scheduled",
+    "inProgressCount": "{count} in progress",
+    "completedCount": "{count} completed",
+    "vocabularyPendingCount": "{count} need vocabulary",
+    "loadLessonsError": "An error occurred while loading your lessons.",
+    "noLessonsToday": "No lessons today",
+    "noLessonsThisWeek": "No lessons this week",
+    "enjoyFreeTime": "Enjoy your free time!",
+    "attendanceMarked": "Attendance marked",
+    "vocabularySentCheck": "Vocabulary sent",
+    "starting": "Starting...",
+    "completing": "Completing...",
+    "startLessonAction": "Start Lesson",
+    "allDoneCheck": "✓ All Done",
+    "durationMin": "{count} min",
+    "studentsCount": "{count} students"
+  },
+  "teacherNotes": {
+    "quickReminderPlaceholder": "Jot down a quick reminder…",
+    "clickDoneToRemove": "Click \"Done\" to remove a note",
+    "done": "Done"
+  },
+  "dailyDuties": {
+    "title": "Daily Duties",
     "subtitle": "View your teaching schedule.",
     "list": "List",
     "week": "Week",
@@ -2187,7 +2215,7 @@
     "addCourse": "Add Course",
     "addCourseDescription": "Fill in the information below to create a new course. Fields marked with * are required.",
     "courseName": "Course Name",
-    "selectGroup": "Select a group",
+    "selectGroup": "Select group",
     "group": "Group",
     "weekdays": "Weekdays",
     "weekdaysHint": "Select the days of the week when the course runs",
@@ -2265,7 +2293,6 @@
     "substituteByGroupDay": "Substitute by group & day",
     "substituteByGroupDayHint": "Applies to all non-cancelled lessons for the selected group on that calendar day (UTC date).",
     "loadingGroups": "Loading groups…",
-    "selectGroup": "Select group",
     "apply": "Apply",
     "removeSubstitute": "Remove substitute",
     "loadingLesson": "Loading lesson…",
@@ -2282,7 +2309,7 @@
     "lessonNotFoundSubtitle": "The lesson you're looking for doesn't exist.",
     "lessonChecklist": "Lesson Checklist",
     "failedToLoadLessons": "Failed to load lessons",
-    "adminTitle": "Lesson Calendar",
+    "adminTitle": "Daily Duties",
     "adminSubtitle": "Schedule and manage lessons across all groups.",
     "teacherDailyDutiesTitle": "Daily Duties",
     "teacherDailyDutiesSubtitle": "View and complete your lesson obligations.",
@@ -2351,37 +2378,5 @@
       "errorSavingFeedback": "Failed to save feedback. Please try again.",
       "skillsCommentExpandHint": "Click “speaking” or “writing” to open the skills comment field."
     }
-  },
-  "schedule": {
-    "noClassesScheduled": "No classes scheduled",
-    "subtitleWeeklyMonthly": "Weekly and monthly schedule for upcoming lessons"
-  },
-  "teacherToday": {
-    "subtitle": "Manage your lessons, mark attendance, and send vocabulary.",
-    "todayTab": "Today",
-    "thisWeekTab": "This Week",
-    "scheduledCount": "{count} scheduled",
-    "inProgressCount": "{count} in progress",
-    "completedCount": "{count} completed",
-    "vocabularyPendingCount": "{count} need vocabulary",
-    "loadLessonsError": "An error occurred while loading your lessons.",
-    "noLessonsToday": "No lessons today",
-    "noLessonsThisWeek": "No lessons this week",
-    "enjoyFreeTime": "Enjoy your free time!",
-    "attendanceMarked": "Attendance marked",
-    "vocabularySentCheck": "Vocabulary sent",
-    "starting": "Starting...",
-    "completing": "Completing...",
-    "startLessonAction": "Start Lesson",
-    "allDoneCheck": "✓ All Done",
-    "durationMin": "{count} min",
-    "studentsCount": "{count} students"
-  },
-  "teacherNotes": {
-    "quickReminderPlaceholder": "Jot down a quick reminder…",
-    "clickDoneToRemove": "Click \"Done\" to remove a note",
-    "done": "Done"
   }
 }
-
-

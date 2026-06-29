@@ -65,7 +65,7 @@ function useMyTeacherProfile() {
 }
 
 export function AddCourseForm({ open, onOpenChange }: AddCourseFormProps) {
-  const t = useTranslations('calendar');
+  const t = useTranslations('dailyDuties');
   const tCommon = useTranslations('common');
   const tLessons = useTranslations('lessons');
   const weekdayOptions = useMemo(

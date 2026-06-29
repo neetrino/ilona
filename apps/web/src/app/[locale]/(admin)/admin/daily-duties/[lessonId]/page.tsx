@@ -14,7 +14,7 @@ import { getAdminDailyDutiesBasePath } from '@/shared/lib/role-routes';
 import {
   AdminLessonDetailPanel,
   type AdminLessonTab,
-} from '../../calendar/components/AdminLessonDetailPanel';
+} from '../../daily-duties/components/AdminLessonDetailPanel';
 
 function parseLessonTab(value: string | null): AdminLessonTab {
   if (
@@ -34,7 +34,7 @@ export default function AdminDailyDutiesLessonPage({
 }: {
   params: Promise<{ lessonId: string }>;
 }) {
-  const t = useTranslations('calendar');
+  const t = useTranslations('dailyDuties');
   const tCommon = useTranslations('common');
   const resolvedParams = use(params);
   const router = useRouter();

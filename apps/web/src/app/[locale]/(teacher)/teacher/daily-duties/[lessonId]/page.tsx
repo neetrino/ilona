@@ -5,12 +5,12 @@ import { useTranslations } from 'next-intl';
 import { useRouter } from '@/config/navigation';
 import { useAppSearchUrl } from '@/shared/hooks/useAppSearchUrl';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
-import { LessonDetailTabs } from '@/shared/components/calendar/LessonDetailTabs';
-import { AbsenceTab } from '@/shared/components/calendar/AbsenceTab';
-import { FeedbacksTab } from '@/shared/components/calendar/FeedbacksTab';
-import { VoiceTab } from '@/shared/components/calendar/VoiceTab';
-import { TextTab } from '@/shared/components/calendar/TextTab';
-import { DailyPlanTab } from '@/shared/components/calendar/DailyPlanTab';
+import { LessonDetailTabs } from '@/shared/components/daily-duties/LessonDetailTabs';
+import { AbsenceTab } from '@/shared/components/daily-duties/AbsenceTab';
+import { FeedbacksTab } from '@/shared/components/daily-duties/FeedbacksTab';
+import { VoiceTab } from '@/shared/components/daily-duties/VoiceTab';
+import { TextTab } from '@/shared/components/daily-duties/TextTab';
+import { DailyPlanTab } from '@/shared/components/daily-duties/DailyPlanTab';
 import { useLesson } from '@/features/lessons';
 import { Button } from '@/shared/components/ui/button';
 import { readUrlSearchParam } from '@/shared/lib/url-search-params';
@@ -36,7 +36,7 @@ export default function TeacherDailyDutiesLessonPage({
   params: Promise<{ lessonId: string }>;
 }) {
   const tCommon = useTranslations('common');
-  const tCalendar = useTranslations('calendar');
+  const tCalendar = useTranslations('dailyDuties');
   const resolvedParams = use(params);
   const router = useRouter();
   const { searchParams, urlRevision, replaceParams } = useAppSearchUrl();

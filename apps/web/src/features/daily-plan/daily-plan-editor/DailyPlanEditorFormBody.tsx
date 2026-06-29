@@ -22,7 +22,7 @@ interface DailyPlanEditorFormBodyProps {
 export function DailyPlanEditorFormBody({ vm }: DailyPlanEditorFormBodyProps) {
   const t = useTranslations('dailyPlanPage');
   const tCommon = useTranslations('common');
-  const tCalendar = useTranslations('calendar');
+  const tCalendar = useTranslations('dailyDuties');
 
   return (
     <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain [-webkit-overflow-scrolling:touch]">

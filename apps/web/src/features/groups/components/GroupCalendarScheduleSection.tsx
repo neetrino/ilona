@@ -32,7 +32,7 @@ export function GroupCalendarScheduleSection({
   adminControls = false,
 }: GroupCalendarScheduleSectionProps) {
   const t = useTranslations('groups');
-  const tCalendar = useTranslations('calendar');
+  const tCommon = useTranslations('common');
   const slotError = schedule.length > 0 ? scheduleSlotsValidationError(schedule) : null;
 
   const handleDateFromChange = useCallback(
@@ -61,7 +61,7 @@ export function GroupCalendarScheduleSection({
 
       <div className="grid grid-cols-2 gap-2 sm:gap-3">
         <div className="min-w-0 space-y-1">
-          <Label htmlFor="schedule-date-from">{tCalendar('startDate')}</Label>
+          <Label htmlFor="schedule-date-from">{tCommon('from')}</Label>
           <DatePickerInput
             id="schedule-date-from"
             value={dateFrom}
@@ -74,7 +74,7 @@ export function GroupCalendarScheduleSection({
           />
         </div>
         <div className="min-w-0 space-y-1">
-          <Label htmlFor="schedule-date-to">{tCalendar('endDate')}</Label>
+          <Label htmlFor="schedule-date-to">{tCommon('to')}</Label>
           <DatePickerInput
             id="schedule-date-to"
             value={dateTo}

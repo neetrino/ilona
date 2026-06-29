@@ -1,7 +1,7 @@
 'use client';
 
-import { PortalCalendarPage } from '@/features/calendar/PortalCalendarPage';
+import { DailyDutiesPage } from '@/features/daily-duties/DailyDutiesPage';
 
 export default function TeacherDailyDutiesPage() {
-  return <PortalCalendarPage mode="teacher" />;
+  return <DailyDutiesPage mode="teacher" />;
 }

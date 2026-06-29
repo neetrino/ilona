@@ -220,7 +220,6 @@
     "schedule": "Ժամանակացույց",
     "recording": "Ձայնագրություն",
     "lessons": "Դասեր",
-    "calendar": "Օրացույց",
     "dailyDuties": "Օրվա պարտականություններ",
     "dailyDutiesMobile": "Օրվա պարտա-\nկանություններ",
     "courses": "Դասընթացներ",
@@ -2175,8 +2174,38 @@
     "login": "Մուտք",
     "dismiss": "Փակել"
   },
-  "calendar": {
-    "title": "Իմ Օրացույց",
+  "schedule": {
+    "noClassesScheduled": "Նախատեսված դասեր չկան",
+    "subtitleWeeklyMonthly": "Շաբաթական և ամսական ժամանակացույց առաջիկա դասերի համար"
+  },
+  "teacherToday": {
+    "subtitle": "Կառավարեք դասերը, նշեք հաճախելիությունը և ուղարկեք բառապաշարը։",
+    "todayTab": "Այսօր",
+    "thisWeekTab": "Այս շաբաթ",
+    "scheduledCount": "{count} պլանավորված",
+    "inProgressCount": "{count} ընթացքում",
+    "completedCount": "{count} ավարտված",
+    "vocabularyPendingCount": "{count} բառապաշար է պետք",
+    "loadLessonsError": "Դասերը բեռնելիս սխալ է տեղի ունեցել։",
+    "noLessonsToday": "Այսօր դասեր չկան",
+    "noLessonsThisWeek": "Այս շաբաթ դասեր չկան",
+    "enjoyFreeTime": "Վայելեք ազատ ժամանակը!",
+    "attendanceMarked": "Հաճախելիությունը նշված է",
+    "vocabularySentCheck": "Բառապաշարը ուղարկված է",
+    "starting": "Սկսվում է...",
+    "completing": "Ավարտվում է...",
+    "startLessonAction": "Սկսել դասը",
+    "allDoneCheck": "✓ Ամեն ինչ պատրաստ է",
+    "durationMin": "{count} ր",
+    "studentsCount": "{count} աշակերտ"
+  },
+  "teacherNotes": {
+    "quickReminderPlaceholder": "Գրեք արագ հիշեցում…",
+    "clickDoneToRemove": "Սեղմեք «Արված»՝ հեռացնելու համար",
+    "done": "Արված"
+  },
+  "dailyDuties": {
+    "title": "Օրվա պարտականություններ",
     "subtitle": "Դիտեք ձեր ուսուցման ժամանակացույցը:",
     "list": "Ցուցակ",
     "week": "Շաբաթ",
@@ -2280,7 +2309,7 @@
     "lessonNotFoundSubtitle": "Ձեր փնտրած դասը գոյություն չունի։",
     "lessonChecklist": "Դասի ստուգացուցակ",
     "failedToLoadLessons": "Չհաջողվեց բեռնել դասերը",
-    "adminTitle": "Դասերի օրացույց",
+    "adminTitle": "Օրվա պարտականություններ",
     "adminSubtitle": "Պլանավորել և կառավարել դասերը բոլոր խմբերում։",
     "teacherDailyDutiesTitle": "Օրվա պարտականություններ",
     "teacherDailyDutiesSubtitle": "Դիտեք և կատարեք ձեր դասերի պարտականությունները։",
@@ -2349,35 +2378,5 @@
       "errorSavingFeedback": "Չհաջողվեց պահպանել արձագանքը։ Խնդրում ենք կրկին փորձել։",
       "skillsCommentExpandHint": "Սեղմիր «խոսք» կամ «գրել»-ի վրա՝ մեկնաբանության դաշտը բացելու համար։"
     }
-  },
-  "schedule": {
-    "noClassesScheduled": "Նախատեսված դասեր չկան",
-    "subtitleWeeklyMonthly": "Շաբաթական և ամսական ժամանակացույց առաջիկա դասերի համար"
-  },
-  "teacherToday": {
-    "subtitle": "Կառավարեք դասերը, նշեք հաճախելիությունը և ուղարկեք բառապաշարը։",
-    "todayTab": "Այսօր",
-    "thisWeekTab": "Այս շաբաթ",
-    "scheduledCount": "{count} պլանավորված",
-    "inProgressCount": "{count} ընթացքում",
-    "completedCount": "{count} ավարտված",
-    "vocabularyPendingCount": "{count} բառապաշար է պետք",
-    "loadLessonsError": "Դասերը բեռնելիս սխալ է տեղի ունեցել։",
-    "noLessonsToday": "Այսօր դասեր չկան",
-    "noLessonsThisWeek": "Այս շաբաթ դասեր չկան",
-    "enjoyFreeTime": "Վայելեք ազատ ժամանակը!",
-    "attendanceMarked": "Հաճախելիությունը նշված է",
-    "vocabularySentCheck": "Բառապաշարը ուղարկված է",
-    "starting": "Սկսվում է...",
-    "completing": "Ավարտվում է...",
-    "startLessonAction": "Սկսել դասը",
-    "allDoneCheck": "✓ Ամեն ինչ պատրաստ է",
-    "durationMin": "{count} ր",
-    "studentsCount": "{count} աշակերտ"
-  },
-  "teacherNotes": {
-    "quickReminderPlaceholder": "Գրեք արագ հիշեցում…",
-    "clickDoneToRemove": "Սեղմեք «Արված»՝ հեռացնելու համար",
-    "done": "Արված"
   }
 }

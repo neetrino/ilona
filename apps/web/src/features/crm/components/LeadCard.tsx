@@ -13,7 +13,7 @@ import {
   Users,
 } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
-import { LessonListDateCell } from '@/shared/components/calendar/LessonListDateCell';
+import { LessonListDateCell } from '@/shared/components/daily-duties/LessonListDateCell';
 import { CrmStatusSelector } from './CrmStatusSelector';
 import { CrmBranchSelector, type CrmBranchOption } from './CrmBranchSelector';
 import { LeadCardVoiceInline } from './LeadCardVoiceInline';
