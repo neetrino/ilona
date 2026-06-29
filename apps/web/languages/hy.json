@@ -841,6 +841,8 @@
     "studentsPerGroup": "աշակերտ մեկ խմբում",
     "searchBranchesPlaceholder": "Որոնել մասնաճյուղեր անունով...",
     "searchGroupsPlaceholder": "Որոնել խմբեր անունով...",
+    "groupsSearchFound": "{count, plural, one {Գտնվել է # խումբ} other {Գտնվել է # խումբ}}",
+    "branchesSearchFound": "{count, plural, one {Գտնվել է # մասնաճյուղ} other {Գտնվել է # մասնաճյուղ}}",
     "deleteAll": "Ջնջել բոլորը ({count})",
     "deleteSelected": "Ջնջել ({count})",
     "listView": "Ցուցակ",

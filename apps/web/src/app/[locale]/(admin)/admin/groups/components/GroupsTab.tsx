@@ -232,6 +232,9 @@ export function GroupsTab({
   ]);
 
   const activeBranchTabId = selectedCenterId ?? boardTabCenterId;
+  const trimmedSearchQuery = searchQuery.trim();
+  const isSearchingBranches = viewMode === 'board' && !activeCenterId && !!trimmedSearchQuery;
+  const isSearchingGroups = !!trimmedSearchQuery && !isSearchingBranches;
   /** Branch tabs: filter by branch name only when picking a branch (no tab selected yet). */
   const centersForBranchTabs = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
@@ -708,6 +711,17 @@ export function GroupsTab({
           {t('addGroupButton')}
         </Button>
       </div>
+
+      {isSearchingBranches && !isLoadingBranchTabs && (
+        <p className="text-sm text-[#8b8b90]">
+          {t('branchesSearchFound', { count: centersForBranchTabs.length })}
+        </p>
+      )}
+      {isSearchingGroups && !isLoading && (
+        <p className="text-sm text-[#8b8b90]">
+          {t('groupsSearchFound', { count: totalGroups })}
+        </p>
+      )}
 
       {/* Board: branch tabs + groups directly underneath */}
       {viewMode === 'board' && (

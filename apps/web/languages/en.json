@@ -841,6 +841,8 @@
     "studentsPerGroup": "students per group",
     "searchBranchesPlaceholder": "Search branches by name...",
     "searchGroupsPlaceholder": "Search groups by name...",
+    "groupsSearchFound": "{count, plural, one {# group found} other {# groups found}}",
+    "branchesSearchFound": "{count, plural, one {# branch found} other {# branches found}}",
     "deleteAll": "Delete All ({count})",
     "deleteSelected": "Delete ({count})",
     "listView": "List",
