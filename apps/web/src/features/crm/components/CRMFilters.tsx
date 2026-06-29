@@ -4,9 +4,9 @@ import { useTranslations } from 'next-intl';
 import type { CrmLeadFilters } from '@/features/crm/types';
 import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
 import { DatePickerInput } from '@/shared/components/ui';
-import { cn } from '@/shared/lib/utils';
+import { ADMIN_SEARCH_INPUT_CLASS } from '@/shared/lib/admin-control-theme';
 
-const CRM_DESKTOP_CONTROL_CLASS = 'lg:h-11 lg:rounded-[15px]';
+const CRM_DESKTOP_CONTROL_CLASS = 'h-11 min-h-11 rounded-[15px] lg:border-[rgba(14,14,16,0.08)] lg:focus:border-[#1010a3]/45 lg:focus:outline-none lg:focus:ring-4 lg:focus:ring-[#1010a3]/10';
 
 interface CRMFiltersProps {
   filters: CrmLeadFilters;
@@ -29,18 +29,30 @@ export function CRMFilters({
   return (
     <div className="grid w-full min-w-0 grid-cols-1 items-end gap-3 sm:grid-cols-2 lg:grid-cols-[repeat(auto-fit,minmax(min(100%,10rem),1fr))]">
       <div className="min-w-0">
-        <label className="block text-xs font-medium text-slate-500 mb-1">{tc('search')}</label>
-        <input
-          type="search"
-          placeholder={t('searchPlaceholder')}
-          value={filters.search ?? ''}
-          onChange={(e) => onFiltersChange({ ...filters, search: e.target.value || undefined })}
-          className={cn(
-            'w-full rounded-lg border border-slate-300 px-3 py-2 text-sm',
-            CRM_DESKTOP_CONTROL_CLASS,
-            'lg:border-[rgba(14,14,16,0.08)] lg:py-0 lg:focus:border-[#1010a3]/45 lg:focus:outline-none lg:focus:ring-4 lg:focus:ring-[#1010a3]/10',
-          )}
-        />
+        <label className="mb-1.5 block text-sm font-medium text-[#8b8b90]">{tc('search')}</label>
+        <div className="relative">
+          <svg
+            className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-[#8b8b90]"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            aria-hidden
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+            />
+          </svg>
+          <input
+            type="search"
+            placeholder={t('searchPlaceholder')}
+            value={filters.search ?? ''}
+            onChange={(e) => onFiltersChange({ ...filters, search: e.target.value || undefined })}
+            className={ADMIN_SEARCH_INPUT_CLASS}
+          />
+        </div>
       </div>
       <div className="min-w-0">
         <label className="block text-xs font-medium text-slate-500 mb-1">{t('center')}</label>
