@@ -843,6 +843,7 @@
     "searchGroupsPlaceholder": "Որոնել խմբեր անունով...",
     "groupsSearchFound": "{count, plural, one {Գտնվել է # խումբ} other {Գտնվել է # խումբ}}",
     "branchesSearchFound": "{count, plural, one {Գտնվել է # մասնաճյուղ} other {Գտնվել է # մասնաճյուղ}}",
+    "branchSingular": "մասնաճյուղ",
     "deleteAll": "Ջնջել բոլորը ({count})",
     "deleteSelected": "Ջնջել ({count})",
     "listView": "Ցուցակ",

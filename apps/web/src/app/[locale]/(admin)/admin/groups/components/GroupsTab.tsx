@@ -25,6 +25,7 @@ import { readUrlSearchParam, getLiveSearchParams } from '../utils/url';
 import { GroupStudentsModal } from './GroupStudentsModal';
 import { StudentDetailsModal } from './StudentDetailsModal';
 import { GroupsBranchTabsStrip } from './GroupsBranchTabsStrip';
+import { GroupsSearchResultsBar } from './GroupsSearchResultsBar';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { getAdminPortalBasePath } from '@/shared/lib/role-routes';
 import { useIsLgViewport } from '@/shared/hooks/useIsLgViewport';
@@ -713,14 +714,22 @@ export function GroupsTab({
       </div>
 
       {isSearchingBranches && !isLoadingBranchTabs && (
-        <p className="text-sm text-[#8b8b90]">
-          {t('branchesSearchFound', { count: centersForBranchTabs.length })}
-        </p>
+        <GroupsSearchResultsBar
+          count={centersForBranchTabs.length}
+          label={tCommon('searchResults')}
+          unitLabel={
+            centersForBranchTabs.length === 1 ? t('branchSingular') : t('branches').toLowerCase()
+          }
+          aria-label={t('branchesSearchFound', { count: centersForBranchTabs.length })}
+        />
       )}
       {isSearchingGroups && !isLoading && (
-        <p className="text-sm text-[#8b8b90]">
-          {t('groupsSearchFound', { count: totalGroups })}
-        </p>
+        <GroupsSearchResultsBar
+          count={totalGroups}
+          label={tCommon('searchResults')}
+          unitLabel={totalGroups === 1 ? t('groupWord') : t('groupsWord')}
+          aria-label={t('groupsSearchFound', { count: totalGroups })}
+        />
       )}
 
       {/* Board: branch tabs + groups directly underneath */}
