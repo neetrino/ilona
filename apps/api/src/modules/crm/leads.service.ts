@@ -1,11 +1,4 @@
-import {
-  Injectable,
-  NotFoundException,
-  BadRequestException,
-  ForbiddenException,
-} from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
-import { StorageService } from '../storage/storage.service';
+import { Injectable } from '@nestjs/common';
 import {
   CreateLeadDto,
   UpdateLeadDto,
@@ -15,351 +8,59 @@ import {
   AddCommentDto,
   ConfirmRecordingDto,
 } from './dto';
-import {
-  canTransition,
-  getAllowedNextStatuses,
-  requireFieldsForTransition,
-  CRM_COLUMN_ORDER,
-} from './crm-status.machine';
-import { CrmLeadStatus, CrmLeadActivityType, UserRole } from '@ilona/database';
-import type { Prisma } from '@ilona/database';
+import { CrmLeadStatus } from '@ilona/database';
 import { JwtPayload } from '../../common/types/auth.types';
-import { getManagerCenterIdOrThrow } from '../../common/utils/manager-scope.util';
-import { parseDurationSecForVoice } from './voice-duration.util';
 import { CreateStudentDto } from '../students/dto/create-student.dto';
-import { StudentsService } from '../students/students.service';
+import { CreateLeadFromVoiceOptions } from './lead.types';
+import { LeadListService } from './lead-list.service';
+import { LeadReadService } from './lead-read.service';
+import { LeadCreateService } from './lead-create.service';
+import { LeadUpdateService } from './lead-update.service';
+import { LeadDeleteService } from './lead-delete.service';
+import { LeadStatusService } from './lead-status.service';
+import { LeadVoiceService } from './lead-voice.service';
+import { LeadActivityService } from './lead-activity.service';
+import { LeadTeacherService } from './lead-teacher.service';
 
-type CrmLeadWhereInput = Prisma.CrmLeadWhereInput;
+export type { CreateLeadFromVoiceOptions } from './lead.types';
 
-type VoiceAttachmentLite = {
-  id: string;
-  r2Key: string;
-  durationSec?: number | null;
-  mimeType: string | null;
-  size: number | null;
-  createdAt: Date;
-};
-
-type VoiceLeadHistoryLite = {
-  id: string;
-  status: CrmLeadStatus;
-  source: string | null;
-  createdAt: Date;
-  centerId: string | null;
-  center: { id: string; name: string } | null;
-  attachments: VoiceAttachmentLite[];
-};
-
-export type CreateLeadFromVoiceOptions = {
-  centerId?: string;
-  leadSource?: string | null;
-  /** Raw multipart / JSON value; parsed according to durationParsing */
-  durationSecRaw?: unknown;
-  /** loose: invalid values ignored; strict: invalid values throw BadRequestException */
-  durationParsing?: 'loose' | 'strict';
-  requireActiveCenter?: boolean;
-};
-
+/** Facade for CRM leads — delegates to domain-specific services. */
 @Injectable()
 export class LeadsService {
   constructor(
-    private readonly prisma: PrismaService,
-    private readonly storage: StorageService,
-    private readonly studentsService: StudentsService,
+    private readonly listService: LeadListService,
+    private readonly readService: LeadReadService,
+    private readonly createService: LeadCreateService,
+    private readonly updateService: LeadUpdateService,
+    private readonly deleteService: LeadDeleteService,
+    private readonly statusService: LeadStatusService,
+    private readonly voiceService: LeadVoiceService,
+    private readonly activityService: LeadActivityService,
+    private readonly teacherService: LeadTeacherService,
   ) {}
 
-  private applyManagerScope(where: CrmLeadWhereInput, user?: JwtPayload): CrmLeadWhereInput {
-    const managerCenterId = getManagerCenterIdOrThrow(user);
-    if (!managerCenterId) {
-      return where;
-    }
-
-    return {
-      AND: [
-        where,
-        { centerId: managerCenterId },
-      ],
-    };
+  create(dto: CreateLeadDto, createdByUserId: string, user?: JwtPayload) {
+    return this.createService.create(dto, createdByUserId, user);
   }
 
-  /** Voice lead creation and CRM lead recording uploads are admin-only (defense in depth with controller @Roles). */
-  private requireAdminForCrmLeadVoice(user?: JwtPayload): void {
-    if (user?.role !== UserRole.ADMIN) {
-      throw new ForbiddenException(
-        'Only administrators can create CRM leads from voice or upload voice attachments.',
-      );
-    }
-  }
-
-  private ensureManagerCenterInput(centerId: string | undefined, user?: JwtPayload): string | undefined {
-    const managerCenterId = getManagerCenterIdOrThrow(user);
-    if (!managerCenterId) {
-      return centerId;
-    }
-
-    if (centerId && centerId !== managerCenterId) {
-      throw new ForbiddenException('Access to another center is forbidden');
-    }
-
-    return managerCenterId;
-  }
-
-  /** Manager may only assign CRM leads to teachers linked to their center (groups or TeacherCenter). */
-  private async assertManagerLeadTeacherInCenter(
-    teacherId: string | undefined | null,
-    user?: JwtPayload,
-  ): Promise<void> {
-    const managerCenterId = getManagerCenterIdOrThrow(user);
-    if (!managerCenterId) {
-      return;
-    }
-    const tid = teacherId && String(teacherId).trim() !== '' ? String(teacherId).trim() : '';
-    if (!tid) {
-      return;
-    }
-    const ok = await this.prisma.teacher.findFirst({
-      where: {
-        id: tid,
-        OR: [
-          { groups: { some: { centerId: managerCenterId } } },
-          { centerLinks: { some: { centerId: managerCenterId } } },
-        ],
-      },
-      select: { id: true },
-    });
-    if (!ok) {
-      throw new ForbiddenException('You can only assign leads to teachers in your center');
-    }
-  }
-
-  async create(dto: CreateLeadDto, createdByUserId: string, user?: JwtPayload) {
-    await this.assertManagerLeadTeacherInCenter(dto.teacherId, user);
-    const centerId = this.ensureManagerCenterInput(dto.centerId, user);
-    const lead = await this.prisma.crmLead.create({
-      data: {
-        status: 'NEW',
-        createdByUserId,
-        firstName: dto.firstName,
-        lastName: dto.lastName,
-        phone: dto.phone,
-        age: dto.age,
-        dateOfBirth: dto.dateOfBirth ? new Date(dto.dateOfBirth) : undefined,
-        parentName: dto.parentName,
-        parentPhone: dto.parentPhone,
-        parentEmail: dto.parentEmail,
-        parentPassportInfo: dto.parentPassportInfo,
-        firstLessonDate: dto.firstLessonDate ? new Date(dto.firstLessonDate) : undefined,
-        comment: dto.comment,
-        levelId: dto.levelId,
-        teacherId: dto.teacherId,
-        groupId: dto.groupId,
-        centerId,
-        source: dto.source,
-        notes: dto.notes,
-      },
-      include: this.leadInclude(),
-    });
-    await this.logActivity(lead.id, createdByUserId, 'STATUS_CHANGE', {
-      toStatus: 'NEW',
-      source: 'create',
-    });
-    return lead;
-  }
-
-  /**
-   * Create a NEW lead from a voice recording (uploaded file). Stores audio in crm/recordings.
-   * Status and createdAt are always server-controlled. Optional leadSource (e.g. VOICE_APP) is server-set per call site.
-   */
-  async createLeadFromVoice(
+  createLeadFromVoice(
     file: Express.Multer.File,
     createdByUserId: string,
     user?: JwtPayload,
     options: CreateLeadFromVoiceOptions = {},
   ) {
-    this.requireAdminForCrmLeadVoice(user);
-    if (!file?.buffer?.length) {
-      throw new BadRequestException('No audio file provided');
-    }
-
-    const trimmedCenterId = options.centerId?.trim();
-    const durationParsing = options.durationParsing ?? 'loose';
-    const durationSec = parseDurationSecForVoice(options.durationSecRaw, durationParsing);
-    const centerId = await this.resolveCenterIdForVoiceLead(options, trimmedCenterId, user);
-
-    const leadSource =
-      options.leadSource !== undefined && options.leadSource !== null && options.leadSource !== ''
-        ? options.leadSource
-        : undefined;
-
-    const lead = await this.prisma.crmLead.create({
-      data: {
-        status: 'NEW',
-        createdByUserId,
-        centerId,
-        ...(leadSource !== undefined ? { source: leadSource } : {}),
-      },
-    });
-    const uploadResult = await this.storage.upload(
-      file.buffer,
-      file.originalname,
-      file.mimetype,
-      'crm/recordings',
-    );
-    await this.prisma.crmLeadAttachment.create({
-      data: {
-        leadId: lead.id,
-        type: 'VOICE_RECORDING',
-        r2Key: uploadResult.key,
-        mimeType: uploadResult.mimeType,
-        size: uploadResult.fileSize,
-        ...(durationSec !== undefined ? { durationSec } : {}),
-      },
-    });
-    const activitySource =
-      leadSource === 'VOICE_APP' ? 'VOICE_APP' : 'voice_lead';
-    await this.logActivity(lead.id, createdByUserId, 'RECORDING_UPLOADED', {
-      source: activitySource,
-      key: uploadResult.key,
-    });
-    return this.findById(lead.id);
+    return this.voiceService.createLeadFromVoice(file, createdByUserId, user, options);
   }
 
-  private async resolveCenterIdForVoiceLead(
-    options: CreateLeadFromVoiceOptions,
-    trimmedCenterId: string | undefined,
-    user?: JwtPayload,
-  ): Promise<string | undefined> {
-    if (options.requireActiveCenter) {
-      if (!trimmedCenterId) {
-        throw new BadRequestException('centerId is required');
-      }
-      const center = await this.prisma.center.findUnique({
-        where: { id: trimmedCenterId },
-        select: { id: true, isActive: true },
-      });
-      if (!center) {
-        throw new NotFoundException(`Center ${trimmedCenterId} not found`);
-      }
-      if (!center.isActive) {
-        throw new BadRequestException('This center is not active');
-      }
-      return center.id;
-    }
-    return this.ensureManagerCenterInput(trimmedCenterId, user);
+  findVoiceAppRecordingsForAdmin(user?: JwtPayload) {
+    return this.voiceService.findVoiceAppRecordingsForAdmin(user);
   }
 
-  private ensureAdminForVoiceRecordingsHistory(user?: JwtPayload): void {
-    if (user?.role !== UserRole.ADMIN) {
-      throw new ForbiddenException('Only administrators may use this endpoint');
-    }
+  updateVoiceAppRecordingCenter(leadId: string, centerId: string, user?: JwtPayload) {
+    return this.voiceService.updateVoiceAppRecordingCenter(leadId, centerId, user);
   }
 
-  private formatVoiceRecordingHistoryItem(lead: VoiceLeadHistoryLite) {
-    const latestAttachment = lead.attachments[0];
-    if (!latestAttachment) {
-      throw new BadRequestException('Voice recording attachment is missing');
-    }
-    return {
-      leadId: lead.id,
-      status: lead.status,
-      source: lead.source,
-      createdAt: lead.createdAt,
-      centerId: lead.centerId,
-      centerName: lead.center?.name ?? null,
-      attachment: {
-        id: latestAttachment.id,
-        r2Key: latestAttachment.r2Key,
-        durationSec: latestAttachment.durationSec ?? null,
-        mimeType: latestAttachment.mimeType,
-        size: latestAttachment.size,
-        createdAt: latestAttachment.createdAt,
-      },
-      audioPath: `/storage/file/${encodeURIComponent(latestAttachment.r2Key)}`,
-    };
-  }
-
-  async findVoiceAppRecordingsForAdmin(user?: JwtPayload) {
-    this.ensureAdminForVoiceRecordingsHistory(user);
-    const leads = await this.prisma.crmLead.findMany({
-      where: {
-        status: 'NEW',
-        source: 'VOICE_APP',
-        attachments: {
-          some: {
-            type: 'VOICE_RECORDING',
-          },
-        },
-      },
-      include: {
-        center: { select: { id: true, name: true } },
-        attachments: {
-          where: { type: 'VOICE_RECORDING' },
-          orderBy: { createdAt: 'desc' },
-        },
-      },
-      orderBy: { createdAt: 'desc' },
-    });
-    return leads.map((lead) => this.formatVoiceRecordingHistoryItem(lead));
-  }
-
-  async updateVoiceAppRecordingCenter(leadId: string, centerId: string, user?: JwtPayload) {
-    this.ensureAdminForVoiceRecordingsHistory(user);
-    const normalizedCenterId = centerId.trim();
-    if (!normalizedCenterId) {
-      throw new BadRequestException('centerId is required');
-    }
-
-    const lead = await this.prisma.crmLead.findUnique({
-      where: { id: leadId },
-      include: {
-        center: { select: { id: true, name: true } },
-        attachments: {
-          where: { type: 'VOICE_RECORDING' },
-          orderBy: { createdAt: 'desc' },
-        },
-      },
-    });
-
-    if (!lead) {
-      throw new NotFoundException(`Lead ${leadId} not found`);
-    }
-    if (lead.status !== 'NEW') {
-      throw new BadRequestException('Only NEW leads are allowed for voice recording center update');
-    }
-    if (lead.source !== 'VOICE_APP') {
-      throw new BadRequestException('Lead source must be VOICE_APP');
-    }
-    if (lead.attachments.length === 0) {
-      throw new BadRequestException('Lead has no VOICE_RECORDING attachment');
-    }
-
-    const center = await this.prisma.center.findUnique({
-      where: { id: normalizedCenterId },
-      select: { id: true, name: true, isActive: true },
-    });
-    if (!center) {
-      throw new NotFoundException(`Center ${normalizedCenterId} not found`);
-    }
-    if (!center.isActive) {
-      throw new BadRequestException('This center is not active');
-    }
-
-    const updatedLead = await this.prisma.crmLead.update({
-      where: { id: leadId },
-      data: { centerId: center.id },
-      include: {
-        center: { select: { id: true, name: true } },
-        attachments: {
-          where: { type: 'VOICE_RECORDING' },
-          orderBy: { createdAt: 'desc' },
-        },
-      },
-    });
-
-    return this.formatVoiceRecordingHistoryItem(updatedLead);
-  }
-
-  async findAll(
+  findAll(
     query: {
       skip?: number;
       take?: number;
@@ -376,549 +77,81 @@ export class LeadsService {
     },
     user?: JwtPayload,
   ) {
-    const skip = query.skip ?? 0;
-    const take = query.take ?? 50;
-    const sortBy = query.sortBy ?? 'createdAt';
-    const sortOrder = query.sortOrder ?? 'desc';
-
-    const where: CrmLeadWhereInput = {};
-
-    if (query.status) where.status = query.status;
-    if (query.centerId) where.centerId = this.ensureManagerCenterInput(query.centerId, user);
-    if (query.teacherId) where.teacherId = query.teacherId;
-    if (query.groupId) where.groupId = query.groupId;
-    if (query.levelId) where.levelId = query.levelId;
-
-    if (query.dateFrom || query.dateTo) {
-      where.createdAt = {};
-      if (query.dateFrom) {
-        where.createdAt.gte = new Date(query.dateFrom);
-      }
-      if (query.dateTo) {
-        const d = new Date(query.dateTo);
-        d.setHours(23, 59, 59, 999);
-        where.createdAt.lte = d;
-      }
-    }
-
-    if (query.search?.trim()) {
-      const term = query.search.trim();
-      where.OR = [
-        { firstName: { contains: term, mode: 'insensitive' } },
-        { lastName: { contains: term, mode: 'insensitive' } },
-        { phone: { contains: term, mode: 'insensitive' } },
-      ];
-    }
-
-    const scopedWhere = this.applyManagerScope(where, user);
-
-    const [items, total] = await Promise.all([
-      this.prisma.crmLead.findMany({
-        where: scopedWhere,
-        skip,
-        take,
-        orderBy: { [sortBy]: sortOrder },
-        include: this.leadInclude(),
-      }),
-      this.prisma.crmLead.count({ where: scopedWhere }),
-    ]);
-
-    const countsByStatus = await this.prisma.crmLead.groupBy({
-      by: ['status'],
-      where: this.applyManagerScope(
-        { status: { in: ['NEW', 'FIRST_LESSON', 'PAID', 'WAITLIST', 'ARCHIVE'] } },
-        user,
-      ),
-      _count: true,
-    });
-    const countMap = Object.fromEntries(
-      countsByStatus.map((c) => [c.status, c._count]),
-    ) as Record<CrmLeadStatus, number>;
-
-    return {
-      items,
-      total,
-      page: Math.floor(skip / take) + 1,
-      pageSize: take,
-      totalPages: Math.ceil(total / take),
-      countsByStatus: countMap,
-    };
+    return this.listService.findAll(query, user);
   }
 
-  async findById(id: string, _userId?: string, user?: JwtPayload) {
-    const lead = await this.prisma.crmLead.findUnique({
-      where: { id },
-      include: this.leadInclude(),
-    });
-    if (!lead) throw new NotFoundException(`Lead ${id} not found`);
-    const managerCenterId = getManagerCenterIdOrThrow(user);
-    if (managerCenterId && lead.centerId !== managerCenterId) {
-      throw new ForbiddenException('You do not have access to this lead');
-    }
-    const activities = lead.activities as Array<{ id: string; actorUserId: string | null; type: string; payload: unknown; createdAt: Date }>;
-    const actorUserIds = [...new Set(activities.map((a) => a.actorUserId).filter(Boolean))] as string[];
-    const actorUsers =
-      actorUserIds.length > 0
-        ? await this.prisma.user.findMany({
-            where: { id: { in: actorUserIds } },
-            select: { id: true, firstName: true, lastName: true },
-          })
-        : [];
-    const actorUserMap = Object.fromEntries(actorUsers.map((u) => [u.id, u]));
-    const activitiesWithActor = activities.map((a) => ({
-      ...a,
-      actorUser: a.actorUserId ? actorUserMap[a.actorUserId] ?? null : null,
-    }));
-    return { ...lead, activities: activitiesWithActor };
+  findById(id: string, userId?: string, user?: JwtPayload) {
+    return this.readService.findById(id, userId, user);
   }
 
-  async update(
-    id: string,
-    dto: UpdateLeadDto,
-    actorUserId: string,
-    user?: JwtPayload,
-  ) {
-    await this.findById(id, actorUserId, user);
-    const isManager = user?.role === UserRole.MANAGER;
-    if (isManager) {
-      await this.assertManagerLeadTeacherInCenter(dto.teacherId, user);
-    }
-    /** Managers cannot set branch via lead edit; `changeBranch` is ADMIN-only. */
-    const updated = await this.prisma.crmLead.update({
-      where: { id },
-      data: {
-        firstName: dto.firstName,
-        lastName: dto.lastName,
-        phone: dto.phone,
-        age: dto.age,
-        dateOfBirth: dto.dateOfBirth ? new Date(dto.dateOfBirth) : undefined,
-        parentName: dto.parentName,
-        parentPhone: dto.parentPhone,
-        parentEmail: dto.parentEmail,
-        parentPassportInfo: dto.parentPassportInfo,
-        firstLessonDate: dto.firstLessonDate ? new Date(dto.firstLessonDate) : undefined,
-        comment: dto.comment,
-        levelId: dto.levelId,
-        teacherId: dto.teacherId,
-        groupId: dto.groupId,
-        ...(isManager
-          ? {}
-          : { centerId: this.ensureManagerCenterInput(dto.centerId, user) }),
-        source: dto.source,
-        notes: dto.notes,
-        assignedManagerId: dto.assignedManagerId,
-        transferFlag: dto.transferFlag,
-        transferComment: dto.transferComment,
-        archivedReason: dto.archivedReason,
-      },
-      include: this.leadInclude(),
-    });
-    await this.logActivity(id, actorUserId, 'FIELD_UPDATE', {
-      updatedFields: Object.keys(dto),
-    });
-    return updated;
+  update(id: string, dto: UpdateLeadDto, actorUserId: string, user?: JwtPayload) {
+    return this.updateService.update(id, dto, actorUserId, user);
   }
 
-  /** Delete a lead and its attachments. Removes R2 files for voice recordings. */
-  async delete(id: string, user?: JwtPayload) {
-    const lead = await this.findById(id, user?.sub, user);
-    const attachments = (lead as { attachments?: { r2Key: string }[] }).attachments ?? [];
-    for (const a of attachments) {
-      if (a.r2Key) {
-        try {
-          await this.storage.delete(a.r2Key);
-        } catch {
-          // Best effort: continue even if R2 delete fails
-        }
-      }
-    }
-    await this.prisma.crmLead.delete({ where: { id } });
+  delete(id: string, user?: JwtPayload) {
+    return this.deleteService.delete(id, user);
   }
 
-  async changeStatus(
+  changeStatus(
     id: string,
     dto: ChangeStatusDto,
     actorUserId: string,
     options?: { isTeacherApprove?: boolean; user?: JwtPayload },
   ) {
-    const lead = await this.findById(id, actorUserId, options?.user);
-    const from = lead.status;
-    const to = dto.status;
-
-    if (from === 'PAID') {
-      if (to !== 'PAID') {
-        throw new BadRequestException(
-          'Lead status cannot be changed after it has been set to Paid.',
-        );
-      }
-      return this.findById(id, actorUserId, options?.user);
-    }
-
-    const adminCanSetAnyStatus = options?.user?.role === 'ADMIN';
-    if (!adminCanSetAnyStatus) {
-      if (!canTransition(from, to, { isTeacherApprove: options?.isTeacherApprove })) {
-        throw new BadRequestException(
-          `Transition from ${from} to ${to} is not allowed`,
-        );
-      }
-    }
-
-    const requiredFields = adminCanSetAnyStatus ? [] : requireFieldsForTransition(from, to);
-    const isVoiceLead = (lead as { attachments?: { type: string }[] }).attachments?.some(
-      (a) => a.type === 'VOICE_RECORDING',
-    );
-    if (requiredFields.length > 0 && !isVoiceLead) {
-      const missing: string[] = [];
-      for (const key of requiredFields) {
-        const v = lead[key as keyof typeof lead];
-        if (v === undefined || v === null || (typeof v === 'string' && !v.trim())) {
-          missing.push(key);
-        }
-      }
-      if (missing.length > 0) {
-        throw new BadRequestException(
-          `Cannot move to ${to}: missing required fields: ${missing.join(', ')}`,
-        );
-      }
-    }
-
-    if (to === 'PAID') {
-      throw new BadRequestException(
-        'Marking a lead as Paid requires completing student registration. Use POST /crm/leads/:id/register-paid.',
-      );
-    }
-
-    const updateData: { status: CrmLeadStatus; archivedReason?: string } = {
-      status: to,
-    };
-    if (to === 'ARCHIVE' && dto.archivedReason) {
-      updateData.archivedReason = dto.archivedReason;
-    }
-
-    const updated = await this.prisma.$transaction(async (tx) => {
-      const updatedLead = await tx.crmLead.update({
-        where: { id },
-        data: updateData,
-        include: this.leadInclude(),
-      });
-
-      await tx.crmLeadActivity.create({
-        data: {
-          leadId: id,
-          actorUserId,
-          type: 'STATUS_CHANGE',
-          payload: { fromStatus: from, toStatus: to },
-        },
-      });
-
-      return updatedLead;
-    });
-
-    return updated;
+    return this.statusService.changeStatus(id, dto, actorUserId, options);
   }
 
-  /**
-   * Same payload as Add Student: creates user + student and marks the lead Paid in one transaction.
-   * Idempotent: if a student is already linked to this lead, returns the current lead.
-   */
-  async registerPaidLead(
-    id: string,
-    dto: CreateStudentDto,
-    actorUserId: string,
+  registerPaidLead(id: string, dto: CreateStudentDto, actorUserId: string, user?: JwtPayload) {
+    return this.statusService.registerPaidLead(id, dto, actorUserId, user);
+  }
+
+  changeBranch(id: string, dto: ChangeBranchDto, actorUserId: string, user?: JwtPayload) {
+    return this.updateService.changeBranch(id, dto, actorUserId, user);
+  }
+
+  getActivities(leadId: string, user?: JwtPayload) {
+    return this.activityService.getActivities(leadId, user);
+  }
+
+  addComment(leadId: string, dto: AddCommentDto, actorUserId: string, user?: JwtPayload) {
+    return this.activityService.addComment(leadId, dto, actorUserId, user);
+  }
+
+  getPresignedRecordingUrl(
+    leadId: string,
+    fileName: string,
+    mimeType: string,
     user?: JwtPayload,
   ) {
-    const lead = await this.findById(id, actorUserId, user);
-    if ((lead as { student?: { id: string } | null }).student) {
-      return this.findById(id, actorUserId, user);
-    }
-
-    const adminCanSetAnyStatus = user?.role === 'ADMIN';
-    const fromStatus = lead.status;
-    const isPaidWithoutStudent = fromStatus === 'PAID';
-    if (!isPaidWithoutStudent && !adminCanSetAnyStatus) {
-      const approved = (lead as { teacherApprovedAt?: Date | null }).teacherApprovedAt != null;
-      if (!canTransition(fromStatus, 'PAID', { isTeacherApprove: approved })) {
-        throw new BadRequestException(
-          `Cannot register as Paid from status ${fromStatus}: transition not allowed`,
-        );
-      }
-    }
-
-    await this.studentsService.createLinkedToCrmPaidLead(id, dto, actorUserId, user);
-    return this.findById(id, actorUserId, user);
+    return this.voiceService.getPresignedRecordingUrl(leadId, fileName, mimeType, user);
   }
 
-  async changeBranch(
-    id: string,
-    dto: ChangeBranchDto,
-    actorUserId: string,
-    user?: JwtPayload,
-  ) {
-    if (user?.role !== UserRole.ADMIN) {
-      throw new ForbiddenException('Only ADMIN can change lead branch');
-    }
-
-    const lead = await this.findById(id, actorUserId, user);
-    const nextCenterId = dto.centerId ?? null;
-    const previousCenterId = lead.centerId ?? null;
-
-    const managerProfile = nextCenterId
-      ? await this.prisma.managerProfile.findFirst({
-          where: {
-            centerId: nextCenterId,
-            isCurrentAssignment: true,
-            user: { status: 'ACTIVE' },
-          },
-          select: { userId: true },
-        })
-      : null;
-    const nextAssignedManagerId = managerProfile?.userId ?? null;
-
-    const updatedLead = await this.prisma.$transaction(async (tx) => {
-      const updated = await tx.crmLead.update({
-        where: { id },
-        data: {
-          centerId: nextCenterId,
-          assignedManagerId: nextAssignedManagerId,
-        },
-        include: this.leadInclude(),
-      });
-
-      await tx.crmLeadActivity.create({
-        data: {
-          leadId: id,
-          actorUserId,
-          type: 'FIELD_UPDATE',
-          payload: {
-            field: 'centerId',
-            fromCenterId: previousCenterId,
-            toCenterId: nextCenterId,
-            assignedManagerId: nextAssignedManagerId,
-          },
-        },
-      });
-
-      return updated;
-    });
-
-    return updatedLead;
-  }
-
-  async getActivities(leadId: string, user?: JwtPayload) {
-    await this.findById(leadId, user?.sub, user);
-    return this.prisma.crmLeadActivity.findMany({
-      where: { leadId },
-      orderBy: { createdAt: 'desc' },
-    });
-  }
-
-  async addComment(leadId: string, dto: AddCommentDto, actorUserId: string, user?: JwtPayload) {
-    await this.findById(leadId, actorUserId, user);
-    await this.prisma.crmLeadActivity.create({
-      data: {
-        leadId,
-        actorUserId,
-        type: 'COMMENT',
-        payload: { content: dto.content },
-      },
-    });
-    return this.getActivities(leadId, user);
-  }
-
-  async getPresignedRecordingUrl(leadId: string, fileName: string, mimeType: string, user?: JwtPayload) {
-    this.requireAdminForCrmLeadVoice(user);
-    await this.findById(leadId, user?.sub, user);
-    const result = await this.storage.getPresignedUploadUrl(
-      fileName,
-      mimeType,
-      'crm/recordings',
-      3600,
-    );
-    return {
-      uploadUrl: result.uploadUrl,
-      key: result.key,
-      publicUrl: result.publicUrl,
-    };
-  }
-
-  async confirmRecording(
+  confirmRecording(
     leadId: string,
     dto: ConfirmRecordingDto,
     actorUserId: string,
     user?: JwtPayload,
   ) {
-    this.requireAdminForCrmLeadVoice(user);
-    await this.findById(leadId, actorUserId, user);
-    const attachment = await this.prisma.crmLeadAttachment.create({
-      data: {
-        leadId,
-        type: 'VOICE_RECORDING',
-        r2Key: dto.key,
-        mimeType: dto.mimeType,
-        size: dto.size ?? null,
-      },
-    });
-    await this.logActivity(leadId, actorUserId, 'RECORDING_UPLOADED', {
-      attachmentId: attachment.id,
-      key: dto.key,
-    });
-    return this.findById(leadId, actorUserId, user);
+    return this.voiceService.confirmRecording(leadId, dto, actorUserId, user);
   }
 
   getAllowedTransitions(status: CrmLeadStatus): CrmLeadStatus[] {
-    return getAllowedNextStatuses(status);
+    return this.statusService.getAllowedTransitions(status);
   }
 
-  /** All CRM statuses in display order (for Admin manual status control). */
   getStatuses(): CrmLeadStatus[] {
-    return [...CRM_COLUMN_ORDER];
+    return this.statusService.getStatuses();
   }
 
-  // --- Teacher: leads assigned to me (teacherId + groupId) ---
-  async findForTeacher(teacherUserId: string, query: { groupId?: string }) {
-    const teacher = await this.prisma.teacher.findUnique({
-      where: { userId: teacherUserId },
-      select: { id: true },
-    });
-    if (!teacher) return { items: [], total: 0 };
-
-    const where: CrmLeadWhereInput = {
-      teacherId: teacher.id,
-      status: { in: ['FIRST_LESSON'] },
-    };
-    if (query.groupId) where.groupId = query.groupId;
-
-    const items = await this.prisma.crmLead.findMany({
-      where,
-      orderBy: { updatedAt: 'desc' },
-      include: this.leadInclude(),
-    });
-    const total = await this.prisma.crmLead.count({ where });
-    return { items, total };
+  findForTeacher(teacherUserId: string, query: { groupId?: string }) {
+    return this.listService.findForTeacher(teacherUserId, query);
   }
 
-  async teacherApprove(leadId: string, teacherUserId: string) {
-    const lead = await this.findById(leadId);
-    const teacher = await this.prisma.teacher.findUnique({
-      where: { userId: teacherUserId },
-      select: { id: true },
-    });
-    if (!teacher || lead.teacherId !== teacher.id) {
-      throw new ForbiddenException('You are not assigned to this lead');
-    }
-    if (lead.status !== 'FIRST_LESSON') {
-      throw new BadRequestException('Lead must be in FIRST_LESSON to approve');
-    }
-    if (lead.transferFlag) {
-      throw new BadRequestException('Lead has been marked for transfer; Approve and Transfer are mutually exclusive.');
-    }
-    const alreadyApproved = (lead as { teacherApprovedAt?: Date | null }).teacherApprovedAt != null;
-    if (alreadyApproved) {
-      return this.findById(leadId);
-    }
-    await this.prisma.crmLead.update({
-      where: { id: leadId },
-      data: { teacherApprovedAt: new Date() },
-    });
-    await this.logActivity(leadId, teacherUserId, 'TEACHER_APPROVED', {});
-    return this.findById(leadId);
+  teacherApprove(leadId: string, teacherUserId: string) {
+    return this.teacherService.teacherApprove(leadId, teacherUserId);
   }
 
-  async teacherTransfer(
-    leadId: string,
-    dto: TeacherTransferDto,
-    teacherUserId: string,
-  ) {
-    const lead = await this.findById(leadId);
-    const teacher = await this.prisma.teacher.findUnique({
-      where: { userId: teacherUserId },
-      select: { id: true },
-    });
-    if (!teacher || lead.teacherId !== teacher.id) {
-      throw new ForbiddenException('You are not assigned to this lead');
-    }
-    if (lead.status !== 'FIRST_LESSON') {
-      throw new BadRequestException('Only FIRST_LESSON leads can be marked for transfer');
-    }
-    if (lead.teacherApprovedAt != null) {
-      throw new BadRequestException('Lead has already been approved; Approve and Transfer are mutually exclusive.');
-    }
-
-    await this.prisma.crmLead.update({
-      where: { id: leadId },
-      data: {
-        transferFlag: true,
-        transferComment: dto.comment,
-      },
-    });
-    await this.logActivity(leadId, teacherUserId, 'TEACHER_TRANSFER', {
-      comment: dto.comment,
-    });
-    return this.findById(leadId);
-  }
-
-  private leadInclude() {
-    return {
-      createdByUser: {
-        select: {
-          id: true,
-          firstName: true,
-          lastName: true,
-          email: true,
-        },
-      },
-      assignedManager: {
-        select: {
-          id: true,
-          firstName: true,
-          lastName: true,
-          email: true,
-        },
-      },
-      teacher: {
-        select: {
-          id: true,
-          user: {
-            select: {
-              id: true,
-              firstName: true,
-              lastName: true,
-              email: true,
-              phone: true,
-            },
-          },
-        },
-      },
-      group: {
-        select: {
-          id: true,
-          name: true,
-          level: true,
-          center: { select: { id: true, name: true } },
-        },
-      },
-      center: {
-        select: { id: true, name: true },
-      },
-      attachments: true,
-      activities: {
-        take: 20,
-        orderBy: { createdAt: 'desc' as const },
-      },
-      student: {
-        select: { id: true },
-      },
-    };
-  }
-
-  private async logActivity(
-    leadId: string,
-    actorUserId: string,
-    type: CrmLeadActivityType,
-    payload: Record<string, unknown>,
-  ) {
-    await this.prisma.crmLeadActivity.create({
-      data: { leadId, actorUserId, type, payload: payload as Prisma.InputJsonValue },
-    });
+  teacherTransfer(leadId: string, dto: TeacherTransferDto, teacherUserId: string) {
+    return this.teacherService.teacherTransfer(leadId, dto, teacherUserId);
   }
 }

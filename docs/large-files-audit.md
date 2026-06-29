@@ -11,16 +11,24 @@ Goal: gradually split source files so each stays at or below **400 lines**.
 | 2026-06-29 | `apps/api/src/modules/chat/chat-management.service.ts` | 1,195 | 61 (facade) | Split into 6 domain services + util |
 | 2026-06-29 | `apps/api/src/modules/students/student-crud.service.ts` | 1,092 | 68 (facade) | Split into list/read/create/update/delete + access util |
 | 2026-06-29 | `apps/api/src/modules/attendance/attendance.service.ts` | 1,046 | 68 (facade) | Split into lesson/student query, report, write, planned absence |
+| 2026-06-29 | `apps/web/src/features/chat/components/ChatWindow.tsx` | 978 | 341 (orchestrator) | Split into header, message list/item, composer + 4 hooks + utils |
+| 2026-06-29 | `apps/web/src/shared/components/attendance/WeekAttendanceGrid.tsx` | 931 | 130 (orchestrator) | Split into toolbar, table, dialogs, legend + state hook + status utils |
+| 2026-06-29 | `apps/web/src/shared/components/attendance/AttendanceGrid.tsx` | 886 | 134 (orchestrator) | Reused week-attendance toolbar/legend/utils; split table, dialogs + lesson hook |
+| 2026-06-29 | `apps/api/src/modules/groups/groups.service.ts` | 886 | 72 (facade) | Split into query, write, membership, chat sync, teacher validation + includes |
+| 2026-06-29 | `apps/api/src/modules/chat/message.service.ts` | 886 | 78 (facade) | Split into query, send, mutation, recording + storage/recording utils |
+| 2026-06-29 | `apps/api/src/modules/chat/chat-lists.service.ts` | 882 | 37 (facade) | Split into admin/teacher lists, admin contact, unread count + list util |
+| 2026-06-29 | `apps/api/src/modules/lessons/lesson-crud.service.ts` | 860 | 68 (facade) | Split into list, read, create, update, delete + manager access |
+| 2026-06-29 | `apps/api/src/modules/crm/leads.service.ts` | 851 | 135 (facade) | Split into list, read, create, update, delete, status, voice, teacher + access/activity |
 
 ## Summary
 
 | Metric | Value |
 | --- | --- |
 | Total source files scanned | 836 |
-| Files over 400 lines | **55** (was 58) |
-| Biggest file | `apps/api/src/modules/students/student-crud.service.ts` → done; now `apps/web/src/features/chat/components/ChatWindow.tsx` (978 lines) |
-| Frontend (`apps/web`) | 38 |
-| Backend (`apps/api`) | 17 |
+| Files over 400 lines | **48** (was 58) |
+| Biggest file | `apps/web/src/features/calendar/PortalCalendarPage.tsx` (828 lines) |
+| Frontend (`apps/web`) | 35 |
+| Backend (`apps/api`) | 14 |
 | Shared / packages | 0 |
 
 **Extensions scanned:** `.ts`, `.tsx`, `.js`, `.jsx`, `.css`, `.scss`, `.module.css`, `.module.scss`
@@ -36,14 +44,14 @@ Goal: gradually split source files so each stays at or below **400 lines**.
 | ~~1~~ | ~~`apps/api/src/modules/chat/chat-management.service.ts`~~ | ~~1,195~~ | Backend / Chat | **Done** | — |
 | ~~2~~ | ~~`apps/api/src/modules/students/student-crud.service.ts`~~ | ~~1,092~~ | Backend / Students | **Done** | — |
 | ~~3~~ | ~~`apps/api/src/modules/attendance/attendance.service.ts`~~ | ~~1,046~~ | Backend / Attendance | **Done** | — |
-| 4 | `apps/web/src/features/chat/components/ChatWindow.tsx` | 978 | Frontend / Chat | Extract message list, composer, header/actions, delete/voice/vocabulary modals into subcomponents; move scroll/typing/draft logic into hooks | High |
-| 5 | `apps/web/src/shared/components/attendance/WeekAttendanceGrid.tsx` | 931 | Frontend / Attendance (shared) | Extract day column, cell editor, note dialog, and save/status helpers; move grid state machine into a dedicated hook | High |
-| 6 | `apps/web/src/shared/components/attendance/AttendanceGrid.tsx` | 886 | Frontend / Attendance (shared) | Same split as week grid: cell components, edit dialogs, status mapping utils, and attendance state hook | High |
-| 7 | `apps/api/src/modules/groups/groups.service.ts` | 886 | Backend / Groups | Split group CRUD, teacher rotation, capacity checks, and schedule linkage; extract query includes and manager-scope assertions | High |
-| 8 | `apps/api/src/modules/chat/message.service.ts` | 886 | Backend / Chat | Split send/edit/delete, voice attachment handling, and read-receipt logic; extract message validation and socket/event emit helpers | High |
-| 9 | `apps/api/src/modules/chat/chat-lists.service.ts` | 882 | Backend / Chat | Split admin/teacher/student list queries; extract unread counts, filtering, and pagination builders | High |
-| 10 | `apps/api/src/modules/lessons/lesson-crud.service.ts` | 860 | Backend / Lessons | Split create/update/delete, substitute teacher logic, and status transitions; extract date/recurrence validation helpers | High |
-| 11 | `apps/api/src/modules/crm/leads.service.ts` | 851 | Backend / CRM | Split lead CRUD, status machine transitions, activity logging, and student conversion; extract CRM-specific query builders | High |
+| ~~4~~ | ~~`apps/web/src/features/chat/components/ChatWindow.tsx`~~ | ~~978~~ | Frontend / Chat | **Done** | — |
+| ~~5~~ | ~~`apps/web/src/shared/components/attendance/WeekAttendanceGrid.tsx`~~ | ~~931~~ | Frontend / Attendance (shared) | **Done** | — |
+| ~~6~~ | ~~`apps/web/src/shared/components/attendance/AttendanceGrid.tsx`~~ | ~~886~~ | Frontend / Attendance (shared) | **Done** | — |
+| ~~7~~ | ~~`apps/api/src/modules/groups/groups.service.ts`~~ | ~~886~~ | Backend / Groups | **Done** | — |
+| ~~8~~ | ~~`apps/api/src/modules/chat/message.service.ts`~~ | ~~886~~ | Backend / Chat | **Done** | — |
+| ~~9~~ | ~~`apps/api/src/modules/chat/chat-lists.service.ts`~~ | ~~882~~ | Backend / Chat | **Done** | — |
+| ~~10~~ | ~~`apps/api/src/modules/lessons/lesson-crud.service.ts`~~ | ~~860~~ | Backend / Lessons | **Done** | — |
+| ~~11~~ | ~~`apps/api/src/modules/crm/leads.service.ts`~~ | ~~851~~ | Backend / CRM | **Done** | — |
 | 12 | `apps/web/src/features/calendar/PortalCalendarPage.tsx` | 828 | Frontend / Calendar | Extract toolbar/filters, view switcher, lesson panels, and data-fetch hooks; split page layout from calendar state orchestration | High |
 | 13 | `apps/web/src/shared/components/calendar/LessonListTable.tsx` | 792 | Frontend / Calendar (shared) | Extract table columns, row actions, status badges, and sort/filter config; move row click/navigation handlers to hook | High |
 | 14 | `apps/api/src/modules/finance/payments.service.ts` | 776 | Backend / Finance | Split payment recording, reconciliation, refunds/adjustments, and reporting queries; extract amount/date validation | High |
@@ -96,9 +104,9 @@ Goal: gradually split source files so each stays at or below **400 lines**.
 
 ## Recommended first 3 refactors
 
-1. **`apps/web/src/features/chat/components/ChatWindow.tsx`** (978 lines) — Largest remaining file; extract subcomponents and hooks.
-2. **`apps/web/src/shared/components/attendance/WeekAttendanceGrid.tsx`** (931 lines) — Split cell editor, dialogs, and state hook.
-3. **`apps/web/src/shared/components/attendance/AttendanceGrid.tsx`** (886 lines) — Same pattern as week grid.
+1. **`apps/web/src/features/calendar/PortalCalendarPage.tsx`** (828 lines) — Extract toolbar/filters, view switcher, lesson panels.
+2. **`apps/web/src/shared/components/calendar/LessonListTable.tsx`** (792 lines) — Extract table columns, row actions, status badges.
+3. **`apps/api/src/modules/finance/payments.service.ts`** (776 lines) — Split payment recording, reconciliation, refunds.
 
 ---
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect, useLayoutEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import {
@@ -9,32 +9,29 @@ import {
   useAddMessageToCache,
   useCreateDirectChat,
   useChatMessageNavigation,
-  isPendingMessageId,
 } from '../hooks';
 import { useChatStore } from '../store/chat.store';
 import type { Chat } from '../types';
-import { cn } from '@/shared/lib/utils';
 import { DeleteConfirmationDialog } from '@/shared/components/ui';
 import { api } from '@/shared/lib/api';
-import { VoiceMessagePlayer } from './VoiceMessagePlayer';
-import { VoiceRecorder } from './VoiceRecorder';
 import { VocabularyModal } from './VocabularyModal';
 import { AddMembersModal } from './AddMembersModal';
-import { MessageNavigationControls } from './MessageNavigationControls';
-import { ChatBackButton } from './ChatBackButton';
-import { OnlineStatusDot } from './OnlineStatusDot';
-import { sendMessageHttp } from '../api/chat.api';
-import {
-  formatTime,
-  formatDateSeparator,
-  shouldShowDateSeparator,
-  getMessageSenderDisplay,
-  formatDisplayName,
-  getInitialsFromParts,
-} from '../utils/chat-utils';
-import Image from 'next/image';
 import { getChatThemeForRole, isPortalChatRole } from '../lib/chat-theme';
 import { useIsLgViewport } from '@/shared/hooks/useIsLgViewport';
+import { ChatWindowHeader } from './chat-window/ChatWindowHeader';
+import { ChatMessageList } from './chat-window/ChatMessageList';
+import { ChatComposer } from './chat-window/ChatComposer';
+import {
+  getChatAvatarInitials,
+  getChatAvatarUrl,
+  getChatTitle,
+  getOtherParticipant,
+  getTypingNames,
+} from './chat-window/chat-window-display';
+import { useChatWindowScroll } from './chat-window/useChatWindowScroll';
+import { useChatWindowComposer } from './chat-window/useChatWindowComposer';
+import { useChatVoiceHandlers } from './chat-window/useChatVoiceHandlers';
+import { useChatMessageDelete } from './chat-window/useChatMessageDelete';
 
 interface ChatWindowProps {
   chat: Chat;
@@ -56,39 +53,18 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
     }),
     [tChat],
   );
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  const messagesContainerRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLTextAreaElement>(null);
-  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  // Track last marked conversation to prevent duplicate mark-as-read calls
-  const lastMarkedConversationIdRef = useRef<string | null>(null);
-  // Track which chat we've done initial scroll-to-bottom for (so we only do it once per open)
-  const lastInitialScrollChatIdRef = useRef<string | null>(null);
-  // Track previous message count to detect new messages vs initial load
-  const prevMessagesLengthRef = useRef<number>(0);
 
-  const { getDraft, setDraft, clearDraft, getTypingUsers, addTypingUser } = useChatStore();
-  // Initialize input as empty - drafts will be loaded in useEffect when chat changes
-  const [inputValue, setInputValue] = useState('');
+  const lastMarkedConversationIdRef = useRef<string | null>(null);
   const [showVocabularyModal, setShowVocabularyModal] = useState(false);
   const [showAddMembersModal, setShowAddMembersModal] = useState(false);
   const [isSendingVocabulary, setIsSendingVocabulary] = useState(false);
-  const [messageIdToDelete, setMessageIdToDelete] = useState<string | null>(null);
-  const [deleteMessageError, setDeleteMessageError] = useState<string | null>(null);
-  const [isDeletingMessage, setIsDeletingMessage] = useState(false);
-  const [showVoiceRecorder, setShowVoiceRecorder] = useState(false);
-  const [showVoiceToTeacherRecorder, setShowVoiceToTeacherRecorder] = useState(false);
-  const [isUploadingVoice, setIsUploadingVoice] = useState(false);
-  const [isUploadingVoiceToTeacher, setIsUploadingVoiceToTeacher] = useState(false);
-  const [mobileDeleteMessageId, setMobileDeleteMessageId] = useState<string | null>(null);
 
   const isLgViewport = useIsLgViewport();
   const isMobileViewport = isLgViewport === false;
-
   const addMessageToCache = useAddMessageToCache();
   const createDirectChat = useCreateDirectChat();
+  const { getTypingUsers, addTypingUser } = useChatStore();
 
-  // Check if user is teacher (can send vocabulary)
   const isTeacher = user?.role === 'TEACHER';
   const isGroupChat = chat.type === 'GROUP';
   const isAdminOrManager = user?.role === 'ADMIN' || user?.role === 'MANAGER';
@@ -104,19 +80,13 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
     ? 'h-10 min-h-10 max-h-10 resize-none overflow-hidden py-0 leading-10'
     : '';
 
-  // Resolve teacher user id for "Send Voice to Teacher" (Student only): ONLY in direct 1:1 chat with assigned teacher
-  const getOtherParticipantForVoice = () => {
-    if (chat.type !== 'DIRECT') return null;
-    return chat.participants.find((p) => p.userId !== user?.id);
-  };
-  const otherParticipant = getOtherParticipantForVoice();
+  const otherParticipant = getOtherParticipant(chat, user?.id);
   const teacherUserIdForVoice: string | null =
     isStudent && chat.type === 'DIRECT' && otherParticipant?.user.role === 'TEACHER'
       ? otherParticipant.userId
       : null;
   const canSendVoiceToTeacher = Boolean(teacherUserIdForVoice);
 
-  // Fetch messages
   const {
     data: messagesData,
     isLoading,
@@ -125,7 +95,6 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
     isFetchingNextPage,
   } = useMessages(chat.id);
 
-  // Socket
   const {
     isConnected,
     sendMessage,
@@ -141,10 +110,7 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
       }
     },
     onNewMessage: (message) => {
-      // When a new message arrives while chat is open, mark as read immediately
-      // This ensures messages are marked as seen even if user doesn't reply
       if (message.chatId === chat.id && message.senderId !== user?.id) {
-        // Only mark as read if message is from another user
         markAsRead(chat.id).catch((error) => {
           console.error('[ChatWindow] Failed to mark new message as read:', error);
         });
@@ -152,23 +118,20 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
     },
   });
 
-  // Flatten messages from infinite query
   const messages = useMemo(
     () => messagesData?.pages.flatMap((page) => page.items) ?? [],
     [messagesData],
   );
 
   const filteredMessages = useMemo(
-    () =>
-      messages.filter(
-        (message) => !(message.content === null && message.isSystem)
-      ),
-    [messages]
+    () => messages.filter((message) => !(message.content === null && message.isSystem)),
+    [messages],
   );
 
-  const navigableMessageIds = useMemo(
-    () => filteredMessages.map((m) => m.id),
-    [filteredMessages]
+  const { messagesEndRef, messagesContainerRef } = useChatWindowScroll(
+    chat.id,
+    isLoading,
+    messages.length,
   );
 
   const {
@@ -179,363 +142,70 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
     canGoPrevious,
     canGoNext,
   } = useChatMessageNavigation({
-    navigableMessageIds,
+    navigableMessageIds: filteredMessages.map((m) => m.id),
     chatId: chat.id,
     endAnchorRef: messagesEndRef,
   });
 
-  // Reset scroll state when switching chats so the new chat gets initial scroll when its messages load
-  useEffect(() => {
-    lastInitialScrollChatIdRef.current = null;
-    prevMessagesLengthRef.current = 0;
-  }, [chat.id]);
-
-  // Initial open: scroll to bottom after messages are loaded and rendered (once per chat)
-  useLayoutEffect(() => {
-    if (isLoading || messages.length === 0) return;
-    if (lastInitialScrollChatIdRef.current === chat.id) return;
-    if (!messagesEndRef.current || !messagesContainerRef.current) return;
-
-    lastInitialScrollChatIdRef.current = chat.id;
-    prevMessagesLengthRef.current = messages.length;
-
-    const scrollToBottom = () => {
-      const container = messagesContainerRef.current;
-      if (container) {
-        container.scrollTop = container.scrollHeight;
-      }
-    };
-
-    // Run after layout is complete so scrollHeight is correct (flex/overflow can settle next frame)
-    const rafId = requestAnimationFrame(() => {
-      scrollToBottom();
-      requestAnimationFrame(scrollToBottom); // second frame for flex layouts
-    });
-    return () => cancelAnimationFrame(rafId);
-  }, [chat.id, isLoading, messages.length]);
-
-  // New messages: only auto-scroll if user is already near bottom (do not interrupt when reading older messages)
-  useEffect(() => {
-    if (!messagesEndRef.current || !messagesContainerRef.current || messages.length === 0) return;
-    // Only react when message count increased (new message arrived), not on initial load
-    if (messages.length <= prevMessagesLengthRef.current) return;
-    prevMessagesLengthRef.current = messages.length;
-
-    const container = messagesContainerRef.current;
-    const isNearBottom =
-      container.scrollHeight - container.scrollTop - container.clientHeight < 200;
-
-    if (isNearBottom) {
-      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
-    }
-  }, [messages.length, chat.id]);
-
-  // Mark as read when opening chat (with guards to prevent infinite loops)
-  // Mark as read when chat is opened, regardless of unreadCount or whether user replies
-  // This ensures messages are marked as seen when user views the chat
-  // Use ref for markAsRead to avoid dependency issues
   const markAsReadRef = useRef(markAsRead);
   markAsReadRef.current = markAsRead;
 
   useEffect(() => {
-    // Mark as read when the conversation is opened (user has entered the chat).
     if (!chat.id || chat.id === lastMarkedConversationIdRef.current) return;
-
     lastMarkedConversationIdRef.current = chat.id;
     markAsReadRef.current(chat.id).catch((error) => {
       console.error('[ChatWindow] Failed to mark as read:', error);
     });
   }, [chat.id]);
 
-  // Reset input value when chat changes - only load user's own draft, never from messages
-  useEffect(() => {
-    const draft = getDraft(chat.id);
-    setInputValue(draft || '');
-  }, [chat.id, getDraft]);
+  const {
+    inputRef,
+    inputValue,
+    handleInputChange,
+    handleSend,
+    handleKeyDown,
+  } = useChatWindowComposer({
+    chatId: chat.id,
+    isConnected,
+    useMobileComposerSizing,
+    startTyping,
+    stopTyping,
+    sendMessage,
+  });
 
-  // Auto-resize textarea by content so typed text stays visible (scrollHeight-based)
-  const MIN_TEXTAREA_HEIGHT = 40;
-  const MAX_TEXTAREA_HEIGHT = 200;
+  const {
+    showVoiceRecorder,
+    setShowVoiceRecorder,
+    showVoiceToTeacherRecorder,
+    setShowVoiceToTeacherRecorder,
+    isUploadingVoice,
+    isUploadingVoiceToTeacher,
+    handleVoiceRecorded,
+    handleVoiceToTeacherRecorded,
+  } = useChatVoiceHandlers({
+    chat,
+    teacherUserIdForVoice,
+    otherParticipantUserId: otherParticipant?.userId,
+    addMessageToCache,
+    createDirectChat,
+  });
 
-  useLayoutEffect(() => {
-    const ta = inputRef.current;
-    if (!ta) return;
-    if (useMobileComposerSizing) {
-      ta.style.height = '40px';
-      ta.style.overflowY = 'hidden';
-      return;
-    }
-    ta.style.overflowY = 'hidden';
-    ta.style.height = '0';
-    const contentHeight = ta.scrollHeight;
-    const h = Math.max(MIN_TEXTAREA_HEIGHT, Math.min(contentHeight, MAX_TEXTAREA_HEIGHT));
-    ta.style.height = `${h}px`;
-    ta.style.overflowY = h >= MAX_TEXTAREA_HEIGHT ? 'auto' : 'hidden';
-  }, [inputValue, useMobileComposerSizing]);
+  const {
+    messageIdToDelete,
+    deleteMessageError,
+    isDeletingMessage,
+    mobileDeleteMessageId,
+    handleOpenDeleteMessage,
+    handleMessagesContainerClick,
+    handleOwnMessageTap,
+    handleDeleteMessageDialogOpenChange,
+    handleConfirmDeleteMessage,
+  } = useChatMessageDelete({
+    chatId: chat.id,
+    isMobileViewport,
+    deleteMessage,
+  });
 
-  const handleOpenDeleteMessage = (messageId: string) => {
-    setDeleteMessageError(null);
-    setMessageIdToDelete(messageId);
-  };
-
-  useEffect(() => {
-    setMobileDeleteMessageId(null);
-  }, [chat.id]);
-
-  const handleMessagesContainerClick = () => {
-    if (isMobileViewport) {
-      setMobileDeleteMessageId(null);
-    }
-  };
-
-  const handleOwnMessageTap = (messageId: string, event: React.MouseEvent) => {
-    if (!isMobileViewport) return;
-
-    const target = event.target as HTMLElement;
-    if (target.closest('button, a, input, textarea')) return;
-
-    event.stopPropagation();
-    setMobileDeleteMessageId((prev) => (prev === messageId ? null : messageId));
-  };
-
-  const handleDeleteMessageDialogOpenChange = (open: boolean) => {
-    if (!open && !isDeletingMessage) {
-      setMessageIdToDelete(null);
-      setDeleteMessageError(null);
-    }
-  };
-
-  const handleConfirmDeleteMessage = async () => {
-    if (!messageIdToDelete || isDeletingMessage) return;
-
-    const messageId = messageIdToDelete;
-    setDeleteMessageError(null);
-    setIsDeletingMessage(true);
-    try {
-      const result = await deleteMessage(messageId);
-      if (!result.success) {
-        console.error('Failed to delete message:', result.error);
-        setDeleteMessageError(tChat('deleteMessageFailed'));
-        return;
-      }
-      setMessageIdToDelete(null);
-      setMobileDeleteMessageId(null);
-    } catch (error) {
-      console.error('Failed to delete message:', error);
-      setDeleteMessageError(tChat('deleteMessageFailed'));
-    } finally {
-      setIsDeletingMessage(false);
-    }
-  };
-
-  // Voice message: upload file then send message via HTTP; update cache and close recorder
-  const handleVoiceRecorded = useCallback(
-    async (file: File, durationSec: number, _mimeType: string) => {
-      setIsUploadingVoice(true);
-      try {
-        const formData = new FormData();
-        formData.append('file', file);
-
-        const uploadResponse = await api.post<{
-          success: boolean;
-          data: { url: string; fileName: string; fileSize: number };
-        }>('/storage/chat', formData);
-
-        if (!uploadResponse.success || !uploadResponse.data) {
-          throw new Error(tChat('uploadVoiceFailed'));
-        }
-
-        const { url: fileUrl, fileName, fileSize } = uploadResponse.data;
-
-        const message = await sendMessageHttp(chat.id, '', 'VOICE', {
-          fileUrl,
-          fileName,
-          fileSize,
-          duration: durationSec,
-        });
-
-        addMessageToCache(chat.id, message);
-        setShowVoiceRecorder(false);
-      } catch (error) {
-        console.error('Failed to send voice message:', error);
-        const msg = error instanceof Error ? error.message : tChat('sendVoiceFailed');
-        alert(msg);
-      } finally {
-        setIsUploadingVoice(false);
-      }
-    },
-    [chat.id, addMessageToCache, tChat]
-  );
-
-  // When switching chats, exit voice recorder and discard any recording
-  useEffect(() => {
-    setShowVoiceRecorder(false);
-    setShowVoiceToTeacherRecorder(false);
-  }, [chat.id]);
-
-  // Voice-to-teacher: upload, ensure DM with teacher exists, send with metadata, add to cache
-  const handleVoiceToTeacherRecorded = useCallback(
-    async (file: File, durationSec: number, _mimeType: string) => {
-      if (!teacherUserIdForVoice) return;
-      setIsUploadingVoiceToTeacher(true);
-      try {
-        const formData = new FormData();
-        formData.append('file', file);
-
-        const uploadResponse = await api.post<{
-          success: boolean;
-          data: { url: string; fileName: string; fileSize: number };
-        }>('/storage/chat', formData);
-
-        if (!uploadResponse.success || !uploadResponse.data) {
-          throw new Error(tChat('uploadVoiceFailed'));
-        }
-
-        const { url: fileUrl, fileName, fileSize } = uploadResponse.data;
-
-        let targetChatId: string;
-        if (chat.type === 'DIRECT' && otherParticipant?.userId === teacherUserIdForVoice) {
-          targetChatId = chat.id;
-        } else {
-          const dmChat = await createDirectChat.mutateAsync(teacherUserIdForVoice);
-          targetChatId = dmChat.id;
-        }
-
-        const message = await sendMessageHttp(targetChatId, '', 'VOICE', {
-          fileUrl,
-          fileName,
-          fileSize,
-          duration: durationSec,
-          metadata: { voiceToTeacher: true, teacherId: teacherUserIdForVoice },
-        });
-
-        addMessageToCache(targetChatId, message);
-        setShowVoiceToTeacherRecorder(false);
-      } catch (error) {
-        console.error('Failed to send voice to teacher:', error);
-        const msg = error instanceof Error ? error.message : tChat('sendVoiceToTeacherFailed');
-        alert(msg);
-      } finally {
-        setIsUploadingVoiceToTeacher(false);
-      }
-    },
-    [teacherUserIdForVoice, chat.type, chat.id, otherParticipant?.userId, createDirectChat, addMessageToCache, tChat]
-  );
-
-  // Save draft on unmount - only save if user has typed something
-  // This ensures we never accidentally save incoming messages as drafts
-  useEffect(() => {
-    return () => {
-      // Only save draft if input has content (user's typed text)
-      // This is safe because inputValue is only set by user typing or from a previous draft
-      // It is NEVER set from incoming messages or chat.lastMessage
-      if (inputValue.trim()) {
-        setDraft(chat.id, inputValue);
-      } else {
-        // Clear draft if input is empty
-        clearDraft(chat.id);
-      }
-    };
-  }, [chat.id, inputValue, setDraft, clearDraft]);
-
-  // Get other participant for direct chats
-  const getOtherParticipant = () => {
-    if (chat.type === 'GROUP') return null;
-    return chat.participants.find((p) => p.userId !== user?.id);
-  };
-
-  // Get chat title
-  const getChatTitle = () => {
-    if (chat.type === 'GROUP') {
-      return chat.name || chat.group?.name || tChat('groupChat');
-    }
-    const other = getOtherParticipant();
-    return other
-      ? formatDisplayName(other.user.firstName, other.user.lastName) || tChat('chatTitle')
-      : tChat('chatTitle');
-  };
-
-  // Get avatar URL for chat header
-  const getChatAvatarUrl = () => {
-    if (chat.type === 'GROUP') return null;
-    const other = getOtherParticipant();
-    return other?.user.avatarUrl || null;
-  };
-
-  // Get avatar initials for fallback
-  const getChatAvatarInitials = () => {
-    if (chat.type === 'GROUP') {
-      const name = chat.name || chat.group?.name || tChat('groupChat');
-      return name[0] || 'G';
-    }
-    const other = getOtherParticipant();
-    if (!other) return '?';
-    return getInitialsFromParts(other.user.firstName, other.user.lastName);
-  };
-
-  // Get online status for direct chats
-  const getOnlineStatus = () => {
-    if (chat.type === 'GROUP') return null;
-    const other = getOtherParticipant();
-    if (!other) return null;
-    return isUserOnline(chat.id, other.userId);
-  };
-
-  // Get typing users names
-  const typingUserIds = getTypingUsers(chat.id);
-  const typingNames = typingUserIds
-    .map((id) => {
-      const participant = chat.participants.find((p) => p.userId === id);
-      return participant?.user.firstName;
-    })
-    .filter(Boolean);
-
-  // Handle input change
-  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setInputValue(e.target.value);
-
-    // Typing indicator
-    if (isConnected) {
-      startTyping(chat.id);
-
-      // Clear previous timeout
-      if (typingTimeoutRef.current) {
-        clearTimeout(typingTimeoutRef.current);
-      }
-
-      // Stop typing after 2 seconds of inactivity
-      typingTimeoutRef.current = setTimeout(() => {
-        stopTyping(chat.id);
-      }, 2000);
-    }
-  };
-
-  // Handle send
-  const handleSend = useCallback(() => {
-    const content = inputValue.trim();
-    if (!content) return;
-
-    setInputValue('');
-    clearDraft(chat.id);
-    stopTyping(chat.id);
-
-    void sendMessage(chat.id, content).then((result) => {
-      if (!result.success) {
-        console.error('Failed to send message:', result.error);
-        setInputValue(content);
-      }
-    });
-  }, [inputValue, chat.id, sendMessage, clearDraft, stopTyping]);
-
-  // Handle key press
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
-    }
-  };
-
-  // Handle vocabulary send
   const handleSendVocabulary = async (words: string[]) => {
     setIsSendingVocabulary(true);
     try {
@@ -548,7 +218,15 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
     }
   };
 
-  const onlineStatus = getOnlineStatus();
+  const chatTitle = getChatTitle(chat, user?.id, tChat('chatTitle'));
+  const chatAvatarUrl = getChatAvatarUrl(chat, user?.id);
+  const chatAvatarInitials = getChatAvatarInitials(chat, user?.id, tChat('groupChat'));
+  const typingNames = getTypingNames(chat, getTypingUsers(chat.id));
+  const onlineStatus =
+    chat.type === 'GROUP' || !otherParticipant
+      ? null
+      : isUserOnline(chat.id, otherParticipant.userId);
+
   const isMobileConversation = Boolean(onBack);
   const isAdminPortalChat = user?.role === 'ADMIN' || user?.role === 'MANAGER';
   const needsMobileBottomNavComposerOffset =
@@ -556,484 +234,82 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
 
   return (
     <div className="flex h-full min-h-0 flex-1 flex-col overflow-hidden">
-      {/* Header */}
-      <div
-        className={cn(
-          'flex shrink-0 items-center gap-2 border-b p-3 min-[1367px]:gap-3 min-[1367px]:p-4',
-          isMobileConversation && 'max-lg:sticky max-lg:top-0 max-lg:z-20',
-          ui.border,
-          ui.headerBg,
-        )}
-      >
-        {/* Back button (mobile) */}
-        {onBack ? (
-          <ChatBackButton
-            onClick={onBack}
-            className="shrink-0 lg:hidden"
-            aria-label={tChat('backToChatList')}
-          />
-        ) : null}
+      <ChatWindowHeader
+        chat={chat}
+        ui={ui}
+        title={chatTitle}
+        avatarUrl={chatAvatarUrl}
+        avatarInitials={chatAvatarInitials}
+        typingNames={typingNames}
+        onlineStatus={onlineStatus}
+        isConnected={isConnected}
+        isMobileConversation={isMobileConversation}
+        isAdminOrManager={isAdminOrManager}
+        isGroupChat={isGroupChat}
+        isTeacher={isTeacher}
+        showMessageNavigation={!isLoading && filteredMessages.length >= 2}
+        navigationVariant={isPortalChatRole(user?.role) ? 'student' : 'default'}
+        onBack={onBack}
+        onAddMembers={() => setShowAddMembersModal(true)}
+        onOpenVocabulary={() => setShowVocabularyModal(true)}
+        onPrevious={goToPrevious}
+        onNext={goToNext}
+        canGoPrevious={canGoPrevious}
+        canGoNext={canGoNext}
+      />
 
-        {/* Avatar */}
-        <div className="shrink-0">
-          {getChatAvatarUrl() ? (
-            <Image
-              src={getChatAvatarUrl() ?? ''}
-              alt={getChatTitle()}
-              width={40}
-              height={40}
-              className="w-10 h-10 rounded-full object-cover"
-              unoptimized
-            />
-          ) : (
-            <div
-              className={cn(
-                'w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold',
-                chat.type === 'GROUP'
-                  ? 'bg-gradient-to-br from-purple-500 to-purple-600'
-                  : ui.avatar,
-              )}
-            >
-              {getChatAvatarInitials()}
-            </div>
-          )}
-        </div>
+      <ChatMessageList
+        chat={chat}
+        ui={ui}
+        messages={filteredMessages}
+        isLoading={isLoading}
+        hasNextPage={Boolean(hasNextPage)}
+        isFetchingNextPage={isFetchingNextPage}
+        currentUserId={user?.id}
+        focusedMessageId={focusedMessageId}
+        isMobileViewport={isMobileViewport}
+        mobileDeleteMessageId={mobileDeleteMessageId}
+        messageIdToDelete={messageIdToDelete}
+        isDeletingMessage={isDeletingMessage}
+        senderLabels={senderLabels}
+        messagesContainerRef={messagesContainerRef}
+        messagesEndRef={messagesEndRef}
+        registerMessageElement={registerMessageElement}
+        onFetchNextPage={() => fetchNextPage()}
+        onMessagesContainerClick={handleMessagesContainerClick}
+        onOpenDeleteMessage={handleOpenDeleteMessage}
+        onOwnMessageTap={handleOwnMessageTap}
+      />
 
-        {/* Title */}
-        <div className="min-w-0 flex-1">
-          <h2
-            className={cn(
-              'font-semibold leading-snug max-lg:line-clamp-2 max-lg:whitespace-normal max-lg:break-words min-[1367px]:truncate',
-              ui.title,
-            )}
-          >
-            {getChatTitle()}
-          </h2>
-          {typingNames.length > 0 ? (
-            <p className={cn('text-xs', ui.typing)}>
-              {tChat('typing', {
-                names: typingNames.join(', '),
-                verb: typingNames.length === 1 ? tChat('typingOne') : tChat('typingMany'),
-              })}
-            </p>
-          ) : onlineStatus !== null ? (
-            <p className={cn('text-xs', onlineStatus ? 'text-green-600' : ui.muted)}>
-              {onlineStatus ? tChat('online') : tChat('offline')}
-            </p>
-          ) : (
-            <p className={cn('text-xs', ui.muted)}>
-              {tChat('participantsCount', { count: chat.participants.length })}
-            </p>
-          )}
-        </div>
+      <ChatComposer
+        chatId={chat.id}
+        ui={ui}
+        userRole={user?.role}
+        inputRef={inputRef}
+        inputValue={inputValue}
+        placeholderKey={mobilePlaceholderKey}
+        isMobileConversation={isMobileConversation}
+        needsMobileBottomNavComposerOffset={needsMobileBottomNavComposerOffset}
+        useMobileComposerSizing={useMobileComposerSizing}
+        mobileComposerBtnClass={mobileComposerBtnClass}
+        mobileComposerInputClass={mobileComposerInputClass}
+        isStudent={isStudent}
+        canSendVoiceToTeacher={canSendVoiceToTeacher}
+        showVoiceRecorder={showVoiceRecorder}
+        showVoiceToTeacherRecorder={showVoiceToTeacherRecorder}
+        isUploadingVoice={isUploadingVoice}
+        isUploadingVoiceToTeacher={isUploadingVoiceToTeacher}
+        onInputChange={handleInputChange}
+        onKeyDown={handleKeyDown}
+        onSend={handleSend}
+        onStartVoiceRecorder={() => setShowVoiceRecorder(true)}
+        onCancelVoiceRecorder={() => setShowVoiceRecorder(false)}
+        onVoiceRecorded={handleVoiceRecorded}
+        onStartVoiceToTeacherRecorder={() => setShowVoiceToTeacherRecorder(true)}
+        onCancelVoiceToTeacherRecorder={() => setShowVoiceToTeacherRecorder(false)}
+        onVoiceToTeacherRecorded={handleVoiceToTeacherRecorded}
+      />
 
-        {/* Actions */}
-        <div className="flex shrink-0 items-center gap-1.5 min-[1367px]:gap-2">
-          {/* Add members (Admin only, group chat only) */}
-          {isAdminOrManager && isGroupChat && (
-            <button
-              onClick={() => setShowAddMembersModal(true)}
-              className={cn(
-                'flex shrink-0 items-center gap-1.5 rounded-[15px] px-2 py-2 text-sm font-medium transition-colors min-[1367px]:px-3 min-[1367px]:py-1.5',
-                ui.ghostBtn,
-              )}
-              title={tChat('addMembers')}
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3z" />
-              </svg>
-              <span className="hidden sm:inline">{tChat('addMembers')}</span>
-            </button>
-          )}
-          {/* Vocabulary Button (Teachers only, Group chats only) */}
-          {isTeacher && isGroupChat && (
-            <button
-              onClick={() => setShowVocabularyModal(true)}
-              className="px-3 py-1.5 bg-purple-100 text-purple-700 rounded-lg text-sm font-medium hover:bg-purple-200 transition-colors flex items-center gap-1.5"
-              title={tChat('sendVocabularyTitle')}
-            >
-              <span>📚</span>
-              <span className="hidden sm:inline">{tChat('vocabulary')}</span>
-            </button>
-          )}
-          {!isLoading && filteredMessages.length >= 2 ? (
-            <MessageNavigationControls
-              variant={isPortalChatRole(user?.role) ? 'student' : 'default'}
-              onPrevious={goToPrevious}
-              onNext={goToNext}
-              canGoPrevious={canGoPrevious}
-              canGoNext={canGoNext}
-            />
-          ) : null}
-          <div className="flex shrink-0 items-center gap-1">
-            <div className="flex h-9 w-7 shrink-0 items-center justify-center pl-1.5 min-[1367px]:w-9 min-[1367px]:pl-2">
-              {chat.type === 'DIRECT' && onlineStatus !== null ? (
-                <OnlineStatusDot
-                  variant="inline"
-                  isOnline={onlineStatus}
-                  title={onlineStatus ? tChat('online') : tChat('offline')}
-                />
-              ) : (
-                <div
-                  className={cn(
-                    'h-2.5 w-2.5 rounded-full',
-                    isConnected ? 'bg-green-500' : 'bg-red-500',
-                  )}
-                  title={isConnected ? tChat('connected') : tChat('reconnecting')}
-                />
-              )}
-            </div>
-            <button
-              type="button"
-              className={cn(
-                'inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-[15px] transition-colors',
-                ui.iconBtn,
-              )}
-            >
-              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"
-                />
-              </svg>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Messages */}
-      <div
-        ref={messagesContainerRef}
-        onClick={handleMessagesContainerClick}
-        className={cn(
-          'min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-y-contain p-4 [touch-action:pan-y] [-webkit-overflow-scrolling:touch]',
-          ui.messagesBg,
-        )}
-      >
-        {/* Load more button */}
-        {hasNextPage && (
-          <div className="text-center">
-            <button
-              onClick={() => fetchNextPage()}
-              disabled={isFetchingNextPage}
-              className={ui.loadMore}
-            >
-              {isFetchingNextPage ? tCommon('loading') : tChat('loadEarlierMessages')}
-            </button>
-          </div>
-        )}
-
-        {isLoading ? (
-          <div className="flex items-center justify-center py-8">
-            <div className={cn('h-8 w-8 animate-spin rounded-full', ui.spinner)} />
-          </div>
-        ) : filteredMessages.length === 0 ? (
-          <div className="text-center py-8">
-            <p className={ui.muted}>{tChat('noMessagesYet')}</p>
-            <p className={cn('mt-1 text-sm', ui.subtle)}>{tChat('startConversation')}</p>
-          </div>
-        ) : (
-            filteredMessages.map((message, index) => {
-              const isOwn = message.senderId === user?.id;
-              const isPending = isPendingMessageId(message.id);
-              const senderDisplay = getMessageSenderDisplay(message, senderLabels);
-              const prevMessage = filteredMessages[index - 1];
-              const showDateSeparator = shouldShowDateSeparator(message, prevMessage);
-              const isVocabulary = message.metadata && typeof message.metadata === 'object' && 'isVocabulary' in message.metadata;
-              const voiceSubstituteMeta =
-                message.type === 'VOICE' &&
-                message.metadata &&
-                typeof message.metadata === 'object' &&
-                'sentAsSubstitute' in message.metadata &&
-                message.metadata.sentAsSubstitute === true;
-              const substituteVoiceLabel =
-                voiceSubstituteMeta &&
-                typeof message.metadata === 'object' &&
-                message.metadata !== null &&
-                'substituteLabel' in message.metadata &&
-                typeof (message.metadata as { substituteLabel?: unknown }).substituteLabel === 'string'
-                  ? (message.metadata as { substituteLabel: string }).substituteLabel
-                  : voiceSubstituteMeta
-                    ? tChat('substituteTeacherDefault')
-                    : null;
-
-            return (
-              <div
-                key={message.id}
-                ref={(el) => registerMessageElement(message.id, el)}
-                className={cn(
-                  'rounded-lg scroll-mt-8',
-                  focusedMessageId === message.id && ui.focusMessage
-                )}
-              >
-                {/* Date separator */}
-                {showDateSeparator && (
-                  <div className="flex items-center justify-center my-4">
-                    <span className={cn('rounded-full px-3 py-1 text-xs', ui.datePill)}>
-                      {formatDateSeparator(message.createdAt, locale, {
-                        today: tCommon('today'),
-                        yesterday: tChat('yesterday'),
-                      })}
-                    </span>
-                  </div>
-                )}
-
-                {/* Message */}
-                <div
-                  className={cn(
-                    'flex gap-2 group',
-                    isOwn ? 'justify-end' : 'justify-start'
-                  )}
-                >
-                  {/* Avatar (only for others) */}
-                  {!isOwn && (
-                    <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden">
-                      {message.sender?.avatarUrl ? (
-                        <Image
-                          src={message.sender.avatarUrl}
-                          alt={senderDisplay.name}
-                          width={32}
-                          height={32}
-                          className="w-full h-full object-cover"
-                          unoptimized
-                        />
-                      ) : (
-                        <div
-                          className={cn(
-                            'flex h-full w-full items-center justify-center text-sm font-medium',
-                            ui.skeleton,
-                            ui.body,
-                          )}
-                        >
-                          {message.sender
-                            ? getInitialsFromParts(
-                                message.sender.firstName,
-                                message.sender.lastName,
-                              )
-                            : '?'}
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  <div
-                    className={cn('max-w-[70%] relative', isOwn && 'order-first')}
-                    data-message-actions={isOwn ? '' : undefined}
-                    onClick={isOwn ? (event) => handleOwnMessageTap(message.id, event) : undefined}
-                  >
-                    {/* Delete button (only for own messages) */}
-                    {isOwn && !isPending && (
-                      <button
-                        type="button"
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          handleOpenDeleteMessage(message.id);
-                        }}
-                        disabled={isDeletingMessage && messageIdToDelete === message.id}
-                        className={cn(
-                          'absolute -top-1 -right-1 w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center transition-opacity hover:bg-red-600 disabled:opacity-50',
-                          isMobileViewport
-                            ? mobileDeleteMessageId === message.id
-                              ? 'opacity-100'
-                              : 'opacity-0'
-                            : 'opacity-0 group-hover:opacity-100',
-                          isOwn ? '-right-1' : '-left-1'
-                        )}
-                        title={tChat('deleteMessage')}
-                        aria-label={tChat('deleteMessage')}
-                      >
-                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                      </button>
-                    )}
-                    {/* Sender name (group chats) */}
-                    {!isOwn && chat.type === 'GROUP' && (
-                      <p className={cn('mb-1 ml-1 text-xs', ui.muted)}>
-                        <span className={senderDisplay.isInactive ? 'italic opacity-80' : ''}>
-                          {senderDisplay.name}
-                        </span>
-                        {substituteVoiceLabel ? (
-                          <span className="ml-2 text-amber-700 font-medium">· {substituteVoiceLabel}</span>
-                        ) : null}
-                      </p>
-                    )}
-
-                    {isOwn && chat.type === 'GROUP' && substituteVoiceLabel && (
-                      <p className="text-xs text-amber-700 font-medium mb-1 mr-1 text-right">{substituteVoiceLabel}</p>
-                    )}
-
-                    {/* Message bubble */}
-                    <div
-                      className={cn(
-                        'px-4 py-2 rounded-2xl',
-                        isPending && 'opacity-70',
-                        isVocabulary
-                          ? 'bg-gradient-to-br from-purple-500 to-purple-600 text-white rounded-lg border-2 border-purple-300'
-                          : isOwn
-                            ? ui.ownBubble
-                            : ui.otherBubble
-                      )}
-                    >
-                      {message.type === 'VOICE' && message.fileUrl ? (
-                        <VoiceMessagePlayer
-                          fileUrl={message.fileUrl}
-                          duration={message.duration}
-                          fileName={message.fileName}
-                        />
-                      ) : isVocabulary ? (
-                        <div>
-                          <div className="flex items-center gap-2 mb-2 pb-2 border-b border-purple-400/30">
-                            <span className="text-lg">📚</span>
-                            <span className="font-semibold">{tChat('vocabularyWords')}</span>
-                          </div>
-                          <p className="text-sm whitespace-pre-wrap break-words">
-                            {message.content}
-                          </p>
-                        </div>
-                      ) : (
-                        <p className="text-sm whitespace-pre-wrap break-words">
-                          {message.content}
-                        </p>
-                      )}
-                    </div>
-
-                    {/* Time & edited indicator */}
-                    <div
-                      className={cn(
-                        'flex items-center gap-1 mt-1',
-                        isOwn ? 'justify-end mr-1' : 'justify-start ml-1'
-                      )}
-                    >
-                      <span className={cn('text-xs', ui.subtle)}>
-                        {formatTime(message.createdAt, locale)}
-                      </span>
-                      {message.isEdited && (
-                        <span className={cn('text-xs', ui.subtle)}>{tChat('edited')}</span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            );
-          })
-        )}
-
-        <div ref={messagesEndRef} />
-      </div>
-
-      {/* Input */}
-      <div
-        className={cn(
-          'shrink-0 border-t p-4',
-          isMobileConversation && 'max-lg:sticky max-lg:bottom-0 max-lg:z-20',
-          needsMobileBottomNavComposerOffset &&
-            'max-lg:pb-[calc(6rem+env(safe-area-inset-bottom))]',
-          isMobileConversation &&
-            !needsMobileBottomNavComposerOffset &&
-            'max-lg:pb-[env(safe-area-inset-bottom)]',
-          ui.border,
-          ui.headerBg,
-        )}
-      >
-        {showVoiceRecorder ? (
-          <div className="space-y-2">
-            <VoiceRecorder
-              variant={isPortalChatRole(user?.role) ? 'student' : 'default'}
-              onRecorded={handleVoiceRecorded}
-              onCancel={() => setShowVoiceRecorder(false)}
-              conversationId={chat.id}
-            />
-            {isUploadingVoice && (
-              <p className={cn('text-center text-sm', ui.muted)}>{tChat('uploadingVoice')}</p>
-            )}
-          </div>
-        ) : showVoiceToTeacherRecorder ? (
-          <div className="space-y-2">
-            <p className={cn('text-sm font-medium', ui.body)}>{tChat('recordingForTeacher')}</p>
-            <VoiceRecorder
-              variant={isPortalChatRole(user?.role) ? 'student' : 'default'}
-              onRecorded={handleVoiceToTeacherRecorded}
-              onCancel={() => setShowVoiceToTeacherRecorder(false)}
-              conversationId={chat.id}
-            />
-            {isUploadingVoiceToTeacher && (
-              <p className={cn('text-center text-sm', ui.muted)}>{tChat('sendingVoiceToTeacher')}</p>
-            )}
-          </div>
-        ) : (
-          <div className={cn('flex gap-2', useMobileComposerSizing ? 'items-center' : 'items-end')}>
-            {/* Text input */}
-            <textarea
-              ref={inputRef}
-              value={inputValue}
-              onChange={handleInputChange}
-              onKeyDown={handleKeyDown}
-              placeholder={tChat(mobilePlaceholderKey)}
-              rows={1}
-              className={cn(ui.input, mobileComposerInputClass)}
-              style={useMobileComposerSizing ? undefined : { minHeight: '40px' }}
-            />
-
-            {/* Microphone: start voice recording (all roles) */}
-            <button
-              type="button"
-              onClick={() => setShowVoiceRecorder(true)}
-              className={cn(mobileComposerBtnClass, 'transition-colors', ui.ghostBtn)}
-              title={tChat('recordVoiceMessage')}
-              aria-label={tChat('recordVoiceMessage')}
-            >
-              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z" />
-                <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z" />
-              </svg>
-            </button>
-
-            {/* Send Voice to Teacher (Student only, in direct 1:1 chat with assigned teacher) */}
-            {isStudent && canSendVoiceToTeacher && (
-              <button
-                type="button"
-                onClick={() => setShowVoiceToTeacherRecorder(true)}
-                className={
-                  useMobileComposerSizing
-                    ? cn(
-                        mobileComposerBtnClass,
-                        'border border-amber-200 bg-amber-100 text-amber-800 transition-colors hover:bg-amber-200',
-                      )
-                    : 'flex flex-shrink-0 items-center gap-1.5 rounded-lg border border-amber-200 bg-amber-100 px-2.5 py-2 text-amber-800 transition-colors hover:bg-amber-200'
-                }
-                title={tChat('sendVoiceToTeacherTitle')}
-                aria-label={tChat('sendVoiceToTeacherTitle')}
-              >
-                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z" />
-                  <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z" />
-                </svg>
-                <span className="text-xs font-medium hidden sm:inline">{tChat('sendVoiceToTeacherShort')}</span>
-              </button>
-            )}
-
-            {/* Send button */}
-            <button
-              onClick={handleSend}
-              disabled={!inputValue.trim()}
-              className={cn(
-                mobileComposerBtnClass,
-                'transition-colors',
-                inputValue.trim() ? ui.primaryBtn : ui.primaryBtnDisabled,
-              )}
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-              </svg>
-            </button>
-          </div>
-        )}
-      </div>
-
-      {/* Vocabulary Modal */}
       <VocabularyModal
         isOpen={showVocabularyModal}
         onClose={() => setShowVocabularyModal(false)}
@@ -1041,7 +317,6 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
         isSubmitting={isSendingVocabulary}
       />
 
-      {/* Add Members Modal (Admin + group chat) */}
       <AddMembersModal
         isOpen={showAddMembersModal}
         onClose={() => setShowAddMembersModal(false)}
