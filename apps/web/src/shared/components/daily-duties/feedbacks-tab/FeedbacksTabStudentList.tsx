@@ -1,9 +1,9 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { Avatar } from '@/shared/components/ui/avatar';
 import { cn } from '@/shared/lib/utils';
 import type { FeedbackStudentItem } from './feedbacks-tab.types';
+import { FeedbacksTabStudentAvatar } from './FeedbacksTabStudentAvatar';
 
 interface FeedbacksTabStudentListProps {
   students: FeedbackStudentItem[];
@@ -38,37 +38,18 @@ export function FeedbacksTabStudentList({
                 type="button"
                 onClick={() => onSelectStudent(student.id)}
                 className={cn(
-                  'flex w-full items-center gap-3 p-4 text-left transition-colors hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1010a3]/30 focus-visible:ring-inset',
-                  isActive && 'bg-[#1010a3]/10 hover:bg-[#1010a3]/10',
+                  'flex w-full items-center gap-3 p-4 text-left transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1010a3]/30 focus-visible:ring-inset',
+                  isActive ? 'bg-[#1010a3]/10' : 'hover:bg-slate-100',
                 )}
                 aria-current={isActive ? 'true' : undefined}
               >
-                <div className="relative shrink-0">
-                  {student.user.avatarUrl ? (
-                    <Avatar
-                      src={student.user.avatarUrl}
-                      name={displayName}
-                      size="md"
-                      className="h-11 w-11 text-sm"
-                    />
-                  ) : (
-                    <div
-                      className="flex h-11 w-11 items-center justify-center rounded-full bg-[#1010a3] text-sm font-semibold text-white"
-                    >
-                      {initials}
-                    </div>
-                  )}
-                  {saved && (
-                    <span
-                      className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full border-2 border-white bg-emerald-500"
-                      aria-hidden
-                    >
-                      <svg className="h-2.5 w-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                      </svg>
-                    </span>
-                  )}
-                </div>
+                <FeedbacksTabStudentAvatar
+                  displayName={displayName}
+                  initials={initials}
+                  avatarUrl={student.user.avatarUrl}
+                  size="list"
+                  showSavedBadge={saved}
+                />
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-semibold text-slate-900">{displayName}</p>
                   {saved ? (

@@ -3,7 +3,6 @@
 import { useTranslations } from 'next-intl';
 import { Button } from '@/shared/components/ui/button';
 import { SegmentedControl } from '@/shared/components/ui';
-import { Avatar } from '@/shared/components/ui/avatar';
 import { MultiSelectChipsDropdown } from '@/shared/components/ui/multi-select-chips-dropdown';
 import { GROUP_LEVEL_SEGMENT_OPTIONS } from '@/features/groups/lib/group-level-options';
 import { cn } from '@/shared/lib/utils';
@@ -12,6 +11,7 @@ import {
   type StructuredFeedbackFields,
 } from '../lesson-feedback-form-utils';
 import { FeedbacksTabParticipationTickBox } from './FeedbacksTabParticipationTickBox';
+import { FeedbacksTabStudentAvatar } from './FeedbacksTabStudentAvatar';
 import { FEEDBACK_FIELD_SHELL_CLASS, type FeedbackSaveStatus, type FeedbackStudentItem } from './feedbacks-tab.types';
 
 interface FeedbacksTabStudentCardProps {
@@ -55,27 +55,13 @@ export function FeedbacksTabStudentCard({
     <div className="space-y-5 rounded-[15px] border border-slate-200/90 bg-white p-5 shadow-sm sm:space-y-6 sm:p-8 lg:border-0 lg:shadow-none lg:p-6">
       {!hideStudentHeader && (
       <div className="flex items-center gap-4">
-        <div className="relative shrink-0">
-          {student.user.avatarUrl ? (
-            <Avatar
-              src={student.user.avatarUrl}
-              name={displayName}
-              size="lg"
-              className="h-14 w-14 text-lg shadow-md ring-2 ring-white"
-            />
-          ) : (
-            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-sky-500 to-indigo-600 text-lg font-bold text-white shadow-md ring-2 ring-white">
-              {initials}
-            </div>
-          )}
-          {hasSavedFeedback && (
-            <div className="absolute -right-0.5 -top-0.5 flex h-5 w-5 items-center justify-center rounded-full border-2 border-white bg-emerald-500">
-              <svg className="h-3 w-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-              </svg>
-            </div>
-          )}
-        </div>
+        <FeedbacksTabStudentAvatar
+          displayName={displayName}
+          initials={initials}
+          avatarUrl={student.user.avatarUrl}
+          size="header"
+          showSavedBadge={hasSavedFeedback}
+        />
         <div className="min-w-0 flex-1">
           <p className="text-lg font-bold leading-tight text-slate-900 sm:text-xl">
             {student.user.firstName} {student.user.lastName}
