@@ -51,3 +51,6 @@ steps:
 images:
   - europe-west1-docker.pkg.dev/$PROJECT_ID/ilona/api:$COMMIT_SHA
   - europe-west1-docker.pkg.dev/$PROJECT_ID/ilona/api:latest
+
+options:
+  logging: CLOUD_LOGGING_ONLY
