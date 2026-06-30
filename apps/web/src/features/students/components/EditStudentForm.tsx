@@ -10,6 +10,7 @@ import {
   stackedSheetOverlayClassName,
 } from '@/shared/lib/sheet-stack';
 import { PORTAL_DESKTOP_SIDE_SHEET_CLASS } from '@/shared/lib/portal-form-sheet-classes';
+import { PortalFormSheetDragHandle } from '@/shared/components/ui/portal-form-sheet-drag-handle';
 import { X } from 'lucide-react';
 import { useEditStudentForm } from './edit-student-form/useEditStudentForm';
 import { EditStudentFormFields } from './edit-student-form/EditStudentFormFields';
@@ -33,6 +34,7 @@ export function EditStudentForm(props: EditStudentFormProps) {
           )}
         />
         <DialogPrimitive.Content
+          ref={form.scrollContentProps.ref}
           style={{ ...form.dragStyle, ...form.contentStyle }}
           {...stackedSheetDialogHandlers}
           {...portalSheetLayerProps}
@@ -46,17 +48,7 @@ export function EditStudentForm(props: EditStudentFormProps) {
           )}
           aria-describedby={undefined}
         >
-          <div className="relative flex h-9 w-full items-center justify-center bg-[#f8f9fb] min-[1367px]:hidden">
-            <div
-              className="absolute inset-x-0 -top-2 h-14"
-              style={{ touchAction: 'pan-y' }}
-              onTouchStart={form.handleDragStart}
-              onTouchMove={form.handleDragMove}
-              onTouchEnd={form.handleDragEnd}
-              onTouchCancel={form.handleDragEnd}
-            />
-            <div className="h-1.5 w-14 rounded-full bg-slate-400" />
-          </div>
+          <PortalFormSheetDragHandle dragHandleProps={form.dragHandleProps} />
           <DialogPrimitive.Title className="sr-only">{form.tForm('editTitle')}</DialogPrimitive.Title>
           <div className="shrink-0 bg-[#f8f9fb] px-4 pb-4 pt-3 min-[1367px]:px-6 min-[1367px]:pb-5 min-[1367px]:pt-6">
             <div className="flex items-center justify-between gap-4">
@@ -72,7 +64,9 @@ export function EditStudentForm(props: EditStudentFormProps) {
               </DialogPrimitive.Close>
             </div>
           </div>
-          <div className="min-h-0 overflow-y-auto overflow-x-hidden overscroll-y-contain [touch-action:pan-y] [-webkit-overflow-scrolling:touch] px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-4 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden min-[1367px]:px-6 min-[1367px]:pb-6 min-[1367px]:pt-0">
+          <div
+            className="min-h-0 overflow-y-auto overflow-x-hidden overscroll-y-contain [touch-action:pan-y] [-webkit-overflow-scrolling:touch] px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-4 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden min-[1367px]:px-6 min-[1367px]:pb-6 min-[1367px]:pt-0"
+          >
             {form.isLoadingStudent ? (
               <div className="flex items-center justify-center py-8">
                 <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />

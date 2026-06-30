@@ -46,7 +46,7 @@ export function useEditLeadModal({
     onClose();
   }, [onClose]);
 
-  const { dragStyle, dragHandleProps, resetDrag } = usePortalSheetDrag({
+  const { dragStyle, dragHandleProps, scrollContentProps, resetDrag } = usePortalSheetDrag({
     enabled: open,
     onClose: requestClose,
   });
@@ -240,6 +240,7 @@ export function useEditLeadModal({
     requestClose,
     dragStyle,
     dragHandleProps,
+    scrollContentProps,
     isLoading,
     lead,
     form,

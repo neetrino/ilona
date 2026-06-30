@@ -1,8 +1,9 @@
 'use client';
 
-import { useEffect, useRef, useState, type TouchEvent } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { useLocale, useTranslations } from 'next-intl';
+import { PORTAL_SHEET_DRAG_HANDLE_ATTR, usePortalSheetDrag } from '@/shared/hooks/usePortalSheetDrag';
 import { StudentCard } from './StudentCard';
 import { Button } from '@/shared/components/ui';
 import {
@@ -92,12 +93,6 @@ export function StudentsBoard({
   const t = useTranslations('students');
   const tc = useTranslations('common');
   const [selectedCenterId, setSelectedCenterId] = useState<string | null>(null);
-  const [dragOffsetY, setDragOffsetY] = useState(0);
-  const [isDragging, setIsDragging] = useState(false);
-  const [isSettling, setIsSettling] = useState(false);
-  const touchStartYRef = useRef<number | null>(null);
-  const touchStartXRef = useRef<number | null>(null);
-  const settleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const allCenters = centersData || [];
   const visibleCenters = allCenters.filter((center) => {
@@ -126,80 +121,20 @@ export function StudentsBoard({
   const selectedCenter = centerCards.find((center) => center.id === selectedCenterId) ?? null;
   const isSheetOpen = selectedCenter !== null;
 
-  useEffect(() => {
-    if (!isSheetOpen) {
-      setDragOffsetY(0);
-      setIsDragging(false);
-      setIsSettling(false);
-    }
-  }, [isSheetOpen]);
-
-  useEffect(() => {
-    return () => {
-      if (settleTimerRef.current) clearTimeout(settleTimerRef.current);
-    };
+  const requestClose = useCallback(() => {
+    setSelectedCenterId(null);
   }, []);
 
-  const isMobileViewport = () =>
-    typeof window !== 'undefined' && window.matchMedia('(max-width: 768px)').matches;
+  const { dragStyle, dragHandleProps, scrollContentProps, resetDrag } = usePortalSheetDrag({
+    enabled: isSheetOpen,
+    onClose: requestClose,
+  });
 
-  const resetDragRefs = () => {
-    touchStartYRef.current = null;
-    touchStartXRef.current = null;
-    setIsDragging(false);
-  };
-
-  const handleDragStart = (event: TouchEvent<HTMLDivElement>) => {
-    if (!isMobileViewport()) return;
-    const firstTouch = event.touches[0];
-    if (!firstTouch) return;
-    if (settleTimerRef.current) {
-      clearTimeout(settleTimerRef.current);
-      settleTimerRef.current = null;
+  useEffect(() => {
+    if (!isSheetOpen) {
+      resetDrag();
     }
-    touchStartYRef.current = firstTouch.clientY;
-    touchStartXRef.current = firstTouch.clientX;
-    setIsSettling(false);
-    setIsDragging(true);
-  };
-
-  const handleDragMove = (event: TouchEvent<HTMLDivElement>) => {
-    if (!isMobileViewport()) return;
-    if (!isDragging || touchStartYRef.current === null || touchStartXRef.current === null) return;
-    const firstTouch = event.touches[0];
-    if (!firstTouch) return;
-    const deltaY = firstTouch.clientY - touchStartYRef.current;
-    const deltaX = Math.abs(firstTouch.clientX - touchStartXRef.current);
-    if (deltaY <= 0 || deltaY <= deltaX) return;
-    event.preventDefault();
-    setDragOffsetY(Math.min(deltaY * 0.95, 340));
-  };
-
-  const handleDragEnd = () => {
-    if (!isMobileViewport()) return;
-    if (!isDragging) return;
-    const shouldClose = dragOffsetY > 110;
-    resetDragRefs();
-    if (shouldClose) {
-      setDragOffsetY(0);
-      setSelectedCenterId(null);
-      return;
-    }
-    setIsSettling(true);
-    setDragOffsetY(0);
-    settleTimerRef.current = setTimeout(() => {
-      setIsSettling(false);
-      settleTimerRef.current = null;
-    }, 280);
-  };
-
-  const dragStyle =
-    dragOffsetY > 0 || isSettling
-      ? {
-          transform: `translateY(${dragOffsetY}px)`,
-          transition: isDragging ? 'none' : 'transform 280ms cubic-bezier(0.22, 1, 0.36, 1)',
-        }
-      : undefined;
+  }, [isSheetOpen, resetDrag]);
 
   if (isLoading) {
     return (
@@ -383,6 +318,7 @@ export function StudentsBoard({
         <DialogPrimitive.Portal>
           <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/60 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 sheet:hidden" />
           <DialogPrimitive.Content
+            ref={scrollContentProps.ref}
             style={dragStyle}
             className={cn(
               'fixed inset-x-0 bottom-[7px] top-auto z-50 grid w-full translate-y-0 lg:bottom-0 sheet:hidden',
@@ -392,13 +328,14 @@ export function StudentsBoard({
             )}
             aria-describedby={undefined}
           >
-            <div className="relative flex h-9 w-full items-center justify-center bg-white">
+            <div
+              className="relative flex h-9 w-full items-center justify-center bg-white"
+              {...{ [PORTAL_SHEET_DRAG_HANDLE_ATTR]: '' }}
+            >
               <div
                 className="absolute inset-x-0 -top-2 h-14"
-                onTouchStart={handleDragStart}
-                onTouchMove={handleDragMove}
-                onTouchEnd={handleDragEnd}
-                onTouchCancel={handleDragEnd}
+                style={{ touchAction: 'pan-y' }}
+                {...dragHandleProps}
               />
               <div className="h-1.5 w-14 rounded-full bg-slate-400" />
             </div>
@@ -411,7 +348,9 @@ export function StudentsBoard({
                 </p>
               </div>
             </div>
-            <div className="overflow-y-auto px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-4">
+            <div
+              className="overflow-y-auto px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-4"
+            >
               {selectedCenter?.students.length ? (
                 <div className="space-y-3">
                   {selectedCenter.students.map((item) => {

@@ -118,7 +118,7 @@ export function useEditTeacherForm({
     onOpenChange(false);
   }, [onOpenChange]);
 
-  const { dragStyle, dragHandleProps, resetDrag } = usePortalSheetDrag({
+  const { dragStyle, dragHandleProps, scrollContentProps, resetDrag } = usePortalSheetDrag({
     enabled: true,
     onClose: requestClose,
   });
@@ -176,6 +176,7 @@ export function useEditTeacherForm({
     requestClose,
     dragStyle,
     dragHandleProps,
+    scrollContentProps,
     isLoadingTeacher,
     isFormBusy,
     isTeacherActive,

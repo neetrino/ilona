@@ -8,12 +8,12 @@ import { formatCurrency, formatPhoneForDisplay, cn } from '@/shared/lib/utils';
 import { Avatar, Badge } from '@/shared/components/ui';
 import { ADMIN_ICON_BUTTON_SM_CLASS } from '@/shared/lib/admin-control-theme';
 import { PortalFormSheetDragHandle } from '@/shared/components/ui/portal-form-sheet-drag-handle';
+import { PortalFormSheetScrollArea } from '@/shared/components/ui/portal-form-sheet-scroll-area';
 import { PortalSheetPortal } from '@/shared/components/ui/portal-sheet-portal';
 import { usePortalSheetDrag } from '@/shared/hooks/usePortalSheetDrag';
 import {
   PORTAL_FORM_SHEET_CLOSE_BUTTON_CLASS,
   PORTAL_FORM_SHEET_HEADER_CLASS,
-  PORTAL_FORM_SHEET_SCROLL_CLASS,
   portalFormSheetContentClass,
 } from '@/shared/lib/portal-form-sheet-classes';
 import { useTeacher } from '../hooks/useTeachers';
@@ -76,7 +76,7 @@ export function TeacherDetailsModal({
     onClose();
   }, [onClose]);
 
-  const { dragStyle, dragHandleProps, resetDrag } = usePortalSheetDrag({
+  const { dragStyle, dragHandleProps, scrollContentProps, resetDrag } = usePortalSheetDrag({
     enabled: true,
     onClose: requestClose,
   });
@@ -110,7 +110,8 @@ export function TeacherDetailsModal({
 
   return (
     <DialogPrimitive.Root open={open} onOpenChange={(nextOpen) => !nextOpen && requestClose()}>
-      <PortalSheetPortal open={open} dragStyle={dragStyle} contentClassName={portalFormSheetContentClass('xl')} contentProps={{ 'aria-describedby': undefined }}>
+      <PortalSheetPortal open={open} dragStyle={dragStyle}
+        sheetContentRef={scrollContentProps.ref} contentClassName={portalFormSheetContentClass('xl')} contentProps={{ 'aria-describedby': undefined }}>
           <PortalFormSheetDragHandle dragHandleProps={dragHandleProps} />
 
           <DialogPrimitive.Title className="sr-only">
@@ -145,7 +146,7 @@ export function TeacherDetailsModal({
             </div>
           </div>
 
-          <div className={cn(PORTAL_FORM_SHEET_SCROLL_CLASS, scrollClassName)}>
+          <PortalFormSheetScrollArea className={scrollClassName}>
             {!teacherId ? (
               <div className="py-8 text-center text-[#8b8b90]">{t('teacherNotFound')}</div>
             ) : isLoading ? (
@@ -239,7 +240,7 @@ export function TeacherDetailsModal({
                 ) : null}
               </div>
             )}
-          </div>
+          </PortalFormSheetScrollArea>
         </PortalSheetPortal>
     </DialogPrimitive.Root>
   );

@@ -7,12 +7,13 @@ import { useTranslations } from 'next-intl';
 import { useCreateGroup, type CreateGroupDto } from '@/features/groups';
 import { useCenters } from '@/features/centers';
 import { useTeachers } from '@/features/teachers';
-import { useState, useEffect, useMemo, useCallback, useRef, type TouchEvent } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { getErrorMessage } from '@/shared/lib/api';
 import type { GroupIconKey } from '@ilona/types';
 import { filterTeachersForCenter } from '../../lib/center-scoped-teachers';
 import { DEFAULT_GROUP_LEVEL } from '../../lib/group-level-options';
 import { useSheetStackZIndex } from '@/shared/lib/sheet-stack';
+import { usePortalSheetDrag } from '@/shared/hooks/usePortalSheetDrag';
 import type { CreateGroupFormData, CreateGroupFormProps } from './create-group-form.types';
 
 export function useCreateGroupForm({ open, onOpenChange }: CreateGroupFormProps) {
@@ -46,12 +47,6 @@ export function useCreateGroupForm({ open, onOpenChange }: CreateGroupFormProps)
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(open);
-  const [dragOffsetY, setDragOffsetY] = useState(0);
-  const [isDragging, setIsDragging] = useState(false);
-  const [isSettling, setIsSettling] = useState(false);
-  const touchStartYRef = useRef<number | null>(null);
-  const touchStartXRef = useRef<number | null>(null);
-  const settleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [iconKey, setIconKey] = useState<GroupIconKey | null>(null);
   const createGroup = useCreateGroup();
 
@@ -156,87 +151,21 @@ export function useCreateGroupForm({ open, onOpenChange }: CreateGroupFormProps)
     }
   }, [open, reset, defaultCenterId]);
 
-  useEffect(() => {
-    if (!open) {
-      setDragOffsetY(0);
-      setIsDragging(false);
-      setIsSettling(false);
-    }
-  }, [open]);
-
-  useEffect(() => {
-    return () => {
-      if (settleTimerRef.current) {
-        clearTimeout(settleTimerRef.current);
-      }
-    };
-  }, []);
-
   const requestClose = useCallback(() => {
     setIsDialogOpen(false);
     onOpenChange(false);
   }, [onOpenChange]);
 
-  const isMobileViewport = () =>
-    typeof window !== 'undefined' && window.matchMedia('(max-width: 1366px)').matches;
+  const { dragStyle, dragHandleProps, scrollContentProps, resetDrag } = usePortalSheetDrag({
+    enabled: isDialogOpen,
+    onClose: requestClose,
+  });
 
-  const resetDragRefs = () => {
-    touchStartYRef.current = null;
-    touchStartXRef.current = null;
-    setIsDragging(false);
-  };
-
-  const handleDragStart = (event: TouchEvent<HTMLDivElement>) => {
-    if (!isMobileViewport()) return;
-    const firstTouch = event.touches[0];
-    if (!firstTouch) return;
-    if (settleTimerRef.current) {
-      clearTimeout(settleTimerRef.current);
-      settleTimerRef.current = null;
+  useEffect(() => {
+    if (!isDialogOpen) {
+      resetDrag();
     }
-    touchStartYRef.current = firstTouch.clientY;
-    touchStartXRef.current = firstTouch.clientX;
-    setIsSettling(false);
-    setIsDragging(true);
-  };
-
-  const handleDragMove = (event: TouchEvent<HTMLDivElement>) => {
-    if (!isMobileViewport()) return;
-    if (!isDragging || touchStartYRef.current === null || touchStartXRef.current === null) return;
-    const firstTouch = event.touches[0];
-    if (!firstTouch) return;
-    const deltaY = firstTouch.clientY - touchStartYRef.current;
-    const deltaX = Math.abs(firstTouch.clientX - touchStartXRef.current);
-    if (deltaY <= 0 || deltaY <= deltaX) return;
-    event.preventDefault();
-    setDragOffsetY(Math.min(deltaY * 0.95, 340));
-  };
-
-  const handleDragEnd = () => {
-    if (!isMobileViewport()) return;
-    if (!isDragging) return;
-    const shouldClose = dragOffsetY > 110;
-    resetDragRefs();
-    if (shouldClose) {
-      setDragOffsetY(0);
-      requestClose();
-      return;
-    }
-    setIsSettling(true);
-    setDragOffsetY(0);
-    settleTimerRef.current = setTimeout(() => {
-      setIsSettling(false);
-      settleTimerRef.current = null;
-    }, 280);
-  };
-
-  const dragStyle =
-    dragOffsetY > 0 || isSettling
-      ? {
-          transform: `translateY(${dragOffsetY}px)`,
-          transition: isDragging ? 'none' : 'transform 280ms cubic-bezier(0.22, 1, 0.36, 1)',
-        }
-      : undefined;
+  }, [isDialogOpen, resetDrag]);
 
   const onSubmit = async (data: CreateGroupFormData) => {
     setErrorMessage(null);
@@ -292,9 +221,8 @@ export function useCreateGroupForm({ open, onOpenChange }: CreateGroupFormProps)
     overlayStyle,
     contentStyle,
     dragStyle,
-    handleDragStart,
-    handleDragMove,
-    handleDragEnd,
+    dragHandleProps,
+    scrollContentProps,
     handleSubmit,
     onSubmit,
     register,

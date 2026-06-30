@@ -19,6 +19,7 @@ import {
   UserCircle,
   X,
 } from 'lucide-react';
+import { PORTAL_SHEET_DRAG_HANDLE_ATTR } from '@/shared/hooks/usePortalSheetDrag';
 import { StudentDetailsModalBody } from './student-details-modal/StudentDetailsModalBody';
 import { useStudentDetailsModal } from './student-details-modal/useStudentDetailsModal';
 import type { StudentDetailsModalProps } from './student-details-modal/student-details-modal.types';
@@ -53,9 +54,8 @@ export function StudentDetailsModal(props: StudentDetailsModalProps) {
     headerActionsRef,
     isDialogOpen,
     requestClose,
-    handleDragStart,
-    handleDragMove,
-    handleDragEnd,
+    dragHandleProps,
+    scrollContentProps,
     dragStyle,
     fullName,
     isUserActive,
@@ -84,7 +84,7 @@ export function StudentDetailsModal(props: StudentDetailsModalProps) {
       <DialogPrimitive.Root open={isDialogOpen} onOpenChange={(nextOpen) => !nextOpen && requestClose()}>
       <DialogPrimitive.Portal>
       <DialogPrimitive.Overlay style={overlayStyle} {...portalSheetLayerProps} className={stackedSheetOverlayClassName('fixed inset-0 z-50 bg-black/60 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0', isBaseLayer)} />
-      <DialogPrimitive.Content style={{ ...dragStyle, ...contentStyle }} {...stackedSheetDialogHandlers} {...portalSheetLayerProps}
+      <DialogPrimitive.Content ref={scrollContentProps.ref} style={{ ...dragStyle, ...contentStyle }} {...stackedSheetDialogHandlers} {...portalSheetLayerProps}
         className={cn(
           'fixed inset-x-0 bottom-[7px] top-auto z-50 grid w-full translate-y-0 lg:bottom-0 [@media(min-width:1024px)_and_(max-width:1366px)_and_(min-height:1000px)]:bottom-0',
           'duration-700 ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out min-[1367px]:duration-350 min-[1367px]:ease-[cubic-bezier(0.22,1,0.36,1)]',
@@ -94,13 +94,14 @@ export function StudentDetailsModal(props: StudentDetailsModalProps) {
         )}
         aria-describedby={undefined}
       >
-      <div className="relative flex h-9 w-full items-center justify-center bg-white min-[1367px]:hidden">
+      <div
+        className="relative flex h-9 w-full items-center justify-center bg-white min-[1367px]:hidden"
+        {...{ [PORTAL_SHEET_DRAG_HANDLE_ATTR]: '' }}
+      >
         <div
           className="absolute inset-x-0 -top-2 h-14"
-          onTouchStart={handleDragStart}
-          onTouchMove={handleDragMove}
-          onTouchEnd={handleDragEnd}
-          onTouchCancel={handleDragEnd}
+          style={{ touchAction: 'pan-y' }}
+          {...dragHandleProps}
         />
         <div className="h-1.5 w-14 rounded-full bg-slate-400" />
       </div>

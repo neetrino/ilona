@@ -7,11 +7,12 @@ import { useTranslations } from 'next-intl';
 import { useUpdateGroup, useGroup, type UpdateGroupDto } from '@/features/groups';
 import { useCenters } from '@/features/centers';
 import { useTeachers } from '@/features/teachers';
-import { useState, useEffect, useMemo, useCallback, useRef, type TouchEvent } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { getErrorMessage } from '@/shared/lib/api';
 import { isGroupIconKey, type GroupIconKey } from '@ilona/types';
 import { filterTeachersForCenter } from '../../lib/center-scoped-teachers';
 import { useSheetStackZIndex } from '@/shared/lib/sheet-stack';
+import { usePortalSheetDrag } from '@/shared/hooks/usePortalSheetDrag';
 import type { EditGroupFormProps, UpdateGroupFormData } from './edit-group-form.types';
 
 export function useEditGroupForm({
@@ -53,12 +54,6 @@ export function useEditGroupForm({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(open);
-  const [dragOffsetY, setDragOffsetY] = useState(0);
-  const [isDragging, setIsDragging] = useState(false);
-  const [isSettling, setIsSettling] = useState(false);
-  const touchStartYRef = useRef<number | null>(null);
-  const touchStartXRef = useRef<number | null>(null);
-  const settleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [iconKey, setIconKey] = useState<GroupIconKey | null>(null);
   const updateGroup = useUpdateGroup();
   const { data: group, isLoading } = useGroup(groupId, open);
@@ -128,19 +123,8 @@ export function useEditGroupForm({
     if (!open) {
       setErrorMessage(null);
       setSuccessMessage(null);
-      setDragOffsetY(0);
-      setIsDragging(false);
-      setIsSettling(false);
     }
   }, [open]);
-
-  useEffect(() => {
-    return () => {
-      if (settleTimerRef.current) {
-        clearTimeout(settleTimerRef.current);
-      }
-    };
-  }, []);
 
   const { overlayStyle, contentStyle, isBaseLayer } = useSheetStackZIndex(isDialogOpen);
 
@@ -149,66 +133,16 @@ export function useEditGroupForm({
     onOpenChange(false);
   }, [onOpenChange]);
 
-  const isMobileViewport = () =>
-    typeof window !== 'undefined' && window.matchMedia('(max-width: 1366px)').matches;
+  const { dragStyle, dragHandleProps, scrollContentProps, resetDrag } = usePortalSheetDrag({
+    enabled: isDialogOpen,
+    onClose: requestClose,
+  });
 
-  const resetDragRefs = () => {
-    touchStartYRef.current = null;
-    touchStartXRef.current = null;
-    setIsDragging(false);
-  };
-
-  const handleDragStart = (event: TouchEvent<HTMLDivElement>) => {
-    if (!isMobileViewport()) return;
-    const firstTouch = event.touches[0];
-    if (!firstTouch) return;
-    if (settleTimerRef.current) {
-      clearTimeout(settleTimerRef.current);
-      settleTimerRef.current = null;
+  useEffect(() => {
+    if (!isDialogOpen) {
+      resetDrag();
     }
-    touchStartYRef.current = firstTouch.clientY;
-    touchStartXRef.current = firstTouch.clientX;
-    setIsSettling(false);
-    setIsDragging(true);
-  };
-
-  const handleDragMove = (event: TouchEvent<HTMLDivElement>) => {
-    if (!isMobileViewport()) return;
-    if (!isDragging || touchStartYRef.current === null || touchStartXRef.current === null) return;
-    const firstTouch = event.touches[0];
-    if (!firstTouch) return;
-    const deltaY = firstTouch.clientY - touchStartYRef.current;
-    const deltaX = Math.abs(firstTouch.clientX - touchStartXRef.current);
-    if (deltaY <= 0 || deltaY <= deltaX) return;
-    event.preventDefault();
-    setDragOffsetY(Math.min(deltaY * 0.95, 340));
-  };
-
-  const handleDragEnd = () => {
-    if (!isMobileViewport()) return;
-    if (!isDragging) return;
-    const shouldClose = dragOffsetY > 110;
-    resetDragRefs();
-    if (shouldClose) {
-      setDragOffsetY(0);
-      requestClose();
-      return;
-    }
-    setIsSettling(true);
-    setDragOffsetY(0);
-    settleTimerRef.current = setTimeout(() => {
-      setIsSettling(false);
-      settleTimerRef.current = null;
-    }, 280);
-  };
-
-  const dragStyle =
-    dragOffsetY > 0 || isSettling
-      ? {
-          transform: `translateY(${dragOffsetY}px)`,
-          transition: isDragging ? 'none' : 'transform 280ms cubic-bezier(0.22, 1, 0.36, 1)',
-        }
-      : undefined;
+  }, [isDialogOpen, resetDrag]);
 
   const buildPayload = (data: UpdateGroupFormData): UpdateGroupDto => ({
     name: data.name,
@@ -260,9 +194,6 @@ export function useEditGroupForm({
     setSuccessMessage,
     isDialogOpen,
     setIsDialogOpen,
-    dragOffsetY,
-    isDragging,
-    isSettling,
     iconKey,
     setIconKey,
     updateGroup,
@@ -292,9 +223,8 @@ export function useEditGroupForm({
     contentStyle,
     isBaseLayer,
     requestClose,
-    handleDragStart,
-    handleDragMove,
-    handleDragEnd,
+    dragHandleProps,
+    scrollContentProps,
     dragStyle,
     onSubmit,
     onToggleActive,

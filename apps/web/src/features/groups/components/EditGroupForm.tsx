@@ -10,6 +10,7 @@ import {
   stackedSheetOverlayClassName,
 } from '@/shared/lib/sheet-stack';
 import { PORTAL_DESKTOP_SIDE_SHEET_CLASS } from '@/shared/lib/portal-form-sheet-classes';
+import { PortalFormSheetDragHandle } from '@/shared/components/ui/portal-form-sheet-drag-handle';
 import { X, Trash2 } from 'lucide-react';
 import { useEditGroupForm } from './edit-group-form/useEditGroupForm';
 import { EditGroupFormFields } from './edit-group-form/EditGroupFormFields';
@@ -87,6 +88,7 @@ export function EditGroupForm(props: EditGroupFormProps) {
             )}
           />
           <DialogPrimitive.Content
+            ref={form.scrollContentProps.ref}
             style={{ ...form.dragStyle, ...form.contentStyle }}
             {...stackedSheetDialogHandlers}
             {...portalSheetLayerProps}
@@ -99,16 +101,7 @@ export function EditGroupForm(props: EditGroupFormProps) {
             )}
             aria-describedby={undefined}
           >
-            <div className="relative flex h-9 w-full items-center justify-center bg-[#f8f9fb] min-[1367px]:hidden">
-              <div
-                className="absolute inset-x-0 -top-2 h-14"
-                onTouchStart={form.handleDragStart}
-                onTouchMove={form.handleDragMove}
-                onTouchEnd={form.handleDragEnd}
-                onTouchCancel={form.handleDragEnd}
-              />
-              <div className="h-1.5 w-14 rounded-full bg-slate-400" />
-            </div>
+            <PortalFormSheetDragHandle dragHandleProps={form.dragHandleProps} />
             <DialogPrimitive.Title className="sr-only">{form.tForm('editTitle')}</DialogPrimitive.Title>
             <div className="shrink-0 bg-[#f8f9fb] px-4 pb-4 pt-3 min-[1367px]:px-6 min-[1367px]:pb-5 min-[1367px]:pt-6">
               <div className="flex items-start justify-between gap-4">
@@ -127,7 +120,9 @@ export function EditGroupForm(props: EditGroupFormProps) {
                 </DialogPrimitive.Close>
               </div>
             </div>
-            <div className="min-h-0 overflow-y-auto overscroll-y-contain [touch-action:pan-y] [-webkit-overflow-scrolling:touch] px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] min-[1367px]:px-6 min-[1367px]:pb-6" />
+            <div
+              className="min-h-0 overflow-y-auto overscroll-y-contain [touch-action:pan-y] [-webkit-overflow-scrolling:touch] px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] min-[1367px]:px-6 min-[1367px]:pb-6"
+            />
           </DialogPrimitive.Content>
         </DialogPrimitive.Portal>
       </DialogPrimitive.Root>
@@ -143,6 +138,7 @@ export function EditGroupForm(props: EditGroupFormProps) {
             className="fixed inset-0 z-50 bg-black/60 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0"
           />
           <DialogPrimitive.Content
+            ref={form.scrollContentProps.ref}
             style={{ ...form.dragStyle, ...form.contentStyle }}
             {...stackedSheetDialogHandlers}
             {...portalSheetLayerProps}
@@ -155,16 +151,7 @@ export function EditGroupForm(props: EditGroupFormProps) {
             )}
             aria-describedby={undefined}
           >
-            <div className="relative flex h-9 w-full items-center justify-center bg-[#f8f9fb] min-[1367px]:hidden">
-              <div
-                className="absolute inset-x-0 -top-2 h-14"
-                onTouchStart={form.handleDragStart}
-                onTouchMove={form.handleDragMove}
-                onTouchEnd={form.handleDragEnd}
-                onTouchCancel={form.handleDragEnd}
-              />
-              <div className="h-1.5 w-14 rounded-full bg-slate-400" />
-            </div>
+            <PortalFormSheetDragHandle dragHandleProps={form.dragHandleProps} />
             <DialogPrimitive.Title className="sr-only">{form.tForm('editTitle')}</DialogPrimitive.Title>
             <div className="shrink-0 bg-[#f8f9fb] px-4 pb-4 pt-3 min-[1367px]:px-6 min-[1367px]:pb-5 min-[1367px]:pt-6">
               <div className="flex items-start justify-between gap-4">
@@ -174,7 +161,9 @@ export function EditGroupForm(props: EditGroupFormProps) {
                 {renderHeaderActions()}
               </div>
             </div>
-            <div className="min-h-0 overflow-y-auto overscroll-y-contain [touch-action:pan-y] [-webkit-overflow-scrolling:touch] px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] min-[1367px]:px-6 min-[1367px]:pb-6">
+            <div
+              className="min-h-0 overflow-y-auto overscroll-y-contain [touch-action:pan-y] [-webkit-overflow-scrolling:touch] px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] min-[1367px]:px-6 min-[1367px]:pb-6"
+            >
               <EditGroupFormFields {...form} />
             </div>
           </DialogPrimitive.Content>

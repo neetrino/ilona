@@ -1,14 +1,11 @@
 'use client';
 
-import { useState, useEffect, useMemo, useCallback, useRef, type TouchEvent } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
 import { useAdminAllUsers, useAdminTeachers, useCreateCustomGroupChat } from '../../hooks';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { useSheetStackZIndex } from '@/shared/lib/sheet-stack';
-import {
-  CREATE_GROUP_CHAT_DRAG_CLOSE_THRESHOLD_PX,
-  CREATE_GROUP_CHAT_DRAG_MAX_OFFSET_PX,
-} from './create-group-chat-modal.constants';
+import { usePortalSheetDrag } from '@/shared/hooks/usePortalSheetDrag';
 import type { CreateGroupChatModalProps } from './create-group-chat-modal.types';
 
 export function useCreateGroupChatModal({ open, onOpenChange, onCreated }: CreateGroupChatModalProps) {
@@ -20,13 +17,6 @@ export function useCreateGroupChatModal({ open, onOpenChange, onCreated }: Creat
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isDialogOpen, setIsDialogOpen] = useState(open);
-  const [dragOffsetY, setDragOffsetY] = useState(0);
-  const [isDragging, setIsDragging] = useState(false);
-  const [isSettling, setIsSettling] = useState(false);
-
-  const touchStartYRef = useRef<number | null>(null);
-  const touchStartXRef = useRef<number | null>(null);
-  const settleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedSearch(search.trim()), 200);
@@ -43,17 +33,8 @@ export function useCreateGroupChatModal({ open, onOpenChange, onCreated }: Creat
       setSearch('');
       setDebouncedSearch('');
       setSelectedIds(new Set());
-      setDragOffsetY(0);
-      setIsDragging(false);
-      setIsSettling(false);
     }
   }, [open]);
-
-  useEffect(() => {
-    return () => {
-      if (settleTimerRef.current) clearTimeout(settleTimerRef.current);
-    };
-  }, []);
 
   const currentUserId = useAuthStore((s) => s.user?.id ?? null);
   const { data: users = [], isLoading } = useAdminAllUsers(open ? debouncedSearch || undefined : undefined);
@@ -78,65 +59,16 @@ export function useCreateGroupChatModal({ open, onOpenChange, onCreated }: Creat
     onOpenChange(false);
   }, [onOpenChange]);
 
-  const isMobileViewport = () =>
-    typeof window !== 'undefined' && window.matchMedia('(max-width: 1366px)').matches;
+  const { dragStyle, dragHandleProps, scrollContentProps, resetDrag } = usePortalSheetDrag({
+    enabled: isDialogOpen,
+    onClose: requestClose,
+  });
 
-  const resetDragRefs = () => {
-    touchStartYRef.current = null;
-    touchStartXRef.current = null;
-    setIsDragging(false);
-  };
-
-  const handleDragStart = (event: TouchEvent<HTMLDivElement>) => {
-    if (!isMobileViewport()) return;
-    const firstTouch = event.touches[0];
-    if (!firstTouch) return;
-    if (settleTimerRef.current) {
-      clearTimeout(settleTimerRef.current);
-      settleTimerRef.current = null;
+  useEffect(() => {
+    if (!isDialogOpen) {
+      resetDrag();
     }
-    touchStartYRef.current = firstTouch.clientY;
-    touchStartXRef.current = firstTouch.clientX;
-    setIsSettling(false);
-    setIsDragging(true);
-  };
-
-  const handleDragMove = (event: TouchEvent<HTMLDivElement>) => {
-    if (!isMobileViewport()) return;
-    if (!isDragging || touchStartYRef.current === null || touchStartXRef.current === null) return;
-    const firstTouch = event.touches[0];
-    if (!firstTouch) return;
-    const deltaY = firstTouch.clientY - touchStartYRef.current;
-    const deltaX = Math.abs(firstTouch.clientX - touchStartXRef.current);
-    if (deltaY <= 0 || deltaY <= deltaX) return;
-    event.preventDefault();
-    setDragOffsetY(Math.min(deltaY * 0.95, CREATE_GROUP_CHAT_DRAG_MAX_OFFSET_PX));
-  };
-
-  const handleDragEnd = () => {
-    if (!isMobileViewport() || !isDragging) return;
-    const shouldClose = dragOffsetY > CREATE_GROUP_CHAT_DRAG_CLOSE_THRESHOLD_PX;
-    resetDragRefs();
-    if (shouldClose) {
-      setDragOffsetY(0);
-      requestClose();
-      return;
-    }
-    setIsSettling(true);
-    setDragOffsetY(0);
-    settleTimerRef.current = setTimeout(() => {
-      setIsSettling(false);
-      settleTimerRef.current = null;
-    }, 280);
-  };
-
-  const dragStyle =
-    dragOffsetY > 0 || isSettling
-      ? {
-          transform: `translateY(${dragOffsetY}px)`,
-          transition: isDragging ? 'none' : 'transform 280ms cubic-bezier(0.22, 1, 0.36, 1)',
-        }
-      : undefined;
+  }, [isDialogOpen, resetDrag]);
 
   const toggleUser = (userId: string) => {
     setSelectedIds((prev) => {
@@ -185,6 +117,8 @@ export function useCreateGroupChatModal({ open, onOpenChange, onCreated }: Creat
     selectedIds,
     isDialogOpen,
     dragStyle,
+    dragHandleProps,
+    scrollContentProps,
     overlayStyle,
     contentStyle,
     isBaseLayer,
@@ -198,8 +132,5 @@ export function useCreateGroupChatModal({ open, onOpenChange, onCreated }: Creat
     toggleAllTeachers,
     handleSubmit,
     requestClose,
-    handleDragStart,
-    handleDragMove,
-    handleDragEnd,
   };
 }

@@ -25,7 +25,9 @@ export function DailyPlanEditorFormBody({ vm }: DailyPlanEditorFormBodyProps) {
   const tCalendar = useTranslations('dailyDuties');
 
   return (
-    <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain [-webkit-overflow-scrolling:touch]">
+    <div
+      className="min-h-0 flex-1 overflow-y-auto overscroll-contain [-webkit-overflow-scrolling:touch]"
+    >
       <div className="flex flex-col gap-6 p-5">
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <div>

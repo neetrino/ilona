@@ -6,12 +6,12 @@ import { useLocale, useTranslations } from 'next-intl';
 import { X } from 'lucide-react';
 import { cn, formatCurrency } from '@/shared/lib/utils';
 import { PortalFormSheetDragHandle } from '@/shared/components/ui/portal-form-sheet-drag-handle';
+import { PortalFormSheetScrollArea } from '@/shared/components/ui/portal-form-sheet-scroll-area';
 import { PortalSheetPortal } from '@/shared/components/ui/portal-sheet-portal';
 import { usePortalSheetDrag } from '@/shared/hooks/usePortalSheetDrag';
 import {
   PORTAL_FORM_SHEET_CLOSE_BUTTON_CLASS,
   PORTAL_FORM_SHEET_HEADER_CLASS,
-  PORTAL_FORM_SHEET_SCROLL_CLASS,
   portalFormSheetContentClass,
 } from '@/shared/lib/portal-form-sheet-classes';
 import { useSalary } from '../hooks/useFinance';
@@ -56,7 +56,7 @@ export function SalaryDetailsModal({ salaryId, open, onClose }: SalaryDetailsMod
     onClose();
   }, [onClose]);
 
-  const { dragStyle, dragHandleProps, resetDrag } = usePortalSheetDrag({
+  const { dragStyle, dragHandleProps, scrollContentProps, resetDrag } = usePortalSheetDrag({
     enabled: true,
     onClose: requestClose,
   });
@@ -118,6 +118,7 @@ export function SalaryDetailsModal({ salaryId, open, onClose }: SalaryDetailsMod
       <PortalSheetPortal
         open={isDialogOpen}
         dragStyle={dragStyle}
+        sheetContentRef={scrollContentProps.ref}
         contentClassName={portalFormSheetContentClass('2xl')}
         contentProps={{ 'aria-describedby': undefined }}
       >
@@ -144,7 +145,7 @@ export function SalaryDetailsModal({ salaryId, open, onClose }: SalaryDetailsMod
           </div>
         </div>
 
-        <div className={PORTAL_FORM_SHEET_SCROLL_CLASS}>
+        <PortalFormSheetScrollArea>
           {!salaryId ? (
             <div className="py-12 text-center text-slate-500">{t('salaryNotFound')}</div>
           ) : isLoading ? (
@@ -303,7 +304,7 @@ export function SalaryDetailsModal({ salaryId, open, onClose }: SalaryDetailsMod
           ) : (
             <div className="py-12 text-center text-slate-500">{t('salaryNotFound')}</div>
           )}
-        </div>
+        </PortalFormSheetScrollArea>
       </PortalSheetPortal>
     </DialogPrimitive.Root>
   );

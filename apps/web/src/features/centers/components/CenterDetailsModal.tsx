@@ -9,6 +9,7 @@ import {
   stackedSheetOverlayClassName,
 } from '@/shared/lib/sheet-stack';
 import { PORTAL_DESKTOP_SIDE_SHEET_CLASS } from '@/shared/lib/portal-form-sheet-classes';
+import { PORTAL_SHEET_DRAG_HANDLE_ATTR } from '@/shared/hooks/usePortalSheetDrag';
 import { useCenterDetailsModal } from './center-details-modal/useCenterDetailsModal';
 import { CenterDetailsModalHeader } from './center-details-modal/CenterDetailsModalHeader';
 import { CenterDetailsModalTabBar } from './center-details-modal/CenterDetailsModalTabBar';
@@ -34,6 +35,7 @@ export function CenterDetailsModal(props: CenterDetailsModalProps) {
           )}
         />
         <DialogPrimitive.Content
+          ref={modal.scrollContentProps.ref}
           style={{ ...modal.dragStyle, ...modal.contentStyle }}
           {...stackedSheetDialogHandlers}
           {...portalSheetLayerProps}
@@ -45,13 +47,14 @@ export function CenterDetailsModal(props: CenterDetailsModalProps) {
             PORTAL_DESKTOP_SIDE_SHEET_CLASS,
           )}
         >
-          <div className="relative flex h-9 w-full items-center justify-center bg-white min-[1367px]:hidden">
+          <div
+            className="relative flex h-9 w-full items-center justify-center bg-white min-[1367px]:hidden"
+            {...{ [PORTAL_SHEET_DRAG_HANDLE_ATTR]: '' }}
+          >
             <div
               className="absolute inset-x-0 -top-2 h-14"
-              onTouchStart={modal.handleDragStart}
-              onTouchMove={modal.handleDragMove}
-              onTouchEnd={modal.handleDragEnd}
-              onTouchCancel={modal.handleDragEnd}
+              style={{ touchAction: 'pan-y' }}
+              {...modal.dragHandleProps}
             />
             <div className="h-1.5 w-14 rounded-full bg-slate-300" />
           </div>
@@ -69,7 +72,9 @@ export function CenterDetailsModal(props: CenterDetailsModalProps) {
             counts={modal.data?.counts}
           />
 
-          <div className="overflow-y-auto px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-4 min-[1367px]:p-6">
+          <div
+            className="overflow-y-auto px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-4 min-[1367px]:p-6"
+          >
             {modal.isLoading && <p className="text-sm text-slate-500">{tCommon('loading')}</p>}
             {modal.error && (
               <p className="text-sm text-red-600">

@@ -8,10 +8,11 @@ import { useCreateTeacher, type CreateTeacherDto } from '@/features/teachers';
 import {
   createOptionalExperienceYearsSchema,
 } from '@/features/teachers/utils/experience';
-import { useState, useEffect, useMemo, useCallback, useRef, type TouchEvent } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { getErrorMessage } from '@/shared/lib/api';
 import { useCenters } from '@/features/centers';
 import { useSheetStackZIndex } from '@/shared/lib/sheet-stack';
+import { usePortalSheetDrag } from '@/shared/hooks/usePortalSheetDrag';
 import type { AddTeacherFormProps, CreateTeacherFormData } from './add-teacher-form.types';
 
 export function useAddTeacherForm({ open, onOpenChange }: AddTeacherFormProps) {
@@ -20,12 +21,6 @@ export function useAddTeacherForm({ open, onOpenChange }: AddTeacherFormProps) {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(open);
-  const [dragOffsetY, setDragOffsetY] = useState(0);
-  const [isDragging, setIsDragging] = useState(false);
-  const [isSettling, setIsSettling] = useState(false);
-  const touchStartYRef = useRef<number | null>(null);
-  const touchStartXRef = useRef<number | null>(null);
-  const settleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const createTeacher = useCreateTeacher();
   const { data: centersData } = useCenters({ isActive: true, take: 100 });
   const centers = centersData?.items ?? [];
@@ -111,86 +106,24 @@ export function useAddTeacherForm({ open, onOpenChange }: AddTeacherFormProps) {
       });
       setErrorMessage(null);
       setSuccessMessage(null);
-    } else {
-      setDragOffsetY(0);
-      setIsDragging(false);
-      setIsSettling(false);
     }
   }, [open, reset]);
-
-  useEffect(() => {
-    return () => {
-      if (settleTimerRef.current) {
-        clearTimeout(settleTimerRef.current);
-      }
-    };
-  }, []);
 
   const requestClose = useCallback(() => {
     setIsDialogOpen(false);
     onOpenChange(false);
   }, [onOpenChange]);
 
-  const isMobileViewport = () =>
-    typeof window !== 'undefined' && window.matchMedia('(max-width: 1366px)').matches;
+  const { dragStyle, dragHandleProps, scrollContentProps, resetDrag } = usePortalSheetDrag({
+    enabled: isDialogOpen,
+    onClose: requestClose,
+  });
 
-  const resetDragRefs = () => {
-    touchStartYRef.current = null;
-    touchStartXRef.current = null;
-    setIsDragging(false);
-  };
-
-  const handleDragStart = (event: TouchEvent<HTMLDivElement>) => {
-    if (!isMobileViewport()) return;
-    const firstTouch = event.touches[0];
-    if (!firstTouch) return;
-    if (settleTimerRef.current) {
-      clearTimeout(settleTimerRef.current);
-      settleTimerRef.current = null;
+  useEffect(() => {
+    if (!isDialogOpen) {
+      resetDrag();
     }
-    touchStartYRef.current = firstTouch.clientY;
-    touchStartXRef.current = firstTouch.clientX;
-    setIsSettling(false);
-    setIsDragging(true);
-  };
-
-  const handleDragMove = (event: TouchEvent<HTMLDivElement>) => {
-    if (!isMobileViewport()) return;
-    if (!isDragging || touchStartYRef.current === null || touchStartXRef.current === null) return;
-    const firstTouch = event.touches[0];
-    if (!firstTouch) return;
-    const deltaY = firstTouch.clientY - touchStartYRef.current;
-    const deltaX = Math.abs(firstTouch.clientX - touchStartXRef.current);
-    if (deltaY <= 0 || deltaY <= deltaX) return;
-    event.preventDefault();
-    setDragOffsetY(Math.min(deltaY * 0.95, 340));
-  };
-
-  const handleDragEnd = () => {
-    if (!isMobileViewport()) return;
-    if (!isDragging) return;
-    const shouldClose = dragOffsetY > 110;
-    resetDragRefs();
-    if (shouldClose) {
-      setDragOffsetY(0);
-      requestClose();
-      return;
-    }
-    setIsSettling(true);
-    setDragOffsetY(0);
-    settleTimerRef.current = setTimeout(() => {
-      setIsSettling(false);
-      settleTimerRef.current = null;
-    }, 280);
-  };
-
-  const dragStyle =
-    dragOffsetY > 0 || isSettling
-      ? {
-          transform: `translateY(${dragOffsetY}px)`,
-          transition: isDragging ? 'none' : 'transform 280ms cubic-bezier(0.22, 1, 0.36, 1)',
-        }
-      : undefined;
+  }, [isDialogOpen, resetDrag]);
 
   const onSubmit = async (data: CreateTeacherFormData) => {
     setErrorMessage(null);
@@ -235,9 +168,8 @@ export function useAddTeacherForm({ open, onOpenChange }: AddTeacherFormProps) {
     overlayStyle,
     contentStyle,
     dragStyle,
-    handleDragStart,
-    handleDragMove,
-    handleDragEnd,
+    dragHandleProps,
+    scrollContentProps,
     handleSubmit,
     onSubmit,
     errorMessage,

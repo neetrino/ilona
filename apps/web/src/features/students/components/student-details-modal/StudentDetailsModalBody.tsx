@@ -60,7 +60,9 @@ export function StudentDetailsModalBody(props: StudentDetailsModalBodyProps) {
   } = props;
 
   return (
-    <div className="overflow-y-auto px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-4 min-[1367px]:p-6">
+    <div
+      className="overflow-y-auto px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-4 min-[1367px]:p-6"
+    >
       {!studentId ? (
         <p className="text-slate-500">{t('noStudentSelected')}</p>
       ) : isLoading ? (

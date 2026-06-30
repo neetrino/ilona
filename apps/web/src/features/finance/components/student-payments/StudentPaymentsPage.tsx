@@ -108,7 +108,7 @@ export function StudentPaymentsPage() {
     setSuccessMessage(null);
   }, []);
 
-  const { dragStyle, dragHandleProps, resetDrag } = usePortalSheetDrag({
+  const { dragStyle, dragHandleProps, scrollContentProps, resetDrag } = usePortalSheetDrag({
     enabled: true,
     onClose: requestClosePayModal,
   });
@@ -451,6 +451,7 @@ export function StudentPaymentsPage() {
         isPending={processPaymentMutation.isPending}
         dragStyle={dragStyle}
         dragHandleProps={dragHandleProps}
+        scrollContentProps={scrollContentProps}
       />
     </DashboardLayout>
   );

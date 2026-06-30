@@ -10,6 +10,7 @@ import {
 } from '@/shared/components/ui/single-select-dropdown';
 import { useLesson, useUpdateLesson } from '@/features/lessons';
 import { PortalFormSheetDragHandle } from '@/shared/components/ui/portal-form-sheet-drag-handle';
+import { PortalFormSheetScrollArea } from '@/shared/components/ui/portal-form-sheet-scroll-area';
 import { usePortalSheetDrag } from '@/shared/hooks/usePortalSheetDrag';
 import { cn } from '@/shared/lib/utils';
 import {
@@ -21,7 +22,6 @@ import {
 import {
   PORTAL_FORM_SHEET_HEADER_CLASS,
   PORTAL_FORM_SHEET_OVERLAY_CLASS,
-  PORTAL_FORM_SHEET_SCROLL_CLASS,
   portalFormSheetContentClass,
 } from '@/shared/lib/portal-form-sheet-classes';
 
@@ -67,7 +67,7 @@ export function SubstituteLessonModal({
     onOpenChange(false);
   }, [onOpenChange]);
 
-  const { dragStyle, dragHandleProps, resetDrag } = usePortalSheetDrag({
+  const { dragStyle, dragHandleProps, scrollContentProps, resetDrag } = usePortalSheetDrag({
     onClose: requestClose,
     enabled: isDialogOpen,
   });
@@ -109,7 +109,7 @@ export function SubstituteLessonModal({
     <DialogPrimitive.Root open={isDialogOpen} onOpenChange={(nextOpen) => !nextOpen && requestClose()}>
       <DialogPrimitive.Portal>
         <DialogPrimitive.Overlay style={overlayStyle} {...portalSheetLayerProps} className={stackedSheetOverlayClassName(PORTAL_FORM_SHEET_OVERLAY_CLASS, isBaseLayer, 'z-[60]')} />
-        <DialogPrimitive.Content style={{ ...dragStyle, ...contentStyle }} {...stackedSheetDialogHandlers} {...portalSheetLayerProps}
+        <DialogPrimitive.Content ref={scrollContentProps.ref} style={{ ...dragStyle, ...contentStyle }} {...stackedSheetDialogHandlers} {...portalSheetLayerProps}
           className={cn(portalFormSheetContentClass('xl'), 'z-[60]')}
           aria-describedby={undefined}
         >
@@ -121,11 +121,8 @@ export function SubstituteLessonModal({
             </DialogPrimitive.Title>
           </div>
 
-          <div
-            className={cn(
-              PORTAL_FORM_SHEET_SCROLL_CLASS,
-              'min-h-0 flex-1 pb-[calc(5.5rem+env(safe-area-inset-bottom))] min-[1367px]:pb-6',
-            )}
+          <PortalFormSheetScrollArea
+            className="min-h-0 flex-1 pb-[calc(5.5rem+env(safe-area-inset-bottom))] min-[1367px]:pb-6"
           >
             {isLoading || !lesson ? (
               <p className="text-sm text-[#3b3b40]">{t('loadingLesson')}</p>
@@ -192,7 +189,7 @@ export function SubstituteLessonModal({
                 </div>
               </div>
             )}
-          </div>
+          </PortalFormSheetScrollArea>
         </DialogPrimitive.Content>
       </DialogPrimitive.Portal>
     </DialogPrimitive.Root>

@@ -15,15 +15,17 @@ type ContentProps = ComponentPropsWithoutRef<typeof DialogPrimitive.Content>;
 interface PortalSheetPortalProps {
   open: boolean;
   dragStyle?: CSSProperties;
+  sheetContentRef?: (node: HTMLDivElement | null) => void;
   contentClassName?: string;
   overlayClassName?: string;
-  contentProps?: Omit<ContentProps, 'className' | 'style' | 'children'>;
+  contentProps?: Omit<ContentProps, 'className' | 'style' | 'children' | 'ref'>;
   children: ReactNode;
 }
 
 export function PortalSheetPortal({
   open,
   dragStyle,
+  sheetContentRef,
   contentClassName,
   overlayClassName,
   contentProps,
@@ -43,6 +45,7 @@ export function PortalSheetPortal({
         {...portalSheetLayerProps}
       />
       <DialogPrimitive.Content
+        ref={sheetContentRef}
         style={{ ...dragStyle, ...contentStyle }}
         className={contentClassName}
         {...stackedSheetDialogHandlers}
