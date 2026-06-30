@@ -74,6 +74,8 @@ export function AdminLessonDetailPanel({
     ? `${lesson.substituteTeacher.user.firstName} ${lesson.substituteTeacher.user.lastName}`.trim()
     : null;
 
+  const lessonTitle = t('lessonTitle', { name: lesson.group?.name || t('lessonUnknown') });
+
   return (
     <>
       <div
@@ -83,6 +85,21 @@ export function AdminLessonDetailPanel({
             'rounded-none border-0 bg-white lg:rounded-[2rem] lg:border lg:border-[rgba(14,14,16,0.07)]',
         )}
       >
+        {variant === 'page' && showAdminActions ? (
+          <div className="shrink-0 border-b border-[rgba(14,14,16,0.07)] px-4 py-3 lg:hidden">
+            <div className="flex items-center justify-between gap-3">
+              <h1 className="min-w-0 flex-1 break-words text-xl font-semibold leading-snug text-[#1010a3]">
+                {lessonTitle}
+              </h1>
+              <AdminLessonActions
+                lessonId={lessonId}
+                teacherOptions={teacherOptions}
+                onDeleted={onDeleted}
+                menuClassName="self-center"
+              />
+            </div>
+          </div>
+        ) : null}
         {subTeacherName && (
           <div className="shrink-0 border-b border-[rgba(14,14,16,0.07)] px-4 py-3 text-sm text-[#3b3b40]">
             <p className={cn('inline-block border border-amber-200 bg-amber-50 px-3 py-2 text-amber-900', DAILY_DUTIES_RADIUS_CLASS)}>
@@ -97,13 +114,16 @@ export function AdminLessonDetailPanel({
             onTabChange={handleTabChange}
             showRequiredActions={false}
             layout={variant === 'sheet' ? 'flow' : 'fill'}
+            checklistInCard={variant === 'sheet'}
             checklistMenu={
               showAdminActions ? (
-                <AdminLessonActions
-                  lessonId={lessonId}
-                  teacherOptions={teacherOptions}
-                  onDeleted={onDeleted}
-                />
+                <span className={cn(variant === 'sheet' && 'hidden', variant === 'page' && 'hidden lg:inline-flex')}>
+                  <AdminLessonActions
+                    lessonId={lessonId}
+                    teacherOptions={teacherOptions}
+                    onDeleted={onDeleted}
+                  />
+                </span>
               ) : null
             }
           >

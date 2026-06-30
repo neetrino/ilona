@@ -22,6 +22,7 @@ import {
   type LessonActionDerived,
   type LessonActionId,
 } from '@/shared/lib/daily-duties/lesson-action-states';
+import { DailyDutiesListActionPill } from '@/shared/components/daily-duties/DailyDutiesListActionPill';
 
 type Tab = LessonActionId;
 
@@ -35,6 +36,8 @@ interface LessonDetailTabsProps {
   layout?: 'fill' | 'flow';
   /** e.g. admin ⋮ menu beside the checklist heading */
   checklistMenu?: ReactNode;
+  /** Sheet/mobile: checklist in a rounded card with top offset */
+  checklistInCard?: boolean;
   children: {
     absence?: React.ReactNode;
     feedback?: React.ReactNode;
@@ -112,6 +115,7 @@ export function LessonDetailTabs({
   showRequiredActions = true,
   layout = 'fill',
   checklistMenu,
+  checklistInCard = false,
   children,
 }: LessonDetailTabsProps) {
   const t = useTranslations('dailyDuties');
@@ -141,56 +145,34 @@ export function LessonDetailTabs({
 
   const tabs: Tab[] = ['absence', 'feedback', 'voice', 'text', 'dailyPlan'];
 
-  return (
-    <div className={cn('flex flex-col', layout === 'fill' && 'h-full min-h-0')}>
-      <div className="shrink-0 border-b border-slate-200 bg-gradient-to-b from-slate-50/80 to-white px-3 py-3 sm:px-4 sm:py-4">
-        {showEmergency && (
-          <div
-            className="mb-3 rounded-[15px] border border-amber-200/90 bg-gradient-to-br from-amber-50 via-orange-50/90 to-rose-50/40 px-3 py-3 shadow-sm sm:px-4 sm:py-3.5"
-            role="region"
-            aria-label={t('lessonActions.emergencyAria')}
-          >
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
-              <div className="flex gap-2.5">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[15px] bg-amber-100/90 text-amber-800">
-                  <AlertTriangle className="h-5 w-5" aria-hidden />
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-amber-950">{t('lessonActions.emergencyTitle')}</p>
-                  <p className="mt-0.5 text-xs leading-relaxed text-amber-900/85 sm:text-sm">
-                    {t('lessonActions.emergencyIntro')}
-                  </p>
-                </div>
+  const checklistBlock = (
+    <>
+      <div className="mb-2 flex items-center justify-between gap-2">
+        <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
+          {t('lessonActions.checklistHeading')}
+        </p>
+        {checklistMenu}
+      </div>
+      {checklistInCard ? (
+        <div
+          className="-mx-1 flex gap-2 overflow-x-auto overscroll-x-contain pb-0.5 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          role="tablist"
+          aria-label={t('lessonActions.checklistHeading')}
+        >
+          {tabs.map((tab) => {
+            const action = actions.find((x) => x.id === tab)!;
+            return (
+              <div key={tab} className="w-[4.85rem] shrink-0" role="presentation">
+                <DailyDutiesListActionPill
+                  action={action}
+                  isActive={activeTab === tab}
+                  onActivate={() => handleTabChange(tab)}
+                />
               </div>
-            </div>
-            <ul className="mt-3 flex list-none flex-col gap-2 p-0 sm:mt-3.5">
-              {incomplete.map((a) => (
-                <li
-                  key={a.id}
-                  className="flex flex-col gap-2 rounded-[15px] border border-white/60 bg-white/70 px-3 py-2.5 backdrop-blur-sm sm:flex-row sm:items-center sm:justify-between"
-                >
-                  <p className="text-sm text-slate-800">{t(reminderKey(a.id))}</p>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    className="shrink-0 border-amber-300/80 bg-white text-amber-950 hover:bg-amber-50"
-                    onClick={() => handleTabChange(a.id)}
-                  >
-                    {t('lessonActions.openAction', { label: t(actionLabelKey(a.id)) })}
-                  </Button>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-
-        <div className="mb-2 flex items-center justify-between gap-2">
-          <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
-            {t('lessonActions.checklistHeading')}
-          </p>
-          {checklistMenu}
+            );
+          })}
         </div>
+      ) : (
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5 lg:gap-2.5">
           {tabs.map((tab) => {
             const action = actions.find((x) => x.id === tab)!;
@@ -245,6 +227,104 @@ export function LessonDetailTabs({
             );
           })}
         </div>
+      )}
+    </>
+  );
+
+  return (
+    <div className={cn('flex flex-col', layout === 'fill' && 'h-full min-h-0')}>
+      {showEmergency && checklistInCard && (
+        <div className="shrink-0 pb-2 pt-2">
+          <div
+            className="rounded-[15px] border border-amber-200/90 bg-gradient-to-br from-amber-50 via-orange-50/90 to-rose-50/40 px-3 py-3 shadow-sm"
+            role="region"
+            aria-label={t('lessonActions.emergencyAria')}
+          >
+            <div className="flex flex-col gap-2">
+              <div className="flex gap-2.5">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[15px] bg-amber-100/90 text-amber-800">
+                  <AlertTriangle className="h-5 w-5" aria-hidden />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-amber-950">{t('lessonActions.emergencyTitle')}</p>
+                  <p className="mt-0.5 text-xs leading-relaxed text-amber-900/85">
+                    {t('lessonActions.emergencyIntro')}
+                  </p>
+                </div>
+              </div>
+            </div>
+            <ul className="mt-3 flex list-none flex-col gap-2 p-0">
+              {incomplete.map((a) => (
+                <li
+                  key={a.id}
+                  className="flex flex-col gap-2 rounded-[15px] border border-white/60 bg-white/70 px-3 py-2.5 backdrop-blur-sm"
+                >
+                  <p className="text-sm text-slate-800">{t(reminderKey(a.id))}</p>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    className="shrink-0 border-amber-300/80 bg-white text-amber-950 hover:bg-amber-50"
+                    onClick={() => handleTabChange(a.id)}
+                  >
+                    {t('lessonActions.openAction', { label: t(actionLabelKey(a.id)) })}
+                  </Button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      )}
+
+      <div
+        className={cn(
+          checklistInCard
+            ? 'sticky top-0 z-20 -mx-4 bg-white px-4 pb-3 pt-3.5 rounded-b-[15px]'
+            : 'shrink-0 border-b border-slate-200 bg-gradient-to-b from-slate-50/80 to-white px-3 py-3 sm:px-4 sm:py-4',
+        )}
+      >
+        {showEmergency && !checklistInCard && (
+          <div
+            className="mb-3 rounded-[15px] border border-amber-200/90 bg-gradient-to-br from-amber-50 via-orange-50/90 to-rose-50/40 px-3 py-3 shadow-sm sm:px-4 sm:py-3.5"
+            role="region"
+            aria-label={t('lessonActions.emergencyAria')}
+          >
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
+              <div className="flex gap-2.5">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[15px] bg-amber-100/90 text-amber-800">
+                  <AlertTriangle className="h-5 w-5" aria-hidden />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-amber-950">{t('lessonActions.emergencyTitle')}</p>
+                  <p className="mt-0.5 text-xs leading-relaxed text-amber-900/85 sm:text-sm">
+                    {t('lessonActions.emergencyIntro')}
+                  </p>
+                </div>
+              </div>
+            </div>
+            <ul className="mt-3 flex list-none flex-col gap-2 p-0 sm:mt-3.5">
+              {incomplete.map((a) => (
+                <li
+                  key={a.id}
+                  className="flex flex-col gap-2 rounded-[15px] border border-white/60 bg-white/70 px-3 py-2.5 backdrop-blur-sm sm:flex-row sm:items-center sm:justify-between"
+                >
+                  <p className="text-sm text-slate-800">{t(reminderKey(a.id))}</p>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    className="shrink-0 border-amber-300/80 bg-white text-amber-950 hover:bg-amber-50"
+                    onClick={() => handleTabChange(a.id)}
+                  >
+                    {t('lessonActions.openAction', { label: t(actionLabelKey(a.id)) })}
+                  </Button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {checklistBlock}
       </div>
 
       <div

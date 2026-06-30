@@ -58,9 +58,11 @@ function pillShortKey(id: LessonActionId): `lessonActions.${string}` {
 export function DailyDutiesListActionPill({
   action,
   onActivate,
+  isActive = false,
 }: {
   action: LessonActionDerived;
   onActivate: () => void;
+  isActive?: boolean;
 }) {
   const t = useTranslations('dailyDuties');
   const Icon = ROW_ICONS[action.id];
@@ -105,13 +107,15 @@ export function DailyDutiesListActionPill({
       }}
       title={title}
       aria-label={title}
+      aria-pressed={isActive}
       className={cn(
         'relative flex h-full min-h-[3.125rem] w-full flex-col items-center justify-center gap-0.5 rounded-[15px] border px-1 pb-1.5 pt-2.5 text-center transition-colors',
         'focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-1',
-        (action.state === 'done' || action.state === 'doneLate') &&
+        isActive && 'border-2 border-blue-300 bg-blue-50/90 shadow-sm',
+        !isActive && (action.state === 'done' || action.state === 'doneLate') &&
           'border-emerald-200 bg-emerald-50 text-emerald-900 hover:bg-emerald-100',
-        action.state === 'pending' && 'border-amber-200 bg-amber-50 text-amber-950 hover:bg-amber-100',
-        action.state === 'missed' && 'border-red-200 bg-red-50 text-red-900 hover:bg-red-100',
+        !isActive && action.state === 'pending' && 'border-amber-200 bg-amber-50 text-amber-950 hover:bg-amber-100',
+        !isActive && action.state === 'missed' && 'border-red-200 bg-red-50 text-red-900 hover:bg-red-100',
       )}
     >
       <span className="absolute right-1.5 top-1.5 text-current opacity-80" aria-hidden>
