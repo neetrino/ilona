@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { emptyStructuredFeedback } from './lesson-feedback-form-utils';
 import { FeedbacksTabStudentCard } from './feedbacks-tab/FeedbacksTabStudentCard';
 import { FeedbacksTabStudentList } from './feedbacks-tab/FeedbacksTabStudentList';
@@ -9,6 +10,9 @@ import {
   FeedbacksTabLessonNotFound,
   FeedbacksTabLoadingState,
 } from './feedbacks-tab/FeedbacksTabStates';
+import { LessonDetailTabSectionHeader } from '@/shared/components/daily-duties/LessonDetailTabSectionHeader';
+import { lessonDetailTabShellClass } from '@/shared/components/daily-duties/lesson-detail-tab-layout';
+import { cn } from '@/shared/lib/utils';
 import type { FeedbacksTabProps } from './feedbacks-tab/feedbacks-tab.types';
 import { useFeedbacksTab } from './feedbacks-tab/useFeedbacksTab';
 
@@ -35,7 +39,8 @@ function buildStudentCardProps(
   };
 }
 
-export function FeedbacksTab({ lessonId }: FeedbacksTabProps) {
+export function FeedbacksTab({ lessonId, embeddedInSheet = false }: FeedbacksTabProps) {
+  const t = useTranslations('dailyDuties.feedback');
   const ctx = useFeedbacksTab({ lessonId });
   const { isLoading, lesson, students } = ctx;
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
@@ -90,7 +95,8 @@ export function FeedbacksTab({ lessonId }: FeedbacksTabProps) {
       </div>
 
       {/* Mobile / tablet: stacked cards */}
-      <div className="space-y-6 p-4 sm:space-y-8 sm:p-6 lg:hidden">
+      <div className={cn('space-y-6 lg:hidden', lessonDetailTabShellClass(embeddedInSheet), 'sm:space-y-8')}>
+        <LessonDetailTabSectionHeader title={t('editFeedback')} embeddedInSheet={embeddedInSheet} />
         {students.map((student) => (
           <FeedbacksTabStudentCard
             key={student.id}

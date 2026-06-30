@@ -129,10 +129,16 @@ export function AdminLessonDetailPanel({
           >
             {{
               absence: <AbsenceTab lessonId={lessonId} embeddedInSheet={variant === 'sheet'} />,
-              feedback: <FeedbacksTab lessonId={lessonId} />,
-              voice: <VoiceTab lessonId={lessonId} />,
-              text: <TextTab lessonId={lessonId} />,
-              dailyPlan: <DailyPlanTab lessonId={lessonId} groupId={lesson.groupId} />,
+              feedback: <FeedbacksTab lessonId={lessonId} embeddedInSheet={variant === 'sheet'} />,
+              voice: <VoiceTab lessonId={lessonId} embeddedInSheet={variant === 'sheet'} />,
+              text: <TextTab lessonId={lessonId} embeddedInSheet={variant === 'sheet'} />,
+              dailyPlan: (
+                <DailyPlanTab
+                  lessonId={lessonId}
+                  groupId={lesson.groupId}
+                  embeddedInSheet={variant === 'sheet'}
+                />
+              ),
             }}
           </LessonDetailTabs>
         </div>

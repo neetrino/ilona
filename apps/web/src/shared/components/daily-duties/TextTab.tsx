@@ -10,13 +10,16 @@ import { lessonKeys } from '@/features/lessons/hooks/useLessons';
 import { Button } from '@/shared/components/ui/button';
 import { DAILY_DUTIES_RADIUS_CLASS } from '@/shared/lib/daily-duties/daily-duties-theme';
 import { ADMIN_PRIMARY_BUTTON_CLASS } from '@/shared/lib/admin-control-theme';
+import { LessonDetailTabSectionHeader } from '@/shared/components/daily-duties/LessonDetailTabSectionHeader';
+import { lessonDetailTabShellClass } from '@/shared/components/daily-duties/lesson-detail-tab-layout';
 import { cn } from '@/shared/lib/utils';
 
 interface TextTabProps {
   lessonId: string;
+  embeddedInSheet?: boolean;
 }
 
-export function TextTab({ lessonId }: TextTabProps) {
+export function TextTab({ lessonId, embeddedInSheet = false }: TextTabProps) {
   const tChat = useTranslations('chat');
   const queryClient = useQueryClient();
   const { data: lesson, isLoading } = useLesson(lessonId);
@@ -60,6 +63,9 @@ export function TextTab({ lessonId }: TextTabProps) {
     }
   };
 
+  const textTitle = lesson?.textSent ? tChat('editTextMessage') : tChat('sendTextMessage');
+  const textSubtitle = lesson?.textSent ? tChat('textReplaceHint') : tChat('textWriteHint');
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center p-12">
@@ -77,15 +83,12 @@ export function TextTab({ lessonId }: TextTabProps) {
   }
 
   return (
-    <div className="p-6">
-      <div className="mb-6">
-        <h3 className="text-lg font-semibold text-slate-800">
-          {lesson.textSent ? tChat('editTextMessage') : tChat('sendTextMessage')}
-        </h3>
-        <p className="text-sm text-slate-500 mt-1">
-          {lesson.textSent ? tChat('textReplaceHint') : tChat('textWriteHint')}
-        </p>
-      </div>
+    <div className={lessonDetailTabShellClass(embeddedInSheet)}>
+      <LessonDetailTabSectionHeader
+        title={textTitle}
+        embeddedInSheet={embeddedInSheet}
+        subtitle={embeddedInSheet ? undefined : textSubtitle}
+      />
 
       <div className="space-y-4">
         <textarea

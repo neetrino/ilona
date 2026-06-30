@@ -279,7 +279,7 @@ export function LessonDetailTabs({
       <div
         className={cn(
           checklistInCard
-            ? 'shrink-0 pb-3 pt-2'
+            ? 'sticky top-0 z-20 -mx-4 mb-5 bg-white px-4 pb-4 pt-3.5 rounded-b-[15px]'
             : 'shrink-0 border-b border-slate-200 bg-gradient-to-b from-slate-50/80 to-white px-3 py-3 sm:px-4 sm:py-4',
         )}
       >

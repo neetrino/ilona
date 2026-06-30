@@ -12,6 +12,8 @@ import { useQueryClient } from '@tanstack/react-query';
 import { lessonKeys } from '@/features/lessons/hooks/useLessons';
 import type { AbsenceType } from '@/features/attendance';
 import type { AutoDismissToastVariant } from '@/shared/components/ui';
+import { LessonDetailTabSectionHeader } from '@/shared/components/daily-duties/LessonDetailTabSectionHeader';
+import { lessonDetailTabShellClass } from '@/shared/components/daily-duties/lesson-detail-tab-layout';
 import { cn } from '@/shared/lib/utils';
 import { ADMIN_FORM_INPUT_CLASS, ADMIN_PRIMARY_BUTTON_CLASS } from '@/shared/lib/admin-control-theme';
 import { DAILY_DUTIES_RADIUS_CLASS } from '@/shared/lib/daily-duties/daily-duties-theme';
@@ -238,6 +240,23 @@ export function AbsenceTab({ lessonId, embeddedInSheet = false }: AbsenceTabProp
     </div>
   );
 
+  const saveButton = (
+    <Button
+      onClick={handleSave}
+      disabled={markBulkAttendance.isPending || students.length === 0}
+      className={cn(
+        ADMIN_PRIMARY_BUTTON_CLASS,
+        'shrink-0 bg-blue-600 px-3 text-white hover:bg-blue-700 sm:px-4',
+      )}
+    >
+      {markBulkAttendance.isPending
+        ? t('savingAttendance')
+        : hasChanges
+          ? t('saveAllChanges')
+          : t('saveAttendance')}
+    </Button>
+  );
+
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center p-12">
@@ -256,7 +275,7 @@ export function AbsenceTab({ lessonId, embeddedInSheet = false }: AbsenceTabProp
   }
 
   return (
-    <div className={cn(embeddedInSheet ? 'pb-4 lg:p-6' : 'p-4 sm:p-6')}>
+    <div className={lessonDetailTabShellClass(embeddedInSheet)}>
       {toast ? (
         <AutoDismissToast
           key={toast.key}
@@ -266,30 +285,11 @@ export function AbsenceTab({ lessonId, embeddedInSheet = false }: AbsenceTabProp
         />
       ) : null}
 
-      <div
-        className={cn(
-          'mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between',
-          embeddedInSheet && 'mb-4 lg:mb-6',
-        )}
-      >
-        <div className={cn(embeddedInSheet && 'hidden lg:block')}>
-          <h3 className="text-lg font-semibold text-slate-800">{t('editAttendance')}</h3>
-        </div>
-        <Button
-          onClick={handleSave}
-          disabled={markBulkAttendance.isPending || students.length === 0}
-          className={cn(
-            ADMIN_PRIMARY_BUTTON_CLASS,
-            'w-full shrink-0 bg-blue-600 text-white hover:bg-blue-700 sm:w-auto',
-          )}
-        >
-          {markBulkAttendance.isPending
-            ? t('savingAttendance')
-            : hasChanges
-              ? t('saveAllChanges')
-              : t('saveAttendance')}
-        </Button>
-      </div>
+      <LessonDetailTabSectionHeader
+        title={t('editAttendance')}
+        embeddedInSheet={embeddedInSheet}
+        actions={saveButton}
+      />
 
       <div className="space-y-3">
         {students.map((student, index) => {

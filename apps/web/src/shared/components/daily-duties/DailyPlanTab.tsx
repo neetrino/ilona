@@ -1,16 +1,21 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { DailyPlanEditor, useDailyPlans, useDeleteDailyPlan } from '@/features/daily-plan';
 import { DailyPlanListSection } from '@/features/daily-plan/DailyPlanListSection';
 import { DailyPlanViewer } from '@/features/daily-plan/DailyPlanViewer';
+import { LessonDetailTabSectionHeader } from '@/shared/components/daily-duties/LessonDetailTabSectionHeader';
+import { lessonDetailTabShellClass } from '@/shared/components/daily-duties/lesson-detail-tab-layout';
 
 interface DailyPlanTabProps {
   lessonId: string;
   groupId?: string;
+  embeddedInSheet?: boolean;
 }
 
-export function DailyPlanTab({ lessonId, groupId }: DailyPlanTabProps) {
+export function DailyPlanTab({ lessonId, groupId, embeddedInSheet = false }: DailyPlanTabProps) {
+  const t = useTranslations('dailyDuties.lessonActions');
   const [search, setSearch] = useState('');
   const [isCreating, setIsCreating] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -34,7 +39,8 @@ export function DailyPlanTab({ lessonId, groupId }: DailyPlanTabProps) {
   const viewingPlan = plans.find((plan) => plan.id === viewingId);
 
   return (
-    <div className="p-4">
+    <div className={lessonDetailTabShellClass(embeddedInSheet)}>
+      <LessonDetailTabSectionHeader title={t('dailyPlanLabel')} embeddedInSheet={embeddedInSheet} />
       <DailyPlanListSection
         search={search}
         onSearchChange={setSearch}
