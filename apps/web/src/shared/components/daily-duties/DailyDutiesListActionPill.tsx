@@ -103,7 +103,7 @@ export function DailyDutiesListActionPill({
         action.state === 'missed' && 'border-red-200 bg-red-50 text-red-900 hover:bg-red-100',
       )}
     >
-      <span className="absolute right-0.5 top-0.5 text-current opacity-80" aria-hidden>
+      <span className="absolute right-1.5 top-1.5 text-current opacity-80" aria-hidden>
         <StatusIcon className="h-2.5 w-2.5" />
       </span>
       <Icon className="h-3.5 w-3.5 shrink-0 text-current opacity-90" aria-hidden />
