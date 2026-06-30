@@ -109,7 +109,7 @@ export function DailyDutiesListActionPill({
       aria-label={title}
       aria-pressed={isActive}
       className={cn(
-        'relative flex h-full min-h-[3.125rem] w-full flex-col items-center justify-center gap-0.5 rounded-[15px] border px-1 pb-1.5 pt-2.5 text-center transition-colors',
+        'relative block h-[3.125rem] w-full rounded-[15px] border px-1 text-center transition-colors',
         'focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-1',
         isActive && 'border-2 border-blue-300 bg-blue-50/90 shadow-sm',
         !isActive && (action.state === 'done' || action.state === 'doneLate') &&
@@ -121,21 +121,28 @@ export function DailyDutiesListActionPill({
       <span className="absolute right-1.5 top-1.5 text-current opacity-80" aria-hidden>
         <StatusIcon className="h-2.5 w-2.5" />
       </span>
-      <Icon className="h-3.5 w-3.5 shrink-0 text-current opacity-90" aria-hidden />
-      <span className="line-clamp-1 w-full px-0.5 text-center text-[8px] font-bold uppercase leading-tight tracking-tight sm:text-[9px]">
-        {t(pillShortKey(action.id))}
-      </span>
       <span
         className={cn(
-          'min-h-[0.625rem] w-full px-0.5 text-center text-[7px] font-semibold leading-tight sm:text-[8px]',
-          action.state === 'doneLate' && 'text-amber-800',
-          action.state === 'missed' && 'text-red-800',
-          !subLine && 'invisible',
+          'absolute inset-x-1 flex flex-col items-center justify-center gap-0.5',
+          subLine ? 'top-1 bottom-[0.6875rem]' : 'inset-y-0',
         )}
-        aria-hidden={!subLine}
       >
-        {subLine ?? '\u00A0'}
+        <Icon className="h-3.5 w-3.5 shrink-0 text-current opacity-90" aria-hidden />
+        <span className="line-clamp-1 w-full px-0.5 text-center text-[8px] font-bold uppercase leading-tight tracking-tight sm:text-[9px]">
+          {t(pillShortKey(action.id))}
+        </span>
       </span>
+      {subLine ? (
+        <span
+          className={cn(
+            'absolute inset-x-1 bottom-1 text-center text-[7px] font-semibold leading-tight sm:text-[8px]',
+            action.state === 'doneLate' && 'text-amber-800',
+            action.state === 'missed' && 'text-red-800',
+          )}
+        >
+          {subLine}
+        </span>
+      ) : null}
     </button>
   );
 }
