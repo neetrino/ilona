@@ -85,6 +85,17 @@ export function DailyDutiesListActionPill({
         ? Lock
         : Clock;
 
+  const subLine =
+    action.state === 'doneLate'
+      ? t('lessonActions.lateUnpaidBadge')
+      : action.state === 'missed'
+        ? t('lessonActions.missedUnpaidBadge')
+        : action.id === 'feedback' &&
+            action.feedbackCount !== undefined &&
+            action.feedbackCount > 0
+          ? String(action.feedbackCount)
+          : null;
+
   return (
     <button
       type="button"
@@ -95,7 +106,7 @@ export function DailyDutiesListActionPill({
       title={title}
       aria-label={title}
       className={cn(
-        'relative inline-flex w-full max-w-[5.5rem] flex-col items-center gap-0.5 rounded-[15px] border px-1 py-1.5 text-center transition-colors',
+        'relative flex h-full min-h-[3.125rem] w-full flex-col items-center justify-center gap-0.5 rounded-[15px] border px-1 pb-1.5 pt-2.5 text-center transition-colors',
         'focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-1',
         (action.state === 'done' || action.state === 'doneLate') &&
           'border-emerald-200 bg-emerald-50 text-emerald-900 hover:bg-emerald-100',
@@ -107,22 +118,20 @@ export function DailyDutiesListActionPill({
         <StatusIcon className="h-2.5 w-2.5" />
       </span>
       <Icon className="h-3.5 w-3.5 shrink-0 text-current opacity-90" aria-hidden />
-      <span className="line-clamp-2 w-full px-0.5 text-[8px] font-bold uppercase leading-tight tracking-tight sm:text-[9px]">
+      <span className="line-clamp-1 w-full px-0.5 text-center text-[8px] font-bold uppercase leading-tight tracking-tight sm:text-[9px]">
         {t(pillShortKey(action.id))}
       </span>
-      {action.state === 'doneLate' && (
-        <span className="w-full px-0.5 text-[7px] font-semibold leading-tight text-amber-800 sm:text-[8px]">
-          {t('lessonActions.lateUnpaidBadge')}
-        </span>
-      )}
-      {action.state === 'missed' && (
-        <span className="w-full px-0.5 text-[7px] font-semibold leading-tight text-red-800 sm:text-[8px]">
-          {t('lessonActions.missedUnpaidBadge')}
-        </span>
-      )}
-      {action.id === 'feedback' && action.feedbackCount !== undefined && action.feedbackCount > 0 && (
-        <span className="text-[8px] font-semibold text-current sm:text-[9px]">{action.feedbackCount}</span>
-      )}
+      <span
+        className={cn(
+          'min-h-[0.625rem] w-full px-0.5 text-center text-[7px] font-semibold leading-tight sm:text-[8px]',
+          action.state === 'doneLate' && 'text-amber-800',
+          action.state === 'missed' && 'text-red-800',
+          !subLine && 'invisible',
+        )}
+        aria-hidden={!subLine}
+      >
+        {subLine ?? '\u00A0'}
+      </span>
     </button>
   );
 }
