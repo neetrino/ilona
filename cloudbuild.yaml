@@ -1,0 +1,53 @@
+steps:
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - -t
+      - europe-west1-docker.pkg.dev/$PROJECT_ID/ilona/api:$COMMIT_SHA
+      - -t
+      - europe-west1-docker.pkg.dev/$PROJECT_ID/ilona/api:latest
+      - .
+
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - push
+      - europe-west1-docker.pkg.dev/$PROJECT_ID/ilona/api:$COMMIT_SHA
+
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - push
+      - europe-west1-docker.pkg.dev/$PROJECT_ID/ilona/api:latest
+
+  - name: gcr.io/google.com/cloudsdktool/cloud-sdk:slim
+    entrypoint: gcloud
+    args:
+      - run
+      - deploy
+      - ilona-api
+      - --image
+      - europe-west1-docker.pkg.dev/$PROJECT_ID/ilona/api:$COMMIT_SHA
+      - --region
+      - europe-west1
+      - --platform
+      - managed
+      - --allow-unauthenticated
+      - --port
+      - "8080"
+      - --memory
+      - 1Gi
+      - --cpu
+      - "1"
+      - --min-instances
+      - "0"
+      - --max-instances
+      - "5"
+      - --concurrency
+      - "80"
+      - --set-env-vars
+      - NODE_ENV=production,API_PREFIX=api,CORS_ORIGIN=https://ilona-web.vercel.app
+      - --set-secrets
+      - DATABASE_URL=DATABASE_URL:latest,JWT_SECRET=JWT_SECRET:latest
+
+images:
+  - europe-west1-docker.pkg.dev/$PROJECT_ID/ilona/api:$COMMIT_SHA
+  - europe-west1-docker.pkg.dev/$PROJECT_ID/ilona/api:latest
