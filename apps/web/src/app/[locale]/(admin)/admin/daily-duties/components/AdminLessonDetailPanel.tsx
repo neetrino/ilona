@@ -128,7 +128,7 @@ export function AdminLessonDetailPanel({
             }
           >
             {{
-              absence: <AbsenceTab lessonId={lessonId} />,
+              absence: <AbsenceTab lessonId={lessonId} embeddedInSheet={variant === 'sheet'} />,
               feedback: <FeedbacksTab lessonId={lessonId} />,
               voice: <VoiceTab lessonId={lessonId} />,
               text: <TextTab lessonId={lessonId} />,

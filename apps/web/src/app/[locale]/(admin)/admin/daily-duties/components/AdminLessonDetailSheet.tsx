@@ -94,12 +94,7 @@ export function AdminLessonDetailSheet({
             <p className="mt-1 hidden text-sm text-[#8b8b90] min-[1367px]:block">{subtitle}</p>
           </div>
 
-          <div
-            className={cn(
-              PORTAL_FORM_SHEET_SCROLL_CLASS,
-              'min-h-0 flex-1 pb-[calc(1.5rem+env(safe-area-inset-bottom))] min-[1367px]:pb-6',
-            )}
-          >
+          <div className={cn(PORTAL_FORM_SHEET_SCROLL_CLASS, 'min-h-0 flex-1')}>
             {lessonId ? (
               <AdminLessonDetailPanel
                 lessonId={lessonId}

@@ -6,7 +6,7 @@ import { useLessonAttendance, useMarkBulkAttendance } from '@/features/attendanc
 import { useLesson } from '@/features/lessons';
 import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/input';
-import { AutoDismissToast } from '@/shared/components/ui';
+import { AutoDismissToast, AdminListPagination } from '@/shared/components/ui';
 import { markAbsenceComplete } from '@/features/lessons/api/obligations.api';
 import { useQueryClient } from '@tanstack/react-query';
 import { lessonKeys } from '@/features/lessons/hooks/useLessons';
@@ -18,6 +18,7 @@ import { DAILY_DUTIES_RADIUS_CLASS } from '@/shared/lib/daily-duties/daily-dutie
 
 interface AbsenceTabProps {
   lessonId: string;
+  embeddedInSheet?: boolean;
 }
 
 type AttendanceStatus = 'present' | 'absent_justified' | 'absent_unjustified' | 'not_marked';
@@ -29,9 +30,14 @@ type ToastState = {
 };
 
 const STATUS_BUTTON_CLASS =
-  'px-4 py-2 rounded-[15px] text-sm font-medium transition-colors border-2 shrink-0';
+  'rounded-[15px] border-2 text-sm font-medium transition-colors shrink-0';
 
-export function AbsenceTab({ lessonId }: AbsenceTabProps) {
+const MOBILE_STATUS_BUTTON_CLASS =
+  'min-w-0 px-1.5 py-1.5 text-xs font-medium transition-colors border-2 rounded-[15px]';
+
+const MOBILE_ABSENCE_PAGE_SIZE = 5;
+
+export function AbsenceTab({ lessonId, embeddedInSheet = false }: AbsenceTabProps) {
   const t = useTranslations('attendance');
   const tCalendar = useTranslations('dailyDuties');
   const queryClient = useQueryClient();
@@ -43,12 +49,28 @@ export function AbsenceTab({ lessonId }: AbsenceTabProps) {
   >({});
   const [hasChanges, setHasChanges] = useState(false);
   const [toast, setToast] = useState<ToastState | null>(null);
+  const [mobilePage, setMobilePage] = useState(0);
 
   const showToast = (message: string, variant: AutoDismissToastVariant) => {
     setToast({ key: Date.now(), message, variant });
   };
 
   const students = attendanceData?.studentsWithAttendance?.map((swa) => swa.student) || [];
+  const studentsKey = students.map((s) => s.id).join('|');
+  const mobileTotalPages = Math.max(1, Math.ceil(students.length / MOBILE_ABSENCE_PAGE_SIZE));
+  const safeMobilePage = Math.min(mobilePage, mobileTotalPages - 1);
+  const mobilePageStart = safeMobilePage * MOBILE_ABSENCE_PAGE_SIZE;
+  const mobilePageEnd = mobilePageStart + MOBILE_ABSENCE_PAGE_SIZE;
+
+  useEffect(() => {
+    setMobilePage(0);
+  }, [lessonId, studentsKey]);
+
+  useEffect(() => {
+    if (mobilePage > mobileTotalPages - 1) {
+      setMobilePage(Math.max(0, mobileTotalPages - 1));
+    }
+  }, [mobilePage, mobileTotalPages]);
 
   useEffect(() => {
     if (attendanceData?.studentsWithAttendance && attendanceData.studentsWithAttendance.length > 0) {
@@ -170,6 +192,52 @@ export function AbsenceTab({ lessonId }: AbsenceTabProps) {
         : 'absent_unjustified';
   };
 
+  const renderStatusButtons = (
+    studentId: string,
+    status: AttendanceStatus,
+    buttonClass: string,
+    wrapperClass?: string,
+  ) => (
+    <div className={cn('gap-2', wrapperClass)}>
+      <button
+        type="button"
+        onClick={() => handleAttendanceChange(studentId, 'present')}
+        className={cn(
+          buttonClass,
+          status === 'present'
+            ? 'border-green-500 bg-green-100 text-green-700'
+            : 'border-transparent bg-slate-100 text-slate-600 hover:bg-slate-200',
+        )}
+      >
+        {t('present')}
+      </button>
+      <button
+        type="button"
+        onClick={() => handleAttendanceChange(studentId, 'absent_justified')}
+        className={cn(
+          buttonClass,
+          status === 'absent_justified'
+            ? 'border-yellow-500 bg-yellow-100 text-yellow-700'
+            : 'border-transparent bg-slate-100 text-slate-600 hover:bg-slate-200',
+        )}
+      >
+        {t('justified')}
+      </button>
+      <button
+        type="button"
+        onClick={() => handleAttendanceChange(studentId, 'absent_unjustified')}
+        className={cn(
+          buttonClass,
+          status === 'absent_unjustified'
+            ? 'border-red-500 bg-red-100 text-red-700'
+            : 'border-transparent bg-slate-100 text-slate-600 hover:bg-slate-200',
+        )}
+      >
+        {t('unjustified')}
+      </button>
+    </div>
+  );
+
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center p-12">
@@ -188,7 +256,7 @@ export function AbsenceTab({ lessonId }: AbsenceTabProps) {
   }
 
   return (
-    <div className="p-4 sm:p-6">
+    <div className={cn(embeddedInSheet ? 'pb-4 lg:p-6' : 'p-4 sm:p-6')}>
       {toast ? (
         <AutoDismissToast
           key={toast.key}
@@ -198,19 +266,22 @@ export function AbsenceTab({ lessonId }: AbsenceTabProps) {
         />
       ) : null}
 
-      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
+      <div
+        className={cn(
+          'mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between',
+          embeddedInSheet && 'mb-4 lg:mb-6',
+        )}
+      >
+        <div className={cn(embeddedInSheet && 'hidden lg:block')}>
           <h3 className="text-lg font-semibold text-slate-800">{t('editAttendance')}</h3>
-          <p className="mt-1 text-sm text-slate-500">
-            {attendanceData?.summary && attendanceData.summary.notMarked < attendanceData.summary.total
-              ? t('updateAttendanceHint')
-              : t('markAttendanceHint')}
-          </p>
         </div>
         <Button
           onClick={handleSave}
           disabled={markBulkAttendance.isPending || students.length === 0}
-          className={cn(ADMIN_PRIMARY_BUTTON_CLASS, 'shrink-0 bg-blue-600 text-white hover:bg-blue-700')}
+          className={cn(
+            ADMIN_PRIMARY_BUTTON_CLASS,
+            'w-full shrink-0 bg-blue-600 text-white hover:bg-blue-700 sm:w-auto',
+          )}
         >
           {markBulkAttendance.isPending
             ? t('savingAttendance')
@@ -221,10 +292,11 @@ export function AbsenceTab({ lessonId }: AbsenceTabProps) {
       </div>
 
       <div className="space-y-3">
-        {students.map((student) => {
+        {students.map((student, index) => {
           const status = getStatus(student.id);
           const displayName = `${student.user.firstName} ${student.user.lastName}`.trim();
           const initials = `${student.user.firstName[0] ?? ''}${student.user.lastName[0] ?? ''}`;
+          const showOnMobile = index >= mobilePageStart && index < mobilePageEnd;
 
           return (
             <div
@@ -232,16 +304,39 @@ export function AbsenceTab({ lessonId }: AbsenceTabProps) {
               className={cn(
                 'border border-slate-200 p-4 hover:bg-slate-50/80',
                 DAILY_DUTIES_RADIUS_CLASS,
+                !showOnMobile && 'hidden lg:block',
               )}
             >
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
-                <div className="flex min-w-0 flex-1 items-center gap-3">
-                  <div
-                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-200 text-sm font-semibold text-slate-600"
-                  >
+              <div className="lg:hidden">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-200 text-sm font-semibold text-slate-600">
                     {initials}
                   </div>
-                  <div className="flex min-w-0 flex-1 flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
+                  <p className="min-w-0 flex-1 font-medium text-slate-800">{displayName}</p>
+                </div>
+                {renderStatusButtons(
+                  student.id,
+                  status,
+                  MOBILE_STATUS_BUTTON_CLASS,
+                  'mt-3 grid w-full grid-cols-3 gap-1.5',
+                )}
+                {status === 'absent_justified' ? (
+                  <Input
+                    placeholder={t('justificationCommentRequired')}
+                    value={attendance[student.id]?.note || ''}
+                    onChange={(event) => handleNoteChange(student.id, event.target.value)}
+                    maxLength={500}
+                    className={cn(ADMIN_FORM_INPUT_CLASS, 'mt-3 w-full')}
+                  />
+                ) : null}
+              </div>
+
+              <div className="hidden flex-col gap-3 lg:flex lg:flex-row lg:items-center lg:justify-between lg:gap-4">
+                <div className="flex min-w-0 flex-1 items-center gap-3">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-200 text-sm font-semibold text-slate-600">
+                    {initials}
+                  </div>
+                  <div className="flex min-w-0 flex-1 flex-row items-center gap-3">
                     <p className="shrink-0 font-medium text-slate-800">{displayName}</p>
                     {status === 'absent_justified' ? (
                       <Input
@@ -255,49 +350,27 @@ export function AbsenceTab({ lessonId }: AbsenceTabProps) {
                   </div>
                 </div>
 
-                <div className="flex shrink-0 flex-wrap items-center gap-2 sm:justify-end">
-                  <button
-                    type="button"
-                    onClick={() => handleAttendanceChange(student.id, 'present')}
-                    className={cn(
-                      STATUS_BUTTON_CLASS,
-                      status === 'present'
-                        ? 'border-green-500 bg-green-100 text-green-700'
-                        : 'border-transparent bg-slate-100 text-slate-600 hover:bg-slate-200',
-                    )}
-                  >
-                    {t('present')}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleAttendanceChange(student.id, 'absent_justified')}
-                    className={cn(
-                      STATUS_BUTTON_CLASS,
-                      status === 'absent_justified'
-                        ? 'border-yellow-500 bg-yellow-100 text-yellow-700'
-                        : 'border-transparent bg-slate-100 text-slate-600 hover:bg-slate-200',
-                    )}
-                  >
-                    {t('justified')}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleAttendanceChange(student.id, 'absent_unjustified')}
-                    className={cn(
-                      STATUS_BUTTON_CLASS,
-                      status === 'absent_unjustified'
-                        ? 'border-red-500 bg-red-100 text-red-700'
-                        : 'border-transparent bg-slate-100 text-slate-600 hover:bg-slate-200',
-                    )}
-                  >
-                    {t('unjustified')}
-                  </button>
-                </div>
+                {renderStatusButtons(
+                  student.id,
+                  status,
+                  cn(STATUS_BUTTON_CLASS, 'px-4 py-2'),
+                  'flex shrink-0 flex-wrap items-center justify-end',
+                )}
               </div>
             </div>
           );
         })}
       </div>
+
+      <AdminListPagination
+        className="mt-3 lg:hidden"
+        page={safeMobilePage}
+        pageSize={MOBILE_ABSENCE_PAGE_SIZE}
+        totalItems={students.length}
+        onPageChange={setMobilePage}
+        previousLabel={tCalendar('paginationPrevious')}
+        nextLabel={tCalendar('paginationNext')}
+      />
     </div>
   );
 }
