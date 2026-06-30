@@ -85,8 +85,7 @@ export function AbsenceTab({ lessonId }: AbsenceTabProps) {
             : status === 'absent_unjustified'
               ? 'UNJUSTIFIED'
               : undefined,
-        note:
-          status === 'present' || status === 'not_marked' ? undefined : prev[studentId]?.note,
+        note: status === 'present' ? undefined : prev[studentId]?.note,
       },
     }));
   };
