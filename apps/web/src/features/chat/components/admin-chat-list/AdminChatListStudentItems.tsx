@@ -1,10 +1,15 @@
 'use client';
 
 import Image from 'next/image';
-import { cn, formatPhoneForDisplay } from '@/shared/lib/utils';
+import { formatPhoneForDisplay } from '@/shared/lib/utils';
 import { Badge } from '@/shared/components/ui/badge';
 import { getInitials } from '@/shared/components/ui/avatar';
 import { OnlineStatusDot } from '../OnlineStatusDot';
+import {
+  ADMIN_CHAT_LIST_ITEM_SUBTITLE_CLASS,
+  ADMIN_CHAT_LIST_ITEM_TITLE_CLASS,
+  getAdminChatListItemClass,
+} from './admin-chat-list.theme';
 import type { AdminChatListViewModel } from './admin-chat-list.types';
 
 interface AdminChatListStudentItemsProps {
@@ -34,19 +39,16 @@ export function AdminChatListStudentItems({
           <button
             key={student.id}
             onClick={() => onSelectUser(student.id)}
-            className={cn(
-              'flex w-full items-center gap-3 p-4 text-left transition-colors hover:bg-slate-50',
-              isActive && 'bg-primary/10 hover:bg-primary/10',
-            )}
+            className={getAdminChatListItemClass(isActive)}
           >
-            <div className="relative h-12 w-12 flex-shrink-0">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary font-semibold text-white">
+            <div className="relative h-11 w-11 flex-shrink-0">
+              <div className="flex h-11 w-11 items-center justify-center rounded-full bg-primary text-sm font-semibold text-white">
                 {student.avatarUrl ? (
                   <Image
                     src={student.avatarUrl}
                     alt={student.name}
-                    width={48}
-                    height={48}
+                    width={44}
+                    height={44}
                     className="h-full w-full rounded-full object-cover"
                     unoptimized
                   />
@@ -58,7 +60,7 @@ export function AdminChatListStudentItems({
             </div>
             <div className="min-w-0 flex-1">
               <div className="flex items-center justify-between gap-2">
-                <h3 className="truncate font-medium text-slate-900">{student.name}</h3>
+                <h3 className={ADMIN_CHAT_LIST_ITEM_TITLE_CLASS}>{student.name}</h3>
                 {unread > 0 && (
                   <Badge
                     variant="error"
@@ -69,7 +71,7 @@ export function AdminChatListStudentItems({
                 )}
               </div>
               {student.phone && (
-                <p className="truncate text-sm text-slate-500">{formatPhoneForDisplay(student.phone)}</p>
+                <p className={ADMIN_CHAT_LIST_ITEM_SUBTITLE_CLASS}>{formatPhoneForDisplay(student.phone)}</p>
               )}
             </div>
           </button>

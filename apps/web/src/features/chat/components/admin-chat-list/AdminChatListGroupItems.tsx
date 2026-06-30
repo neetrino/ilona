@@ -1,10 +1,14 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { cn } from '@/shared/lib/utils';
 import { Badge } from '@/shared/components/ui/badge';
 import { getInitials } from '@/shared/components/ui/avatar';
 import { getGroupIconComponent } from '@/features/groups';
+import {
+  ADMIN_CHAT_LIST_ITEM_SUBTITLE_CLASS,
+  ADMIN_CHAT_LIST_ITEM_TITLE_CLASS,
+  getAdminChatListItemClass,
+} from './admin-chat-list.theme';
 import type { AdminChatListViewModel } from './admin-chat-list.types';
 
 interface AdminChatListGroupItemsProps {
@@ -37,17 +41,14 @@ export function AdminChatListGroupItems({
             <button
               key={chat.id}
               onClick={() => onSelectChat(chat)}
-              className={cn(
-                'flex w-full items-center gap-3 p-4 text-left transition-colors hover:bg-slate-50',
-                isActive && 'bg-primary/10 hover:bg-primary/10',
-              )}
+              className={getAdminChatListItemClass(isActive)}
             >
-              <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-purple-500 to-purple-600 font-semibold text-white">
+              <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-purple-500 to-purple-600 text-sm font-semibold text-white">
                 {getInitials(chat.name || tChat('groupDefault'))}
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center justify-between gap-2">
-                  <h3 className="truncate font-medium text-slate-900">
+                  <h3 className={ADMIN_CHAT_LIST_ITEM_TITLE_CLASS}>
                     {chat.name || tChat('groupChatLabel')}
                   </h3>
                   {unread > 0 && (
@@ -59,7 +60,7 @@ export function AdminChatListGroupItems({
                     </Badge>
                   )}
                 </div>
-                <p className="truncate text-sm text-slate-500">
+                <p className={ADMIN_CHAT_LIST_ITEM_SUBTITLE_CLASS}>
                   {tChat('groupChatParticipants', { count: chat.participants?.length ?? 0 })}
                 </p>
               </div>
@@ -76,12 +77,9 @@ export function AdminChatListGroupItems({
           <button
             key={group.id}
             onClick={() => onSelectGroup(group.id)}
-            className={cn(
-              'flex w-full items-center gap-3 p-4 text-left transition-colors hover:bg-slate-50',
-              isActive && 'bg-primary/10 hover:bg-primary/10',
-            )}
+            className={getAdminChatListItemClass(isActive)}
           >
-            <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-purple-500 to-purple-600 font-semibold text-white">
+            <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-purple-500 to-purple-600 text-sm font-semibold text-white">
               {GroupListIcon ? (
                 <GroupListIcon className="text-white" size={24} strokeWidth={1.75} aria-hidden />
               ) : (
@@ -90,7 +88,7 @@ export function AdminChatListGroupItems({
             </div>
             <div className="min-w-0 flex-1">
               <div className="flex items-center justify-between gap-2">
-                <h3 className="truncate font-medium text-slate-900">{group.name}</h3>
+                <h3 className={ADMIN_CHAT_LIST_ITEM_TITLE_CLASS}>{group.name}</h3>
                 {unread > 0 && (
                   <Badge
                     variant="error"
@@ -101,7 +99,7 @@ export function AdminChatListGroupItems({
                 )}
               </div>
               {group.center && (
-                <p className="truncate text-sm text-slate-500">{group.center.name}</p>
+                <p className={ADMIN_CHAT_LIST_ITEM_SUBTITLE_CLASS}>{group.center.name}</p>
               )}
             </div>
           </button>

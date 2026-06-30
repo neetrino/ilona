@@ -11,6 +11,7 @@ import { AdminChatContainerHeader } from './admin-chat-container/AdminChatContai
 import { AdminChatContainerListPane } from './admin-chat-container/AdminChatContainerListPane';
 import { AdminChatContainerDesktopPane } from './admin-chat-container/AdminChatContainerDesktopPane';
 import { AdminChatContainerLoadingShell } from './admin-chat-container/AdminChatContainerLoadingShell';
+import { ADMIN_CHAT_EMPTY_PANE_BG_CLASS } from './admin-chat-list/admin-chat-list.theme';
 import type { AdminChatContainerProps } from './admin-chat-container/admin-chat-container.types';
 
 export type { AdminChatContainerProps } from './admin-chat-container/admin-chat-container.types';
@@ -25,11 +26,12 @@ function AdminChatContent(props: AdminChatContainerProps) {
     <div
       className={cn(
         containerHeight,
-        'flex flex-col overflow-hidden bg-white',
+        'flex flex-col overflow-hidden',
         !isFullScreen && 'rounded-2xl border border-slate-200',
         isFullScreen && 'max-lg:max-h-[100dvh] max-lg:min-h-0 max-lg:flex-1 max-lg:overflow-hidden',
         activeChat && isFullScreen && 'max-lg:h-[100dvh]',
         className,
+        activeChat ? 'bg-white' : ADMIN_CHAT_EMPTY_PANE_BG_CLASS,
       )}
     >
       <AdminChatContainerHeader vm={vm} />
