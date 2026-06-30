@@ -83,7 +83,6 @@ export function LessonListTable({
         mobilePaginatedCardRows={table.mobilePaginatedCardRows}
         mobileCardPageSize={table.mobileCardPageSize}
         safeMobileCardsPage={table.safeMobileCardsPage}
-        mobileCardsTotalPages={table.mobileCardsTotalPages}
         mobileCardsStartRef={table.mobileCardsStartRef}
         sectionedCalendarList={sectionedCalendarList}
         selectedLessons={table.selectedLessons}

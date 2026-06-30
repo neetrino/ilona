@@ -3,7 +3,8 @@ import { useLocale, useTranslations } from 'next-intl';
 import { Button } from '@/shared/components/ui/button';
 import { Checkbox } from '@/shared/components/ui/checkbox';
 import { DailyDutiesLessonStatusUnderName } from '@/shared/lib/daily-duties/DailyDutiesLessonStatusBadge';
-import { ChevronLeft, ChevronRight, User } from 'lucide-react';
+import { AdminListPagination } from '@/shared/components/ui';
+import { User } from 'lucide-react';
 import Image from 'next/image';
 import { cn } from '@/shared/lib/utils';
 import { DailyDutiesListActionPill } from '@/shared/components/daily-duties/DailyDutiesListActionPill';
@@ -19,7 +20,6 @@ interface LessonListTableMobileCardsProps {
   mobilePaginatedCardRows: LessonListCardRow[];
   mobileCardPageSize: number;
   safeMobileCardsPage: number;
-  mobileCardsTotalPages: number;
   mobileCardsStartRef: RefObject<HTMLDivElement | null>;
   sectionedCalendarList: boolean;
   selectedLessons: Set<string>;
@@ -44,7 +44,6 @@ export function LessonListTableMobileCards({
   mobilePaginatedCardRows,
   mobileCardPageSize,
   safeMobileCardsPage,
-  mobileCardsTotalPages,
   mobileCardsStartRef,
   sectionedCalendarList,
   selectedLessons,
@@ -276,50 +275,15 @@ export function LessonListTableMobileCards({
           </div>
         );
       })}
-      {cardRows.length > mobileCardPageSize && (
-        <div
-          className={cn(
-            'flex items-center justify-between px-1 text-sm text-[#8b8b90]',
-            isIPad && 'col-span-2',
-          )}
-        >
-          <span>
-            {(safeMobileCardsPage - 1) * mobileCardPageSize + 1}-
-            {Math.min(safeMobileCardsPage * mobileCardPageSize, cardRows.length)} / {cardRows.length}
-          </span>
-          <div className="flex items-center gap-3">
-            <button
-              type="button"
-              className={`inline-flex h-9 w-9 items-center justify-center rounded-[15px] border transition-colors ${
-                safeMobileCardsPage <= 1
-                  ? 'border-[#d9dde8] bg-[#f1f1f4] text-[#9aa3b5]'
-                  : 'border-[rgba(14,14,16,0.12)] bg-white text-[#3b3b40] hover:bg-[#f6f6f7]'
-              }`}
-              disabled={safeMobileCardsPage <= 1}
-              onClick={() => onGoToPage(Math.max(1, safeMobileCardsPage - 1))}
-              aria-label={tCal('paginationPrevious')}
-            >
-              <ChevronLeft className="h-4 w-4" aria-hidden />
-            </button>
-            <span className="inline-flex h-9 min-w-9 items-center justify-center rounded-[15px] bg-[#1010a3] px-3 text-xs font-semibold text-white">
-              {safeMobileCardsPage}
-            </span>
-            <button
-              type="button"
-              className={`inline-flex h-9 w-9 items-center justify-center rounded-[15px] border transition-colors ${
-                safeMobileCardsPage >= mobileCardsTotalPages
-                  ? 'border-[#d9dde8] bg-[#f1f1f4] text-[#9aa3b5]'
-                  : 'border-[rgba(14,14,16,0.12)] bg-white text-[#3b3b40] hover:bg-[#f6f6f7]'
-              }`}
-              disabled={safeMobileCardsPage >= mobileCardsTotalPages}
-              onClick={() => onGoToPage(Math.min(mobileCardsTotalPages, safeMobileCardsPage + 1))}
-              aria-label={tCal('paginationNext')}
-            >
-              <ChevronRight className="h-4 w-4" aria-hidden />
-            </button>
-          </div>
-        </div>
-      )}
+      <AdminListPagination
+        className={cn(isIPad && 'col-span-2')}
+        page={safeMobileCardsPage - 1}
+        pageSize={mobileCardPageSize}
+        totalItems={cardRows.length}
+        onPageChange={(page) => onGoToPage(page + 1)}
+        previousLabel={tCal('paginationPrevious')}
+        nextLabel={tCal('paginationNext')}
+      />
     </div>
   );
 }
