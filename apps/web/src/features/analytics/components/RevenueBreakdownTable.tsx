@@ -7,7 +7,6 @@ import type { RevenueData } from '../api/analytics.api';
 import { analyticsTableScrollClass } from '../analytics-table-scroll';
 import { AnalyticsMobilePagination } from './AnalyticsMobilePagination';
 
-console.log('RevenueBreakdownTable');
 interface RevenueBreakdownTableProps {
   revenue: RevenueData[];
   isLoading: boolean;
