@@ -2,7 +2,10 @@ import { RefObject } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { Button } from '@/shared/components/ui/button';
 import { Checkbox } from '@/shared/components/ui/checkbox';
-import { DailyDutiesLessonStatusUnderName } from '@/shared/lib/daily-duties/DailyDutiesLessonStatusBadge';
+import {
+  DailyDutiesLessonStatusBadge,
+  resolveDailyDutiesLessonStatus,
+} from '@/shared/lib/daily-duties/DailyDutiesLessonStatusBadge';
 import { AdminListPagination } from '@/shared/components/ui';
 import { User } from 'lucide-react';
 import Image from 'next/image';
@@ -76,6 +79,7 @@ export function LessonListTableMobileCards({
         const actionMap = new Map(actions.map((action) => [action.id, action]));
         const isLocked = isTeacher && lesson.isLockedForTeacher;
         const section = row.category ? teacherDailyDutiesRowSection(row.category) : null;
+        const lessonStatus = resolveDailyDutiesLessonStatus(lesson);
         const globalRowIndex = (safeMobileCardsPage - 1) * mobileCardPageSize + idx;
         const prevGlobalRow = globalRowIndex > 0 ? cardRows[globalRowIndex - 1] : null;
         const prevSection = prevGlobalRow?.category
@@ -129,10 +133,14 @@ export function LessonListTableMobileCards({
                     />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="text-[1.2rem] leading-tight font-semibold whitespace-normal break-words text-[#111827]">
-                      {lesson.group?.name || tCal('unknownGroupName')}
-                    </p>
-                    <DailyDutiesLessonStatusUnderName lesson={lesson} />
+                    <div className="flex items-start justify-between gap-2">
+                      <p className="min-w-0 flex-1 text-[1.2rem] leading-tight font-semibold break-words text-[#111827]">
+                        {lesson.group?.name || tCal('unknownGroupName')}
+                      </p>
+                      {lessonStatus ? (
+                        <DailyDutiesLessonStatusBadge status={lessonStatus} className="shrink-0" />
+                      ) : null}
+                    </div>
                     <div className="mt-5 -ml-[31px] grid grid-cols-2 items-stretch gap-3">
                       <div className="flex items-start gap-2 justify-self-start">
                         <svg
