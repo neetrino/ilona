@@ -1,5 +1,6 @@
 export interface FeedbacksTabProps {
   lessonId: string;
+  embeddedInSheet?: boolean;
 }
 
 export interface FeedbackStudentItem {

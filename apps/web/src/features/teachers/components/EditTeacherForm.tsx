@@ -72,6 +72,7 @@ export function EditTeacherForm(props: EditTeacherFormProps) {
       <PortalSheetPortal
         open={open}
         dragStyle={form.dragStyle}
+        sheetContentRef={form.scrollContentProps.ref}
         contentClassName={portalFormSheetContentClass('2xl')}
         contentProps={{ 'aria-describedby': undefined }}
       >
@@ -85,7 +86,9 @@ export function EditTeacherForm(props: EditTeacherFormProps) {
             {renderHeaderActions()}
           </div>
         </div>
-        <div className="min-h-0 overflow-y-auto overscroll-y-contain [touch-action:pan-y] [-webkit-overflow-scrolling:touch] px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-4 min-[1367px]:px-6 min-[1367px]:pb-6 min-[1367px]:pt-5">
+        <div
+          className="min-h-0 overflow-y-auto overscroll-y-contain [touch-action:pan-y] [-webkit-overflow-scrolling:touch] px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-4 min-[1367px]:px-6 min-[1367px]:pb-6 min-[1367px]:pt-5"
+        >
           {form.isLoadingTeacher ? (
             <div className="flex items-center justify-center py-4">
               <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />

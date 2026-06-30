@@ -58,9 +58,11 @@ function pillShortKey(id: LessonActionId): `lessonActions.${string}` {
 export function DailyDutiesListActionPill({
   action,
   onActivate,
+  isActive = false,
 }: {
   action: LessonActionDerived;
   onActivate: () => void;
+  isActive?: boolean;
 }) {
   const t = useTranslations('dailyDuties');
   const Icon = ROW_ICONS[action.id];
@@ -85,6 +87,17 @@ export function DailyDutiesListActionPill({
         ? Lock
         : Clock;
 
+  const subLine =
+    action.state === 'doneLate'
+      ? t('lessonActions.lateUnpaidBadge')
+      : action.state === 'missed'
+        ? t('lessonActions.missedUnpaidBadge')
+        : action.id === 'feedback' &&
+            action.feedbackCount !== undefined &&
+            action.feedbackCount > 0
+          ? String(action.feedbackCount)
+          : null;
+
   return (
     <button
       type="button"
@@ -94,35 +107,42 @@ export function DailyDutiesListActionPill({
       }}
       title={title}
       aria-label={title}
+      aria-pressed={isActive}
       className={cn(
-        'relative inline-flex w-full max-w-[5.5rem] flex-col items-center gap-0.5 rounded-[15px] border px-1 py-1.5 text-center transition-colors',
+        'relative block h-[3.125rem] w-full rounded-[15px] border px-1 text-center transition-colors',
         'focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-1',
-        (action.state === 'done' || action.state === 'doneLate') &&
+        isActive && 'border-2 border-blue-300 bg-blue-50/90 shadow-sm',
+        !isActive && (action.state === 'done' || action.state === 'doneLate') &&
           'border-emerald-200 bg-emerald-50 text-emerald-900 hover:bg-emerald-100',
-        action.state === 'pending' && 'border-amber-200 bg-amber-50 text-amber-950 hover:bg-amber-100',
-        action.state === 'missed' && 'border-red-200 bg-red-50 text-red-900 hover:bg-red-100',
+        !isActive && action.state === 'pending' && 'border-amber-200 bg-amber-50 text-amber-950 hover:bg-amber-100',
+        !isActive && action.state === 'missed' && 'border-red-200 bg-red-50 text-red-900 hover:bg-red-100',
       )}
     >
-      <span className="absolute right-0.5 top-0.5 text-current opacity-80" aria-hidden>
+      <span className="absolute right-1.5 top-1.5 text-current opacity-80" aria-hidden>
         <StatusIcon className="h-2.5 w-2.5" />
       </span>
-      <Icon className="h-3.5 w-3.5 shrink-0 text-current opacity-90" aria-hidden />
-      <span className="line-clamp-2 w-full px-0.5 text-[8px] font-bold uppercase leading-tight tracking-tight sm:text-[9px]">
-        {t(pillShortKey(action.id))}
+      <span
+        className={cn(
+          'absolute inset-x-1 flex flex-col items-center justify-center gap-0.5',
+          subLine ? 'top-1 bottom-[0.6875rem]' : 'inset-y-0',
+        )}
+      >
+        <Icon className="h-3.5 w-3.5 shrink-0 text-current opacity-90" aria-hidden />
+        <span className="line-clamp-1 w-full px-0.5 text-center text-[8px] font-bold uppercase leading-tight tracking-tight sm:text-[9px]">
+          {t(pillShortKey(action.id))}
+        </span>
       </span>
-      {action.state === 'doneLate' && (
-        <span className="w-full px-0.5 text-[7px] font-semibold leading-tight text-amber-800 sm:text-[8px]">
-          {t('lessonActions.lateUnpaidBadge')}
+      {subLine ? (
+        <span
+          className={cn(
+            'absolute inset-x-1 bottom-1 text-center text-[7px] font-semibold leading-tight sm:text-[8px]',
+            action.state === 'doneLate' && 'text-amber-800',
+            action.state === 'missed' && 'text-red-800',
+          )}
+        >
+          {subLine}
         </span>
-      )}
-      {action.state === 'missed' && (
-        <span className="w-full px-0.5 text-[7px] font-semibold leading-tight text-red-800 sm:text-[8px]">
-          {t('lessonActions.missedUnpaidBadge')}
-        </span>
-      )}
-      {action.id === 'feedback' && action.feedbackCount !== undefined && action.feedbackCount > 0 && (
-        <span className="text-[8px] font-semibold text-current sm:text-[9px]">{action.feedbackCount}</span>
-      )}
+      ) : null}
     </button>
   );
 }

@@ -2,6 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 import { ChatBackButton } from '../ChatBackButton';
+import { ADMIN_CHAT_EMPTY_PANE_BG_CLASS } from '../admin-chat-list/admin-chat-list.theme';
 import { cn } from '@/shared/lib/utils';
 import type { AdminChatContainerViewModel } from './admin-chat-container.types';
 
@@ -17,7 +18,8 @@ export function AdminChatContainerHeader({ vm }: AdminChatContainerHeaderProps) 
   return (
     <div
       className={cn(
-        'flex shrink-0 items-center justify-between border-b border-[rgba(14,14,16,0.07)] bg-white px-3 py-3 sm:px-4',
+        'flex shrink-0 items-center justify-between border-b border-[rgba(14,14,16,0.07)] px-3 py-3 sm:px-4',
+        activeChat ? 'bg-white' : ADMIN_CHAT_EMPTY_PANE_BG_CLASS,
         activeChat && 'max-lg:hidden',
       )}
     >

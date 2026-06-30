@@ -5,11 +5,11 @@ import { Trash2, X } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
 import { ADMIN_ICON_BUTTON_SM_CLASS } from '@/shared/lib/admin-control-theme';
 import { PortalFormSheetDragHandle } from '@/shared/components/ui/portal-form-sheet-drag-handle';
+import { PortalFormSheetScrollArea } from '@/shared/components/ui/portal-form-sheet-scroll-area';
 import { PortalSheetPortal } from '@/shared/components/ui/portal-sheet-portal';
 import {
   PORTAL_FORM_SHEET_CLOSE_BUTTON_CLASS,
   PORTAL_FORM_SHEET_HEADER_CLASS,
-  PORTAL_FORM_SHEET_SCROLL_CLASS,
   portalFormSheetContentClass,
 } from '@/shared/lib/portal-form-sheet-classes';
 import { PaidRegistrationModal } from './PaidRegistrationModal';
@@ -36,6 +36,7 @@ export function EditLeadModal({
         <PortalSheetPortal
           open={vm.isDialogOpen}
           dragStyle={vm.dragStyle}
+          sheetContentRef={vm.scrollContentProps.ref}
           contentClassName={portalFormSheetContentClass('3xl')}
           contentProps={{ 'aria-describedby': undefined }}
         >
@@ -72,13 +73,15 @@ export function EditLeadModal({
             </div>
           </div>
           {vm.isLoading ? (
-            <div className={cn(PORTAL_FORM_SHEET_SCROLL_CLASS, 'p-8 text-center text-slate-500')}>
+            <PortalFormSheetScrollArea
+              className="p-8 text-center text-slate-500"
+            >
               {vm.tc('loading')}
-            </div>
+            </PortalFormSheetScrollArea>
           ) : (
-            <div className={cn(PORTAL_FORM_SHEET_SCROLL_CLASS, 'pt-4 sm:pt-5')}>
+            <PortalFormSheetScrollArea className="pt-4 sm:pt-5">
               <EditLeadModalFormBody {...vm} />
-            </div>
+            </PortalFormSheetScrollArea>
           )}
         </PortalSheetPortal>
       </DialogPrimitive.Root>

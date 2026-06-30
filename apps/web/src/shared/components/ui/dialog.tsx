@@ -4,7 +4,7 @@ import * as React from 'react';
 import { useTranslations } from 'next-intl';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { X } from 'lucide-react';
-import { usePortalSheetDrag } from '@/shared/hooks/usePortalSheetDrag';
+import { PORTAL_SHEET_DRAG_HANDLE_ATTR, usePortalSheetDrag } from '@/shared/hooks/usePortalSheetDrag';
 import { cn } from '@/shared/lib/utils';
 import { DIALOG_LG_DESKTOP_SIDE_SHEET_CLASS } from '@/shared/lib/portal-form-sheet-classes';
 import {
@@ -77,7 +77,7 @@ const DialogContent = React.forwardRef<
   const [contentNode, setContentNode] = React.useState<HTMLDivElement | null>(null);
   const [isContentOpen, setIsContentOpen] = React.useState(false);
 
-  const { dragStyle, dragHandleProps, resetDrag } = usePortalSheetDrag({
+  const { dragStyle, dragHandleProps, scrollContentProps, resetDrag } = usePortalSheetDrag({
     enabled: useSheet,
     onClose: () => closeRef.current?.click(),
   });
@@ -108,13 +108,16 @@ const DialogContent = React.forwardRef<
     (node: HTMLDivElement | null) => {
       contentRef.current = node;
       setContentNode(node);
+      if (useSheet) {
+        scrollContentProps.ref(node);
+      }
       if (typeof ref === 'function') {
         ref(node);
       } else if (ref) {
         ref.current = node;
       }
     },
-    [ref],
+    [ref, useSheet, scrollContentProps],
   );
 
   const closeButtonClasses = cn(
@@ -166,6 +169,7 @@ const DialogContent = React.forwardRef<
               'relative flex h-9 w-full shrink-0 items-center justify-center',
               isPortalSheet ? 'bg-[#f8f9fb] lg:hidden' : 'lg:hidden',
             )}
+            {...{ [PORTAL_SHEET_DRAG_HANDLE_ATTR]: '' }}
           >
             <div
               className="absolute inset-x-0 -top-2 h-14"
@@ -175,7 +179,11 @@ const DialogContent = React.forwardRef<
             <div className="h-1.5 w-14 rounded-full bg-slate-400" />
           </div>
         ) : null}
-        {isPortalSheet ? <div className={PORTAL_SHEET_BODY_CLASS}>{children}</div> : children}
+        {isPortalSheet ? (
+          <div className={PORTAL_SHEET_BODY_CLASS}>{children}</div>
+        ) : (
+          children
+        )}
         <DialogClose ref={closeRef} className="hidden" />
         {!isPortalSheet && hideCloseButton ? (
           <DialogPrimitive.Close

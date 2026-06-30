@@ -20,11 +20,11 @@ import { StudentAccountFormFields } from '@/features/students/components/Student
 import { cn } from '@/shared/lib/utils';
 import { Button } from '@/shared/components/ui';
 import { PortalFormSheetDragHandle } from '@/shared/components/ui/portal-form-sheet-drag-handle';
+import { PortalFormSheetScrollArea } from '@/shared/components/ui/portal-form-sheet-scroll-area';
 import { PortalSheetPortal } from '@/shared/components/ui/portal-sheet-portal';
 import {
   PORTAL_FORM_SHEET_CLOSE_BUTTON_CLASS,
   PORTAL_FORM_SHEET_HEADER_CLASS,
-  PORTAL_FORM_SHEET_SCROLL_CLASS,
   portalFormSheetContentClass,
 } from '@/shared/lib/portal-form-sheet-classes';
 import {
@@ -62,7 +62,7 @@ export function PaidRegistrationModal({
     onClose();
   }, [onClose]);
 
-  const { dragStyle, dragHandleProps, resetDrag } = usePortalSheetDrag({
+  const { dragStyle, dragHandleProps, scrollContentProps, resetDrag } = usePortalSheetDrag({
     enabled: open,
     onClose: requestClose,
   });
@@ -224,6 +224,7 @@ export function PaidRegistrationModal({
       <PortalSheetPortal
         open={open}
         dragStyle={dragStyle}
+        sheetContentRef={scrollContentProps.ref}
         contentClassName={portalFormSheetContentClass('2xl')}
         contentProps={{ 'aria-describedby': undefined }}
       >
@@ -248,16 +249,18 @@ export function PaidRegistrationModal({
         </div>
 
         {isLoadingLead || !lead ? (
-          <div className={cn(PORTAL_FORM_SHEET_SCROLL_CLASS, 'p-8 text-center text-slate-500')}>
+          <PortalFormSheetScrollArea
+            className="p-8 text-center text-slate-500"
+          >
             {tCommon('loading')}
-          </div>
+          </PortalFormSheetScrollArea>
         ) : (
           <form
             onSubmit={handleSubmit(onValidSubmit)}
             className="flex min-h-0 flex-1 flex-col overflow-hidden"
             noValidate
           >
-            <div className={cn(PORTAL_FORM_SHEET_SCROLL_CLASS, 'flex-1 pt-4 sm:pt-5')}>
+            <PortalFormSheetScrollArea className="flex-1 pt-4 sm:pt-5">
               {apiError ? (
                 <p className="mb-4 rounded-[15px] bg-red-50 p-2 text-sm text-red-600" role="alert">
                   {apiError}
@@ -301,7 +304,7 @@ export function PaidRegistrationModal({
                   {isSubmitting ? 'Saving…' : 'Save & mark Paid'}
                 </Button>
               </div>
-            </div>
+            </PortalFormSheetScrollArea>
           </form>
         )}
       </PortalSheetPortal>

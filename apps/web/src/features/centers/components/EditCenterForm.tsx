@@ -6,6 +6,7 @@ import { cn } from '@/shared/lib/utils';
 import { ADMIN_ICON_BUTTON_SM_CLASS } from '@/shared/lib/admin-control-theme';
 import { portalSheetLayerProps, stackedSheetDialogHandlers } from '@/shared/lib/sheet-stack';
 import { PORTAL_DESKTOP_SIDE_SHEET_CLASS } from '@/shared/lib/portal-form-sheet-classes';
+import { PortalFormSheetDragHandle } from '@/shared/components/ui/portal-form-sheet-drag-handle';
 import { X, Trash2 } from 'lucide-react';
 import { useEditCenterForm } from './edit-center-form/useEditCenterForm';
 import { EditCenterFormFields } from './edit-center-form/EditCenterFormFields';
@@ -73,18 +74,7 @@ export function EditCenterForm(props: EditCenterFormProps) {
     PORTAL_DESKTOP_SIDE_SHEET_CLASS,
   );
 
-  const dragHandle = (
-    <div className="relative flex h-9 w-full items-center justify-center bg-[#f8f9fb] min-[1367px]:hidden">
-      <div
-        className="absolute inset-x-0 -top-2 h-14"
-        onTouchStart={form.handleDragStart}
-        onTouchMove={form.handleDragMove}
-        onTouchEnd={form.handleDragEnd}
-        onTouchCancel={form.handleDragEnd}
-      />
-      <div className="h-1.5 w-14 rounded-full bg-slate-400" />
-    </div>
-  );
+  const dragHandle = <PortalFormSheetDragHandle dragHandleProps={form.dragHandleProps} />;
 
   if (form.isLoading) {
     return (
@@ -96,6 +86,7 @@ export function EditCenterForm(props: EditCenterFormProps) {
             className="fixed inset-0 z-50 bg-black/60 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0"
           />
           <DialogPrimitive.Content
+            ref={form.scrollContentProps.ref}
             style={{ ...form.dragStyle, ...form.contentStyle }}
             {...stackedSheetDialogHandlers}
             {...portalSheetLayerProps}
@@ -113,7 +104,9 @@ export function EditCenterForm(props: EditCenterFormProps) {
                 {renderHeaderActions()}
               </div>
             </div>
-            <div className="min-h-0 overflow-y-auto overscroll-y-contain [touch-action:pan-y] [-webkit-overflow-scrolling:touch] px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] min-[1367px]:px-6 min-[1367px]:pb-6">
+            <div
+              className="min-h-0 overflow-y-auto overscroll-y-contain [touch-action:pan-y] [-webkit-overflow-scrolling:touch] px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] min-[1367px]:px-6 min-[1367px]:pb-6"
+            >
               <div className="flex items-center justify-center py-8">
                 <div className="text-slate-500">{tCommon('loading')}</div>
               </div>
@@ -133,6 +126,7 @@ export function EditCenterForm(props: EditCenterFormProps) {
           className="fixed inset-0 z-50 bg-black/60 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0"
         />
         <DialogPrimitive.Content
+          ref={form.scrollContentProps.ref}
           style={{ ...form.dragStyle, ...form.contentStyle }}
           {...stackedSheetDialogHandlers}
           {...portalSheetLayerProps}
@@ -149,7 +143,9 @@ export function EditCenterForm(props: EditCenterFormProps) {
               {renderHeaderActions()}
             </div>
           </div>
-          <div className="min-h-0 overflow-y-auto overscroll-y-contain [touch-action:pan-y] [-webkit-overflow-scrolling:touch] px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] min-[1367px]:px-6 min-[1367px]:pb-6">
+          <div
+            className="min-h-0 overflow-y-auto overscroll-y-contain [touch-action:pan-y] [-webkit-overflow-scrolling:touch] px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] min-[1367px]:px-6 min-[1367px]:pb-6"
+          >
             <EditCenterFormFields {...form} />
           </div>
         </DialogPrimitive.Content>

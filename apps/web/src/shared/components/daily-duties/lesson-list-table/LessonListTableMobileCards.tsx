@@ -2,8 +2,12 @@ import { RefObject } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { Button } from '@/shared/components/ui/button';
 import { Checkbox } from '@/shared/components/ui/checkbox';
-import { DailyDutiesLessonStatusUnderName } from '@/shared/lib/daily-duties/DailyDutiesLessonStatusBadge';
-import { ChevronLeft, ChevronRight, User } from 'lucide-react';
+import {
+  DailyDutiesLessonStatusBadge,
+  resolveDailyDutiesLessonStatus,
+} from '@/shared/lib/daily-duties/DailyDutiesLessonStatusBadge';
+import { AdminListPagination } from '@/shared/components/ui';
+import { User } from 'lucide-react';
 import Image from 'next/image';
 import { cn } from '@/shared/lib/utils';
 import { DailyDutiesListActionPill } from '@/shared/components/daily-duties/DailyDutiesListActionPill';
@@ -19,7 +23,6 @@ interface LessonListTableMobileCardsProps {
   mobilePaginatedCardRows: LessonListCardRow[];
   mobileCardPageSize: number;
   safeMobileCardsPage: number;
-  mobileCardsTotalPages: number;
   mobileCardsStartRef: RefObject<HTMLDivElement | null>;
   sectionedCalendarList: boolean;
   selectedLessons: Set<string>;
@@ -44,7 +47,6 @@ export function LessonListTableMobileCards({
   mobilePaginatedCardRows,
   mobileCardPageSize,
   safeMobileCardsPage,
-  mobileCardsTotalPages,
   mobileCardsStartRef,
   sectionedCalendarList,
   selectedLessons,
@@ -77,6 +79,7 @@ export function LessonListTableMobileCards({
         const actionMap = new Map(actions.map((action) => [action.id, action]));
         const isLocked = isTeacher && lesson.isLockedForTeacher;
         const section = row.category ? teacherDailyDutiesRowSection(row.category) : null;
+        const lessonStatus = resolveDailyDutiesLessonStatus(lesson);
         const globalRowIndex = (safeMobileCardsPage - 1) * mobileCardPageSize + idx;
         const prevGlobalRow = globalRowIndex > 0 ? cardRows[globalRowIndex - 1] : null;
         const prevSection = prevGlobalRow?.category
@@ -130,10 +133,14 @@ export function LessonListTableMobileCards({
                     />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="text-[1.2rem] leading-tight font-semibold whitespace-normal break-words text-[#111827]">
-                      {lesson.group?.name || tCal('unknownGroupName')}
-                    </p>
-                    <DailyDutiesLessonStatusUnderName lesson={lesson} />
+                    <div className="flex items-start justify-between gap-2">
+                      <p className="min-w-0 flex-1 text-[1.2rem] leading-tight font-semibold break-words text-[#111827]">
+                        {lesson.group?.name || tCal('unknownGroupName')}
+                      </p>
+                      {lessonStatus ? (
+                        <DailyDutiesLessonStatusBadge status={lessonStatus} className="shrink-0" />
+                      ) : null}
+                    </div>
                     <div className="mt-5 -ml-[31px] grid grid-cols-2 items-stretch gap-3">
                       <div className="flex items-start gap-2 justify-self-start">
                         <svg
@@ -276,50 +283,15 @@ export function LessonListTableMobileCards({
           </div>
         );
       })}
-      {cardRows.length > mobileCardPageSize && (
-        <div
-          className={cn(
-            'flex items-center justify-between px-1 text-sm text-[#8b8b90]',
-            isIPad && 'col-span-2',
-          )}
-        >
-          <span>
-            {(safeMobileCardsPage - 1) * mobileCardPageSize + 1}-
-            {Math.min(safeMobileCardsPage * mobileCardPageSize, cardRows.length)} / {cardRows.length}
-          </span>
-          <div className="flex items-center gap-3">
-            <button
-              type="button"
-              className={`inline-flex h-9 w-9 items-center justify-center rounded-[15px] border transition-colors ${
-                safeMobileCardsPage <= 1
-                  ? 'border-[#d9dde8] bg-[#f1f1f4] text-[#9aa3b5]'
-                  : 'border-[rgba(14,14,16,0.12)] bg-white text-[#3b3b40] hover:bg-[#f6f6f7]'
-              }`}
-              disabled={safeMobileCardsPage <= 1}
-              onClick={() => onGoToPage(Math.max(1, safeMobileCardsPage - 1))}
-              aria-label={tCal('paginationPrevious')}
-            >
-              <ChevronLeft className="h-4 w-4" aria-hidden />
-            </button>
-            <span className="inline-flex h-9 min-w-9 items-center justify-center rounded-[15px] bg-[#1010a3] px-3 text-xs font-semibold text-white">
-              {safeMobileCardsPage}
-            </span>
-            <button
-              type="button"
-              className={`inline-flex h-9 w-9 items-center justify-center rounded-[15px] border transition-colors ${
-                safeMobileCardsPage >= mobileCardsTotalPages
-                  ? 'border-[#d9dde8] bg-[#f1f1f4] text-[#9aa3b5]'
-                  : 'border-[rgba(14,14,16,0.12)] bg-white text-[#3b3b40] hover:bg-[#f6f6f7]'
-              }`}
-              disabled={safeMobileCardsPage >= mobileCardsTotalPages}
-              onClick={() => onGoToPage(Math.min(mobileCardsTotalPages, safeMobileCardsPage + 1))}
-              aria-label={tCal('paginationNext')}
-            >
-              <ChevronRight className="h-4 w-4" aria-hidden />
-            </button>
-          </div>
-        </div>
-      )}
+      <AdminListPagination
+        className={cn(isIPad && 'col-span-2')}
+        page={safeMobileCardsPage - 1}
+        pageSize={mobileCardPageSize}
+        totalItems={cardRows.length}
+        onPageChange={(page) => onGoToPage(page + 1)}
+        previousLabel={tCal('paginationPrevious')}
+        nextLabel={tCal('paginationNext')}
+      />
     </div>
   );
 }

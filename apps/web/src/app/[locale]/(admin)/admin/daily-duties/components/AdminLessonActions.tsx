@@ -8,18 +8,21 @@ import { BulkDeleteConfirmationDialog } from '@/features/lessons/components/Bulk
 import { useOutsidePress } from '@/shared/hooks/useOutsidePress';
 import { getErrorMessage } from '@/shared/lib/api';
 import { ADMIN_ICON_BUTTON_SM_CLASS } from '@/shared/lib/admin-control-theme';
+import { cn } from '@/shared/lib/utils';
 import { SubstituteLessonModal, type SubstituteTeacherOption } from './SubstituteLessonModal';
 
 interface AdminLessonActionsProps {
   lessonId: string;
   teacherOptions: SubstituteTeacherOption[];
   onDeleted?: () => void;
+  menuClassName?: string;
 }
 
 export function AdminLessonActions({
   lessonId,
   teacherOptions,
   onDeleted,
+  menuClassName,
 }: AdminLessonActionsProps) {
   const t = useTranslations('dailyDuties');
   const tCommon = useTranslations('common');
@@ -64,7 +67,7 @@ export function AdminLessonActions({
 
   return (
     <>
-      <div ref={menuRef} className="relative shrink-0 -mt-1">
+      <div ref={menuRef} className={cn('relative shrink-0', menuClassName ?? '-mt-1')}>
         <button
           type="button"
           aria-label={tCommon('actions')}

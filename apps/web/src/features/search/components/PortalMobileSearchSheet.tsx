@@ -1,7 +1,9 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
+import { PortalFormSheetDragHandle } from '@/shared/components/ui/portal-form-sheet-drag-handle';
+import { usePortalSheetDrag } from '@/shared/hooks/usePortalSheetDrag';
 import { GlobalSearchBar } from './GlobalSearchBar';
 import { cn } from '@/shared/lib/utils';
 
@@ -21,30 +23,27 @@ export function PortalMobileSearchSheet({
   backdropClassName,
   containerClassName,
 }: PortalMobileSearchSheetProps) {
-  const DRAG_CLOSE_THRESHOLD = 96;
   const t = useTranslations('common');
   const [isMounted, setIsMounted] = useState(open);
   const [isVisible, setIsVisible] = useState(open);
-  const [dragOffsetY, setDragOffsetY] = useState(0);
-  const [isDragging, setIsDragging] = useState(false);
-  const touchStartY = useRef<number | null>(null);
-  const touchCurrentY = useRef<number | null>(null);
+
+  const { dragStyle, dragHandleProps, scrollContentProps, resetDrag } = usePortalSheetDrag({
+    onClose,
+    enabled: isMounted && isVisible,
+  });
 
   useEffect(() => {
     if (open) {
       setIsMounted(true);
-      setDragOffsetY(0);
-      setIsDragging(false);
       const frame = window.requestAnimationFrame(() => setIsVisible(true));
       return () => window.cancelAnimationFrame(frame);
     }
 
     setIsVisible(false);
-    setDragOffsetY(0);
-    setIsDragging(false);
+    resetDrag();
     const timeout = window.setTimeout(() => setIsMounted(false), 360);
     return () => window.clearTimeout(timeout);
-  }, [open]);
+  }, [open, resetDrag]);
 
   useEffect(() => {
     if (!isMounted) return;
@@ -58,47 +57,6 @@ export function PortalMobileSearchSheet({
   if (!isMounted) {
     return null;
   }
-
-  const handleTouchStart = (event: React.TouchEvent<HTMLDivElement>) => {
-    const target = event.target;
-    const isHandleTouch =
-      target instanceof Element && target.closest('[data-drag-handle="true"]') !== null;
-    if (!isHandleTouch) {
-      touchStartY.current = null;
-      touchCurrentY.current = null;
-      setIsDragging(false);
-      return;
-    }
-
-    const touchY = event.touches[0]?.clientY ?? null;
-    if (touchY === null) return;
-
-    touchStartY.current = touchY;
-    touchCurrentY.current = touchY;
-    setIsDragging(true);
-  };
-
-  const handleTouchMove = (event: React.TouchEvent<HTMLDivElement>) => {
-    if (!isDragging || touchStartY.current === null) return;
-    touchCurrentY.current = event.touches[0]?.clientY ?? null;
-    const delta = (touchCurrentY.current ?? touchStartY.current) - touchStartY.current;
-    const nextOffset = Math.max(0, delta);
-    setDragOffsetY(nextOffset);
-    if (nextOffset > 0) {
-      event.preventDefault();
-    }
-  };
-
-  const handleTouchEnd = () => {
-    if (isDragging && dragOffsetY > DRAG_CLOSE_THRESHOLD) {
-      onClose();
-    } else {
-      setDragOffsetY(0);
-    }
-    setIsDragging(false);
-    touchStartY.current = null;
-    touchCurrentY.current = null;
-  };
 
   return (
     <>
@@ -114,24 +72,17 @@ export function PortalMobileSearchSheet({
       />
 
       <div
+        ref={scrollContentProps.ref}
         className={cn(
           'fixed inset-x-0 bottom-0 z-[80] lg:hidden',
-          isDragging
-            ? 'transition-none'
-            : 'transition-transform duration-350 ease-[cubic-bezier(0.22,1,0.36,1)]',
+          dragStyle ? 'transition-none' : 'transition-transform duration-350 ease-[cubic-bezier(0.22,1,0.36,1)]',
           isVisible ? 'translate-y-0' : 'pointer-events-none translate-y-full',
           containerClassName,
         )}
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
-        onTouchCancel={handleTouchEnd}
-        style={isVisible ? { transform: `translateY(${dragOffsetY}px)` } : undefined}
+        style={dragStyle}
       >
         <div className="flex h-[72vh] min-h-[26rem] max-h-[80vh] flex-col rounded-t-[1.5rem] border border-b-0 border-[rgba(14,14,16,0.07)] bg-white shadow-[0_-12px_36px_rgba(0,0,0,0.16)]">
-          <div className="flex justify-center pt-3" data-drag-handle="true">
-            <span className="h-1.5 w-12 rounded-full bg-[#d8d8de]" aria-hidden />
-          </div>
+          <PortalFormSheetDragHandle dragHandleProps={dragHandleProps} />
 
           <div className="flex-1 overflow-visible px-4 pt-6 pb-3">
             <GlobalSearchBar

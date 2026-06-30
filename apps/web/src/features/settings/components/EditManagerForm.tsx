@@ -14,6 +14,7 @@ import {
   ADMIN_OUTLINE_BUTTON_CLASS,
   ADMIN_PRIMARY_BUTTON_CLASS,
 } from '@/shared/lib/admin-control-theme';
+import { PortalFormSheetDragHandle } from '@/shared/components/ui/portal-form-sheet-drag-handle';
 import { X } from 'lucide-react';
 import { useEditManagerForm } from './edit-manager-form/useEditManagerForm';
 import {
@@ -44,6 +45,7 @@ export function EditManagerForm(props: EditManagerFormProps) {
           )}
         />
         <DialogPrimitive.Content
+          ref={form.scrollContentProps.ref}
           style={{ ...form.dragStyle, ...form.contentStyle }}
           {...stackedSheetDialogHandlers}
           {...portalSheetLayerProps}
@@ -56,16 +58,7 @@ export function EditManagerForm(props: EditManagerFormProps) {
           )}
           aria-describedby="edit-manager-description"
         >
-          <div className="relative flex h-9 w-full items-center justify-center bg-[#f8f9fb] min-[1367px]:hidden">
-            <div
-              className="absolute inset-x-0 -top-2 h-14"
-              onTouchStart={form.handleDragStart}
-              onTouchMove={form.handleDragMove}
-              onTouchEnd={form.handleDragEnd}
-              onTouchCancel={form.handleDragEnd}
-            />
-            <div className="h-1.5 w-14 rounded-full bg-slate-400" />
-          </div>
+          <PortalFormSheetDragHandle dragHandleProps={form.dragHandleProps} />
           <DialogPrimitive.Title className="sr-only">{form.title}</DialogPrimitive.Title>
           <DialogPrimitive.Description id="edit-manager-description" className="sr-only">
             {form.description}
@@ -86,7 +79,9 @@ export function EditManagerForm(props: EditManagerFormProps) {
               </DialogPrimitive.Close>
             </div>
           </div>
-          <div className="min-h-0 overflow-y-auto overscroll-y-contain [touch-action:pan-y] [-webkit-overflow-scrolling:touch] px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] min-[1367px]:px-6 min-[1367px]:pb-6">
+          <div
+            className="min-h-0 overflow-y-auto overscroll-y-contain [touch-action:pan-y] [-webkit-overflow-scrolling:touch] px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] min-[1367px]:px-6 min-[1367px]:pb-6"
+          >
             {form.isInactiveVariant ? (
               <form onSubmit={form.handleSubmitInactive} className="space-y-4">
                 {form.errorMessage && <EditManagerFormError message={form.errorMessage} />}

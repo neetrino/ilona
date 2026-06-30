@@ -4,7 +4,7 @@ import {
   scheduleDateKeyFromIso,
 } from '@/features/schedule/schedule-dates';
 
-export const TEACHER_DAILY_DUTIES_LIST_PAGE_SIZE = 10;
+export const TEACHER_DAILY_DUTIES_LIST_PAGE_SIZE = 5;
 
 export type TeacherDailyDutiesRowCategory = 'upcoming-next' | 'upcoming-later' | 'today' | 'completed';
 

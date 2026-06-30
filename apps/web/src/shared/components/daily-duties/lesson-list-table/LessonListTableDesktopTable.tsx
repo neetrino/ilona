@@ -1,8 +1,7 @@
 import type { ReactElement } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
-import { Button } from '@/shared/components/ui/button';
 import { Checkbox } from '@/shared/components/ui/checkbox';
-import { ArrowUpDown, ArrowUp, ArrowDown, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import { LessonListTableBodyRow } from '@/shared/components/daily-duties/LessonListTableBodyRow';
 import type { Lesson } from '@/features/lessons';
 import { getScheduleCardDayStatus } from '@/features/schedule/schedule-dates';
@@ -32,8 +31,6 @@ interface LessonListTableDesktopTableProps {
   sectionedPageRows: TeacherDailyDutiesOrderedRow[];
   sectionedOrderedRows: TeacherDailyDutiesOrderedRow[];
   sectionedListPage: number;
-  sectionedTotalPages: number;
-  onSectionedPageChange: (page: number) => void;
   sortedLessons: Lesson[];
   scheduleCategoryLabels: {
     upcoming: string;
@@ -73,8 +70,6 @@ export function LessonListTableDesktopTable({
   sectionedPageRows,
   sectionedOrderedRows,
   sectionedListPage,
-  sectionedTotalPages,
-  onSectionedPageChange,
   sortedLessons,
   scheduleCategoryLabels,
   tableColSpan,
@@ -258,56 +253,6 @@ export function LessonListTableDesktopTable({
           </tbody>
         </table>
       </div>
-      {sectionedCalendarList && sectionedTotalPages > 1 && (
-        <div
-          className={cn(
-            'flex flex-col-reverse gap-3 border-t border-slate-200 bg-slate-50/80 px-4 py-3 sm:flex-row sm:items-center sm:justify-between lg:justify-start lg:gap-4',
-            useMobileCards && 'hidden',
-          )}
-        >
-          <p className="text-center text-sm text-slate-600 sm:text-left">
-            {tCal('paginationSummary', {
-              showingFrom: (sectionedListPage - 1) * TEACHER_DAILY_DUTIES_LIST_PAGE_SIZE + 1,
-              showingTo: Math.min(
-                sectionedListPage * TEACHER_DAILY_DUTIES_LIST_PAGE_SIZE,
-                sectionedOrderedRows.length,
-              ),
-              total: sectionedOrderedRows.length,
-            })}
-          </p>
-          <div className="flex items-center justify-center gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="gap-1"
-              disabled={sectionedListPage <= 1}
-              onClick={() => onSectionedPageChange(Math.max(1, sectionedListPage - 1))}
-              aria-label={tCal('paginationPrevious')}
-            >
-              <ChevronLeft className="h-4 w-4" aria-hidden />
-              <span className="hidden sm:inline">{tCal('paginationPrevious')}</span>
-            </Button>
-            <span className="min-w-[6.5rem] text-center text-sm font-medium text-slate-800">
-              {tCal('paginationPageOf', { current: sectionedListPage, total: sectionedTotalPages })}
-            </span>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="gap-1"
-              disabled={sectionedListPage >= sectionedTotalPages}
-              onClick={() =>
-                onSectionedPageChange(Math.min(sectionedTotalPages, sectionedListPage + 1))
-              }
-              aria-label={tCal('paginationNext')}
-            >
-              <span className="hidden sm:inline">{tCal('paginationNext')}</span>
-              <ChevronRight className="h-4 w-4" aria-hidden />
-            </Button>
-          </div>
-        </div>
-      )}
     </>
   );
 }

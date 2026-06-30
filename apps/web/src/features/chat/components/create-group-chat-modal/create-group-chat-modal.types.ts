@@ -1,4 +1,5 @@
-import type { CSSProperties, TouchEvent } from 'react';
+import type { CSSProperties } from 'react';
+import type { PortalSheetDragHandleProps, PortalSheetScrollContentProps } from '@/shared/hooks/usePortalSheetDrag';
 import type { Chat } from '../../types';
 import type { AdminChatAllUser } from '../../api/chat.api';
 
@@ -19,6 +20,8 @@ export interface CreateGroupChatModalViewModel {
   selectedIds: Set<string>;
   isDialogOpen: boolean;
   dragStyle: CSSProperties | undefined;
+  dragHandleProps: PortalSheetDragHandleProps;
+  scrollContentProps: PortalSheetScrollContentProps;
   overlayStyle: CSSProperties;
   contentStyle: CSSProperties;
   isBaseLayer: boolean;
@@ -32,7 +35,4 @@ export interface CreateGroupChatModalViewModel {
   toggleAllTeachers: () => void;
   handleSubmit: () => Promise<void>;
   requestClose: () => void;
-  handleDragStart: (event: TouchEvent<HTMLDivElement>) => void;
-  handleDragMove: (event: TouchEvent<HTMLDivElement>) => void;
-  handleDragEnd: () => void;
 }

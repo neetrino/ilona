@@ -4,11 +4,11 @@ import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { useTranslations } from 'next-intl';
 import { X } from 'lucide-react';
 import { PortalFormSheetDragHandle } from '@/shared/components/ui/portal-form-sheet-drag-handle';
+import { PortalFormSheetScrollArea } from '@/shared/components/ui/portal-form-sheet-scroll-area';
 import { PortalSheetPortal } from '@/shared/components/ui/portal-sheet-portal';
 import {
   PORTAL_FORM_SHEET_CLOSE_BUTTON_CLASS,
   PORTAL_FORM_SHEET_HEADER_CLASS,
-  PORTAL_FORM_SHEET_SCROLL_CLASS,
   portalFormSheetContentClass,
 } from '@/shared/lib/portal-form-sheet-classes';
 import { Label } from '@/shared/components/ui';
@@ -32,6 +32,7 @@ interface StudentPaymentPayModalProps {
   isPending: boolean;
   dragStyle: ReturnType<typeof usePortalSheetDrag>['dragStyle'];
   dragHandleProps: ReturnType<typeof usePortalSheetDrag>['dragHandleProps'];
+  scrollContentProps: ReturnType<typeof usePortalSheetDrag>['scrollContentProps'];
 }
 
 export function StudentPaymentPayModal({
@@ -47,6 +48,7 @@ export function StudentPaymentPayModal({
   isPending,
   dragStyle,
   dragHandleProps,
+  scrollContentProps,
 }: StudentPaymentPayModalProps) {
   const t = useTranslations('finance');
   const tCommon = useTranslations('common');
@@ -56,6 +58,7 @@ export function StudentPaymentPayModal({
       <PortalSheetPortal
         open={isOpen}
         dragStyle={dragStyle}
+        sheetContentRef={scrollContentProps.ref}
         contentClassName={portalFormSheetContentClass('2xl')}
         contentProps={{ 'aria-describedby': undefined }}
       >
@@ -77,7 +80,7 @@ export function StudentPaymentPayModal({
           </div>
         </div>
 
-        <div className={PORTAL_FORM_SHEET_SCROLL_CLASS}>
+        <PortalFormSheetScrollArea>
           {processModal ? (
             successMessage ? (
               <div className="py-4 text-center">
@@ -169,7 +172,7 @@ export function StudentPaymentPayModal({
               </>
             )
           ) : null}
-        </div>
+        </PortalFormSheetScrollArea>
       </PortalSheetPortal>
     </DialogPrimitive.Root>
   );

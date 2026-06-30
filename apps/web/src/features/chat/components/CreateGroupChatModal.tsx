@@ -9,6 +9,7 @@ import {
   stackedSheetOverlayClassName,
 } from '@/shared/lib/sheet-stack';
 import { ADMIN_ICON_BUTTON_SM_CLASS } from '@/shared/lib/admin-control-theme';
+import { PortalFormSheetDragHandle } from '@/shared/components/ui/portal-form-sheet-drag-handle';
 import { useCreateGroupChatModal } from './create-group-chat-modal/useCreateGroupChatModal';
 import { CreateGroupChatModalFormSection } from './create-group-chat-modal/CreateGroupChatModalFormSection';
 import { CreateGroupChatModalMemberList } from './create-group-chat-modal/CreateGroupChatModalMemberList';
@@ -36,22 +37,14 @@ export function CreateGroupChatModal(props: CreateGroupChatModalProps) {
           )}
         />
         <DialogPrimitive.Content
+          ref={vm.scrollContentProps.ref}
           style={{ ...vm.dragStyle, ...vm.contentStyle }}
           {...stackedSheetDialogHandlers}
           {...portalSheetLayerProps}
           className={CREATE_GROUP_CHAT_SHEET_CLASS}
           aria-describedby={undefined}
         >
-          <div className="relative flex h-9 w-full items-center justify-center bg-[#f8f9fb] min-[1367px]:hidden">
-            <div
-              className="absolute inset-x-0 -top-2 h-14"
-              onTouchStart={vm.handleDragStart}
-              onTouchMove={vm.handleDragMove}
-              onTouchEnd={vm.handleDragEnd}
-              onTouchCancel={vm.handleDragEnd}
-            />
-            <div className="h-1.5 w-14 rounded-full bg-slate-400" />
-          </div>
+          <PortalFormSheetDragHandle dragHandleProps={vm.dragHandleProps} />
 
           <DialogPrimitive.Title className="sr-only">{vm.tChat('createGroupChat')}</DialogPrimitive.Title>
 
@@ -72,7 +65,9 @@ export function CreateGroupChatModal(props: CreateGroupChatModalProps) {
             </div>
           </div>
 
-          <div className="min-h-0 overflow-y-auto overscroll-y-contain bg-[#f8f9fb] [touch-action:pan-y] [-webkit-overflow-scrolling:touch] px-4 min-[1367px]:px-6">
+          <div
+            className="min-h-0 overflow-y-auto overscroll-y-contain bg-[#f8f9fb] [touch-action:pan-y] [-webkit-overflow-scrolling:touch] px-4 min-[1367px]:px-6"
+          >
             <CreateGroupChatModalFormSection {...vm} />
             <div className="mt-4 pb-2">
               <CreateGroupChatModalMemberList {...vm} />

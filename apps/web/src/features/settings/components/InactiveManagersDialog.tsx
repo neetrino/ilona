@@ -21,11 +21,9 @@ import {
   useSheetStackZIndex,
   stackedSheetOverlayClassName,
 } from '@/shared/lib/sheet-stack';
-import { usePortalSheetDrag } from '@/shared/hooks/usePortalSheetDrag';
-import {
-  PORTAL_FORM_SHEET_SCROLL_CLASS,
-  portalFormSheetContentClass,
-} from '@/shared/lib/portal-form-sheet-classes';
+import { PORTAL_SHEET_DRAG_HANDLE_ATTR, usePortalSheetDrag } from '@/shared/hooks/usePortalSheetDrag';
+import { PortalFormSheetScrollArea } from '@/shared/components/ui/portal-form-sheet-scroll-area';
+import { portalFormSheetContentClass } from '@/shared/lib/portal-form-sheet-classes';
 import {
   ADMIN_ICON_BUTTON_SM_CLASS,
   ADMIN_OUTLINE_BUTTON_CLASS,
@@ -61,7 +59,7 @@ export function InactiveManagersDialog({ open, onOpenChange }: InactiveManagersD
     onOpenChange(false);
   }, [onOpenChange]);
 
-  const { dragStyle, dragHandleProps, resetDrag } = usePortalSheetDrag({
+  const { dragStyle, dragHandleProps, scrollContentProps, resetDrag } = usePortalSheetDrag({
     enabled: true,
     onClose: requestClose,
   });
@@ -138,13 +136,17 @@ export function InactiveManagersDialog({ open, onOpenChange }: InactiveManagersD
             )}
           />
           <DialogPrimitive.Content
+            ref={scrollContentProps.ref}
             style={{ ...dragStyle, ...contentStyle }}
             {...stackedSheetDialogHandlers}
             {...portalSheetLayerProps}
             className={portalFormSheetContentClass('2xl')}
             aria-describedby="inactive-managers-description"
           >
-            <div className="relative flex h-9 w-full items-center justify-center bg-white min-[1367px]:hidden">
+            <div
+              className="relative flex h-9 w-full items-center justify-center bg-white min-[1367px]:hidden"
+              {...{ [PORTAL_SHEET_DRAG_HANDLE_ATTR]: '' }}
+            >
               <div
                 className="absolute inset-x-0 -top-2 h-14"
                 style={{ touchAction: 'pan-y' }}
@@ -178,7 +180,7 @@ export function InactiveManagersDialog({ open, onOpenChange }: InactiveManagersD
               </div>
             </div>
 
-            <div className={cn(PORTAL_FORM_SHEET_SCROLL_CLASS, 'pt-4 min-[1367px]:pt-6')}>
+            <PortalFormSheetScrollArea className="pt-4 min-[1367px]:pt-6">
               <p className="mb-4 text-sm text-[#8b8b90]">{t('inactiveManagersDescription')}</p>
 
               {feedback && (
@@ -206,7 +208,7 @@ export function InactiveManagersDialog({ open, onOpenChange }: InactiveManagersD
                 onEdit={openEdit}
                 onActivate={handleActivate}
               />
-            </div>
+            </PortalFormSheetScrollArea>
           </DialogPrimitive.Content>
         </DialogPrimitive.Portal>
       </DialogPrimitive.Root>

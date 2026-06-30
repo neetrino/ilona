@@ -7,6 +7,7 @@ export interface AdminChatListProps {
   activeTab: AdminChatTab | null;
   onTabChange: (tab: AdminChatTab) => void;
   onSelectChat: (chat: Chat) => void;
+  hasActiveChat?: boolean;
 }
 
 export type AdminGroupListItem =

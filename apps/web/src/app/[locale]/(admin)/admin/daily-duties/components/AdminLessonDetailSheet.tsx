@@ -5,15 +5,16 @@ import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useLesson } from '@/features/lessons';
 import { PortalFormSheetDragHandle } from '@/shared/components/ui/portal-form-sheet-drag-handle';
+import { PortalFormSheetScrollArea } from '@/shared/components/ui/portal-form-sheet-scroll-area';
 import { PortalSheetPortal } from '@/shared/components/ui/portal-sheet-portal';
 import { usePortalSheetDrag } from '@/shared/hooks/usePortalSheetDrag';
 import { cn } from '@/shared/lib/utils';
 import {
   PORTAL_FORM_SHEET_HEADER_CLASS,
-  PORTAL_FORM_SHEET_SCROLL_CLASS,
   portalFormSheetContentClass,
 } from '@/shared/lib/portal-form-sheet-classes';
 import { AdminLessonDetailPanel, type AdminLessonTab } from './AdminLessonDetailPanel';
+import { AdminLessonActions } from './AdminLessonActions';
 import type { SubstituteTeacherOption } from './SubstituteLessonModal';
 
 interface AdminLessonDetailSheetProps {
@@ -53,7 +54,7 @@ export function AdminLessonDetailSheet({
     onOpenChange(false);
   };
 
-  const { dragStyle, dragHandleProps, resetDrag } = usePortalSheetDrag({
+  const { dragStyle, dragHandleProps, scrollContentProps, resetDrag } = usePortalSheetDrag({
     onClose: requestClose,
     enabled: isDialogOpen,
   });
@@ -73,24 +74,28 @@ export function AdminLessonDetailSheet({
 
   return (
     <DialogPrimitive.Root open={isDialogOpen} onOpenChange={(nextOpen) => !nextOpen && requestClose()}>
-      <PortalSheetPortal open={isDialogOpen} dragStyle={dragStyle} contentClassName={portalFormSheetContentClass('2xl')} contentProps={{ 'aria-describedby': undefined }}>
+      <PortalSheetPortal open={isDialogOpen} dragStyle={dragStyle}
+        sheetContentRef={scrollContentProps.ref} contentClassName={portalFormSheetContentClass('2xl')} contentProps={{ 'aria-describedby': undefined }}>
           <PortalFormSheetDragHandle dragHandleProps={dragHandleProps} />
 
           <div className={cn(PORTAL_FORM_SHEET_HEADER_CLASS, 'pb-3 pt-2 min-[1367px]:pb-5 min-[1367px]:pt-6')}>
-            <div className="flex items-start justify-between gap-3">
+            <div className="flex items-center justify-between gap-3">
               <DialogPrimitive.Title className="min-w-0 flex-1 break-words text-xl font-semibold leading-snug text-[#1010a3] min-[1367px]:text-lg min-[1367px]:text-[#3b3b40]">
                 {title}
               </DialogPrimitive.Title>
+              {showAdminActions && lessonId ? (
+                <AdminLessonActions
+                  lessonId={lessonId}
+                  teacherOptions={teacherOptions}
+                  onDeleted={requestClose}
+                  menuClassName="self-center"
+                />
+              ) : null}
             </div>
             <p className="mt-1 hidden text-sm text-[#8b8b90] min-[1367px]:block">{subtitle}</p>
           </div>
 
-          <div
-            className={cn(
-              PORTAL_FORM_SHEET_SCROLL_CLASS,
-              'min-h-0 flex-1 pb-[calc(1.5rem+env(safe-area-inset-bottom))] min-[1367px]:pb-6',
-            )}
-          >
+          <PortalFormSheetScrollArea className="min-h-0 flex-1">
             {lessonId ? (
               <AdminLessonDetailPanel
                 lessonId={lessonId}
@@ -102,7 +107,7 @@ export function AdminLessonDetailSheet({
                 showAdminActions={showAdminActions}
               />
             ) : null}
-          </div>
+          </PortalFormSheetScrollArea>
         </PortalSheetPortal>
     </DialogPrimitive.Root>
   );

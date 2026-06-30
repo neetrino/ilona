@@ -7,9 +7,10 @@ import { useTranslations } from 'next-intl';
 import { useUpdateStudent, useStudent, type UpdateStudentDto } from '@/features/students';
 import { useGroups } from '@/features/groups';
 import { useCenters } from '@/features/centers';
-import { useState, useEffect, useMemo, useRef, type TouchEvent } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import type { UserStatus } from '@/types';
 import { getErrorMessage } from '@/shared/lib/api';
+import { usePortalSheetDrag } from '@/shared/hooks/usePortalSheetDrag';
 import { useSheetStackZIndex } from '@/shared/lib/sheet-stack';
 import {
   ensureCurrentGroupInList,
@@ -61,12 +62,6 @@ export function useEditStudentForm({ open, onOpenChange, studentId }: EditStuden
 
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const [dragOffsetY, setDragOffsetY] = useState(0);
-  const [isDragging, setIsDragging] = useState(false);
-  const [isSettling, setIsSettling] = useState(false);
-  const touchStartYRef = useRef<number | null>(null);
-  const touchStartXRef = useRef<number | null>(null);
-  const settleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const updateStudent = useUpdateStudent();
   const { data: student, isLoading: isLoadingStudent } = useStudent(studentId, open);
 
@@ -193,80 +188,26 @@ export function useEditStudentForm({ open, onOpenChange, studentId }: EditStuden
       reset();
       setErrorMessage(null);
       setSuccessMessage(null);
-      setDragOffsetY(0);
-      setIsDragging(false);
-      setIsSettling(false);
     }
   }, [open, reset]);
 
+  const requestClose = useCallback(() => {
+    reset();
+    onOpenChange(false);
+    setErrorMessage(null);
+    setSuccessMessage(null);
+  }, [reset, onOpenChange]);
+
+  const { dragStyle, dragHandleProps, scrollContentProps, resetDrag } = usePortalSheetDrag({
+    enabled: open,
+    onClose: requestClose,
+  });
+
   useEffect(() => {
-    return () => {
-      if (settleTimerRef.current) {
-        clearTimeout(settleTimerRef.current);
-      }
-    };
-  }, []);
-
-  const isMobileViewport = () =>
-    typeof window !== 'undefined' && window.matchMedia('(max-width: 1366px)').matches;
-
-  const resetDragRefs = () => {
-    touchStartYRef.current = null;
-    touchStartXRef.current = null;
-    setIsDragging(false);
-  };
-
-  const handleDragStart = (event: TouchEvent<HTMLDivElement>) => {
-    if (!isMobileViewport()) return;
-    const firstTouch = event.touches[0];
-    if (!firstTouch) return;
-    if (settleTimerRef.current) {
-      clearTimeout(settleTimerRef.current);
-      settleTimerRef.current = null;
+    if (!open) {
+      resetDrag();
     }
-    touchStartYRef.current = firstTouch.clientY;
-    touchStartXRef.current = firstTouch.clientX;
-    setIsSettling(false);
-    setIsDragging(true);
-  };
-
-  const handleDragMove = (event: TouchEvent<HTMLDivElement>) => {
-    if (!isMobileViewport()) return;
-    if (!isDragging || touchStartYRef.current === null || touchStartXRef.current === null) return;
-    const firstTouch = event.touches[0];
-    if (!firstTouch) return;
-    const deltaY = firstTouch.clientY - touchStartYRef.current;
-    const deltaX = Math.abs(firstTouch.clientX - touchStartXRef.current);
-    if (deltaY <= 0 || deltaY <= deltaX) return;
-    event.preventDefault();
-    setDragOffsetY(Math.min(deltaY * 0.95, 340));
-  };
-
-  const handleDragEnd = () => {
-    if (!isMobileViewport()) return;
-    if (!isDragging) return;
-    const shouldClose = dragOffsetY > 110;
-    resetDragRefs();
-    if (shouldClose) {
-      setDragOffsetY(0);
-      onOpenChange(false);
-      return;
-    }
-    setIsSettling(true);
-    setDragOffsetY(0);
-    settleTimerRef.current = setTimeout(() => {
-      setIsSettling(false);
-      settleTimerRef.current = null;
-    }, 280);
-  };
-
-  const dragStyle =
-    dragOffsetY > 0 || isSettling
-      ? {
-          transform: `translateY(${dragOffsetY}px)`,
-          transition: isDragging ? 'none' : 'transform 280ms cubic-bezier(0.22, 1, 0.36, 1)',
-        }
-      : undefined;
+  }, [open, resetDrag]);
 
   const { overlayStyle, contentStyle, isBaseLayer } = useSheetStackZIndex(open);
 
@@ -324,12 +265,6 @@ export function useEditStudentForm({ open, onOpenChange, studentId }: EditStuden
     }
   };
 
-  const requestClose = () => {
-    reset();
-    onOpenChange(false);
-    setErrorMessage(null);
-    setSuccessMessage(null);
-  };
   return {
     t,
     tForm,
@@ -343,9 +278,6 @@ export function useEditStudentForm({ open, onOpenChange, studentId }: EditStuden
     setErrorMessage,
     successMessage,
     setSuccessMessage,
-    dragOffsetY,
-    isDragging,
-    isSettling,
     updateStudent,
     student,
     isLoadingStudent,
@@ -372,10 +304,9 @@ export function useEditStudentForm({ open, onOpenChange, studentId }: EditStuden
     statusOptions,
     isLoadingGroups,
     isLoadingCenters,
-    handleDragStart,
-    handleDragMove,
-    handleDragEnd,
     dragStyle,
+    dragHandleProps,
+    scrollContentProps,
     onSubmit,
     requestClose,
     overlayStyle,

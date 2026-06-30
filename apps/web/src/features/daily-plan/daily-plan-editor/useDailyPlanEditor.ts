@@ -24,7 +24,7 @@ export function useDailyPlanEditor({
   const [topics, setTopics] = useState<DraftTopic[]>([]);
   const [error, setError] = useState<string | null>(null);
 
-  const { dragStyle, dragHandleProps, resetDrag } = usePortalSheetDrag({ onClose });
+  const { dragStyle, dragHandleProps, scrollContentProps, resetDrag } = usePortalSheetDrag({ onClose });
   const create = useCreateDailyPlan();
   const update = useUpdateDailyPlan();
   const { data: myGroups = [], isLoading: isLoadingGroups } = useMyGroups();
@@ -146,6 +146,7 @@ export function useDailyPlanEditor({
     isSaving,
     dragStyle,
     dragHandleProps,
+    scrollContentProps,
     updateTopic,
     updateResource,
     addTopic,

@@ -12,6 +12,7 @@ import {
 } from '@/shared/lib/sheet-stack';
 import { PORTAL_DESKTOP_SIDE_SHEET_CLASS } from '@/shared/lib/portal-form-sheet-classes';
 import { ADMIN_ICON_BUTTON_SM_CLASS } from '@/shared/lib/admin-control-theme';
+import { PORTAL_SHEET_DRAG_HANDLE_ATTR } from '@/shared/hooks/usePortalSheetDrag';
 import { useDailyPlanEditor } from './daily-plan-editor/useDailyPlanEditor';
 import { DailyPlanEditorFormBody } from './daily-plan-editor/DailyPlanEditorFormBody';
 import type { DailyPlanEditorProps } from './daily-plan-editor/daily-plan-editor.types';
@@ -37,6 +38,7 @@ export function DailyPlanEditor(props: DailyPlanEditorProps) {
           )}
         />
         <DialogPrimitive.Content
+          ref={vm.scrollContentProps.ref}
           onOpenAutoFocus={(event) => event.preventDefault()}
           style={{ ...vm.dragStyle, ...contentStyle }}
           {...stackedSheetDialogHandlers}
@@ -53,7 +55,10 @@ export function DailyPlanEditor(props: DailyPlanEditorProps) {
         >
           <DialogPrimitive.Title className="sr-only">{modalTitle}</DialogPrimitive.Title>
 
-          <div className="relative flex h-9 w-full shrink-0 items-center justify-center bg-white min-[1367px]:hidden">
+          <div
+            className="relative flex h-9 w-full shrink-0 items-center justify-center bg-white min-[1367px]:hidden"
+            {...{ [PORTAL_SHEET_DRAG_HANDLE_ATTR]: '' }}
+          >
             <div className="absolute inset-x-0 -top-2 h-14" {...vm.dragHandleProps} />
             <div className="h-1.5 w-14 rounded-full bg-slate-400" />
           </div>

@@ -13,7 +13,7 @@ import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { X } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useStudent } from '@/features/students';
-import { usePortalSheetDrag } from '@/shared/hooks/usePortalSheetDrag';
+import { PORTAL_SHEET_DRAG_HANDLE_ATTR, usePortalSheetDrag } from '@/shared/hooks/usePortalSheetDrag';
 import { formatPhoneForDisplay } from '@/shared/lib/utils';
 import { portalFormSheetContentClass } from '@/shared/lib/portal-form-sheet-classes';
 
@@ -71,7 +71,7 @@ export function StudentDetailsModal({ open, onOpenChange, studentId }: StudentDe
     onOpenChange(false);
   }, [onOpenChange]);
 
-  const { dragStyle, dragHandleProps, resetDrag } = usePortalSheetDrag({
+  const { dragStyle, dragHandleProps, scrollContentProps, resetDrag } = usePortalSheetDrag({
     enabled: true,
     onClose: requestClose,
   });
@@ -97,11 +97,14 @@ export function StudentDetailsModal({ open, onOpenChange, studentId }: StudentDe
     <DialogPrimitive.Root open={isDialogOpen} onOpenChange={(nextOpen) => !nextOpen && requestClose()}>
       <DialogPrimitive.Portal>
         <DialogPrimitive.Overlay style={overlayStyle} {...portalSheetLayerProps} className={stackedSheetOverlayClassName('fixed inset-0 z-50 bg-black/60 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0', isBaseLayer)} />
-        <DialogPrimitive.Content style={{ ...dragStyle, ...contentStyle }} {...stackedSheetDialogHandlers} {...portalSheetLayerProps}
+        <DialogPrimitive.Content ref={scrollContentProps.ref} style={{ ...dragStyle, ...contentStyle }} {...stackedSheetDialogHandlers} {...portalSheetLayerProps}
           className={portalFormSheetContentClass('2xl')}
           aria-describedby={undefined}
         >
-          <div className="relative flex h-9 w-full items-center justify-center bg-[#f8f9fb] min-[1367px]:hidden">
+          <div
+            className="relative flex h-9 w-full items-center justify-center bg-[#f8f9fb] min-[1367px]:hidden"
+            {...{ [PORTAL_SHEET_DRAG_HANDLE_ATTR]: '' }}
+          >
             <div className="absolute inset-x-0 -top-2 h-14" style={{ touchAction: 'pan-y' }} {...dragHandleProps} />
             <div className="h-1.5 w-14 rounded-full bg-slate-400" />
           </div>
@@ -122,7 +125,9 @@ export function StudentDetailsModal({ open, onOpenChange, studentId }: StudentDe
             </div>
           </div>
 
-          <div className="min-h-0 overflow-y-auto overscroll-y-contain [touch-action:pan-y] [-webkit-overflow-scrolling:touch] px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] min-[1367px]:px-6 min-[1367px]:pb-6">
+          <div
+            className="min-h-0 overflow-y-auto overscroll-y-contain [touch-action:pan-y] [-webkit-overflow-scrolling:touch] px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] min-[1367px]:px-6 min-[1367px]:pb-6"
+          >
             {isLoading ? (
               <div className="py-8 text-center text-[#8b8b90]">{t('loadingStudentDetails')}</div>
             ) : isError ? (

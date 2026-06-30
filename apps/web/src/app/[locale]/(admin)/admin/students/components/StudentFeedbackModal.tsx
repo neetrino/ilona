@@ -13,11 +13,9 @@ import {
   useSheetStackZIndex,
   stackedSheetOverlayClassName,
 } from '@/shared/lib/sheet-stack';
-import { usePortalSheetDrag } from '@/shared/hooks/usePortalSheetDrag';
-import {
-  PORTAL_FORM_SHEET_SCROLL_CLASS,
-  portalFormSheetContentClass,
-} from '@/shared/lib/portal-form-sheet-classes';
+import { PortalFormSheetScrollArea } from '@/shared/components/ui/portal-form-sheet-scroll-area';
+import { PORTAL_SHEET_DRAG_HANDLE_ATTR, usePortalSheetDrag } from '@/shared/hooks/usePortalSheetDrag';
+import { portalFormSheetContentClass } from '@/shared/lib/portal-form-sheet-classes';
 import { ADMIN_ICON_BUTTON_SM_CLASS } from '@/shared/lib/admin-control-theme';
 import { cn } from '@/shared/lib/utils';
 
@@ -70,7 +68,7 @@ export function StudentFeedbackModal({
     onOpenChange(false);
   }, [onOpenChange]);
 
-  const { dragStyle, dragHandleProps, resetDrag } = usePortalSheetDrag({
+  const { dragStyle, dragHandleProps, scrollContentProps, resetDrag } = usePortalSheetDrag({
     enabled: true,
     onClose: requestClose,
   });
@@ -119,13 +117,17 @@ export function StudentFeedbackModal({
           )}
         />
         <DialogPrimitive.Content
+          ref={scrollContentProps.ref}
           style={{ ...dragStyle, ...contentStyle }}
           {...stackedSheetDialogHandlers}
           {...portalSheetLayerProps}
           className={portalFormSheetContentClass('2xl')}
           aria-describedby={undefined}
         >
-          <div className="relative flex h-9 w-full items-center justify-center bg-white min-[1367px]:hidden">
+          <div
+            className="relative flex h-9 w-full items-center justify-center bg-white min-[1367px]:hidden"
+            {...{ [PORTAL_SHEET_DRAG_HANDLE_ATTR]: '' }}
+          >
             <div
               className="absolute inset-x-0 -top-2 h-14"
               style={{ touchAction: 'pan-y' }}
@@ -156,7 +158,7 @@ export function StudentFeedbackModal({
             </div>
           </div>
 
-          <div className={cn(PORTAL_FORM_SHEET_SCROLL_CLASS, 'pt-4 min-[1367px]:pt-6')}>
+          <PortalFormSheetScrollArea className="pt-4 min-[1367px]:pt-6">
             {!student ? (
               open && studentIdFromUrl ? (
                 <div className="flex items-center justify-center py-12">
@@ -217,7 +219,7 @@ export function StudentFeedbackModal({
                 )}
               </div>
             )}
-          </div>
+          </PortalFormSheetScrollArea>
         </DialogPrimitive.Content>
       </DialogPrimitive.Portal>
     </DialogPrimitive.Root>

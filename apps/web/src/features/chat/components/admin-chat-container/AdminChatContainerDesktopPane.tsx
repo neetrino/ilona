@@ -4,6 +4,7 @@ import { useTranslations } from 'next-intl';
 import { cn } from '@/shared/lib/utils';
 import { ChatWindow } from '../ChatWindow';
 import { ChatEmptyState } from '../ChatEmptyState';
+import { ADMIN_CHAT_EMPTY_PANE_BG_CLASS } from '../admin-chat-list/admin-chat-list.theme';
 import type { AdminChatContainerViewModel } from './admin-chat-container.types';
 
 interface AdminChatContainerDesktopPaneProps {
@@ -15,14 +16,18 @@ export function AdminChatContainerDesktopPane({ vm }: AdminChatContainerDesktopP
   const { activeChat, emptyTitle, emptyDescription, handleBack, setActiveChat } = vm;
 
   return (
-    <div className={cn('hidden min-h-0 flex-1 flex-col overflow-hidden bg-white lg:flex')}>
+    <div
+      className={cn(
+        'hidden min-h-0 flex-1 flex-col overflow-hidden lg:flex',
+        activeChat ? 'bg-white' : ADMIN_CHAT_EMPTY_PANE_BG_CLASS,
+      )}
+    >
       {activeChat ? (
         <ChatWindow chat={activeChat} onBack={handleBack} onChatUpdated={setActiveChat} />
       ) : (
         <ChatEmptyState
           title={emptyTitle || tChat('selectChat')}
           description={emptyDescription || tChat('selectChatDescription')}
-          className="bg-white lg:bg-[#fafafa]"
         />
       )}
     </div>

@@ -16,13 +16,16 @@ import { AutoDismissToast } from '@/shared/components/ui';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { DAILY_DUTIES_RADIUS_CLASS } from '@/shared/lib/daily-duties/daily-duties-theme';
 import { ADMIN_PRIMARY_BUTTON_CLASS } from '@/shared/lib/admin-control-theme';
+import { LessonDetailTabSectionHeader } from '@/shared/components/daily-duties/LessonDetailTabSectionHeader';
+import { lessonDetailTabShellClass } from '@/shared/components/daily-duties/lesson-detail-tab-layout';
 import { cn } from '@/shared/lib/utils';
 
 interface VoiceTabProps {
   lessonId: string;
+  embeddedInSheet?: boolean;
 }
 
-export function VoiceTab({ lessonId }: VoiceTabProps) {
+export function VoiceTab({ lessonId, embeddedInSheet = false }: VoiceTabProps) {
   const router = useRouter();
   const pathname = usePathname();
   const queryClient = useQueryClient();
@@ -151,6 +154,11 @@ export function VoiceTab({ lessonId }: VoiceTabProps) {
     setIsRecording(false);
   };
 
+  const voiceTitle = lesson?.voiceSent ? 'Edit Voice Message' : 'Record Voice Message';
+  const voiceSubtitle = lesson?.voiceSent
+    ? 'Record a new voice message to replace the existing one'
+    : 'Record a voice message that will be sent to the group chat';
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center p-12">
@@ -168,7 +176,7 @@ export function VoiceTab({ lessonId }: VoiceTabProps) {
   }
 
   return (
-    <div className="p-6">
+    <div className={lessonDetailTabShellClass(embeddedInSheet)}>
       {toast ? (
         <AutoDismissToast
           key={toast.key}
@@ -177,16 +185,11 @@ export function VoiceTab({ lessonId }: VoiceTabProps) {
           onDismiss={() => setToast(null)}
         />
       ) : null}
-      <div className="mb-6">
-        <h3 className="text-lg font-semibold text-slate-800">
-          {lesson.voiceSent ? 'Edit Voice Message' : 'Record Voice Message'}
-        </h3>
-        <p className="text-sm text-slate-500 mt-1">
-          {lesson.voiceSent
-            ? 'Record a new voice message to replace the existing one'
-            : 'Record a voice message that will be sent to the group chat'}
-        </p>
-      </div>
+      <LessonDetailTabSectionHeader
+        title={voiceTitle}
+        embeddedInSheet={embeddedInSheet}
+        subtitle={embeddedInSheet ? undefined : voiceSubtitle}
+      />
 
       {!isRecording ? (
         <div
