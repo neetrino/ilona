@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { emptyStructuredFeedback } from './lesson-feedback-form-utils';
 import { FeedbacksTabStudentCard } from './feedbacks-tab/FeedbacksTabStudentCard';
 import { FeedbacksTabStudentList } from './feedbacks-tab/FeedbacksTabStudentList';
+import { FeedbacksTabStudentSheet } from './feedbacks-tab/FeedbacksTabStudentSheet';
 import {
   FeedbacksTabEmptyStudents,
   FeedbacksTabLessonNotFound,
@@ -44,6 +45,7 @@ export function FeedbacksTab({ lessonId, embeddedInSheet = false }: FeedbacksTab
   const ctx = useFeedbacksTab({ lessonId });
   const { isLoading, lesson, students } = ctx;
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
+  const [sheetStudentId, setSheetStudentId] = useState<string | null>(null);
 
   const studentsKey = useMemo(() => students.map((s) => s.id).join(','), [students]);
 
@@ -58,6 +60,7 @@ export function FeedbacksTab({ lessonId, embeddedInSheet = false }: FeedbacksTab
   }, [studentsKey, selectedStudentId, students]);
 
   const selectedStudent = students.find((s) => s.id === selectedStudentId) ?? null;
+  const sheetStudent = students.find((s) => s.id === sheetStudentId) ?? null;
 
   if (isLoading) {
     return <FeedbacksTabLoadingState />;
@@ -94,16 +97,35 @@ export function FeedbacksTab({ lessonId, embeddedInSheet = false }: FeedbacksTab
         </div>
       </div>
 
-      {/* Mobile / tablet: stacked cards */}
-      <div className={cn('space-y-6 lg:hidden', lessonDetailTabShellClass(embeddedInSheet), 'sm:space-y-8')}>
+      {/* Mobile / tablet: chat-style list + detail sheet */}
+      <div className={cn('flex flex-col lg:hidden', lessonDetailTabShellClass(embeddedInSheet))}>
         <LessonDetailTabSectionHeader title={t('editFeedback')} embeddedInSheet={embeddedInSheet} />
-        {students.map((student) => (
-          <FeedbacksTabStudentCard
-            key={student.id}
-            {...buildStudentCardProps(student, ctx, false)}
+        <div className="-mx-4 min-h-0 flex-1">
+          <FeedbacksTabStudentList
+            students={students}
+            selectedStudentId={sheetStudentId}
+            hasSavedFeedback={ctx.getHasSavedFeedback}
+            onSelectStudent={setSheetStudentId}
           />
-        ))}
+        </div>
       </div>
+
+      <FeedbacksTabStudentSheet
+        open={sheetStudentId !== null}
+        onOpenChange={(open) => {
+          if (!open) {
+            setSheetStudentId(null);
+          }
+        }}
+        student={sheetStudent}
+        hasSavedFeedback={sheetStudent ? ctx.getHasSavedFeedback(sheetStudent.id) : false}
+      >
+        {sheetStudent ? (
+          <FeedbacksTabStudentCard
+            {...buildStudentCardProps(sheetStudent, ctx, true)}
+          />
+        ) : null}
+      </FeedbacksTabStudentSheet>
     </div>
   );
 }

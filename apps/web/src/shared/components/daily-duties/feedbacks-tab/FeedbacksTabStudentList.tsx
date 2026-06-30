@@ -51,11 +51,11 @@ export function FeedbacksTabStudentList({
                   showSavedBadge={saved}
                 />
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-semibold text-slate-900">{displayName}</p>
+                  <p className="truncate text-base font-semibold text-slate-900 lg:text-sm">{displayName}</p>
                   {saved ? (
-                    <p className="truncate text-xs font-medium text-emerald-600">{t('feedbackProvided')}</p>
+                    <p className="truncate text-sm font-medium text-emerald-600 lg:text-xs">{t('feedbackProvided')}</p>
                   ) : (
-                    <p className="truncate text-xs text-slate-500">{t('notProvidedYet')}</p>
+                    <p className="truncate text-sm text-slate-500 lg:text-xs">{t('notProvidedYet')}</p>
                   )}
                 </div>
               </button>
