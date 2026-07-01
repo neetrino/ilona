@@ -9,6 +9,7 @@ import { VoiceTab } from '@/shared/components/daily-duties/VoiceTab';
 import { TextTab } from '@/shared/components/daily-duties/TextTab';
 import { DailyPlanTab } from '@/shared/components/daily-duties/DailyPlanTab';
 import { useLesson } from '@/features/lessons';
+import { ChatBackButton } from '@/features/chat/components/ChatBackButton';
 import { AdminLessonActions } from './AdminLessonActions';
 import type { SubstituteTeacherOption } from './SubstituteLessonModal';
 import { cn } from '@/shared/lib/utils';
@@ -22,6 +23,8 @@ interface AdminLessonDetailPanelProps {
   activeTab?: AdminLessonTab;
   onTabChange?: (tab: AdminLessonTab) => void;
   onDeleted?: () => void;
+  onBack?: () => void;
+  backLabel?: string;
   variant?: 'page' | 'sheet';
   showAdminActions?: boolean;
 }
@@ -32,6 +35,8 @@ export function AdminLessonDetailPanel({
   activeTab: controlledTab,
   onTabChange,
   onDeleted,
+  onBack,
+  backLabel,
   variant = 'page',
   showAdminActions = true,
 }: AdminLessonDetailPanelProps) {
@@ -85,6 +90,11 @@ export function AdminLessonDetailPanel({
             'rounded-none border-0 bg-white lg:rounded-[2rem] lg:border lg:border-[rgba(14,14,16,0.07)]',
         )}
       >
+        {variant === 'page' && onBack ? (
+          <div className="flex shrink-0 items-center border-b border-[rgba(14,14,16,0.07)] px-3 py-3 sm:px-4">
+            <ChatBackButton onClick={onBack} aria-label={backLabel} />
+          </div>
+        ) : null}
         {variant === 'page' && showAdminActions ? (
           <div className="shrink-0 border-b border-[rgba(14,14,16,0.07)] px-4 py-3 lg:hidden">
             <div className="flex items-center justify-between gap-3">
