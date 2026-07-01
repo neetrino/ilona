@@ -25,7 +25,7 @@ export function LandingProgramsSection({ tr, isHy }: LandingSectionProps) {
               <motion.article
                 key={activeProgramIndex}
                 role="tabpanel"
-                className="relative mx-auto flex w-full max-w-[320px] flex-col rounded-[22px] bg-[#093394] px-6 py-5"
+                className="relative mx-auto flex w-full max-w-[320px] flex-col justify-center rounded-[22px] bg-[#093394] px-6 pt-5 pb-8"
                 initial={{ opacity: 0, x: 16 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -16 }}
@@ -101,7 +101,7 @@ export function LandingProgramsSection({ tr, isHy }: LandingSectionProps) {
             {[1, 2, 3, 4].map((item, index) => (
               <motion.article
                 key={item}
-                className="flex w-[300px] flex-col rounded-[26px] bg-[#093394] px-[30px] py-7"
+                className="flex w-[300px] flex-col justify-center rounded-[26px] bg-[#093394] px-[30px] pt-7 pb-10"
                 initial={{ opacity: 0, y: 28 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.55, ease: 'easeOut', delay: index * 0.08 }}
