@@ -55,6 +55,8 @@ interface MultiSelectChipsDropdownProps {
   fitContentWidth?: boolean;
   /** Keep trigger width fixed but expand the open menu to fit option labels. */
   menuFitContentWidth?: boolean;
+  /** Minimum width for the open menu when using menuFitContentWidth. */
+  menuMinWidthClassName?: string;
 }
 
 export function MultiSelectChipsDropdown({
@@ -81,6 +83,7 @@ export function MultiSelectChipsDropdown({
   onClearSelection,
   fitContentWidth = false,
   menuFitContentWidth = false,
+  menuMinWidthClassName,
 }: MultiSelectChipsDropdownProps) {
   const t = useTranslations('common');
   const [isOpen, setIsOpen] = useState(false);
@@ -196,6 +199,8 @@ export function MultiSelectChipsDropdown({
   const hasSummarySelection =
     selectedChips.length > 0 && !(allSelectedLabel && isAllOptionsSelected);
   const expandMenuLabels = fitContentWidth || menuFitContentWidth;
+  const resolvedMenuMinWidthClassName =
+    menuMinWidthClassName ?? (hideSearch && menuFitContentWidth ? 'min-w-[17rem]' : undefined);
 
   return (
     <div className={cn('relative', fitContentWidth && 'w-full sm:w-auto', className)} ref={dropdownRef}>
@@ -315,9 +320,12 @@ export function MultiSelectChipsDropdown({
         <div
           className={cn(
             DROPDOWN_MENU_SURFACE_CLASS,
-            'absolute mt-1 flex max-h-72 flex-col overflow-hidden',
+            'absolute mt-1 flex max-h-72 flex-col overflow-hidden p-0',
             expandMenuLabels
-              ? 'left-1/2 right-auto w-max min-w-full max-w-[calc(100vw-2rem)] -translate-x-1/2'
+              ? cn(
+                  'left-1/2 right-auto w-max min-w-full max-w-[calc(100vw-2rem)] -translate-x-1/2',
+                  resolvedMenuMinWidthClassName,
+                )
               : 'w-full',
           )}
         >
@@ -326,7 +334,7 @@ export function MultiSelectChipsDropdown({
           ) : (
             <>
               {!hideSearch ? (
-                <div className="p-2 border-b border-slate-200">
+                <div className="shrink-0 border-b border-slate-200 p-2">
                   <input
                     type="text"
                     placeholder={searchPlaceholder}
@@ -337,14 +345,19 @@ export function MultiSelectChipsDropdown({
                   />
                 </div>
               ) : null}
-              <div className="flex items-center justify-between px-3 py-2 border-b border-slate-200 bg-slate-50">
+              <div
+                className={cn(
+                  'flex shrink-0 items-center justify-between gap-4 border-b border-slate-200 bg-slate-50 px-3 py-2',
+                  hideSearch && 'pt-3',
+                )}
+              >
                 <button
                   type="button"
                   onClick={(e) => {
                     e.stopPropagation();
                     handleSelectAllFiltered();
                   }}
-                  className="text-xs font-medium text-[#1010a3] transition-colors hover:text-[#0d0d85]"
+                  className="whitespace-nowrap text-xs font-medium text-[#1010a3] transition-colors hover:text-[#0d0d85]"
                   disabled={filteredOptions.length === 0}
                 >
                   Select all (visible)
@@ -355,13 +368,13 @@ export function MultiSelectChipsDropdown({
                     e.stopPropagation();
                     handleClearSelection();
                   }}
-                  className="text-xs font-medium text-slate-600 hover:text-slate-800 transition-colors"
+                  className="whitespace-nowrap text-xs font-medium text-slate-600 transition-colors hover:text-slate-800"
                   disabled={selectedIds.size === 0}
                 >
                   Clear selection
                 </button>
               </div>
-              <div className="overflow-y-auto max-h-52">
+              <div className="max-h-52 overflow-y-auto">
                 {filteredOptions.length === 0 ? (
                   <div className="p-3 text-sm text-slate-500">{noResultsHint}</div>
                 ) : (
