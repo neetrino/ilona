@@ -71,11 +71,6 @@ export function DailyDutiesFilters({
     }));
   }, [t]);
 
-  const allStatusIds = useMemo(
-    () => new Set<string>(DAILY_DUTIES_STATUS_FILTER_OPTIONS),
-    [],
-  );
-
   return (
     <div className="flex w-full min-w-0 flex-col gap-3 lg:flex-row lg:items-center lg:gap-3">
       <div className="relative min-w-0 flex-1 lg:max-w-md">
@@ -123,7 +118,6 @@ export function DailyDutiesFilters({
             allSelectedLabel={t('allStatuses')}
             summaryPartialUsesCount
             hideSearch
-            onClearSelection={() => onStatusChange(allStatusIds)}
             closedTriggerMode="summary"
             menuFitContentWidth
             triggerClassName={ADMIN_CONTROL_CLASS}
@@ -141,9 +135,6 @@ export function DailyDutiesFilters({
               placeholder={t('allTeachers')}
               allSelectedLabel={t('allTeachers')}
               summaryPartialUsesCount
-              onClearSelection={() =>
-                onTeacherChange(new Set(teacherOptions.map((teacher) => teacher.id)))
-              }
               searchPlaceholder={t('searchTeachers')}
               noResultsHint={t('noTeachersFound')}
               isLoading={isLoadingTeachers}

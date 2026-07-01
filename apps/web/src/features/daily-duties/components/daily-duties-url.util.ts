@@ -9,12 +9,21 @@ export const SUBSTITUTE_LESSON_ID_QUERY_KEY = 'substituteLessonId';
 export const DAILY_DUTIES_WEEK_QUERY_KEY = 'week';
 export const DAILY_DUTIES_MONTH_QUERY_KEY = 'month';
 export const RETURN_TO_QUERY_KEY = 'returnTo';
+export const DAILY_DUTIES_FILTER_CLEARED_SENTINEL = 'none';
+
+function isDailyDutiesFilterClearedInUrlValues(values: string[]): boolean {
+  return values.some((value) => value === DAILY_DUTIES_FILTER_CLEARED_SENTINEL);
+}
 
 export function readDailyDutiesTeacherIdsFromUrl(searchParams: URLSearchParams): string[] {
   const live = getLiveSearchParams(searchParams);
   const ids = live
     .getAll('teacherIds')
     .flatMap((value) => value.split(',').map((id) => id.trim()).filter(Boolean));
+
+  if (isDailyDutiesFilterClearedInUrlValues(ids)) {
+    return [];
+  }
 
   if (ids.length > 0) {
     return ids;
@@ -34,6 +43,10 @@ export function readDailyDutiesStatusesFromUrl(searchParams: URLSearchParams): s
   const ids = live
     .getAll('statuses')
     .flatMap((value) => value.split(',').map((id) => id.trim()).filter(Boolean));
+
+  if (isDailyDutiesFilterClearedInUrlValues(ids)) {
+    return [];
+  }
 
   if (ids.length > 0) {
     return ids;

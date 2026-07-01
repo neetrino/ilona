@@ -43,6 +43,7 @@ import {
   readDailyDutiesStatusesFromUrl,
   hasDailyDutiesStatusFilterInUrl,
   readSubstituteLessonModalFromUrl,
+  DAILY_DUTIES_FILTER_CLEARED_SENTINEL,
 } from './daily-duties-url.util';
 
 export function useDailyDutiesPage(mode: DailyDutiesMode) {
@@ -363,10 +364,10 @@ export function useDailyDutiesPage(mode: DailyDutiesMode) {
     if (isTeacherMode || teacherOptions.length === 0) {
       return undefined;
     }
-    if (
-      selectedTeacherIds.size === 0 ||
-      selectedTeacherIds.size >= teacherOptions.length
-    ) {
+    if (selectedTeacherIds.size === 0) {
+      return undefined;
+    }
+    if (selectedTeacherIds.size >= teacherOptions.length) {
       return undefined;
     }
     return Array.from(selectedTeacherIds);
@@ -376,16 +377,11 @@ export function useDailyDutiesPage(mode: DailyDutiesMode) {
     if (isTeacherMode || teacherOptions.length === 0) {
       return false;
     }
-    return (
-      selectedTeacherIds.size > 0 && selectedTeacherIds.size < teacherOptions.length
-    );
+    return selectedTeacherIds.size < teacherOptions.length;
   }, [isTeacherMode, selectedTeacherIds, teacherOptions.length]);
 
   const hasPartialStatusFilter = useMemo(() => {
-    return (
-      selectedStatusIds.size > 0 &&
-      selectedStatusIds.size < DAILY_DUTIES_STATUS_FILTER_VALUES.length
-    );
+    return selectedStatusIds.size < DAILY_DUTIES_STATUS_FILTER_VALUES.length;
   }, [selectedStatusIds]);
 
   const { data: lessonsData, isLoading, isFetching } = useLessons(
@@ -403,7 +399,17 @@ export function useDailyDutiesPage(mode: DailyDutiesMode) {
 
   const { data: stats } = useLessonStatistics();
 
-  const lessons = useMemo(() => lessonsData?.items || [], [lessonsData?.items]);
+  const lessons = useMemo(() => {
+    const items = lessonsData?.items || [];
+    if (
+      !isTeacherMode &&
+      selectedTeacherIds.size === 0 &&
+      hasDailyDutiesTeacherFilterInUrl(searchParams)
+    ) {
+      return [];
+    }
+    return items;
+  }, [lessonsData?.items, isTeacherMode, selectedTeacherIds.size, searchParams]);
 
   const lessonsByDate = useMemo(() => {
     const grouped: Record<string, Lesson[]> = {};
@@ -486,6 +492,16 @@ export function useDailyDutiesPage(mode: DailyDutiesMode) {
         return;
       }
 
+      if (teacherIds.size === 0) {
+        setSelectedTeacherIds(new Set());
+        replaceAllParams((params) => {
+          params.delete('teacherId');
+          params.delete('teacherIds');
+          params.set('teacherIds', DAILY_DUTIES_FILTER_CLEARED_SENTINEL);
+        });
+        return;
+      }
+
       setSelectedTeacherIds(teacherIds);
       replaceAllParams((params) => {
         params.delete('teacherId');
@@ -514,6 +530,16 @@ export function useDailyDutiesPage(mode: DailyDutiesMode) {
         replaceAllParams((params) => {
           params.delete('status');
           params.delete('statuses');
+        });
+        return;
+      }
+
+      if (nextStatuses.size === 0) {
+        setSelectedStatusIds(new Set());
+        replaceAllParams((params) => {
+          params.delete('status');
+          params.delete('statuses');
+          params.set('statuses', DAILY_DUTIES_FILTER_CLEARED_SENTINEL);
         });
         return;
       }

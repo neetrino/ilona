@@ -171,6 +171,9 @@ export function MultiSelectChipsDropdown({
       return allSelectedLabel;
     }
     if (selectedChips.length === 0) {
+      if (summaryPartialUsesCount) {
+        return selectedCountLabel(0);
+      }
       return allSelectedLabel ?? placeholder;
     }
     if (allSelectedLabel || summaryPartialUsesCount) {

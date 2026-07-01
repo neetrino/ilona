@@ -16,7 +16,10 @@ export function filterLessonsByDailyDutiesStatuses(
   selectedStatuses: Set<DailyDutiesLessonStatus>,
   totalStatusCount = DAILY_DUTIES_STATUS_FILTER_VALUES.length,
 ): Lesson[] {
-  if (selectedStatuses.size === 0 || selectedStatuses.size >= totalStatusCount) {
+  if (selectedStatuses.size === 0) {
+    return [];
+  }
+  if (selectedStatuses.size >= totalStatusCount) {
     return lessons;
   }
   return lessons.filter(
