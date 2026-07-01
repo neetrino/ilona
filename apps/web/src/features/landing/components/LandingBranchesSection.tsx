@@ -5,6 +5,8 @@ import { useTranslations } from 'next-intl';
 import { AnimatePresence, motion } from 'framer-motion';
 import { cn } from '@/shared/lib/utils';
 import { BUTTON_HOVER_CLASS, BRANCH_MAP_ICON, BRANCH_NAV_ARROW } from '../landingConstants';
+import { LandingSectionHeader } from './LandingSectionHeader';
+import { LandingScrollReveal } from './LandingScrollReveal';
 import { useBranchCarousel } from '../hooks/useBranchCarousel';
 import type { LandingSectionProps } from '../types';
 
@@ -24,18 +26,16 @@ export function LandingBranchesSection({ tr, isHy }: LandingSectionProps) {
 
   return (
     <>
-      <section id="branches" className="overflow-hidden bg-[#093394]">
+      <section id="branches" className="scroll-mt-28 overflow-hidden bg-[#093394]">
         <div className="flex flex-col items-center gap-6 px-5 pb-12 pt-10 tablet:hidden">
-          <div className="text-center">
-            <h2 className="text-[28px] font-medium leading-[42px] tracking-[0.35px] text-white">
-              {tr('Our Branches', 'Մեր մասնաճյուղերը')}
-            </h2>
-            <p className="mt-2 text-[15px] leading-[22.5px] tracking-[-0.45px] text-white/[0.58]">
-              {tr('Find the location nearest to you', 'Գտեք ձեզ ամենամոտ մասնաճյուղը')}
-            </p>
-          </div>
+          <LandingSectionHeader
+            title={tr('Our Branches', 'Մեր մասնաճյուղերը')}
+            subtitle={tr('Find the location nearest to you', 'Գտեք ձեզ ամենամոտ մասնաճյուղը')}
+            titleClassName="text-[28px] font-medium leading-[42px] tracking-[0.35px] text-white"
+            subtitleClassName="text-[15px] leading-[22.5px] tracking-[-0.45px] text-white/[0.58]"
+          />
       
-          <div className="relative h-[240px] w-full overflow-hidden rounded-[24px] border-[3px] border-white">
+          <LandingScrollReveal className="relative h-[240px] w-full overflow-hidden rounded-[24px] border-[3px] border-white">
             <AnimatePresence initial={false} custom={branchSlideDirection} mode="sync">
               <motion.div
                 key={`mobile-branch-image-${activeBranch.shortLabel}`}
@@ -65,9 +65,9 @@ export function LandingBranchesSection({ tr, isHy }: LandingSectionProps) {
             >
               <span className="ml-1 block size-0 border-y-[10px] border-l-[16px] border-y-transparent border-l-[#093394]" />
             </button>
-          </div>
-      
-          <div className="flex w-full flex-col items-center gap-2 text-center">
+          </LandingScrollReveal>
+
+          <LandingScrollReveal className="flex w-full flex-col items-center gap-2 text-center" delay={0.08}>
             <h3 className="text-[22px] font-bold leading-[33px] text-white/[0.74]">
               {isHy ? activeBranch.branchNameHy : activeBranch.branchName}
             </h3>
@@ -83,7 +83,7 @@ export function LandingBranchesSection({ tr, isHy }: LandingSectionProps) {
               <Image src={BRANCH_MAP_ICON} alt="" width={16} height={16} unoptimized />
               <span>{tr('View on map', 'Դիտել քարտեզում')}</span>
             </a>
-          </div>
+          </LandingScrollReveal>
       
           <div className="flex items-center justify-center gap-5">
             <button
@@ -112,13 +112,15 @@ export function LandingBranchesSection({ tr, isHy }: LandingSectionProps) {
         </div>
       
         <div className="relative mx-auto hidden h-[878px] w-full max-w-[1470px] px-6 tablet:block">
-          <div className="absolute left-1/2 top-[81px] w-full max-w-[1216px] -translate-x-1/2 text-center">
-            <h2 className="text-[48px] font-medium leading-[48px] tracking-[0.3516px] text-white">
-              {tr('Our Branches', 'Մեր մասնաճյուղերը')}
-            </h2>
-            <p className="mt-[27px] text-[20px] leading-[28px] tracking-[-0.4492px] text-white/60">
-              {tr('Find the location nearest to you', 'Գտեք ձեզ ամենամոտ մասնաճյուղը')}
-            </p>
+          <div className="absolute inset-x-0 top-[81px] flex justify-center px-6">
+            <LandingScrollReveal className="w-full max-w-[1216px] text-center">
+              <h2 className="text-[48px] font-medium leading-[48px] tracking-[0.3516px] text-white">
+                {tr('Our Branches', 'Մեր մասնաճյուղերը')}
+              </h2>
+              <p className="mt-[27px] text-[20px] leading-[28px] tracking-[-0.4492px] text-white/60">
+                {tr('Find the location nearest to you', 'Գտեք ձեզ ամենամոտ մասնաճյուղը')}
+              </p>
+            </LandingScrollReveal>
           </div>
       
           <div className="absolute left-[68px] top-[313px] h-[301px] w-[553px] overflow-hidden rounded-[30px]">
@@ -138,8 +140,7 @@ export function LandingBranchesSection({ tr, isHy }: LandingSectionProps) {
                   alt=""
                   fill
                   unoptimized
-                  loading="eager"
-                  fetchPriority="high"
+                  loading="lazy"
                   sizes="553px"
                   className="object-cover object-bottom"
                 />
@@ -167,8 +168,7 @@ export function LandingBranchesSection({ tr, isHy }: LandingSectionProps) {
                   alt=""
                   fill
                   unoptimized
-                  loading="eager"
-                  fetchPriority="high"
+                  loading="lazy"
                   sizes="553px"
                   className="object-cover object-bottom"
                 />
@@ -196,8 +196,7 @@ export function LandingBranchesSection({ tr, isHy }: LandingSectionProps) {
                   alt=""
                   fill
                   unoptimized
-                  loading="eager"
-                  fetchPriority="high"
+                  loading="lazy"
                   sizes="722px"
                   className="object-cover object-bottom"
                 />

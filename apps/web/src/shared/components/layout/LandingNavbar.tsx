@@ -13,27 +13,15 @@ import {
   LANDING_NAVBAR_HEIGHT,
 } from '@/shared/lib/landing-layout';
 import { cn } from '@/shared/lib/utils';
+import { LANDING_NAV_ITEMS, type LandingNavSectionId } from '@/features/landing/landingNav';
 
 type LandingNavbarProps = {
   logoUrl: string;
   profileHref: string;
   logoHref?: string;
+  activeSection?: LandingNavSectionId;
+  onSectionNavigate?: (sectionId: LandingNavSectionId) => void;
 };
-
-type NavItem = {
-  id: string;
-  href: string;
-};
-
-const NAV_ITEMS: NavItem[] = [
-  { id: 'home', href: '#home' },
-  { id: 'about', href: '#about' },
-  { id: 'courses', href: '#courses' },
-  { id: 'teachers', href: '#teachers' },
-  { id: 'branches', href: '#branches' },
-  { id: 'contact', href: '#contact' },
-  { id: 'blog', href: '#contact' },
-];
 
 function ProfileIcon({ className }: { className?: string }) {
   return (
@@ -55,7 +43,13 @@ function ProfileIcon({ className }: { className?: string }) {
   );
 }
 
-export function LandingNavbar({ logoUrl, profileHref, logoHref = '#home' }: LandingNavbarProps) {
+export function LandingNavbar({
+  logoUrl,
+  profileHref,
+  logoHref = '#home',
+  activeSection = 'home',
+  onSectionNavigate,
+}: LandingNavbarProps) {
   const t = useTranslations('home.nav');
   const tHome = useTranslations('home');
   const tCommon = useTranslations('common');
@@ -116,11 +110,40 @@ export function LandingNavbar({ logoUrl, profileHref, logoHref = '#home' }: Land
 
     event.preventDefault();
     setMenuOpen(false);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    onSectionNavigate?.('home');
   };
 
-  const handleNavClick = () => {
+  const handleNavClick = (
+    event: ReactMouseEvent<HTMLAnchorElement>,
+    sectionId: LandingNavSectionId,
+  ) => {
     setMenuOpen(false);
+
+    if (!isOnHomePage) {
+      return;
+    }
+
+    event.preventDefault();
+    onSectionNavigate?.(sectionId);
+  };
+
+  const getNavLinkClassName = (sectionId: LandingNavSectionId, variant: 'desktop' | 'mobile') => {
+    const isActive = activeSection === sectionId;
+
+    if (variant === 'mobile') {
+      return cn(
+        'block rounded-2xl px-4 py-3 text-base font-medium tracking-[-0.2px] transition-colors duration-300',
+        isActive ? 'bg-white/12 text-white' : 'text-white/85 hover:bg-white/10 hover:text-white',
+      );
+    }
+
+    return cn(
+      'relative whitespace-nowrap font-normal tracking-[-0.3px] transition-colors duration-300',
+      isCanvasActive ? 'text-base' : 'text-sm navDesktop:text-[15px] xl:text-base',
+      isActive
+        ? 'text-white after:absolute after:-bottom-1 after:left-0 after:h-[2px] after:w-full after:rounded-full after:bg-white/90 after:content-[""]'
+        : 'text-white/70 hover:text-white',
+    );
   };
 
   const profileLinkClassName = cn(
@@ -161,14 +184,13 @@ export function LandingNavbar({ logoUrl, profileHref, logoHref = '#home' }: Land
             languageToggleClassName="hidden lg:inline-flex"
             center={
               <>
-                {NAV_ITEMS.map((item) => (
+                {LANDING_NAV_ITEMS.map((item) => (
                   <Link
                     key={item.id}
                     href={getNavHref(item.href)}
-                    className={cn(
-                      'whitespace-nowrap font-normal tracking-[-0.3px] transition-opacity hover:opacity-80',
-                      isCanvasActive ? 'text-base' : 'text-sm navDesktop:text-[15px] xl:text-base',
-                    )}
+                    onClick={(event) => handleNavClick(event, item.id)}
+                    aria-current={activeSection === item.id ? 'page' : undefined}
+                    className={getNavLinkClassName(item.id, 'desktop')}
                   >
                     {t(item.id)}
                   </Link>
@@ -235,12 +257,13 @@ export function LandingNavbar({ logoUrl, profileHref, logoHref = '#home' }: Land
             style={isCanvasActive ? { top: scaledMenuTop } : undefined}
           >
             <ul className="flex flex-col gap-1">
-              {NAV_ITEMS.map((item) => (
+              {LANDING_NAV_ITEMS.map((item) => (
                 <li key={item.id}>
                   <Link
                     href={getNavHref(item.href)}
-                    onClick={handleNavClick}
-                    className="block rounded-2xl px-4 py-3 text-base font-medium tracking-[-0.2px] text-white transition-colors hover:bg-white/10"
+                    onClick={(event) => handleNavClick(event, item.id)}
+                    aria-current={activeSection === item.id ? 'page' : undefined}
+                    className={getNavLinkClassName(item.id, 'mobile')}
                   >
                     {t(item.id)}
                   </Link>
@@ -250,7 +273,7 @@ export function LandingNavbar({ logoUrl, profileHref, logoHref = '#home' }: Land
                 <li className="mt-1 border-t border-white/15 pt-1">
                   <Link
                     href={profileHref}
-                    onClick={handleNavClick}
+                    onClick={() => setMenuOpen(false)}
                     className="flex items-center gap-3 rounded-2xl px-4 py-3 text-base font-medium tracking-[-0.2px] text-white transition-colors hover:bg-white/10"
                   >
                     <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center">

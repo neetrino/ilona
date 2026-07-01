@@ -8,11 +8,12 @@ import {
 } from '../api/settings.api';
 import { settingsKeys } from './useSettings';
 
-export function useFooterIconLinks() {
+export function useFooterIconLinks(options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: settingsKeys.footerIconLinks(),
     queryFn: () => fetchFooterIconLinks(),
     staleTime: 5 * 60 * 1000,
+    enabled: options?.enabled ?? true,
   });
 }
 
