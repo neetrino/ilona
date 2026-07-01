@@ -38,7 +38,7 @@ const TILTED_STATUS_BG: Record<DailyDutiesLessonStatus, string> = {
 };
 
 export const dailyDutiesTiltedStatusBadgeClassName =
-  'pointer-events-none absolute -left-4 -top-0.5 inline-flex -translate-y-1/2 -rotate-12 items-center rounded px-1.5 py-0.5 text-[9px] font-extrabold uppercase tracking-[0.08em] text-white shadow-sm';
+  'pointer-events-none absolute -left-4 -top-0.5 inline-flex -translate-y-1/2 -rotate-12 items-center whitespace-nowrap rounded px-1.5 py-0.5 text-[9px] font-extrabold uppercase leading-none tracking-[0.08em] text-white shadow-sm';
 
 function labelKey(status: DailyDutiesLessonStatus): `lessonStatus.${string}` {
   const keys: Record<DailyDutiesLessonStatus, `lessonStatus.${string}`> = {
