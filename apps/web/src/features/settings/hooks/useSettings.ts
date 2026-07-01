@@ -10,8 +10,6 @@ import {
   fetchLogo,
   uploadLogo,
   deleteLogo,
-  fetchActionPercents,
-  updateActionPercents,
   fetchPenalties,
   updatePenalties,
   fetchManagers,
@@ -31,7 +29,6 @@ export const settingsKeys = {
   dashboardBanner: () => [...settingsKeys.all, 'dashboard-banner'] as const,
   footerIconLinks: () => [...settingsKeys.all, 'footer-icon-links'] as const,
   public: () => [...settingsKeys.all, 'public'] as const,
-  actionPercents: () => [...settingsKeys.all, 'action-percents'] as const,
   penalties: () => [...settingsKeys.all, 'penalties'] as const,
   managers: () => [...settingsKeys.all, 'managers'] as const,
 };
@@ -192,40 +189,6 @@ export function useDeleteLogo() {
 }
 
 /**
- * Hook to fetch action percent settings (Admin only)
- */
-export function useActionPercents() {
-  return useQuery({
-    queryKey: settingsKeys.actionPercents(),
-    queryFn: () => fetchActionPercents(),
-  });
-}
-
-/**
- * Hook to update action percent settings (Admin only) - DEPRECATED
- */
-export function useUpdateActionPercents() {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (data: {
-      absencePercent: number;
-      feedbacksPercent: number;
-      voicePercent: number;
-      textPercent: number;
-    }) => updateActionPercents(data),
-    onSuccess: () => {
-      // Invalidate action percents query
-      queryClient.invalidateQueries({ queryKey: settingsKeys.actionPercents() });
-      
-      // Invalidate all salary-related queries so finance recalculates immediately
-      queryClient.invalidateQueries({ queryKey: ['finance', 'salaries'] });
-      queryClient.invalidateQueries({ queryKey: financeKeys.salaries() });
-    },
-  });
-}
-
-/**
  * Hook to fetch penalty amounts (Admin only)
  */
 export function usePenalties() {
@@ -249,11 +212,9 @@ export function useUpdatePenalties() {
       penaltyTextAmd: number;
       penaltyDailyPlanAmd: number;
     }) => updatePenalties(data),
-    onSuccess: () => {
-      // Invalidate penalties query
+    onSuccess: (data) => {
+      queryClient.setQueryData(settingsKeys.penalties(), data);
       queryClient.invalidateQueries({ queryKey: settingsKeys.penalties() });
-      
-      // Invalidate all salary-related queries so finance recalculates immediately
       queryClient.invalidateQueries({ queryKey: ['finance', 'salaries'] });
       queryClient.invalidateQueries({ queryKey: financeKeys.salaries() });
     },

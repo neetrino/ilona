@@ -3,38 +3,19 @@
 // ============================================
 
 /**
- * Action percent weights configuration (DEPRECATED - kept for backward compatibility)
- * Total must equal exactly 100
- */
-export interface ActionPercents {
-  absencePercent: number;
-  feedbacksPercent: number;
-  voicePercent: number;
-  textPercent: number;
-  total: number;
-}
-
-/**
- * Action percent weights for calculation (DEPRECATED - use PenaltyAmounts instead)
- */
-export interface ActionWeights {
-  absence: number;
-  feedbacks: number;
-  voice: number;
-  text: number;
-  dailyPlan: number;
-}
-
-/**
- * Fixed penalty amounts in AMD (replaces percent-based system)
+ * Fixed penalty amounts in AMD per daily duty action (null = not configured yet)
  */
 export interface PenaltyAmounts {
-  penaltyAbsenceAmd: number;
-  penaltyFeedbackAmd: number;
-  penaltyVoiceAmd: number;
-  penaltyTextAmd: number;
-  penaltyDailyPlanAmd: number;
+  penaltyAbsenceAmd: number | null;
+  penaltyFeedbackAmd: number | null;
+  penaltyVoiceAmd: number | null;
+  penaltyTextAmd: number | null;
+  penaltyDailyPlanAmd: number | null;
 }
+
+export type PenaltyAmountsInput = {
+  [K in keyof PenaltyAmounts]: number;
+};
 
 /**
  * Completed actions for a lesson
@@ -45,25 +26,6 @@ export interface CompletedActions {
   voice: boolean;
   text: boolean;
   dailyPlan: boolean;
-}
-
-/**
- * System settings with action percents (DEPRECATED - kept for backward compatibility)
- * Extends Prisma SystemSettings model
- */
-export interface SystemSettingsWithPercents {
-  id: string;
-  vocabDeductionPercent: number;
-  feedbackDeductionPercent: number;
-  maxUnjustifiedAbsences: number;
-  paymentDueDays: number;
-  lessonReminderHours: number;
-  logoUrl: string | null;
-  absencePercent: number;
-  feedbacksPercent: number;
-  voicePercent: number;
-  textPercent: number;
-  updatedAt: Date;
 }
 
 /**
@@ -78,11 +40,11 @@ export interface SystemSettingsWithPenalties {
   paymentDueDays: number;
   lessonReminderHours: number;
   logoUrl: string | null;
-  penaltyAbsenceAmd: number;
-  penaltyFeedbackAmd: number;
-  penaltyVoiceAmd: number;
-  penaltyTextAmd: number;
-  penaltyDailyPlanAmd: number;
+  penaltyAbsenceAmd: number | null;
+  penaltyFeedbackAmd: number | null;
+  penaltyVoiceAmd: number | null;
+  penaltyTextAmd: number | null;
+  penaltyDailyPlanAmd: number | null;
   updatedAt: Date;
 }
 

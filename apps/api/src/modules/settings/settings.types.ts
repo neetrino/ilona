@@ -24,3 +24,4 @@ export type SystemSettingsWithOptionalPenalties = SystemSettings & {
 };
 
 export const SETTINGS_CACHE_KEY = 'settings:system';
+export const CANONICAL_SYSTEM_SETTINGS_ID = 'default';

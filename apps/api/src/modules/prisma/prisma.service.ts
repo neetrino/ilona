@@ -7,6 +7,7 @@ import {
   isTransientConnectionError,
 } from './prisma-connection.util';
 import { ensurePlannedAbsencesTable } from './prisma-planned-absences.util';
+import { ensurePenaltyAmountColumns } from './prisma-penalty-columns.util';
 import { registerPrismaRetryMiddleware } from './prisma-retry.middleware';
 import type { RetryContext } from './prisma.types';
 
@@ -77,6 +78,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
         this.isConnected = true;
         this.logger.log('Database connected successfully');
         await ensurePlannedAbsencesTable(this, this.logger);
+        await ensurePenaltyAmountColumns(this, this.logger);
         this.startHealthCheck();
         return;
       } catch (error) {

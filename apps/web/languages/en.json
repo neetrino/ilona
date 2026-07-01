@@ -1,6 +1,7 @@
 {
   "common": {
     "save": "Save",
+    "savedSuccessfully": "Saved successfully.",
     "cancel": "Cancel",
     "clear": "Clear",
     "delete": "Delete",
@@ -1993,14 +1994,7 @@
     "penaltyDailyPlanAmd": "Daily Plan Penalty (AMD)",
     "penaltyDailyPlanAmdHint": "Deducted when the teacher does not submit a daily plan for a scheduled lesson.",
     "penaltyAmountsMustBeNonNegative": "All penalty amounts must be 0 or greater.",
-    "actionPercentWeights": "Action Percent Weights",
-    "actionPercentDescription": "Configure the weight distribution for the 4 mandatory actions. The total must equal exactly 100%. These weights affect all salary and obligation calculations across the system.",
-    "absencePercent": "Absence %",
-    "feedbacksPercent": "Feedbacks %",
-    "voicePercent": "Voice %",
-    "textPercent": "Text %",
-    "total": "Total",
-    "totalMustEqual100": "Total must equal exactly 100%",
+    "penaltyAmountsSavedSuccess": "Penalty amounts saved successfully.",
     "failedToSaveSettings": "Failed to save settings. Please try again.",
     "minimum8Characters": "Minimum 8 characters",
     "loginUpdatedSuccess": "Login updated successfully",

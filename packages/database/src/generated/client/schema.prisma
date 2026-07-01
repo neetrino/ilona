@@ -507,15 +507,11 @@ model SystemSettings {
   dashboardBannerUrl       String?
   dashboardBannerTitle     String?
   dashboardBannerSubtitle  String?
-  absencePercent           Int      @default(25)
-  feedbacksPercent         Int      @default(25)
-  voicePercent             Int      @default(25)
-  textPercent              Int      @default(25)
-  penaltyAbsenceAmd        Decimal  @default(1000) @db.Decimal(10, 2)
-  penaltyFeedbackAmd       Decimal  @default(500) @db.Decimal(10, 2)
-  penaltyVoiceAmd          Decimal  @default(1000) @db.Decimal(10, 2)
-  penaltyTextAmd           Decimal  @default(1000) @db.Decimal(10, 2)
-  penaltyDailyPlanAmd      Decimal  @default(1000) @db.Decimal(10, 2)
+  penaltyAbsenceAmd        Decimal? @db.Decimal(10, 2)
+  penaltyFeedbackAmd       Decimal? @db.Decimal(10, 2)
+  penaltyVoiceAmd          Decimal? @db.Decimal(10, 2)
+  penaltyTextAmd           Decimal? @db.Decimal(10, 2)
+  penaltyDailyPlanAmd      Decimal? @db.Decimal(10, 2)
   footerIconLinks          Json?
   updatedAt                DateTime @updatedAt
 

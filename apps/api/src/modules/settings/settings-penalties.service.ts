@@ -1,117 +1,68 @@
 import { Injectable, Logger, BadRequestException } from '@nestjs/common';
-import type { PenaltyAmounts } from '@ilona/types';
-import { PrismaService } from '../prisma/prisma.service';
-import type { SystemSettingsCreateData, SystemSettingsUpdateData, SystemSettingsWithOptionalPenalties } from './settings.types';
+import type { PenaltyAmounts, PenaltyAmountsInput } from '@ilona/types';
+import type { SystemSettingsWithOptionalPenalties } from './settings.types';
 import { SettingsCoreService } from './settings-core.service';
 import { convertToNumber } from './settings.util';
+import type { ConvertibleToNumber } from './settings.types';
 
 @Injectable()
 export class SettingsPenaltiesService {
   private readonly logger = new Logger(SettingsPenaltiesService.name);
 
-  constructor(
-    private readonly prisma: PrismaService,
-    private readonly coreService: SettingsCoreService,
-  ) {}
+  constructor(private readonly coreService: SettingsCoreService) {}
 
-  async getPenaltyAmounts(): Promise<PenaltyAmounts> {
-    try {
-      const settings = await this.coreService.getSystemSettings();
-      const settingsWithPenalties = settings as SystemSettingsWithOptionalPenalties;
+  private toNullablePenaltyAmount(value: ConvertibleToNumber): number | null {
+    if (value == null) {
+      return null;
+    }
 
-      return {
-        penaltyAbsenceAmd: convertToNumber(settingsWithPenalties.penaltyAbsenceAmd, 1000),
-        penaltyFeedbackAmd: convertToNumber(settingsWithPenalties.penaltyFeedbackAmd, 500),
-        penaltyVoiceAmd: convertToNumber(settingsWithPenalties.penaltyVoiceAmd, 1000),
-        penaltyTextAmd: convertToNumber(settingsWithPenalties.penaltyTextAmd, 1000),
-        penaltyDailyPlanAmd: convertToNumber(settingsWithPenalties.penaltyDailyPlanAmd, 1000),
-      };
-    } catch (error) {
-      this.logger.error(
-        `Failed to get penalty amounts: ${error instanceof Error ? error.message : String(error)}`,
-        error instanceof Error ? error.stack : undefined,
-      );
-      this.logger.warn('Returning default penalty amounts due to error');
-      return {
-        penaltyAbsenceAmd: 1000,
-        penaltyFeedbackAmd: 500,
-        penaltyVoiceAmd: 1000,
-        penaltyTextAmd: 1000,
-        penaltyDailyPlanAmd: 1000,
-      };
+    const amount = convertToNumber(value);
+    return Number.isNaN(amount) ? null : amount;
+  }
+
+  private toPenaltyPayload(settings: SystemSettingsWithOptionalPenalties): PenaltyAmounts {
+    return {
+      penaltyAbsenceAmd: this.toNullablePenaltyAmount(settings.penaltyAbsenceAmd),
+      penaltyFeedbackAmd: this.toNullablePenaltyAmount(settings.penaltyFeedbackAmd),
+      penaltyVoiceAmd: this.toNullablePenaltyAmount(settings.penaltyVoiceAmd),
+      penaltyTextAmd: this.toNullablePenaltyAmount(settings.penaltyTextAmd),
+      penaltyDailyPlanAmd: this.toNullablePenaltyAmount(settings.penaltyDailyPlanAmd),
+    };
+  }
+
+  private validatePenaltyAmounts(data: PenaltyAmountsInput): void {
+    const entries: Array<[keyof PenaltyAmountsInput, number]> = [
+      ['penaltyAbsenceAmd', data.penaltyAbsenceAmd],
+      ['penaltyFeedbackAmd', data.penaltyFeedbackAmd],
+      ['penaltyVoiceAmd', data.penaltyVoiceAmd],
+      ['penaltyTextAmd', data.penaltyTextAmd],
+      ['penaltyDailyPlanAmd', data.penaltyDailyPlanAmd],
+    ];
+
+    for (const [name, value] of entries) {
+      if (!Number.isFinite(value) || value < 0) {
+        throw new BadRequestException(`${name} must be a non-negative number. Received: ${value}`);
+      }
     }
   }
 
-  async updatePenaltyAmounts(data: {
-    penaltyAbsenceAmd: number;
-    penaltyFeedbackAmd: number;
-    penaltyVoiceAmd: number;
-    penaltyTextAmd: number;
-    penaltyDailyPlanAmd: number;
-  }) {
+  async getPenaltyAmounts(): Promise<PenaltyAmounts> {
+    const settings = await this.coreService.getSystemSettings();
+    return this.toPenaltyPayload(settings as SystemSettingsWithOptionalPenalties);
+  }
+
+  async updatePenaltyAmounts(data: PenaltyAmountsInput): Promise<PenaltyAmounts> {
+    this.validatePenaltyAmounts(data);
+
     try {
-      const penalties = [
-        { name: 'penaltyAbsenceAmd', value: data.penaltyAbsenceAmd },
-        { name: 'penaltyFeedbackAmd', value: data.penaltyFeedbackAmd },
-        { name: 'penaltyVoiceAmd', value: data.penaltyVoiceAmd },
-        { name: 'penaltyTextAmd', value: data.penaltyTextAmd },
-        { name: 'penaltyDailyPlanAmd', value: data.penaltyDailyPlanAmd },
-      ];
+      const settings = await this.coreService.upsertCanonicalSystemSettings(data);
 
-      for (const penalty of penalties) {
-        if (penalty.value < 0) {
-          throw new BadRequestException(
-            `${penalty.name} must be >= 0. Received: ${penalty.value}`,
-          );
-        }
-      }
-
-      let settings = await this.prisma.systemSettings.findFirst();
-
-      if (!settings) {
-        settings = await this.prisma.systemSettings.create({
-          data: {
-            vocabDeductionPercent: 10,
-            feedbackDeductionPercent: 5,
-            maxUnjustifiedAbsences: 3,
-            paymentDueDays: 5,
-            lessonReminderHours: 24,
-            penaltyAbsenceAmd: data.penaltyAbsenceAmd,
-            penaltyFeedbackAmd: data.penaltyFeedbackAmd,
-            penaltyVoiceAmd: data.penaltyVoiceAmd,
-            penaltyTextAmd: data.penaltyTextAmd,
-            penaltyDailyPlanAmd: data.penaltyDailyPlanAmd,
-          } as unknown as SystemSettingsCreateData,
-        });
-      } else {
-        settings = await this.prisma.$transaction(async (tx) => {
-          return tx.systemSettings.update({
-            where: { id: settings!.id },
-            data: {
-              penaltyAbsenceAmd: data.penaltyAbsenceAmd,
-              penaltyFeedbackAmd: data.penaltyFeedbackAmd,
-              penaltyVoiceAmd: data.penaltyVoiceAmd,
-              penaltyTextAmd: data.penaltyTextAmd,
-              penaltyDailyPlanAmd: data.penaltyDailyPlanAmd,
-            } as unknown as SystemSettingsUpdateData,
-          });
-        });
-      }
-
-      await this.coreService.invalidateCache();
-      const settingsWithPenalties = settings as SystemSettingsWithOptionalPenalties;
-
-      return {
-        penaltyAbsenceAmd: convertToNumber(settingsWithPenalties.penaltyAbsenceAmd),
-        penaltyFeedbackAmd: convertToNumber(settingsWithPenalties.penaltyFeedbackAmd),
-        penaltyVoiceAmd: convertToNumber(settingsWithPenalties.penaltyVoiceAmd),
-        penaltyTextAmd: convertToNumber(settingsWithPenalties.penaltyTextAmd),
-        penaltyDailyPlanAmd: convertToNumber(settingsWithPenalties.penaltyDailyPlanAmd),
-      };
+      return this.toPenaltyPayload(settings as SystemSettingsWithOptionalPenalties);
     } catch (error) {
       if (error instanceof BadRequestException) {
         throw error;
       }
+
       this.logger.error(
         `Failed to update penalty amounts: ${error instanceof Error ? error.message : String(error)}`,
         error instanceof Error ? error.stack : undefined,

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useMessages } from 'next-intl';
 import { Button } from '@/shared/components/ui';
 import { usePenalties, useUpdatePenalties } from '@/features/settings/hooks/useSettings';
 import { getErrorMessage } from '@/shared/lib/api';
@@ -14,6 +14,18 @@ type PenaltyFormValues = {
   penaltyDailyPlanAmd: string;
 };
 
+const EMPTY_PENALTY_FORM: PenaltyFormValues = {
+  penaltyAbsenceAmd: '',
+  penaltyFeedbackAmd: '',
+  penaltyVoiceAmd: '',
+  penaltyTextAmd: '',
+  penaltyDailyPlanAmd: '',
+};
+
+function formatPenaltyField(value: number | null | undefined): string {
+  return value == null ? '' : String(value);
+}
+
 function parseNonNegativeNumber(value: string): number | null {
   const normalizedValue = value.trim();
   if (!normalizedValue) return null;
@@ -24,31 +36,39 @@ function parseNonNegativeNumber(value: string): number | null {
   return parsedValue;
 }
 
+function getPenaltySavedSuccessMessage(
+  settingsMessages: unknown,
+  fallbackMessage: string,
+): string {
+  if (typeof settingsMessages !== 'object' || settingsMessages === null) {
+    return fallbackMessage;
+  }
+
+  const value = (settingsMessages as Record<string, unknown>).penaltyAmountsSavedSuccess;
+  return typeof value === 'string' && value.trim().length > 0 ? value : fallbackMessage;
+}
+
 export function PenaltyTab() {
   const t = useTranslations('settings');
   const tCommon = useTranslations('common');
+  const messages = useMessages();
   const { data: penalties, isLoading } = usePenalties();
   const updatePenalties = useUpdatePenalties();
   
-  const [formValues, setFormValues] = useState<PenaltyFormValues>({
-    penaltyAbsenceAmd: '1000',
-    penaltyFeedbackAmd: '500',
-    penaltyVoiceAmd: '1000',
-    penaltyTextAmd: '1000',
-    penaltyDailyPlanAmd: '1000',
-  });
+  const [formValues, setFormValues] = useState<PenaltyFormValues>(EMPTY_PENALTY_FORM);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   // Initialize from API data
   useEffect(() => {
     if (penalties) {
       setFormValues({
-        penaltyAbsenceAmd: String(penalties.penaltyAbsenceAmd),
-        penaltyFeedbackAmd: String(penalties.penaltyFeedbackAmd),
-        penaltyVoiceAmd: String(penalties.penaltyVoiceAmd),
-        penaltyTextAmd: String(penalties.penaltyTextAmd),
-        penaltyDailyPlanAmd: String(penalties.penaltyDailyPlanAmd ?? 1000),
+        penaltyAbsenceAmd: formatPenaltyField(penalties.penaltyAbsenceAmd),
+        penaltyFeedbackAmd: formatPenaltyField(penalties.penaltyFeedbackAmd),
+        penaltyVoiceAmd: formatPenaltyField(penalties.penaltyVoiceAmd),
+        penaltyTextAmd: formatPenaltyField(penalties.penaltyTextAmd),
+        penaltyDailyPlanAmd: formatPenaltyField(penalties.penaltyDailyPlanAmd),
       });
     }
   }, [penalties]);
@@ -86,16 +106,26 @@ export function PenaltyTab() {
 
     setIsSaving(true);
     setError(null);
+    setSuccessMessage(null);
 
     try {
-      await updatePenalties.mutateAsync({
+      const savedPenalties = await updatePenalties.mutateAsync({
         penaltyAbsenceAmd,
         penaltyFeedbackAmd,
         penaltyVoiceAmd,
         penaltyTextAmd,
         penaltyDailyPlanAmd,
       });
-      // Success toast will be handled by the mutation
+      setFormValues({
+        penaltyAbsenceAmd: formatPenaltyField(savedPenalties.penaltyAbsenceAmd),
+        penaltyFeedbackAmd: formatPenaltyField(savedPenalties.penaltyFeedbackAmd),
+        penaltyVoiceAmd: formatPenaltyField(savedPenalties.penaltyVoiceAmd),
+        penaltyTextAmd: formatPenaltyField(savedPenalties.penaltyTextAmd),
+        penaltyDailyPlanAmd: formatPenaltyField(savedPenalties.penaltyDailyPlanAmd),
+      });
+      setSuccessMessage(
+        getPenaltySavedSuccessMessage(messages.settings, tCommon('savedSuccessfully')),
+      );
     } catch (err) {
       setError(getErrorMessage(err, t('failedToSaveSettings')));
     } finally {
@@ -104,6 +134,7 @@ export function PenaltyTab() {
   };
 
   const handleInputChange = (field: keyof PenaltyFormValues, value: string) => {
+    setSuccessMessage(null);
     setFormValues((currentValues) => ({
       ...currentValues,
       [field]: value,
@@ -219,11 +250,16 @@ export function PenaltyTab() {
             <p className="mt-1 text-xs text-[#8b8b90]">{t('penaltyDailyPlanAmdHint')}</p>
           </div>
 
-          {error && (
-            <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-sm text-red-600">
+          {error ? (
+            <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-600">
               {error}
             </div>
-          )}
+          ) : null}
+          {successMessage ? (
+            <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700">
+              {successMessage}
+            </div>
+          ) : null}
         </div>
 
         <div className="pt-4 flex justify-end">
