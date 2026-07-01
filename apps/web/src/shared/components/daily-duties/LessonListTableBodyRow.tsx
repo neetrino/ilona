@@ -14,7 +14,7 @@ import type { TeacherDailyDutiesRowCategory } from '@/shared/lib/daily-duties/te
 import type { ScheduleCardDayStatus } from '@/features/schedule/schedule-dates';
 import { getLessonActionsDerived, type LessonActionId } from '@/shared/lib/daily-duties/lesson-action-states';
 import { DailyDutiesListActionPill } from '@/shared/components/daily-duties/DailyDutiesListActionPill';
-import { DailyDutiesLessonStatusUnderName } from '@/shared/lib/daily-duties/DailyDutiesLessonStatusBadge';
+import { DailyDutiesLessonListNameCell } from '@/shared/lib/daily-duties/DailyDutiesLessonStatusBadge';
 import { LessonListDateCell } from '@/shared/components/daily-duties/LessonListDateCell';
 import {
   getAdminDailyDutiesBasePath,
@@ -166,10 +166,7 @@ export function LessonListTableBodyRow({
         />
       </td>
       <td className="px-4 py-3">
-        <div>
-          <p className="font-semibold text-slate-800">{lesson.group?.name || t('unknownGroupName')}</p>
-          <DailyDutiesLessonStatusUnderName lesson={lesson} />
-        </div>
+        <DailyDutiesLessonListNameCell lesson={lesson} />
       </td>
       {scheduleCategory !== undefined && (
         <LessonListScheduleCategoryCell
