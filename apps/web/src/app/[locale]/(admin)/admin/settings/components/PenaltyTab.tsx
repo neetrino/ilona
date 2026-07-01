@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useTranslations, useMessages } from 'next-intl';
-import { Button } from '@/shared/components/ui';
+import { Button, AutoDismissToast } from '@/shared/components/ui';
 import { usePenalties, useUpdatePenalties } from '@/features/settings/hooks/useSettings';
 import { getErrorMessage } from '@/shared/lib/api';
 
@@ -58,7 +58,7 @@ export function PenaltyTab() {
   const [formValues, setFormValues] = useState<PenaltyFormValues>(EMPTY_PENALTY_FORM);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [successToast, setSuccessToast] = useState<{ key: number; message: string } | null>(null);
 
   // Initialize from API data
   useEffect(() => {
@@ -106,7 +106,7 @@ export function PenaltyTab() {
 
     setIsSaving(true);
     setError(null);
-    setSuccessMessage(null);
+    setSuccessToast(null);
 
     try {
       const savedPenalties = await updatePenalties.mutateAsync({
@@ -123,9 +123,10 @@ export function PenaltyTab() {
         penaltyTextAmd: formatPenaltyField(savedPenalties.penaltyTextAmd),
         penaltyDailyPlanAmd: formatPenaltyField(savedPenalties.penaltyDailyPlanAmd),
       });
-      setSuccessMessage(
-        getPenaltySavedSuccessMessage(messages.settings, tCommon('savedSuccessfully')),
-      );
+      setSuccessToast({
+        key: Date.now(),
+        message: getPenaltySavedSuccessMessage(messages.settings, tCommon('savedSuccessfully')),
+      });
     } catch (err) {
       setError(getErrorMessage(err, t('failedToSaveSettings')));
     } finally {
@@ -134,7 +135,6 @@ export function PenaltyTab() {
   };
 
   const handleInputChange = (field: keyof PenaltyFormValues, value: string) => {
-    setSuccessMessage(null);
     setFormValues((currentValues) => ({
       ...currentValues,
       [field]: value,
@@ -255,11 +255,6 @@ export function PenaltyTab() {
               {error}
             </div>
           ) : null}
-          {successMessage ? (
-            <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700">
-              {successMessage}
-            </div>
-          ) : null}
         </div>
 
         <div className="pt-4 flex justify-end">
@@ -273,6 +268,17 @@ export function PenaltyTab() {
           </Button>
         </div>
       </form>
+
+      {successToast ? (
+        <AutoDismissToast
+          key={successToast.key}
+          message={successToast.message}
+          variant="success"
+          position="center"
+          durationMs={3500}
+          onDismiss={() => setSuccessToast(null)}
+        />
+      ) : null}
     </div>
   );
 }
