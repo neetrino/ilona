@@ -374,7 +374,7 @@ export function MultiSelectChipsDropdown({
                   Clear selection
                 </button>
               </div>
-              <div className="max-h-52 overflow-y-auto">
+              <div className="max-h-52 overflow-y-auto overscroll-contain [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                 {filteredOptions.length === 0 ? (
                   <div className="p-3 text-sm text-slate-500">{noResultsHint}</div>
                 ) : (
