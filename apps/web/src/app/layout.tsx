@@ -1,9 +1,11 @@
 import type { Metadata } from 'next';
+import Script from 'next/script';
 import { Inter } from 'next/font/google';
 import './globals.css';
 import { getSiteUrl, siteConfig } from '@/config/site';
 import { DisableImageDrag } from '@/shared/components/DisableImageDrag';
 import { WarmupRequest } from '@/shared/components/WarmupRequest';
+import { LANDING_SCROLL_RESTORE_EARLY_SCRIPT } from '@/features/landing/landingScrollRestoreEarlyScript';
 
 const inter = Inter({ subsets: ['latin'], preload: false });
 
@@ -39,6 +41,9 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
+        <Script id="landing-scroll-restore" strategy="beforeInteractive">
+          {LANDING_SCROLL_RESTORE_EARLY_SCRIPT}
+        </Script>
         <DisableImageDrag />
         <WarmupRequest />
         {children}

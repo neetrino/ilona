@@ -13,70 +13,70 @@ const LANDING_FAQ_ENTRIES = [
     answerEn:
       'We welcome learners from age 6 through adults. Programs are grouped by age and level so every student studies with peers at a similar stage — from engaging starter classes for children to professional and exam-focused courses for adults.',
     answerHy:
-      'Մենք ընդունում ենք 6 տարեկանից մինչև մեծահասակներ։ Ըրագրերը խմբավորված են տարիքի և մակարդակի համադեյն, որպեսզի յուրաքանչյուր ուսանոխը սովորի իր տարիքային խմբի հետ՝ սկսնական դասերից մինչև մասնագիտական և քննության նպատակով դասընթացներ։',
+      'Մենք աշխատում ենք տարբեր տարիքային խմբերի ուսանողների հետ՝ հաշվի առնելով նրանց գիտելիքների մակարդակը, նպատակները և ուսուցման տեմպը։ Մեր թիմը կօգնի ընտրել ամենահարմար խումբը կամ դասընթացը։',
   },
   {
     id: 'level-duration',
     answerEn:
       'Most students complete one CEFR level in 6–9 months with regular attendance (2–3 sessions per week). Your pace depends on your starting point, homework consistency, and active participation in class.',
     answerHy:
-      'Մեգամասնությունը մեկ CEFR մակարդակն ավարտում է 6–9 ամսու՝ կանունավոր հաճարակման դեպքում (շաբաթական 2–3 դաս)։ Արագությունը կախված է սկզբական մակարդակից, տնային աշխատանքից և դասերում ակտիվ մասնակցությանից։',
+      'Մեկ մակարդակի ավարտման տևողությունը կախված է դասընթացի ձևաչափից, դասերի հաճախականությունից և ուսանողի առաջընթացից։ Գրանցման ընթացքում մենք կներկայացնենք ծրագրի կառուցվածքը և մոտավոր տևողությունը։',
   },
   {
     id: 'trial-lesson',
     answerEn:
       'Yes. Book a complimentary trial lesson to experience our teaching style, meet your potential teacher, and receive a short level assessment — with no obligation to enroll.',
     answerHy:
-      'Այո։ Կարոխ եք ամրագրել անյչար ությունակ դաս՝ ձերանոթնալու մեր դասավանդման ոճինը, հանդիպելու հնարավոր ուսուչի։ և ստանալու կարտ մակարդակի գնահատում՝ արանց պարտադիր գրանցման։',
+      'Այո, հնարավոր է մասնակցել փորձնական դասի՝ ծրագրի ձևաչափին, ուսուցչի մոտեցմանը և դասի ընթացքին ծանոթանալու համար։ Մանրամասները կարող եք ճշտել մեր թիմի հետ գրանցման փուլում։',
   },
   {
     id: 'class-sizes',
     answerEn:
       'Groups typically include 6–10 students. Smaller classes mean more speaking time, personalised feedback, and a supportive atmosphere where everyone participates.',
     answerHy:
-      'Խմբերը սովորաբար 6–10 ուսանոխ են բաղկանց։ Փուքր խմբերը ավելի խոսելու հնարավորություն, անհատական արագանի և աջակցութ միջավայր է ապահովում։',
+      'Խմբերի չափը կազմվում է այնպես, որ յուրաքանչյուր ուսանող ստանա բավարար ուշադրություն և կարողանա ակտիվ մասնակցել դասին։ Խմբի վերջնական կազմը կարող է տարբեր լինել՝ կախված դասընթացից և մակարդակից։',
   },
   {
     id: 'switch-branch',
     answerEn:
       'Absolutely. You can transfer to any IEC branch in Yerevan if your schedule or location changes. Our team will help match you with a suitable group at your current level.',
     answerHy:
-      'Անշուշտ։ Եթե ձեր գրանցման կամ տեխակարդակը կամ տեխադրությունը ևննագելի դեպքում է, կարոխ եք տեխապոխվել IEC-ի ցանկացաց մասնագրության։ Մեր թիմը կյողնի գտնել ձեր մակարդակին համապատասխան խմբ։',
+      'Այո, անհրաժեշտության դեպքում կարող ենք քննարկել մասնաճյուղը փոխելու հնարավորությունը։ Փոփոխությունը կախված է տվյալ մասնաճյուղում համապատասխան խմբի, մակարդակի և ազատ տեղերի առկայությունից։',
   },
   {
     id: 'materials',
     answerEn:
       'We provide core course books and digital resources. You will need a notebook and pen; headphones are recommended for online practice. Any additional materials will be communicated at enrollment.',
     answerHy:
-      'Մենք ապահովում ենք հիմնական դասագրքեր և թվային րեսուրսներ։ Դեզ անհրաջեշտ են նոտատետր և գրիչ, իսկ ականջակալները խորուրդ են տրվում արցանց վարջություների համա։ Լրացուցիչ նյութերի մասին կտելեկացնենք գրանցման ժամանակ։',
+      'Ուսումնական նյութերի ցանկը կախված է ընտրված դասընթացից և մակարդակից։ Դասընթացի մեկնարկից առաջ մեր թիմը կտրամադրի անհրաժեշտ տեղեկությունը և կօգնի ճիշտ պատրաստվել դասերին։',
   },
   {
     id: 'international-exams',
     answerEn:
       'Yes. We offer dedicated IELTS, TOEFL, and Cambridge preparation with mock tests, writing workshops, and strategies tailored to your target score and exam date.',
     answerHy:
-      'Այո։ Մենք արաջարկում ենք IELTS, TOEFL և Cambridge քննությաների նպատակով պատրաստում՝ պորդզնական թեստերով, գրավոր աշխատանքի դասերով և ձեր նպակային միավորին համապատասխան րազմավանդություներով։',
+      'Այո, մենք օգնում ենք ուսանողներին պատրաստվել միջազգային քննությունների՝ կենտրոնանալով անհրաժեշտ հմտությունների, առաջադրանքների ձևաչափի և արդյունավետ պատրաստվածության վրա։ Ծրագիրը ընտրվում է ըստ ուսանողի նպատակի և ներկայիս մակարդակի։',
   },
   {
     id: 'miss-class',
     answerEn:
       'Please notify us in advance when possible. Depending on your program, you may attend a makeup session or receive lesson materials to stay on track. Repeated absences may affect your progress.',
     answerHy:
-      'Հնարավորության դեպքում խնդրում ենք արացակից տեբեակացնել։ Դեզ ալիքական կարագրից կախված՝ կարոխ եք մասնակածել փուխհատության դասին կամ ստանալ դասի նյութերը։ Կնդական բաց թոեխնումները կարոբ են ազդել արաջընթացի վրա։',
+      'Եթե բաց եք թողել դասը, անհրաժեշտ է տեղեկացնել մեր թիմին կամ ուսուցչին։ Մենք կօգնենք հասկանալ բաց թողած նյութը լրացնելու հնարավոր տարբերակները՝ ըստ դասընթացի կանոնների և խմբի ընթացքի։',
   },
   {
     id: 'discounts',
     answerEn:
       'We offer seasonal promotions, sibling discounts, and early enrollment benefits. Contact any branch or follow us on social media for current offers.',
     answerHy:
-      'Մենք արաջարկում ենք սեզոնային ակցիաներ, եղբայր-եխպորի զեղչեր և արաջակի գրանցման հոնարներ։ Ընտացիք արաջարկների համար կապվեցը ցանկացաց մասնագրության թե կամ հետեվեցը մեզ սոծիալիական անգներում։',
+      'Զեղչերի և հատուկ առաջարկների առկայությունը կարող է տարբեր լինել՝ կախված ընթացիկ ծրագրերից, գրանցման պայմաններից կամ ընտրված դասընթացից։ Թարմ տեղեկությունը կարող եք ստանալ մեր թիմից։',
   },
   {
     id: 'track-progress',
     answerEn:
       'Through regular assessments, teacher feedback, and our student portal where you can view attendance, grades, and personalised recommendations after each unit.',
     answerHy:
-      'Կանունավոր գնահատումների, ուսուչի արագանի և ուսանոխական պորտալի միջոցով, որտեղ կարոբ եք տեսնել հաճարակմանը, գնահատակաները և անհատական խորհուրդները յուրաքանչյուր բլոկից հետ։',
+      'Ուսանողի առաջընթացը գնահատվում է դասերի ընթացքում՝ ըստ մասնակցության, առաջադրանքների կատարման և ձեռք բերված գիտելիքների։ Անհրաժեշտության դեպքում մեր թիմը կամ ուսուցիչը կտրամադրի հետադարձ կապ և կօգնի հասկանալ հաջորդ քայլերը։',
   },
 ] as const;
 

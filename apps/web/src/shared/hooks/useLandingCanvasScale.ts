@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useState } from 'react';
 import {
   getLandingCanvasMetrics,
   LANDING_CANVAS_MIN_WIDTH,
@@ -9,29 +9,24 @@ import {
 
 type LandingCanvasMetrics = ReturnType<typeof getLandingCanvasMetrics>;
 
-function readMetrics(
-  designWidth: number,
-  minWidth: number,
-): LandingCanvasMetrics {
-  if (typeof window === 'undefined') {
-    return { isCanvasActive: false, scale: 1 };
-  }
-
-  return getLandingCanvasMetrics(window.innerWidth, designWidth, minWidth);
-}
+/** Matches SSR HTML so hydration succeeds; real metrics apply before first paint. */
+const INITIAL_METRICS: LandingCanvasMetrics = { isCanvasActive: false, scale: 1 };
 
 export function useLandingCanvasScale(
   designWidth = LANDING_DESIGN_WIDTH,
   minWidth = LANDING_CANVAS_MIN_WIDTH,
 ) {
-  const [metrics, setMetrics] = useState(() => readMetrics(designWidth, minWidth));
+  const [metrics, setMetrics] = useState(INITIAL_METRICS);
 
   const updateMetrics = useCallback(() => {
     setMetrics(getLandingCanvasMetrics(window.innerWidth, designWidth, minWidth));
   }, [designWidth, minWidth]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     updateMetrics();
+  }, [updateMetrics]);
+
+  useEffect(() => {
     window.addEventListener('resize', updateMetrics, { passive: true });
     return () => window.removeEventListener('resize', updateMetrics);
   }, [updateMetrics]);
