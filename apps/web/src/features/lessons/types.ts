@@ -106,6 +106,7 @@ export interface LessonFilters {
   groupId?: string;
   groupIds?: string[];
   teacherId?: string;
+  teacherIds?: string[];
   status?: LessonStatus;
   dateFrom?: string;
   dateTo?: string;

@@ -25,6 +25,7 @@ export class LessonCrudService {
     groupId?: string;
     groupIds?: string[];
     teacherId?: string;
+    teacherIds?: string[];
     status?: LessonStatus;
     dateFrom?: Date;
     dateTo?: Date;

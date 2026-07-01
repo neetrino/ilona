@@ -34,10 +34,12 @@ import {
   SUBSTITUTE_LESSON_MODAL_QUERY_VALUE,
   buildDailyDutiesLessonDetailHref,
   formatDailyDutiesMonthParam,
+  formatDailyDutiesTeacherIdsParam,
   formatDailyDutiesWeekParam,
   isAddLessonModalOpen,
   parseDailyDutiesMonthParam,
   parseDailyDutiesWeekParam,
+  readDailyDutiesTeacherIdsFromUrl,
   readSubstituteLessonModalFromUrl,
 } from './daily-duties-url.util';
 
@@ -74,7 +76,7 @@ export function useDailyDutiesPage(mode: DailyDutiesMode) {
   const [sortBy, setSortBy] = useState<string | undefined>(undefined);
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | undefined>(undefined);
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [selectedTeacherId, setSelectedTeacherId] = useState<string>('');
+  const [selectedTeacherIds, setSelectedTeacherIds] = useState<Set<string>>(new Set());
   const [selectedStatus, setSelectedStatus] = useState<DailyDutiesStatusFilter>('');
 
   const readAnchorDateFromUrl = useCallback((): Date => {
@@ -195,7 +197,7 @@ export function useDailyDutiesPage(mode: DailyDutiesMode) {
     }
 
     setSearchQuery(readUrlSearchParam('q', searchParams, urlRevision) || '');
-    setSelectedTeacherId(readUrlSearchParam('teacherId', searchParams, urlRevision) || '');
+    setSelectedTeacherIds(new Set(readDailyDutiesTeacherIdsFromUrl(searchParams)));
 
     const statusFromUrl = readUrlSearchParam('status', searchParams, urlRevision);
     const validStatuses: DailyDutiesLessonStatus[] = ['DONE', 'CAUTION', 'IN_PROGRESS', 'WAITING'];
@@ -340,6 +342,11 @@ export function useDailyDutiesPage(mode: DailyDutiesMode) {
     return getWeekDateRangeForApi(weekDates);
   }, [currentDate, viewMode, weekDates]);
 
+  const teacherIdsArray = useMemo(
+    () => (selectedTeacherIds.size > 0 ? Array.from(selectedTeacherIds) : undefined),
+    [selectedTeacherIds],
+  );
+
   const { data: lessonsData, isLoading, isFetching } = useLessons(
     {
       dateFrom: rangeFrom,
@@ -348,7 +355,7 @@ export function useDailyDutiesPage(mode: DailyDutiesMode) {
       sortBy: sortBy === 'scheduledAt' ? 'scheduledAt' : undefined,
       sortOrder,
       search: searchQuery || undefined,
-      teacherId: isTeacherMode ? undefined : selectedTeacherId || undefined,
+      teacherIds: isTeacherMode ? undefined : teacherIdsArray,
     },
     { refetchInterval: 60000, refetchIntervalInBackground: false },
   );
@@ -424,9 +431,12 @@ export function useDailyDutiesPage(mode: DailyDutiesMode) {
   );
 
   const handleTeacherChange = useCallback(
-    (teacherId: string) => {
-      setSelectedTeacherId(teacherId);
-      replaceParams({ teacherId: teacherId || null });
+    (teacherIds: Set<string>) => {
+      setSelectedTeacherIds(teacherIds);
+      replaceParams({
+        teacherIds: formatDailyDutiesTeacherIdsParam(teacherIds),
+        teacherId: null,
+      });
     },
     [replaceParams],
   );
@@ -454,7 +464,7 @@ export function useDailyDutiesPage(mode: DailyDutiesMode) {
     goToToday,
     stats,
     searchQuery,
-    selectedTeacherId,
+    selectedTeacherIds,
     selectedStatus,
     teacherOptions,
     isLoadingTeachers,

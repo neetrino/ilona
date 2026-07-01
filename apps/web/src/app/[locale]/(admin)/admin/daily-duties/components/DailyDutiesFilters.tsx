@@ -3,26 +3,28 @@
 import { useState, useEffect, useRef, startTransition } from 'react';
 import { useTranslations } from 'next-intl';
 import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
+import { MultiSelectChipsDropdown } from '@/shared/components/ui/multi-select-chips-dropdown';
 import { ADMIN_CONTROL_CLASS, ADMIN_SEARCH_INPUT_CLASS } from '@/shared/lib/admin-control-theme';
+import { cn } from '@/shared/lib/utils';
 import type { DailyDutiesStatusFilter } from '@/shared/lib/daily-duties/filter-by-daily-duties-status';
 import { DAILY_DUTIES_STATUS_FILTER_OPTIONS } from '@/shared/lib/daily-duties/DailyDutiesLessonStatusBadge';
 import type { DailyDutiesLessonStatus } from '@ilona/types';
 
 interface DailyDutiesFiltersProps {
   searchQuery: string;
-  selectedTeacherId: string;
+  selectedTeacherIds: Set<string>;
   selectedStatus: DailyDutiesStatusFilter;
   teacherOptions: Array<{ id: string; label: string }>;
   isLoadingTeachers?: boolean;
   onSearchChange: (value: string) => void;
-  onTeacherChange: (teacherId: string) => void;
+  onTeacherChange: (teacherIds: Set<string>) => void;
   onStatusChange: (status: DailyDutiesStatusFilter) => void;
   hideTeacherFilter?: boolean;
 }
 
 export function DailyDutiesFilters({
   searchQuery,
-  selectedTeacherId,
+  selectedTeacherIds,
   selectedStatus,
   teacherOptions,
   isLoadingTeachers = false,
@@ -59,7 +61,7 @@ export function DailyDutiesFilters({
     onSearchChange('');
   };
 
-  const teacherSelectOptions = [{ id: '', label: t('allTeachers') }, ...teacherOptions];
+  const teacherSelectOptions = teacherOptions;
 
   const statusLabel = (status: DailyDutiesLessonStatus): string => {
     const keys: Record<DailyDutiesLessonStatus, `lessonStatus.${string}`> = {
@@ -129,15 +131,19 @@ export function DailyDutiesFilters({
         </div>
 
         {!hideTeacherFilter ? (
-          <div className="w-full sm:min-w-[11rem] sm:w-auto">
-            <SingleSelectDropdown
-              id="calendar-teacher-filter"
+          <div className="w-full sm:w-auto">
+            <MultiSelectChipsDropdown
               options={teacherSelectOptions}
-              value={selectedTeacherId}
-              onValueChange={(nextValue) => onTeacherChange(nextValue ?? '')}
+              selectedIds={selectedTeacherIds}
+              onSelectionChange={onTeacherChange}
+              placeholder={t('allTeachers')}
+              searchPlaceholder={t('searchTeachers')}
+              noResultsHint={t('noTeachersFound')}
               isLoading={isLoadingTeachers}
-              className="sm:min-w-[11rem]"
-              triggerClassName={ADMIN_CONTROL_CLASS}
+              closedTriggerMode="summary"
+              fitContentWidth
+              triggerClassName={cn(ADMIN_CONTROL_CLASS, 'px-4 py-0 items-center')}
+              selectedCountLabel={(count) => t('teachersSelected', { count })}
             />
           </div>
         ) : null}

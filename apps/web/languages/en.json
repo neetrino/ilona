@@ -2311,6 +2311,9 @@
     },
     "searchLessonsPlaceholder": "Search lessons by keyword, group, or teacher...",
     "allTeachers": "All teachers",
+    "searchTeachers": "Search teachers...",
+    "noTeachersFound": "No teachers found",
+    "teachersSelected": "{count} teachers selected",
     "allStatuses": "All statuses",
     "lessonStatus": {
       "done": "Done",

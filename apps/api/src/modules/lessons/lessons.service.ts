@@ -29,6 +29,7 @@ export class LessonsService {
     groupId?: string;
     groupIds?: string[];
     teacherId?: string;
+    teacherIds?: string[];
     status?: LessonStatus;
     dateFrom?: Date;
     dateTo?: Date;

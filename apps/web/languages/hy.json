@@ -2311,6 +2311,9 @@
     },
     "searchLessonsPlaceholder": "Որոնել դասեր բառով, խմբով կամ ուսուցիչով...",
     "allTeachers": "Բոլոր ուսուցիչները",
+    "searchTeachers": "Որոնել ուսուցիչներ...",
+    "noTeachersFound": "Ուսուցիչներ չեն գտնվել",
+    "teachersSelected": "{count} ուսուցիչ ընտրված",
     "allStatuses": "Բոլոր կարգավիճակները",
     "lessonStatus": {
       "done": "Կատարված",
