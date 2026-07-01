@@ -6,6 +6,7 @@ import { getSiteUrl, siteConfig } from '@/config/site';
 import { DisableImageDrag } from '@/shared/components/DisableImageDrag';
 import { WarmupRequest } from '@/shared/components/WarmupRequest';
 import { LANDING_SCROLL_RESTORE_EARLY_SCRIPT } from '@/features/landing/landingScrollRestoreEarlyScript';
+import { LANDING_CANVAS_SCALE_SCRIPT } from '@/shared/lib/landing-layout';
 
 const inter = Inter({ subsets: ['latin'], preload: false });
 
@@ -43,6 +44,9 @@ export default function RootLayout({
       <body className={inter.className}>
         <Script id="landing-scroll-restore" strategy="beforeInteractive">
           {LANDING_SCROLL_RESTORE_EARLY_SCRIPT}
+        </Script>
+        <Script id="landing-canvas-scale-init" strategy="beforeInteractive">
+          {LANDING_CANVAS_SCALE_SCRIPT}
         </Script>
         <DisableImageDrag />
         <WarmupRequest />

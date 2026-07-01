@@ -5,6 +5,7 @@ import { useAuthStore, getPortalEntryPath } from '@/features/auth/store/auth.sto
 import { useLogo } from '@/features/settings/hooks/useSettings';
 import { getFullApiUrl } from '@/shared/lib/api';
 import { LandingNavbar } from '@/shared/components/layout/LandingNavbar';
+import { LandingCanvasScaleRuntime } from '@/shared/components/layout/LandingCanvasScaleInit';
 import { CanvasScaler } from '@/shared/components/layout/CanvasScaler';
 import { useLandingTr } from '../hooks/useLandingTr';
 import { useLandingActiveSection } from '../hooks/useLandingActiveSection';
@@ -98,6 +99,7 @@ export function LandingPageContent() {
 
   return (
     <>
+      <LandingCanvasScaleRuntime />
       <LandingNavbar
         logoUrl={logoUrl}
         profileHref={profileHref}
