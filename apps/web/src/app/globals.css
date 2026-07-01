@@ -154,6 +154,10 @@
   }
 }
 
+html.landing-scroll-restore-pending {
+  visibility: hidden;
+}
+
 @layer utilities {
   @media (min-width: 744px) {
     html.landing-canvas-active .landing-canvas-scale-wrap {

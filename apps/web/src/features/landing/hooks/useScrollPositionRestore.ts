@@ -1,18 +1,14 @@
 import { useEffect } from 'react';
 import { usePathname } from 'next/navigation';
-import { LANDING_NAV_ITEMS, type LandingNavSectionId } from '../landingNav';
 import {
   getLandingSectionIdFromHash,
   getLandingSectionScrollTop,
+  isLandingNavSectionId,
   releaseLandingScrollRestoreLock,
   scrollToPositionWhenReady,
 } from '../landingScroll';
 
 const RESTORE_LOCK_SAFETY_MS = 3000;
-
-function isLandingNavSectionId(sectionId: string): sectionId is LandingNavSectionId {
-  return LANDING_NAV_ITEMS.some((item) => item.id === sectionId);
-}
 
 function readSavedScrollTop(storageKey: string): number | null {
   const savedPosition = sessionStorage.getItem(storageKey);
@@ -47,13 +43,6 @@ export function useScrollPositionRestore(): void {
     const restoreScroll = () => {
       cancelRestore?.();
 
-      const savedTop = readSavedScrollTop(storageKey);
-      if (savedTop !== null && savedTop > 0) {
-        isRestoring = true;
-        cancelRestore = scrollToPositionWhenReady(() => savedTop, { onSettled: finishRestore });
-        return;
-      }
-
       const hashSection = getLandingSectionIdFromHash(window.location.hash);
       if (hashSection && isLandingNavSectionId(hashSection)) {
         isRestoring = true;
@@ -61,6 +50,13 @@ export function useScrollPositionRestore(): void {
           () => getLandingSectionScrollTop(hashSection),
           { onSettled: finishRestore },
         );
+        return;
+      }
+
+      const savedTop = readSavedScrollTop(storageKey);
+      if (savedTop !== null && savedTop > 0) {
+        isRestoring = true;
+        cancelRestore = scrollToPositionWhenReady(() => savedTop, { onSettled: finishRestore });
         return;
       }
 

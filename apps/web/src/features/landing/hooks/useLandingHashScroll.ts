@@ -2,11 +2,11 @@
 
 import { useEffect } from 'react';
 import { LANDING_NAV_ITEMS, type LandingNavSectionId } from '../landingNav';
-import { getLandingSectionIdFromHash } from '../landingScroll';
-
-function isLandingNavSectionId(sectionId: string): sectionId is LandingNavSectionId {
-  return LANDING_NAV_ITEMS.some((item) => item.id === sectionId);
-}
+import {
+  getLandingSectionIdFromHash,
+  isLandingNavSectionId,
+  scrollToLandingSection,
+} from '../landingScroll';
 
 export function useLandingHashScroll(
   scrollToSection: (sectionId: LandingNavSectionId) => void,
@@ -22,10 +22,15 @@ export function useLandingHashScroll(
       return;
     }
 
-    const timer = window.setTimeout(() => {
-      scrollToSection(sectionId);
-    }, 120);
-
-    return () => window.clearTimeout(timer);
+    scrollToSection(sectionId);
   }, [enabled, scrollToSection]);
+}
+
+/** @deprecated Prefer useScrollPositionRestore for refresh restoration. */
+export function scrollToLandingHashSection(sectionId: LandingNavSectionId): void {
+  if (!LANDING_NAV_ITEMS.some((item) => item.id === sectionId)) {
+    return;
+  }
+
+  scrollToLandingSection(sectionId, { behavior: 'auto' });
 }

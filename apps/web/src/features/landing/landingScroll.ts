@@ -1,9 +1,19 @@
-import { LANDING_HEADER_SCROLL_OFFSET } from './landingNav';
+import {
+  LANDING_HEADER_SCROLL_OFFSET,
+  LANDING_NAV_SECTION_IDS,
+  type LandingNavSectionId,
+} from './landingNav';
 import { LANDING_SCROLL_RESTORE_PENDING_CLASS } from './landingScrollRestoreEarlyScript';
 
 export { LANDING_SCROLL_RESTORE_PENDING_CLASS };
 
-function getScrollBehavior(): ScrollBehavior {
+export const LANDING_SCROLL_RESTORE_SETTLED_EVENT = 'landing-scroll-restore-settled';
+
+function getScrollBehavior(preferred?: ScrollBehavior): ScrollBehavior {
+  if (preferred) {
+    return preferred;
+  }
+
   if (typeof window === 'undefined') {
     return 'auto';
   }
@@ -11,13 +21,18 @@ function getScrollBehavior(): ScrollBehavior {
   return window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
 }
 
-export function scrollToLandingSection(sectionId: string): void {
+export function scrollToLandingSection(
+  sectionId: string,
+  options?: { behavior?: ScrollBehavior },
+): void {
   if (typeof window === 'undefined') {
     return;
   }
 
+  const behavior = getScrollBehavior(options?.behavior);
+
   if (sectionId === 'home') {
-    window.scrollTo({ top: 0, behavior: getScrollBehavior() });
+    window.scrollTo({ top: 0, behavior });
     return;
   }
 
@@ -26,7 +41,6 @@ export function scrollToLandingSection(sectionId: string): void {
     return;
   }
 
-  const behavior = getScrollBehavior();
   const top =
     element.getBoundingClientRect().top + window.scrollY - LANDING_HEADER_SCROLL_OFFSET;
 
@@ -36,6 +50,28 @@ export function scrollToLandingSection(sectionId: string): void {
 export function getLandingSectionIdFromHash(hash: string): string | null {
   const sectionId = hash.replace(/^#/, '').trim();
   return sectionId.length > 0 ? sectionId : null;
+}
+
+export function isLandingNavSectionId(
+  sectionId: string,
+  sectionIds: readonly LandingNavSectionId[] = LANDING_NAV_SECTION_IDS,
+): sectionId is LandingNavSectionId {
+  return sectionIds.includes(sectionId as LandingNavSectionId);
+}
+
+export function resolveInitialLandingSection(
+  sectionIds: readonly LandingNavSectionId[],
+): LandingNavSectionId {
+  if (typeof window === 'undefined') {
+    return sectionIds[0] ?? 'home';
+  }
+
+  const hashSection = getLandingSectionIdFromHash(window.location.hash);
+  if (hashSection && isLandingNavSectionId(hashSection, sectionIds)) {
+    return hashSection;
+  }
+
+  return sectionIds[0] ?? 'home';
 }
 
 export function getLandingSectionScrollTop(sectionId: string): number | null {
@@ -65,6 +101,7 @@ export function releaseLandingScrollRestoreLock(): void {
   }
 
   document.documentElement.classList.remove(LANDING_SCROLL_RESTORE_PENDING_CLASS);
+  window.dispatchEvent(new Event(LANDING_SCROLL_RESTORE_SETTLED_EVENT));
 }
 
 export function scrollToPositionWhenReady(
