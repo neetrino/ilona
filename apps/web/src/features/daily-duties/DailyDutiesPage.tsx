@@ -81,8 +81,7 @@ export function DailyDutiesPage({ mode }: DailyDutiesPageProps) {
             monthDates={dailyDuties.monthDates}
             lessonsByDate={dailyDuties.filteredLessonsByDate}
             isLoading={dailyDuties.isLoading}
-            portalBasePath={dailyDuties.portalBasePath}
-            router={dailyDuties.router}
+            onLessonClick={(lessonId) => dailyDuties.handleOpenLessonDetail(lessonId)}
           />
         )}
 

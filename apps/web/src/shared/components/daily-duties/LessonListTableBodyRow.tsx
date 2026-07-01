@@ -17,10 +17,12 @@ import { DailyDutiesListActionPill } from '@/shared/components/daily-duties/Dail
 import { DailyDutiesLessonStatusUnderName } from '@/shared/lib/daily-duties/DailyDutiesLessonStatusBadge';
 import { LessonListDateCell } from '@/shared/components/daily-duties/LessonListDateCell';
 import {
-  getAdminDailyDutiesLessonPath,
+  getAdminDailyDutiesBasePath,
   getTeacherDailyDutiesLessonPath,
   isAdminPortalPath,
+  TEACHER_DAILY_DUTIES_BASE_PATH,
 } from '@/shared/lib/role-routes';
+import { buildDailyDutiesLessonDetailHref } from '@/features/daily-duties/components/daily-duties-url.util';
 
 export type LessonListTableBodyRowProps = {
   lesson: Lesson;
@@ -117,11 +119,23 @@ export function LessonListTableBodyRow({
     const currentPath = window.location.pathname;
     if (isAdminPortalPath(currentPath.replace(/^\/[a-z]{2}\//, '/'))) {
       const role = currentPath.includes('/manager/') ? 'MANAGER' : 'ADMIN';
-      router.push(getAdminDailyDutiesLessonPath(lessonId, role));
+      router.push(
+        buildDailyDutiesLessonDetailHref({
+          locale,
+          portalBasePath: getAdminDailyDutiesBasePath(role),
+          lessonId,
+        }),
+      );
     } else if (currentPath.includes('/teacher/')) {
-      router.push(getTeacherDailyDutiesLessonPath(lessonId));
+      router.push(
+        buildDailyDutiesLessonDetailHref({
+          locale,
+          portalBasePath: TEACHER_DAILY_DUTIES_BASE_PATH,
+          lessonId,
+        }),
+      );
     } else {
-      router.push(`/daily-duties/${lessonId}`);
+      router.push(getTeacherDailyDutiesLessonPath(lessonId));
     }
   };
 

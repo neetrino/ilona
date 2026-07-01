@@ -1,19 +1,33 @@
 import {
-  getAdminDailyDutiesLessonPath,
-  getTeacherDailyDutiesLessonPath,
+  getAdminDailyDutiesBasePath,
   isAdminPortalPath,
+  TEACHER_DAILY_DUTIES_BASE_PATH,
 } from '@/shared/lib/role-routes';
+import { buildDailyDutiesLessonDetailHref } from '@/features/daily-duties/components/daily-duties-url.util';
 
-export function navigateToLessonDetail(lessonId: string, router: { push: (href: string) => void }) {
+export function navigateToLessonDetail(
+  lessonId: string,
+  router: { push: (href: string) => void },
+  locale: string,
+) {
   const currentPath = window.location.pathname;
-  if (isAdminPortalPath(currentPath.replace(/^\/[a-z]{2}\//, '/'))) {
+  const normalizedPath = currentPath.replace(/^\/[a-z]{2}\//, '/');
+  if (isAdminPortalPath(normalizedPath)) {
     const role = currentPath.includes('/manager/') ? 'MANAGER' : 'ADMIN';
-    router.push(getAdminDailyDutiesLessonPath(lessonId, role));
+    router.push(
+      buildDailyDutiesLessonDetailHref({
+        locale,
+        portalBasePath: getAdminDailyDutiesBasePath(role),
+        lessonId,
+      }),
+    );
     return;
   }
-  if (currentPath.includes('/teacher/')) {
-    router.push(getTeacherDailyDutiesLessonPath(lessonId));
-    return;
-  }
-  router.push(`/daily-duties/${lessonId}`);
+  router.push(
+    buildDailyDutiesLessonDetailHref({
+      locale,
+      portalBasePath: TEACHER_DAILY_DUTIES_BASE_PATH,
+      lessonId,
+    }),
+  );
 }

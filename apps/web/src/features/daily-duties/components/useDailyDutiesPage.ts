@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
+import type { SearchParamUpdates } from '@/shared/lib/url-search-params';
 import { useLocale } from 'next-intl';
 import { useRouter } from '@/config/navigation';
 import { useAuthStore } from '@/features/auth/store/auth.store';
@@ -31,7 +32,12 @@ import {
   DAILY_DUTIES_MODAL_QUERY_KEY,
   SUBSTITUTE_LESSON_ID_QUERY_KEY,
   SUBSTITUTE_LESSON_MODAL_QUERY_VALUE,
+  buildDailyDutiesLessonDetailHref,
+  formatDailyDutiesMonthParam,
+  formatDailyDutiesWeekParam,
   isAddLessonModalOpen,
+  parseDailyDutiesMonthParam,
+  parseDailyDutiesWeekParam,
   readSubstituteLessonModalFromUrl,
 } from './daily-duties-url.util';
 
@@ -71,7 +77,38 @@ export function useDailyDutiesPage(mode: DailyDutiesMode) {
   const [selectedTeacherId, setSelectedTeacherId] = useState<string>('');
   const [selectedStatus, setSelectedStatus] = useState<DailyDutiesStatusFilter>('');
 
-  const [currentDate, setCurrentDate] = useState(new Date());
+  const readAnchorDateFromUrl = useCallback((): Date => {
+    const view = readViewModeFromUrl();
+    if (view === 'month') {
+      const parsedMonth = parseDailyDutiesMonthParam(
+        readUrlSearchParam('month', searchParams, urlRevision),
+      );
+      if (parsedMonth) {
+        return parsedMonth;
+      }
+    } else {
+      const parsedWeek = parseDailyDutiesWeekParam(
+        readUrlSearchParam('week', searchParams, urlRevision),
+      );
+      if (parsedWeek) {
+        return parsedWeek;
+      }
+    }
+    return new Date();
+  }, [readViewModeFromUrl, searchParams, urlRevision]);
+
+  const [currentDate, setCurrentDate] = useState(() => {
+    if (typeof window === 'undefined') {
+      return new Date();
+    }
+    const params = new URLSearchParams(window.location.search);
+    return (
+      parseDailyDutiesWeekParam(params.get('week')) ??
+      parseDailyDutiesMonthParam(params.get('month')) ??
+      new Date()
+    );
+  });
+  const didSeedPeriodInUrlRef = useRef(false);
   const [isAddLessonOpen, setIsAddLessonOpen] = useState(
     () => !isTeacherMode && isAddLessonModalOpen(searchParams),
   );
@@ -100,8 +137,52 @@ export function useDailyDutiesPage(mode: DailyDutiesMode) {
 
   const updateViewModeInUrl = (nextMode: DailyDutiesViewMode) => {
     setPendingViewMode(nextMode);
-    replaceParams({ view: nextMode === 'list' ? null : nextMode });
+    const updates: SearchParamUpdates = { view: nextMode === 'list' ? null : nextMode };
+    if (nextMode === 'month') {
+      updates.month = formatDailyDutiesMonthParam(currentDate);
+      updates.week = null;
+    } else {
+      updates.week = formatDailyDutiesWeekParam(currentDate);
+      updates.month = null;
+    }
+    replaceParams(updates);
   };
+
+  const syncAnchorDateToUrl = useCallback(
+    (date: Date, mode: DailyDutiesViewMode) => {
+      if (mode === 'month') {
+        replaceParams({
+          month: formatDailyDutiesMonthParam(date),
+          week: null,
+        });
+        return;
+      }
+      replaceParams({
+        week: formatDailyDutiesWeekParam(date),
+        month: null,
+      });
+    },
+    [replaceParams],
+  );
+
+  useEffect(() => {
+    setCurrentDate(readAnchorDateFromUrl());
+  }, [readAnchorDateFromUrl]);
+
+  useEffect(() => {
+    if (didSeedPeriodInUrlRef.current) {
+      return;
+    }
+    const view = readViewModeFromUrl();
+    const hasWeek = Boolean(readUrlSearchParam('week', searchParams, urlRevision));
+    const hasMonth = Boolean(readUrlSearchParam('month', searchParams, urlRevision));
+    if ((view === 'month' && hasMonth) || (view !== 'month' && hasWeek)) {
+      didSeedPeriodInUrlRef.current = true;
+      return;
+    }
+    didSeedPeriodInUrlRef.current = true;
+    syncAnchorDateToUrl(currentDate, view);
+  }, [currentDate, readViewModeFromUrl, searchParams, syncAnchorDateToUrl, urlRevision]);
 
   useEffect(() => {
     const sortByFromUrl = readUrlSearchParam('sortBy', searchParams, urlRevision);
@@ -207,8 +288,14 @@ export function useDailyDutiesPage(mode: DailyDutiesMode) {
 
   const handleOpenLessonDetail = useCallback(
     (lessonId: string, tab?: string) => {
-      const query = tab ? `?tab=${tab}` : '';
-      router.push(`/${locale}${portalBasePath}/${lessonId}${query}`);
+      router.push(
+        buildDailyDutiesLessonDetailHref({
+          locale,
+          portalBasePath,
+          lessonId,
+          tab,
+        }),
+      );
     },
     [locale, portalBasePath, router],
   );
@@ -316,10 +403,13 @@ export function useDailyDutiesPage(mode: DailyDutiesMode) {
       newDate.setDate(newDate.getDate() + delta * 7);
     }
     setCurrentDate(newDate);
+    syncAnchorDateToUrl(newDate, viewMode);
   };
 
   const goToToday = () => {
-    setCurrentDate(new Date());
+    const today = new Date();
+    setCurrentDate(today);
+    syncAnchorDateToUrl(today, viewMode);
   };
 
   const weekHeader = `${weekDates[0].toLocaleDateString('en-GB', { month: 'short', day: 'numeric' })} - ${weekDates[6].toLocaleDateString('en-GB', { month: 'short', day: 'numeric', year: 'numeric' })}`;

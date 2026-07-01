@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import {
@@ -38,6 +38,7 @@ export function useLessonListTable({
   | 'showScheduleColumn'
 >) {
   const tCal = useTranslations('dailyDuties');
+  const locale = useLocale();
   const router = useRouter();
   const { user } = useAuthStore();
   const isTeacher = user?.role === 'TEACHER';
@@ -198,7 +199,7 @@ export function useLessonListTable({
   const hasSelectedLessons = selectedLessons.size > 0;
 
   const handleView = (lessonId: string) => {
-    navigateToLessonDetail(lessonId, router);
+    navigateToLessonDetail(lessonId, router, locale);
   };
 
   const goToMobileCardsPage = (nextPage: number) => {
