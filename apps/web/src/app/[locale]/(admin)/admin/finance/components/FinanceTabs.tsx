@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
+import { CreditCard, Wallet } from 'lucide-react';
+import { cn } from '@/shared/lib/utils';
 
 interface FinanceTabsProps {
   activeTab: 'payments' | 'salaries';
@@ -47,26 +49,26 @@ export function FinanceTabs({ activeTab, totalPayments, totalSalaries, onTabChan
           tabRefs.current.payments = node;
         }}
         onClick={() => onTabChange('payments')}
-        className={`relative z-10 px-3 py-3 text-center text-sm font-medium transition-colors duration-300 sm:px-4 sm:text-left ${
-          activeTab === 'payments'
-            ? 'text-[#1010a3]'
-            : 'text-[#8b8b90] hover:text-[#3b3b40]'
-        }`}
+        className={cn(
+          'relative z-10 flex items-center justify-center gap-2 px-3 py-3 text-center text-sm font-medium transition-colors duration-300 sm:justify-start sm:px-4 sm:text-left',
+          activeTab === 'payments' ? 'text-[#1010a3]' : 'text-[#8b8b90] hover:text-[#3b3b40]',
+        )}
       >
-        {t('studentPaymentsTab', { count: totalPayments })}
+        <CreditCard className="size-4 shrink-0" aria-hidden />
+        <span>{t('studentPaymentsTab', { count: totalPayments })}</span>
       </button>
       <button
         ref={(node) => {
           tabRefs.current.salaries = node;
         }}
         onClick={() => onTabChange('salaries')}
-        className={`relative z-10 px-3 py-3 text-center text-sm font-medium transition-colors duration-300 sm:px-4 sm:text-left ${
-          activeTab === 'salaries'
-            ? 'text-[#1010a3]'
-            : 'text-[#8b8b90] hover:text-[#3b3b40]'
-        }`}
+        className={cn(
+          'relative z-10 flex items-center justify-center gap-2 px-3 py-3 text-center text-sm font-medium transition-colors duration-300 sm:justify-start sm:px-4 sm:text-left',
+          activeTab === 'salaries' ? 'text-[#1010a3]' : 'text-[#8b8b90] hover:text-[#3b3b40]',
+        )}
       >
-        {t('teacherSalariesTab', { count: totalSalaries })}
+        <Wallet className="size-4 shrink-0" aria-hidden />
+        <span>{t('teacherSalariesTab', { count: totalSalaries })}</span>
       </button>
       <span
         className="pointer-events-none absolute bottom-0 left-0 h-0.5 bg-[#1010a3] transition-[transform,width,opacity] duration-300 ease-out"
