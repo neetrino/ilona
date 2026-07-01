@@ -14,6 +14,8 @@ import { effectiveLessonInstructorTeacherId, teacherActsAsLessonInstructor } fro
 import { AttendanceScopeService } from './attendance-scope.service';
 import { AttendanceSideEffectsService } from './attendance-side-effects.service';
 import { updateStudentStreakOnAttendanceChange } from './attendance.util';
+import { isLessonAbsenceChecklistComplete } from './attendance-absence-completion.util';
+import type { Prisma } from '@ilona/database';
 
 @Injectable()
 export class AttendanceWriteService {
@@ -140,21 +142,10 @@ export class AttendanceWriteService {
         },
       });
 
-      let lessonCompletedForAbsence = false;
-      if (lessonWithAttendances) {
-        const studentCount = lessonWithAttendances.group.students.length;
-        const attendanceCount = lessonWithAttendances.attendances.length;
-        if (studentCount > 0 && attendanceCount >= studentCount && !lessonWithAttendances.absenceMarked) {
-          await tx.lesson.update({
-            where: { id: lessonId },
-            data: {
-              absenceMarked: true,
-              absenceMarkedAt: new Date(),
-            },
-          });
-          lessonCompletedForAbsence = true;
-        }
-      }
+      const syncResult = lessonWithAttendances
+        ? await this.syncLessonAbsenceMarkedInTx(tx, lessonWithAttendances)
+        : { newlyCompleted: false };
+      const lessonCompletedForAbsence = syncResult.newlyCompleted;
 
       return {
         attendance: attendanceRecord,
@@ -220,7 +211,7 @@ export class AttendanceWriteService {
       throw new ForbiddenException('You do not have access to this lesson');
     }
 
-    // Process each attendance
+    // Process each attendance (parallel saves); sync completion once after all writes.
     const results = await Promise.all(
       attendances.map((item) =>
         this.markAttendance({
@@ -233,10 +224,91 @@ export class AttendanceWriteService {
       ),
     );
 
+    const { lessonCompletedForAbsence, lessonScheduledAt, lessonTeacherId } =
+      await this.syncLessonAbsenceMarked(lessonId);
+
+    if (lessonCompletedForAbsence && lessonScheduledAt && lessonTeacherId) {
+      const lessonMonth = new Date(lessonScheduledAt);
+      await this.salariesService.recalculateSalaryForMonth(lessonTeacherId, lessonMonth);
+    }
+
     return {
       success: true,
       count: results.length,
       attendances: results,
+    };
+  }
+
+  private async syncLessonAbsenceMarkedInTx(
+    tx: Prisma.TransactionClient,
+    lesson: {
+      id: string;
+      absenceMarked: boolean;
+      group: { students: { id: string }[] };
+      attendances: { studentId: string }[];
+    },
+  ): Promise<{ newlyCompleted: boolean }> {
+    const groupStudentIds = lesson.group.students.map((student) => student.id);
+    const attendanceStudentIds = lesson.attendances.map((attendance) => attendance.studentId);
+    const allMarked = isLessonAbsenceChecklistComplete(groupStudentIds, attendanceStudentIds);
+
+    if (allMarked && !lesson.absenceMarked) {
+      await tx.lesson.update({
+        where: { id: lesson.id },
+        data: {
+          absenceMarked: true,
+          absenceMarkedAt: new Date(),
+        },
+      });
+      return { newlyCompleted: true };
+    }
+
+    if (!allMarked && lesson.absenceMarked) {
+      await tx.lesson.update({
+        where: { id: lesson.id },
+        data: {
+          absenceMarked: false,
+          absenceMarkedAt: null,
+        },
+      });
+    }
+
+    return { newlyCompleted: false };
+  }
+
+  private async syncLessonAbsenceMarked(lessonId: string): Promise<{
+    lessonCompletedForAbsence: boolean;
+    lessonScheduledAt: Date | null;
+    lessonTeacherId: string | null;
+  }> {
+    const lesson = await this.prisma.lesson.findUnique({
+      where: { id: lessonId },
+      include: {
+        group: {
+          include: {
+            students: { select: { id: true } },
+          },
+        },
+        attendances: { select: { studentId: true } },
+      },
+    });
+
+    if (!lesson) {
+      return {
+        lessonCompletedForAbsence: false,
+        lessonScheduledAt: null,
+        lessonTeacherId: null,
+      };
+    }
+
+    const syncResult = await this.prisma.$transaction((tx) =>
+      this.syncLessonAbsenceMarkedInTx(tx, lesson),
+    );
+
+    return {
+      lessonCompletedForAbsence: syncResult.newlyCompleted,
+      lessonScheduledAt: lesson.scheduledAt,
+      lessonTeacherId: effectiveLessonInstructorTeacherId(lesson),
     };
   }
 
