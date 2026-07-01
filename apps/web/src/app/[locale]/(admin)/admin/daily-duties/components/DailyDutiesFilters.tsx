@@ -5,7 +5,6 @@ import { useTranslations } from 'next-intl';
 import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
 import { MultiSelectChipsDropdown } from '@/shared/components/ui/multi-select-chips-dropdown';
 import { ADMIN_CONTROL_CLASS, ADMIN_SEARCH_INPUT_CLASS } from '@/shared/lib/admin-control-theme';
-import { cn } from '@/shared/lib/utils';
 import type { DailyDutiesStatusFilter } from '@/shared/lib/daily-duties/filter-by-daily-duties-status';
 import { DAILY_DUTIES_STATUS_FILTER_OPTIONS } from '@/shared/lib/daily-duties/DailyDutiesLessonStatusBadge';
 import type { DailyDutiesLessonStatus } from '@ilona/types';
@@ -131,7 +130,7 @@ export function DailyDutiesFilters({
         </div>
 
         {!hideTeacherFilter ? (
-          <div className="w-full sm:w-auto">
+          <div className="w-full sm:min-w-[10.5rem] sm:w-auto">
             <MultiSelectChipsDropdown
               options={teacherSelectOptions}
               selectedIds={selectedTeacherIds}
@@ -141,9 +140,10 @@ export function DailyDutiesFilters({
               noResultsHint={t('noTeachersFound')}
               isLoading={isLoadingTeachers}
               closedTriggerMode="summary"
-              fitContentWidth
-              triggerClassName={cn(ADMIN_CONTROL_CLASS, 'px-4 py-0 items-center')}
+              menuFitContentWidth
+              triggerClassName={ADMIN_CONTROL_CLASS}
               selectedCountLabel={(count) => t('teachersSelected', { count })}
+              className="sm:min-w-[10.5rem]"
             />
           </div>
         ) : null}
