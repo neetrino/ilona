@@ -20,6 +20,7 @@ export class LessonListService {
     groupId?: string;
     groupIds?: string[];
     teacherId?: string;
+    teacherIds?: string[];
     status?: LessonStatus;
     dateFrom?: Date;
     dateTo?: Date;
@@ -36,6 +37,7 @@ export class LessonListService {
       groupId,
       groupIds,
       teacherId,
+      teacherIds,
       status,
       dateFrom,
       dateTo,
@@ -114,6 +116,7 @@ export class LessonListService {
     }
 
     const additionalFilters: Prisma.LessonWhereInput = {};
+    let teacherScopeFilter: Prisma.LessonWhereInput | null = null;
     if (userRole === UserRole.ADMIN) {
       if (centerIdParam) {
         const groupIs: Prisma.GroupWhereInput = { centerId: centerIdParam };
@@ -137,12 +140,29 @@ export class LessonListService {
         additionalFilters.groupId = groupId;
       }
     }
-    if (teacherId) {
+    if (teacherIds && teacherIds.length > 0) {
+      if (userRole === UserRole.TEACHER && currentTeacherId && !teacherIds.includes(currentTeacherId)) {
+        throw new ForbiddenException('You can only view your own lessons');
+      }
+      if (userRole !== UserRole.TEACHER) {
+        if (teacherIds.length === 1) {
+          const id = teacherIds[0];
+          teacherScopeFilter = { OR: [{ teacherId: id }, { substituteTeacherId: id }] };
+        } else {
+          teacherScopeFilter = {
+            OR: [
+              { teacherId: { in: teacherIds } },
+              { substituteTeacherId: { in: teacherIds } },
+            ],
+          };
+        }
+      }
+    } else if (teacherId) {
       if (userRole === UserRole.TEACHER && currentTeacherId && teacherId !== currentTeacherId) {
         throw new ForbiddenException('You can only view your own lessons');
       }
       if (userRole !== UserRole.TEACHER) {
-        additionalFilters.OR = [{ teacherId }, { substituteTeacherId: teacherId }];
+        teacherScopeFilter = { OR: [{ teacherId }, { substituteTeacherId: teacherId }] };
       }
     }
     if (status) additionalFilters.status = status;
@@ -155,30 +175,40 @@ export class LessonListService {
 
     if (search && search.trim()) {
       const searchTerm = search.trim();
-      additionalFilters.OR = [
-        { topic: { contains: searchTerm, mode: 'insensitive' } },
-        { group: { name: { contains: searchTerm, mode: 'insensitive' } } },
-        {
-          teacher: {
-            user: {
-              OR: [
-                { firstName: { contains: searchTerm, mode: 'insensitive' } },
-                { lastName: { contains: searchTerm, mode: 'insensitive' } },
-              ],
+      const searchScopeFilter: Prisma.LessonWhereInput = {
+        OR: [
+          { topic: { contains: searchTerm, mode: 'insensitive' } },
+          { group: { name: { contains: searchTerm, mode: 'insensitive' } } },
+          {
+            teacher: {
+              user: {
+                OR: [
+                  { firstName: { contains: searchTerm, mode: 'insensitive' } },
+                  { lastName: { contains: searchTerm, mode: 'insensitive' } },
+                ],
+              },
             },
           },
-        },
-        {
-          substituteTeacher: {
-            user: {
-              OR: [
-                { firstName: { contains: searchTerm, mode: 'insensitive' } },
-                { lastName: { contains: searchTerm, mode: 'insensitive' } },
-              ],
+          {
+            substituteTeacher: {
+              user: {
+                OR: [
+                  { firstName: { contains: searchTerm, mode: 'insensitive' } },
+                  { lastName: { contains: searchTerm, mode: 'insensitive' } },
+                ],
+              },
             },
           },
-        },
-      ];
+        ],
+      };
+
+      if (teacherScopeFilter) {
+        additionalFilters.AND = [teacherScopeFilter, searchScopeFilter];
+      } else {
+        Object.assign(additionalFilters, searchScopeFilter);
+      }
+    } else if (teacherScopeFilter) {
+      Object.assign(additionalFilters, teacherScopeFilter);
     }
 
     if (filterConditions.length > 0 || Object.keys(additionalFilters).length > 0) {

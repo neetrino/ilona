@@ -1,9 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import type { ActionPercents, FooterIconLinks, PenaltyAmounts } from '@ilona/types';
+import type { FooterIconLinks, PenaltyAmounts, PenaltyAmountsInput } from '@ilona/types';
 import { SettingsCoreService } from './settings-core.service';
 import { SettingsBrandingService } from './settings-branding.service';
 import { SettingsFooterService } from './settings-footer.service';
-import { SettingsPercentsService } from './settings-percents.service';
 import { SettingsPenaltiesService } from './settings-penalties.service';
 
 /** Facade for system settings — delegates to domain-specific services. */
@@ -13,7 +12,6 @@ export class SettingsService {
     private readonly coreService: SettingsCoreService,
     private readonly brandingService: SettingsBrandingService,
     private readonly footerService: SettingsFooterService,
-    private readonly percentsService: SettingsPercentsService,
     private readonly penaltiesService: SettingsPenaltiesService,
   ) {}
 
@@ -61,30 +59,11 @@ export class SettingsService {
     return this.brandingService.getLogoUrl();
   }
 
-  getActionPercents(): Promise<ActionPercents> {
-    return this.percentsService.getActionPercents();
-  }
-
-  updateActionPercents(data: {
-    absencePercent: number;
-    feedbacksPercent: number;
-    voicePercent: number;
-    textPercent: number;
-  }) {
-    return this.percentsService.updateActionPercents(data);
-  }
-
   getPenaltyAmounts(): Promise<PenaltyAmounts> {
     return this.penaltiesService.getPenaltyAmounts();
   }
 
-  updatePenaltyAmounts(data: {
-    penaltyAbsenceAmd: number;
-    penaltyFeedbackAmd: number;
-    penaltyVoiceAmd: number;
-    penaltyTextAmd: number;
-    penaltyDailyPlanAmd: number;
-  }) {
+  updatePenaltyAmounts(data: PenaltyAmountsInput) {
     return this.penaltiesService.updatePenaltyAmounts(data);
   }
 }

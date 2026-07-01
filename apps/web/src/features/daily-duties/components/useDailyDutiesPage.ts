@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
+import type { SearchParamUpdates } from '@/shared/lib/url-search-params';
 import { useLocale } from 'next-intl';
 import { useRouter } from '@/config/navigation';
 import { useAuthStore } from '@/features/auth/store/auth.store';
@@ -19,10 +20,10 @@ import {
 import { useLessons, useLessonStatistics, type Lesson } from '@/features/lessons';
 import { useTeachers } from '@/features/teachers';
 import type { LessonActionId } from '@/shared/lib/daily-duties/lesson-action-states';
-import type { DailyDutiesStatusFilter } from '@/shared/lib/daily-duties/filter-by-daily-duties-status';
 import {
-  filterLessonsByDailyDutiesStatus,
-  filterLessonsByDateAndStatus,
+  DAILY_DUTIES_STATUS_FILTER_VALUES,
+  filterLessonsByDailyDutiesStatuses,
+  filterLessonsByDateAndStatuses,
 } from '@/shared/lib/daily-duties/filter-by-daily-duties-status';
 import type { DailyDutiesLessonStatus } from '@ilona/types';
 import type { DailyDutiesMode, DailyDutiesViewMode, DailyDutiesLessonDetailTab } from './daily-duties.types';
@@ -31,14 +32,24 @@ import {
   DAILY_DUTIES_MODAL_QUERY_KEY,
   SUBSTITUTE_LESSON_ID_QUERY_KEY,
   SUBSTITUTE_LESSON_MODAL_QUERY_VALUE,
+  buildDailyDutiesLessonDetailHref,
+  formatDailyDutiesMonthParam,
+  formatDailyDutiesWeekParam,
   isAddLessonModalOpen,
+  parseDailyDutiesMonthParam,
+  parseDailyDutiesWeekParam,
+  readDailyDutiesTeacherIdsFromUrl,
+  hasDailyDutiesTeacherFilterInUrl,
+  readDailyDutiesStatusesFromUrl,
+  hasDailyDutiesStatusFilterInUrl,
   readSubstituteLessonModalFromUrl,
+  DAILY_DUTIES_FILTER_CLEARED_SENTINEL,
 } from './daily-duties-url.util';
 
 export function useDailyDutiesPage(mode: DailyDutiesMode) {
   const isTeacherMode = mode === 'teacher';
   const router = useRouter();
-  const { searchParams, urlRevision, replaceParams } = useAppSearchUrl();
+  const { searchParams, urlRevision, replaceParams, replaceAllParams } = useAppSearchUrl();
   const locale = useLocale();
   const { user } = useAuthStore();
   const portalBasePath = isTeacherMode
@@ -68,10 +79,43 @@ export function useDailyDutiesPage(mode: DailyDutiesMode) {
   const [sortBy, setSortBy] = useState<string | undefined>(undefined);
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | undefined>(undefined);
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [selectedTeacherId, setSelectedTeacherId] = useState<string>('');
-  const [selectedStatus, setSelectedStatus] = useState<DailyDutiesStatusFilter>('');
+  const [selectedTeacherIds, setSelectedTeacherIds] = useState<Set<string>>(new Set());
+  const [selectedStatusIds, setSelectedStatusIds] = useState<Set<DailyDutiesLessonStatus>>(
+    () => new Set(DAILY_DUTIES_STATUS_FILTER_VALUES),
+  );
 
-  const [currentDate, setCurrentDate] = useState(new Date());
+  const readAnchorDateFromUrl = useCallback((): Date => {
+    const view = readViewModeFromUrl();
+    if (view === 'month') {
+      const parsedMonth = parseDailyDutiesMonthParam(
+        readUrlSearchParam('month', searchParams, urlRevision),
+      );
+      if (parsedMonth) {
+        return parsedMonth;
+      }
+    } else {
+      const parsedWeek = parseDailyDutiesWeekParam(
+        readUrlSearchParam('week', searchParams, urlRevision),
+      );
+      if (parsedWeek) {
+        return parsedWeek;
+      }
+    }
+    return new Date();
+  }, [readViewModeFromUrl, searchParams, urlRevision]);
+
+  const [currentDate, setCurrentDate] = useState(() => {
+    if (typeof window === 'undefined') {
+      return new Date();
+    }
+    const params = new URLSearchParams(window.location.search);
+    return (
+      parseDailyDutiesWeekParam(params.get('week')) ??
+      parseDailyDutiesMonthParam(params.get('month')) ??
+      new Date()
+    );
+  });
+  const didSeedPeriodInUrlRef = useRef(false);
   const [isAddLessonOpen, setIsAddLessonOpen] = useState(
     () => !isTeacherMode && isAddLessonModalOpen(searchParams),
   );
@@ -100,8 +144,52 @@ export function useDailyDutiesPage(mode: DailyDutiesMode) {
 
   const updateViewModeInUrl = (nextMode: DailyDutiesViewMode) => {
     setPendingViewMode(nextMode);
-    replaceParams({ view: nextMode === 'list' ? null : nextMode });
+    const updates: SearchParamUpdates = { view: nextMode === 'list' ? null : nextMode };
+    if (nextMode === 'month') {
+      updates.month = formatDailyDutiesMonthParam(currentDate);
+      updates.week = null;
+    } else {
+      updates.week = formatDailyDutiesWeekParam(currentDate);
+      updates.month = null;
+    }
+    replaceParams(updates);
   };
+
+  const syncAnchorDateToUrl = useCallback(
+    (date: Date, mode: DailyDutiesViewMode) => {
+      if (mode === 'month') {
+        replaceParams({
+          month: formatDailyDutiesMonthParam(date),
+          week: null,
+        });
+        return;
+      }
+      replaceParams({
+        week: formatDailyDutiesWeekParam(date),
+        month: null,
+      });
+    },
+    [replaceParams],
+  );
+
+  useEffect(() => {
+    setCurrentDate(readAnchorDateFromUrl());
+  }, [readAnchorDateFromUrl]);
+
+  useEffect(() => {
+    if (didSeedPeriodInUrlRef.current) {
+      return;
+    }
+    const view = readViewModeFromUrl();
+    const hasWeek = Boolean(readUrlSearchParam('week', searchParams, urlRevision));
+    const hasMonth = Boolean(readUrlSearchParam('month', searchParams, urlRevision));
+    if ((view === 'month' && hasMonth) || (view !== 'month' && hasWeek)) {
+      didSeedPeriodInUrlRef.current = true;
+      return;
+    }
+    didSeedPeriodInUrlRef.current = true;
+    syncAnchorDateToUrl(currentDate, view);
+  }, [currentDate, readViewModeFromUrl, searchParams, syncAnchorDateToUrl, urlRevision]);
 
   useEffect(() => {
     const sortByFromUrl = readUrlSearchParam('sortBy', searchParams, urlRevision);
@@ -114,15 +202,18 @@ export function useDailyDutiesPage(mode: DailyDutiesMode) {
     }
 
     setSearchQuery(readUrlSearchParam('q', searchParams, urlRevision) || '');
-    setSelectedTeacherId(readUrlSearchParam('teacherId', searchParams, urlRevision) || '');
+    if (hasDailyDutiesTeacherFilterInUrl(searchParams)) {
+      setSelectedTeacherIds(new Set(readDailyDutiesTeacherIdsFromUrl(searchParams)));
+    }
 
-    const statusFromUrl = readUrlSearchParam('status', searchParams, urlRevision);
-    const validStatuses: DailyDutiesLessonStatus[] = ['DONE', 'CAUTION', 'IN_PROGRESS', 'WAITING'];
-    setSelectedStatus(
-      validStatuses.includes(statusFromUrl as DailyDutiesLessonStatus)
-        ? (statusFromUrl as DailyDutiesLessonStatus)
-        : '',
-    );
+    if (hasDailyDutiesStatusFilterInUrl(searchParams)) {
+      const validStatuses = new Set(DAILY_DUTIES_STATUS_FILTER_VALUES);
+      const fromUrl = readDailyDutiesStatusesFromUrl(searchParams).filter(
+        (status): status is DailyDutiesLessonStatus =>
+          validStatuses.has(status as DailyDutiesLessonStatus),
+      );
+      setSelectedStatusIds(new Set(fromUrl));
+    }
 
     if (!isTeacherMode && !isAddLessonClosingRef.current) {
       setIsAddLessonOpen(isAddLessonModalOpen(searchParams));
@@ -134,6 +225,16 @@ export function useDailyDutiesPage(mode: DailyDutiesMode) {
       setSubstituteLessonId(substituteFromUrl.lessonId);
     }
   }, [searchParams, urlRevision, isTeacherMode]);
+
+  useEffect(() => {
+    if (isTeacherMode || teacherOptions.length === 0) {
+      return;
+    }
+    if (hasDailyDutiesTeacherFilterInUrl(searchParams)) {
+      return;
+    }
+    setSelectedTeacherIds(new Set(teacherOptions.map((teacher) => teacher.id)));
+  }, [isTeacherMode, searchParams, teacherOptions, urlRevision]);
 
   const updateAddLessonModalInUrl = useCallback(
     (open: boolean) => {
@@ -207,8 +308,14 @@ export function useDailyDutiesPage(mode: DailyDutiesMode) {
 
   const handleOpenLessonDetail = useCallback(
     (lessonId: string, tab?: string) => {
-      const query = tab ? `?tab=${tab}` : '';
-      router.push(`/${locale}${portalBasePath}/${lessonId}${query}`);
+      router.push(
+        buildDailyDutiesLessonDetailHref({
+          locale,
+          portalBasePath,
+          lessonId,
+          tab,
+        }),
+      );
     },
     [locale, portalBasePath, router],
   );
@@ -253,6 +360,30 @@ export function useDailyDutiesPage(mode: DailyDutiesMode) {
     return getWeekDateRangeForApi(weekDates);
   }, [currentDate, viewMode, weekDates]);
 
+  const teacherIdsArray = useMemo(() => {
+    if (isTeacherMode || teacherOptions.length === 0) {
+      return undefined;
+    }
+    if (selectedTeacherIds.size === 0) {
+      return undefined;
+    }
+    if (selectedTeacherIds.size >= teacherOptions.length) {
+      return undefined;
+    }
+    return Array.from(selectedTeacherIds);
+  }, [isTeacherMode, selectedTeacherIds, teacherOptions.length]);
+
+  const hasPartialTeacherFilter = useMemo(() => {
+    if (isTeacherMode || teacherOptions.length === 0) {
+      return false;
+    }
+    return selectedTeacherIds.size < teacherOptions.length;
+  }, [isTeacherMode, selectedTeacherIds, teacherOptions.length]);
+
+  const hasPartialStatusFilter = useMemo(() => {
+    return selectedStatusIds.size < DAILY_DUTIES_STATUS_FILTER_VALUES.length;
+  }, [selectedStatusIds]);
+
   const { data: lessonsData, isLoading, isFetching } = useLessons(
     {
       dateFrom: rangeFrom,
@@ -261,14 +392,24 @@ export function useDailyDutiesPage(mode: DailyDutiesMode) {
       sortBy: sortBy === 'scheduledAt' ? 'scheduledAt' : undefined,
       sortOrder,
       search: searchQuery || undefined,
-      teacherId: isTeacherMode ? undefined : selectedTeacherId || undefined,
+      teacherIds: isTeacherMode ? undefined : teacherIdsArray,
     },
     { refetchInterval: 60000, refetchIntervalInBackground: false },
   );
 
   const { data: stats } = useLessonStatistics();
 
-  const lessons = useMemo(() => lessonsData?.items || [], [lessonsData?.items]);
+  const lessons = useMemo(() => {
+    const items = lessonsData?.items || [];
+    if (
+      !isTeacherMode &&
+      selectedTeacherIds.size === 0 &&
+      hasDailyDutiesTeacherFilterInUrl(searchParams)
+    ) {
+      return [];
+    }
+    return items;
+  }, [lessonsData?.items, isTeacherMode, selectedTeacherIds.size, searchParams]);
 
   const lessonsByDate = useMemo(() => {
     const grouped: Record<string, Lesson[]> = {};
@@ -292,15 +433,15 @@ export function useDailyDutiesPage(mode: DailyDutiesMode) {
 
   const listViewLessons = useMemo(() => {
     if (viewMode !== 'list') {
-      return filterLessonsByDailyDutiesStatus(lessons, selectedStatus);
+      return filterLessonsByDailyDutiesStatuses(lessons, selectedStatusIds);
     }
     const ranged = filterLessonsByLocalDateRange(lessons, weekDates[0], weekDates[6]);
-    return filterLessonsByDailyDutiesStatus(ranged, selectedStatus);
-  }, [lessons, viewMode, weekDates, selectedStatus]);
+    return filterLessonsByDailyDutiesStatuses(ranged, selectedStatusIds);
+  }, [lessons, viewMode, weekDates, selectedStatusIds]);
 
   const filteredLessonsByDate = useMemo(
-    () => filterLessonsByDateAndStatus(lessonsByDate, selectedStatus),
-    [lessonsByDate, selectedStatus],
+    () => filterLessonsByDateAndStatuses(lessonsByDate, selectedStatusIds),
+    [lessonsByDate, selectedStatusIds],
   );
 
   const listReferenceDate = useMemo(() => getDailyDutiesListReferenceDate(weekDates), [weekDates]);
@@ -316,10 +457,13 @@ export function useDailyDutiesPage(mode: DailyDutiesMode) {
       newDate.setDate(newDate.getDate() + delta * 7);
     }
     setCurrentDate(newDate);
+    syncAnchorDateToUrl(newDate, viewMode);
   };
 
   const goToToday = () => {
-    setCurrentDate(new Date());
+    const today = new Date();
+    setCurrentDate(today);
+    syncAnchorDateToUrl(today, viewMode);
   };
 
   const weekHeader = `${weekDates[0].toLocaleDateString('en-GB', { month: 'short', day: 'numeric' })} - ${weekDates[6].toLocaleDateString('en-GB', { month: 'short', day: 'numeric', year: 'numeric' })}`;
@@ -334,19 +478,82 @@ export function useDailyDutiesPage(mode: DailyDutiesMode) {
   );
 
   const handleTeacherChange = useCallback(
-    (teacherId: string) => {
-      setSelectedTeacherId(teacherId);
-      replaceParams({ teacherId: teacherId || null });
+    (teacherIds: Set<string>) => {
+      const allTeacherIds = new Set(teacherOptions.map((teacher) => teacher.id));
+      const isAllSelected =
+        teacherOptions.length > 0 && teacherIds.size >= teacherOptions.length;
+
+      if (isAllSelected) {
+        setSelectedTeacherIds(allTeacherIds);
+        replaceAllParams((params) => {
+          params.delete('teacherId');
+          params.delete('teacherIds');
+        });
+        return;
+      }
+
+      if (teacherIds.size === 0) {
+        setSelectedTeacherIds(new Set());
+        replaceAllParams((params) => {
+          params.delete('teacherId');
+          params.delete('teacherIds');
+          params.set('teacherIds', DAILY_DUTIES_FILTER_CLEARED_SENTINEL);
+        });
+        return;
+      }
+
+      setSelectedTeacherIds(teacherIds);
+      replaceAllParams((params) => {
+        params.delete('teacherId');
+        params.delete('teacherIds');
+        for (const id of teacherIds) {
+          params.append('teacherIds', id);
+        }
+      });
     },
-    [replaceParams],
+    [replaceAllParams, teacherOptions],
   );
 
   const handleStatusChange = useCallback(
-    (status: DailyDutiesStatusFilter) => {
-      setSelectedStatus(status);
-      replaceParams({ status: status || null });
+    (statusIds: Set<string>) => {
+      const allStatusIds = new Set(DAILY_DUTIES_STATUS_FILTER_VALUES);
+      const nextStatuses = new Set(
+        [...statusIds].filter((id): id is DailyDutiesLessonStatus =>
+          allStatusIds.has(id as DailyDutiesLessonStatus),
+        ),
+      );
+      const isAllSelected =
+        nextStatuses.size >= DAILY_DUTIES_STATUS_FILTER_VALUES.length;
+
+      if (isAllSelected) {
+        setSelectedStatusIds(allStatusIds);
+        replaceAllParams((params) => {
+          params.delete('status');
+          params.delete('statuses');
+        });
+        return;
+      }
+
+      if (nextStatuses.size === 0) {
+        setSelectedStatusIds(new Set());
+        replaceAllParams((params) => {
+          params.delete('status');
+          params.delete('statuses');
+          params.set('statuses', DAILY_DUTIES_FILTER_CLEARED_SENTINEL);
+        });
+        return;
+      }
+
+      setSelectedStatusIds(nextStatuses);
+      replaceAllParams((params) => {
+        params.delete('status');
+        params.delete('statuses');
+        for (const id of nextStatuses) {
+          params.append('statuses', id);
+        }
+      });
     },
-    [replaceParams],
+    [replaceAllParams],
   );
 
   return {
@@ -364,9 +571,11 @@ export function useDailyDutiesPage(mode: DailyDutiesMode) {
     goToToday,
     stats,
     searchQuery,
-    selectedTeacherId,
-    selectedStatus,
+    selectedTeacherIds,
+    selectedStatusIds,
     teacherOptions,
+    hasPartialTeacherFilter,
+    hasPartialStatusFilter,
     isLoadingTeachers,
     handleSearchChange,
     handleTeacherChange,

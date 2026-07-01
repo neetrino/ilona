@@ -18,6 +18,7 @@ import {
 import type { MarkAttendanceDto, BulkAttendanceDto, AbsenceType } from '../types';
 import { financeKeys } from '@/features/finance/hooks';
 import { studentKeys } from '@/features/students/hooks/useStudents';
+import { lessonKeys } from '@/features/lessons/hooks/useLessons';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 
 // Query keys
@@ -135,6 +136,8 @@ export function useMarkAttendance() {
       queryClient.invalidateQueries({ queryKey: attendanceKeys.atRisk() });
       queryClient.invalidateQueries({ queryKey: studentKeys.statistics(data.studentId) });
       queryClient.invalidateQueries({ queryKey: studentKeys.myDashboard() });
+      queryClient.invalidateQueries({ queryKey: lessonKeys.details() });
+      queryClient.invalidateQueries({ queryKey: lessonKeys.lists() });
       // Invalidate salary queries to reflect immediate salary updates
       queryClient.invalidateQueries({ queryKey: financeKeys.salaries() });
       queryClient.invalidateQueries({ queryKey: financeKeys.salaryBreakdown('', '') });
@@ -156,6 +159,8 @@ export function useMarkBulkAttendance() {
       queryClient.invalidateQueries({ queryKey: attendanceKeys.atRisk() });
       queryClient.invalidateQueries({ queryKey: studentKeys.all });
       queryClient.invalidateQueries({ queryKey: studentKeys.myDashboard() });
+      queryClient.invalidateQueries({ queryKey: lessonKeys.details() });
+      queryClient.invalidateQueries({ queryKey: lessonKeys.lists() });
       // Invalidate salary queries to reflect immediate salary updates
       queryClient.invalidateQueries({ queryKey: financeKeys.salaries() });
       queryClient.invalidateQueries({ queryKey: financeKeys.salaryBreakdown('', '') });

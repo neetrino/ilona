@@ -26981,10 +26981,6 @@ export namespace Prisma {
     maxUnjustifiedAbsences: number | null
     paymentDueDays: number | null
     lessonReminderHours: number | null
-    absencePercent: number | null
-    feedbacksPercent: number | null
-    voicePercent: number | null
-    textPercent: number | null
     penaltyAbsenceAmd: Decimal | null
     penaltyFeedbackAmd: Decimal | null
     penaltyVoiceAmd: Decimal | null
@@ -26998,10 +26994,6 @@ export namespace Prisma {
     maxUnjustifiedAbsences: number | null
     paymentDueDays: number | null
     lessonReminderHours: number | null
-    absencePercent: number | null
-    feedbacksPercent: number | null
-    voicePercent: number | null
-    textPercent: number | null
     penaltyAbsenceAmd: Decimal | null
     penaltyFeedbackAmd: Decimal | null
     penaltyVoiceAmd: Decimal | null
@@ -27020,10 +27012,6 @@ export namespace Prisma {
     dashboardBannerUrl: string | null
     dashboardBannerTitle: string | null
     dashboardBannerSubtitle: string | null
-    absencePercent: number | null
-    feedbacksPercent: number | null
-    voicePercent: number | null
-    textPercent: number | null
     penaltyAbsenceAmd: Decimal | null
     penaltyFeedbackAmd: Decimal | null
     penaltyVoiceAmd: Decimal | null
@@ -27043,10 +27031,6 @@ export namespace Prisma {
     dashboardBannerUrl: string | null
     dashboardBannerTitle: string | null
     dashboardBannerSubtitle: string | null
-    absencePercent: number | null
-    feedbacksPercent: number | null
-    voicePercent: number | null
-    textPercent: number | null
     penaltyAbsenceAmd: Decimal | null
     penaltyFeedbackAmd: Decimal | null
     penaltyVoiceAmd: Decimal | null
@@ -27066,10 +27050,6 @@ export namespace Prisma {
     dashboardBannerUrl: number
     dashboardBannerTitle: number
     dashboardBannerSubtitle: number
-    absencePercent: number
-    feedbacksPercent: number
-    voicePercent: number
-    textPercent: number
     penaltyAbsenceAmd: number
     penaltyFeedbackAmd: number
     penaltyVoiceAmd: number
@@ -27087,10 +27067,6 @@ export namespace Prisma {
     maxUnjustifiedAbsences?: true
     paymentDueDays?: true
     lessonReminderHours?: true
-    absencePercent?: true
-    feedbacksPercent?: true
-    voicePercent?: true
-    textPercent?: true
     penaltyAbsenceAmd?: true
     penaltyFeedbackAmd?: true
     penaltyVoiceAmd?: true
@@ -27104,10 +27080,6 @@ export namespace Prisma {
     maxUnjustifiedAbsences?: true
     paymentDueDays?: true
     lessonReminderHours?: true
-    absencePercent?: true
-    feedbacksPercent?: true
-    voicePercent?: true
-    textPercent?: true
     penaltyAbsenceAmd?: true
     penaltyFeedbackAmd?: true
     penaltyVoiceAmd?: true
@@ -27126,10 +27098,6 @@ export namespace Prisma {
     dashboardBannerUrl?: true
     dashboardBannerTitle?: true
     dashboardBannerSubtitle?: true
-    absencePercent?: true
-    feedbacksPercent?: true
-    voicePercent?: true
-    textPercent?: true
     penaltyAbsenceAmd?: true
     penaltyFeedbackAmd?: true
     penaltyVoiceAmd?: true
@@ -27149,10 +27117,6 @@ export namespace Prisma {
     dashboardBannerUrl?: true
     dashboardBannerTitle?: true
     dashboardBannerSubtitle?: true
-    absencePercent?: true
-    feedbacksPercent?: true
-    voicePercent?: true
-    textPercent?: true
     penaltyAbsenceAmd?: true
     penaltyFeedbackAmd?: true
     penaltyVoiceAmd?: true
@@ -27172,10 +27136,6 @@ export namespace Prisma {
     dashboardBannerUrl?: true
     dashboardBannerTitle?: true
     dashboardBannerSubtitle?: true
-    absencePercent?: true
-    feedbacksPercent?: true
-    voicePercent?: true
-    textPercent?: true
     penaltyAbsenceAmd?: true
     penaltyFeedbackAmd?: true
     penaltyVoiceAmd?: true
@@ -27283,15 +27243,11 @@ export namespace Prisma {
     dashboardBannerUrl: string | null
     dashboardBannerTitle: string | null
     dashboardBannerSubtitle: string | null
-    absencePercent: number
-    feedbacksPercent: number
-    voicePercent: number
-    textPercent: number
-    penaltyAbsenceAmd: Decimal
-    penaltyFeedbackAmd: Decimal
-    penaltyVoiceAmd: Decimal
-    penaltyTextAmd: Decimal
-    penaltyDailyPlanAmd: Decimal
+    penaltyAbsenceAmd: Decimal | null
+    penaltyFeedbackAmd: Decimal | null
+    penaltyVoiceAmd: Decimal | null
+    penaltyTextAmd: Decimal | null
+    penaltyDailyPlanAmd: Decimal | null
     footerIconLinks: JsonValue | null
     updatedAt: Date
     _count: SystemSettingsCountAggregateOutputType | null
@@ -27326,10 +27282,6 @@ export namespace Prisma {
     dashboardBannerUrl?: boolean
     dashboardBannerTitle?: boolean
     dashboardBannerSubtitle?: boolean
-    absencePercent?: boolean
-    feedbacksPercent?: boolean
-    voicePercent?: boolean
-    textPercent?: boolean
     penaltyAbsenceAmd?: boolean
     penaltyFeedbackAmd?: boolean
     penaltyVoiceAmd?: boolean
@@ -27350,10 +27302,6 @@ export namespace Prisma {
     dashboardBannerUrl?: boolean
     dashboardBannerTitle?: boolean
     dashboardBannerSubtitle?: boolean
-    absencePercent?: boolean
-    feedbacksPercent?: boolean
-    voicePercent?: boolean
-    textPercent?: boolean
     penaltyAbsenceAmd?: boolean
     penaltyFeedbackAmd?: boolean
     penaltyVoiceAmd?: boolean
@@ -27374,10 +27322,6 @@ export namespace Prisma {
     dashboardBannerUrl?: boolean
     dashboardBannerTitle?: boolean
     dashboardBannerSubtitle?: boolean
-    absencePercent?: boolean
-    feedbacksPercent?: boolean
-    voicePercent?: boolean
-    textPercent?: boolean
     penaltyAbsenceAmd?: boolean
     penaltyFeedbackAmd?: boolean
     penaltyVoiceAmd?: boolean
@@ -27402,15 +27346,11 @@ export namespace Prisma {
       dashboardBannerUrl: string | null
       dashboardBannerTitle: string | null
       dashboardBannerSubtitle: string | null
-      absencePercent: number
-      feedbacksPercent: number
-      voicePercent: number
-      textPercent: number
-      penaltyAbsenceAmd: Prisma.Decimal
-      penaltyFeedbackAmd: Prisma.Decimal
-      penaltyVoiceAmd: Prisma.Decimal
-      penaltyTextAmd: Prisma.Decimal
-      penaltyDailyPlanAmd: Prisma.Decimal
+      penaltyAbsenceAmd: Prisma.Decimal | null
+      penaltyFeedbackAmd: Prisma.Decimal | null
+      penaltyVoiceAmd: Prisma.Decimal | null
+      penaltyTextAmd: Prisma.Decimal | null
+      penaltyDailyPlanAmd: Prisma.Decimal | null
       footerIconLinks: Prisma.JsonValue | null
       updatedAt: Date
     }, ExtArgs["result"]["systemSettings"]>
@@ -27816,10 +27756,6 @@ export namespace Prisma {
     readonly dashboardBannerUrl: FieldRef<"SystemSettings", 'String'>
     readonly dashboardBannerTitle: FieldRef<"SystemSettings", 'String'>
     readonly dashboardBannerSubtitle: FieldRef<"SystemSettings", 'String'>
-    readonly absencePercent: FieldRef<"SystemSettings", 'Int'>
-    readonly feedbacksPercent: FieldRef<"SystemSettings", 'Int'>
-    readonly voicePercent: FieldRef<"SystemSettings", 'Int'>
-    readonly textPercent: FieldRef<"SystemSettings", 'Int'>
     readonly penaltyAbsenceAmd: FieldRef<"SystemSettings", 'Decimal'>
     readonly penaltyFeedbackAmd: FieldRef<"SystemSettings", 'Decimal'>
     readonly penaltyVoiceAmd: FieldRef<"SystemSettings", 'Decimal'>
@@ -36800,10 +36736,6 @@ export namespace Prisma {
     dashboardBannerUrl: 'dashboardBannerUrl',
     dashboardBannerTitle: 'dashboardBannerTitle',
     dashboardBannerSubtitle: 'dashboardBannerSubtitle',
-    absencePercent: 'absencePercent',
-    feedbacksPercent: 'feedbacksPercent',
-    voicePercent: 'voicePercent',
-    textPercent: 'textPercent',
     penaltyAbsenceAmd: 'penaltyAbsenceAmd',
     penaltyFeedbackAmd: 'penaltyFeedbackAmd',
     penaltyVoiceAmd: 'penaltyVoiceAmd',
@@ -39323,15 +39255,11 @@ export namespace Prisma {
     dashboardBannerUrl?: StringNullableFilter<"SystemSettings"> | string | null
     dashboardBannerTitle?: StringNullableFilter<"SystemSettings"> | string | null
     dashboardBannerSubtitle?: StringNullableFilter<"SystemSettings"> | string | null
-    absencePercent?: IntFilter<"SystemSettings"> | number
-    feedbacksPercent?: IntFilter<"SystemSettings"> | number
-    voicePercent?: IntFilter<"SystemSettings"> | number
-    textPercent?: IntFilter<"SystemSettings"> | number
-    penaltyAbsenceAmd?: DecimalFilter<"SystemSettings"> | Decimal | DecimalJsLike | number | string
-    penaltyFeedbackAmd?: DecimalFilter<"SystemSettings"> | Decimal | DecimalJsLike | number | string
-    penaltyVoiceAmd?: DecimalFilter<"SystemSettings"> | Decimal | DecimalJsLike | number | string
-    penaltyTextAmd?: DecimalFilter<"SystemSettings"> | Decimal | DecimalJsLike | number | string
-    penaltyDailyPlanAmd?: DecimalFilter<"SystemSettings"> | Decimal | DecimalJsLike | number | string
+    penaltyAbsenceAmd?: DecimalNullableFilter<"SystemSettings"> | Decimal | DecimalJsLike | number | string | null
+    penaltyFeedbackAmd?: DecimalNullableFilter<"SystemSettings"> | Decimal | DecimalJsLike | number | string | null
+    penaltyVoiceAmd?: DecimalNullableFilter<"SystemSettings"> | Decimal | DecimalJsLike | number | string | null
+    penaltyTextAmd?: DecimalNullableFilter<"SystemSettings"> | Decimal | DecimalJsLike | number | string | null
+    penaltyDailyPlanAmd?: DecimalNullableFilter<"SystemSettings"> | Decimal | DecimalJsLike | number | string | null
     footerIconLinks?: JsonNullableFilter<"SystemSettings">
     updatedAt?: DateTimeFilter<"SystemSettings"> | Date | string
   }
@@ -39347,15 +39275,11 @@ export namespace Prisma {
     dashboardBannerUrl?: SortOrderInput | SortOrder
     dashboardBannerTitle?: SortOrderInput | SortOrder
     dashboardBannerSubtitle?: SortOrderInput | SortOrder
-    absencePercent?: SortOrder
-    feedbacksPercent?: SortOrder
-    voicePercent?: SortOrder
-    textPercent?: SortOrder
-    penaltyAbsenceAmd?: SortOrder
-    penaltyFeedbackAmd?: SortOrder
-    penaltyVoiceAmd?: SortOrder
-    penaltyTextAmd?: SortOrder
-    penaltyDailyPlanAmd?: SortOrder
+    penaltyAbsenceAmd?: SortOrderInput | SortOrder
+    penaltyFeedbackAmd?: SortOrderInput | SortOrder
+    penaltyVoiceAmd?: SortOrderInput | SortOrder
+    penaltyTextAmd?: SortOrderInput | SortOrder
+    penaltyDailyPlanAmd?: SortOrderInput | SortOrder
     footerIconLinks?: SortOrderInput | SortOrder
     updatedAt?: SortOrder
   }
@@ -39374,15 +39298,11 @@ export namespace Prisma {
     dashboardBannerUrl?: StringNullableFilter<"SystemSettings"> | string | null
     dashboardBannerTitle?: StringNullableFilter<"SystemSettings"> | string | null
     dashboardBannerSubtitle?: StringNullableFilter<"SystemSettings"> | string | null
-    absencePercent?: IntFilter<"SystemSettings"> | number
-    feedbacksPercent?: IntFilter<"SystemSettings"> | number
-    voicePercent?: IntFilter<"SystemSettings"> | number
-    textPercent?: IntFilter<"SystemSettings"> | number
-    penaltyAbsenceAmd?: DecimalFilter<"SystemSettings"> | Decimal | DecimalJsLike | number | string
-    penaltyFeedbackAmd?: DecimalFilter<"SystemSettings"> | Decimal | DecimalJsLike | number | string
-    penaltyVoiceAmd?: DecimalFilter<"SystemSettings"> | Decimal | DecimalJsLike | number | string
-    penaltyTextAmd?: DecimalFilter<"SystemSettings"> | Decimal | DecimalJsLike | number | string
-    penaltyDailyPlanAmd?: DecimalFilter<"SystemSettings"> | Decimal | DecimalJsLike | number | string
+    penaltyAbsenceAmd?: DecimalNullableFilter<"SystemSettings"> | Decimal | DecimalJsLike | number | string | null
+    penaltyFeedbackAmd?: DecimalNullableFilter<"SystemSettings"> | Decimal | DecimalJsLike | number | string | null
+    penaltyVoiceAmd?: DecimalNullableFilter<"SystemSettings"> | Decimal | DecimalJsLike | number | string | null
+    penaltyTextAmd?: DecimalNullableFilter<"SystemSettings"> | Decimal | DecimalJsLike | number | string | null
+    penaltyDailyPlanAmd?: DecimalNullableFilter<"SystemSettings"> | Decimal | DecimalJsLike | number | string | null
     footerIconLinks?: JsonNullableFilter<"SystemSettings">
     updatedAt?: DateTimeFilter<"SystemSettings"> | Date | string
   }, "id">
@@ -39398,15 +39318,11 @@ export namespace Prisma {
     dashboardBannerUrl?: SortOrderInput | SortOrder
     dashboardBannerTitle?: SortOrderInput | SortOrder
     dashboardBannerSubtitle?: SortOrderInput | SortOrder
-    absencePercent?: SortOrder
-    feedbacksPercent?: SortOrder
-    voicePercent?: SortOrder
-    textPercent?: SortOrder
-    penaltyAbsenceAmd?: SortOrder
-    penaltyFeedbackAmd?: SortOrder
-    penaltyVoiceAmd?: SortOrder
-    penaltyTextAmd?: SortOrder
-    penaltyDailyPlanAmd?: SortOrder
+    penaltyAbsenceAmd?: SortOrderInput | SortOrder
+    penaltyFeedbackAmd?: SortOrderInput | SortOrder
+    penaltyVoiceAmd?: SortOrderInput | SortOrder
+    penaltyTextAmd?: SortOrderInput | SortOrder
+    penaltyDailyPlanAmd?: SortOrderInput | SortOrder
     footerIconLinks?: SortOrderInput | SortOrder
     updatedAt?: SortOrder
     _count?: SystemSettingsCountOrderByAggregateInput
@@ -39430,15 +39346,11 @@ export namespace Prisma {
     dashboardBannerUrl?: StringNullableWithAggregatesFilter<"SystemSettings"> | string | null
     dashboardBannerTitle?: StringNullableWithAggregatesFilter<"SystemSettings"> | string | null
     dashboardBannerSubtitle?: StringNullableWithAggregatesFilter<"SystemSettings"> | string | null
-    absencePercent?: IntWithAggregatesFilter<"SystemSettings"> | number
-    feedbacksPercent?: IntWithAggregatesFilter<"SystemSettings"> | number
-    voicePercent?: IntWithAggregatesFilter<"SystemSettings"> | number
-    textPercent?: IntWithAggregatesFilter<"SystemSettings"> | number
-    penaltyAbsenceAmd?: DecimalWithAggregatesFilter<"SystemSettings"> | Decimal | DecimalJsLike | number | string
-    penaltyFeedbackAmd?: DecimalWithAggregatesFilter<"SystemSettings"> | Decimal | DecimalJsLike | number | string
-    penaltyVoiceAmd?: DecimalWithAggregatesFilter<"SystemSettings"> | Decimal | DecimalJsLike | number | string
-    penaltyTextAmd?: DecimalWithAggregatesFilter<"SystemSettings"> | Decimal | DecimalJsLike | number | string
-    penaltyDailyPlanAmd?: DecimalWithAggregatesFilter<"SystemSettings"> | Decimal | DecimalJsLike | number | string
+    penaltyAbsenceAmd?: DecimalNullableWithAggregatesFilter<"SystemSettings"> | Decimal | DecimalJsLike | number | string | null
+    penaltyFeedbackAmd?: DecimalNullableWithAggregatesFilter<"SystemSettings"> | Decimal | DecimalJsLike | number | string | null
+    penaltyVoiceAmd?: DecimalNullableWithAggregatesFilter<"SystemSettings"> | Decimal | DecimalJsLike | number | string | null
+    penaltyTextAmd?: DecimalNullableWithAggregatesFilter<"SystemSettings"> | Decimal | DecimalJsLike | number | string | null
+    penaltyDailyPlanAmd?: DecimalNullableWithAggregatesFilter<"SystemSettings"> | Decimal | DecimalJsLike | number | string | null
     footerIconLinks?: JsonNullableWithAggregatesFilter<"SystemSettings">
     updatedAt?: DateTimeWithAggregatesFilter<"SystemSettings"> | Date | string
   }
@@ -42349,15 +42261,11 @@ export namespace Prisma {
     dashboardBannerUrl?: string | null
     dashboardBannerTitle?: string | null
     dashboardBannerSubtitle?: string | null
-    absencePercent?: number
-    feedbacksPercent?: number
-    voicePercent?: number
-    textPercent?: number
-    penaltyAbsenceAmd?: Decimal | DecimalJsLike | number | string
-    penaltyFeedbackAmd?: Decimal | DecimalJsLike | number | string
-    penaltyVoiceAmd?: Decimal | DecimalJsLike | number | string
-    penaltyTextAmd?: Decimal | DecimalJsLike | number | string
-    penaltyDailyPlanAmd?: Decimal | DecimalJsLike | number | string
+    penaltyAbsenceAmd?: Decimal | DecimalJsLike | number | string | null
+    penaltyFeedbackAmd?: Decimal | DecimalJsLike | number | string | null
+    penaltyVoiceAmd?: Decimal | DecimalJsLike | number | string | null
+    penaltyTextAmd?: Decimal | DecimalJsLike | number | string | null
+    penaltyDailyPlanAmd?: Decimal | DecimalJsLike | number | string | null
     footerIconLinks?: NullableJsonNullValueInput | InputJsonValue
     updatedAt?: Date | string
   }
@@ -42373,15 +42281,11 @@ export namespace Prisma {
     dashboardBannerUrl?: string | null
     dashboardBannerTitle?: string | null
     dashboardBannerSubtitle?: string | null
-    absencePercent?: number
-    feedbacksPercent?: number
-    voicePercent?: number
-    textPercent?: number
-    penaltyAbsenceAmd?: Decimal | DecimalJsLike | number | string
-    penaltyFeedbackAmd?: Decimal | DecimalJsLike | number | string
-    penaltyVoiceAmd?: Decimal | DecimalJsLike | number | string
-    penaltyTextAmd?: Decimal | DecimalJsLike | number | string
-    penaltyDailyPlanAmd?: Decimal | DecimalJsLike | number | string
+    penaltyAbsenceAmd?: Decimal | DecimalJsLike | number | string | null
+    penaltyFeedbackAmd?: Decimal | DecimalJsLike | number | string | null
+    penaltyVoiceAmd?: Decimal | DecimalJsLike | number | string | null
+    penaltyTextAmd?: Decimal | DecimalJsLike | number | string | null
+    penaltyDailyPlanAmd?: Decimal | DecimalJsLike | number | string | null
     footerIconLinks?: NullableJsonNullValueInput | InputJsonValue
     updatedAt?: Date | string
   }
@@ -42397,15 +42301,11 @@ export namespace Prisma {
     dashboardBannerUrl?: NullableStringFieldUpdateOperationsInput | string | null
     dashboardBannerTitle?: NullableStringFieldUpdateOperationsInput | string | null
     dashboardBannerSubtitle?: NullableStringFieldUpdateOperationsInput | string | null
-    absencePercent?: IntFieldUpdateOperationsInput | number
-    feedbacksPercent?: IntFieldUpdateOperationsInput | number
-    voicePercent?: IntFieldUpdateOperationsInput | number
-    textPercent?: IntFieldUpdateOperationsInput | number
-    penaltyAbsenceAmd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    penaltyFeedbackAmd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    penaltyVoiceAmd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    penaltyTextAmd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    penaltyDailyPlanAmd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    penaltyAbsenceAmd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    penaltyFeedbackAmd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    penaltyVoiceAmd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    penaltyTextAmd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    penaltyDailyPlanAmd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     footerIconLinks?: NullableJsonNullValueInput | InputJsonValue
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -42421,15 +42321,11 @@ export namespace Prisma {
     dashboardBannerUrl?: NullableStringFieldUpdateOperationsInput | string | null
     dashboardBannerTitle?: NullableStringFieldUpdateOperationsInput | string | null
     dashboardBannerSubtitle?: NullableStringFieldUpdateOperationsInput | string | null
-    absencePercent?: IntFieldUpdateOperationsInput | number
-    feedbacksPercent?: IntFieldUpdateOperationsInput | number
-    voicePercent?: IntFieldUpdateOperationsInput | number
-    textPercent?: IntFieldUpdateOperationsInput | number
-    penaltyAbsenceAmd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    penaltyFeedbackAmd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    penaltyVoiceAmd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    penaltyTextAmd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    penaltyDailyPlanAmd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    penaltyAbsenceAmd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    penaltyFeedbackAmd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    penaltyVoiceAmd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    penaltyTextAmd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    penaltyDailyPlanAmd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     footerIconLinks?: NullableJsonNullValueInput | InputJsonValue
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -42445,15 +42341,11 @@ export namespace Prisma {
     dashboardBannerUrl?: string | null
     dashboardBannerTitle?: string | null
     dashboardBannerSubtitle?: string | null
-    absencePercent?: number
-    feedbacksPercent?: number
-    voicePercent?: number
-    textPercent?: number
-    penaltyAbsenceAmd?: Decimal | DecimalJsLike | number | string
-    penaltyFeedbackAmd?: Decimal | DecimalJsLike | number | string
-    penaltyVoiceAmd?: Decimal | DecimalJsLike | number | string
-    penaltyTextAmd?: Decimal | DecimalJsLike | number | string
-    penaltyDailyPlanAmd?: Decimal | DecimalJsLike | number | string
+    penaltyAbsenceAmd?: Decimal | DecimalJsLike | number | string | null
+    penaltyFeedbackAmd?: Decimal | DecimalJsLike | number | string | null
+    penaltyVoiceAmd?: Decimal | DecimalJsLike | number | string | null
+    penaltyTextAmd?: Decimal | DecimalJsLike | number | string | null
+    penaltyDailyPlanAmd?: Decimal | DecimalJsLike | number | string | null
     footerIconLinks?: NullableJsonNullValueInput | InputJsonValue
     updatedAt?: Date | string
   }
@@ -42469,15 +42361,11 @@ export namespace Prisma {
     dashboardBannerUrl?: NullableStringFieldUpdateOperationsInput | string | null
     dashboardBannerTitle?: NullableStringFieldUpdateOperationsInput | string | null
     dashboardBannerSubtitle?: NullableStringFieldUpdateOperationsInput | string | null
-    absencePercent?: IntFieldUpdateOperationsInput | number
-    feedbacksPercent?: IntFieldUpdateOperationsInput | number
-    voicePercent?: IntFieldUpdateOperationsInput | number
-    textPercent?: IntFieldUpdateOperationsInput | number
-    penaltyAbsenceAmd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    penaltyFeedbackAmd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    penaltyVoiceAmd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    penaltyTextAmd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    penaltyDailyPlanAmd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    penaltyAbsenceAmd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    penaltyFeedbackAmd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    penaltyVoiceAmd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    penaltyTextAmd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    penaltyDailyPlanAmd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     footerIconLinks?: NullableJsonNullValueInput | InputJsonValue
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -42493,15 +42381,11 @@ export namespace Prisma {
     dashboardBannerUrl?: NullableStringFieldUpdateOperationsInput | string | null
     dashboardBannerTitle?: NullableStringFieldUpdateOperationsInput | string | null
     dashboardBannerSubtitle?: NullableStringFieldUpdateOperationsInput | string | null
-    absencePercent?: IntFieldUpdateOperationsInput | number
-    feedbacksPercent?: IntFieldUpdateOperationsInput | number
-    voicePercent?: IntFieldUpdateOperationsInput | number
-    textPercent?: IntFieldUpdateOperationsInput | number
-    penaltyAbsenceAmd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    penaltyFeedbackAmd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    penaltyVoiceAmd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    penaltyTextAmd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
-    penaltyDailyPlanAmd?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    penaltyAbsenceAmd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    penaltyFeedbackAmd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    penaltyVoiceAmd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    penaltyTextAmd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
+    penaltyDailyPlanAmd?: NullableDecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string | null
     footerIconLinks?: NullableJsonNullValueInput | InputJsonValue
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -45048,10 +44932,6 @@ export namespace Prisma {
     dashboardBannerUrl?: SortOrder
     dashboardBannerTitle?: SortOrder
     dashboardBannerSubtitle?: SortOrder
-    absencePercent?: SortOrder
-    feedbacksPercent?: SortOrder
-    voicePercent?: SortOrder
-    textPercent?: SortOrder
     penaltyAbsenceAmd?: SortOrder
     penaltyFeedbackAmd?: SortOrder
     penaltyVoiceAmd?: SortOrder
@@ -45067,10 +44947,6 @@ export namespace Prisma {
     maxUnjustifiedAbsences?: SortOrder
     paymentDueDays?: SortOrder
     lessonReminderHours?: SortOrder
-    absencePercent?: SortOrder
-    feedbacksPercent?: SortOrder
-    voicePercent?: SortOrder
-    textPercent?: SortOrder
     penaltyAbsenceAmd?: SortOrder
     penaltyFeedbackAmd?: SortOrder
     penaltyVoiceAmd?: SortOrder
@@ -45089,10 +44965,6 @@ export namespace Prisma {
     dashboardBannerUrl?: SortOrder
     dashboardBannerTitle?: SortOrder
     dashboardBannerSubtitle?: SortOrder
-    absencePercent?: SortOrder
-    feedbacksPercent?: SortOrder
-    voicePercent?: SortOrder
-    textPercent?: SortOrder
     penaltyAbsenceAmd?: SortOrder
     penaltyFeedbackAmd?: SortOrder
     penaltyVoiceAmd?: SortOrder
@@ -45112,10 +44984,6 @@ export namespace Prisma {
     dashboardBannerUrl?: SortOrder
     dashboardBannerTitle?: SortOrder
     dashboardBannerSubtitle?: SortOrder
-    absencePercent?: SortOrder
-    feedbacksPercent?: SortOrder
-    voicePercent?: SortOrder
-    textPercent?: SortOrder
     penaltyAbsenceAmd?: SortOrder
     penaltyFeedbackAmd?: SortOrder
     penaltyVoiceAmd?: SortOrder
@@ -45130,10 +44998,6 @@ export namespace Prisma {
     maxUnjustifiedAbsences?: SortOrder
     paymentDueDays?: SortOrder
     lessonReminderHours?: SortOrder
-    absencePercent?: SortOrder
-    feedbacksPercent?: SortOrder
-    voicePercent?: SortOrder
-    textPercent?: SortOrder
     penaltyAbsenceAmd?: SortOrder
     penaltyFeedbackAmd?: SortOrder
     penaltyVoiceAmd?: SortOrder

@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useTranslations } from 'next-intl';
-import { Button } from '@/shared/components/ui';
+import { useTranslations, useMessages } from 'next-intl';
+import { Button, AutoDismissToast } from '@/shared/components/ui';
 import { usePenalties, useUpdatePenalties } from '@/features/settings/hooks/useSettings';
 import { getErrorMessage } from '@/shared/lib/api';
 
@@ -14,6 +14,18 @@ type PenaltyFormValues = {
   penaltyDailyPlanAmd: string;
 };
 
+const EMPTY_PENALTY_FORM: PenaltyFormValues = {
+  penaltyAbsenceAmd: '',
+  penaltyFeedbackAmd: '',
+  penaltyVoiceAmd: '',
+  penaltyTextAmd: '',
+  penaltyDailyPlanAmd: '',
+};
+
+function formatPenaltyField(value: number | null | undefined): string {
+  return value == null ? '' : String(value);
+}
+
 function parseNonNegativeNumber(value: string): number | null {
   const normalizedValue = value.trim();
   if (!normalizedValue) return null;
@@ -24,31 +36,39 @@ function parseNonNegativeNumber(value: string): number | null {
   return parsedValue;
 }
 
+function getPenaltySavedSuccessMessage(
+  settingsMessages: unknown,
+  fallbackMessage: string,
+): string {
+  if (typeof settingsMessages !== 'object' || settingsMessages === null) {
+    return fallbackMessage;
+  }
+
+  const value = (settingsMessages as Record<string, unknown>).penaltyAmountsSavedSuccess;
+  return typeof value === 'string' && value.trim().length > 0 ? value : fallbackMessage;
+}
+
 export function PenaltyTab() {
   const t = useTranslations('settings');
   const tCommon = useTranslations('common');
+  const messages = useMessages();
   const { data: penalties, isLoading } = usePenalties();
   const updatePenalties = useUpdatePenalties();
   
-  const [formValues, setFormValues] = useState<PenaltyFormValues>({
-    penaltyAbsenceAmd: '1000',
-    penaltyFeedbackAmd: '500',
-    penaltyVoiceAmd: '1000',
-    penaltyTextAmd: '1000',
-    penaltyDailyPlanAmd: '1000',
-  });
+  const [formValues, setFormValues] = useState<PenaltyFormValues>(EMPTY_PENALTY_FORM);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [successToast, setSuccessToast] = useState<{ key: number; message: string } | null>(null);
 
   // Initialize from API data
   useEffect(() => {
     if (penalties) {
       setFormValues({
-        penaltyAbsenceAmd: String(penalties.penaltyAbsenceAmd),
-        penaltyFeedbackAmd: String(penalties.penaltyFeedbackAmd),
-        penaltyVoiceAmd: String(penalties.penaltyVoiceAmd),
-        penaltyTextAmd: String(penalties.penaltyTextAmd),
-        penaltyDailyPlanAmd: String(penalties.penaltyDailyPlanAmd ?? 1000),
+        penaltyAbsenceAmd: formatPenaltyField(penalties.penaltyAbsenceAmd),
+        penaltyFeedbackAmd: formatPenaltyField(penalties.penaltyFeedbackAmd),
+        penaltyVoiceAmd: formatPenaltyField(penalties.penaltyVoiceAmd),
+        penaltyTextAmd: formatPenaltyField(penalties.penaltyTextAmd),
+        penaltyDailyPlanAmd: formatPenaltyField(penalties.penaltyDailyPlanAmd),
       });
     }
   }, [penalties]);
@@ -86,16 +106,27 @@ export function PenaltyTab() {
 
     setIsSaving(true);
     setError(null);
+    setSuccessToast(null);
 
     try {
-      await updatePenalties.mutateAsync({
+      const savedPenalties = await updatePenalties.mutateAsync({
         penaltyAbsenceAmd,
         penaltyFeedbackAmd,
         penaltyVoiceAmd,
         penaltyTextAmd,
         penaltyDailyPlanAmd,
       });
-      // Success toast will be handled by the mutation
+      setFormValues({
+        penaltyAbsenceAmd: formatPenaltyField(savedPenalties.penaltyAbsenceAmd),
+        penaltyFeedbackAmd: formatPenaltyField(savedPenalties.penaltyFeedbackAmd),
+        penaltyVoiceAmd: formatPenaltyField(savedPenalties.penaltyVoiceAmd),
+        penaltyTextAmd: formatPenaltyField(savedPenalties.penaltyTextAmd),
+        penaltyDailyPlanAmd: formatPenaltyField(savedPenalties.penaltyDailyPlanAmd),
+      });
+      setSuccessToast({
+        key: Date.now(),
+        message: getPenaltySavedSuccessMessage(messages.settings, tCommon('savedSuccessfully')),
+      });
     } catch (err) {
       setError(getErrorMessage(err, t('failedToSaveSettings')));
     } finally {
@@ -133,8 +164,7 @@ export function PenaltyTab() {
             <label className="block text-sm font-medium text-[#3b3b40] mb-2">
               {t('penaltyAbsenceAmd')}
             </label>
-            <div className="relative">
-              <input
+            <input
                 type="number"
                 min="0"
                 step="1"
@@ -142,8 +172,6 @@ export function PenaltyTab() {
                 onChange={(e) => handleInputChange('penaltyAbsenceAmd', e.target.value)}
                 className="h-11 min-h-11 w-full rounded-[15px] border border-[rgba(14,14,16,0.07)] px-4 py-0 focus:border-[#1010a3] focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20"
               />
-              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[#8b8b90]">֏</span>
-            </div>
           </div>
 
           {/* Feedback Penalty */}
@@ -151,8 +179,7 @@ export function PenaltyTab() {
             <label className="block text-sm font-medium text-[#3b3b40] mb-2">
               {t('penaltyFeedbackAmd')}
             </label>
-            <div className="relative">
-              <input
+            <input
                 type="number"
                 min="0"
                 step="1"
@@ -160,8 +187,6 @@ export function PenaltyTab() {
                 onChange={(e) => handleInputChange('penaltyFeedbackAmd', e.target.value)}
                 className="h-11 min-h-11 w-full rounded-[15px] border border-[rgba(14,14,16,0.07)] px-4 py-0 focus:border-[#1010a3] focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20"
               />
-              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[#8b8b90]">֏</span>
-            </div>
           </div>
 
           {/* Voice Penalty */}
@@ -169,8 +194,7 @@ export function PenaltyTab() {
             <label className="block text-sm font-medium text-[#3b3b40] mb-2">
               {t('penaltyVoiceAmd')}
             </label>
-            <div className="relative">
-              <input
+            <input
                 type="number"
                 min="0"
                 step="1"
@@ -178,8 +202,6 @@ export function PenaltyTab() {
                 onChange={(e) => handleInputChange('penaltyVoiceAmd', e.target.value)}
                 className="h-11 min-h-11 w-full rounded-[15px] border border-[rgba(14,14,16,0.07)] px-4 py-0 focus:border-[#1010a3] focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20"
               />
-              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[#8b8b90]">֏</span>
-            </div>
           </div>
 
           {/* Text Penalty */}
@@ -187,8 +209,7 @@ export function PenaltyTab() {
             <label className="block text-sm font-medium text-[#3b3b40] mb-2">
               {t('penaltyTextAmd')}
             </label>
-            <div className="relative">
-              <input
+            <input
                 type="number"
                 min="0"
                 step="1"
@@ -196,8 +217,6 @@ export function PenaltyTab() {
                 onChange={(e) => handleInputChange('penaltyTextAmd', e.target.value)}
                 className="h-11 min-h-11 w-full rounded-[15px] border border-[rgba(14,14,16,0.07)] px-4 py-0 focus:border-[#1010a3] focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20"
               />
-              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[#8b8b90]">֏</span>
-            </div>
           </div>
 
           {/* Daily Plan Penalty */}
@@ -205,8 +224,7 @@ export function PenaltyTab() {
             <label className="block text-sm font-medium text-[#3b3b40] mb-2">
               {t('penaltyDailyPlanAmd')}
             </label>
-            <div className="relative">
-              <input
+            <input
                 type="number"
                 min="0"
                 step="1"
@@ -214,16 +232,14 @@ export function PenaltyTab() {
                 onChange={(e) => handleInputChange('penaltyDailyPlanAmd', e.target.value)}
                 className="h-11 min-h-11 w-full rounded-[15px] border border-[rgba(14,14,16,0.07)] px-4 py-0 focus:border-[#1010a3] focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20"
               />
-              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[#8b8b90]">֏</span>
-            </div>
             <p className="mt-1 text-xs text-[#8b8b90]">{t('penaltyDailyPlanAmdHint')}</p>
           </div>
 
-          {error && (
-            <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-sm text-red-600">
+          {error ? (
+            <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-600">
               {error}
             </div>
-          )}
+          ) : null}
         </div>
 
         <div className="pt-4 flex justify-end">
@@ -237,6 +253,17 @@ export function PenaltyTab() {
           </Button>
         </div>
       </form>
+
+      {successToast ? (
+        <AutoDismissToast
+          key={successToast.key}
+          message={successToast.message}
+          variant="success"
+          position="center"
+          durationMs={3500}
+          onDismiss={() => setSuccessToast(null)}
+        />
+      ) : null}
     </div>
   );
 }

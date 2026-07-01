@@ -44,4 +44,4 @@ export type { AdminDetailModalProps } from './admin-detail-modal';
 export { AdminAvatarPhotoLightbox } from './admin-avatar-photo-lightbox';
 export type { AdminAvatarPhotoLightboxProps } from './admin-avatar-photo-lightbox';
 export { AutoDismissToast } from './auto-dismiss-toast';
-export type { AutoDismissToastVariant } from './auto-dismiss-toast';
+export type { AutoDismissToastVariant, AutoDismissToastPosition } from './auto-dismiss-toast';

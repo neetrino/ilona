@@ -2,6 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 import { usePathname } from 'next/navigation';
+import { ArrowLeft } from 'lucide-react';
 import { LandingNavbarLanguageToggle } from '@/shared/components/layout/LandingNavbarLanguageToggle';
 import { StudentLogoutControl } from '@/shared/components/layout/StudentLogoutControl';
 import { PortalHeaderSearch } from '@/features/search/components/PortalHeaderSearch';
@@ -13,14 +14,19 @@ import { cn } from '@/shared/lib/utils';
 type TeacherDashboardHeaderProps = {
   pageTitle?: string;
   pageSubtitle?: string;
+  onBack?: () => void;
+  backLabel?: string;
 };
 
 export function TeacherDashboardHeader({
   pageTitle,
   pageSubtitle,
+  onBack,
+  backLabel,
 }: TeacherDashboardHeaderProps) {
   const t = useTranslations('dashboard');
   const tNav = useTranslations('nav');
+  const tCommon = useTranslations('common');
   const pathname = usePathname();
   const { user } = useAuthStore();
   const firstName = user?.firstName ?? tNav('user');
@@ -33,6 +39,7 @@ export function TeacherDashboardHeader({
   const isTeacherMobileSubpage = isTeacherPortalSubpage(normalizedPath);
   const isProfilePage = isTeacherProfilePath(normalizedPath);
   const shouldShowSecondaryRowOnMobile = !isTeacherMobileSubpage;
+  const resolvedBackLabel = backLabel ?? tCommon('back');
 
   return (
     <header
@@ -45,14 +52,25 @@ export function TeacherDashboardHeader({
             <div className="flex min-h-11 min-w-0 flex-1 flex-col justify-center text-center lg:min-h-full lg:text-left">
               {isSubpage ? (
                 <>
-                  <div className="relative flex min-h-11 w-full items-center lg:block">
-                    <h1 className="flex w-full min-h-11 items-center justify-center px-0 text-[1.125rem] font-bold leading-tight tracking-tight text-[#1010a3] sm:px-5 sm:text-[1.375rem] lg:min-h-0 lg:flex-1 lg:justify-start">
+                  <div className="relative flex min-h-11 w-full items-center gap-2 lg:justify-start">
+                    {onBack ? (
+                      <button
+                        type="button"
+                        onClick={onBack}
+                        aria-label={resolvedBackLabel}
+                        className="absolute left-0 top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-[#1010a3] text-white transition-opacity hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-[#1010a3]/30 focus:ring-offset-2 lg:static lg:shrink-0 lg:translate-y-0"
+                      >
+                        <ArrowLeft className="h-5 w-5" aria-hidden />
+                      </button>
+                    ) : null}
+                    <h1 className="flex w-full min-h-11 items-center justify-center px-0 text-[1.125rem] font-bold leading-tight tracking-tight text-[#1010a3] sm:px-5 sm:text-[1.375rem] lg:min-h-0 lg:w-auto lg:flex-1 lg:justify-start lg:px-0">
                       <button
                         type="button"
                         onClick={scrollToTop}
                         className={cn(
                           'max-w-full truncate border-0 bg-transparent p-0 text-inherit cursor-pointer sm:cursor-default',
                           isProfilePage && 'pr-[5.5rem] lg:pr-0',
+                          onBack && 'px-10 lg:px-0',
                         )}
                       >
                         {pageTitle}

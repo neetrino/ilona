@@ -1,22 +1,22 @@
 import { DailyDutiesFilters } from '@/app/[locale]/(admin)/admin/daily-duties/components/DailyDutiesFilters';
-import type { DailyDutiesStatusFilter } from '@/shared/lib/daily-duties/filter-by-daily-duties-status';
+import type { DailyDutiesLessonStatus } from '@ilona/types';
 
 interface DailyDutiesFiltersSectionProps {
   searchQuery: string;
-  selectedTeacherId: string;
-  selectedStatus: DailyDutiesStatusFilter;
+  selectedTeacherIds: Set<string>;
+  selectedStatusIds: Set<DailyDutiesLessonStatus>;
   teacherOptions: Array<{ id: string; label: string }>;
   isLoadingTeachers: boolean;
   hideTeacherFilter: boolean;
   onSearchChange: (value: string) => void;
-  onTeacherChange: (teacherId: string) => void;
-  onStatusChange: (status: DailyDutiesStatusFilter) => void;
+  onTeacherChange: (teacherIds: Set<string>) => void;
+  onStatusChange: (statusIds: Set<string>) => void;
 }
 
 export function DailyDutiesFiltersSection({
   searchQuery,
-  selectedTeacherId,
-  selectedStatus,
+  selectedTeacherIds,
+  selectedStatusIds,
   teacherOptions,
   isLoadingTeachers,
   hideTeacherFilter,
@@ -28,8 +28,8 @@ export function DailyDutiesFiltersSection({
     <div className="rounded-[15px] border border-[rgba(14,14,16,0.07)] bg-white p-4">
       <DailyDutiesFilters
         searchQuery={searchQuery}
-        selectedTeacherId={selectedTeacherId}
-        selectedStatus={selectedStatus}
+        selectedTeacherIds={selectedTeacherIds}
+        selectedStatusIds={selectedStatusIds}
         teacherOptions={teacherOptions}
         isLoadingTeachers={isLoadingTeachers}
         onSearchChange={onSearchChange}

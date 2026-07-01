@@ -1,26 +1,23 @@
 import { CalendarMonthGrid } from '@/shared/components/calendar/CalendarMonthGrid';
 import { cn } from '@/shared/lib/utils';
 import type { Lesson } from '@/features/lessons';
-import { useLocale, useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
 import { formatDailyDutiesLessonTime } from './daily-duties-display.util';
 
 interface DailyDutiesMonthViewProps {
   monthDates: (Date | null)[][];
   lessonsByDate: Record<string, Lesson[]>;
   isLoading: boolean;
-  portalBasePath: string;
-  router: { push: (href: string) => void };
+  onLessonClick: (lessonId: string) => void;
 }
 
 export function DailyDutiesMonthView({
   monthDates,
   lessonsByDate,
   isLoading,
-  portalBasePath,
-  router,
+  onLessonClick,
 }: DailyDutiesMonthViewProps) {
   const t = useTranslations('dailyDuties');
-  const locale = useLocale();
 
   return (
     <div className="w-full min-w-0 overflow-x-auto rounded-[15px] border border-[rgba(14,14,16,0.07)] bg-white [-webkit-overflow-scrolling:touch]">
@@ -35,7 +32,7 @@ export function DailyDutiesMonthView({
             renderLesson={({ lesson, variant }) => (
               <button
                 type="button"
-                onClick={() => router.push(`/${locale}${portalBasePath}/${lesson.id}`)}
+                onClick={() => onLessonClick(lesson.id)}
                 className={cn(
                   'w-full min-w-0 max-w-full truncate rounded border border-blue-100/90 bg-blue-50/90 text-left text-[#3b3b40] transition hover:border-blue-200 hover:bg-blue-100/80',
                   variant === 'cell'

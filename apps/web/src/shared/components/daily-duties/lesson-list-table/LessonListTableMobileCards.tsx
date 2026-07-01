@@ -3,9 +3,10 @@ import { useLocale, useTranslations } from 'next-intl';
 import { Button } from '@/shared/components/ui/button';
 import { Checkbox } from '@/shared/components/ui/checkbox';
 import {
-  DailyDutiesLessonStatusBadge,
+  DailyDutiesLessonStatusTiltedBadge,
   resolveDailyDutiesLessonStatus,
 } from '@/shared/lib/daily-duties/DailyDutiesLessonStatusBadge';
+import { Avatar } from '@/shared/components/ui/avatar';
 import { AdminListPagination } from '@/shared/components/ui';
 import { User } from 'lucide-react';
 import Image from 'next/image';
@@ -80,6 +81,7 @@ export function LessonListTableMobileCards({
         const isLocked = isTeacher && lesson.isLockedForTeacher;
         const section = row.category ? teacherDailyDutiesRowSection(row.category) : null;
         const lessonStatus = resolveDailyDutiesLessonStatus(lesson);
+        const groupName = lesson.group?.name || tCal('unknownGroupName');
         const globalRowIndex = (safeMobileCardsPage - 1) * mobileCardPageSize + idx;
         const prevGlobalRow = globalRowIndex > 0 ? cardRows[globalRowIndex - 1] : null;
         const prevSection = prevGlobalRow?.category
@@ -132,16 +134,15 @@ export function LessonListTableMobileCards({
                       className="relative -top-[1px] h-5 w-5 rounded-[15px]"
                     />
                   </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-start justify-between gap-2">
-                      <p className="min-w-0 flex-1 text-[1.2rem] leading-tight font-semibold break-words text-[#111827]">
-                        {lesson.group?.name || tCal('unknownGroupName')}
-                      </p>
-                      {lessonStatus ? (
-                        <DailyDutiesLessonStatusBadge status={lessonStatus} className="shrink-0" />
-                      ) : null}
-                    </div>
-                    <div className="mt-5 -ml-[31px] grid grid-cols-2 items-stretch gap-3">
+                  <div className="relative shrink-0">
+                    <Avatar name={groupName} size="md" />
+                    {lessonStatus ? <DailyDutiesLessonStatusTiltedBadge status={lessonStatus} /> : null}
+                  </div>
+                  <p className="min-w-0 flex-1 text-[1.2rem] leading-tight font-semibold break-words text-[#111827]">
+                    {groupName}
+                  </p>
+                </div>
+                <div className="mt-5 grid grid-cols-2 items-stretch gap-3">
                       <div className="flex items-start gap-2 justify-self-start">
                         <svg
                           className="mt-0.5 h-5 w-5 shrink-0 text-green-500"
@@ -183,8 +184,6 @@ export function LessonListTableMobileCards({
                         </div>
                       </div>
                     </div>
-                  </div>
-                </div>
                 <div className="my-3 border-t border-dashed border-[rgba(14,14,16,0.14)]" />
                 <div
                   className="grid grid-cols-3 gap-2"

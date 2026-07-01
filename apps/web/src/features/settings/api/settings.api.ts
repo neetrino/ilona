@@ -256,58 +256,23 @@ export async function updateFooterIconLinks(
 }
 
 /**
- * Get action percent settings (Admin only)
- */
-export async function fetchActionPercents(): Promise<{
-  absencePercent: number;
-  feedbacksPercent: number;
-  voicePercent: number;
-  textPercent: number;
-  total: number;
-}> {
-  return api.get<{
-    absencePercent: number;
-    feedbacksPercent: number;
-    voicePercent: number;
-    textPercent: number;
-    total: number;
-  }>('/settings/action-percents');
-}
-
-/**
- * Update action percent settings (Admin only) - DEPRECATED
- */
-export async function updateActionPercents(data: {
-  absencePercent: number;
-  feedbacksPercent: number;
-  voicePercent: number;
-  textPercent: number;
-}): Promise<{
-  absencePercent: number;
-  feedbacksPercent: number;
-  voicePercent: number;
-  textPercent: number;
-  total: number;
-}> {
-  return api.put<{
-    absencePercent: number;
-    feedbacksPercent: number;
-    voicePercent: number;
-    textPercent: number;
-    total: number;
-  }>('/settings/action-percents', data);
-}
-
-/**
  * Get penalty amounts (Admin only)
  */
 export interface PenaltyAmountsPayload {
+  penaltyAbsenceAmd: number | null;
+  penaltyFeedbackAmd: number | null;
+  penaltyVoiceAmd: number | null;
+  penaltyTextAmd: number | null;
+  penaltyDailyPlanAmd: number | null;
+}
+
+export type PenaltyAmountsUpdatePayload = {
   penaltyAbsenceAmd: number;
   penaltyFeedbackAmd: number;
   penaltyVoiceAmd: number;
   penaltyTextAmd: number;
   penaltyDailyPlanAmd: number;
-}
+};
 
 export async function fetchPenalties(): Promise<PenaltyAmountsPayload> {
   return api.get<PenaltyAmountsPayload>('/settings/penalties');
@@ -317,7 +282,7 @@ export async function fetchPenalties(): Promise<PenaltyAmountsPayload> {
  * Update penalty amounts (Admin only)
  */
 export async function updatePenalties(
-  data: PenaltyAmountsPayload,
+  data: PenaltyAmountsUpdatePayload,
 ): Promise<PenaltyAmountsPayload> {
   return api.put<PenaltyAmountsPayload>('/settings/penalties', data);
 }

@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { SettingsService } from '../settings/settings.service';
 import { LessonStatus } from '@ilona/database';
-import type { ActionWeights, CompletedActions, PenaltyAmounts } from '@ilona/types';
+import type { CompletedActions, PenaltyAmounts } from '@ilona/types';
 import { lessonsPayableToTeacherWhere } from '../../common/lesson-instructor';
 import {
   getPaymentEligibleActions,
@@ -20,39 +20,10 @@ export class SalaryCalculationService {
   ) {}
 
   /**
-   * Get action weights from settings (DEPRECATED - kept for backward compatibility)
-   */
-  async getActionWeights(): Promise<ActionWeights> {
-    const settings = await this.settingsService.getActionPercents();
-    return {
-      absence: settings.absencePercent,
-      feedbacks: settings.feedbacksPercent,
-      voice: settings.voicePercent,
-      text: settings.textPercent,
-      dailyPlan: 0,
-    };
-  }
-
-  /**
    * Get penalty amounts from settings (single source of truth)
    */
   async getPenaltyAmounts(): Promise<PenaltyAmounts> {
     return await this.settingsService.getPenaltyAmounts();
-  }
-
-  /**
-   * Calculate earned percent for a lesson based on completed actions and weights (DEPRECATED)
-   */
-  calculateEarnedPercent(
-    completedActions: CompletedActions,
-    weights: ActionWeights,
-  ): number {
-    let earnedPercent = 0;
-    if (completedActions.absence) earnedPercent += weights.absence;
-    if (completedActions.feedbacks) earnedPercent += weights.feedbacks;
-    if (completedActions.voice) earnedPercent += weights.voice;
-    if (completedActions.text) earnedPercent += weights.text;
-    return earnedPercent;
   }
 
   /**
@@ -64,11 +35,11 @@ export class SalaryCalculationService {
     penalties: PenaltyAmounts,
   ): number {
     let deduction = 0;
-    if (!completedActions.absence) deduction += penalties.penaltyAbsenceAmd;
-    if (!completedActions.feedbacks) deduction += penalties.penaltyFeedbackAmd;
-    if (!completedActions.voice) deduction += penalties.penaltyVoiceAmd;
-    if (!completedActions.text) deduction += penalties.penaltyTextAmd;
-    if (!completedActions.dailyPlan) deduction += penalties.penaltyDailyPlanAmd;
+    if (!completedActions.absence) deduction += penalties.penaltyAbsenceAmd ?? 0;
+    if (!completedActions.feedbacks) deduction += penalties.penaltyFeedbackAmd ?? 0;
+    if (!completedActions.voice) deduction += penalties.penaltyVoiceAmd ?? 0;
+    if (!completedActions.text) deduction += penalties.penaltyTextAmd ?? 0;
+    if (!completedActions.dailyPlan) deduction += penalties.penaltyDailyPlanAmd ?? 0;
     return deduction;
   }
 
@@ -88,7 +59,7 @@ export class SalaryCalculationService {
   /**
    * Calculate monthly salary from lessons for a teacher
    * This is the single source of truth for salary calculation
-   * Returns: SUM of (baseSalary * earnedPercent / 100) for all lessons in the month
+   * Returns: SUM of (lessonRate - penalty deductions) for all lessons in the month
    * Salary is calculated per lesson (fixed price per class), NOT per hour
    * Salary updates immediately when any required lesson action is completed, without requiring "Lesson Complete"
    */

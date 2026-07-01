@@ -53,6 +53,9 @@ interface DashboardLayoutProps {
   contentScrollClassName?: string;
   /** Full-bleed mobile page: hide admin header and remove content padding below lg */
   mobileFullBleed?: boolean;
+  /** Teacher subpages: navigate back in browser history with optional fallback */
+  onBack?: () => void;
+  backLabel?: string;
 }
 
 export function DashboardLayout({
@@ -64,6 +67,8 @@ export function DashboardLayout({
   variant = 'default',
   contentScrollClassName,
   mobileFullBleed = false,
+  onBack,
+  backLabel,
 }: DashboardLayoutProps) {
   const t = useTranslations('common');
   const pathname = usePathname();
@@ -197,6 +202,8 @@ export function DashboardLayout({
               <TeacherDashboardHeader
                 pageTitle={isDashboardHome ? undefined : title}
                 pageSubtitle={portalHeaderSubtitle}
+                onBack={onBack}
+                backLabel={backLabel}
               />
             </div>
           ) : isAdminPortal ? (

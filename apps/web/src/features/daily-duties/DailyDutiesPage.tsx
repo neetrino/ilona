@@ -27,8 +27,8 @@ export function DailyDutiesPage({ mode }: DailyDutiesPageProps) {
 
   const hasActiveFilters =
     Boolean(dailyDuties.searchQuery) ||
-    Boolean(dailyDuties.selectedStatus) ||
-    (!dailyDuties.isTeacherMode && Boolean(dailyDuties.selectedTeacherId));
+    dailyDuties.hasPartialStatusFilter ||
+    (!dailyDuties.isTeacherMode && dailyDuties.hasPartialTeacherFilter);
 
   const periodHeader =
     dailyDuties.viewMode === 'month' ? dailyDuties.monthHeader : dailyDuties.weekHeader;
@@ -41,8 +41,8 @@ export function DailyDutiesPage({ mode }: DailyDutiesPageProps) {
       <div className={portalPageStackClass}>
         <DailyDutiesFiltersSection
           searchQuery={dailyDuties.searchQuery}
-          selectedTeacherId={dailyDuties.selectedTeacherId}
-          selectedStatus={dailyDuties.selectedStatus}
+          selectedTeacherIds={dailyDuties.selectedTeacherIds}
+          selectedStatusIds={dailyDuties.selectedStatusIds}
           teacherOptions={dailyDuties.teacherOptions}
           isLoadingTeachers={dailyDuties.isLoadingTeachers}
           hideTeacherFilter={dailyDuties.isTeacherMode}
@@ -81,8 +81,7 @@ export function DailyDutiesPage({ mode }: DailyDutiesPageProps) {
             monthDates={dailyDuties.monthDates}
             lessonsByDate={dailyDuties.filteredLessonsByDate}
             isLoading={dailyDuties.isLoading}
-            portalBasePath={dailyDuties.portalBasePath}
-            router={dailyDuties.router}
+            onLessonClick={(lessonId) => dailyDuties.handleOpenLessonDetail(lessonId)}
           />
         )}
 

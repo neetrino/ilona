@@ -14,13 +14,15 @@ import type { TeacherDailyDutiesRowCategory } from '@/shared/lib/daily-duties/te
 import type { ScheduleCardDayStatus } from '@/features/schedule/schedule-dates';
 import { getLessonActionsDerived, type LessonActionId } from '@/shared/lib/daily-duties/lesson-action-states';
 import { DailyDutiesListActionPill } from '@/shared/components/daily-duties/DailyDutiesListActionPill';
-import { DailyDutiesLessonStatusUnderName } from '@/shared/lib/daily-duties/DailyDutiesLessonStatusBadge';
+import { DailyDutiesLessonListNameCell } from '@/shared/lib/daily-duties/DailyDutiesLessonStatusBadge';
 import { LessonListDateCell } from '@/shared/components/daily-duties/LessonListDateCell';
 import {
-  getAdminDailyDutiesLessonPath,
+  getAdminDailyDutiesBasePath,
   getTeacherDailyDutiesLessonPath,
   isAdminPortalPath,
+  TEACHER_DAILY_DUTIES_BASE_PATH,
 } from '@/shared/lib/role-routes';
+import { buildDailyDutiesLessonDetailHref } from '@/features/daily-duties/components/daily-duties-url.util';
 
 export type LessonListTableBodyRowProps = {
   lesson: Lesson;
@@ -117,11 +119,23 @@ export function LessonListTableBodyRow({
     const currentPath = window.location.pathname;
     if (isAdminPortalPath(currentPath.replace(/^\/[a-z]{2}\//, '/'))) {
       const role = currentPath.includes('/manager/') ? 'MANAGER' : 'ADMIN';
-      router.push(getAdminDailyDutiesLessonPath(lessonId, role));
+      router.push(
+        buildDailyDutiesLessonDetailHref({
+          locale,
+          portalBasePath: getAdminDailyDutiesBasePath(role),
+          lessonId,
+        }),
+      );
     } else if (currentPath.includes('/teacher/')) {
-      router.push(getTeacherDailyDutiesLessonPath(lessonId));
+      router.push(
+        buildDailyDutiesLessonDetailHref({
+          locale,
+          portalBasePath: TEACHER_DAILY_DUTIES_BASE_PATH,
+          lessonId,
+        }),
+      );
     } else {
-      router.push(`/daily-duties/${lessonId}`);
+      router.push(getTeacherDailyDutiesLessonPath(lessonId));
     }
   };
 
@@ -152,10 +166,7 @@ export function LessonListTableBodyRow({
         />
       </td>
       <td className="px-4 py-3">
-        <div>
-          <p className="font-semibold text-slate-800">{lesson.group?.name || t('unknownGroupName')}</p>
-          <DailyDutiesLessonStatusUnderName lesson={lesson} />
-        </div>
+        <DailyDutiesLessonListNameCell lesson={lesson} />
       </td>
       {scheduleCategory !== undefined && (
         <LessonListScheduleCategoryCell

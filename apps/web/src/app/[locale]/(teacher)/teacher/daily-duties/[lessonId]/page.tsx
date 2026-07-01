@@ -1,8 +1,7 @@
 'use client';
 
-import { use, useEffect, useState, useCallback } from 'react';
+import { use, useEffect, useState, useCallback, type ReactNode } from 'react';
 import { useTranslations } from 'next-intl';
-import { useRouter } from '@/config/navigation';
 import { useAppSearchUrl } from '@/shared/hooks/useAppSearchUrl';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { LessonDetailTabs } from '@/shared/components/daily-duties/LessonDetailTabs';
@@ -13,8 +12,11 @@ import { TextTab } from '@/shared/components/daily-duties/TextTab';
 import { DailyPlanTab } from '@/shared/components/daily-duties/DailyPlanTab';
 import { useLesson } from '@/features/lessons';
 import { Button } from '@/shared/components/ui/button';
+import { ChatBackButton } from '@/features/chat/components/ChatBackButton';
+import { useHistoryBack } from '@/shared/hooks/useHistoryBack';
+import { TEACHER_DAILY_DUTIES_BASE_PATH } from '@/shared/lib/role-routes';
 import { readUrlSearchParam } from '@/shared/lib/url-search-params';
-
+import { cn } from '@/shared/lib/utils';
 type LessonTab = 'absence' | 'feedback' | 'voice' | 'text' | 'dailyPlan';
 
 function parseLessonTab(value: string | null): LessonTab {
@@ -30,6 +32,30 @@ function parseLessonTab(value: string | null): LessonTab {
   return 'absence';
 }
 
+const LESSON_BANNER_CLASS =
+  'flex h-[calc(100vh-200px)] flex-col overflow-hidden rounded-[2rem] border border-[rgba(14,14,16,0.07)] bg-white';
+
+function TeacherLessonDetailBanner({
+  onBack,
+  backLabel,
+  children,
+  className,
+}: {
+  onBack: () => void;
+  backLabel: string;
+  children: ReactNode;
+  className?: string;
+}) {
+  return (
+    <div className={cn(LESSON_BANNER_CLASS, className)}>
+      <div className="flex shrink-0 items-center border-b border-[rgba(14,14,16,0.07)] px-3 py-3 sm:px-4">
+        <ChatBackButton onClick={onBack} aria-label={backLabel} />
+      </div>
+      <div className="flex min-h-0 flex-1 flex-col">{children}</div>
+    </div>
+  );
+}
+
 export default function TeacherDailyDutiesLessonPage({
   params,
 }: {
@@ -38,7 +64,6 @@ export default function TeacherDailyDutiesLessonPage({
   const tCommon = useTranslations('common');
   const tCalendar = useTranslations('dailyDuties');
   const resolvedParams = use(params);
-  const router = useRouter();
   const { searchParams, urlRevision, replaceParams } = useAppSearchUrl();
   const [pendingTab, setPendingTab] = useState<LessonTab | null>(null);
 
@@ -59,6 +84,7 @@ export default function TeacherDailyDutiesLessonPage({
   }, [pendingTab, readTabFromUrl]);
 
   const { data: lesson, isLoading } = useLesson(resolvedParams.lessonId);
+  const handleBack = useHistoryBack(TEACHER_DAILY_DUTIES_BASE_PATH);
 
   const handleTabChange = (tab: LessonTab) => {
     setPendingTab(tab);
@@ -68,19 +94,26 @@ export default function TeacherDailyDutiesLessonPage({
   if (isLoading) {
     return (
       <DashboardLayout title={tCommon('loading')} subtitle={tCommon('loading')}>
-        <div className="flex items-center justify-center p-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
-        </div>
+        <TeacherLessonDetailBanner onBack={handleBack} backLabel={tCommon('goBack')}>
+          <div className="flex flex-1 items-center justify-center p-12">
+            <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-blue-600" />
+          </div>
+        </TeacherLessonDetailBanner>
       </DashboardLayout>
     );
   }
 
   if (!lesson) {
     return (
-      <DashboardLayout title={tCalendar('lessonNotFoundTitle')} subtitle={tCalendar('lessonNotFoundSubtitle')}>
-        <div className="text-center p-12">
-          <Button onClick={() => router.back()}>{tCommon('goBack')}</Button>
-        </div>
+      <DashboardLayout
+        title={tCalendar('lessonNotFoundTitle')}
+        subtitle={tCalendar('lessonNotFoundSubtitle')}
+      >
+        <TeacherLessonDetailBanner onBack={handleBack} backLabel={tCommon('goBack')}>
+          <div className="flex flex-1 flex-col items-center justify-center p-12">
+            <Button onClick={handleBack}>{tCommon('goBack')}</Button>
+          </div>
+        </TeacherLessonDetailBanner>
       </DashboardLayout>
     );
   }
@@ -90,7 +123,7 @@ export default function TeacherDailyDutiesLessonPage({
       title={tCalendar('lessonTitle', { name: lesson.group?.name || tCalendar('lessonUnknown') })}
       subtitle={`${new Date(lesson.scheduledAt).toLocaleDateString()} at ${new Date(lesson.scheduledAt).toLocaleTimeString()}`}
     >
-      <div className="bg-white rounded-xl border border-[rgba(14,14,16,0.07)] h-[calc(100vh-200px)] flex flex-col">
+      <TeacherLessonDetailBanner onBack={handleBack} backLabel={tCommon('goBack')}>
         <LessonDetailTabs lesson={lesson} activeTab={activeTab} onTabChange={handleTabChange}>
           {{
             absence: <AbsenceTab lessonId={resolvedParams.lessonId} />,
@@ -102,7 +135,7 @@ export default function TeacherDailyDutiesLessonPage({
             ),
           }}
         </LessonDetailTabs>
-      </div>
+      </TeacherLessonDetailBanner>
     </DashboardLayout>
   );
 }

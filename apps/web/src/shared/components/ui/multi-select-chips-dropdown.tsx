@@ -14,6 +14,7 @@ import {
   DROPDOWN_PLACEHOLDER_TEXT_CLASS,
   DROPDOWN_TRIGGER_BASE_CLASS,
   DROPDOWN_TRIGGER_INTERACTIVE_CLASS,
+  DROPDOWN_VALUE_TEXT_CLASS,
 } from './dropdown-theme';
 
 export interface MultiSelectChipsOption {
@@ -39,6 +40,23 @@ interface MultiSelectChipsDropdownProps {
   showSelectedChipsOnlyWhenOpen?: boolean;
   /** Never show selected option labels in the trigger area */
   hideSelectedLabelsInTrigger?: boolean;
+  /** When closed, show placeholder / single label / count instead of chips */
+  closedTriggerMode?: 'chips' | 'summary';
+  /** When every option is selected, show this label in summary mode (e.g. "All teachers"). */
+  allSelectedLabel?: string;
+  /** In summary mode, always show count for partial selection (never a single name). */
+  summaryPartialUsesCount?: boolean;
+  /** Hide the search field in the dropdown menu. */
+  hideSearch?: boolean;
+  triggerClassName?: string;
+  selectedCountLabel?: (count: number) => string;
+  onClearSelection?: () => void;
+  /** Grow trigger and menu width to fit full option labels (no truncation). */
+  fitContentWidth?: boolean;
+  /** Keep trigger width fixed but expand the open menu to fit option labels. */
+  menuFitContentWidth?: boolean;
+  /** Minimum width for the open menu when using menuFitContentWidth. */
+  menuMinWidthClassName?: string;
 }
 
 export function MultiSelectChipsDropdown({
@@ -56,6 +74,16 @@ export function MultiSelectChipsDropdown({
   maxChipsHeightClassName = 'max-h-24',
   showSelectedChipsOnlyWhenOpen = false,
   hideSelectedLabelsInTrigger = false,
+  closedTriggerMode = 'chips',
+  allSelectedLabel,
+  summaryPartialUsesCount = false,
+  hideSearch = false,
+  triggerClassName,
+  selectedCountLabel = (count) => `${count} selected`,
+  onClearSelection,
+  fitContentWidth = false,
+  menuFitContentWidth = false,
+  menuMinWidthClassName,
 }: MultiSelectChipsDropdownProps) {
   const t = useTranslations('common');
   const [isOpen, setIsOpen] = useState(false);
@@ -83,11 +111,14 @@ export function MultiSelectChipsDropdown({
     return options.filter((opt) => opt.label.toLowerCase().includes(q));
   }, [options, searchQuery]);
 
-  const handleToggle = useCallback(
-    (optionId: string) => {
+  const handleSetSelected = useCallback(
+    (optionId: string, checked: boolean) => {
       const next = new Set(selectedIds);
-      if (next.has(optionId)) next.delete(optionId);
-      else next.add(optionId);
+      if (checked) {
+        next.add(optionId);
+      } else {
+        next.delete(optionId);
+      }
       onSelectionChange(next);
     },
     [selectedIds, onSelectionChange],
@@ -117,8 +148,14 @@ export function MultiSelectChipsDropdown({
   };
 
   const handleClearSelection = () => {
+    if (onClearSelection) {
+      onClearSelection();
+      return;
+    }
     onSelectionChange(new Set());
   };
+
+  const isAllOptionsSelected = options.length > 0 && selectedIds.size >= options.length;
 
   const selectedChips = useMemo(() => {
     return Array.from(selectedIds)
@@ -128,11 +165,45 @@ export function MultiSelectChipsDropdown({
   }, [selectedIds, optionById]);
 
   const shouldShowChipsInTrigger =
+    closedTriggerMode === 'chips' &&
     !hideSelectedLabelsInTrigger &&
     (!showSelectedChipsOnlyWhenOpen || isOpen);
 
+  const closedSummaryText = useMemo(() => {
+    if (allSelectedLabel && isAllOptionsSelected) {
+      return allSelectedLabel;
+    }
+    if (selectedChips.length === 0) {
+      if (summaryPartialUsesCount) {
+        return selectedCountLabel(0);
+      }
+      return allSelectedLabel ?? placeholder;
+    }
+    if (allSelectedLabel || summaryPartialUsesCount) {
+      return selectedCountLabel(selectedChips.length);
+    }
+    if (selectedChips.length === 1) {
+      return selectedChips[0]!.label;
+    }
+    return selectedCountLabel(selectedChips.length);
+  }, [
+    allSelectedLabel,
+    isAllOptionsSelected,
+    placeholder,
+    selectedChips,
+    selectedCountLabel,
+    summaryPartialUsesCount,
+  ]);
+
+  const isSummaryTrigger = closedTriggerMode === 'summary';
+  const hasSummarySelection =
+    selectedChips.length > 0 && !(allSelectedLabel && isAllOptionsSelected);
+  const expandMenuLabels = fitContentWidth || menuFitContentWidth;
+  const resolvedMenuMinWidthClassName =
+    menuMinWidthClassName ?? (hideSearch && menuFitContentWidth ? 'min-w-[17rem]' : undefined);
+
   return (
-    <div className={cn('relative', className)} ref={dropdownRef}>
+    <div className={cn('relative', fitContentWidth && 'w-full sm:w-auto', className)} ref={dropdownRef}>
       {label && (
         <label className={DROPDOWN_LABEL_CLASS}>{label}</label>
       )}
@@ -151,18 +222,45 @@ export function MultiSelectChipsDropdown({
           }
         }}
         className={cn(
-          'w-full min-h-11 py-1.5 text-left px-2',
+          isSummaryTrigger
+            ? 'flex w-full items-center text-left sm:w-auto'
+            : 'w-full min-h-11 py-1.5 text-left px-2',
           DROPDOWN_TRIGGER_BASE_CLASS,
+          !isSummaryTrigger && fitContentWidth && 'sm:w-auto',
           DROPDOWN_TRIGGER_INTERACTIVE_CLASS,
           isOpen && 'border-[#1010a3]/35 shadow-[0_8px_20px_rgba(16,16,163,0.12)]',
           (isLoading || disabled) && 'opacity-50 cursor-not-allowed pointer-events-none',
           !(isLoading || disabled) && 'cursor-pointer transition-colors',
+          triggerClassName,
         )}
       >
-        <div className="flex items-start gap-2">
+        {isSummaryTrigger ? (
+          <div className="flex min-w-0 w-full items-center justify-between gap-2">
+            <span
+              className={cn(
+                'text-sm',
+                fitContentWidth ? 'whitespace-nowrap' : 'truncate',
+                hasSummarySelection ? DROPDOWN_VALUE_TEXT_CLASS : DROPDOWN_PLACEHOLDER_TEXT_CLASS,
+              )}
+            >
+              {isLoading ? t('loading') : closedSummaryText}
+            </span>
+            <svg
+              className={cn(DROPDOWN_CHEVRON_CLASS, isOpen && 'rotate-180')}
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              aria-hidden
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </div>
+        ) : (
+        <div className={cn('flex gap-2 items-start')}>
           <div
             className={cn(
-              'flex flex-wrap flex-1 gap-1.5 items-center content-start overflow-y-auto',
+              'flex items-center content-start overflow-y-auto',
+              fitContentWidth ? 'min-h-0 shrink-0' : 'min-w-0 flex-1 flex-wrap gap-1.5',
               maxChipsHeightClassName,
             )}
           >
@@ -214,32 +312,51 @@ export function MultiSelectChipsDropdown({
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
           </svg>
         </div>
+        )}
       </div>
 
       {isOpen && (
-        <div className={cn(DROPDOWN_MENU_SURFACE_CLASS, 'absolute mt-1 flex max-h-72 w-full flex-col overflow-hidden')}>
+        <div
+          className={cn(
+            DROPDOWN_MENU_SURFACE_CLASS,
+            'absolute mt-1 flex max-h-72 flex-col overflow-hidden p-0',
+            expandMenuLabels
+              ? cn(
+                  'left-1/2 right-auto w-max min-w-full max-w-[calc(100vw-2rem)] -translate-x-1/2',
+                  resolvedMenuMinWidthClassName,
+                )
+              : 'w-full',
+          )}
+        >
           {options.length === 0 ? (
             <div className="p-3 text-sm text-slate-500">{emptyOptionsHint}</div>
           ) : (
             <>
-              <div className="p-2 border-b border-slate-200">
-                <input
-                  type="text"
-                  placeholder={searchPlaceholder}
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full rounded-lg border border-slate-200 px-3 py-1.5 text-sm focus:border-[#1010a3]/45 focus:outline-none focus:ring-4 focus:ring-[#1010a3]/10"
-                  onClick={(e) => e.stopPropagation()}
-                />
-              </div>
-              <div className="flex items-center justify-between px-3 py-2 border-b border-slate-200 bg-slate-50">
+              {!hideSearch ? (
+                <div className="shrink-0 border-b border-slate-200 p-2">
+                  <input
+                    type="text"
+                    placeholder={searchPlaceholder}
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full rounded-lg border border-slate-200 px-3 py-1.5 text-sm focus:border-[#1010a3]/45 focus:outline-none focus:ring-4 focus:ring-[#1010a3]/10"
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                </div>
+              ) : null}
+              <div
+                className={cn(
+                  'flex shrink-0 items-center justify-between gap-4 border-b border-slate-200 bg-slate-50 px-3 py-2',
+                  hideSearch && 'pt-3',
+                )}
+              >
                 <button
                   type="button"
                   onClick={(e) => {
                     e.stopPropagation();
                     handleSelectAllFiltered();
                   }}
-                  className="text-xs font-medium text-[#1010a3] transition-colors hover:text-[#0d0d85]"
+                  className="whitespace-nowrap text-xs font-medium text-[#1010a3] transition-colors hover:text-[#0d0d85]"
                   disabled={filteredOptions.length === 0}
                 >
                   Select all (visible)
@@ -250,13 +367,13 @@ export function MultiSelectChipsDropdown({
                     e.stopPropagation();
                     handleClearSelection();
                   }}
-                  className="text-xs font-medium text-slate-600 hover:text-slate-800 transition-colors"
+                  className="whitespace-nowrap text-xs font-medium text-slate-600 transition-colors hover:text-slate-800"
                   disabled={selectedIds.size === 0}
                 >
                   Clear selection
                 </button>
               </div>
-              <div className="overflow-y-auto max-h-52">
+              <div className="max-h-52 overflow-y-auto overscroll-contain [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                 {filteredOptions.length === 0 ? (
                   <div className="p-3 text-sm text-slate-500">{noResultsHint}</div>
                 ) : (
@@ -273,9 +390,16 @@ export function MultiSelectChipsDropdown({
                         >
                           <Checkbox
                             checked={isSelected}
-                            onCheckedChange={() => handleToggle(option.id)}
+                            onCheckedChange={(checked) => handleSetSelected(option.id, checked)}
                           />
-                          <span className="ml-3 text-sm text-slate-700 truncate">{option.label}</span>
+                          <span
+                            className={cn(
+                              'ml-3 text-sm text-slate-700',
+                              expandMenuLabels ? 'whitespace-nowrap' : 'truncate',
+                            )}
+                          >
+                            {option.label}
+                          </span>
                         </label>
                       );
                     })}

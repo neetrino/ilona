@@ -38,6 +38,16 @@ export class QueryLessonDto {
   teacherId?: string;
 
   @IsOptional()
+  @Transform(({ value }: { value: unknown }) => {
+    if (!value) return undefined;
+    if (Array.isArray(value)) return value as string[];
+    return [value] as string[];
+  })
+  @IsArray()
+  @IsString({ each: true })
+  teacherIds?: string[];
+
+  @IsOptional()
   @IsString()
   status?: string;
 

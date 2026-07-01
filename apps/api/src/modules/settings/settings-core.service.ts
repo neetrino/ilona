@@ -1,10 +1,18 @@
 import { Injectable, Logger, Inject } from '@nestjs/common';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import type { Cache } from 'cache-manager';
-import type { SystemSettings } from '@ilona/database';
+import type { Prisma, SystemSettings } from '@ilona/database';
 import { PrismaService } from '../prisma/prisma.service';
-import type { PrismaError, SystemSettingsCreateData } from './settings.types';
-import { SETTINGS_CACHE_KEY } from './settings.types';
+import { CANONICAL_SYSTEM_SETTINGS_ID, SETTINGS_CACHE_KEY } from './settings.types';
+
+const DEFAULT_SYSTEM_SETTINGS_CREATE: Prisma.SystemSettingsCreateInput = {
+  id: CANONICAL_SYSTEM_SETTINGS_ID,
+  vocabDeductionPercent: 10,
+  feedbackDeductionPercent: 5,
+  maxUnjustifiedAbsences: 3,
+  paymentDueDays: 5,
+  lessonReminderHours: 24,
+};
 
 @Injectable()
 export class SettingsCoreService {
@@ -19,6 +27,19 @@ export class SettingsCoreService {
     await this.cache.del(SETTINGS_CACHE_KEY);
   }
 
+  async findCanonicalSystemSettings(): Promise<SystemSettings | null> {
+    const canonical = await this.prisma.systemSettings.findUnique({
+      where: { id: CANONICAL_SYSTEM_SETTINGS_ID },
+    });
+    if (canonical) {
+      return canonical;
+    }
+
+    return this.prisma.systemSettings.findFirst({
+      orderBy: { updatedAt: 'desc' },
+    });
+  }
+
   async getSystemSettings(): Promise<SystemSettings> {
     try {
       const cached = await this.cache.get<SystemSettings | null>(SETTINGS_CACHE_KEY);
@@ -26,60 +47,12 @@ export class SettingsCoreService {
         return cached;
       }
 
-      let settings = await this.prisma.systemSettings.findFirst();
+      let settings = await this.findCanonicalSystemSettings();
 
       if (!settings) {
-        try {
-          try {
-            settings = await this.prisma.systemSettings.create({
-              data: {
-                vocabDeductionPercent: 10,
-                feedbackDeductionPercent: 5,
-                maxUnjustifiedAbsences: 3,
-                paymentDueDays: 5,
-                lessonReminderHours: 24,
-                absencePercent: 25,
-                feedbacksPercent: 25,
-                voicePercent: 25,
-                textPercent: 25,
-                penaltyAbsenceAmd: 1000,
-                penaltyFeedbackAmd: 500,
-                penaltyVoiceAmd: 1000,
-                penaltyTextAmd: 1000,
-                penaltyDailyPlanAmd: 1000,
-              } as unknown as SystemSettingsCreateData,
-            });
-          } catch (penaltyError: unknown) {
-            const error = penaltyError as PrismaError;
-            if (error?.message?.includes('penalty') || error?.code === 'P2002') {
-              this.logger.warn('Penalty columns may not exist, trying to create settings without them');
-              settings = await this.prisma.systemSettings.create({
-                data: {
-                  vocabDeductionPercent: 10,
-                  feedbackDeductionPercent: 5,
-                  maxUnjustifiedAbsences: 3,
-                  paymentDueDays: 5,
-                  lessonReminderHours: 24,
-                  absencePercent: 25,
-                  feedbacksPercent: 25,
-                  voicePercent: 25,
-                  textPercent: 25,
-                } as unknown as SystemSettingsCreateData,
-              });
-            } else {
-              throw penaltyError;
-            }
-          }
-        } catch (createError) {
-          this.logger.error(
-            `Failed to create default system settings: ${createError instanceof Error ? createError.message : String(createError)}`,
-            createError instanceof Error ? createError.stack : undefined,
-          );
-          settings = await this.prisma.systemSettings.findFirst();
-          if (!settings) {
-            throw createError;
-          }
-        }
+        settings = await this.prisma.systemSettings.create({
+          data: DEFAULT_SYSTEM_SETTINGS_CREATE,
+        });
       }
 
       await this.cache.set(SETTINGS_CACHE_KEY, settings);
@@ -91,5 +64,28 @@ export class SettingsCoreService {
       );
       throw error;
     }
+  }
+
+  async upsertCanonicalSystemSettings(
+    data: Prisma.SystemSettingsUpdateInput,
+  ): Promise<SystemSettings> {
+    const existing = await this.prisma.systemSettings.findUnique({
+      where: { id: CANONICAL_SYSTEM_SETTINGS_ID },
+    });
+
+    const settings = existing
+      ? await this.prisma.systemSettings.update({
+          where: { id: CANONICAL_SYSTEM_SETTINGS_ID },
+          data,
+        })
+      : await this.prisma.systemSettings.create({
+          data: {
+            ...DEFAULT_SYSTEM_SETTINGS_CREATE,
+            ...(data as Prisma.SystemSettingsCreateInput),
+          },
+        });
+
+    await this.invalidateCache();
+    return settings;
   }
 }

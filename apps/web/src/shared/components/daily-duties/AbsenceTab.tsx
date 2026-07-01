@@ -7,7 +7,6 @@ import { useLesson } from '@/features/lessons';
 import { Button } from '@/shared/components/ui/button';
 import { Input } from '@/shared/components/ui/input';
 import { AutoDismissToast, AdminListPagination } from '@/shared/components/ui';
-import { markAbsenceComplete } from '@/features/lessons/api/obligations.api';
 import { useQueryClient } from '@tanstack/react-query';
 import { lessonKeys } from '@/features/lessons/hooks/useLessons';
 import type { AbsenceType } from '@/features/attendance';
@@ -155,8 +154,6 @@ export function AbsenceTab({ lessonId, embeddedInSheet = false }: AbsenceTabProp
         lessonId: lesson.id,
         attendances,
       });
-
-      await markAbsenceComplete(lesson.id);
 
       queryClient.invalidateQueries({ queryKey: lessonKeys.details() });
       queryClient.invalidateQueries({ queryKey: lessonKeys.lists() });

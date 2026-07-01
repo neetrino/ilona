@@ -28,6 +28,9 @@ export async function fetchLessons(filters?: LessonFilters): Promise<LessonsResp
     filters.groupIds.forEach(id => params.append('groupIds', id));
   }
   if (filters?.teacherId) params.append('teacherId', filters.teacherId);
+  if (filters?.teacherIds && filters.teacherIds.length > 0) {
+    filters.teacherIds.forEach((id) => params.append('teacherIds', id));
+  }
   if (filters?.status) params.append('status', filters.status);
   if (filters?.dateFrom) params.append('dateFrom', filters.dateFrom);
   if (filters?.dateTo) params.append('dateTo', filters.dateTo);
