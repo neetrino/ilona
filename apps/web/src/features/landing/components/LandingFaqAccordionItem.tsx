@@ -13,6 +13,41 @@ interface LandingFaqAccordionItemProps {
   onToggle: () => void;
 }
 
+function renderFaqAnswerSegment(segment: string, key: number) {
+  if (segment.startsWith('**') && segment.endsWith('**')) {
+    return (
+      <span key={key} className="font-semibold text-[#093394]">
+        {segment.slice(2, -2)}
+      </span>
+    );
+  }
+
+  return segment;
+}
+
+function renderFaqAnswerParagraph(text: string, key: number) {
+  const segments = text.split(/(\*\*[^*]+\*\*)/g).filter((part) => part.length > 0);
+
+  return (
+    <p
+      key={key}
+      className="text-[14px] leading-[22px] tracking-[-0.2px] text-[#4a5565] tablet:text-[16px] tablet:leading-[26px] tablet:tracking-[-0.31px]"
+    >
+      {segments.map((segment, index) => renderFaqAnswerSegment(segment, index))}
+    </p>
+  );
+}
+
+function FaqAnswerContent({ answer }: { answer: string }) {
+  const paragraphs = answer.split(/\n\n+/).map((part) => part.trim()).filter(Boolean);
+
+  return (
+    <div className="space-y-2.5 tablet:space-y-3">
+      {paragraphs.map((paragraph, index) => renderFaqAnswerParagraph(paragraph, index))}
+    </div>
+  );
+}
+
 export function LandingFaqAccordionItem({
   id,
   question,
@@ -89,12 +124,15 @@ export function LandingFaqAccordionItem({
               opacity: { duration: 0.35, ease: 'easeOut', delay: isOpen ? 0.1 : 0 },
               y: { duration: 0.45, ease: [0.32, 0.72, 0, 1], delay: isOpen ? 0.08 : 0 },
             }}
-            className="relative overflow-hidden rounded-[16px] border border-[#dbeafe]/70 bg-gradient-to-br from-[#f8fbff] via-[#f1f6ff] to-[#eef3ff] px-4 py-4 tablet:rounded-[18px] tablet:px-5 tablet:py-5"
+            className="rounded-[16px] border border-[#c7dcff]/55 bg-[#eef4ff] px-4 py-4 tablet:rounded-[18px] tablet:px-5 tablet:py-[18px]"
           >
-            <div className="pointer-events-none absolute inset-y-3 left-0 w-[3px] rounded-full bg-gradient-to-b from-[#155dfc] to-[#60a5fa]" />
-            <p className="pl-3 text-[14px] leading-[22px] tracking-[-0.2px] text-[#4a5565] tablet:pl-4 tablet:text-[16px] tablet:leading-[26px] tablet:tracking-[-0.31px]">
-              {answer}
-            </p>
+            <div className="flex gap-3 tablet:gap-4">
+              <div
+                className="w-1 shrink-0 self-stretch rounded-full bg-gradient-to-b from-[#093394] to-[#155dfc]"
+                aria-hidden
+              />
+              <FaqAnswerContent answer={answer} />
+            </div>
           </motion.div>
         </div>
       </motion.div>

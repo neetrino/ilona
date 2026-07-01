@@ -53,9 +53,9 @@ const LANDING_FAQ_ENTRIES = [
   {
     id: 'international-exams',
     answerEn:
-      'Yes. We offer dedicated IELTS, TOEFL, and Cambridge preparation with mock tests, writing workshops, and strategies tailored to your target score and exam date.',
+      'Yes — we offer dedicated **IELTS**, **TOEFL**, and **Cambridge** exam preparation.\n\nYour program includes mock tests, writing workshops, and score-focused strategies tailored to your target grade and exam date.',
     answerHy:
-      'Այո, մենք օգնում ենք ուսանողներին պատրաստվել միջազգային քննությունների՝ կենտրոնանալով անհրաժեշտ հմտությունների, առաջադրանքների ձևաչափի և արդյունավետ պատրաստվածության վրա։ Ծրագիրը ընտրվում է ըստ ուսանողի նպատակի և ներկայիս մակարդակի։',
+      'Այո — մենք պատրաստում ենք **IELTS**, **TOEFL** և **Cambridge** միջազգային քննություններին։\n\nԾրագիրը ներառում է փորձնական թեստեր, գրավոր աշխատանքների արհեստաշարեր և ռազմավարություններ՝ հարմարեցված ձեր նպատակային միավորին և քննության ամսաթվին։',
   },
   {
     id: 'miss-class',
