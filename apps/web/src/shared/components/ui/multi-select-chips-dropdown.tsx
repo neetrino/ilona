@@ -97,11 +97,14 @@ export function MultiSelectChipsDropdown({
     return options.filter((opt) => opt.label.toLowerCase().includes(q));
   }, [options, searchQuery]);
 
-  const handleToggle = useCallback(
-    (optionId: string) => {
+  const handleSetSelected = useCallback(
+    (optionId: string, checked: boolean) => {
       const next = new Set(selectedIds);
-      if (next.has(optionId)) next.delete(optionId);
-      else next.add(optionId);
+      if (checked) {
+        next.add(optionId);
+      } else {
+        next.delete(optionId);
+      }
       onSelectionChange(next);
     },
     [selectedIds, onSelectionChange],
@@ -339,7 +342,7 @@ export function MultiSelectChipsDropdown({
                         >
                           <Checkbox
                             checked={isSelected}
-                            onCheckedChange={() => handleToggle(option.id)}
+                            onCheckedChange={(checked) => handleSetSelected(option.id, checked)}
                           />
                           <span
                             className={cn(

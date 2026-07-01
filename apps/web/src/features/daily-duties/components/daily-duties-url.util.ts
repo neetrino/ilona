@@ -12,24 +12,16 @@ export const RETURN_TO_QUERY_KEY = 'returnTo';
 
 export function readDailyDutiesTeacherIdsFromUrl(searchParams: URLSearchParams): string[] {
   const live = getLiveSearchParams(searchParams);
-  const fromMulti = live.getAll('teacherIds').filter(Boolean);
-  if (fromMulti.length > 0) {
-    return fromMulti;
+  const ids = live
+    .getAll('teacherIds')
+    .flatMap((value) => value.split(',').map((id) => id.trim()).filter(Boolean));
+
+  if (ids.length > 0) {
+    return ids;
   }
-  const csv = live.get('teacherIds');
-  if (csv) {
-    const parsed = csv.split(',').map((id) => id.trim()).filter(Boolean);
-    if (parsed.length > 0) {
-      return parsed;
-    }
-  }
+
   const legacyTeacherId = live.get('teacherId');
   return legacyTeacherId ? [legacyTeacherId] : [];
-}
-
-export function formatDailyDutiesTeacherIdsParam(ids: Iterable<string>): string | null {
-  const values = Array.from(ids);
-  return values.length > 0 ? values.join(',') : null;
 }
 
 export function isAddLessonModalOpen(searchParams: URLSearchParams): boolean {

@@ -34,7 +34,6 @@ import {
   SUBSTITUTE_LESSON_MODAL_QUERY_VALUE,
   buildDailyDutiesLessonDetailHref,
   formatDailyDutiesMonthParam,
-  formatDailyDutiesTeacherIdsParam,
   formatDailyDutiesWeekParam,
   isAddLessonModalOpen,
   parseDailyDutiesMonthParam,
@@ -46,7 +45,7 @@ import {
 export function useDailyDutiesPage(mode: DailyDutiesMode) {
   const isTeacherMode = mode === 'teacher';
   const router = useRouter();
-  const { searchParams, urlRevision, replaceParams } = useAppSearchUrl();
+  const { searchParams, urlRevision, replaceParams, replaceAllParams } = useAppSearchUrl();
   const locale = useLocale();
   const { user } = useAuthStore();
   const portalBasePath = isTeacherMode
@@ -433,12 +432,15 @@ export function useDailyDutiesPage(mode: DailyDutiesMode) {
   const handleTeacherChange = useCallback(
     (teacherIds: Set<string>) => {
       setSelectedTeacherIds(teacherIds);
-      replaceParams({
-        teacherIds: formatDailyDutiesTeacherIdsParam(teacherIds),
-        teacherId: null,
+      replaceAllParams((params) => {
+        params.delete('teacherId');
+        params.delete('teacherIds');
+        for (const id of teacherIds) {
+          params.append('teacherIds', id);
+        }
       });
     },
-    [replaceParams],
+    [replaceAllParams],
   );
 
   const handleStatusChange = useCallback(
