@@ -81,7 +81,7 @@ export function Column({
           )}
         </div>
       </div>
-      <div className="flex-1 min-h-0 overflow-y-auto p-1.5 sm:p-2 space-y-2">
+      <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain p-1.5 sm:p-2 space-y-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {leads.map((lead) => (
           <div key={lead.id} className="space-y-1">
             <LeadCard
