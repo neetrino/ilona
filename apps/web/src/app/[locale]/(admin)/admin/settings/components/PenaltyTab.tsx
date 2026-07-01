@@ -164,8 +164,7 @@ export function PenaltyTab() {
             <label className="block text-sm font-medium text-[#3b3b40] mb-2">
               {t('penaltyAbsenceAmd')}
             </label>
-            <div className="relative">
-              <input
+            <input
                 type="number"
                 min="0"
                 step="1"
@@ -173,8 +172,6 @@ export function PenaltyTab() {
                 onChange={(e) => handleInputChange('penaltyAbsenceAmd', e.target.value)}
                 className="h-11 min-h-11 w-full rounded-[15px] border border-[rgba(14,14,16,0.07)] px-4 py-0 focus:border-[#1010a3] focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20"
               />
-              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[#8b8b90]">֏</span>
-            </div>
           </div>
 
           {/* Feedback Penalty */}
@@ -182,8 +179,7 @@ export function PenaltyTab() {
             <label className="block text-sm font-medium text-[#3b3b40] mb-2">
               {t('penaltyFeedbackAmd')}
             </label>
-            <div className="relative">
-              <input
+            <input
                 type="number"
                 min="0"
                 step="1"
@@ -191,8 +187,6 @@ export function PenaltyTab() {
                 onChange={(e) => handleInputChange('penaltyFeedbackAmd', e.target.value)}
                 className="h-11 min-h-11 w-full rounded-[15px] border border-[rgba(14,14,16,0.07)] px-4 py-0 focus:border-[#1010a3] focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20"
               />
-              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[#8b8b90]">֏</span>
-            </div>
           </div>
 
           {/* Voice Penalty */}
@@ -200,8 +194,7 @@ export function PenaltyTab() {
             <label className="block text-sm font-medium text-[#3b3b40] mb-2">
               {t('penaltyVoiceAmd')}
             </label>
-            <div className="relative">
-              <input
+            <input
                 type="number"
                 min="0"
                 step="1"
@@ -209,8 +202,6 @@ export function PenaltyTab() {
                 onChange={(e) => handleInputChange('penaltyVoiceAmd', e.target.value)}
                 className="h-11 min-h-11 w-full rounded-[15px] border border-[rgba(14,14,16,0.07)] px-4 py-0 focus:border-[#1010a3] focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20"
               />
-              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[#8b8b90]">֏</span>
-            </div>
           </div>
 
           {/* Text Penalty */}
@@ -218,8 +209,7 @@ export function PenaltyTab() {
             <label className="block text-sm font-medium text-[#3b3b40] mb-2">
               {t('penaltyTextAmd')}
             </label>
-            <div className="relative">
-              <input
+            <input
                 type="number"
                 min="0"
                 step="1"
@@ -227,8 +217,6 @@ export function PenaltyTab() {
                 onChange={(e) => handleInputChange('penaltyTextAmd', e.target.value)}
                 className="h-11 min-h-11 w-full rounded-[15px] border border-[rgba(14,14,16,0.07)] px-4 py-0 focus:border-[#1010a3] focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20"
               />
-              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[#8b8b90]">֏</span>
-            </div>
           </div>
 
           {/* Daily Plan Penalty */}
@@ -236,8 +224,7 @@ export function PenaltyTab() {
             <label className="block text-sm font-medium text-[#3b3b40] mb-2">
               {t('penaltyDailyPlanAmd')}
             </label>
-            <div className="relative">
-              <input
+            <input
                 type="number"
                 min="0"
                 step="1"
@@ -245,8 +232,6 @@ export function PenaltyTab() {
                 onChange={(e) => handleInputChange('penaltyDailyPlanAmd', e.target.value)}
                 className="h-11 min-h-11 w-full rounded-[15px] border border-[rgba(14,14,16,0.07)] px-4 py-0 focus:border-[#1010a3] focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20"
               />
-              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[#8b8b90]">֏</span>
-            </div>
             <p className="mt-1 text-xs text-[#8b8b90]">{t('penaltyDailyPlanAmdHint')}</p>
           </div>
 
