@@ -1,5 +1,6 @@
 export { Avatar, getInitials, getInitialsFromParts, formatDisplayName } from './avatar';
 export { Button } from './button';
+export { ChatBackButton } from './chat-back-button';
 export { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from './card';
 export { Input } from './input';
 export { DatePickerInput } from './date-picker-input';

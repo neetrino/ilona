@@ -7,6 +7,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { Button } from '@/shared/components/ui';
+import { ChatBackButton } from '@/shared/components/ui/chat-back-button';
 import { useTeacher, useUpdateTeacher, type UpdateTeacherDto } from '@/features/teachers';
 import { TeacherProfileHeader } from './components/TeacherProfileHeader';
 import { TeacherStats } from './components/TeacherStats';
@@ -257,12 +258,10 @@ export default function TeacherProfilePage() {
                   ? 'Failed to load teacher information. Please try again later.'
                   : 'The teacher you are looking for does not exist or has been removed.'}
               </p>
-              <Button 
-                variant="outline" 
+              <ChatBackButton
                 onClick={() => router.push(`/${locale}${portalBasePath}/teachers`)}
-              >
-                Back to Teachers
-              </Button>
+                aria-label={t('backToTeachers')}
+              />
             </div>
           </div>
         </div>
@@ -285,16 +284,10 @@ export default function TeacherProfilePage() {
       <form key={teacherId} onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         {/* Back Button & Edit Mode Toggle */}
         <div className="flex items-center justify-between mb-4">
-          <Button 
-            variant="ghost" 
-            type="button"
+          <ChatBackButton
             onClick={() => handleNavigation(`/${locale}${portalBasePath}/teachers`)}
-          >
-            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-            Back to Teachers
-          </Button>
+            aria-label={t('backToTeachers')}
+          />
           {!isEditMode && (
             <Button 
               type="button"

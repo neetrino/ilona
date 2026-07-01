@@ -3,7 +3,7 @@
 import { portalPageStackClass } from '@/shared/lib/portal-theme';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { EditTeacherForm, TeacherDetailsModal } from '@/features/teachers';
-import { ArrowLeft } from 'lucide-react';
+import { ChatBackButton } from '@/shared/components/ui/chat-back-button';
 import { AllTeachersBoardGrid } from '../components/AllTeachersBoardGrid';
 import { TeachersFilters } from '../components/TeachersFilters';
 import { useAllTeachersPage } from '../hooks/useAllTeachersPage';
@@ -42,14 +42,10 @@ export default function AllTeachersPage() {
       contentScrollClassName="overscroll-y-none"
     >
       <div className={portalPageStackClass}>
-        <button
-          type="button"
+        <ChatBackButton
           onClick={handleBackToTeachers}
-          className="inline-flex items-center gap-2 text-sm font-medium text-[#1010a3] transition-colors hover:text-[#1010a3]/80"
-        >
-          <ArrowLeft className="h-4 w-4" aria-hidden="true" />
-          {t('backToTeachers')}
-        </button>
+          aria-label={t('backToTeachers')}
+        />
 
         <TeachersFilters
           searchQuery={searchQuery}

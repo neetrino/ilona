@@ -3,6 +3,7 @@
 import Image from 'next/image';
 import { LANDING_ASSETS } from '@/features/landing/landingAssets';
 import { useFooterIconLinks } from '@/features/settings/hooks/useFooterIconLinks';
+import { useInView } from '@/shared/hooks/useInView';
 import type { FooterIconKey } from '@ilona/types';
 
 const iconShellClassName =
@@ -34,10 +35,11 @@ function isExternalLink(href: string): boolean {
 }
 
 export function FooterSocialIcons({ containerClassName, getAriaLabel }: FooterSocialIconsProps) {
-  const { data: links } = useFooterIconLinks();
+  const { ref, inView } = useInView({ rootMargin: '300px', triggerOnce: true });
+  const { data: links, isLoading } = useFooterIconLinks({ enabled: inView });
 
   return (
-    <div className={containerClassName}>
+    <div ref={ref} className={containerClassName} aria-busy={isLoading || undefined}>
       {FOOTER_ICON_CONFIG.map(({ key, src, viberSize }) => {
         const href = links?.[key]?.trim() ?? '';
         const iconClassName = viberSize ? 'size-5' : 'size-10';

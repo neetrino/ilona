@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { useAppSearchUrl } from '@/shared/hooks/useAppSearchUrl';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
-import { Badge, Button } from '@/shared/components/ui';
+import { Badge, ChatBackButton } from '@/shared/components/ui';
 import { useStudent } from '@/features/students';
 import { ApiError } from '@/shared/lib/api';
 import Image from 'next/image';
@@ -114,12 +114,10 @@ export default function TeacherStudentProfilePage() {
                   ? error.message || t('failedToLoadMessage')
                   : t('failedToLoadMessage')}
               </p>
-              <Button 
-                variant="outline" 
+              <ChatBackButton
                 onClick={() => router.push(getBackUrl())}
-              >
-                {t('backToStudents')}
-              </Button>
+                aria-label={t('backToStudents')}
+              />
             </div>
           </div>
         </div>
@@ -141,16 +139,10 @@ export default function TeacherStudentProfilePage() {
       <div className="space-y-6">
         {/* Back Button */}
         <div className="flex items-center justify-between mb-4">
-          <Button 
-            variant="ghost" 
-            type="button"
+          <ChatBackButton
             onClick={() => router.push(getBackUrl())}
-          >
-            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-            {t('backToStudents')}
-          </Button>
+            aria-label={t('backToStudents')}
+          />
         </div>
 
         {/* Profile Header */}

@@ -13,7 +13,8 @@ type LandingMobileNavbarPillProps = {
   onLogoClick?: (event: MouseEvent<HTMLAnchorElement>) => void;
   center?: ReactNode;
   trailing?: ReactNode;
-  isCanvasActive?: boolean;
+  /** Landing home: centered pill + canvas spacing from the tablet breakpoint up. */
+  canvasLayout?: boolean;
   showLanguageToggle?: boolean;
   languageToggleClassName?: string;
   logoOnError?: (event: SyntheticEvent<HTMLImageElement>) => void;
@@ -27,29 +28,15 @@ export function LandingMobileNavbarPill({
   onLogoClick,
   center,
   trailing,
-  isCanvasActive = false,
+  canvasLayout = false,
   showLanguageToggle = true,
   languageToggleClassName,
   logoOnError,
   enlargeLogoInner = false,
 }: LandingMobileNavbarPillProps) {
-  const brandClassName = cn(
-    'min-w-0 truncate font-bold tracking-[-0.18px] text-white',
-    isCanvasActive
-      ? 'text-[20px]'
-      : 'text-[14px] min-[420px]:text-[16px] sm:text-[18px] tablet:text-[20px]',
-  );
-
   const logoBlock = (
     <>
-      <div
-        className={cn(
-          'relative shrink-0 overflow-hidden rounded-full bg-white ring-2 ring-white/40',
-          isCanvasActive
-            ? 'h-[52px] w-[52px]'
-            : 'h-[42px] w-[42px] sm:h-[48px] sm:w-[48px] tablet:h-[52px] tablet:w-[52px]',
-        )}
-      >
+      <div className="relative h-[42px] w-[42px] shrink-0 overflow-hidden rounded-full bg-white ring-2 ring-white/40 sm:h-[48px] sm:w-[48px] tablet:h-[52px] tablet:w-[52px]">
         <Image
           src={logoUrl}
           alt={brandLabel}
@@ -59,22 +46,22 @@ export function LandingMobileNavbarPill({
           onError={logoOnError}
         />
       </div>
-      <span className={brandClassName}>{brandLabel}</span>
+      <span className="min-w-0 truncate text-[14px] font-bold tracking-[-0.18px] text-white min-[420px]:text-[16px] sm:text-[18px] tablet:text-[20px]">
+        {brandLabel}
+      </span>
     </>
   );
 
   const logoWrapClassName = cn(
-    'flex min-w-0 items-center',
-    isCanvasActive ? 'gap-3' : 'flex-1 gap-2 pr-2 sm:gap-3',
+    'flex min-w-0 items-center flex-1 gap-2 pr-2 sm:gap-3',
+    canvasLayout && 'tablet:flex-none tablet:gap-3 tablet:pr-0',
   );
 
   return (
     <div
       className={cn(
-        'flex w-full items-center justify-between rounded-[100px] bg-[#093394] shadow-lg',
-        isCanvasActive
-          ? 'mx-auto h-[70px] max-w-[1280px] px-5'
-          : 'h-[58px] px-3 sm:h-[64px] sm:px-4 tablet:h-[70px] tablet:px-5',
+        'flex h-[58px] w-full items-center justify-between rounded-[100px] bg-[#093394] px-3 shadow-lg sm:h-[64px] sm:px-4 tablet:h-[70px] tablet:px-5',
+        canvasLayout && 'tablet:mx-auto tablet:max-w-[1280px]',
       )}
     >
       {logoHref ? (
@@ -88,20 +75,17 @@ export function LandingMobileNavbarPill({
       {center ? (
         <nav
           className={cn(
-            'hidden items-center text-white',
-            isCanvasActive ? 'gap-8 navDesktop:flex' : 'gap-4 navDesktop:flex navDesktop:gap-6 xl:gap-8',
+            'hidden items-center gap-4 text-white navDesktop:flex',
+            canvasLayout ? 'navDesktop:gap-8' : 'navDesktop:gap-6 xl:gap-8',
           )}
         >
           {center}
         </nav>
       ) : null}
 
-      <div className={cn('flex items-center', isCanvasActive ? 'gap-3' : 'gap-1.5 sm:gap-2 tablet:gap-3')}>
+      <div className="flex items-center gap-1.5 sm:gap-2 tablet:gap-3">
         {showLanguageToggle ? (
-          <LandingNavbarLanguageToggle
-            isCanvasActive={isCanvasActive}
-            className={languageToggleClassName}
-          />
+          <LandingNavbarLanguageToggle className={languageToggleClassName} />
         ) : null}
         {trailing}
       </div>

@@ -11,8 +11,7 @@ import { VoiceTab } from '@/shared/components/daily-duties/VoiceTab';
 import { TextTab } from '@/shared/components/daily-duties/TextTab';
 import { DailyPlanTab } from '@/shared/components/daily-duties/DailyPlanTab';
 import { useLesson } from '@/features/lessons';
-import { Button } from '@/shared/components/ui/button';
-import { ChatBackButton } from '@/features/chat/components/ChatBackButton';
+import { ChatBackButton } from '@/shared/components/ui/chat-back-button';
 import { useHistoryBack } from '@/shared/hooks/useHistoryBack';
 import { TEACHER_DAILY_DUTIES_BASE_PATH } from '@/shared/lib/role-routes';
 import { readUrlSearchParam } from '@/shared/lib/url-search-params';
@@ -111,7 +110,7 @@ export default function TeacherDailyDutiesLessonPage({
       >
         <TeacherLessonDetailBanner onBack={handleBack} backLabel={tCommon('goBack')}>
           <div className="flex flex-1 flex-col items-center justify-center p-12">
-            <Button onClick={handleBack}>{tCommon('goBack')}</Button>
+            <ChatBackButton onClick={handleBack} aria-label={tCommon('goBack')} />
           </div>
         </TeacherLessonDetailBanner>
       </DashboardLayout>

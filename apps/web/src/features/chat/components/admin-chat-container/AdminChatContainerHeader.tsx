@@ -12,7 +12,6 @@ interface AdminChatContainerHeaderProps {
 
 export function AdminChatContainerHeader({ vm }: AdminChatContainerHeaderProps) {
   const tChat = useTranslations('chat');
-  const tCommon = useTranslations('common');
   const { activeChat, handleBackToPrevious, setShowCreateGroupChatModal } = vm;
 
   return (
@@ -26,28 +25,7 @@ export function AdminChatContainerHeader({ vm }: AdminChatContainerHeaderProps) 
       <ChatBackButton
         onClick={handleBackToPrevious}
         aria-label={tChat('backToPreviousPage')}
-        className="lg:hidden"
       />
-      <button
-        type="button"
-        onClick={handleBackToPrevious}
-        className={cn(
-          'hidden items-center gap-1.5 rounded-[0.875rem] px-2 py-2 lg:flex',
-          'text-[#3b3b40] transition-colors hover:text-[#1010a3]',
-          'focus:outline-none focus:ring-2 focus:ring-[#1010a3]/20 focus:ring-offset-2',
-        )}
-        aria-label={tChat('backToPreviousPage')}
-      >
-        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M10 19l-7-7m0 0l7-7m-7 7h18"
-          />
-        </svg>
-        <span className="text-sm font-medium">{tCommon('back')}</span>
-      </button>
       <h2 className="text-lg font-bold text-[#3b3b40] sm:text-xl">{tChat('title')}</h2>
       <button
         type="button"

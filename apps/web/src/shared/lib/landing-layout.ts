@@ -16,6 +16,9 @@ export const LANDING_NAV_DESKTOP_MIN_WIDTH = 1367;
 /** Horizontal padding for landing mobile navbar (matches admin portal home). */
 export const LANDING_MOBILE_HORIZONTAL_PADDING = 'px-4';
 
+/** Runs before React hydrates so the landing header canvas scale is correct on first paint. */
+export const LANDING_CANVAS_SCALE_SCRIPT = `(function(){try{var w=window.innerWidth;if(w>=${LANDING_CANVAS_MIN_WIDTH}){document.documentElement.style.setProperty('--landing-canvas-scale',String(w/${LANDING_DESIGN_WIDTH}));document.documentElement.classList.add('landing-canvas-active');}}catch(e){}})();`;
+
 export function getLandingCanvasMetrics(
   viewportWidth: number,
   designWidth = LANDING_DESIGN_WIDTH,

@@ -7,7 +7,6 @@ import { useSwitchLocale } from '@/shared/hooks/useSwitchLocale';
 import { cn } from '@/shared/lib/utils';
 
 type LandingNavbarLanguageToggleProps = {
-  isCanvasActive?: boolean;
   className?: string;
 };
 
@@ -17,10 +16,7 @@ const INDICATOR_TRANSITION =
 const BUTTON_FOCUS =
   'focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1010a3]/20 focus-visible:ring-offset-2';
 
-export function LandingNavbarLanguageToggle({
-  isCanvasActive = false,
-  className,
-}: LandingNavbarLanguageToggleProps) {
+export function LandingNavbarLanguageToggle({ className }: LandingNavbarLanguageToggleProps) {
   const t = useTranslations('language');
   const { locale, switchLocale } = useSwitchLocale();
   const trackRef = useRef<HTMLDivElement>(null);
@@ -48,7 +44,7 @@ export function LandingNavbarLanguageToggle({
     syncIndicator();
     window.addEventListener('resize', syncIndicator);
     return () => window.removeEventListener('resize', syncIndicator);
-  }, [locale, isCanvasActive]);
+  }, [locale]);
 
   useLayoutEffect(() => {
     const frameId = requestAnimationFrame(() => setAnimateIndicator(true));
@@ -56,9 +52,8 @@ export function LandingNavbarLanguageToggle({
   }, []);
 
   const buttonClass = cn(
-    'relative z-10 rounded-full px-2 py-1 font-medium transition-colors duration-300 motion-reduce:transition-none',
+    'relative z-10 min-w-[38px] rounded-full px-2 py-1 text-[11px] font-medium transition-colors duration-300 motion-reduce:transition-none sm:min-w-[42px] sm:text-[12px]',
     BUTTON_FOCUS,
-    isCanvasActive ? 'min-w-[42px] text-[12px]' : 'min-w-[38px] text-[11px] sm:min-w-[42px] sm:text-[12px]',
   );
 
   return (

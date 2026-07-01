@@ -1,20 +1,48 @@
 'use client';
 
-import { use, useEffect, useMemo, useState, useCallback } from 'react';
+import { use, useEffect, useMemo, useState, useCallback, type ReactNode } from 'react';
 import { useRouter } from '@/config/navigation';
 import { useAppSearchUrl } from '@/shared/hooks/useAppSearchUrl';
 import { useTranslations } from 'next-intl';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
-import { Button } from '@/shared/components/ui/button';
+import { ChatBackButton } from '@/shared/components/ui/chat-back-button';
+import { useHistoryBack } from '@/shared/hooks/useHistoryBack';
 import { useLesson } from '@/features/lessons';
 import { useTeachers } from '@/features/teachers';
 import { readUrlSearchParam } from '@/shared/lib/url-search-params';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { getAdminDailyDutiesBasePath } from '@/shared/lib/role-routes';
+import { cn } from '@/shared/lib/utils';
 import {
   AdminLessonDetailPanel,
   type AdminLessonTab,
 } from '../../daily-duties/components/AdminLessonDetailPanel';
+
+function AdminLessonDetailShell({
+  onBack,
+  backLabel,
+  children,
+  className,
+}: {
+  onBack: () => void;
+  backLabel: string;
+  children: ReactNode;
+  className?: string;
+}) {
+  return (
+    <div
+      className={cn(
+        'flex min-h-0 flex-1 flex-col overflow-hidden rounded-none border-0 bg-white lg:rounded-[2rem] lg:border lg:border-[rgba(14,14,16,0.07)]',
+        className,
+      )}
+    >
+      <div className="flex shrink-0 items-center border-b border-[rgba(14,14,16,0.07)] px-3 py-3 sm:px-4">
+        <ChatBackButton onClick={onBack} aria-label={backLabel} />
+      </div>
+      <div className="flex min-h-0 flex-1 flex-col">{children}</div>
+    </div>
+  );
+}
 
 function parseLessonTab(value: string | null): AdminLessonTab {
   if (
@@ -60,6 +88,7 @@ export default function AdminDailyDutiesLessonPage({
   }, [pendingTab, readTabFromUrl]);
 
   const { data: lesson, isLoading } = useLesson(resolvedParams.lessonId);
+  const handleBack = useHistoryBack(portalBasePath);
   const { data: teachersData } = useTeachers({ status: 'ACTIVE', take: 100 });
   const teacherOptions = useMemo(() => {
     if (!teachersData?.items) return [];
@@ -81,9 +110,11 @@ export default function AdminDailyDutiesLessonPage({
   if (isLoading) {
     return (
       <DashboardLayout title={t('lessonLoadingTitle')} subtitle={t('lessonLoadingSubtitle')} mobileFullBleed>
-        <div className="flex min-h-0 flex-1 items-center justify-center rounded-none border-0 bg-white lg:rounded-[2rem] lg:border lg:border-[rgba(14,14,16,0.07)]">
-          <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-blue-600" />
-        </div>
+        <AdminLessonDetailShell onBack={handleBack} backLabel={tCommon('goBack')}>
+          <div className="flex flex-1 items-center justify-center p-12">
+            <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-blue-600" />
+          </div>
+        </AdminLessonDetailShell>
       </DashboardLayout>
     );
   }
@@ -91,9 +122,11 @@ export default function AdminDailyDutiesLessonPage({
   if (!lesson) {
     return (
       <DashboardLayout title={t('lessonNotFoundTitle')} subtitle={t('lessonNotFoundSubtitle')} mobileFullBleed>
-        <div className="flex min-h-0 flex-1 flex-col items-center justify-center rounded-none border-0 bg-white lg:rounded-[2rem] lg:border lg:border-[rgba(14,14,16,0.07)]">
-          <Button onClick={() => router.back()}>{tCommon('goBack')}</Button>
-        </div>
+        <AdminLessonDetailShell onBack={handleBack} backLabel={tCommon('goBack')}>
+          <div className="flex flex-1 flex-col items-center justify-center p-12">
+            <ChatBackButton onClick={handleBack} aria-label={tCommon('goBack')} />
+          </div>
+        </AdminLessonDetailShell>
       </DashboardLayout>
     );
   }
@@ -111,6 +144,8 @@ export default function AdminDailyDutiesLessonPage({
           activeTab={activeTab}
           onTabChange={handleTabChange}
           onDeleted={handleDeleted}
+          onBack={handleBack}
+          backLabel={tCommon('goBack')}
           variant="page"
         />
       </div>

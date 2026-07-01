@@ -1,7 +1,7 @@
 'use client';
 
-import { ArrowLeft, Trash2 } from 'lucide-react';
-import { Button, StatCard } from '@/shared/components/ui';
+import { Trash2 } from 'lucide-react';
+import { Button, ChatBackButton, StatCard } from '@/shared/components/ui';
 import { cn, formatCurrency } from '@/shared/lib/utils';
 import type { SalaryBreakdownSubstituteSummary } from '@/features/finance/types';
 
@@ -54,15 +54,7 @@ export function SalaryBreakdownHeader({
 }: SalaryBreakdownHeaderProps) {
   return (
     <>
-      <Button
-        type="button"
-        variant="outline"
-        onClick={onBack}
-        className="flex items-center gap-2 rounded-xl px-6 py-3 font-medium w-full sm:w-auto justify-center"
-      >
-        <ArrowLeft className="w-4 h-4" />
-        {backLabel}
-      </Button>
+      <ChatBackButton onClick={onBack} aria-label={backLabel} />
 
       {!isLoading && !error && hasLessons && (
         <div

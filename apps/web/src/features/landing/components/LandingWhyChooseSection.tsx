@@ -5,22 +5,23 @@ import { motion } from 'framer-motion';
 import { cn } from '@/shared/lib/utils';
 import { WHY_METHODS_IMAGE, WHY_RESULTS_IMAGE, WHY_TEACHERS_IMAGE, WHY_SCHEDULE_IMAGE } from '../landingConstants';
 import { whyChooseDesktopBodyBase, whyChooseDesktopBodyHy, whyChooseDesktopMethodsIconBase, whyChooseDesktopMethodsIconHy, whyChooseDesktopResultsIconWrapBase, whyChooseDesktopResultsIconWrapHy, whyChooseDesktopScheduleIconWrapBase, whyChooseDesktopTeachersIconWrapBase, whyChooseDesktopTeachersIconWrapHy, whyChooseDesktopTitleBase, whyChooseDesktopTitleHy, whyChooseMobileBodyBase, whyChooseMobileBodyHy, whyChooseMobileContentBase, whyChooseMobileContentHy, whyChooseMobileFourthContentHy, whyChooseMobileIconBase, whyChooseMobileIconHy, whyChooseMobileTitleBase, whyChooseMobileTitleHy } from '../landingStyles';
+import { LandingScrollReveal } from './LandingScrollReveal';
 import type { LandingSectionProps } from '../types';
 
 export function LandingWhyChooseSection({ tr, isHy }: LandingSectionProps) {
 
   return (
     <>
-      <section className="relative overflow-hidden bg-white max-tablet:-mt-px tablet:h-[764px]">
+      <section className="relative overflow-hidden bg-white max-tablet:-mt-px tablet:h-[764px] scroll-mt-28" id="teachers">
         <div className="flex flex-col gap-8 px-5 pb-10 pt-10 tablet:hidden">
-          <div className="text-center">
+          <LandingScrollReveal className="text-center">
             <h2 className="text-[28px] font-extrabold leading-[42px] tracking-[0.35px] text-[#0a0a0a]">
               {tr('Why Choose IEC?', 'Ինչու ընտրել IEC-ը')}
             </h2>
             <p className="mt-2 text-[16px] leading-[24px] tracking-[-0.45px] text-[#4a5565]">
               {tr('Experience the difference', 'Զգացեք տարբերությունը')}
             </p>
-          </div>
+          </LandingScrollReveal>
       
           <div className="grid grid-cols-2 gap-4">
             <motion.article

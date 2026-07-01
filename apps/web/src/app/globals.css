@@ -154,3 +154,22 @@
   }
 }
 
+html.landing-scroll-restore-pending {
+  visibility: hidden;
+}
+
+@layer utilities {
+  @media (min-width: 744px) {
+    html.landing-canvas-active .landing-canvas-scale-wrap {
+      width: 1440px;
+      transform: scale(var(--landing-canvas-scale));
+      transform-origin: top left;
+    }
+
+    html.landing-canvas-active .landing-mobile-menu-canvas {
+      inset-inline: 1.5rem;
+      top: calc(0.75rem + 70px * var(--landing-canvas-scale) + 0.5rem);
+    }
+  }
+}
+

@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore, getPortalEntryPath } from '@/features/auth/store/auth.store';
 
-export function useLandingAuthRedirect(): { isLoading: boolean } {
+export function useLandingAuthRedirect(): { shouldRedirect: boolean } {
   const router = useRouter();
   const { isAuthenticated, isHydrated, user } = useAuthStore();
 
@@ -12,5 +12,5 @@ export function useLandingAuthRedirect(): { isLoading: boolean } {
     }
   }, [isAuthenticated, isHydrated, user, router]);
 
-  return { isLoading: !isHydrated || (isAuthenticated && !!user) };
+  return { shouldRedirect: isHydrated && isAuthenticated && !!user };
 }
