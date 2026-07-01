@@ -146,7 +146,7 @@ export class LessonListService {
       }
       if (userRole !== UserRole.TEACHER) {
         if (teacherIds.length === 1) {
-          const id = teacherIds[0]!;
+          const id = teacherIds[0];
           teacherScopeFilter = { OR: [{ teacherId: id }, { substituteTeacherId: id }] };
         } else {
           teacherScopeFilter = {

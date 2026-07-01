@@ -261,8 +261,7 @@ export function MultiSelectChipsDropdown({
             className={cn(
               'flex items-center content-start overflow-y-auto',
               fitContentWidth ? 'min-h-0 shrink-0' : 'min-w-0 flex-1 flex-wrap gap-1.5',
-              !fitContentWidth && closedTriggerMode === 'summary' ? 'min-h-0' : maxChipsHeightClassName,
-              fitContentWidth && closedTriggerMode !== 'summary' && maxChipsHeightClassName,
+              maxChipsHeightClassName,
             )}
           >
             {isLoading ? (
