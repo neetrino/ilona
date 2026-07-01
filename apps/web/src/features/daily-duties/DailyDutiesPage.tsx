@@ -27,8 +27,8 @@ export function DailyDutiesPage({ mode }: DailyDutiesPageProps) {
 
   const hasActiveFilters =
     Boolean(dailyDuties.searchQuery) ||
-    Boolean(dailyDuties.selectedStatus) ||
-    (!dailyDuties.isTeacherMode && dailyDuties.selectedTeacherIds.size > 0);
+    dailyDuties.hasPartialStatusFilter ||
+    (!dailyDuties.isTeacherMode && dailyDuties.hasPartialTeacherFilter);
 
   const periodHeader =
     dailyDuties.viewMode === 'month' ? dailyDuties.monthHeader : dailyDuties.weekHeader;
@@ -42,7 +42,7 @@ export function DailyDutiesPage({ mode }: DailyDutiesPageProps) {
         <DailyDutiesFiltersSection
           searchQuery={dailyDuties.searchQuery}
           selectedTeacherIds={dailyDuties.selectedTeacherIds}
-          selectedStatus={dailyDuties.selectedStatus}
+          selectedStatusIds={dailyDuties.selectedStatusIds}
           teacherOptions={dailyDuties.teacherOptions}
           isLoadingTeachers={dailyDuties.isLoadingTeachers}
           hideTeacherFilter={dailyDuties.isTeacherMode}

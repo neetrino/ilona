@@ -24,6 +24,30 @@ export function readDailyDutiesTeacherIdsFromUrl(searchParams: URLSearchParams):
   return legacyTeacherId ? [legacyTeacherId] : [];
 }
 
+export function hasDailyDutiesTeacherFilterInUrl(searchParams: URLSearchParams): boolean {
+  const live = getLiveSearchParams(searchParams);
+  return live.has('teacherIds') || live.has('teacherId');
+}
+
+export function readDailyDutiesStatusesFromUrl(searchParams: URLSearchParams): string[] {
+  const live = getLiveSearchParams(searchParams);
+  const ids = live
+    .getAll('statuses')
+    .flatMap((value) => value.split(',').map((id) => id.trim()).filter(Boolean));
+
+  if (ids.length > 0) {
+    return ids;
+  }
+
+  const legacyStatus = live.get('status');
+  return legacyStatus ? [legacyStatus] : [];
+}
+
+export function hasDailyDutiesStatusFilterInUrl(searchParams: URLSearchParams): boolean {
+  const live = getLiveSearchParams(searchParams);
+  return live.has('statuses') || live.has('status');
+}
+
 export function isAddLessonModalOpen(searchParams: URLSearchParams): boolean {
   return readUrlSearchParam(DAILY_DUTIES_MODAL_QUERY_KEY, searchParams) === ADD_LESSON_MODAL_QUERY_VALUE;
 }

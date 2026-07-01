@@ -42,8 +42,15 @@ interface MultiSelectChipsDropdownProps {
   hideSelectedLabelsInTrigger?: boolean;
   /** When closed, show placeholder / single label / count instead of chips */
   closedTriggerMode?: 'chips' | 'summary';
+  /** When every option is selected, show this label in summary mode (e.g. "All teachers"). */
+  allSelectedLabel?: string;
+  /** In summary mode, always show count for partial selection (never a single name). */
+  summaryPartialUsesCount?: boolean;
+  /** Hide the search field in the dropdown menu. */
+  hideSearch?: boolean;
   triggerClassName?: string;
   selectedCountLabel?: (count: number) => string;
+  onClearSelection?: () => void;
   /** Grow trigger and menu width to fit full option labels (no truncation). */
   fitContentWidth?: boolean;
   /** Keep trigger width fixed but expand the open menu to fit option labels. */
@@ -66,8 +73,12 @@ export function MultiSelectChipsDropdown({
   showSelectedChipsOnlyWhenOpen = false,
   hideSelectedLabelsInTrigger = false,
   closedTriggerMode = 'chips',
+  allSelectedLabel,
+  summaryPartialUsesCount = false,
+  hideSearch = false,
   triggerClassName,
   selectedCountLabel = (count) => `${count} selected`,
+  onClearSelection,
   fitContentWidth = false,
   menuFitContentWidth = false,
 }: MultiSelectChipsDropdownProps) {
@@ -134,8 +145,14 @@ export function MultiSelectChipsDropdown({
   };
 
   const handleClearSelection = () => {
+    if (onClearSelection) {
+      onClearSelection();
+      return;
+    }
     onSelectionChange(new Set());
   };
+
+  const isAllOptionsSelected = options.length > 0 && selectedIds.size >= options.length;
 
   const selectedChips = useMemo(() => {
     return Array.from(selectedIds)
@@ -150,17 +167,31 @@ export function MultiSelectChipsDropdown({
     (!showSelectedChipsOnlyWhenOpen || isOpen);
 
   const closedSummaryText = useMemo(() => {
+    if (allSelectedLabel && isAllOptionsSelected) {
+      return allSelectedLabel;
+    }
     if (selectedChips.length === 0) {
-      return placeholder;
+      return allSelectedLabel ?? placeholder;
+    }
+    if (allSelectedLabel || summaryPartialUsesCount) {
+      return selectedCountLabel(selectedChips.length);
     }
     if (selectedChips.length === 1) {
       return selectedChips[0]!.label;
     }
     return selectedCountLabel(selectedChips.length);
-  }, [placeholder, selectedChips, selectedCountLabel]);
+  }, [
+    allSelectedLabel,
+    isAllOptionsSelected,
+    placeholder,
+    selectedChips,
+    selectedCountLabel,
+    summaryPartialUsesCount,
+  ]);
 
   const isSummaryTrigger = closedTriggerMode === 'summary';
-  const hasSummarySelection = selectedChips.length > 0;
+  const hasSummarySelection =
+    selectedChips.length > 0 && !(allSelectedLabel && isAllOptionsSelected);
   const expandMenuLabels = fitContentWidth || menuFitContentWidth;
 
   return (
@@ -291,16 +322,18 @@ export function MultiSelectChipsDropdown({
             <div className="p-3 text-sm text-slate-500">{emptyOptionsHint}</div>
           ) : (
             <>
-              <div className="p-2 border-b border-slate-200">
-                <input
-                  type="text"
-                  placeholder={searchPlaceholder}
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full rounded-lg border border-slate-200 px-3 py-1.5 text-sm focus:border-[#1010a3]/45 focus:outline-none focus:ring-4 focus:ring-[#1010a3]/10"
-                  onClick={(e) => e.stopPropagation()}
-                />
-              </div>
+              {!hideSearch ? (
+                <div className="p-2 border-b border-slate-200">
+                  <input
+                    type="text"
+                    placeholder={searchPlaceholder}
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full rounded-lg border border-slate-200 px-3 py-1.5 text-sm focus:border-[#1010a3]/45 focus:outline-none focus:ring-4 focus:ring-[#1010a3]/10"
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                </div>
+              ) : null}
               <div className="flex items-center justify-between px-3 py-2 border-b border-slate-200 bg-slate-50">
                 <button
                   type="button"

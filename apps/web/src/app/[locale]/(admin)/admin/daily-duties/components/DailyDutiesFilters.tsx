@@ -1,30 +1,28 @@
 'use client';
 
-import { useState, useEffect, useRef, startTransition } from 'react';
+import { useState, useEffect, useRef, startTransition, useMemo } from 'react';
 import { useTranslations } from 'next-intl';
-import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
 import { MultiSelectChipsDropdown } from '@/shared/components/ui/multi-select-chips-dropdown';
 import { ADMIN_CONTROL_CLASS, ADMIN_SEARCH_INPUT_CLASS } from '@/shared/lib/admin-control-theme';
-import type { DailyDutiesStatusFilter } from '@/shared/lib/daily-duties/filter-by-daily-duties-status';
 import { DAILY_DUTIES_STATUS_FILTER_OPTIONS } from '@/shared/lib/daily-duties/DailyDutiesLessonStatusBadge';
 import type { DailyDutiesLessonStatus } from '@ilona/types';
 
 interface DailyDutiesFiltersProps {
   searchQuery: string;
   selectedTeacherIds: Set<string>;
-  selectedStatus: DailyDutiesStatusFilter;
+  selectedStatusIds: Set<DailyDutiesLessonStatus>;
   teacherOptions: Array<{ id: string; label: string }>;
   isLoadingTeachers?: boolean;
   onSearchChange: (value: string) => void;
   onTeacherChange: (teacherIds: Set<string>) => void;
-  onStatusChange: (status: DailyDutiesStatusFilter) => void;
+  onStatusChange: (statusIds: Set<string>) => void;
   hideTeacherFilter?: boolean;
 }
 
 export function DailyDutiesFilters({
   searchQuery,
   selectedTeacherIds,
-  selectedStatus,
+  selectedStatusIds,
   teacherOptions,
   isLoadingTeachers = false,
   onSearchChange,
@@ -60,25 +58,23 @@ export function DailyDutiesFilters({
     onSearchChange('');
   };
 
-  const teacherSelectOptions = teacherOptions;
-
-  const statusLabel = (status: DailyDutiesLessonStatus): string => {
+  const statusSelectOptions = useMemo(() => {
     const keys: Record<DailyDutiesLessonStatus, `lessonStatus.${string}`> = {
       DONE: 'lessonStatus.done',
       CAUTION: 'lessonStatus.caution',
       IN_PROGRESS: 'lessonStatus.inProgress',
       WAITING: 'lessonStatus.waiting',
     };
-    return t(keys[status]);
-  };
-
-  const statusSelectOptions = [
-    { id: '', label: t('allStatuses') },
-    ...DAILY_DUTIES_STATUS_FILTER_OPTIONS.map((status) => ({
+    return DAILY_DUTIES_STATUS_FILTER_OPTIONS.map((status) => ({
       id: status,
-      label: statusLabel(status),
-    })),
-  ];
+      label: t(keys[status]),
+    }));
+  }, [t]);
+
+  const allStatusIds = useMemo(
+    () => new Set<string>(DAILY_DUTIES_STATUS_FILTER_OPTIONS),
+    [],
+  );
 
   return (
     <div className="flex w-full min-w-0 flex-col gap-3 lg:flex-row lg:items-center lg:gap-3">
@@ -119,23 +115,35 @@ export function DailyDutiesFilters({
 
       <div className="flex w-full shrink-0 flex-col gap-3 sm:flex-row sm:items-center lg:w-auto">
         <div className="w-full sm:min-w-[10.5rem] sm:w-auto">
-          <SingleSelectDropdown
-            id="daily-duties-status-filter"
+          <MultiSelectChipsDropdown
             options={statusSelectOptions}
-            value={selectedStatus}
-            onValueChange={(nextValue) => onStatusChange((nextValue ?? '') as DailyDutiesStatusFilter)}
-            className="sm:min-w-[10.5rem]"
+            selectedIds={selectedStatusIds}
+            onSelectionChange={onStatusChange}
+            placeholder={t('allStatuses')}
+            allSelectedLabel={t('allStatuses')}
+            summaryPartialUsesCount
+            hideSearch
+            onClearSelection={() => onStatusChange(allStatusIds)}
+            closedTriggerMode="summary"
+            menuFitContentWidth
             triggerClassName={ADMIN_CONTROL_CLASS}
+            selectedCountLabel={(count) => t('statusesSelected', { count })}
+            className="sm:min-w-[10.5rem]"
           />
         </div>
 
         {!hideTeacherFilter ? (
           <div className="w-full sm:min-w-[10.5rem] sm:w-auto">
             <MultiSelectChipsDropdown
-              options={teacherSelectOptions}
+              options={teacherOptions}
               selectedIds={selectedTeacherIds}
               onSelectionChange={onTeacherChange}
               placeholder={t('allTeachers')}
+              allSelectedLabel={t('allTeachers')}
+              summaryPartialUsesCount
+              onClearSelection={() =>
+                onTeacherChange(new Set(teacherOptions.map((teacher) => teacher.id)))
+              }
               searchPlaceholder={t('searchTeachers')}
               noResultsHint={t('noTeachersFound')}
               isLoading={isLoadingTeachers}

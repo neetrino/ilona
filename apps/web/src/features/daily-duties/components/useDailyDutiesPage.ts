@@ -20,10 +20,10 @@ import {
 import { useLessons, useLessonStatistics, type Lesson } from '@/features/lessons';
 import { useTeachers } from '@/features/teachers';
 import type { LessonActionId } from '@/shared/lib/daily-duties/lesson-action-states';
-import type { DailyDutiesStatusFilter } from '@/shared/lib/daily-duties/filter-by-daily-duties-status';
 import {
-  filterLessonsByDailyDutiesStatus,
-  filterLessonsByDateAndStatus,
+  DAILY_DUTIES_STATUS_FILTER_VALUES,
+  filterLessonsByDailyDutiesStatuses,
+  filterLessonsByDateAndStatuses,
 } from '@/shared/lib/daily-duties/filter-by-daily-duties-status';
 import type { DailyDutiesLessonStatus } from '@ilona/types';
 import type { DailyDutiesMode, DailyDutiesViewMode, DailyDutiesLessonDetailTab } from './daily-duties.types';
@@ -39,6 +39,9 @@ import {
   parseDailyDutiesMonthParam,
   parseDailyDutiesWeekParam,
   readDailyDutiesTeacherIdsFromUrl,
+  hasDailyDutiesTeacherFilterInUrl,
+  readDailyDutiesStatusesFromUrl,
+  hasDailyDutiesStatusFilterInUrl,
   readSubstituteLessonModalFromUrl,
 } from './daily-duties-url.util';
 
@@ -76,7 +79,9 @@ export function useDailyDutiesPage(mode: DailyDutiesMode) {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | undefined>(undefined);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedTeacherIds, setSelectedTeacherIds] = useState<Set<string>>(new Set());
-  const [selectedStatus, setSelectedStatus] = useState<DailyDutiesStatusFilter>('');
+  const [selectedStatusIds, setSelectedStatusIds] = useState<Set<DailyDutiesLessonStatus>>(
+    () => new Set(DAILY_DUTIES_STATUS_FILTER_VALUES),
+  );
 
   const readAnchorDateFromUrl = useCallback((): Date => {
     const view = readViewModeFromUrl();
@@ -196,15 +201,18 @@ export function useDailyDutiesPage(mode: DailyDutiesMode) {
     }
 
     setSearchQuery(readUrlSearchParam('q', searchParams, urlRevision) || '');
-    setSelectedTeacherIds(new Set(readDailyDutiesTeacherIdsFromUrl(searchParams)));
+    if (hasDailyDutiesTeacherFilterInUrl(searchParams)) {
+      setSelectedTeacherIds(new Set(readDailyDutiesTeacherIdsFromUrl(searchParams)));
+    }
 
-    const statusFromUrl = readUrlSearchParam('status', searchParams, urlRevision);
-    const validStatuses: DailyDutiesLessonStatus[] = ['DONE', 'CAUTION', 'IN_PROGRESS', 'WAITING'];
-    setSelectedStatus(
-      validStatuses.includes(statusFromUrl as DailyDutiesLessonStatus)
-        ? (statusFromUrl as DailyDutiesLessonStatus)
-        : '',
-    );
+    if (hasDailyDutiesStatusFilterInUrl(searchParams)) {
+      const validStatuses = new Set(DAILY_DUTIES_STATUS_FILTER_VALUES);
+      const fromUrl = readDailyDutiesStatusesFromUrl(searchParams).filter(
+        (status): status is DailyDutiesLessonStatus =>
+          validStatuses.has(status as DailyDutiesLessonStatus),
+      );
+      setSelectedStatusIds(new Set(fromUrl));
+    }
 
     if (!isTeacherMode && !isAddLessonClosingRef.current) {
       setIsAddLessonOpen(isAddLessonModalOpen(searchParams));
@@ -216,6 +224,16 @@ export function useDailyDutiesPage(mode: DailyDutiesMode) {
       setSubstituteLessonId(substituteFromUrl.lessonId);
     }
   }, [searchParams, urlRevision, isTeacherMode]);
+
+  useEffect(() => {
+    if (isTeacherMode || teacherOptions.length === 0) {
+      return;
+    }
+    if (hasDailyDutiesTeacherFilterInUrl(searchParams)) {
+      return;
+    }
+    setSelectedTeacherIds(new Set(teacherOptions.map((teacher) => teacher.id)));
+  }, [isTeacherMode, searchParams, teacherOptions, urlRevision]);
 
   const updateAddLessonModalInUrl = useCallback(
     (open: boolean) => {
@@ -341,10 +359,34 @@ export function useDailyDutiesPage(mode: DailyDutiesMode) {
     return getWeekDateRangeForApi(weekDates);
   }, [currentDate, viewMode, weekDates]);
 
-  const teacherIdsArray = useMemo(
-    () => (selectedTeacherIds.size > 0 ? Array.from(selectedTeacherIds) : undefined),
-    [selectedTeacherIds],
-  );
+  const teacherIdsArray = useMemo(() => {
+    if (isTeacherMode || teacherOptions.length === 0) {
+      return undefined;
+    }
+    if (
+      selectedTeacherIds.size === 0 ||
+      selectedTeacherIds.size >= teacherOptions.length
+    ) {
+      return undefined;
+    }
+    return Array.from(selectedTeacherIds);
+  }, [isTeacherMode, selectedTeacherIds, teacherOptions.length]);
+
+  const hasPartialTeacherFilter = useMemo(() => {
+    if (isTeacherMode || teacherOptions.length === 0) {
+      return false;
+    }
+    return (
+      selectedTeacherIds.size > 0 && selectedTeacherIds.size < teacherOptions.length
+    );
+  }, [isTeacherMode, selectedTeacherIds, teacherOptions.length]);
+
+  const hasPartialStatusFilter = useMemo(() => {
+    return (
+      selectedStatusIds.size > 0 &&
+      selectedStatusIds.size < DAILY_DUTIES_STATUS_FILTER_VALUES.length
+    );
+  }, [selectedStatusIds]);
 
   const { data: lessonsData, isLoading, isFetching } = useLessons(
     {
@@ -385,15 +427,15 @@ export function useDailyDutiesPage(mode: DailyDutiesMode) {
 
   const listViewLessons = useMemo(() => {
     if (viewMode !== 'list') {
-      return filterLessonsByDailyDutiesStatus(lessons, selectedStatus);
+      return filterLessonsByDailyDutiesStatuses(lessons, selectedStatusIds);
     }
     const ranged = filterLessonsByLocalDateRange(lessons, weekDates[0], weekDates[6]);
-    return filterLessonsByDailyDutiesStatus(ranged, selectedStatus);
-  }, [lessons, viewMode, weekDates, selectedStatus]);
+    return filterLessonsByDailyDutiesStatuses(ranged, selectedStatusIds);
+  }, [lessons, viewMode, weekDates, selectedStatusIds]);
 
   const filteredLessonsByDate = useMemo(
-    () => filterLessonsByDateAndStatus(lessonsByDate, selectedStatus),
-    [lessonsByDate, selectedStatus],
+    () => filterLessonsByDateAndStatuses(lessonsByDate, selectedStatusIds),
+    [lessonsByDate, selectedStatusIds],
   );
 
   const listReferenceDate = useMemo(() => getDailyDutiesListReferenceDate(weekDates), [weekDates]);
@@ -431,6 +473,19 @@ export function useDailyDutiesPage(mode: DailyDutiesMode) {
 
   const handleTeacherChange = useCallback(
     (teacherIds: Set<string>) => {
+      const allTeacherIds = new Set(teacherOptions.map((teacher) => teacher.id));
+      const isAllSelected =
+        teacherOptions.length > 0 && teacherIds.size >= teacherOptions.length;
+
+      if (isAllSelected) {
+        setSelectedTeacherIds(allTeacherIds);
+        replaceAllParams((params) => {
+          params.delete('teacherId');
+          params.delete('teacherIds');
+        });
+        return;
+      }
+
       setSelectedTeacherIds(teacherIds);
       replaceAllParams((params) => {
         params.delete('teacherId');
@@ -440,15 +495,39 @@ export function useDailyDutiesPage(mode: DailyDutiesMode) {
         }
       });
     },
-    [replaceAllParams],
+    [replaceAllParams, teacherOptions],
   );
 
   const handleStatusChange = useCallback(
-    (status: DailyDutiesStatusFilter) => {
-      setSelectedStatus(status);
-      replaceParams({ status: status || null });
+    (statusIds: Set<string>) => {
+      const allStatusIds = new Set(DAILY_DUTIES_STATUS_FILTER_VALUES);
+      const nextStatuses = new Set(
+        [...statusIds].filter((id): id is DailyDutiesLessonStatus =>
+          allStatusIds.has(id as DailyDutiesLessonStatus),
+        ),
+      );
+      const isAllSelected =
+        nextStatuses.size >= DAILY_DUTIES_STATUS_FILTER_VALUES.length;
+
+      if (isAllSelected) {
+        setSelectedStatusIds(allStatusIds);
+        replaceAllParams((params) => {
+          params.delete('status');
+          params.delete('statuses');
+        });
+        return;
+      }
+
+      setSelectedStatusIds(nextStatuses);
+      replaceAllParams((params) => {
+        params.delete('status');
+        params.delete('statuses');
+        for (const id of nextStatuses) {
+          params.append('statuses', id);
+        }
+      });
     },
-    [replaceParams],
+    [replaceAllParams],
   );
 
   return {
@@ -467,8 +546,10 @@ export function useDailyDutiesPage(mode: DailyDutiesMode) {
     stats,
     searchQuery,
     selectedTeacherIds,
-    selectedStatus,
+    selectedStatusIds,
     teacherOptions,
+    hasPartialTeacherFilter,
+    hasPartialStatusFilter,
     isLoadingTeachers,
     handleSearchChange,
     handleTeacherChange,

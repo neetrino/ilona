@@ -2314,6 +2314,7 @@
     "searchTeachers": "Որոնել ուսուցիչներ...",
     "noTeachersFound": "Ուսուցիչներ չեն գտնվել",
     "teachersSelected": "{count} ուսուցիչ ընտրված",
+    "statusesSelected": "{count} կարգավիճակ ընտրված",
     "allStatuses": "Բոլոր կարգավիճակները",
     "lessonStatus": {
       "done": "Կատարված",

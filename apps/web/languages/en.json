@@ -2314,6 +2314,7 @@
     "searchTeachers": "Search teachers...",
     "noTeachersFound": "No teachers found",
     "teachersSelected": "{count} teachers selected",
+    "statusesSelected": "{count} statuses selected",
     "allStatuses": "All statuses",
     "lessonStatus": {
       "done": "Done",
