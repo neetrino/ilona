@@ -9,7 +9,7 @@ import { VoiceTab } from '@/shared/components/daily-duties/VoiceTab';
 import { TextTab } from '@/shared/components/daily-duties/TextTab';
 import { DailyPlanTab } from '@/shared/components/daily-duties/DailyPlanTab';
 import { useLesson } from '@/features/lessons';
-import { ChatBackButton } from '@/features/chat/components/ChatBackButton';
+import { ChatBackButton } from '@/shared/components/ui/chat-back-button';
 import { AdminLessonActions } from './AdminLessonActions';
 import type { SubstituteTeacherOption } from './SubstituteLessonModal';
 import { cn } from '@/shared/lib/utils';

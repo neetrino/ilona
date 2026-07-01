@@ -2,7 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 import { usePathname } from 'next/navigation';
-import { ArrowLeft } from 'lucide-react';
+import { ChatBackButton } from '@/shared/components/ui/chat-back-button';
 import { LandingNavbarLanguageToggle } from '@/shared/components/layout/LandingNavbarLanguageToggle';
 import { StudentLogoutControl } from '@/shared/components/layout/StudentLogoutControl';
 import { PortalHeaderSearch } from '@/features/search/components/PortalHeaderSearch';
@@ -54,14 +54,11 @@ export function TeacherDashboardHeader({
                 <>
                   <div className="relative flex min-h-11 w-full items-center gap-2 lg:justify-start">
                     {onBack ? (
-                      <button
-                        type="button"
+                      <ChatBackButton
                         onClick={onBack}
                         aria-label={resolvedBackLabel}
-                        className="absolute left-0 top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-[#1010a3] text-white transition-opacity hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-[#1010a3]/30 focus:ring-offset-2 lg:static lg:shrink-0 lg:translate-y-0"
-                      >
-                        <ArrowLeft className="h-5 w-5" aria-hidden />
-                      </button>
+                        className="absolute left-0 top-1/2 z-10 -translate-y-1/2 lg:static lg:shrink-0 lg:translate-y-0"
+                      />
                     ) : null}
                     <h1 className="flex w-full min-h-11 items-center justify-center px-0 text-[1.125rem] font-bold leading-tight tracking-tight text-[#1010a3] sm:px-5 sm:text-[1.375rem] lg:min-h-0 lg:w-auto lg:flex-1 lg:justify-start lg:px-0">
                       <button

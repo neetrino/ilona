@@ -5,8 +5,7 @@ import { useRouter } from '@/config/navigation';
 import { useAppSearchUrl } from '@/shared/hooks/useAppSearchUrl';
 import { useTranslations } from 'next-intl';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
-import { Button } from '@/shared/components/ui/button';
-import { ChatBackButton } from '@/features/chat/components/ChatBackButton';
+import { ChatBackButton } from '@/shared/components/ui/chat-back-button';
 import { useHistoryBack } from '@/shared/hooks/useHistoryBack';
 import { useLesson } from '@/features/lessons';
 import { useTeachers } from '@/features/teachers';
@@ -125,7 +124,7 @@ export default function AdminDailyDutiesLessonPage({
       <DashboardLayout title={t('lessonNotFoundTitle')} subtitle={t('lessonNotFoundSubtitle')} mobileFullBleed>
         <AdminLessonDetailShell onBack={handleBack} backLabel={tCommon('goBack')}>
           <div className="flex flex-1 flex-col items-center justify-center p-12">
-            <Button onClick={handleBack}>{tCommon('goBack')}</Button>
+            <ChatBackButton onClick={handleBack} aria-label={tCommon('goBack')} />
           </div>
         </AdminLessonDetailShell>
       </DashboardLayout>

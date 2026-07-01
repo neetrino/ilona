@@ -3,6 +3,7 @@
 import { PublicAssetImage } from '@/shared/components/ui';
 import { useTranslations } from 'next-intl';
 import { usePathname } from 'next/navigation';
+import { ChatBackButton } from '@/shared/components/ui/chat-back-button';
 import { LandingNavbarLanguageToggle } from '@/shared/components/layout/LandingNavbarLanguageToggle';
 import { StudentLogoutControl } from '@/shared/components/layout/StudentLogoutControl';
 import { PortalHeaderSearch } from '@/features/search/components/PortalHeaderSearch';
@@ -16,14 +17,19 @@ import { STUDENT_DASHBOARD_ASSETS } from './assets';
 type StudentDashboardHeaderProps = {
   pageTitle?: string;
   pageSubtitle?: string;
+  onBack?: () => void;
+  backLabel?: string;
 };
 
 export function StudentDashboardHeader({
   pageTitle,
   pageSubtitle,
+  onBack,
+  backLabel,
 }: StudentDashboardHeaderProps) {
   const t = useTranslations('dashboard');
   const tNav = useTranslations('nav');
+  const tCommon = useTranslations('common');
   const pathname = usePathname();
   const { user } = useAuthStore();
   const { data: dashboard } = useMyDashboard();
@@ -39,6 +45,7 @@ export function StudentDashboardHeader({
   const isStudentMobileSubpage = isStudentPortalSubpage(normalizedPath);
   const isProfilePage = isStudentProfilePath(normalizedPath);
   const shouldShowSecondaryRowOnMobile = !isStudentMobileSubpage;
+  const resolvedBackLabel = backLabel ?? tCommon('back');
 
   return (
     <header
@@ -52,6 +59,13 @@ export function StudentDashboardHeader({
               {isSubpage ? (
                 <>
                   <div className="relative flex min-h-11 w-full items-center lg:block">
+                    {onBack ? (
+                      <ChatBackButton
+                        onClick={onBack}
+                        aria-label={resolvedBackLabel}
+                        className="absolute left-0 top-1/2 z-10 -translate-y-1/2 lg:static lg:shrink-0 lg:translate-y-0"
+                      />
+                    ) : null}
                     <h1 className="flex w-full min-h-11 items-center justify-center px-0 text-[1.125rem] font-bold leading-tight tracking-tight text-[#1010a3] sm:px-5 sm:text-[1.375rem] lg:min-h-0 lg:flex-1 lg:justify-start">
                       <button
                         type="button"
@@ -59,6 +73,7 @@ export function StudentDashboardHeader({
                         className={cn(
                           'max-w-full truncate border-0 bg-transparent p-0 text-inherit cursor-pointer sm:cursor-default',
                           isProfilePage && 'pr-[5.5rem] lg:pr-0',
+                          onBack && 'px-10 lg:px-0',
                         )}
                       >
                         {pageTitle}

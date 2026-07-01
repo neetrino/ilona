@@ -2,18 +2,22 @@
 
 import { useTranslations } from 'next-intl';
 import { usePathname } from 'next/navigation';
+import { ChatBackButton } from '@/shared/components/ui/chat-back-button';
 import { LandingNavbarLanguageToggle } from '@/shared/components/layout/LandingNavbarLanguageToggle';
 import { StudentLogoutControl } from '@/shared/components/layout/StudentLogoutControl';
 import { PortalHeaderSearch } from '@/features/search/components/PortalHeaderSearch';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { isAdminPortalSubpage } from '@/shared/lib/role-routes';
 import { PORTAL_MOBILE_HEADER_ID } from '@/shared/lib/portal-mobile-layout';
+import { cn } from '@/shared/lib/utils';
 
 type AdminDashboardHeaderProps = {
   pageTitle?: string;
   pageSubtitle?: string;
   headerContent?: React.ReactNode;
   onMenuClick?: () => void;
+  onBack?: () => void;
+  backLabel?: string;
 };
 
 export function AdminDashboardHeader({
@@ -21,6 +25,8 @@ export function AdminDashboardHeader({
   pageSubtitle,
   headerContent,
   onMenuClick,
+  onBack,
+  backLabel,
 }: AdminDashboardHeaderProps) {
   const t = useTranslations('dashboard');
   const tNav = useTranslations('nav');
@@ -38,6 +44,7 @@ export function AdminDashboardHeader({
     user?.role,
   );
   const shouldShowSecondaryRowOnMobile = !isAdminMobileSubpage || Boolean(headerContent);
+  const resolvedBackLabel = backLabel ?? tCommon('back');
   return (
     <header
       id={PORTAL_MOBILE_HEADER_ID}
@@ -67,15 +74,27 @@ export function AdminDashboardHeader({
             <div className="flex min-h-11 min-w-0 flex-1 flex-col justify-center text-center lg:min-h-full lg:text-left">
               {isSubpage ? (
                 <>
-                  <h1 className="flex min-h-11 items-center justify-center px-0 text-[1.125rem] font-bold leading-tight tracking-tight text-[#1010a3] sm:px-5 sm:text-[1.375rem] lg:min-h-0 lg:flex-1 lg:justify-start">
-                    <button
-                      type="button"
-                      onClick={scrollToTop}
-                      className="max-w-full truncate border-0 bg-transparent p-0 text-inherit cursor-pointer sm:cursor-default"
-                    >
-                      {pageTitle}
-                    </button>
-                  </h1>
+                  <div className="relative flex min-h-11 w-full items-center gap-2 lg:justify-start">
+                    {onBack ? (
+                      <ChatBackButton
+                        onClick={onBack}
+                        aria-label={resolvedBackLabel}
+                        className="absolute left-0 top-1/2 z-10 -translate-y-1/2 lg:static lg:shrink-0 lg:translate-y-0"
+                      />
+                    ) : null}
+                    <h1 className="flex min-h-11 w-full items-center justify-center px-0 text-[1.125rem] font-bold leading-tight tracking-tight text-[#1010a3] sm:px-5 sm:text-[1.375rem] lg:min-h-0 lg:w-auto lg:flex-1 lg:justify-start lg:px-0">
+                      <button
+                        type="button"
+                        onClick={scrollToTop}
+                        className={cn(
+                          'max-w-full truncate border-0 bg-transparent p-0 text-inherit cursor-pointer sm:cursor-default',
+                          onBack && 'px-10 lg:px-0',
+                        )}
+                      >
+                        {pageTitle}
+                      </button>
+                    </h1>
+                  </div>
                   {pageSubtitle ? (
                     <p className="mt-1.5 line-clamp-2 text-xs text-[#8b8b90] sm:text-sm lg:text-left">
                       {pageSubtitle}
