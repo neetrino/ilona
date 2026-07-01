@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { Archive } from 'lucide-react';
+import { Archive, Info } from 'lucide-react';
 import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
 import { useCenters } from '@/features/centers';
 import { useCreateManager, useManagers, type ManagerAccount } from '@/features/settings';
@@ -16,7 +16,7 @@ export function ManagerTab() {
   const t = useTranslations('settings');
   const tStatus = useTranslations('status');
   const tCommon = useTranslations('common');
-  const { data: centersData } = useCenters({ isActive: true, take: 100 });
+  const { data: centersData, isLoading: isLoadingCenters } = useCenters({ isActive: true, take: 100 });
   const { data: managers, isLoading } = useManagers();
   const createManager = useCreateManager();
 
@@ -57,6 +57,10 @@ export function ManagerTab() {
     () => centers.filter((center) => !assignedCenterIds.has(center.id)),
     [centers, assignedCenterIds],
   );
+
+  const isDataReady = !isLoadingCenters && !isLoading;
+  const allCentersHaveManagers =
+    isDataReady && centers.length > 0 && availableCenters.length === 0;
 
   useEffect(() => {
     if (form.centerId && !availableCenters.some((center) => center.id === form.centerId)) {
@@ -155,12 +159,20 @@ export function ManagerTab() {
             ]}
             value={form.centerId}
             onValueChange={(nextValue) => setForm((prev) => ({ ...prev, centerId: nextValue ?? '' }))}
-            disabled={availableCenters.length === 0}
+            disabled={allCentersHaveManagers}
             triggerClassName="h-11 min-h-11 rounded-[15px]"
           />
 
-          {availableCenters.length === 0 && (
-            <p className="md:col-span-2 text-xs text-amber-700">{t('managerNoAvailableCenters')}</p>
+          {allCentersHaveManagers && (
+            <div
+              role="status"
+              className="md:col-span-2 flex items-start gap-3 rounded-[15px] border border-[rgba(14,14,16,0.07)] bg-[#fafafa] px-4 py-3"
+            >
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-[#f0f0ff] text-[#1010a3]">
+                <Info className="h-4 w-4" aria-hidden />
+              </div>
+              <p className="text-sm leading-relaxed text-[#3b3b40] pt-1">{t('managerNoAvailableCenters')}</p>
+            </div>
           )}
 
           <div className="md:col-span-2 flex items-center justify-between mt-1">
