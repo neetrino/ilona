@@ -279,8 +279,9 @@ export function MultiSelectChipsDropdown({
           className={cn(
             DROPDOWN_MENU_SURFACE_CLASS,
             'absolute mt-1 flex max-h-72 flex-col overflow-hidden',
-            expandMenuLabels && 'right-auto',
-            expandMenuLabels ? 'min-w-full w-max max-w-[calc(100vw-2rem)]' : 'w-full',
+            expandMenuLabels
+              ? 'left-1/2 right-auto w-max min-w-full max-w-[calc(100vw-2rem)] -translate-x-1/2'
+              : 'w-full',
           )}
         >
           {options.length === 0 ? (
