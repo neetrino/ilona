@@ -8,6 +8,7 @@ import { BulkDeleteConfirmationDialog } from '@/features/lessons/components/Bulk
 import { useOutsidePress } from '@/shared/hooks/useOutsidePress';
 import { getErrorMessage } from '@/shared/lib/api';
 import { ADMIN_ICON_BUTTON_SM_CLASS } from '@/shared/lib/admin-control-theme';
+import { formatAppDateTime } from '@/shared/lib/app-timezone';
 import { cn } from '@/shared/lib/utils';
 import { SubstituteLessonModal, type SubstituteTeacherOption } from './SubstituteLessonModal';
 
@@ -120,12 +121,7 @@ export function AdminLessonActions({
         title={t('deleteThisLessonTitle')}
         description={t('deleteLessonPermanentFor', {
           group: lesson?.group?.name ?? t('unknownGroup'),
-          datetime: lesson
-            ? new Date(lesson.scheduledAt).toLocaleString(undefined, {
-                dateStyle: 'medium',
-                timeStyle: 'short',
-              })
-            : '',
+          datetime: lesson ? formatAppDateTime(lesson.scheduledAt) : '',
         })}
         confirmLabel={tCommon('delete')}
       />

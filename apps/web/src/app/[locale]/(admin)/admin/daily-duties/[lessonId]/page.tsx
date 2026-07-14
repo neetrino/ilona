@@ -12,6 +12,7 @@ import { useTeachers } from '@/features/teachers';
 import { readUrlSearchParam } from '@/shared/lib/url-search-params';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { getAdminDailyDutiesBasePath } from '@/shared/lib/role-routes';
+import { formatAppDateTime } from '@/shared/lib/app-timezone';
 import { cn } from '@/shared/lib/utils';
 import {
   AdminLessonDetailPanel,
@@ -134,7 +135,7 @@ export default function AdminDailyDutiesLessonPage({
   return (
     <DashboardLayout
       title={t('lessonTitle', { name: lesson.group?.name || t('lessonUnknown') })}
-      subtitle={`${new Date(lesson.scheduledAt).toLocaleDateString()} at ${new Date(lesson.scheduledAt).toLocaleTimeString()}`}
+      subtitle={formatAppDateTime(lesson.scheduledAt)}
       mobileFullBleed
     >
       <div className="flex min-h-0 flex-1 flex-col">

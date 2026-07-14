@@ -16,7 +16,7 @@ export function getAppDateLocaleTag(locale: string): string {
 }
 
 /**
- * Format a date to a locale string
+ * Format a date to a locale string (project timezone — Asia/Yerevan).
  */
 export function formatDate(date: Date | string, locale: string = 'en'): string {
   const d = typeof date === 'string' ? new Date(date) : date;
@@ -24,17 +24,20 @@ export function formatDate(date: Date | string, locale: string = 'en'): string {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
+    timeZone: 'Asia/Yerevan',
   });
 }
 
 /**
- * Format a date to a time string
+ * Format a date to a time string (project timezone — Asia/Yerevan).
  */
 export function formatTime(date: Date | string, locale: string = 'en'): string {
   const d = typeof date === 'string' ? new Date(date) : date;
   return d.toLocaleTimeString(locale === 'hy' ? 'hy-AM' : 'en-US', {
     hour: '2-digit',
     minute: '2-digit',
+    hour12: false,
+    timeZone: 'Asia/Yerevan',
   });
 }
 

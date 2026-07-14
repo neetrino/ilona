@@ -14,6 +14,7 @@ import { useLesson } from '@/features/lessons';
 import { ChatBackButton } from '@/shared/components/ui/chat-back-button';
 import { useHistoryBack } from '@/shared/hooks/useHistoryBack';
 import { TEACHER_DAILY_DUTIES_BASE_PATH } from '@/shared/lib/role-routes';
+import { formatAppDateTime } from '@/shared/lib/app-timezone';
 import { readUrlSearchParam } from '@/shared/lib/url-search-params';
 import { cn } from '@/shared/lib/utils';
 type LessonTab = 'absence' | 'feedback' | 'voice' | 'text' | 'dailyPlan';
@@ -120,7 +121,7 @@ export default function TeacherDailyDutiesLessonPage({
   return (
     <DashboardLayout
       title={tCalendar('lessonTitle', { name: lesson.group?.name || tCalendar('lessonUnknown') })}
-      subtitle={`${new Date(lesson.scheduledAt).toLocaleDateString()} at ${new Date(lesson.scheduledAt).toLocaleTimeString()}`}
+      subtitle={formatAppDateTime(lesson.scheduledAt)}
     >
       <TeacherLessonDetailBanner onBack={handleBack} backLabel={tCommon('goBack')}>
         <LessonDetailTabs lesson={lesson} activeTab={activeTab} onTabChange={handleTabChange}>

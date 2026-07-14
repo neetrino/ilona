@@ -12,5 +12,6 @@ export * from './finance.types';
 export * from './api.types';
 export * from './settings.types';
 export * from './group.types';
+export * from './app-timezone';
 export * from './duty-deadline';
 

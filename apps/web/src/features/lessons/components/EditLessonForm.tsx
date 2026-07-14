@@ -3,11 +3,17 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useTranslations, useLocale } from 'next-intl';
+import { useTranslations } from 'next-intl';
 import { Button, Input, Label, Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/shared/components/ui';
 import { useUpdateLesson, useLesson, type UpdateLessonDto } from '@/features/lessons';
 import { useState, useEffect, useMemo } from 'react';
 import { getErrorMessage } from '@/shared/lib/api';
+import {
+  formatAppTimeHHmm,
+  getZonedParts,
+  lessonWallTimeToIso,
+  wallTimeToUtc,
+} from '@/shared/lib/app-timezone';
 
 type UpdateLessonFormData = {
   date: string;
@@ -29,7 +35,6 @@ export function EditLessonForm({ open, onOpenChange, lessonId }: EditLessonFormP
   const tForm = useTranslations('lessons.form');
   const tVal = useTranslations('lessons.validation');
   const tCommon = useTranslations('common');
-  const locale = useLocale();
 
   const updateLessonSchema = useMemo(
     () =>
@@ -75,13 +80,11 @@ export function EditLessonForm({ open, onOpenChange, lessonId }: EditLessonFormP
 
   useEffect(() => {
     if (lesson) {
-      const scheduledAt = new Date(lesson.scheduledAt);
-      const dateStr = scheduledAt.toISOString().split('T')[0];
-      const timeStr = scheduledAt.toTimeString().slice(0, 5);
+      const parts = getZonedParts(new Date(lesson.scheduledAt));
 
       reset({
-        date: dateStr,
-        time: timeStr,
+        date: parts.ymd,
+        time: parts.timeHHmm,
         duration: lesson.duration || 60,
         topic: lesson.topic || '',
         description: lesson.description || '',
@@ -101,10 +104,8 @@ export function EditLessonForm({ open, onOpenChange, lessonId }: EditLessonFormP
     setErrorMessage(null);
 
     try {
-      const scheduledAt = new Date(`${data.date}T${data.time}:00`);
-
       const payload: UpdateLessonDto = {
-        scheduledAt: scheduledAt.toISOString(),
+        scheduledAt: lessonWallTimeToIso(data.date, data.time),
         duration: data.duration,
         topic: data.topic || undefined,
         description: data.description || undefined,
@@ -219,13 +220,9 @@ export function EditLessonForm({ open, onOpenChange, lessonId }: EditLessonFormP
                     const date = watch('date');
                     const time = watch('time');
                     if (date && time) {
-                      const start = new Date(`${date}T${time}:00`);
+                      const start = wallTimeToUtc(date, time);
                       const end = new Date(start.getTime() + duration * 60 * 1000);
-                      return end.toLocaleTimeString(locale, {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        hour12: false,
-                      });
+                      return formatAppTimeHHmm(end);
                     }
                     return '—';
                   })(),

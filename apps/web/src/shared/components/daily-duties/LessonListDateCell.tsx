@@ -1,23 +1,19 @@
 'use client';
 
 import { Clock } from 'lucide-react';
+import { APP_TIMEZONE, formatAppDate, formatAppTime, getZonedParts } from '@/shared/lib/app-timezone';
 
 function formatTime(dateStr: string, locale: string): string {
-  const date = new Date(dateStr);
-  return date.toLocaleTimeString(locale === 'hy' ? 'hy-AM' : 'en-US', {
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false,
-  });
+  return formatAppTime(dateStr, locale);
 }
 
 function getDateParts(dateStr: string, locale: string) {
   const date = new Date(dateStr);
-  const loc = locale === 'hy' ? 'hy-AM' : 'en-GB';
+  const parts = getZonedParts(date);
   return {
-    weekday: date.toLocaleDateString(loc, { weekday: 'short' }).toUpperCase(),
-    day: date.getDate(),
-    month: date.toLocaleDateString(loc, { month: 'short' }).toUpperCase(),
+    weekday: formatAppDate(date, locale, { weekday: 'short', timeZone: APP_TIMEZONE }).toUpperCase(),
+    day: parts.day,
+    month: formatAppDate(date, locale, { month: 'short', timeZone: APP_TIMEZONE }).toUpperCase(),
   };
 }
 
