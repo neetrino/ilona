@@ -49,22 +49,43 @@ export function createOptimisticTextMessage(params: {
 }
 
 function createMessagesCacheSeed(message: Message): MessagesInfiniteData {
+  // hasMore:true so opening the chat can still fetch older history from the API.
   return {
-    pages: [{ items: [message], hasMore: false, nextCursor: null }],
+    pages: [{ items: [message], hasMore: true, nextCursor: message.id }],
     pageParams: [undefined],
   };
 }
+
+/** Prevents duplicate socket/handler deliveries from inflating unread badges. */
+const unreadAppliedMessageIds = new Set<string>();
 
 function shouldIncrementUnread(chatId: string, message: Message): boolean {
   const { user } = useAuthStore.getState();
   if (!user?.id || message.senderId === user.id) return false;
   const { activeChat } = useChatStore.getState();
   // Open conversation is marked read immediately — do not inflate the badge.
-  return activeChat?.id !== chatId;
+  if (activeChat?.id === chatId) return false;
+  if (unreadAppliedMessageIds.has(message.id)) return false;
+  unreadAppliedMessageIds.add(message.id);
+  if (unreadAppliedMessageIds.size > 500) {
+    const oldest = unreadAppliedMessageIds.values().next().value;
+    if (oldest) unreadAppliedMessageIds.delete(oldest);
+  }
+  return true;
 }
 
 function bumpUnread(count: number | undefined, shouldBump: boolean): number {
   return shouldBump ? (count || 0) + 1 : count || 0;
+}
+
+function messageExistsInCache(
+  queryClient: QueryClient,
+  chatId: string,
+  messageId: string,
+): boolean {
+  const cached = queryClient.getQueryData<MessagesInfiniteData>(chatKeys.messages(chatId));
+  if (!cached) return false;
+  return cached.pages.some((page) => page.items.some((item) => item.id === messageId));
 }
 
 function updateChatListForMessage(
@@ -223,19 +244,30 @@ export function upsertIncomingMessageInCache(
   chatId: string,
   message: Message,
 ) {
-  queryClient.setQueryData(
+  // If the conversation has never been opened, do not seed a one-message cache
+  // (that blocked history fetch via staleTime). Only update the chat list.
+  const existingCache = queryClient.getQueryData<MessagesInfiniteData>(
     chatKeys.messages(chatId),
-    (oldData: MessagesInfiniteData | undefined) => {
-      if (!oldData) {
-        return createMessagesCacheSeed(message);
-      }
-
-      return {
-        ...oldData,
-        pages: appendMessageToMessagesCache(oldData.pages, message, true),
-      };
-    },
   );
+
+  if (existingCache) {
+    if (messageExistsInCache(queryClient, chatId, message.id)) {
+      updateChatListForMessage(queryClient, chatId, message);
+      return;
+    }
+
+    queryClient.setQueryData(
+      chatKeys.messages(chatId),
+      (oldData: MessagesInfiniteData | undefined) => {
+        if (!oldData) return oldData;
+        return {
+          ...oldData,
+          pages: appendMessageToMessagesCache(oldData.pages, message, true),
+        };
+      },
+    );
+  }
+
   updateChatListForMessage(queryClient, chatId, message);
 }
 

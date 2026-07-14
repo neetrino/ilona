@@ -15,6 +15,33 @@ const disconnectHandlers = new Set<() => void>();
 const errorHandlers = new Set<(error: Error) => void>();
 let tokenExpiredHandler: (() => Promise<string | null>) | null = null;
 
+type SocketEventHandler = (data: unknown) => void;
+/** One socket listener per event; fan-out to all registered React handlers. */
+const eventHandlerSets = new Map<string, Set<SocketEventHandler>>();
+const eventBridges = new Map<string, SocketEventHandler>();
+
+function ensureEventBridge(event: string): void {
+  if (eventBridges.has(event) || !socket) return;
+
+  const bridge: SocketEventHandler = (payload) => {
+    const handlers = eventHandlerSets.get(event);
+    if (!handlers) return;
+    handlers.forEach((handler) => {
+      handler(payload);
+    });
+  };
+
+  eventBridges.set(event, bridge);
+  socket.on(event, bridge);
+}
+
+function rebindEventBridges(): void {
+  eventBridges.clear();
+  for (const eventName of eventHandlerSets.keys()) {
+    ensureEventBridge(eventName);
+  }
+}
+
 function stripWrappingQuotes(value: string): string {
   const trimmed = value.trim();
   if (
@@ -61,6 +88,8 @@ export interface SocketOptions {
 function destroySocketInstance(instance: Socket | null): void {
   if (!instance) return;
   instance.removeAllListeners();
+  // Bridges were bound to this instance — recreate them after the next initSocket.
+  eventBridges.clear();
   // Prevent orphan reconnects as a previous account after we drop the reference.
   instance.io.reconnection(false);
   instance.disconnect();
@@ -135,6 +164,8 @@ export function initSocket(options: SocketOptions): Socket {
     reconnectionDelayMax: 5000,
     timeout: 10000,
   });
+
+  rebindEventBridges();
 
   socket.on('connect', () => {
     console.log('[Socket] Connected');
@@ -350,15 +381,34 @@ export function emitSendVocabulary(
   });
 }
 
-type EventHandler<T> = (data: T) => void;
-
+/**
+ * Subscribe to a chat socket event. Safe for multiple useSocket() callers —
+ * only one native listener is attached per event name.
+ */
 export function onSocketEvent<K extends keyof SocketEvents>(
   event: K,
-  handler: EventHandler<SocketEvents[K]>,
+  handler: (data: SocketEvents[K]) => void,
 ): () => void {
-  socket?.on(event as never, handler as never);
+  const eventName = event as string;
+  let set = eventHandlerSets.get(eventName);
+  if (!set) {
+    set = new Set();
+    eventHandlerSets.set(eventName, set);
+  }
+  set.add(handler as SocketEventHandler);
+  ensureEventBridge(eventName);
 
   return () => {
-    socket?.off(event as never, handler as never);
+    const handlers = eventHandlerSets.get(eventName);
+    if (!handlers) return;
+    handlers.delete(handler as SocketEventHandler);
+    if (handlers.size === 0) {
+      const bridge = eventBridges.get(eventName);
+      if (bridge && socket) {
+        socket.off(eventName, bridge);
+      }
+      eventBridges.delete(eventName);
+      eventHandlerSets.delete(eventName);
+    }
   };
 }

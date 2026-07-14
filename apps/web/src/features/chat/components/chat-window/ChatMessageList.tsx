@@ -11,7 +11,6 @@ interface ChatMessageListProps {
   ui: ChatThemeTokens;
   messages: Message[];
   isLoading: boolean;
-  hasNextPage: boolean;
   isFetchingNextPage: boolean;
   currentUserId?: string;
   currentUserAvatar?: {
@@ -35,7 +34,6 @@ interface ChatMessageListProps {
   messagesContainerRef: React.RefObject<HTMLDivElement | null>;
   messagesEndRef: React.RefObject<HTMLDivElement | null>;
   registerMessageElement: (messageId: string, el: HTMLDivElement | null) => void;
-  onFetchNextPage: () => void;
   onMessagesContainerClick: () => void;
   onOpenDeleteMessage: (messageId: string) => void;
   onDeletableMessageTap: (messageId: string, event: React.MouseEvent) => void;
@@ -46,7 +44,6 @@ export function ChatMessageList({
   ui,
   messages,
   isLoading,
-  hasNextPage,
   isFetchingNextPage,
   currentUserId,
   currentUserAvatar,
@@ -61,13 +58,11 @@ export function ChatMessageList({
   messagesContainerRef,
   messagesEndRef,
   registerMessageElement,
-  onFetchNextPage,
   onMessagesContainerClick,
   onOpenDeleteMessage,
   onDeletableMessageTap,
 }: ChatMessageListProps) {
   const tChat = useTranslations('chat');
-  const tCommon = useTranslations('common');
 
   return (
     <div
@@ -78,15 +73,9 @@ export function ChatMessageList({
         ui.messagesBg,
       )}
     >
-      {hasNextPage && (
-        <div className="text-center">
-          <button
-            onClick={onFetchNextPage}
-            disabled={isFetchingNextPage}
-            className={ui.loadMore}
-          >
-            {isFetchingNextPage ? tCommon('loading') : tChat('loadEarlierMessages')}
-          </button>
+      {isFetchingNextPage && (
+        <div className="flex items-center justify-center py-2">
+          <div className={cn('h-5 w-5 animate-spin rounded-full', ui.spinner)} />
         </div>
       )}
 

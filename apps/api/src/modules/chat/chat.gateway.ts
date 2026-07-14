@@ -224,8 +224,14 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         authUser,
       );
 
-      // Brand-new DMs are not in the room until chat:join — join sender and fan out.
+      // Brand-new DMs are not in the room until chat:join — join sender, then
+      // broadcast to the room and fan-out only to peers not yet in the room.
       void client.join(`chat:${data.chatId}`);
+      if (!this.onlineUsers.has(data.chatId)) {
+        this.onlineUsers.set(data.chatId, new Set());
+      }
+      this.onlineUsers.get(data.chatId)?.add(senderIdFromAuth);
+
       this.broadcastNewMessage(data.chatId, message);
       await this.fanOutNewMessageToParticipants(data.chatId, senderIdFromAuth, authUser, message);
 
@@ -265,7 +271,12 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   ): Promise<void> {
     try {
       const chat = await this.chatService.getChatById(chatId, senderId, authUser.role, authUser);
+      const roomMembers = this.onlineUsers.get(chatId);
       for (const participant of chat.participants) {
+        // Room broadcast already reaches anyone currently in the chat room.
+        // Only direct-emit to connected users who have not joined this room yet
+        // (e.g. brand-new DM before chat:join) — avoids duplicate message:new.
+        if (roomMembers?.has(participant.userId)) continue;
         this.emitToUser(participant.userId, 'message:new', message);
       }
     } catch (error) {

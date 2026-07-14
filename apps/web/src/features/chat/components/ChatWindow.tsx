@@ -146,8 +146,12 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
     return () => window.clearInterval(timer);
   }, [chat.type, chat.id]);
 
+  // Pages: [newest page, older, …]. Reverse so history renders top→bottom.
   const messages = useMemo(
-    () => messagesData?.pages.flatMap((page) => page.items) ?? [],
+    () =>
+      messagesData?.pages
+        ? [...messagesData.pages].reverse().flatMap((page) => page.items)
+        : [],
     [messagesData],
   );
 
@@ -156,11 +160,16 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
     [messages],
   );
 
-  const { messagesEndRef, messagesContainerRef } = useChatWindowScroll(
-    chat.id,
+  const { messagesEndRef, messagesContainerRef } = useChatWindowScroll({
+    chatId: chat.id,
     isLoading,
-    messages.length,
-  );
+    messagesLength: messages.length,
+    hasNextPage: Boolean(hasNextPage),
+    isFetchingNextPage,
+    onLoadOlder: () => {
+      void fetchNextPage();
+    },
+  });
 
   const {
     focusedMessageId,
@@ -323,7 +332,6 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
         ui={ui}
         messages={filteredMessages}
         isLoading={isLoading}
-        hasNextPage={Boolean(hasNextPage)}
         isFetchingNextPage={isFetchingNextPage}
         currentUserId={user?.id}
         currentUserAvatar={
@@ -347,7 +355,6 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
         messagesContainerRef={messagesContainerRef}
         messagesEndRef={messagesEndRef}
         registerMessageElement={registerMessageElement}
-        onFetchNextPage={() => fetchNextPage()}
         onMessagesContainerClick={handleMessagesContainerClick}
         onOpenDeleteMessage={handleOpenDeleteMessage}
         onDeletableMessageTap={handleDeletableMessageTap}
