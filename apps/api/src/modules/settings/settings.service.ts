@@ -19,34 +19,34 @@ export class SettingsService {
     return this.coreService.getSystemSettings();
   }
 
-  updateLogoUrl(logoUrl: string | null): Promise<unknown> {
+  updateLogoUrl(logoUrl: string | null): Promise<{ logoUrl: string | null }> {
     return this.brandingService.updateLogoUrl(logoUrl);
   }
 
-  getLogoKey(): Promise<unknown> {
+  getLogoKey(): Promise<{ logoKey: string | null }> {
     return this.brandingService.getLogoKey();
   }
 
-  updateLogoKey(logoKey: string | null): Promise<unknown> {
+  updateLogoKey(logoKey: string | null): Promise<void> {
     return this.brandingService.updateLogoKey(logoKey);
   }
 
-  getDashboardBannerKey(): Promise<unknown> {
+  getDashboardBannerKey(): Promise<{ dashboardBannerKey: string | null }> {
     return this.brandingService.getDashboardBannerKey();
   }
 
-  updateDashboardBannerKey(dashboardBannerKey: string | null): Promise<unknown> {
+  updateDashboardBannerKey(dashboardBannerKey: string | null): Promise<void> {
     return this.brandingService.updateDashboardBannerKey(dashboardBannerKey);
   }
 
-  getDashboardBannerText(): Promise<unknown> {
+  getDashboardBannerText(): Promise<{ title: string | null; subtitle: string | null }> {
     return this.brandingService.getDashboardBannerText();
   }
 
   updateDashboardBannerText(input: {
     title?: string | null;
     subtitle?: string | null;
-  }): Promise<unknown> {
+  }): Promise<{ title: string | null; subtitle: string | null }> {
     return this.brandingService.updateDashboardBannerText(input);
   }
 
@@ -54,11 +54,13 @@ export class SettingsService {
     return this.footerService.getFooterIconLinks();
   }
 
-  updateFooterIconLinks(input: Partial<Record<string, string | null>>): Promise<unknown> {
+  updateFooterIconLinks(
+    input: Partial<Record<string, string | null>>,
+  ): Promise<FooterIconLinks> {
     return this.footerService.updateFooterIconLinks(input);
   }
 
-  getLogoUrl(): Promise<unknown> {
+  getLogoUrl(): Promise<{ logoUrl: string | null }> {
     return this.brandingService.getLogoUrl();
   }
 
@@ -66,7 +68,7 @@ export class SettingsService {
     return this.penaltiesService.getPenaltyAmounts();
   }
 
-  updatePenaltyAmounts(data: PenaltyAmountsInput): Promise<unknown> {
+  updatePenaltyAmounts(data: PenaltyAmountsInput): Promise<PenaltyAmounts> {
     return this.penaltiesService.updatePenaltyAmounts(data);
   }
 }
