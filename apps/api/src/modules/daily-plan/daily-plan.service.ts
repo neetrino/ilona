@@ -17,6 +17,7 @@ import {
 import { DailyPlanResourceKind, Prisma, UserRole } from '@ilona/database';
 import { effectiveLessonInstructorTeacherId, teacherActsAsLessonInstructor } from '../../common/lesson-instructor';
 import { JwtPayload } from '../../common/types/auth.types';
+import { buildDailyPlanSearchWhere } from './daily-plan-search.util';
 
 const RESOURCE_KINDS = new Set<string>([
   DailyPlanResourceKind.READING,
@@ -147,42 +148,6 @@ export class DailyPlanService {
     return plan.teacher.user.id === user.sub;
   }
 
-  private buildSearchWhere(term: string): Prisma.DailyPlanWhereInput {
-    return {
-      OR: [
-        {
-          teacher: {
-            user: {
-              OR: [
-                { firstName: { contains: term, mode: 'insensitive' } },
-                { lastName: { contains: term, mode: 'insensitive' } },
-              ],
-            },
-          },
-        },
-        {
-          topics: {
-            some: {
-              OR: [
-                { title: { contains: term, mode: 'insensitive' } },
-                {
-                  resources: {
-                    some: {
-                      OR: [
-                        { title: { contains: term, mode: 'insensitive' } },
-                        { description: { contains: term, mode: 'insensitive' } },
-                      ],
-                    },
-                  },
-                },
-              ],
-            },
-          },
-        },
-      ],
-    };
-  }
-
   async findAll(query: QueryDailyPlanDto, user: JwtPayload) {
     const take = Math.min(Math.max(query.take ?? 50, 1), 200);
     const skip = Math.max(query.skip ?? 0, 0);
@@ -206,7 +171,7 @@ export class DailyPlanService {
     }
 
     if (query.search?.trim()) {
-      whereParts.push(this.buildSearchWhere(query.search.trim()));
+      whereParts.push(buildDailyPlanSearchWhere(query.search.trim()));
     }
 
     const where: Prisma.DailyPlanWhereInput =

@@ -1717,7 +1717,7 @@
     "sectionMine": "My Daily Plans",
     "sectionOthers": "Other teachers' Daily Plans",
     "sectionAll": "All Daily Plans",
-    "searchPlaceholder": "Teacher name, topic, or resource…",
+    "searchPlaceholder": "Teacher, group, center, topic, or resource…",
     "loadError": "Failed to load daily plans",
     "noTopics": "No topics",
     "oneTopic": "1 topic",
