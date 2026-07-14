@@ -2,7 +2,10 @@
 
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
+import { useLogo } from '@/features/settings/hooks/useSettings';
 import { cn } from '@/shared/lib/utils';
+import { getFullApiUrl } from '@/shared/lib/api-url-utils';
+import { resolveChatAvatarUrl } from '../../utils/chat-avatar';
 import { formatMessagePreview } from '../../utils';
 import type { TeacherChatListViewModel } from './teacher-chat-list.types';
 
@@ -24,6 +27,12 @@ export function TeacherChatListAdminItem({
   onAdminClick,
 }: TeacherChatListAdminItemProps) {
   const tChat = useTranslations('chat');
+  const { data: logoData } = useLogo();
+  const adminAvatarUrl = resolveChatAvatarUrl(
+    admin.avatarUrl,
+    'ADMIN',
+    getFullApiUrl(logoData?.logoUrl),
+  );
 
   return (
     <div className="border-b border-slate-200">
@@ -37,9 +46,9 @@ export function TeacherChatListAdminItem({
         )}
       >
         <div className="relative">
-          {admin.avatarUrl ? (
+          {adminAvatarUrl ? (
             <Image
-              src={admin.avatarUrl}
+              src={adminAvatarUrl}
               alt={admin.name}
               width={48}
               height={48}

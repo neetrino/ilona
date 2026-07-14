@@ -25,6 +25,7 @@ interface ChatMessageListProps {
     inactiveManager: string;
     unknownUser: string;
   };
+  brandLogoUrl: string | null;
   messagesContainerRef: React.RefObject<HTMLDivElement | null>;
   messagesEndRef: React.RefObject<HTMLDivElement | null>;
   registerMessageElement: (messageId: string, el: HTMLDivElement | null) => void;
@@ -49,6 +50,7 @@ export function ChatMessageList({
   messageIdToDelete,
   isDeletingMessage,
   senderLabels,
+  brandLogoUrl,
   messagesContainerRef,
   messagesEndRef,
   registerMessageElement,
@@ -106,6 +108,7 @@ export function ChatMessageList({
             messageIdToDelete={messageIdToDelete}
             isDeletingMessage={isDeletingMessage}
             senderLabels={senderLabels}
+            brandLogoUrl={brandLogoUrl}
             registerMessageElement={registerMessageElement}
             onOpenDeleteMessage={onOpenDeleteMessage}
             onDeletableMessageTap={onDeletableMessageTap}

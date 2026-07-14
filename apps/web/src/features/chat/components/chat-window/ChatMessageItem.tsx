@@ -12,6 +12,7 @@ import {
   getMessageSenderDisplay,
   getInitialsFromParts,
 } from '../../utils/chat-utils';
+import { resolveChatAvatarUrl } from '../../utils/chat-avatar';
 import { isPendingMessageId } from '../../hooks';
 import { VoiceMessagePlayer } from '../VoiceMessagePlayer';
 import { getSubstituteVoiceLabel, isVocabularyMessage } from './chat-message-meta';
@@ -33,6 +34,7 @@ interface ChatMessageItemProps {
     inactiveManager: string;
     unknownUser: string;
   };
+  brandLogoUrl: string | null;
   registerMessageElement: (messageId: string, el: HTMLDivElement | null) => void;
   onOpenDeleteMessage: (messageId: string) => void;
   onDeletableMessageTap: (messageId: string, event: React.MouseEvent) => void;
@@ -51,6 +53,7 @@ export function ChatMessageItem({
   messageIdToDelete,
   isDeletingMessage,
   senderLabels,
+  brandLogoUrl,
   registerMessageElement,
   onOpenDeleteMessage,
   onDeletableMessageTap,
@@ -63,6 +66,11 @@ export function ChatMessageItem({
   const isPending = isPendingMessageId(message.id);
   const canDelete = !isPending && (isOwn || canDeleteAnyMessage);
   const senderDisplay = getMessageSenderDisplay(message, senderLabels);
+  const senderAvatarUrl = resolveChatAvatarUrl(
+    message.sender?.avatarUrl,
+    message.sender?.role,
+    brandLogoUrl,
+  );
   const showDateSeparator = shouldShowDateSeparator(message, prevMessage);
   const isVocabulary = isVocabularyMessage(message);
   const substituteVoiceLabel = getSubstituteVoiceLabel(message, tChat('substituteTeacherDefault'));
@@ -83,12 +91,12 @@ export function ChatMessageItem({
         </div>
       )}
 
-      <div className={cn('group flex gap-2', isOwn ? 'justify-end' : 'justify-start')}>
+      <div className={cn('flex gap-2', isOwn ? 'justify-end' : 'justify-start')}>
         {!isOwn && (
           <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center overflow-hidden rounded-full">
-            {message.sender?.avatarUrl ? (
+            {senderAvatarUrl ? (
               <Image
-                src={message.sender.avatarUrl}
+                src={senderAvatarUrl}
                 alt={senderDisplay.name}
                 width={32}
                 height={32}
@@ -112,36 +120,10 @@ export function ChatMessageItem({
         )}
 
         <div
-          className={cn('relative max-w-[70%]', isOwn && 'order-first')}
+          className={cn('max-w-[70%]', isOwn && 'order-first')}
           data-message-actions={canDelete ? '' : undefined}
           onClick={canDelete ? (event) => onDeletableMessageTap(message.id, event) : undefined}
         >
-          {canDelete && (
-            <button
-              type="button"
-              onClick={(event) => {
-                event.stopPropagation();
-                onOpenDeleteMessage(message.id);
-              }}
-              disabled={isDeletingMessage && messageIdToDelete === message.id}
-              className={cn(
-                'absolute -top-1 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-white transition-opacity hover:bg-red-600 disabled:opacity-50',
-                isMobileViewport
-                  ? mobileDeleteMessageId === message.id
-                    ? 'opacity-100'
-                    : 'opacity-0'
-                  : 'opacity-0 group-hover:opacity-100',
-                isOwn ? '-right-1' : '-left-1',
-              )}
-              title={tChat('deleteMessage')}
-              aria-label={tChat('deleteMessage')}
-            >
-              <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          )}
-
           {!isOwn && chat.type === 'GROUP' && (
             <p className={cn('mb-1 ml-1 text-xs', ui.muted)}>
               <span className={senderDisplay.isInactive ? 'italic opacity-80' : ''}>
@@ -158,6 +140,33 @@ export function ChatMessageItem({
               {substituteVoiceLabel}
             </p>
           )}
+
+          <div className="group/bubble relative inline-block max-w-full">
+            {canDelete && (
+              <button
+                type="button"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  onOpenDeleteMessage(message.id);
+                }}
+                disabled={isDeletingMessage && messageIdToDelete === message.id}
+                className={cn(
+                  'absolute -top-1 z-10 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-white transition-opacity hover:bg-red-600 disabled:opacity-50',
+                  isMobileViewport
+                    ? mobileDeleteMessageId === message.id
+                      ? 'opacity-100'
+                      : 'opacity-0'
+                    : 'opacity-0 group-hover/bubble:opacity-100',
+                  isOwn ? '-right-1' : '-left-1',
+                )}
+                title={tChat('deleteMessage')}
+                aria-label={tChat('deleteMessage')}
+              >
+                <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            )}
 
           <div
             className={cn(
@@ -187,6 +196,7 @@ export function ChatMessageItem({
             ) : (
               <p className="whitespace-pre-wrap break-words text-sm">{message.content}</p>
             )}
+          </div>
           </div>
 
           <div

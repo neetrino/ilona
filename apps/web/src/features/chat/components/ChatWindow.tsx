@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useAuthStore } from '@/features/auth/store/auth.store';
+import { useLogo } from '@/features/settings/hooks/useSettings';
 import {
   useMessages,
   useSocket,
@@ -14,6 +15,7 @@ import { useChatStore } from '../store/chat.store';
 import type { Chat } from '../types';
 import { DeleteConfirmationDialog } from '@/shared/components/ui';
 import { api } from '@/shared/lib/api';
+import { getFullApiUrl } from '@/shared/lib/api-url-utils';
 import { VocabularyModal } from './VocabularyModal';
 import { AddMembersModal } from './AddMembersModal';
 import { getChatThemeForRole, isPortalChatRole } from '../lib/chat-theme';
@@ -47,6 +49,8 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
   const tCommon = useTranslations('common');
   const locale = useLocale();
   const { user } = useAuthStore();
+  const { data: logoData } = useLogo();
+  const brandLogoUrl = getFullApiUrl(logoData?.logoUrl);
   const senderLabels = useMemo(
     () => ({
       formerManager: tChat('formerManager'),
@@ -105,6 +109,7 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
     markAsRead,
     isUserOnline,
     deleteMessage,
+    joinChat,
   } = useSocket({
     onTypingStart: ({ chatId, userId }) => {
       if (chatId === chat.id && userId !== user?.id) {
@@ -119,6 +124,12 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
       }
     },
   });
+
+  // New DMs are not in the socket room from the initial connection — join when opened.
+  useEffect(() => {
+    if (!chat.id || !isConnected) return;
+    void joinChat(chat.id);
+  }, [chat.id, isConnected, joinChat]);
 
   const messages = useMemo(
     () => messagesData?.pages.flatMap((page) => page.items) ?? [],
@@ -239,7 +250,7 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
   };
 
   const chatTitle = getChatTitle(chat, user?.id, tChat('chatTitle'));
-  const chatAvatarUrl = getChatAvatarUrl(chat, user?.id);
+  const chatAvatarUrl = getChatAvatarUrl(chat, user?.id, brandLogoUrl);
   const chatAvatarInitials = getChatAvatarInitials(chat, user?.id, tChat('groupChat'));
   const typingNames = getTypingNames(chat, getTypingUsers(chat.id));
   const onlineStatus =
@@ -294,6 +305,7 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
         messageIdToDelete={messageIdToDelete}
         isDeletingMessage={isDeletingMessage}
         senderLabels={senderLabels}
+        brandLogoUrl={brandLogoUrl}
         messagesContainerRef={messagesContainerRef}
         messagesEndRef={messagesEndRef}
         registerMessageElement={registerMessageElement}

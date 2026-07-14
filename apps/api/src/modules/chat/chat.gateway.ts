@@ -8,15 +8,15 @@ import {
   MessageBody,
 } from '@nestjs/websockets';
 import { Logger } from '@nestjs/common';
-import { Server, Socket } from 'socket.io';
+import { Server } from 'socket.io';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { ChatService } from './chat.service';
 import { JwtPayload } from '../../common/types/auth.types';
-
-interface AuthenticatedSocket extends Socket {
-  user: JwtPayload;
-}
+import {
+  AuthenticatedSocket,
+  resolveSocketUser,
+} from './chat-gateway-auth.util';
 
 @WebSocketGateway({
   namespace: '/chat',
@@ -142,10 +142,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   /**
-   * Handle send message. SECURITY: Sender identity is taken ONLY from the socket's
-   * authenticated user (client.user, set at connection from JWT). Never use any
-   * senderId from the message payload. Client must reconnect when user changes (e.g.
-   * after logout/login as different user) so the socket identity is correct.
+   * Handle send message. SECURITY: Sender identity is taken ONLY from a freshly
+   * verified JWT on the handshake (never from the message payload, never from a
+   * stale client.user cached at first connect).
    */
   @SubscribeMessage('message:send')
   async handleSendMessage(
@@ -153,22 +152,16 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @MessageBody() data: { chatId: string; content: string; type?: string; metadata?: Record<string, unknown>; fileUrl?: string; fileName?: string; fileSize?: number; duration?: number },
   ) {
     try {
-      // CRITICAL: Validate client.user is set (per-connection identity from JWT at handshake)
-      if (!client.user || !client.user.sub) {
-        this.logger.error('handleSendMessage: client.user is missing or invalid', { hasUser: !!client.user, userId: client.user?.sub });
-        return { success: false, error: 'Authentication required' };
-      }
+      const authUser = this.requireSocketUser(client);
 
       // Voice messages must be sent via HTTP (upload file first, then send with fileUrl)
       if (data.type === 'VOICE') {
         return { success: false, error: 'Voice messages must be sent via the REST API after uploading the file' };
       }
 
-      // Sender is ALWAYS the socket's authenticated user - never from payload
-      const senderIdFromAuth = client.user.sub;
-      const senderRoleFromAuth = client.user.role;
+      const senderIdFromAuth = authUser.sub;
+      const senderRoleFromAuth = authUser.role;
 
-      // CRITICAL: Log sender identity for debugging (dev only)
       if (process.env.NODE_ENV !== 'production') {
         this.logger.log(
           JSON.stringify({ message: 'handleSendMessage', senderId: senderIdFromAuth, senderRole: senderRoleFromAuth, chatId: data.chatId }),
@@ -184,17 +177,59 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         },
         senderIdFromAuth,
         senderRoleFromAuth,
-        client.user,
+        authUser,
       );
 
-      // Broadcast to all participants in the chat
-      this.server.to(`chat:${data.chatId}`).emit('message:new', message);
+      // Brand-new DMs are not in the room until chat:join — join sender and fan out.
+      void client.join(`chat:${data.chatId}`);
+      this.broadcastNewMessage(data.chatId, message);
+      await this.fanOutNewMessageToParticipants(data.chatId, senderIdFromAuth, authUser, message);
 
       return { success: true, message };
     } catch (err: unknown) {
       const error = err instanceof Error ? err : new Error(String(err));
       this.logger.error('Send message error', error.stack ?? error.message);
       return { success: false, error: error.message };
+    }
+  }
+
+  private requireSocketUser(client: AuthenticatedSocket): JwtPayload {
+    try {
+      return resolveSocketUser(client, this.jwtService, this.configService);
+    } catch (error) {
+      this.logger.error('Socket auth failed', {
+        hasUser: !!client.user,
+        userId: client.user?.sub,
+        error: error instanceof Error ? error.message : String(error),
+      });
+      throw new Error('Authentication required');
+    }
+  }
+
+  private emitToUser(userId: string, event: string, payload: unknown): void {
+    const socketIds = this.userSockets.get(userId) || [];
+    for (const socketId of socketIds) {
+      this.server.to(socketId).emit(event, payload);
+    }
+  }
+
+  private async fanOutNewMessageToParticipants(
+    chatId: string,
+    senderId: string,
+    authUser: JwtPayload,
+    message: unknown,
+  ): Promise<void> {
+    try {
+      const chat = await this.chatService.getChatById(chatId, senderId, authUser.role, authUser);
+      for (const participant of chat.participants) {
+        this.emitToUser(participant.userId, 'message:new', message);
+      }
+    } catch (error) {
+      this.logger.warn(
+        `Failed to fan-out message to participants for chat ${chatId}: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      );
     }
   }
 
@@ -212,14 +247,14 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @MessageBody() data: { messageId: string; content: string },
   ): Promise<unknown> {
     try {
+      const authUser = this.requireSocketUser(client);
       const message = (await this.chatService.editMessage(
         data.messageId,
         { content: data.content },
-        client.user.sub,
-        client.user,
+        authUser.sub,
+        authUser,
       )) as { chatId: string };
 
-      // Broadcast to all participants
       this.server.to(`chat:${message.chatId}`).emit('message:edited', message);
 
       return { success: true, message };
@@ -234,9 +269,12 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @MessageBody() data: { messageId: string },
   ) {
     try {
-      // Get message first to get chatId before deletion
-      const message = (await this.chatService.getMessage(data.messageId)) as { chatId: string; id: string } | null;
-      
+      const authUser = this.requireSocketUser(client);
+      const message = (await this.chatService.getMessage(data.messageId)) as {
+        chatId: string;
+        id: string;
+      } | null;
+
       if (!message) {
         return { success: false, error: 'Message not found' };
       }
@@ -244,14 +282,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       const chatId = message.chatId;
       const messageId = message.id;
 
-      // Delete the message (hard delete)
-      await this.chatService.deleteMessage(
-        data.messageId,
-        client.user.sub,
-        client.user,
-      );
+      await this.chatService.deleteMessage(data.messageId, authUser.sub, authUser);
 
-      // Broadcast to all participants
       this.server.to(`chat:${chatId}`).emit('message:deleted', {
         messageId,
         chatId,
@@ -268,10 +300,15 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @ConnectedSocket() client: AuthenticatedSocket,
     @MessageBody() data: { chatId: string },
   ) {
-    client.to(`chat:${data.chatId}`).emit('typing:start', {
-      chatId: data.chatId,
-      userId: client.user.sub,
-    });
+    try {
+      const authUser = this.requireSocketUser(client);
+      client.to(`chat:${data.chatId}`).emit('typing:start', {
+        chatId: data.chatId,
+        userId: authUser.sub,
+      });
+    } catch {
+      // ignore unauthenticated typing events
+    }
   }
 
   @SubscribeMessage('typing:stop')
@@ -279,10 +316,15 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @ConnectedSocket() client: AuthenticatedSocket,
     @MessageBody() data: { chatId: string },
   ) {
-    client.to(`chat:${data.chatId}`).emit('typing:stop', {
-      chatId: data.chatId,
-      userId: client.user.sub,
-    });
+    try {
+      const authUser = this.requireSocketUser(client);
+      client.to(`chat:${data.chatId}`).emit('typing:stop', {
+        chatId: data.chatId,
+        userId: authUser.sub,
+      });
+    } catch {
+      // ignore unauthenticated typing events
+    }
   }
 
   @SubscribeMessage('chat:read')
@@ -291,12 +333,12 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @MessageBody() data: { chatId: string },
   ) {
     try {
-      await this.chatService.markAsRead(data.chatId, client.user.sub, client.user);
-      
-      // Notify other participants that this user has read messages
+      const authUser = this.requireSocketUser(client);
+      await this.chatService.markAsRead(data.chatId, authUser.sub, authUser);
+
       client.to(`chat:${data.chatId}`).emit('chat:read', {
         chatId: data.chatId,
-        userId: client.user.sub,
+        userId: authUser.sub,
         readAt: new Date(),
       });
 
@@ -312,23 +354,23 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @MessageBody() data: { chatId: string },
   ) {
     try {
-      // Verify user is participant
-      await this.chatService.getChatById(data.chatId, client.user.sub, client.user.role, client.user);
-      
+      const authUser = this.requireSocketUser(client);
+      await this.chatService.getChatById(data.chatId, authUser.sub, authUser.role, authUser);
+
       void client.join(`chat:${data.chatId}`);
-      
+
       if (!this.onlineUsers.has(data.chatId)) {
         this.onlineUsers.set(data.chatId, new Set());
       }
-      this.onlineUsers.get(data.chatId)?.add(client.user.sub);
+      this.onlineUsers.get(data.chatId)?.add(authUser.sub);
 
       client.to(`chat:${data.chatId}`).emit('user:online', {
         chatId: data.chatId,
-        userId: client.user.sub,
+        userId: authUser.sub,
       });
 
-      return { 
-        success: true, 
+      return {
+        success: true,
         onlineUsers: Array.from(this.onlineUsers.get(data.chatId) || []),
       };
     } catch (error) {
@@ -342,15 +384,10 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @MessageBody() data: { chatId: string; words: string[] },
   ): Promise<unknown> {
     try {
-      // CRITICAL: Validate client.user is set and has required fields
-      if (!client.user || !client.user.sub) {
-        this.logger.error('handleSendVocabulary: client.user is missing or invalid', { hasUser: !!client.user, userId: client.user?.sub });
-        return { success: false, error: 'Authentication required' };
-      }
-
+      const authUser = this.requireSocketUser(client);
       const message = await this.chatService.sendVocabularyMessage(
         data.chatId,
-        client.user.sub,
+        authUser.sub,
         data.words,
       );
 

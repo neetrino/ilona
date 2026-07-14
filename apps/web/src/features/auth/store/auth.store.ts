@@ -54,6 +54,10 @@ export const useAuthStore = create<AuthStore>()(
         set({ isLoading: true, error: null, sessionExpired: false });
 
         try {
+          // Drop any previous account's chat socket/state before applying a new session.
+          // Prevents first messages being sent under the previous user's identity.
+          clearChatStateOnLogout();
+
           const response = await api.post<{ user: User; tokens: AuthTokens }>('/auth/login', {
             email,
             password,

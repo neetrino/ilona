@@ -3,14 +3,17 @@
 import { useState, useMemo } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useAuthStore } from '@/features/auth/store/auth.store';
+import { useLogo } from '@/features/settings/hooks/useSettings';
 import { useChats, useSocket, useCreateDirectChat } from '../hooks';
 import { useChatStore } from '../store/chat.store';
 import { useMyTeachers } from '@/features/students/hooks/useStudents';
 import type { Chat } from '../types';
 import type { AssignedTeacher } from '@/features/students/api/students.api';
 import { cn } from '@/shared/lib/utils';
+import { getFullApiUrl } from '@/shared/lib/api-url-utils';
 import { getChatTheme } from '../lib/chat-theme';
 import { formatMessagePreview } from '../utils';
+import { resolveChatAvatarUrl } from '../utils/chat-avatar';
 import { formatChatListTime, sortChatListItems } from '../utils/chat-utils';
 import Image from 'next/image';
 import { formatDisplayName, getInitials, getInitialsFromParts } from '@/shared/components/ui/avatar';
@@ -29,6 +32,8 @@ export function StudentChatList({ onSelectChat }: StudentChatListProps) {
   const locale = useLocale();
   const ui = getChatTheme('student');
   const { user } = useAuthStore();
+  const { data: logoData } = useLogo();
+  const brandLogoUrl = getFullApiUrl(logoData?.logoUrl);
   const { activeChat } = useChatStore();
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -125,7 +130,11 @@ export function StudentChatList({ onSelectChat }: StudentChatListProps) {
       avatar: otherParticipant
         ? getInitialsFromParts(otherParticipant.user.firstName, otherParticipant.user.lastName)
         : '?',
-      avatarUrl: otherParticipant?.user.avatarUrl || null,
+      avatarUrl: resolveChatAvatarUrl(
+        otherParticipant?.user.avatarUrl,
+        otherParticipant?.user.role,
+        brandLogoUrl,
+      ),
       isGroup: false,
       otherUserId: otherParticipant?.userId,
     };
