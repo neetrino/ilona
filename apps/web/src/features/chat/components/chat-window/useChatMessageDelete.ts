@@ -33,7 +33,7 @@ export function useChatMessageDelete({
     }
   };
 
-  const handleOwnMessageTap = (messageId: string, event: React.MouseEvent) => {
+  const handleDeletableMessageTap = (messageId: string, event: React.MouseEvent) => {
     if (!isMobileViewport) return;
 
     const target = event.target as HTMLElement;
@@ -80,7 +80,7 @@ export function useChatMessageDelete({
     mobileDeleteMessageId,
     handleOpenDeleteMessage,
     handleMessagesContainerClick,
-    handleOwnMessageTap,
+    handleDeletableMessageTap,
     handleDeleteMessageDialogOpenChange,
     handleConfirmDeleteMessage,
   };

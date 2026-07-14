@@ -14,6 +14,7 @@ interface ChatMessageListProps {
   hasNextPage: boolean;
   isFetchingNextPage: boolean;
   currentUserId?: string;
+  canDeleteAnyMessage: boolean;
   focusedMessageId: string | null;
   isMobileViewport: boolean;
   mobileDeleteMessageId: string | null;
@@ -30,7 +31,7 @@ interface ChatMessageListProps {
   onFetchNextPage: () => void;
   onMessagesContainerClick: () => void;
   onOpenDeleteMessage: (messageId: string) => void;
-  onOwnMessageTap: (messageId: string, event: React.MouseEvent) => void;
+  onDeletableMessageTap: (messageId: string, event: React.MouseEvent) => void;
 }
 
 export function ChatMessageList({
@@ -41,6 +42,7 @@ export function ChatMessageList({
   hasNextPage,
   isFetchingNextPage,
   currentUserId,
+  canDeleteAnyMessage,
   focusedMessageId,
   isMobileViewport,
   mobileDeleteMessageId,
@@ -53,7 +55,7 @@ export function ChatMessageList({
   onFetchNextPage,
   onMessagesContainerClick,
   onOpenDeleteMessage,
-  onOwnMessageTap,
+  onDeletableMessageTap,
 }: ChatMessageListProps) {
   const tChat = useTranslations('chat');
   const tCommon = useTranslations('common');
@@ -97,6 +99,7 @@ export function ChatMessageList({
             chat={chat}
             ui={ui}
             currentUserId={currentUserId}
+            canDeleteAnyMessage={canDeleteAnyMessage}
             focusedMessageId={focusedMessageId}
             isMobileViewport={isMobileViewport}
             mobileDeleteMessageId={mobileDeleteMessageId}
@@ -105,7 +108,7 @@ export function ChatMessageList({
             senderLabels={senderLabels}
             registerMessageElement={registerMessageElement}
             onOpenDeleteMessage={onOpenDeleteMessage}
-            onOwnMessageTap={onOwnMessageTap}
+            onDeletableMessageTap={onDeletableMessageTap}
           />
         ))
       )}

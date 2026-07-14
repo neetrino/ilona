@@ -22,6 +22,7 @@ interface ChatMessageItemProps {
   chat: Chat;
   ui: ChatThemeTokens;
   currentUserId?: string;
+  canDeleteAnyMessage: boolean;
   focusedMessageId: string | null;
   isMobileViewport: boolean;
   mobileDeleteMessageId: string | null;
@@ -34,7 +35,7 @@ interface ChatMessageItemProps {
   };
   registerMessageElement: (messageId: string, el: HTMLDivElement | null) => void;
   onOpenDeleteMessage: (messageId: string) => void;
-  onOwnMessageTap: (messageId: string, event: React.MouseEvent) => void;
+  onDeletableMessageTap: (messageId: string, event: React.MouseEvent) => void;
 }
 
 export function ChatMessageItem({
@@ -43,6 +44,7 @@ export function ChatMessageItem({
   chat,
   ui,
   currentUserId,
+  canDeleteAnyMessage,
   focusedMessageId,
   isMobileViewport,
   mobileDeleteMessageId,
@@ -51,7 +53,7 @@ export function ChatMessageItem({
   senderLabels,
   registerMessageElement,
   onOpenDeleteMessage,
-  onOwnMessageTap,
+  onDeletableMessageTap,
 }: ChatMessageItemProps) {
   const tChat = useTranslations('chat');
   const tCommon = useTranslations('common');
@@ -59,6 +61,7 @@ export function ChatMessageItem({
 
   const isOwn = message.senderId === currentUserId;
   const isPending = isPendingMessageId(message.id);
+  const canDelete = !isPending && (isOwn || canDeleteAnyMessage);
   const senderDisplay = getMessageSenderDisplay(message, senderLabels);
   const showDateSeparator = shouldShowDateSeparator(message, prevMessage);
   const isVocabulary = isVocabularyMessage(message);
@@ -110,10 +113,10 @@ export function ChatMessageItem({
 
         <div
           className={cn('relative max-w-[70%]', isOwn && 'order-first')}
-          data-message-actions={isOwn ? '' : undefined}
-          onClick={isOwn ? (event) => onOwnMessageTap(message.id, event) : undefined}
+          data-message-actions={canDelete ? '' : undefined}
+          onClick={canDelete ? (event) => onDeletableMessageTap(message.id, event) : undefined}
         >
-          {isOwn && !isPending && (
+          {canDelete && (
             <button
               type="button"
               onClick={(event) => {

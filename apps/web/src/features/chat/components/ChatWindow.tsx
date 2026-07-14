@@ -199,7 +199,7 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
     mobileDeleteMessageId,
     handleOpenDeleteMessage,
     handleMessagesContainerClick,
-    handleOwnMessageTap,
+    handleDeletableMessageTap,
     handleDeleteMessageDialogOpenChange,
     handleConfirmDeleteMessage,
   } = useChatMessageDelete({
@@ -287,6 +287,7 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
         hasNextPage={Boolean(hasNextPage)}
         isFetchingNextPage={isFetchingNextPage}
         currentUserId={user?.id}
+        canDeleteAnyMessage={isAdminOrManager}
         focusedMessageId={focusedMessageId}
         isMobileViewport={isMobileViewport}
         mobileDeleteMessageId={mobileDeleteMessageId}
@@ -299,7 +300,7 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
         onFetchNextPage={() => fetchNextPage()}
         onMessagesContainerClick={handleMessagesContainerClick}
         onOpenDeleteMessage={handleOpenDeleteMessage}
-        onOwnMessageTap={handleOwnMessageTap}
+        onDeletableMessageTap={handleDeletableMessageTap}
       />
 
       <ChatComposer
