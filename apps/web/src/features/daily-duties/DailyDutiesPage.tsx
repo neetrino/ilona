@@ -56,6 +56,7 @@ export function DailyDutiesPage({ mode }: DailyDutiesPageProps) {
         <DailyDutiesControls
           viewMode={dailyDuties.viewMode}
           periodHeader={periodHeader}
+          isTodayPeriod={dailyDuties.isTodayPeriod}
           onNavigatePeriod={dailyDuties.navigatePeriod}
           onGoToToday={dailyDuties.goToToday}
           onViewModeChange={dailyDuties.updateViewModeInUrl}

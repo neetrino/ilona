@@ -10,7 +10,7 @@ import { Avatar } from '@/shared/components/ui/avatar';
 import { AdminListPagination } from '@/shared/components/ui';
 import { User } from 'lucide-react';
 import Image from 'next/image';
-import { formatAppDate, formatAppTime } from '@/shared/lib/app-timezone';
+import { formatAppDate, formatAppTimeRange } from '@/shared/lib/app-timezone';
 import { cn } from '@/shared/lib/utils';
 import { DailyDutiesListActionPill } from '@/shared/components/daily-duties/DailyDutiesListActionPill';
 import { getLessonActionsDerived, type LessonActionId } from '@/shared/lib/daily-duties/lesson-action-states';
@@ -167,8 +167,8 @@ export function LessonListTableMobileCards({
                               day: 'numeric',
                             })}
                           </p>
-                          <p className="mt-0.5 text-left text-[2rem] leading-none font-medium text-[#111827]">
-                            {formatAppTime(lesson.scheduledAt, locale)}
+                          <p className="mt-0.5 text-left text-[1.65rem] leading-none font-medium tabular-nums text-[#111827]">
+                            {formatAppTimeRange(lesson.scheduledAt, lesson.duration)}
                           </p>
                         </div>
                       </div>

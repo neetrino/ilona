@@ -1,11 +1,12 @@
 'use client';
 
 import { Clock } from 'lucide-react';
-import { APP_TIMEZONE, formatAppDate, formatAppTime, getZonedParts } from '@/shared/lib/app-timezone';
-
-function formatTime(dateStr: string, locale: string): string {
-  return formatAppTime(dateStr, locale);
-}
+import {
+  APP_TIMEZONE,
+  formatAppDate,
+  formatAppTimeRange,
+  getZonedParts,
+} from '@/shared/lib/app-timezone';
 
 function getDateParts(dateStr: string, locale: string) {
   const date = new Date(dateStr);
@@ -20,10 +21,17 @@ function getDateParts(dateStr: string, locale: string) {
 type LessonListDateCellProps = {
   dateStr: string;
   locale: string;
+  /** When set, shows `start–end` instead of start only. */
+  durationMinutes?: number | null;
 };
 
-export function LessonListDateCell({ dateStr, locale }: LessonListDateCellProps) {
+export function LessonListDateCell({
+  dateStr,
+  locale,
+  durationMinutes,
+}: LessonListDateCellProps) {
   const { weekday, day, month } = getDateParts(dateStr, locale);
+  const timeLabel = formatAppTimeRange(dateStr, durationMinutes);
 
   return (
     <div className="inline-flex items-stretch">
@@ -32,10 +40,10 @@ export function LessonListDateCell({ dateStr, locale }: LessonListDateCellProps)
         <span className="py-0.5 text-lg font-bold">{day}</span>
         <span className="text-[9px] font-bold tracking-wider">{month}</span>
       </div>
-      <div className="relative z-[1] -ml-2.5 flex min-w-[3.25rem] flex-col items-center justify-center gap-[5px] rounded-r-[15px] border border-[rgba(14,14,16,0.08)] bg-white py-1.5 pl-3.5 pr-2.5 shadow-[0_2px_10px_rgba(14,14,16,0.06)]">
+      <div className="relative z-[1] -ml-2.5 flex min-w-[4.5rem] flex-col items-center justify-center gap-[5px] rounded-r-[15px] border border-[rgba(14,14,16,0.08)] bg-white py-1.5 pl-3.5 pr-2.5 shadow-[0_2px_10px_rgba(14,14,16,0.06)]">
         <Clock className="h-4 w-4 text-[#8b8b90]" strokeWidth={1.75} aria-hidden />
-        <span className="text-sm font-bold tabular-nums leading-none text-[#1010a3]">
-          {formatTime(dateStr, locale)}
+        <span className="text-[11px] font-bold tabular-nums leading-none text-[#1010a3] sm:text-sm">
+          {timeLabel}
         </span>
       </div>
     </div>

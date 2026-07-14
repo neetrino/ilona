@@ -44,6 +44,23 @@ export function formatAppTimeHHmm(date: Date | string): string {
   return getZonedParts(d).timeHHmm;
 }
 
+/** Lesson start–end range (`HH:mm–HH:mm`) in app timezone. */
+export function formatAppTimeRange(
+  start: Date | string,
+  durationMinutes: number | null | undefined,
+): string {
+  const startDate = typeof start === 'string' ? new Date(start) : start;
+  if (Number.isNaN(startDate.getTime())) return '--:--';
+  const startLabel = formatAppTimeHHmm(startDate);
+  const duration =
+    typeof durationMinutes === 'number' && Number.isFinite(durationMinutes) && durationMinutes > 0
+      ? durationMinutes
+      : null;
+  if (duration == null) return startLabel;
+  const endDate = new Date(startDate.getTime() + duration * 60_000);
+  return `${startLabel}–${formatAppTimeHHmm(endDate)}`;
+}
+
 /** Date + time inputs → ISO stored for lessons (app timezone wall clock). */
 export function lessonWallTimeToIso(ymd: string, timeHHmm: string): string {
   return wallTimeToUtc(ymd, timeHHmm).toISOString();

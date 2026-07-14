@@ -469,6 +469,18 @@ export function useDailyDutiesPage(mode: DailyDutiesMode) {
   const weekHeader = `${weekDates[0].toLocaleDateString('en-GB', { month: 'short', day: 'numeric' })} - ${weekDates[6].toLocaleDateString('en-GB', { month: 'short', day: 'numeric', year: 'numeric' })}`;
   const monthHeader = currentDate.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
 
+  const isTodayPeriod = useMemo(() => {
+    const today = new Date();
+    if (viewMode === 'month') {
+      return (
+        currentDate.getFullYear() === today.getFullYear() &&
+        currentDate.getMonth() === today.getMonth()
+      );
+    }
+    const todayKey = formatScheduleDate(today);
+    return weekDates.some((date) => formatScheduleDate(date) === todayKey);
+  }, [currentDate, viewMode, weekDates]);
+
   const handleSearchChange = useCallback(
     (value: string) => {
       setSearchQuery(value);
@@ -569,6 +581,7 @@ export function useDailyDutiesPage(mode: DailyDutiesMode) {
     monthHeader,
     navigatePeriod,
     goToToday,
+    isTodayPeriod,
     stats,
     searchQuery,
     selectedTeacherIds,

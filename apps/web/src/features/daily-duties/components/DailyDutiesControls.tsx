@@ -15,6 +15,8 @@ import type { DailyDutiesViewMode } from './daily-duties.types';
 interface DailyDutiesControlsProps {
   viewMode: DailyDutiesViewMode;
   periodHeader: string;
+  /** True when the visible period includes today (Today control looks selected). */
+  isTodayPeriod: boolean;
   onNavigatePeriod: (direction: 'prev' | 'next') => void;
   onGoToToday: () => void;
   onViewModeChange: (mode: DailyDutiesViewMode) => void;
@@ -24,6 +26,7 @@ interface DailyDutiesControlsProps {
 export function DailyDutiesControls({
   viewMode,
   periodHeader,
+  isTodayPeriod,
   onNavigatePeriod,
   onGoToToday,
   onViewModeChange,
@@ -60,7 +63,13 @@ export function DailyDutiesControls({
         <button
           type="button"
           onClick={onGoToToday}
-          className="h-11 min-h-11 rounded-[15px] px-3 text-sm font-medium text-blue-600 hover:bg-blue-50 sm:ml-0"
+          aria-pressed={isTodayPeriod}
+          className={cn(
+            'h-11 min-h-11 rounded-[15px] px-3 text-sm font-medium sm:ml-0',
+            isTodayPeriod
+              ? 'bg-[#1010a3] text-white shadow-sm'
+              : 'text-blue-600 hover:bg-blue-50',
+          )}
         >
           {t('today')}
         </button>
