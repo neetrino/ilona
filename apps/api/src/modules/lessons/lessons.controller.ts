@@ -96,7 +96,7 @@ export class LessonsController {
   async getUpcomingLessons(
     @CurrentUser() user: JwtPayload,
     @Query() query: GetUpcomingLessonsQueryDto,
-  ) {
+  ): Promise<unknown> {
     const teacher = await this.prisma.teacher.findUnique({
       where: { userId: user.sub },
     });
@@ -127,7 +127,10 @@ export class LessonsController {
 
   @Get('statistics')
   @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.TEACHER)
-  async getStatistics(@CurrentUser() user: JwtPayload, @Query() query: QueryLessonDto) {
+  async getStatistics(
+    @CurrentUser() user: JwtPayload,
+    @Query() query: QueryLessonDto,
+  ): Promise<unknown> {
     let teacherId: string | undefined;
     let managerCenterId: string | undefined;
 
@@ -253,13 +256,16 @@ export class LessonsController {
     @Param('id') id: string,
     @Body() dto: UpdateLessonDto,
     @CurrentUser() user?: JwtPayload,
-  ) {
+  ): Promise<unknown> {
     return this.lessonsService.update(id, dto, user?.sub, user?.role);
   }
 
   @Patch(':id/start')
   @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.TEACHER)
-  async startLesson(@Param('id') id: string, @CurrentUser() user: JwtPayload) {
+  async startLesson(
+    @Param('id') id: string,
+    @CurrentUser() user: JwtPayload,
+  ): Promise<unknown> {
     return this.lessonsService.startLesson(id, user.sub, user.role);
   }
 
@@ -275,43 +281,59 @@ export class LessonsController {
 
   @Patch(':id/cancel')
   @Roles(UserRole.ADMIN, UserRole.MANAGER)
-  async cancelLesson(@Param('id') id: string, @Body('reason') reason?: string, @CurrentUser() user?: JwtPayload) {
+  async cancelLesson(
+    @Param('id') id: string,
+    @Body('reason') reason?: string,
+    @CurrentUser() user?: JwtPayload,
+  ): Promise<unknown> {
     return this.lessonsService.cancelLesson(id, reason, user?.sub, user?.role);
   }
 
   @Patch(':id/vocabulary-sent')
   @Roles(UserRole.TEACHER)
-  async markVocabularySent(@Param('id') id: string) {
+  async markVocabularySent(@Param('id') id: string): Promise<unknown> {
     return this.lessonsService.markVocabularySent(id);
   }
 
   @Patch(':id/absence-complete')
   @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.TEACHER)
-  async markAbsenceComplete(@Param('id') id: string, @CurrentUser() user?: JwtPayload) {
+  async markAbsenceComplete(
+    @Param('id') id: string,
+    @CurrentUser() user?: JwtPayload,
+  ): Promise<unknown> {
     return this.lessonsService.markAbsenceComplete(id, user?.sub, user?.role);
   }
 
   @Patch(':id/voice-sent')
   @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.TEACHER)
-  async markVoiceSent(@Param('id') id: string, @CurrentUser() user?: JwtPayload) {
+  async markVoiceSent(
+    @Param('id') id: string,
+    @CurrentUser() user?: JwtPayload,
+  ): Promise<unknown> {
     return this.lessonsService.markVoiceSent(id, user?.sub, user?.role);
   }
 
   @Patch(':id/text-sent')
   @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.TEACHER)
-  async markTextSent(@Param('id') id: string, @CurrentUser() user?: JwtPayload) {
+  async markTextSent(
+    @Param('id') id: string,
+    @CurrentUser() user?: JwtPayload,
+  ): Promise<unknown> {
     return this.lessonsService.markTextSent(id, user?.sub, user?.role);
   }
 
   @Delete('bulk')
   @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.TEACHER)
-  async deleteBulk(@Body() body: { lessonIds: string[] }, @CurrentUser() user?: JwtPayload) {
+  async deleteBulk(
+    @Body() body: { lessonIds: string[] },
+    @CurrentUser() user?: JwtPayload,
+  ): Promise<unknown> {
     return this.lessonsService.deleteBulk(body.lessonIds, user?.sub, user?.role);
   }
 
   @Delete(':id')
   @Roles(UserRole.ADMIN, UserRole.MANAGER)
-  async delete(@Param('id') id: string, @CurrentUser() user?: JwtPayload) {
+  async delete(@Param('id') id: string, @CurrentUser() user?: JwtPayload): Promise<unknown> {
     if (user?.role === UserRole.MANAGER) {
       await this.lessonsService.findById(id, user.sub, user.role);
     }

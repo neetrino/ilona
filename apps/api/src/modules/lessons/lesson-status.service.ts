@@ -10,6 +10,12 @@ import { LessonEnrichmentService } from './lesson-enrichment.service';
 import { LessonCrudService } from './lesson-crud.service';
 import { teacherActsAsLessonInstructor } from '../../common/lesson-instructor';
 
+type LessonStatusFields = {
+  status: string;
+  teacherId: string;
+  substituteTeacherId: string | null | undefined;
+};
+
 /**
  * Service responsible for lesson status management
  */
@@ -21,8 +27,8 @@ export class LessonStatusService {
     private readonly crudService: LessonCrudService,
   ) {}
 
-  async startLesson(id: string, userId: string, userRole: UserRole) {
-    const lesson = await this.crudService.findById(id, userId, userRole);
+  async startLesson(id: string, userId: string, userRole: UserRole): Promise<unknown> {
+    const lesson = (await this.crudService.findById(id, userId, userRole)) as LessonStatusFields;
 
     // Check if teacher owns this lesson
     if (userRole === UserRole.TEACHER) {
@@ -45,8 +51,13 @@ export class LessonStatusService {
     });
   }
 
-  async completeLesson(id: string, dto: CompleteLessonDto, userId: string, userRole: UserRole): Promise<unknown> {
-    const lesson = await this.crudService.findById(id, userId, userRole);
+  async completeLesson(
+    id: string,
+    dto: CompleteLessonDto,
+    userId: string,
+    userRole: UserRole,
+  ): Promise<unknown> {
+    const lesson = (await this.crudService.findById(id, userId, userRole)) as LessonStatusFields;
 
     // Check if teacher owns this lesson
     if (userRole === UserRole.TEACHER) {
@@ -109,8 +120,13 @@ export class LessonStatusService {
     return this.enrichmentService.enrichLesson(updated);
   }
 
-  async cancelLesson(id: string, reason?: string, userId?: string, userRole?: UserRole) {
-    const lesson = await this.crudService.findById(id, userId, userRole);
+  async cancelLesson(
+    id: string,
+    reason?: string,
+    userId?: string,
+    userRole?: UserRole,
+  ): Promise<unknown> {
+    const lesson = (await this.crudService.findById(id, userId, userRole)) as LessonStatusFields;
 
     if (['COMPLETED', 'CANCELLED'].includes(lesson.status)) {
       throw new BadRequestException('Lesson cannot be cancelled');
@@ -125,8 +141,8 @@ export class LessonStatusService {
     });
   }
 
-  async markMissed(id: string) {
-    const lesson = await this.crudService.findById(id);
+  async markMissed(id: string): Promise<unknown> {
+    const lesson = (await this.crudService.findById(id)) as LessonStatusFields;
 
     if (lesson.status !== 'SCHEDULED') {
       throw new BadRequestException('Only scheduled lessons can be marked as missed');

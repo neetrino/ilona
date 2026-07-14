@@ -11,7 +11,7 @@ export class MessageQueryService {
     private readonly chatManagementService: ChatManagementService,
   ) {}
 
-  async getMessage(messageId: string) {
+  async getMessage(messageId: string): Promise<unknown> {
     return this.prisma.message.findUnique({
       where: { id: messageId },
       include: {
@@ -34,7 +34,7 @@ export class MessageQueryService {
     params?: { cursor?: string; take?: number },
     userRole?: string,
     authUser?: JwtPayload,
-  ) {
+  ): Promise<unknown> {
     await this.chatManagementService.getChatById(chatId, userId, userRole, authUser);
 
     const { cursor, take = 50 } = params || {};

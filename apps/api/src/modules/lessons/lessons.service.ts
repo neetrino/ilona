@@ -54,7 +54,7 @@ export class LessonsService {
     return this.crudService.getTodayLessons(teacherId);
   }
 
-  async getUpcoming(teacherId: string, limit = 10) {
+  async getUpcoming(teacherId: string, limit = 10): Promise<unknown> {
     return this.crudService.getUpcoming(teacherId, limit);
   }
 
@@ -66,7 +66,12 @@ export class LessonsService {
     return this.crudService.createBulk(lessons, currentUserId, userRole);
   }
 
-  async update(id: string, dto: UpdateLessonDto, userId?: string, userRole?: UserRole) {
+  async update(
+    id: string,
+    dto: UpdateLessonDto,
+    userId?: string,
+    userRole?: UserRole,
+  ): Promise<unknown> {
     return this.crudService.update(id, dto, userId, userRole);
   }
 
@@ -78,16 +83,20 @@ export class LessonsService {
     return this.crudService.setSubstituteForGroupDay(params, userId, userRole);
   }
 
-  async delete(id: string) {
+  async delete(id: string): Promise<unknown> {
     return this.crudService.delete(id);
   }
 
-  async deleteBulk(lessonIds: string[], currentUserId?: string, userRole?: UserRole) {
+  async deleteBulk(
+    lessonIds: string[],
+    currentUserId?: string,
+    userRole?: UserRole,
+  ): Promise<unknown> {
     return this.crudService.deleteBulk(lessonIds, currentUserId, userRole);
   }
 
   // Status Methods
-  async startLesson(id: string, userId: string, userRole: UserRole) {
+  async startLesson(id: string, userId: string, userRole: UserRole): Promise<unknown> {
     return this.statusService.startLesson(id, userId, userRole);
   }
 
@@ -95,28 +104,37 @@ export class LessonsService {
     return this.statusService.completeLesson(id, dto, userId, userRole);
   }
 
-  async cancelLesson(id: string, reason?: string, userId?: string, userRole?: UserRole) {
+  async cancelLesson(
+    id: string,
+    reason?: string,
+    userId?: string,
+    userRole?: UserRole,
+  ): Promise<unknown> {
     return this.statusService.cancelLesson(id, reason, userId, userRole);
   }
 
-  async markMissed(id: string) {
+  async markMissed(id: string): Promise<unknown> {
     return this.statusService.markMissed(id);
   }
 
   // Actions Methods
-  async markVocabularySent(id: string) {
+  async markVocabularySent(id: string): Promise<unknown> {
     return this.actionsService.markVocabularySent(id);
   }
 
-  async markAbsenceComplete(id: string, userId?: string, userRole?: UserRole) {
+  async markAbsenceComplete(
+    id: string,
+    userId?: string,
+    userRole?: UserRole,
+  ): Promise<unknown> {
     return this.actionsService.markAbsenceComplete(id, userId, userRole);
   }
 
-  async markVoiceSent(id: string, userId?: string, userRole?: UserRole) {
+  async markVoiceSent(id: string, userId?: string, userRole?: UserRole): Promise<unknown> {
     return this.actionsService.markVoiceSent(id, userId, userRole);
   }
 
-  async markTextSent(id: string, userId?: string, userRole?: UserRole) {
+  async markTextSent(id: string, userId?: string, userRole?: UserRole): Promise<unknown> {
     return this.actionsService.markTextSent(id, userId, userRole);
   }
 
@@ -136,7 +154,12 @@ export class LessonsService {
   }
 
   // Statistics Methods
-  async getLessonStatistics(teacherId?: string, dateFrom?: Date, dateTo?: Date, centerId?: string) {
+  async getLessonStatistics(
+    teacherId?: string,
+    dateFrom?: Date,
+    dateTo?: Date,
+    centerId?: string,
+  ): Promise<unknown> {
     return this.statisticsService.getLessonStatistics(teacherId, dateFrom, dateTo, centerId);
   }
 }

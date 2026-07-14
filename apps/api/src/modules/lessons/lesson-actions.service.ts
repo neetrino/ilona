@@ -6,6 +6,14 @@ import { UserRole } from '@ilona/database';
 import { effectiveLessonInstructorTeacherId } from '../../common/lesson-instructor';
 import { isLessonAbsenceChecklistComplete } from '../attendance/attendance-absence-completion.util';
 
+type LessonActionFields = {
+  voiceSent?: boolean;
+  textSent?: boolean;
+  scheduledAt?: Date | string | null;
+  teacherId: string;
+  substituteTeacherId: string | null | undefined;
+};
+
 /**
  * Service responsible for lesson action completion
  */
@@ -18,7 +26,7 @@ export class LessonActionsService {
     private readonly crudService: LessonCrudService,
   ) {}
 
-  async markVocabularySent(id: string) {
+  async markVocabularySent(id: string): Promise<unknown> {
     // Verify lesson exists
     await this.crudService.findById(id);
 
@@ -31,7 +39,11 @@ export class LessonActionsService {
     });
   }
 
-  async markAbsenceComplete(id: string, userId?: string, userRole?: UserRole) {
+  async markAbsenceComplete(
+    id: string,
+    userId?: string,
+    userRole?: UserRole,
+  ): Promise<unknown> {
     // Verify lesson exists and get lesson data
     await this.crudService.findById(id, userId, userRole);
 
@@ -85,9 +97,9 @@ export class LessonActionsService {
     return updated;
   }
 
-  async markVoiceSent(id: string, userId?: string, userRole?: UserRole) {
+  async markVoiceSent(id: string, userId?: string, userRole?: UserRole): Promise<unknown> {
     // Verify lesson exists and get lesson data
-    const lesson = await this.crudService.findById(id, userId, userRole);
+    const lesson = (await this.crudService.findById(id, userId, userRole)) as LessonActionFields;
 
     const wasAlreadySent = lesson.voiceSent;
     const updated = await this.prisma.lesson.update({
@@ -112,9 +124,9 @@ export class LessonActionsService {
     return updated;
   }
 
-  async markTextSent(id: string, userId?: string, userRole?: UserRole) {
+  async markTextSent(id: string, userId?: string, userRole?: UserRole): Promise<unknown> {
     // Verify lesson exists and get lesson data
-    const lesson = await this.crudService.findById(id, userId, userRole);
+    const lesson = (await this.crudService.findById(id, userId, userRole)) as LessonActionFields;
 
     const wasAlreadySent = lesson.textSent;
     const updated = await this.prisma.lesson.update({

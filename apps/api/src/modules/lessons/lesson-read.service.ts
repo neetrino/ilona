@@ -13,7 +13,7 @@ export class LessonReadService {
     private readonly managerAccessService: LessonManagerAccessService,
   ) {}
 
-  async findById(id: string, currentUserId?: string, userRole?: UserRole) {
+  async findById(id: string, currentUserId?: string, userRole?: UserRole): Promise<unknown> {
     const managerCenterId = await this.managerAccessService.getManagerCenterId(
       currentUserId,
       userRole,

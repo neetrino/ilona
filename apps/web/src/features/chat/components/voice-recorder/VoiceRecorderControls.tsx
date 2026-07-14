@@ -40,7 +40,7 @@ export function VoiceRecorderControls({
 
   return (
     <div className={cn('border-t bg-white p-4', ui.border)}>
-      <div className="flex items-center gap-3">
+      <div className="flex min-w-0 items-center gap-3">
         {!isRecording && !recordedBlob && (
           <button
             type="button"
@@ -98,22 +98,23 @@ export function VoiceRecorderControls({
         )}
 
         {recordedBlob && !isRecording && (
-          <>
-            <div className="flex-1 flex items-center gap-3">
+          <div className="flex min-w-0 w-full flex-1 flex-col gap-3 sm:flex-row sm:items-center">
+            <div className="flex min-w-0 flex-1 items-center gap-2">
               {previewUrl && (
                 <audio
                   src={previewUrl}
                   controls
                   playsInline
                   preload="metadata"
-                  className="flex-1 h-10"
-                  style={{ minWidth: '200px' }}
+                  className="h-10 min-w-0 w-full max-w-full flex-1"
                   onError={() => setError(tChat('previewPlaybackFailed'))}
                 />
               )}
-              <span className={cn('text-sm', ui.body)}>{formatDuration(durationSec)}</span>
+              <span className={cn('flex-shrink-0 text-sm', ui.body)}>
+                {formatDuration(durationSec)}
+              </span>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-shrink-0 items-center justify-end gap-2">
               <button
                 type="button"
                 onClick={onCancel}
@@ -140,7 +141,7 @@ export function VoiceRecorderControls({
                 {isSending ? tChat('sending') : tChat('send')}
               </button>
             </div>
-          </>
+          </div>
         )}
       </div>
 

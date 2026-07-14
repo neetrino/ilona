@@ -12,7 +12,7 @@ export class FeedbackService {
     private readonly writeService: FeedbackWriteService,
   ) {}
 
-  getByLesson(lessonId: string) {
+  getByLesson(lessonId: string): Promise<unknown> {
     return this.queryService.getByLesson(lessonId);
   }
 
@@ -25,19 +25,28 @@ export class FeedbackService {
       dateTo?: Date;
       teacherId?: string;
     },
-  ) {
+  ): Promise<unknown> {
     return this.queryService.getByStudent(studentId, userId, userRole, params);
   }
 
-  createOrUpdate(dto: CreateFeedbackDto, userId: string, userRole: UserRole) {
+  createOrUpdate(
+    dto: CreateFeedbackDto,
+    userId: string,
+    userRole: UserRole,
+  ): Promise<unknown> {
     return this.writeService.createOrUpdate(dto, userId, userRole);
   }
 
-  update(id: string, dto: UpdateFeedbackDto, userId: string, userRole: UserRole) {
+  update(
+    id: string,
+    dto: UpdateFeedbackDto,
+    userId: string,
+    userRole: UserRole,
+  ): Promise<unknown> {
     return this.writeService.update(id, dto, userId, userRole);
   }
 
-  delete(id: string, userId: string, userRole: UserRole) {
+  delete(id: string, userId: string, userRole: UserRole): Promise<unknown> {
     return this.writeService.delete(id, userId, userRole);
   }
 }

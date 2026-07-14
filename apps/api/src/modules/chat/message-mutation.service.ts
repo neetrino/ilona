@@ -33,7 +33,7 @@ export class MessageMutationService {
     dto: UpdateMessageDto,
     userId: string,
     authUser?: JwtPayload,
-  ) {
+  ): Promise<unknown> {
     const message = await this.prisma.message.findUnique({ where: { id: messageId } });
 
     if (!message) {
@@ -72,7 +72,7 @@ export class MessageMutationService {
     return mapMessageWithSender(updated);
   }
 
-  async deleteMessage(messageId: string, userId: string, authUser?: JwtPayload) {
+  async deleteMessage(messageId: string, userId: string, authUser?: JwtPayload): Promise<unknown> {
     const message = await this.prisma.message.findUnique({ where: { id: messageId } });
 
     if (!message) {
@@ -131,7 +131,11 @@ export class MessageMutationService {
     return { success: true };
   }
 
-  async sendVocabularyMessage(chatId: string, teacherId: string, vocabularyWords: string[]) {
+  async sendVocabularyMessage(
+    chatId: string,
+    teacherId: string,
+    vocabularyWords: string[],
+  ): Promise<unknown> {
     if (!teacherId || teacherId.trim() === '') {
       this.logger.error('[sendVocabularyMessage] teacherId is missing or empty', { chatId });
       throw new BadRequestException('Teacher ID is required');
