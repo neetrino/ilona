@@ -4,10 +4,10 @@ import { useMemo } from 'react';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 import { formatPhoneForDisplay } from '@/shared/lib/utils';
-import { Badge } from '@/shared/components/ui/badge';
 import { getInitials } from '@/shared/components/ui/avatar';
 import { formatChatListPreview } from '../../utils';
 import { OnlineStatusDot } from '../OnlineStatusDot';
+import { ChatUnreadBadge } from '../ChatUnreadBadge';
 import {
   ADMIN_CHAT_LIST_ITEM_SUBTITLE_CLASS,
   ADMIN_CHAT_LIST_ITEM_TITLE_CLASS,
@@ -84,14 +84,10 @@ export function AdminChatListStudentItems({
             <div className="min-w-0 flex-1">
               <div className="flex items-center justify-between gap-2">
                 <h3 className={ADMIN_CHAT_LIST_ITEM_TITLE_CLASS}>{student.name}</h3>
-                {unread > 0 && (
-                  <Badge
-                    variant="error"
-                    className="flex h-5 min-w-[20px] flex-shrink-0 items-center justify-center px-1.5"
-                  >
-                    {unread}
-                  </Badge>
-                )}
+                <ChatUnreadBadge
+                  count={unread}
+                  label={tChat('unreadCount', { count: unread })}
+                />
               </div>
               <p className={ADMIN_CHAT_LIST_ITEM_SUBTITLE_CLASS}>
                 {formatChatListPreview({

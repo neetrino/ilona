@@ -18,6 +18,7 @@ import { formatChatListTime, sortChatListItems } from '../utils/chat-utils';
 import Image from 'next/image';
 import { formatDisplayName, getInitials, getInitialsFromParts } from '@/shared/components/ui/avatar';
 import { OnlineStatusDot } from './OnlineStatusDot';
+import { ChatUnreadBadge } from './ChatUnreadBadge';
 
 type ListItem =
   | { type: 'chat'; chat: Chat }
@@ -338,16 +339,11 @@ export function StudentChatList({ onSelectChat }: StudentChatListProps) {
                           currentUserId: user?.id,
                         })}
                       </p>
-                      {hasUnread && (
-                        <span
-                          className={cn(
-                            'ml-2 flex h-5 min-w-[1.25rem] flex-shrink-0 items-center justify-center rounded-full px-1.5 text-xs',
-                            ui.unreadBadge,
-                          )}
-                        >
-                          {chat.unreadCount}
-                        </span>
-                      )}
+                      <ChatUnreadBadge
+                        count={chat.unreadCount || 0}
+                        className="ml-2"
+                        label={tChat('unreadCount', { count: chat.unreadCount || 0 })}
+                      />
                     </div>
                   </div>
                 </button>

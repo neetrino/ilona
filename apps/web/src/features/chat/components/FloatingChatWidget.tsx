@@ -105,14 +105,7 @@ export function FloatingChatWidget() {
         {totalUnread > 0 && (
           <span
             className={cn(
-              'absolute -top-1 -right-1',
-              'min-w-[20px] h-5 px-1.5',
-              isPortalShell ? 'bg-[#ff2e23] text-white' : 'bg-red-500 text-white',
-              'text-xs font-semibold',
-              'rounded-full',
-              'flex items-center justify-center',
-              'border-2 border-white',
-              'shadow-sm'
+              'absolute -right-1 -top-1 flex h-5 min-w-[20px] items-center justify-center rounded-full border-2 border-white bg-[#1010a3] px-1.5 text-xs font-semibold text-white shadow-sm',
             )}
           >
             {totalUnread > 99 ? '99+' : totalUnread}

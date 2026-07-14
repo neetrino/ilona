@@ -5,6 +5,7 @@ import { useAuthStore } from '@/features/auth/store/auth.store';
 import { cn } from '@/shared/lib/utils';
 import { formatChatListPreview } from '../../utils';
 import { getGroupIconComponent } from '@/features/groups';
+import { ChatUnreadBadge } from '../ChatUnreadBadge';
 import type { TeacherChatListViewModel } from './teacher-chat-list.types';
 
 interface TeacherChatListGroupItemsProps {
@@ -85,11 +86,11 @@ export function TeacherChatListGroupItems({
                       currentUserId,
                     })}
                   </p>
-                  {unread > 0 && (
-                    <span className="ml-2 flex h-5 min-w-[1.25rem] flex-shrink-0 items-center justify-center rounded-full bg-primary px-1.5 text-xs text-primary-foreground">
-                      {unread}
-                    </span>
-                  )}
+                  <ChatUnreadBadge
+                    count={unread}
+                    className="ml-2"
+                    label={tChat('unreadCount', { count: unread })}
+                  />
                 </div>
                 <p className="mt-1 text-xs text-slate-400">{tChat('groupChatLabel')}</p>
               </div>
@@ -100,10 +101,7 @@ export function TeacherChatListGroupItems({
         const group = item.group;
         const isActive = activeChat?.groupId === group.id;
         const unread = Math.max(0, Number(group.unreadCount) || 0);
-        const total = Math.max(0, Number(group.messageCount) || 0);
         const hasUnread = unread > 0;
-        const showBadge = hasUnread;
-        const count = hasUnread ? unread : total;
         const GroupListIcon = getGroupIconComponent(group.iconKey);
 
         return (
@@ -163,14 +161,11 @@ export function TeacherChatListGroupItems({
                     currentUserId,
                   })}
                 </p>
-                {showBadge && (
-                  <span
-                    className="ml-1 flex h-5 min-w-[1.25rem] flex-shrink-0 items-center justify-center rounded-full bg-primary px-1.5 text-center text-xs text-primary-foreground"
-                    aria-label={tChat('unreadCount', { count })}
-                  >
-                    {count}
-                  </span>
-                )}
+                <ChatUnreadBadge
+                  count={unread}
+                  className="ml-1"
+                  label={tChat('unreadCount', { count: unread })}
+                />
               </div>
               <p className="mt-0.5 text-xs text-slate-400">
                 {group.level

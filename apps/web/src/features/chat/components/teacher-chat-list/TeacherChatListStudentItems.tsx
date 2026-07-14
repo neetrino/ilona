@@ -6,6 +6,7 @@ import { cn } from '@/shared/lib/utils';
 import { formatDisplayName, getInitialsFromParts } from '@/shared/components/ui/avatar';
 import { formatChatListPreview } from '../../utils';
 import { OnlineStatusDot } from '../OnlineStatusDot';
+import { ChatUnreadBadge } from '../ChatUnreadBadge';
 import type { TeacherChatListViewModel } from './teacher-chat-list.types';
 
 interface TeacherChatListStudentItemsProps {
@@ -101,11 +102,11 @@ export function TeacherChatListStudentItems({
                           : undefined,
                       })}
                     </p>
-                    {hasUnread && (
-                      <span className="ml-2 flex h-5 min-w-[1.25rem] flex-shrink-0 items-center justify-center rounded-full bg-primary px-1.5 text-xs text-primary-foreground">
-                        {student.unreadCount}
-                      </span>
-                    )}
+                    <ChatUnreadBadge
+                      count={student.unreadCount || 0}
+                      className="ml-2"
+                      label={tChat('unreadCount', { count: student.unreadCount || 0 })}
+                    />
                   </>
                 ) : (
                   <p className="text-sm italic text-slate-500">{tChat('clickToStartConversation')}</p>

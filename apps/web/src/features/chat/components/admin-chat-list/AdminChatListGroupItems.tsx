@@ -3,10 +3,10 @@
 import { useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import { useAuthStore } from '@/features/auth/store/auth.store';
-import { Badge } from '@/shared/components/ui/badge';
 import { getInitials } from '@/shared/components/ui/avatar';
 import { getGroupIconComponent } from '@/features/groups';
 import { formatChatListPreview } from '../../utils';
+import { ChatUnreadBadge } from '../ChatUnreadBadge';
 import {
   ADMIN_CHAT_LIST_ITEM_SUBTITLE_CLASS,
   ADMIN_CHAT_LIST_ITEM_TITLE_CLASS,
@@ -70,14 +70,10 @@ export function AdminChatListGroupItems({
                   <h3 className={ADMIN_CHAT_LIST_ITEM_TITLE_CLASS}>
                     {chat.name || tChat('groupChatLabel')}
                   </h3>
-                  {unread > 0 && (
-                    <Badge
-                      variant="error"
-                      className="flex h-5 min-w-[20px] flex-shrink-0 items-center justify-center px-1.5"
-                    >
-                      {unread}
-                    </Badge>
-                  )}
+                  <ChatUnreadBadge
+                    count={unread}
+                    label={tChat('unreadCount', { count: unread })}
+                  />
                 </div>
                 <p className={ADMIN_CHAT_LIST_ITEM_SUBTITLE_CLASS}>
                   {formatChatListPreview({
@@ -120,14 +116,10 @@ export function AdminChatListGroupItems({
             <div className="min-w-0 flex-1">
               <div className="flex items-center justify-between gap-2">
                 <h3 className={ADMIN_CHAT_LIST_ITEM_TITLE_CLASS}>{group.name}</h3>
-                {unread > 0 && (
-                  <Badge
-                    variant="error"
-                    className="flex h-5 min-w-[20px] flex-shrink-0 items-center justify-center px-1.5"
-                  >
-                    {unread}
-                  </Badge>
-                )}
+                <ChatUnreadBadge
+                  count={unread}
+                  label={tChat('unreadCount', { count: unread })}
+                />
               </div>
               <p className={ADMIN_CHAT_LIST_ITEM_SUBTITLE_CLASS}>
                 {formatChatListPreview({

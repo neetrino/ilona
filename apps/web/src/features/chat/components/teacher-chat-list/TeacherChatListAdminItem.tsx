@@ -7,6 +7,7 @@ import { cn } from '@/shared/lib/utils';
 import { getFullApiUrl } from '@/shared/lib/api-url-utils';
 import { resolveChatAvatarUrl } from '../../utils/chat-avatar';
 import { formatChatListPreview } from '../../utils';
+import { ChatUnreadBadge } from '../ChatUnreadBadge';
 import type { TeacherChatListViewModel } from './teacher-chat-list.types';
 
 interface TeacherChatListAdminItemProps {
@@ -98,11 +99,11 @@ export function TeacherChatListAdminItem({
                         : undefined,
                   })}
                 </p>
-                {(admin.unreadCount || 0) > 0 && (
-                  <span className="ml-2 flex h-5 min-w-[1.25rem] flex-shrink-0 items-center justify-center rounded-full bg-primary px-1.5 text-xs text-primary-foreground">
-                    {admin.unreadCount}
-                  </span>
-                )}
+                <ChatUnreadBadge
+                  count={admin.unreadCount || 0}
+                  className="ml-2"
+                  label={tChat('unreadCount', { count: admin.unreadCount || 0 })}
+                />
               </>
             ) : (
               <p className="text-sm italic text-slate-500">{tChat('clickToStartConversation')}</p>

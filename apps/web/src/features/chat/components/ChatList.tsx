@@ -15,6 +15,7 @@ import { resolveChatAvatarUrl } from '../utils/chat-avatar';
 import { formatChatListTime, sortChatListItems } from '../utils/chat-utils';
 import Image from 'next/image';
 import { OnlineStatusDot } from './OnlineStatusDot';
+import { ChatUnreadBadge } from './ChatUnreadBadge';
 
 interface ChatListProps {
   onSelectChat: (chat: Chat) => void;
@@ -253,11 +254,11 @@ export function ChatList({ onSelectChat }: ChatListProps) {
                         currentUserId: user?.id,
                       })}
                     </p>
-                    {hasUnread && (
-                      <span className="ml-2 flex h-5 min-w-[1.25rem] flex-shrink-0 items-center justify-center rounded-full bg-primary px-1.5 text-xs text-primary-foreground">
-                        {chat.unreadCount}
-                      </span>
-                    )}
+                    <ChatUnreadBadge
+                      count={chat.unreadCount || 0}
+                      className="ml-2"
+                      label={tChat('unreadCount', { count: chat.unreadCount || 0 })}
+                    />
                   </div>
                 </div>
               </button>
