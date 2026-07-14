@@ -21,11 +21,34 @@ for (const path of possibleRootPaths) {
   }
 }
 
-if (envPath) {
-  config({ path: envPath });
-} else {
-  config({ path: resolve(process.cwd(), '.env') });
+function stripWrappingQuotes(value: string): string {
+  const trimmed = value.trim();
+  if (
+    (trimmed.startsWith('"') && trimmed.endsWith('"')) ||
+    (trimmed.startsWith("'") && trimmed.endsWith("'"))
+  ) {
+    return trimmed.slice(1, -1);
+  }
+  return trimmed;
 }
+
+/** Cursor/shell can leave literal quotes in process.env; .env file must win. */
+function sanitizeQuotedEnvValues(): void {
+  for (const [key, value] of Object.entries(process.env)) {
+    if (typeof value !== 'string') continue;
+    const cleaned = stripWrappingQuotes(value);
+    if (cleaned !== value) {
+      process.env[key] = cleaned;
+    }
+  }
+}
+
+if (envPath) {
+  config({ path: envPath, override: true });
+} else {
+  config({ path: resolve(process.cwd(), '.env'), override: true });
+}
+sanitizeQuotedEnvValues();
 
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe, RequestMethod, Logger } from '@nestjs/common';

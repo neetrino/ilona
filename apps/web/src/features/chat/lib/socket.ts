@@ -15,9 +15,24 @@ const disconnectHandlers = new Set<() => void>();
 const errorHandlers = new Set<(error: Error) => void>();
 let tokenExpiredHandler: (() => Promise<string | null>) | null = null;
 
+function stripWrappingQuotes(value: string): string {
+  const trimmed = value.trim();
+  if (
+    (trimmed.startsWith('"') && trimmed.endsWith('"')) ||
+    (trimmed.startsWith("'") && trimmed.endsWith("'"))
+  ) {
+    return trimmed.slice(1, -1);
+  }
+  return trimmed;
+}
+
 function getWebSocketUrl(): string {
-  if (process.env.NEXT_PUBLIC_API_URL) {
-    return process.env.NEXT_PUBLIC_API_URL.replace('/api', '');
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL
+    ? stripWrappingQuotes(process.env.NEXT_PUBLIC_API_URL)
+    : '';
+
+  if (apiUrl) {
+    return apiUrl.replace(/\/api\/?$/, '');
   }
 
   if (typeof window !== 'undefined') {
