@@ -12,7 +12,7 @@ import { Request, Response } from 'express';
 /**
  * Global exception filter. In production, responses must NOT include stack traces
  * or sensitive internal details (security requirement 3.2, 3.2a).
- * Uses ConfigService so NODE_ENV is read from the same source as the rest of the app (.env.local / env).
+ * Uses ConfigService so NODE_ENV is read from the same source as the rest of the app (.env / process env).
  */
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {

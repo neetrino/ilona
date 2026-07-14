@@ -4,7 +4,7 @@
  * Production diverged: an older `add_teacher_centers` migration was already
  * applied directly, so running the un-applied Phase 0 migration verbatim would
  * crash on existing objects. This script:
- *   1. Loads .env.local (DATABASE_URL).
+ *   1. Loads .env (DATABASE_URL).
  *   2. Executes `reconcile-phase0-schema.sql` (idempotent DDL).
  *   3. Marks the three local-only migrations as APPLIED in `_prisma_migrations`
  *      so future `prisma migrate deploy` calls succeed cleanly.
@@ -19,6 +19,9 @@ import { createHash, randomUUID } from 'crypto';
 import { PrismaClient } from '../src/generated/client';
 
 const possibleEnvPaths = [
+  resolve(process.cwd(), '.env'),
+  resolve(process.cwd(), '../../.env'),
+  resolve(__dirname, '../../../.env'),
   resolve(process.cwd(), '.env.local'),
   resolve(process.cwd(), '../../.env.local'),
   resolve(__dirname, '../../../.env.local'),
@@ -29,8 +32,6 @@ for (const p of possibleEnvPaths) {
     break;
   }
 }
-config({ path: resolve(process.cwd(), '.env') });
-
 const MIGRATIONS_DIR = resolve(__dirname, '../prisma/migrations');
 const SQL_FILE = resolve(__dirname, 'reconcile-phase0-schema.sql');
 

@@ -1,5 +1,8 @@
-# Load environment variables from .env.local
-$envFile = Get-Content .env.local -ErrorAction SilentlyContinue
+# Load environment variables from .env (fallback: .env.local)
+$envFile = Get-Content .env -ErrorAction SilentlyContinue
+if (-not $envFile) {
+    $envFile = Get-Content .env.local -ErrorAction SilentlyContinue
+}
 if ($envFile) {
     foreach ($line in $envFile) {
         if ($line -match '^([^=]+)=(.*)$') {
@@ -22,7 +25,7 @@ if ($env:DATABASE_URL) {
         Write-Host "📝 Next: Run 'pnpm db:generate' to regenerate Prisma Client"
     }
 } else {
-    Write-Host "❌ DATABASE_URL not found in .env.local"
+    Write-Host "❌ DATABASE_URL not found in .env"
     exit 1
 }
 

@@ -4,11 +4,13 @@ import { config as loadEnv } from 'dotenv';
 // Minimal Node env type so build works when devDependencies (e.g. @types/node) are not installed (e.g. Render NODE_ENV=production)
 declare const process: { env: Record<string, string | undefined> };
 
-// Load .env.local / .env when DATABASE_URL is not set (e.g. local dev or scripts). Production (Render) sets env vars, so this is a no-op.
+// Load .env when DATABASE_URL is not set (local dev / scripts). Production sets env vars, so this is a no-op.
 if (typeof process !== 'undefined' && !process.env.DATABASE_URL) {
   loadEnv(); // .env from cwd
-  loadEnv({ path: '.env.local' });
-  loadEnv({ path: '../../.env.local' }); // repo root when cwd is packages/database
+  loadEnv({ path: '.env' });
+  loadEnv({ path: '../../.env' }); // repo root when cwd is packages/database
+  loadEnv({ path: '.env.local' }); // fallback
+  loadEnv({ path: '../../.env.local' });
 }
 
 // PrismaClient singleton

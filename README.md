@@ -21,8 +21,8 @@ cd ilona-english-center
 pnpm install
 
 # Setup environment variables
-cp .env.example .env.local
-# Edit .env.local with your values
+cp .env.example .env
+# Edit .env with your values
 
 # Generate Prisma client
 pnpm db:generate

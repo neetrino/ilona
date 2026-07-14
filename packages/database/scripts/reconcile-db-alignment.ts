@@ -11,6 +11,9 @@ const prisma = new PrismaClient();
 
 function loadEnv(): void {
   const candidates = [
+    resolve(process.cwd(), '.env'),
+    resolve(process.cwd(), '../../.env'),
+    resolve(__dirname, '../../../.env'),
     resolve(process.cwd(), '.env.local'),
     resolve(process.cwd(), '../../.env.local'),
     resolve(__dirname, '../../../.env.local'),

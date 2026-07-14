@@ -3,15 +3,16 @@ import { config } from 'dotenv';
 import { resolve } from 'path';
 import { existsSync } from 'fs';
 
-// Load .env.local from project root
-// Try multiple paths to handle different execution contexts (dev, build, etc.)
+// Load .env from project root (.env.local only as fallback if .env is missing)
 const possibleRootPaths = [
-  resolve(process.cwd(), '.env.local'),           // If running from root
-  resolve(process.cwd(), '../../.env.local'),    // If running from apps/api
-  resolve(__dirname, '../../../.env.local'),     // If running from dist
+  resolve(process.cwd(), '.env'),
+  resolve(process.cwd(), '../../.env'),
+  resolve(__dirname, '../../../.env'),
+  resolve(process.cwd(), '.env.local'),
+  resolve(process.cwd(), '../../.env.local'),
+  resolve(__dirname, '../../../.env.local'),
 ];
 
-// Find the first existing .env.local file
 let envPath: string | undefined;
 for (const path of possibleRootPaths) {
   if (existsSync(path)) {
@@ -22,14 +23,7 @@ for (const path of possibleRootPaths) {
 
 if (envPath) {
   config({ path: envPath });
-  // Also try .env as fallback
-  const envFallback = envPath.replace('.env.local', '.env');
-  if (existsSync(envFallback)) {
-    config({ path: envFallback });
-  }
 } else {
-  // Fallback: try loading from current working directory
-  config({ path: resolve(process.cwd(), '.env.local') });
   config({ path: resolve(process.cwd(), '.env') });
 }
 
@@ -104,7 +98,7 @@ async function bootstrap() {
   app.enableCors(corsOptions);
 
   // Production: do not expose stack traces or sensitive data in error responses (security 3.2, 3.2a)
-  // Registered in AppModule via APP_FILTER; uses ConfigService (same env as .env.local)
+  // Registered in AppModule via APP_FILTER; uses ConfigService (same env as .env)
 
   // Enable shutdown hooks to ensure Prisma disconnects properly
   app.enableShutdownHooks();

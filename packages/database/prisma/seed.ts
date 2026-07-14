@@ -4,8 +4,11 @@ import { resolve } from 'path';
 import { existsSync } from 'fs';
 import { PrismaClient } from '../src/generated/client';
 
-// Load .env.local from project root (same as other scripts)
+// Load .env from project root (fallback: .env.local)
 const possibleEnvPaths = [
+  resolve(process.cwd(), '.env'),
+  resolve(process.cwd(), '../../.env'),
+  resolve(__dirname, '../../../.env'),
   resolve(process.cwd(), '.env.local'),
   resolve(process.cwd(), '../../.env.local'),
   resolve(__dirname, '../../../.env.local'),
@@ -16,8 +19,6 @@ for (const p of possibleEnvPaths) {
     break;
   }
 }
-config({ path: resolve(process.cwd(), '.env') });
-
 const prisma = new PrismaClient();
 
 async function main() {

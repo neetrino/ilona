@@ -3,45 +3,14 @@
  * This script applies the migration SQL directly to the database
  */
 
-// Load environment variables from .env.local
-const path = require('path');
-const fs = require('fs');
+const { loadRootEnv } = require('./load-root-env.cjs');
 
-// Try to load .env.local or .env from root directory
-const rootDir = path.join(__dirname, '../..');
-const envPaths = [
-  path.join(rootDir, '.env.local'),
-  path.join(rootDir, '.env'),
-];
-
-for (const envPath of envPaths) {
-  if (fs.existsSync(envPath)) {
-    console.log(`Loading environment from: ${envPath}`);
-    const envContent = fs.readFileSync(envPath, 'utf-8');
-    envContent.split('\n').forEach((line) => {
-      const trimmedLine = line.trim();
-      // Skip comments and empty lines
-      if (trimmedLine && !trimmedLine.startsWith('#')) {
-        const match = trimmedLine.match(/^([^=]+)=(.*)$/);
-        if (match) {
-          const key = match[1].trim();
-          let value = match[2].trim();
-          // Remove quotes if present
-          value = value.replace(/^["']|["']$/g, '');
-          if (!process.env[key]) {
-            process.env[key] = value;
-          }
-        }
-      }
-    });
-    break; // Use first found file
-  }
-}
+loadRootEnv();
 
 // Check if DATABASE_URL is set
 if (!process.env.DATABASE_URL) {
   console.error('❌ Error: DATABASE_URL environment variable is not set.');
-  console.error('Please set DATABASE_URL in your .env.local or .env file, or export it in your shell.');
+  console.error('Please set DATABASE_URL in your .env file, or export it in your shell.');
   console.error('\nAlternatively, you can run the SQL migration directly:');
   console.error('  psql $DATABASE_URL -f packages/database/prisma/migrations/apply_color_hex_migration.sql');
   process.exit(1);
