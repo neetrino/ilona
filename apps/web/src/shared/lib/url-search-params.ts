@@ -76,7 +76,6 @@ export function replaceAppSearchUrl({
   const currentUrl = getBrowserUrl();
 
   if (currentUrl === nextUrl) {
-    onReplaced?.();
     return false;
   }
 
@@ -113,7 +112,6 @@ export function replaceAppSearchParams({
   const currentUrl = getBrowserUrl();
 
   if (currentUrl === nextUrl) {
-    onReplaced?.();
     return false;
   }
 
