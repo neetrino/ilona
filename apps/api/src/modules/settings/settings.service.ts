@@ -15,35 +15,38 @@ export class SettingsService {
     private readonly penaltiesService: SettingsPenaltiesService,
   ) {}
 
-  getSystemSettings() {
+  getSystemSettings(): Promise<unknown> {
     return this.coreService.getSystemSettings();
   }
 
-  updateLogoUrl(logoUrl: string | null) {
+  updateLogoUrl(logoUrl: string | null): Promise<unknown> {
     return this.brandingService.updateLogoUrl(logoUrl);
   }
 
-  getLogoKey() {
+  getLogoKey(): Promise<unknown> {
     return this.brandingService.getLogoKey();
   }
 
-  updateLogoKey(logoKey: string | null) {
+  updateLogoKey(logoKey: string | null): Promise<unknown> {
     return this.brandingService.updateLogoKey(logoKey);
   }
 
-  getDashboardBannerKey() {
+  getDashboardBannerKey(): Promise<unknown> {
     return this.brandingService.getDashboardBannerKey();
   }
 
-  updateDashboardBannerKey(dashboardBannerKey: string | null) {
+  updateDashboardBannerKey(dashboardBannerKey: string | null): Promise<unknown> {
     return this.brandingService.updateDashboardBannerKey(dashboardBannerKey);
   }
 
-  getDashboardBannerText() {
+  getDashboardBannerText(): Promise<unknown> {
     return this.brandingService.getDashboardBannerText();
   }
 
-  updateDashboardBannerText(input: { title?: string | null; subtitle?: string | null }) {
+  updateDashboardBannerText(input: {
+    title?: string | null;
+    subtitle?: string | null;
+  }): Promise<unknown> {
     return this.brandingService.updateDashboardBannerText(input);
   }
 
@@ -51,11 +54,11 @@ export class SettingsService {
     return this.footerService.getFooterIconLinks();
   }
 
-  updateFooterIconLinks(input: Partial<Record<string, string | null>>) {
+  updateFooterIconLinks(input: Partial<Record<string, string | null>>): Promise<unknown> {
     return this.footerService.updateFooterIconLinks(input);
   }
 
-  getLogoUrl() {
+  getLogoUrl(): Promise<unknown> {
     return this.brandingService.getLogoUrl();
   }
 
@@ -63,7 +66,7 @@ export class SettingsService {
     return this.penaltiesService.getPenaltyAmounts();
   }
 
-  updatePenaltyAmounts(data: PenaltyAmountsInput) {
+  updatePenaltyAmounts(data: PenaltyAmountsInput): Promise<unknown> {
     return this.penaltiesService.updatePenaltyAmounts(data);
   }
 }

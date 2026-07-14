@@ -1,0 +1,16 @@
+import type { Prisma } from '@ilona/database';
+export declare const PER_TYPE = 8;
+export declare const DEFAULT_MAX = 28;
+export declare function userSearchOrSingleToken(token: string): Prisma.UserWhereInput['OR'];
+export declare function userWhereMatchesTokens(tokens: string[]): Prisma.UserWhereInput;
+export declare function studentTextOneToken(token: string): Prisma.StudentWhereInput;
+export declare function studentTextMatchTokens(tokens: string[]): Prisma.StudentWhereInput;
+export declare function groupNameOrDescriptionMatchTokens(tokens: string[]): Prisma.GroupWhereInput;
+export declare function crmLeadFieldsMatchTokens(tokens: string[]): Prisma.CrmLeadWhereInput;
+export declare function lessonSearchMatchTokens(tokens: string[]): Prisma.LessonWhereInput;
+export declare function paymentSearchClause(normalizedPhrase: string, tokens: string[]): Prisma.PaymentWhereInput;
+export declare function recordingSearchClause(normalizedPhrase: string, tokens: string[]): Prisma.RecordingItemWhereInput;
+export declare function teacherPipelineLeadMatchTokens(tokens: string[]): Prisma.CrmLeadWhereInput;
+export declare function lessonTopicNotesMatchTokens(tokens: string[]): Prisma.LessonWhereInput;
+export declare function studentPortalPaymentMatch(normalizedPhrase: string, tokens: string[]): Prisma.PaymentWhereInput;
+export declare function studentPortalRecordingMatch(normalizedPhrase: string, tokens: string[]): Prisma.RecordingItemWhereInput;

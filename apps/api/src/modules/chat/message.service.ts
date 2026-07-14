@@ -19,7 +19,7 @@ export class MessageService {
     private readonly recordingService: MessageRecordingService,
   ) {}
 
-  getMessage(messageId: string) {
+  getMessage(messageId: string): Promise<unknown> {
     return this.queryService.getMessage(messageId);
   }
 
@@ -29,7 +29,7 @@ export class MessageService {
     params?: { cursor?: string; take?: number },
     userRole?: string,
     authUser?: JwtPayload,
-  ) {
+  ): Promise<unknown> {
     return this.queryService.getMessages(chatId, userId, params, userRole, authUser);
   }
 
@@ -42,11 +42,16 @@ export class MessageService {
     return this.sendService.sendMessage(dto, senderId, senderRole, authUser);
   }
 
-  editMessage(messageId: string, dto: UpdateMessageDto, userId: string, authUser?: JwtPayload) {
+  editMessage(
+    messageId: string,
+    dto: UpdateMessageDto,
+    userId: string,
+    authUser?: JwtPayload,
+  ): Promise<unknown> {
     return this.mutationService.editMessage(messageId, dto, userId, authUser);
   }
 
-  deleteMessage(messageId: string, userId: string, authUser?: JwtPayload) {
+  deleteMessage(messageId: string, userId: string, authUser?: JwtPayload): Promise<unknown> {
     return this.mutationService.deleteMessage(messageId, userId, authUser);
   }
 
@@ -54,7 +59,11 @@ export class MessageService {
     return this.mutationService.markAsRead(chatId, userId, authUser);
   }
 
-  sendVocabularyMessage(chatId: string, teacherId: string, vocabularyWords: string[]) {
+  sendVocabularyMessage(
+    chatId: string,
+    teacherId: string,
+    vocabularyWords: string[],
+  ): Promise<unknown> {
     return this.mutationService.sendVocabularyMessage(chatId, teacherId, vocabularyWords);
   }
 

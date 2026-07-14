@@ -11,15 +11,15 @@ export class ChatAdminContactService {
     private readonly unreadCountService: ChatUnreadCountService,
   ) {}
 
-  getAdminForTeacher(teacherUserId: string) {
+  getAdminForTeacher(teacherUserId: string): Promise<unknown> {
     return this.getAdminForPortalUser(teacherUserId);
   }
 
-  getAdminForStudent(studentUserId: string) {
+  getAdminForStudent(studentUserId: string): Promise<unknown> {
     return this.getAdminForPortalUser(studentUserId);
   }
 
-  private async getAdminForPortalUser(portalUserId: string) {
+  private async getAdminForPortalUser(portalUserId: string): Promise<unknown> {
     const adminUser = await this.prisma.user.findFirst({
       where: {
         role: UserRole.ADMIN,

@@ -12,35 +12,35 @@ export class ChatListsService {
     private readonly adminContactService: ChatAdminContactService,
   ) {}
 
-  getAdminStudents(adminId: string, search?: string, branchCenterId?: string) {
+  getAdminStudents(adminId: string, search?: string, branchCenterId?: string): Promise<unknown> {
     return this.adminListsService.getAdminStudents(adminId, search, branchCenterId);
   }
 
-  getAdminTeachers(adminId: string, search?: string, branchCenterId?: string) {
+  getAdminTeachers(adminId: string, search?: string, branchCenterId?: string): Promise<unknown> {
     return this.adminListsService.getAdminTeachers(adminId, search, branchCenterId);
   }
 
-  getAdminGroups(adminId: string, search?: string, branchCenterId?: string) {
+  getAdminGroups(adminId: string, search?: string, branchCenterId?: string): Promise<unknown> {
     return this.adminListsService.getAdminGroups(adminId, search, branchCenterId);
   }
 
-  getAdminAllUsers(adminId: string, search?: string, branchCenterId?: string) {
+  getAdminAllUsers(adminId: string, search?: string, branchCenterId?: string): Promise<unknown> {
     return this.adminListsService.getAdminAllUsers(adminId, search, branchCenterId);
   }
 
-  getTeacherGroups(teacherUserId: string, search?: string) {
+  getTeacherGroups(teacherUserId: string, search?: string): Promise<unknown> {
     return this.teacherListsService.getTeacherGroups(teacherUserId, search);
   }
 
-  getTeacherStudents(teacherUserId: string, search?: string) {
+  getTeacherStudents(teacherUserId: string, search?: string): Promise<unknown> {
     return this.teacherListsService.getTeacherStudents(teacherUserId, search);
   }
 
-  getAdminForTeacher(teacherUserId: string) {
+  getAdminForTeacher(teacherUserId: string): Promise<unknown> {
     return this.adminContactService.getAdminForTeacher(teacherUserId);
   }
 
-  getAdminForStudent(studentUserId: string) {
+  getAdminForStudent(studentUserId: string): Promise<unknown> {
     return this.adminContactService.getAdminForStudent(studentUserId);
   }
 }

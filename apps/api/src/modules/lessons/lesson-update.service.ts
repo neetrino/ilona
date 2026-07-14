@@ -25,8 +25,19 @@ export class LessonUpdateService {
     private readonly salariesService: SalariesService,
   ) {}
 
-  async update(id: string, dto: UpdateLessonDto, userId?: string, userRole?: UserRole) {
-    const lesson = await this.readService.findById(id, userId, userRole);
+  async update(
+    id: string,
+    dto: UpdateLessonDto,
+    userId?: string,
+    userRole?: UserRole,
+  ): Promise<unknown> {
+    const lesson = (await this.readService.findById(id, userId, userRole)) as {
+      scheduledAt: Date | string;
+      duration: number;
+      status: string;
+      teacherId: string;
+      substituteTeacherId: string | null | undefined;
+    };
 
     if (userRole === UserRole.TEACHER && dto.substituteTeacherId !== undefined) {
       throw new ForbiddenException('Only administrators can assign substitute teachers');
@@ -143,7 +154,7 @@ export class LessonUpdateService {
     params: { groupId: string; date: string; substituteTeacherId: string | null },
     userId: string | undefined,
     userRole: UserRole | undefined,
-  ) {
+  ): Promise<{ updatedCount: number; lessonIds: string[] }> {
     if (userRole !== UserRole.ADMIN && userRole !== UserRole.MANAGER) {
       throw new ForbiddenException('Only administrators can assign substitute teachers');
     }

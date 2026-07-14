@@ -1,0 +1,66 @@
+import { PrismaService } from '../prisma/prisma.service';
+import { CreateFeedbackDto, UpdateFeedbackDto } from './dto';
+import { UserRole } from '@ilona/database';
+import { FeedbackCompletionService } from './feedback-completion.service';
+export declare class FeedbackWriteService {
+    private readonly prisma;
+    private readonly completionService;
+    constructor(prisma: PrismaService, completionService: FeedbackCompletionService);
+    createOrUpdate(dto: CreateFeedbackDto, userId: string, userRole: UserRole): Promise<{
+        teacherId: string;
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        content: string;
+        lessonId: string;
+        studentId: string;
+        level: import("@ilona/database").$Enums.CefrLevel | null;
+        rating: number | null;
+        strengths: string | null;
+        improvements: string | null;
+        grammarTopics: string[];
+        skills: string[];
+        skillsNote: string | null;
+        participation: number | null;
+        progress: string | null;
+        encouragement: string | null;
+    }>;
+    update(id: string, dto: UpdateFeedbackDto, userId: string, userRole: UserRole): Promise<{
+        teacherId: string;
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        content: string;
+        lessonId: string;
+        studentId: string;
+        level: import("@ilona/database").$Enums.CefrLevel | null;
+        rating: number | null;
+        strengths: string | null;
+        improvements: string | null;
+        grammarTopics: string[];
+        skills: string[];
+        skillsNote: string | null;
+        participation: number | null;
+        progress: string | null;
+        encouragement: string | null;
+    }>;
+    delete(id: string, userId: string, userRole: UserRole): Promise<{
+        teacherId: string;
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
+        content: string;
+        lessonId: string;
+        studentId: string;
+        level: import("@ilona/database").$Enums.CefrLevel | null;
+        rating: number | null;
+        strengths: string | null;
+        improvements: string | null;
+        grammarTopics: string[];
+        skills: string[];
+        skillsNote: string | null;
+        participation: number | null;
+        progress: string | null;
+        encouragement: string | null;
+    }>;
+}

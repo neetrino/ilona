@@ -34,35 +34,44 @@ export class LessonCrudService {
     search?: string;
     currentUserId?: string;
     userRole?: UserRole;
-  }) {
+  }): Promise<unknown> {
     return this.listService.findAll(params);
   }
 
-  findById(id: string, currentUserId?: string, userRole?: UserRole) {
+  findById(id: string, currentUserId?: string, userRole?: UserRole): Promise<unknown> {
     return this.readService.findById(id, currentUserId, userRole);
   }
 
-  findByTeacher(teacherId: string, dateFrom?: Date, dateTo?: Date) {
+  findByTeacher(teacherId: string, dateFrom?: Date, dateTo?: Date): Promise<unknown> {
     return this.listService.findByTeacher(teacherId, dateFrom, dateTo);
   }
 
-  getTodayLessons(teacherId: string) {
+  getTodayLessons(teacherId: string): Promise<unknown> {
     return this.listService.getTodayLessons(teacherId);
   }
 
-  getUpcoming(teacherId: string, limit = 10) {
+  getUpcoming(teacherId: string, limit = 10): Promise<unknown> {
     return this.listService.getUpcoming(teacherId, limit);
   }
 
-  create(dto: CreateLessonDto, currentUserId?: string, userRole?: UserRole) {
+  create(dto: CreateLessonDto, currentUserId?: string, userRole?: UserRole): Promise<unknown> {
     return this.createService.create(dto, currentUserId, userRole);
   }
 
-  createBulk(lessons: CreateLessonDto[], currentUserId?: string, userRole?: UserRole) {
+  createBulk(
+    lessons: CreateLessonDto[],
+    currentUserId?: string,
+    userRole?: UserRole,
+  ): Promise<unknown> {
     return this.createService.createBulk(lessons, currentUserId, userRole);
   }
 
-  update(id: string, dto: UpdateLessonDto, userId?: string, userRole?: UserRole) {
+  update(
+    id: string,
+    dto: UpdateLessonDto,
+    userId?: string,
+    userRole?: UserRole,
+  ): Promise<unknown> {
     return this.updateService.update(id, dto, userId, userRole);
   }
 
@@ -70,15 +79,19 @@ export class LessonCrudService {
     params: { groupId: string; date: string; substituteTeacherId: string | null },
     userId: string | undefined,
     userRole: UserRole | undefined,
-  ) {
+  ): Promise<unknown> {
     return this.updateService.setSubstituteForGroupDay(params, userId, userRole);
   }
 
-  delete(id: string) {
+  delete(id: string): Promise<unknown> {
     return this.deleteService.delete(id);
   }
 
-  deleteBulk(lessonIds: string[], currentUserId?: string, userRole?: UserRole) {
+  deleteBulk(
+    lessonIds: string[],
+    currentUserId?: string,
+    userRole?: UserRole,
+  ): Promise<unknown> {
     return this.deleteService.deleteBulk(lessonIds, currentUserId, userRole);
   }
 }
