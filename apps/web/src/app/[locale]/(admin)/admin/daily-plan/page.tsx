@@ -4,7 +4,11 @@ import { useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { useAuthStore } from '@/features/auth/store/auth.store';
-import { useDailyPlans, useDeleteDailyPlan } from '@/features/daily-plan';
+import {
+  useDailyPlans,
+  useDeleteDailyPlan,
+  useDailyPlanViewSheet,
+} from '@/features/daily-plan';
 import type { DailyPlan } from '@/features/daily-plan/types';
 import { DailyPlanEditor } from '@/features/daily-plan/DailyPlanEditor';
 import { DailyPlanListSection } from '@/features/daily-plan/DailyPlanListSection';
@@ -19,7 +23,6 @@ export default function AdminDailyPlanPage() {
   const [search, setSearch] = useState('');
   const [editing, setEditing] = useState<DailyPlan | null>(null);
   const [creating, setCreating] = useState(false);
-  const [viewing, setViewing] = useState<DailyPlan | null>(null);
   const [deletingPlanId, setDeletingPlanId] = useState<string | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
@@ -30,6 +33,7 @@ export default function AdminDailyPlanPage() {
   const { data, isLoading, refetch } = useDailyPlans(filters);
   const items = data?.items ?? [];
   const remove = useDeleteDailyPlan();
+  const { viewing, openView, closeView } = useDailyPlanViewSheet(items);
 
   return (
     <DashboardLayout title={tNav('dailyPlan')} subtitle={t('subtitleAll')}>
@@ -44,7 +48,7 @@ export default function AdminDailyPlanPage() {
         currentUserId={user?.id}
         emptyDefaultMessage={t('emptyDefault')}
         emptySearchMessage={(query) => t('emptySearch', { query })}
-        onView={setViewing}
+        onView={openView}
         onEdit={(plan) => {
           if (plan.canEdit) {
             setEditing(plan);
@@ -87,9 +91,7 @@ export default function AdminDailyPlanPage() {
         />
       )}
 
-      {viewing && (
-        <DailyPlanViewer plan={viewing} onClose={() => setViewing(null)} />
-      )}
+      {viewing && <DailyPlanViewer plan={viewing} onClose={closeView} />}
     </DashboardLayout>
   );
 }

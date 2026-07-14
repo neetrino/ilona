@@ -4,7 +4,11 @@ import { useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { useAuthStore } from '@/features/auth/store/auth.store';
-import { useDailyPlans, useDeleteDailyPlan } from '@/features/daily-plan';
+import {
+  useDailyPlans,
+  useDeleteDailyPlan,
+  useDailyPlanViewSheet,
+} from '@/features/daily-plan';
 import type { DailyPlan } from '@/features/daily-plan/types';
 import { DailyPlanEditor } from '@/features/daily-plan/DailyPlanEditor';
 import { DailyPlanListSection } from '@/features/daily-plan/DailyPlanListSection';
@@ -17,7 +21,6 @@ export default function TeacherDailyPlanPage() {
   const [search, setSearch] = useState('');
   const [editing, setEditing] = useState<DailyPlan | null>(null);
   const [creating, setCreating] = useState(false);
-  const [viewing, setViewing] = useState<DailyPlan | null>(null);
   const [deletingPlanId, setDeletingPlanId] = useState<string | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
@@ -28,6 +31,7 @@ export default function TeacherDailyPlanPage() {
   const { data, isLoading, refetch } = useDailyPlans(filters);
   const items = data?.items ?? [];
   const remove = useDeleteDailyPlan();
+  const { viewing, openView, closeView } = useDailyPlanViewSheet(items);
 
   return (
     <DashboardLayout
@@ -45,7 +49,7 @@ export default function TeacherDailyPlanPage() {
         alwaysShowMineSection
         emptyDefaultMessage="No daily plans yet. Create one to get started."
         emptySearchMessage={(query) => `No daily plans match "${query}".`}
-        onView={setViewing}
+        onView={openView}
         onEdit={(plan) => {
           if (plan.canEdit) {
             setEditing(plan);
@@ -88,9 +92,7 @@ export default function TeacherDailyPlanPage() {
         />
       )}
 
-      {viewing && (
-        <DailyPlanViewer plan={viewing} onClose={() => setViewing(null)} />
-      )}
+      {viewing && <DailyPlanViewer plan={viewing} onClose={closeView} />}
     </DashboardLayout>
   );
 }
