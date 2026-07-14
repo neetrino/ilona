@@ -43,9 +43,10 @@ export function VoiceRecorderControls({
       <div className="flex items-center gap-3">
         {!isRecording && !recordedBlob && (
           <button
+            type="button"
             onClick={() => void startRecording()}
             className={cn(
-              'flex-shrink-0 p-3 bg-red-600 text-white transition-colors hover:bg-red-700',
+              'flex-shrink-0 touch-manipulation p-3 bg-red-600 text-white transition-colors hover:bg-red-700',
               recordRadiusClass,
             )}
             title={tChat('startRecording')}
@@ -59,9 +60,10 @@ export function VoiceRecorderControls({
         {isRecording && (
           <>
             <button
+              type="button"
               onClick={stopRecording}
               className={cn(
-                'flex-shrink-0 p-3 text-white transition-colors',
+                'flex-shrink-0 touch-manipulation p-3 text-white transition-colors',
                 recordRadiusClass,
                 variant === 'student' ? 'bg-[#3b3b40] hover:bg-[#1010a3]' : 'bg-slate-600 hover:bg-slate-700',
               )}
@@ -102,6 +104,7 @@ export function VoiceRecorderControls({
                 <audio
                   src={previewUrl}
                   controls
+                  playsInline
                   preload="metadata"
                   className="flex-1 h-10"
                   style={{ minWidth: '200px' }}
@@ -112,10 +115,11 @@ export function VoiceRecorderControls({
             </div>
             <div className="flex items-center gap-2">
               <button
+                type="button"
                 onClick={onCancel}
                 disabled={isSending}
                 className={cn(
-                  'px-4 py-2 text-sm transition-colors disabled:cursor-not-allowed disabled:opacity-50',
+                  'touch-manipulation px-4 py-2 text-sm transition-colors disabled:cursor-not-allowed disabled:opacity-50',
                   actionRadiusClass,
                   ui.ghostBtn,
                 )}
@@ -123,10 +127,11 @@ export function VoiceRecorderControls({
                 {tCommon('cancel')}
               </button>
               <button
+                type="button"
                 onClick={() => void handleSend()}
                 disabled={!canSend || isSending}
                 className={cn(
-                  'px-4 py-2 text-sm font-medium transition-all',
+                  'touch-manipulation px-4 py-2 text-sm font-medium transition-all',
                   actionRadiusClass,
                   isSending && 'cursor-wait opacity-90',
                   canSend && !isSending ? ui.primaryBtn : ui.primaryBtnDisabled,

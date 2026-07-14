@@ -1,3 +1,4 @@
+import { describe, expect, it } from 'vitest';
 import { getZonedParts, wallTimeToUtc } from '@ilona/types';
 
 describe('lesson wall-clock timezone (Asia/Yerevan)', () => {
