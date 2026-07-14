@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
+import { useAuthStore } from '@/features/auth/store/auth.store';
 import { useDailyPlans, useDeleteDailyPlan } from '@/features/daily-plan';
 import type { DailyPlan } from '@/features/daily-plan/types';
 import { DailyPlanEditor } from '@/features/daily-plan/DailyPlanEditor';
@@ -12,6 +13,7 @@ import { DailyPlanViewer } from '@/features/daily-plan/DailyPlanViewer';
 export default function TeacherDailyPlanPage() {
   const t = useTranslations('nav');
   const tDaily = useTranslations('dailyPlanPage');
+  const { user } = useAuthStore();
   const [search, setSearch] = useState('');
   const [editing, setEditing] = useState<DailyPlan | null>(null);
   const [creating, setCreating] = useState(false);
@@ -39,6 +41,8 @@ export default function TeacherDailyPlanPage() {
         createLabel="+ New Daily Plan"
         items={items}
         isLoading={isLoading}
+        currentUserId={user?.id}
+        alwaysShowMineSection
         emptyDefaultMessage="No daily plans yet. Create one to get started."
         emptySearchMessage={(query) => `No daily plans match "${query}".`}
         onView={setViewing}

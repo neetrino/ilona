@@ -41,6 +41,7 @@ export default function AdminDailyPlanPage() {
         showCreate={isAdmin}
         items={items}
         isLoading={isLoading}
+        currentUserId={user?.id}
         emptyDefaultMessage={t('emptyDefault')}
         emptySearchMessage={(query) => t('emptySearch', { query })}
         onView={setViewing}
