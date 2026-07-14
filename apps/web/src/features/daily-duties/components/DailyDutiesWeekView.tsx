@@ -85,7 +85,7 @@ export function DailyDutiesWeekView({
                         className={`rounded-[15px] border-l-4 p-2 text-xs ${getWeekLessonCardClass(lesson)}`}
                       >
                         <p className="truncate font-medium text-[#3b3b40]">
-                          {formatDailyDutiesLessonTime(lesson.scheduledAt)}
+                          {formatDailyDutiesLessonTime(lesson.scheduledAt, lesson.duration)}
                         </p>
                         <p className="truncate text-[#3b3b40]">
                           {lesson.group?.name || t('lessonUnknown')}

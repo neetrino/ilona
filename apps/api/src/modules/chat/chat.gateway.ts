@@ -8,15 +8,15 @@ import {
   MessageBody,
 } from '@nestjs/websockets';
 import { Logger } from '@nestjs/common';
-import { Server, Socket } from 'socket.io';
+import { Server } from 'socket.io';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { ChatService } from './chat.service';
 import { JwtPayload } from '../../common/types/auth.types';
-
-interface AuthenticatedSocket extends Socket {
-  user: JwtPayload;
-}
+import {
+  AuthenticatedSocket,
+  resolveSocketUser,
+} from './chat-gateway-auth.util';
 
 @WebSocketGateway({
   namespace: '/chat',
@@ -70,35 +70,56 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
       // Track socket
       const existingSockets = this.userSockets.get(payload.sub) || [];
+      const isFirstSocket = existingSockets.length === 0;
       this.userSockets.set(payload.sub, [...existingSockets, client.id]);
 
       this.logger.log(`User ${payload.email} connected`);
 
+      await this.chatService.touchUserLastSeen(payload.sub);
+
       // Get user's chats and join rooms
-      const chats = (await this.chatService.getUserChats(payload.sub, payload)) as Array<{ id: string }>;
-      chats.forEach((chat: { id: string }) => {
+      const chats = (await this.chatService.getUserChats(payload.sub, payload)) as Array<{
+        id: string;
+        participants?: Array<{ userId: string; user?: { lastSeenAt?: Date | string | null } }>;
+      }>;
+
+      const partnerIds = new Set<string>();
+      chats.forEach((chat) => {
         void client.join(`chat:${chat.id}`);
-        
-        // Track online status
+
         if (!this.onlineUsers.has(chat.id)) {
           this.onlineUsers.set(chat.id, new Set());
         }
         this.onlineUsers.get(chat.id)?.add(payload.sub);
 
-        // Notify others in chat
-        client.to(`chat:${chat.id}`).emit('user:online', {
-          chatId: chat.id,
-          userId: payload.sub,
+        chat.participants?.forEach((participant) => {
+          if (participant.userId !== payload.sub) {
+            partnerIds.add(participant.userId);
+          }
         });
+
+        if (isFirstSocket) {
+          client.to(`chat:${chat.id}`).emit('user:online', {
+            chatId: chat.id,
+            userId: payload.sub,
+          });
+        }
       });
 
-      // Send online users to connected client
+      const partnersLastSeen = await this.chatService.getUsersLastSeen(Array.from(partnerIds));
+      const presence = partnersLastSeen.map((partner) => ({
+        userId: partner.id,
+        isOnline: this.userSockets.has(partner.id),
+        lastSeenAt: partner.lastSeenAt ? partner.lastSeenAt.toISOString() : null,
+      }));
+
       client.emit('connection:success', {
         userId: payload.sub,
-        chats: chats.map((chat: { id: string }) => ({
+        chats: chats.map((chat) => ({
           id: chat.id,
           onlineUsers: Array.from(this.onlineUsers.get(chat.id) || []),
         })),
+        presence,
       });
     } catch (error) {
       const isTokenExpired = error && typeof error === 'object' && 'name' in error && (error as Error).name === 'TokenExpiredError';
@@ -116,36 +137,58 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     if (!client.user) return;
 
     const userId = client.user.sub;
-    
+    const email = client.user.email;
+
     // Remove socket from tracking
     const sockets = this.userSockets.get(userId) || [];
     const remainingSockets = sockets.filter((id) => id !== client.id);
-    
+
     if (remainingSockets.length === 0) {
       this.userSockets.delete(userId);
 
-      // User is completely offline - notify all chats
-      this.onlineUsers.forEach((users, chatId) => {
-        if (users.has(userId)) {
-          users.delete(userId);
-          this.server.to(`chat:${chatId}`).emit('user:offline', {
-            chatId,
-            userId,
+      void this.chatService
+        .touchUserLastSeen(userId)
+        .then((lastSeenAt) => {
+          const lastSeenIso = lastSeenAt.toISOString();
+          this.onlineUsers.forEach((users, chatId) => {
+            if (users.has(userId)) {
+              users.delete(userId);
+              this.server.to(`chat:${chatId}`).emit('user:offline', {
+                chatId,
+                userId,
+                lastSeenAt: lastSeenIso,
+              });
+            }
           });
-        }
-      });
+        })
+        .catch((error: unknown) => {
+          this.logger.warn(
+            `Failed to persist lastSeenAt for ${userId}: ${
+              error instanceof Error ? error.message : String(error)
+            }`,
+          );
+          this.onlineUsers.forEach((users, chatId) => {
+            if (users.has(userId)) {
+              users.delete(userId);
+              this.server.to(`chat:${chatId}`).emit('user:offline', {
+                chatId,
+                userId,
+                lastSeenAt: new Date().toISOString(),
+              });
+            }
+          });
+        });
     } else {
       this.userSockets.set(userId, remainingSockets);
     }
 
-    this.logger.log(`User ${client.user.email} disconnected`);
+    this.logger.log(`User ${email} disconnected`);
   }
 
   /**
-   * Handle send message. SECURITY: Sender identity is taken ONLY from the socket's
-   * authenticated user (client.user, set at connection from JWT). Never use any
-   * senderId from the message payload. Client must reconnect when user changes (e.g.
-   * after logout/login as different user) so the socket identity is correct.
+   * Handle send message. SECURITY: Sender identity is taken ONLY from a freshly
+   * verified JWT on the handshake (never from the message payload, never from a
+   * stale client.user cached at first connect).
    */
   @SubscribeMessage('message:send')
   async handleSendMessage(
@@ -153,22 +196,16 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @MessageBody() data: { chatId: string; content: string; type?: string; metadata?: Record<string, unknown>; fileUrl?: string; fileName?: string; fileSize?: number; duration?: number },
   ) {
     try {
-      // CRITICAL: Validate client.user is set (per-connection identity from JWT at handshake)
-      if (!client.user || !client.user.sub) {
-        this.logger.error('handleSendMessage: client.user is missing or invalid', { hasUser: !!client.user, userId: client.user?.sub });
-        return { success: false, error: 'Authentication required' };
-      }
+      const authUser = this.requireSocketUser(client);
 
       // Voice messages must be sent via HTTP (upload file first, then send with fileUrl)
       if (data.type === 'VOICE') {
         return { success: false, error: 'Voice messages must be sent via the REST API after uploading the file' };
       }
 
-      // Sender is ALWAYS the socket's authenticated user - never from payload
-      const senderIdFromAuth = client.user.sub;
-      const senderRoleFromAuth = client.user.role;
+      const senderIdFromAuth = authUser.sub;
+      const senderRoleFromAuth = authUser.role;
 
-      // CRITICAL: Log sender identity for debugging (dev only)
       if (process.env.NODE_ENV !== 'production') {
         this.logger.log(
           JSON.stringify({ message: 'handleSendMessage', senderId: senderIdFromAuth, senderRole: senderRoleFromAuth, chatId: data.chatId }),
@@ -184,17 +221,70 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         },
         senderIdFromAuth,
         senderRoleFromAuth,
-        client.user,
+        authUser,
       );
 
-      // Broadcast to all participants in the chat
-      this.server.to(`chat:${data.chatId}`).emit('message:new', message);
+      // Brand-new DMs are not in the room until chat:join — join sender, then
+      // broadcast to the room and fan-out only to peers not yet in the room.
+      void client.join(`chat:${data.chatId}`);
+      if (!this.onlineUsers.has(data.chatId)) {
+        this.onlineUsers.set(data.chatId, new Set());
+      }
+      this.onlineUsers.get(data.chatId)?.add(senderIdFromAuth);
+
+      this.broadcastNewMessage(data.chatId, message);
+      await this.fanOutNewMessageToParticipants(data.chatId, senderIdFromAuth, authUser, message);
 
       return { success: true, message };
     } catch (err: unknown) {
       const error = err instanceof Error ? err : new Error(String(err));
       this.logger.error('Send message error', error.stack ?? error.message);
       return { success: false, error: error.message };
+    }
+  }
+
+  private requireSocketUser(client: AuthenticatedSocket): JwtPayload {
+    try {
+      return resolveSocketUser(client, this.jwtService, this.configService);
+    } catch (error) {
+      this.logger.error('Socket auth failed', {
+        hasUser: !!client.user,
+        userId: client.user?.sub,
+        error: error instanceof Error ? error.message : String(error),
+      });
+      throw new Error('Authentication required');
+    }
+  }
+
+  private emitToUser(userId: string, event: string, payload: unknown): void {
+    const socketIds = this.userSockets.get(userId) || [];
+    for (const socketId of socketIds) {
+      this.server.to(socketId).emit(event, payload);
+    }
+  }
+
+  private async fanOutNewMessageToParticipants(
+    chatId: string,
+    senderId: string,
+    authUser: JwtPayload,
+    message: unknown,
+  ): Promise<void> {
+    try {
+      const chat = await this.chatService.getChatById(chatId, senderId, authUser.role, authUser);
+      const roomMembers = this.onlineUsers.get(chatId);
+      for (const participant of chat.participants) {
+        // Room broadcast already reaches anyone currently in the chat room.
+        // Only direct-emit to connected users who have not joined this room yet
+        // (e.g. brand-new DM before chat:join) — avoids duplicate message:new.
+        if (roomMembers?.has(participant.userId)) continue;
+        this.emitToUser(participant.userId, 'message:new', message);
+      }
+    } catch (error) {
+      this.logger.warn(
+        `Failed to fan-out message to participants for chat ${chatId}: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
+      );
     }
   }
 
@@ -212,14 +302,14 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @MessageBody() data: { messageId: string; content: string },
   ): Promise<unknown> {
     try {
+      const authUser = this.requireSocketUser(client);
       const message = (await this.chatService.editMessage(
         data.messageId,
         { content: data.content },
-        client.user.sub,
-        client.user,
+        authUser.sub,
+        authUser,
       )) as { chatId: string };
 
-      // Broadcast to all participants
       this.server.to(`chat:${message.chatId}`).emit('message:edited', message);
 
       return { success: true, message };
@@ -234,9 +324,12 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @MessageBody() data: { messageId: string },
   ) {
     try {
-      // Get message first to get chatId before deletion
-      const message = (await this.chatService.getMessage(data.messageId)) as { chatId: string; id: string } | null;
-      
+      const authUser = this.requireSocketUser(client);
+      const message = (await this.chatService.getMessage(data.messageId)) as {
+        chatId: string;
+        id: string;
+      } | null;
+
       if (!message) {
         return { success: false, error: 'Message not found' };
       }
@@ -244,14 +337,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       const chatId = message.chatId;
       const messageId = message.id;
 
-      // Delete the message (hard delete)
-      await this.chatService.deleteMessage(
-        data.messageId,
-        client.user.sub,
-        client.user,
-      );
+      await this.chatService.deleteMessage(data.messageId, authUser.sub, authUser);
 
-      // Broadcast to all participants
       this.server.to(`chat:${chatId}`).emit('message:deleted', {
         messageId,
         chatId,
@@ -268,10 +355,15 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @ConnectedSocket() client: AuthenticatedSocket,
     @MessageBody() data: { chatId: string },
   ) {
-    client.to(`chat:${data.chatId}`).emit('typing:start', {
-      chatId: data.chatId,
-      userId: client.user.sub,
-    });
+    try {
+      const authUser = this.requireSocketUser(client);
+      client.to(`chat:${data.chatId}`).emit('typing:start', {
+        chatId: data.chatId,
+        userId: authUser.sub,
+      });
+    } catch {
+      // ignore unauthenticated typing events
+    }
   }
 
   @SubscribeMessage('typing:stop')
@@ -279,10 +371,15 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @ConnectedSocket() client: AuthenticatedSocket,
     @MessageBody() data: { chatId: string },
   ) {
-    client.to(`chat:${data.chatId}`).emit('typing:stop', {
-      chatId: data.chatId,
-      userId: client.user.sub,
-    });
+    try {
+      const authUser = this.requireSocketUser(client);
+      client.to(`chat:${data.chatId}`).emit('typing:stop', {
+        chatId: data.chatId,
+        userId: authUser.sub,
+      });
+    } catch {
+      // ignore unauthenticated typing events
+    }
   }
 
   @SubscribeMessage('chat:read')
@@ -291,16 +388,17 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @MessageBody() data: { chatId: string },
   ) {
     try {
-      await this.chatService.markAsRead(data.chatId, client.user.sub, client.user);
-      
-      // Notify other participants that this user has read messages
+      const authUser = this.requireSocketUser(client);
+      await this.chatService.markAsRead(data.chatId, authUser.sub, authUser);
+
+      const readAt = new Date().toISOString();
       client.to(`chat:${data.chatId}`).emit('chat:read', {
         chatId: data.chatId,
-        userId: client.user.sub,
-        readAt: new Date(),
+        userId: authUser.sub,
+        readAt,
       });
 
-      return { success: true };
+      return { success: true, readAt };
     } catch (error) {
       return { success: false, error: (error as Error).message };
     }
@@ -312,24 +410,48 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @MessageBody() data: { chatId: string },
   ) {
     try {
-      // Verify user is participant
-      await this.chatService.getChatById(data.chatId, client.user.sub, client.user.role, client.user);
-      
+      const authUser = this.requireSocketUser(client);
+      const chat = await this.chatService.getChatById(
+        data.chatId,
+        authUser.sub,
+        authUser.role,
+        authUser,
+      );
+
       void client.join(`chat:${data.chatId}`);
-      
+
       if (!this.onlineUsers.has(data.chatId)) {
         this.onlineUsers.set(data.chatId, new Set());
       }
-      this.onlineUsers.get(data.chatId)?.add(client.user.sub);
+      this.onlineUsers.get(data.chatId)?.add(authUser.sub);
+
+      // Prefer global socket map so online status is correct even if peer
+      // has not joined this room yet (e.g. newly created DM).
+      const roomOnline = this.onlineUsers.get(data.chatId) ?? new Set<string>();
+      for (const participant of chat.participants) {
+        if (this.userSockets.has(participant.userId)) {
+          roomOnline.add(participant.userId);
+        }
+      }
+      this.onlineUsers.set(data.chatId, roomOnline);
 
       client.to(`chat:${data.chatId}`).emit('user:online', {
         chatId: data.chatId,
-        userId: client.user.sub,
+        userId: authUser.sub,
       });
 
-      return { 
-        success: true, 
+      const presence = chat.participants.map((participant) => ({
+        userId: participant.userId,
+        isOnline: this.userSockets.has(participant.userId),
+        lastSeenAt: participant.user.lastSeenAt
+          ? new Date(participant.user.lastSeenAt).toISOString()
+          : null,
+      }));
+
+      return {
+        success: true,
         onlineUsers: Array.from(this.onlineUsers.get(data.chatId) || []),
+        presence,
       };
     } catch (error) {
       return { success: false, error: (error as Error).message };
@@ -342,15 +464,10 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @MessageBody() data: { chatId: string; words: string[] },
   ): Promise<unknown> {
     try {
-      // CRITICAL: Validate client.user is set and has required fields
-      if (!client.user || !client.user.sub) {
-        this.logger.error('handleSendVocabulary: client.user is missing or invalid', { hasUser: !!client.user, userId: client.user?.sub });
-        return { success: false, error: 'Authentication required' };
-      }
-
+      const authUser = this.requireSocketUser(client);
       const message = await this.chatService.sendVocabularyMessage(
         data.chatId,
-        client.user.sub,
+        authUser.sub,
         data.words,
       );
 

@@ -60,12 +60,14 @@ export class MessageQueryService {
     });
 
     const hasMore = messages.length > take;
-    const items = hasMore ? messages.slice(0, -1) : messages;
+    // Desc order: index 0 = newest, last = oldest in this page.
+    const pageItems = hasMore ? messages.slice(0, take) : messages;
+    const nextCursor = hasMore ? (pageItems[pageItems.length - 1]?.id ?? null) : null;
 
     return {
-      items: items.reverse().map(mapMessageWithSender),
+      items: [...pageItems].reverse().map(mapMessageWithSender),
       hasMore,
-      nextCursor: hasMore ? items[items.length - 1]?.id : null,
+      nextCursor,
     };
   }
 }

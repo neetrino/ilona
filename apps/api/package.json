@@ -5,7 +5,7 @@
   "description": "NestJS Backend for Ilona English Center",
   "scripts": {
     "build": "pnpm --filter @ilona/database build && nest build",
-    "predev": "pnpm --filter @ilona/database build",
+    "predev": "pnpm --filter @ilona/database build && node -e \"try{require('fs').rmSync('tsconfig.tsbuildinfo',{force:true})}catch{}\"",
     "dev": "nest start --watch",
     "start": "nest start",
     "start:debug": "nest start --debug --watch",

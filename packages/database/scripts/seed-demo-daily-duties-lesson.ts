@@ -2,6 +2,7 @@ import dotenv from 'dotenv';
 import path from 'path';
 import { PrismaClient } from '../src/generated/client';
 
+dotenv.config({ path: path.join(__dirname, '../../../.env') });
 dotenv.config({ path: path.join(__dirname, '../../../.env.local') });
 
 const prisma = new PrismaClient();

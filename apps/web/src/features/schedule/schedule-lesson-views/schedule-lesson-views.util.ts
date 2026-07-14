@@ -1,6 +1,7 @@
 import type { Lesson } from '@/features/lessons';
 import { isLessonStartStrictlyInFuture } from '@/features/schedule/schedule-dates';
 import { studentScheduleTable } from '@/features/student-ui/tokens';
+import { APP_TIMEZONE, formatAppDate, formatAppTimeHHmm, getZonedParts } from '@/shared/lib/app-timezone';
 import {
   FUTURE_LESSON_CARD_CLASSES,
   PAST_LESSON_CARD_CLASSES,
@@ -8,10 +9,7 @@ import {
 import type { ScheduleUiVariant } from './schedule-lesson-views.types';
 
 export function formatScheduleTime(dateString: string): string {
-  const date = new Date(dateString);
-  const hh = String(date.getHours()).padStart(2, '0');
-  const mm = String(date.getMinutes()).padStart(2, '0');
-  return `${hh}:${mm}`;
+  return formatAppTimeHHmm(dateString);
 }
 
 export function formatMinutesToLabel(totalMinutes: number): string {
@@ -21,17 +19,18 @@ export function formatMinutesToLabel(totalMinutes: number): string {
 }
 
 export function formatWeekdayLabel(date: Date): string {
-  return date.toLocaleDateString('en-GB', { weekday: 'short' }).toUpperCase();
+  return formatAppDate(date, 'en', { weekday: 'short', timeZone: APP_TIMEZONE }).toUpperCase();
 }
 
 export function formatWeekdayShort(date: Date): string {
-  return date.toLocaleDateString('en-GB', { weekday: 'short' });
+  return formatAppDate(date, 'en', { weekday: 'short', timeZone: APP_TIMEZONE });
 }
 
 export function getLessonTimeBounds(lesson: Lesson): { start: number; end: number } | null {
   const startDate = new Date(lesson.scheduledAt);
   if (Number.isNaN(startDate.getTime())) return null;
-  const start = startDate.getHours() * 60 + startDate.getMinutes();
+  const parts = getZonedParts(startDate);
+  const start = parts.hour * 60 + parts.minute;
   const duration = lesson.duration > 0 ? lesson.duration : 60;
   return { start, end: start + duration };
 }

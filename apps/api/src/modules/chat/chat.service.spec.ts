@@ -347,7 +347,7 @@ describe('ChatService', () => {
       ).rejects.toThrow(NotFoundException);
     });
 
-    it('should throw ForbiddenException if not message owner', async () => {
+    it('should throw ForbiddenException if not message owner and not moderator', async () => {
       mockPrismaService.message.findUnique.mockResolvedValue(mockMessage);
 
       await expect(

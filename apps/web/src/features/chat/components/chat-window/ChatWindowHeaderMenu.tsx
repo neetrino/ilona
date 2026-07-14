@@ -26,7 +26,10 @@ export function ChatWindowHeaderMenu({ ui, onDeleteGroup }: ChatWindowHeaderMenu
     };
 
     const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') setIsOpen(false);
+      if (event.key !== 'Escape') return;
+      event.preventDefault();
+      event.stopPropagation();
+      setIsOpen(false);
     };
 
     document.addEventListener('mousedown', handlePointerDown);
@@ -38,7 +41,11 @@ export function ChatWindowHeaderMenu({ ui, onDeleteGroup }: ChatWindowHeaderMenu
   }, [isOpen]);
 
   return (
-    <div ref={menuRef} className="relative">
+    <div
+      ref={menuRef}
+      className="relative"
+      data-chat-header-menu={isOpen ? 'open' : undefined}
+    >
       <button
         type="button"
         aria-label={tChat('chatOptions')}

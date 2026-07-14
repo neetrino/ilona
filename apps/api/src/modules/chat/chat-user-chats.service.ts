@@ -51,6 +51,7 @@ export class ChatUserChatsService {
                   lastName: true,
                   avatarUrl: true,
                   role: true,
+                  lastSeenAt: true,
                 },
               },
             },
@@ -99,20 +100,20 @@ export class ChatUserChatsService {
 
       const participantMap = new Map(participants.map((p) => [p.chatId, p.lastReadAt]));
 
-      const chatsNeedingCount = chats.filter((chat) => {
-        const lastReadAt = participantMap.get(chat.id);
-        return lastReadAt !== undefined && lastReadAt !== null;
-      });
-
       const unreadCounts = await Promise.all(
-        chatsNeedingCount.map(async (chat) => {
+        chats.map(async (chat) => {
           try {
-            const lastReadAt = participantMap.get(chat.id)!;
+            const lastReadAt = participantMap.get(chat.id);
             const count = await this.prisma.message.count({
               where: {
                 chatId: chat.id,
-                createdAt: { gt: lastReadAt },
                 senderId: { not: userId },
+                NOT: {
+                  AND: [{ content: null }, { isSystem: true }],
+                },
+                ...(lastReadAt
+                  ? { createdAt: { gt: lastReadAt } }
+                  : {}),
               },
             });
 
@@ -127,18 +128,12 @@ export class ChatUserChatsService {
       const unreadCountMap = new Map(unreadCounts.map((uc) => [uc.chatId, uc.count]));
 
       const chatsWithMetadata = chats.map((chat) => {
-        const lastReadAt = participantMap.get(chat.id);
-        const unreadCount =
-          lastReadAt === undefined || lastReadAt === null
-            ? chat._count.messages
-            : (unreadCountMap.get(chat.id) ?? 0);
-
         const lastMessage = chat.messages[0] || null;
         const lastMessageAt = lastMessage?.createdAt || chat.updatedAt;
 
         return {
           ...chat,
-          unreadCount,
+          unreadCount: unreadCountMap.get(chat.id) ?? 0,
           lastMessage,
           lastMessageAt,
         };

@@ -78,7 +78,7 @@ export class ChatUnreadCountService {
     chatId: string,
     userId: string,
     lastReadAt: Date | null | undefined,
-    totalMessageCount: number,
+    _totalMessageCount?: number,
   ) {
     if (lastReadAt) {
       return this.prisma.message.count({
@@ -86,9 +86,17 @@ export class ChatUnreadCountService {
           chatId,
           createdAt: { gt: lastReadAt },
           senderId: { not: userId },
+          ...softDeletedMessageFilter,
         },
       });
     }
-    return totalMessageCount;
+
+    return this.prisma.message.count({
+      where: {
+        chatId,
+        senderId: { not: userId },
+        ...softDeletedMessageFilter,
+      },
+    });
   }
 }

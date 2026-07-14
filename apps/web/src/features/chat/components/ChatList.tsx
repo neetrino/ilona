@@ -3,15 +3,19 @@
 import { useState, useMemo } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useAuthStore } from '@/features/auth/store/auth.store';
+import { useLogo } from '@/features/settings/hooks/useSettings';
 import { useChats, useSocket } from '../hooks';
 import { useChatStore } from '../store/chat.store';
 import type { Chat } from '../types';
 import { cn } from '@/shared/lib/utils';
+import { getFullApiUrl } from '@/shared/lib/api-url-utils';
 import { formatDisplayName, getInitialsFromParts } from '@/shared/components/ui/avatar';
-import { formatMessagePreview } from '../utils';
+import { formatChatListPreview } from '../utils';
+import { resolveChatAvatarUrl } from '../utils/chat-avatar';
 import { formatChatListTime, sortChatListItems } from '../utils/chat-utils';
 import Image from 'next/image';
 import { OnlineStatusDot } from './OnlineStatusDot';
+import { ChatUnreadBadge } from './ChatUnreadBadge';
 
 interface ChatListProps {
   onSelectChat: (chat: Chat) => void;
@@ -21,14 +25,17 @@ export function ChatList({ onSelectChat }: ChatListProps) {
   const tChat = useTranslations('chat');
   const locale = useLocale();
   const { user } = useAuthStore();
+  const { data: logoData } = useLogo();
+  const brandLogoUrl = getFullApiUrl(logoData?.logoUrl);
   const { activeChat } = useChatStore();
   const [searchQuery, setSearchQuery] = useState('');
 
   // Fetch chats from API
   const { data: chats = [], isLoading } = useChats();
 
-  // Socket for online status
-  const { isConnected, isUserOnline } = useSocket();
+  // Shared presence (all roles / hook instances)
+  const { isConnected } = useSocket();
+  const presenceByUserId = useChatStore((state) => state.presenceByUserId);
 
   const messagePreviewLabels = useMemo(
     () => ({
@@ -86,7 +93,11 @@ export function ChatList({ onSelectChat }: ChatListProps) {
       avatar: otherParticipant
         ? getInitialsFromParts(otherParticipant.user.firstName, otherParticipant.user.lastName)
         : '?',
-      avatarUrl: otherParticipant?.user.avatarUrl || null,
+      avatarUrl: resolveChatAvatarUrl(
+        otherParticipant?.user.avatarUrl,
+        otherParticipant?.user.role,
+        brandLogoUrl,
+      ),
       isGroup: false,
       otherUserId: otherParticipant?.userId,
     };
@@ -172,7 +183,7 @@ export function ChatList({ onSelectChat }: ChatListProps) {
             const isActive = activeChat?.id === chat.id;
             const hasUnread = (chat.unreadCount || 0) > 0;
             const isOnline = info.otherUserId
-              ? isUserOnline(chat.id, info.otherUserId)
+              ? Boolean(presenceByUserId[info.otherUserId]?.isOnline)
               : false;
 
             return (
@@ -225,20 +236,29 @@ export function ChatList({ onSelectChat }: ChatListProps) {
                       {formatTime(chat.lastMessage?.createdAt || chat.updatedAt)}
                     </span>
                   </div>
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between gap-2">
                     <p
                       className={cn(
                         'text-sm truncate',
                         hasUnread ? 'text-slate-700 font-medium' : 'text-slate-500'
                       )}
                     >
-                      {formatMessagePreview(chat.lastMessage, messagePreviewLabels)}
+                      {formatChatListPreview({
+                        message: chat.lastMessage,
+                        labels: messagePreviewLabels,
+                        unreadCount: chat.unreadCount || 0,
+                        unreadLabel: hasUnread
+                          ? tChat('unreadCount', { count: chat.unreadCount || 0 })
+                          : undefined,
+                        isGroup: info.isGroup,
+                        currentUserId: user?.id,
+                      })}
                     </p>
-                    {hasUnread && (
-                      <span className="ml-2 px-2 py-0.5 bg-primary text-primary-foreground text-xs rounded-full flex-shrink-0">
-                        {chat.unreadCount}
-                      </span>
-                    )}
+                    <ChatUnreadBadge
+                      count={chat.unreadCount || 0}
+                      className="ml-2"
+                      label={tChat('unreadCount', { count: chat.unreadCount || 0 })}
+                    />
                   </div>
                 </div>
               </button>

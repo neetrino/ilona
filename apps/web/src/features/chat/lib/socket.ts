@@ -5,28 +5,72 @@ import type { SocketEvents } from '../types';
 
 // Socket instance
 let socket: Socket | null = null;
+/** JWT currently bound to the live socket (reuse connection across useSocket callers). */
+let activeAuthToken: string | null = null;
+/** userId reported by the server for the active socket connection */
+let socketAuthenticatedUserId: string | null = null;
 
-// Get WebSocket URL - same logic as API URL
+const connectHandlers = new Set<() => void>();
+const disconnectHandlers = new Set<() => void>();
+const errorHandlers = new Set<(error: Error) => void>();
+let tokenExpiredHandler: (() => Promise<string | null>) | null = null;
+
+type SocketEventHandler = (data: unknown) => void;
+/** One socket listener per event; fan-out to all registered React handlers. */
+const eventHandlerSets = new Map<string, Set<SocketEventHandler>>();
+const eventBridges = new Map<string, SocketEventHandler>();
+
+function ensureEventBridge(event: string): void {
+  if (eventBridges.has(event) || !socket) return;
+
+  const bridge: SocketEventHandler = (payload) => {
+    const handlers = eventHandlerSets.get(event);
+    if (!handlers) return;
+    handlers.forEach((handler) => {
+      handler(payload);
+    });
+  };
+
+  eventBridges.set(event, bridge);
+  socket.on(event, bridge);
+}
+
+function rebindEventBridges(): void {
+  eventBridges.clear();
+  for (const eventName of eventHandlerSets.keys()) {
+    ensureEventBridge(eventName);
+  }
+}
+
+function stripWrappingQuotes(value: string): string {
+  const trimmed = value.trim();
+  if (
+    (trimmed.startsWith('"') && trimmed.endsWith('"')) ||
+    (trimmed.startsWith("'") && trimmed.endsWith("'"))
+  ) {
+    return trimmed.slice(1, -1);
+  }
+  return trimmed;
+}
+
 function getWebSocketUrl(): string {
-  // If explicitly set in environment, use it
-  if (process.env.NEXT_PUBLIC_API_URL) {
-    return process.env.NEXT_PUBLIC_API_URL.replace('/api', '');
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL
+    ? stripWrappingQuotes(process.env.NEXT_PUBLIC_API_URL)
+    : '';
+
+  if (apiUrl) {
+    return apiUrl.replace(/\/api\/?$/, '');
   }
 
-  // In browser, construct from current host
   if (typeof window !== 'undefined') {
     const host = window.location.host;
     const protocol = window.location.protocol === 'https:' ? 'https:' : 'http:';
-    // If running on port 3000, assume API is on 4000
-    // Otherwise, use same host and port
     if (host.includes(':3000')) {
       return `${protocol}//${host.split(':')[0]}:4000`;
     }
-    // For production or custom ports, use same host
     return `${protocol}//${host}`;
   }
 
-  // Server-side fallback
   return 'http://localhost:4000';
 }
 
@@ -34,31 +78,83 @@ const WS_URL = getWebSocketUrl();
 
 export interface SocketOptions {
   token: string;
+  force?: boolean;
   onConnect?: () => void;
   onDisconnect?: () => void;
   onError?: (error: Error) => void;
-  onTokenExpired?: () => Promise<string | null>; // Callback to refresh token
+  onTokenExpired?: () => Promise<string | null>;
+}
+
+function destroySocketInstance(instance: Socket | null): void {
+  if (!instance) return;
+  instance.removeAllListeners();
+  // Bridges were bound to this instance — recreate them after the next initSocket.
+  eventBridges.clear();
+  // Prevent orphan reconnects as a previous account after we drop the reference.
+  instance.io.reconnection(false);
+  instance.disconnect();
+}
+
+function notifyConnect(): void {
+  connectHandlers.forEach((handler) => handler());
+}
+
+function notifyDisconnect(): void {
+  disconnectHandlers.forEach((handler) => handler());
+}
+
+function notifyError(error: Error): void {
+  errorHandlers.forEach((handler) => handler(error));
+}
+
+/**
+ * Register connect/disconnect listeners without recreating the socket.
+ * Safe for multiple concurrent useSocket() callers (list + window).
+ */
+export function registerSocketLifecycle(handlers: {
+  onConnect?: () => void;
+  onDisconnect?: () => void;
+  onError?: (error: Error) => void;
+}): () => void {
+  if (handlers.onConnect) connectHandlers.add(handlers.onConnect);
+  if (handlers.onDisconnect) disconnectHandlers.add(handlers.onDisconnect);
+  if (handlers.onError) errorHandlers.add(handlers.onError);
+
+  return () => {
+    if (handlers.onConnect) connectHandlers.delete(handlers.onConnect);
+    if (handlers.onDisconnect) disconnectHandlers.delete(handlers.onDisconnect);
+    if (handlers.onError) errorHandlers.delete(handlers.onError);
+  };
+}
+
+function canReuseSocket(token: string, force?: boolean): boolean {
+  if (force || !socket || activeAuthToken !== token) return false;
+  // Keep the same connection while it is up or still trying to reconnect.
+  return socket.connected || Boolean(socket.active);
 }
 
 /**
  * Initialize and get socket connection.
- * SECURITY: When the user switches accounts (logout + login as another user), the client
- * must get a new connection authenticated as the new user. We always disconnect any
- * existing socket before creating a new one with the provided token, so that token
- * changes (e.g. after re-login) result in a fresh connection with correct identity.
+ * Reuses the existing socket when the token is unchanged so nested useSocket
+ * callers do not wipe presence event listeners.
  */
 export function initSocket(options: SocketOptions): Socket {
-  // Always tear down existing connection so that a new token = new identity on server.
-  // Reusing a connected socket when token changed would send messages as the previous user.
-  if (socket) {
-    socket.removeAllListeners();
-    if (socket.connected) {
-      socket.disconnect();
-    }
-    socket = null;
+  if (options.onTokenExpired) {
+    tokenExpiredHandler = options.onTokenExpired;
   }
 
-  // Create new socket connection with the current token
+  if (canReuseSocket(options.token, options.force) && socket) {
+    if (socket.connected) {
+      options.onConnect?.();
+    }
+    return socket;
+  }
+
+  destroySocketInstance(socket);
+  socket = null;
+  socketAuthenticatedUserId = null;
+  activeAuthToken = options.token;
+
   socket = io(`${WS_URL}/chat`, {
     auth: { token: options.token },
     transports: ['websocket', 'polling'],
@@ -69,27 +165,32 @@ export function initSocket(options: SocketOptions): Socket {
     timeout: 10000,
   });
 
-  // Connection events
+  rebindEventBridges();
+
   socket.on('connect', () => {
     console.log('[Socket] Connected');
-    options.onConnect?.();
+    notifyConnect();
   });
 
   socket.on('disconnect', (reason) => {
     console.log('[Socket] Disconnected:', reason);
-    options.onDisconnect?.();
+    socketAuthenticatedUserId = null;
+    notifyDisconnect();
   });
 
   socket.on('connect_error', async (error) => {
     console.error('[Socket] Connection error:', error.message);
-    
-    // If token expired, try to refresh
-    if (error.message?.includes('expired') || error.message?.includes('jwt') || error.message?.includes('TokenExpiredError')) {
-      if (options.onTokenExpired) {
+
+    if (
+      error.message?.includes('expired') ||
+      error.message?.includes('jwt') ||
+      error.message?.includes('TokenExpiredError')
+    ) {
+      if (tokenExpiredHandler) {
         try {
-          const newToken = await options.onTokenExpired();
+          const newToken = await tokenExpiredHandler();
           if (newToken && socket) {
-            // Reconnect with new token
+            activeAuthToken = newToken;
             socket.auth = { token: newToken };
             socket.connect();
             return;
@@ -99,16 +200,16 @@ export function initSocket(options: SocketOptions): Socket {
         }
       }
     }
-    
-    options.onError?.(error);
+
+    notifyError(error);
   });
 
-  // Server may reject connection with TOKEN_EXPIRED before disconnect
   socket.on('connection:error', async (data: { code?: string; message?: string }) => {
-    if (data?.code === 'TOKEN_EXPIRED' && options.onTokenExpired) {
+    if (data?.code === 'TOKEN_EXPIRED' && tokenExpiredHandler) {
       try {
-        const newToken = await options.onTokenExpired();
+        const newToken = await tokenExpiredHandler();
         if (newToken && socket) {
+          activeAuthToken = newToken;
           socket.auth = { token: newToken };
           socket.connect();
           return;
@@ -117,52 +218,45 @@ export function initSocket(options: SocketOptions): Socket {
         console.error('[Socket] Failed to refresh token after TOKEN_EXPIRED:', e);
       }
     }
-    options.onError?.(new Error(data?.message ?? 'Connection error'));
+    notifyError(new Error(data?.message ?? 'Connection error'));
+  });
+
+  socket.on('connection:success', (data: { userId?: string }) => {
+    socketAuthenticatedUserId = data?.userId ?? null;
   });
 
   return socket;
 }
 
-/**
- * Get current socket instance
- */
 export function getSocket(): Socket | null {
   return socket;
 }
 
-/**
- * Disconnect socket
- */
-export function disconnectSocket(): void {
-  if (socket) {
-    // Remove all listeners first
-    socket.removeAllListeners();
-    // Only disconnect if already connected to avoid closing during connection attempt
-    if (socket.connected) {
-      socket.disconnect();
-    }
-    // Clear the socket reference
-    socket = null;
-  }
+export function getSocketAuthenticatedUserId(): string | null {
+  return socketAuthenticatedUserId;
 }
 
-/**
- * Check if socket is connected
- */
+export function setSocketAuthenticatedUserId(userId: string | null): void {
+  socketAuthenticatedUserId = userId;
+}
+
+export function disconnectSocket(): void {
+  destroySocketInstance(socket);
+  socket = null;
+  socketAuthenticatedUserId = null;
+  activeAuthToken = null;
+  tokenExpiredHandler = null;
+}
+
 export function isSocketConnected(): boolean {
   return socket?.connected ?? false;
 }
 
-// ============ EMIT HELPERS ============
-
-/**
- * Send a message
- */
 export function emitSendMessage(
   chatId: string,
   content: string,
   type: string = 'TEXT',
-  metadata?: Record<string, unknown>
+  metadata?: Record<string, unknown>,
 ): Promise<{ success: boolean; message?: unknown; error?: string }> {
   return new Promise((resolve) => {
     if (!socket?.connected) {
@@ -170,18 +264,19 @@ export function emitSendMessage(
       return;
     }
 
-    socket.emit('message:send', { chatId, content, type, metadata }, (response: { success: boolean; message?: unknown; error?: string }) => {
-      resolve(response);
-    });
+    socket.emit(
+      'message:send',
+      { chatId, content, type, metadata },
+      (response: { success: boolean; message?: unknown; error?: string }) => {
+        resolve(response);
+      },
+    );
   });
 }
 
-/**
- * Edit a message
- */
 export function emitEditMessage(
   messageId: string,
-  content: string
+  content: string,
 ): Promise<{ success: boolean; message?: unknown; error?: string }> {
   return new Promise((resolve) => {
     if (!socket?.connected) {
@@ -189,17 +284,18 @@ export function emitEditMessage(
       return;
     }
 
-    socket.emit('message:edit', { messageId, content }, (response: { success: boolean; message?: unknown; error?: string }) => {
-      resolve(response);
-    });
+    socket.emit(
+      'message:edit',
+      { messageId, content },
+      (response: { success: boolean; message?: unknown; error?: string }) => {
+        resolve(response);
+      },
+    );
   });
 }
 
-/**
- * Delete a message
- */
 export function emitDeleteMessage(
-  messageId: string
+  messageId: string,
 ): Promise<{ success: boolean; error?: string }> {
   return new Promise((resolve) => {
     if (!socket?.connected) {
@@ -207,29 +303,24 @@ export function emitDeleteMessage(
       return;
     }
 
-    socket.emit('message:delete', { messageId }, (response: { success: boolean; error?: string }) => {
-      resolve(response);
-    });
+    socket.emit(
+      'message:delete',
+      { messageId },
+      (response: { success: boolean; error?: string }) => {
+        resolve(response);
+      },
+    );
   });
 }
 
-/**
- * Start typing indicator
- */
 export function emitTypingStart(chatId: string): void {
   socket?.emit('typing:start', { chatId });
 }
 
-/**
- * Stop typing indicator
- */
 export function emitTypingStop(chatId: string): void {
   socket?.emit('typing:stop', { chatId });
 }
 
-/**
- * Mark chat as read
- */
 export function emitMarkAsRead(chatId: string): Promise<{ success: boolean }> {
   return new Promise((resolve) => {
     if (!socket?.connected) {
@@ -243,28 +334,36 @@ export function emitMarkAsRead(chatId: string): Promise<{ success: boolean }> {
   });
 }
 
-/**
- * Join a chat room
- */
-export function emitJoinChat(chatId: string): Promise<{ success: boolean; onlineUsers?: string[] }> {
+export function emitJoinChat(chatId: string): Promise<{
+  success: boolean;
+  onlineUsers?: string[];
+  presence?: Array<{ userId: string; isOnline: boolean; lastSeenAt?: string | null }>;
+  error?: string;
+}> {
   return new Promise((resolve) => {
     if (!socket?.connected) {
       resolve({ success: false });
       return;
     }
 
-    socket.emit('chat:join', { chatId }, (response: { success: boolean; onlineUsers?: string[] }) => {
-      resolve(response);
-    });
+    socket.emit(
+      'chat:join',
+      { chatId },
+      (response: {
+        success: boolean;
+        onlineUsers?: string[];
+        presence?: Array<{ userId: string; isOnline: boolean; lastSeenAt?: string | null }>;
+        error?: string;
+      }) => {
+        resolve(response);
+      },
+    );
   });
 }
 
-/**
- * Send vocabulary (teacher feature)
- */
 export function emitSendVocabulary(
   chatId: string,
-  words: string[]
+  words: string[],
 ): Promise<{ success: boolean; message?: unknown; error?: string }> {
   return new Promise((resolve) => {
     if (!socket?.connected) {
@@ -272,27 +371,44 @@ export function emitSendVocabulary(
       return;
     }
 
-    socket.emit('vocabulary:send', { chatId, words }, (response: { success: boolean; message?: unknown; error?: string }) => {
-      resolve(response);
-    });
+    socket.emit(
+      'vocabulary:send',
+      { chatId, words },
+      (response: { success: boolean; message?: unknown; error?: string }) => {
+        resolve(response);
+      },
+    );
   });
 }
 
-// ============ SUBSCRIBE HELPERS ============
-
-type EventHandler<T> = (data: T) => void;
-
 /**
- * Subscribe to socket events
+ * Subscribe to a chat socket event. Safe for multiple useSocket() callers —
+ * only one native listener is attached per event name.
  */
 export function onSocketEvent<K extends keyof SocketEvents>(
   event: K,
-  handler: EventHandler<SocketEvents[K]>
+  handler: (data: SocketEvents[K]) => void,
 ): () => void {
-  socket?.on(event as never, handler as never);
+  const eventName = event as string;
+  let set = eventHandlerSets.get(eventName);
+  if (!set) {
+    set = new Set();
+    eventHandlerSets.set(eventName, set);
+  }
+  set.add(handler as SocketEventHandler);
+  ensureEventBridge(eventName);
 
-  // Return unsubscribe function
   return () => {
-    socket?.off(event as never, handler as never);
+    const handlers = eventHandlerSets.get(eventName);
+    if (!handlers) return;
+    handlers.delete(handler as SocketEventHandler);
+    if (handlers.size === 0) {
+      const bridge = eventBridges.get(eventName);
+      if (bridge && socket) {
+        socket.off(eventName, bridge);
+      }
+      eventBridges.delete(eventName);
+      eventHandlerSets.delete(eventName);
+    }
   };
 }

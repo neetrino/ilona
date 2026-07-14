@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
+import { formatAppDate, formatAppTime } from '@/shared/lib/app-timezone';
 import { cn } from '@/shared/lib/utils';
 import { ActionButtons } from '@/shared/components/ui/action-buttons';
 import { Eye, Check } from 'lucide-react';
@@ -55,10 +56,9 @@ export function DailyDutiesLessonsTable({
   };
 
   const formatDateTime = (dateString: string) => {
-    const date = new Date(dateString);
     return {
-      date: date.toLocaleDateString('en-GB', { month: 'short', day: 'numeric', year: 'numeric' }),
-      time: date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+      date: formatAppDate(dateString, 'en', { month: 'short', day: 'numeric', year: 'numeric' }),
+      time: formatAppTime(dateString, 'en'),
     };
   };
 

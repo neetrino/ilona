@@ -35,6 +35,7 @@ export function AdminChatList(props: AdminChatListProps) {
           activeChat={vm.activeChat}
           getUserUnreadCount={vm.getUserUnreadCount}
           getUserOnlineStatus={vm.getUserOnlineStatus}
+          getUserLastMessage={vm.getUserLastMessage}
           onSelectUser={vm.handleSelectUser}
         />
       );
@@ -46,6 +47,7 @@ export function AdminChatList(props: AdminChatListProps) {
           activeChat={vm.activeChat}
           getUserUnreadCount={vm.getUserUnreadCount}
           getUserOnlineStatus={vm.getUserOnlineStatus}
+          getUserLastMessage={vm.getUserLastMessage}
           onSelectUser={vm.handleSelectUser}
         />
       );
@@ -56,6 +58,7 @@ export function AdminChatList(props: AdminChatListProps) {
           items={vm.sortedGroupItems}
           groupUnreadMap={vm.groupUnreadMap}
           activeChat={vm.activeChat}
+          getGroupLastMessage={vm.getGroupLastMessage}
           onSelectChat={vm.onSelectChat}
           onSelectGroup={vm.handleSelectGroup}
         />

@@ -2,8 +2,12 @@
 
 import { useTranslations } from 'next-intl';
 import Image from 'next/image';
+import { useLogo } from '@/features/settings/hooks/useSettings';
 import { cn } from '@/shared/lib/utils';
-import { formatMessagePreview } from '../../utils';
+import { getFullApiUrl } from '@/shared/lib/api-url-utils';
+import { resolveChatAvatarUrl } from '../../utils/chat-avatar';
+import { formatChatListPreview } from '../../utils';
+import { ChatUnreadBadge } from '../ChatUnreadBadge';
 import type { TeacherChatListViewModel } from './teacher-chat-list.types';
 
 interface TeacherChatListAdminItemProps {
@@ -24,6 +28,12 @@ export function TeacherChatListAdminItem({
   onAdminClick,
 }: TeacherChatListAdminItemProps) {
   const tChat = useTranslations('chat');
+  const { data: logoData } = useLogo();
+  const adminAvatarUrl = resolveChatAvatarUrl(
+    admin.avatarUrl,
+    'ADMIN',
+    getFullApiUrl(logoData?.logoUrl),
+  );
 
   return (
     <div className="border-b border-slate-200">
@@ -37,9 +47,9 @@ export function TeacherChatListAdminItem({
         )}
       >
         <div className="relative">
-          {admin.avatarUrl ? (
+          {adminAvatarUrl ? (
             <Image
-              src={admin.avatarUrl}
+              src={adminAvatarUrl}
               alt={admin.name}
               width={48}
               height={48}
@@ -70,7 +80,7 @@ export function TeacherChatListAdminItem({
               </span>
             )}
           </div>
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-2">
             {admin.chatId ? (
               <>
                 <p
@@ -79,13 +89,21 @@ export function TeacherChatListAdminItem({
                     (admin.unreadCount || 0) > 0 ? 'font-medium text-slate-700' : 'text-slate-500',
                   )}
                 >
-                  {formatMessagePreview(admin.lastMessage, messagePreviewLabels)}
+                  {formatChatListPreview({
+                    message: admin.lastMessage,
+                    labels: messagePreviewLabels,
+                    unreadCount: admin.unreadCount || 0,
+                    unreadLabel:
+                      (admin.unreadCount || 0) > 0
+                        ? tChat('unreadCount', { count: admin.unreadCount || 0 })
+                        : undefined,
+                  })}
                 </p>
-                {(admin.unreadCount || 0) > 0 && (
-                  <span className="ml-2 flex-shrink-0 rounded-full bg-primary px-2 py-0.5 text-xs text-primary-foreground">
-                    {admin.unreadCount}
-                  </span>
-                )}
+                <ChatUnreadBadge
+                  count={admin.unreadCount || 0}
+                  className="ml-2"
+                  label={tChat('unreadCount', { count: admin.unreadCount || 0 })}
+                />
               </>
             ) : (
               <p className="text-sm italic text-slate-500">{tChat('clickToStartConversation')}</p>

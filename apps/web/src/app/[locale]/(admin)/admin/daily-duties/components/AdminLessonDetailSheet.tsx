@@ -8,6 +8,7 @@ import { PortalFormSheetDragHandle } from '@/shared/components/ui/portal-form-sh
 import { PortalFormSheetScrollArea } from '@/shared/components/ui/portal-form-sheet-scroll-area';
 import { PortalSheetPortal } from '@/shared/components/ui/portal-sheet-portal';
 import { usePortalSheetDrag } from '@/shared/hooks/usePortalSheetDrag';
+import { formatAppDateTime } from '@/shared/lib/app-timezone';
 import { cn } from '@/shared/lib/utils';
 import {
   PORTAL_FORM_SHEET_HEADER_CLASS,
@@ -69,7 +70,7 @@ export function AdminLessonDetailSheet({
     ? t('lessonTitle', { name: lesson.group?.name || t('lessonUnknown') })
     : t('lessonLoadingTitle');
   const subtitle = lesson
-    ? `${new Date(lesson.scheduledAt).toLocaleDateString()} at ${new Date(lesson.scheduledAt).toLocaleTimeString()}`
+    ? formatAppDateTime(lesson.scheduledAt)
     : t('lessonLoadingSubtitle');
 
   return (

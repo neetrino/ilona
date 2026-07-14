@@ -40,7 +40,8 @@ export function DailyDutiesMonthView({
                     : 'px-3 py-2.5 text-sm',
                 )}
               >
-                {formatDailyDutiesLessonTime(lesson.scheduledAt)} · {lesson.group?.name ?? t('lessonUnknown')}
+                {formatDailyDutiesLessonTime(lesson.scheduledAt, lesson.duration)} ·{' '}
+                {lesson.group?.name ?? t('lessonUnknown')}
                 {lesson.substituteTeacher?.user
                   ? ` · ${t('substituteShort')} ${lesson.substituteTeacher.user.firstName[0]}.`
                   : ''}

@@ -17,6 +17,7 @@ import {
 import { DailyPlanResourceKind, Prisma, UserRole } from '@ilona/database';
 import { effectiveLessonInstructorTeacherId, teacherActsAsLessonInstructor } from '../../common/lesson-instructor';
 import { JwtPayload } from '../../common/types/auth.types';
+import { buildDailyPlanSearchWhere } from './daily-plan-search.util';
 
 const RESOURCE_KINDS = new Set<string>([
   DailyPlanResourceKind.READING,
@@ -170,26 +171,7 @@ export class DailyPlanService {
     }
 
     if (query.search?.trim()) {
-      const term = query.search.trim();
-      whereParts.push({
-        topics: {
-          some: {
-            OR: [
-              { title: { contains: term, mode: 'insensitive' } },
-              {
-                resources: {
-                  some: {
-                    OR: [
-                      { title: { contains: term, mode: 'insensitive' } },
-                      { description: { contains: term, mode: 'insensitive' } },
-                    ],
-                  },
-                },
-              },
-            ],
-          },
-        },
-      });
+      whereParts.push(buildDailyPlanSearchWhere(query.search.trim()));
     }
 
     const where: Prisma.DailyPlanWhereInput =

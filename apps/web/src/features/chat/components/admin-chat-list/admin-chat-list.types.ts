@@ -1,5 +1,5 @@
 import type { AdminChatGroup, AdminChatUser } from '../../api/chat.api';
-import type { Chat } from '../../types';
+import type { Chat, Message } from '../../types';
 
 export type AdminChatTab = 'students' | 'teachers' | 'groups';
 
@@ -30,6 +30,8 @@ export interface AdminChatListViewModel {
   activeChat: Chat | null;
   getUserUnreadCount: (userId: string) => number;
   getUserOnlineStatus: (userId: string) => boolean;
+  getUserLastMessage: (userId: string) => Message | null | undefined;
+  getGroupLastMessage: (groupIdOrChatId: string) => Message | null | undefined;
   handleSelectUser: (userId: string) => Promise<void>;
   handleSelectGroup: (groupId: string) => Promise<void>;
   onSelectChat: (chat: Chat) => void;

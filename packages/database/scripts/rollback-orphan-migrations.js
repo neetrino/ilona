@@ -1,30 +1,18 @@
 /**
  * Removes orphan migration records from _prisma_migrations.
  * Orphan = migration was applied to DB but the migration file no longer exists in code.
- * Loads .env.local from repo root for DATABASE_URL/DIRECT_URL.
+ * Loads repo-root `.env` for DATABASE_URL/DIRECT_URL.
  */
 const path = require('path');
-const fs = require('fs');
+const { loadRootEnv } = require('./load-root-env.cjs');
 
 const prismaDir = path.join(__dirname, '..');
-const repoRoot = path.join(prismaDir, '../..');
 
-const envPath = path.join(repoRoot, '.env.local');
-if (fs.existsSync(envPath)) {
-  const content = fs.readFileSync(envPath, 'utf8');
-  content.split(/\r?\n/).forEach((line) => {
-    const match = line.match(/^([^#=]+)=(.*)$/);
-    if (match) {
-      const key = match[1].trim();
-      const value = match[2].trim().replace(/^["']|["']$/g, '');
-      process.env[key] = value;
-    }
-  });
-}
+loadRootEnv();
 
 const DIRECT_URL = process.env.DIRECT_URL || process.env.DATABASE_URL;
 if (!DIRECT_URL) {
-  console.error('Missing DIRECT_URL or DATABASE_URL (e.g. in .env.local)');
+  console.error('Missing DIRECT_URL or DATABASE_URL (e.g. in .env)');
   process.exit(1);
 }
 

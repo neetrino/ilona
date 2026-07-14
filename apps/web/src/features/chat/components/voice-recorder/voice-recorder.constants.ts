@@ -1,9 +1,15 @@
+/**
+ * Prefer MP4/AAC first: Safari + modern Chromium can record it, and all major
+ * browsers can play it. WebM/Opus is last — Safari/iOS cannot play WebM.
+ */
 export const VOICE_RECORDER_MIME_TYPES = [
+  'audio/mp4;codecs=mp4a.40.2',
+  'audio/mp4',
+  'audio/aac',
   'audio/webm;codecs=opus',
   'audio/webm',
   'audio/ogg;codecs=opus',
   'audio/ogg',
-  'audio/mp4',
 ] as const;
 
 export const VOICE_RECORDER_MAX_DURATION_SEC = 300;

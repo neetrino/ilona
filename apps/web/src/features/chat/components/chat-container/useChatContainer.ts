@@ -8,7 +8,13 @@ import { useAppSearchUrl } from '@/shared/hooks/useAppSearchUrl';
 import { useAuthStore, getDashboardPath } from '@/features/auth/store/auth.store';
 import { useMyTeachers } from '@/features/students/hooks/useStudents';
 import { useChatStore } from '../../store/chat.store';
-import { useSocket, useChats, useCreateDirectChat, clearChatUnreadInCache } from '../../hooks';
+import {
+  useSocket,
+  useChats,
+  useCreateDirectChat,
+  clearChatUnreadInCache,
+  useEscapeToLeaveChatConversation,
+} from '../../hooks';
 import { fetchChat } from '../../api/chat.api';
 import { getChatThemeForRole } from '../../lib/chat-theme';
 import type { Chat } from '../../types';
@@ -77,18 +83,22 @@ export function useChatContainer({
     }
   }, [returnTo, router, user?.role]);
 
+  const activeChatId = activeChat?.id ?? null;
+
+  // URL is the source of truth after mount. User actions update both store and URL;
+  // this effect only mirrors URL → store (never the reverse) so the two cannot ping-pong.
   useEffect(() => {
     if (isInitialMount.current || isLoadingChats) return;
 
     if (!conversationIdFromUrl) {
-      if (activeChat) {
+      if (activeChatId) {
         setActiveChat(null);
         setMobileListVisible(true);
       }
       return;
     }
 
-    if (activeChat?.id === conversationIdFromUrl) return;
+    if (activeChatId === conversationIdFromUrl) return;
 
     const fromList = chats.find((chat) => chat.id === conversationIdFromUrl);
     if (fromList) {
@@ -118,7 +128,7 @@ export function useChatContainer({
   }, [
     conversationIdFromUrl,
     urlRevision,
-    activeChat,
+    activeChatId,
     chats,
     isLoadingChats,
     replaceSearchParams,
@@ -129,8 +139,8 @@ export function useChatContainer({
   useEffect(() => {
     if (isLoadingChats || !isInitialMount.current) return;
 
-    const typeFromUrl = readUrlSearchParam('type', searchParams);
-    const teacherIdFromUrl = readUrlSearchParam('teacherId', searchParams);
+    const typeFromUrl = readUrlSearchParam('type', searchParams, urlRevision);
+    const teacherIdFromUrl = readUrlSearchParam('teacherId', searchParams, urlRevision);
     if (isStudent && typeFromUrl === 'dm' && teacherIdFromUrl && isLoadingTeachers) {
       return;
     }
@@ -138,7 +148,7 @@ export function useChatContainer({
     const chatIdFromUrl = conversationIdFromUrl;
 
     if (!chatIdFromUrl && !teacherIdFromUrl) {
-      if (activeChat) {
+      if (activeChatId) {
         setActiveChat(null);
       }
       isInitialMount.current = false;
@@ -159,7 +169,8 @@ export function useChatContainer({
           replaceSearchParams((params) => {
             params.delete('type');
             params.delete('teacherId');
-            params.set('chatId', existingChat.id);
+            params.set('conversationId', existingChat.id);
+            params.delete('chatId');
           });
         } else {
           createDirectChat.mutate(teacher.userId, {
@@ -169,7 +180,8 @@ export function useChatContainer({
               replaceSearchParams((params) => {
                 params.delete('type');
                 params.delete('teacherId');
-                params.set('chatId', newChat.id);
+                params.set('conversationId', newChat.id);
+                params.delete('chatId');
               });
             },
           });
@@ -210,6 +222,7 @@ export function useChatContainer({
     isLoadingTeachers,
     teachers,
     searchParams,
+    urlRevision,
     setActiveChat,
     setMobileListVisible,
     replaceSearchParams,
@@ -217,27 +230,8 @@ export function useChatContainer({
     isStudent,
     createDirectChat,
     conversationIdFromUrl,
-    activeChat,
+    activeChatId,
   ]);
-
-  useEffect(() => {
-    if (isInitialMount.current) return;
-
-    const chatIdInUrl = conversationIdFromUrl;
-    if (activeChat) {
-      if (activeChat.id !== chatIdInUrl) {
-        replaceSearchParams((params) => {
-          params.set('conversationId', activeChat.id);
-          params.delete('chatId');
-        });
-      }
-    } else if (chatIdInUrl) {
-      replaceSearchParams((params) => {
-        params.delete('chatId');
-        params.delete('conversationId');
-      });
-    }
-  }, [activeChat, conversationIdFromUrl, replaceSearchParams, urlRevision]);
 
   const handleSelectChat = useCallback(
     (chat: Chat) => {
@@ -263,6 +257,8 @@ export function useChatContainer({
       params.delete('conversationId');
     });
   }, [replaceSearchParams, setActiveChat, setMobileListVisible]);
+
+  useEscapeToLeaveChatConversation(Boolean(activeChat), handleBack);
 
   useEffect(() => {
     if (activeChat && !isMobileListVisible) {

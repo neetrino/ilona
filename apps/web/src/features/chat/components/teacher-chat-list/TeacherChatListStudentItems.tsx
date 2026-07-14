@@ -4,8 +4,9 @@ import { useTranslations } from 'next-intl';
 import Image from 'next/image';
 import { cn } from '@/shared/lib/utils';
 import { formatDisplayName, getInitialsFromParts } from '@/shared/components/ui/avatar';
-import { formatMessagePreview } from '../../utils';
+import { formatChatListPreview } from '../../utils';
 import { OnlineStatusDot } from '../OnlineStatusDot';
+import { ChatUnreadBadge } from '../ChatUnreadBadge';
 import type { TeacherChatListViewModel } from './teacher-chat-list.types';
 
 interface TeacherChatListStudentItemsProps {
@@ -83,7 +84,7 @@ export function TeacherChatListStudentItems({
                   </span>
                 )}
               </div>
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between gap-2">
                 {student.chatId ? (
                   <>
                     <p
@@ -92,13 +93,20 @@ export function TeacherChatListStudentItems({
                         hasUnread ? 'font-medium text-slate-700' : 'text-slate-500',
                       )}
                     >
-                      {formatMessagePreview(student.lastMessage, messagePreviewLabels)}
+                      {formatChatListPreview({
+                        message: student.lastMessage,
+                        labels: messagePreviewLabels,
+                        unreadCount: student.unreadCount || 0,
+                        unreadLabel: hasUnread
+                          ? tChat('unreadCount', { count: student.unreadCount || 0 })
+                          : undefined,
+                      })}
                     </p>
-                    {hasUnread && (
-                      <span className="ml-2 flex-shrink-0 rounded-full bg-primary px-2 py-0.5 text-xs text-primary-foreground">
-                        {student.unreadCount}
-                      </span>
-                    )}
+                    <ChatUnreadBadge
+                      count={student.unreadCount || 0}
+                      className="ml-2"
+                      label={tChat('unreadCount', { count: student.unreadCount || 0 })}
+                    />
                   </>
                 ) : (
                   <p className="text-sm italic text-slate-500">{tChat('clickToStartConversation')}</p>

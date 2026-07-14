@@ -1,8 +1,11 @@
 import type { Lesson } from '@/features/lessons';
+import { formatAppTimeRange } from '@/shared/lib/app-timezone';
 
-export function formatDailyDutiesLessonTime(dateStr: string): string {
-  const date = new Date(dateStr);
-  return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+export function formatDailyDutiesLessonTime(
+  dateStr: string,
+  durationMinutes?: number | null,
+): string {
+  return formatAppTimeRange(dateStr, durationMinutes);
 }
 
 export function isCalendarToday(date: Date): boolean {

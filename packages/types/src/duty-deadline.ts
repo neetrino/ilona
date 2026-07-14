@@ -3,9 +3,11 @@
 // ============================================
 
 import type { CompletedActions } from './settings.types';
-
-/** Project timezone for daily duty deadlines (23:59 on duty date). */
-export const APP_TIMEZONE = 'Asia/Yerevan';
+import {
+  APP_TIMEZONE,
+  endOfZonedDay,
+  getCalendarDateInTimezone,
+} from './app-timezone';
 
 export type DutyActionKey = 'absence' | 'feedbacks' | 'voice' | 'text' | 'dailyPlan';
 
@@ -32,77 +34,11 @@ export interface LessonDutyTimestamps {
   latestFeedbackAt?: Date | null;
 }
 
-function getCalendarDateInTimezone(date: Date, timeZone: string): string {
-  return new Intl.DateTimeFormat('en-CA', {
-    timeZone,
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  }).format(date);
-}
-
-function zonedWallClockToUtc(
-  year: number,
-  month: number,
-  day: number,
-  hour: number,
-  minute: number,
-  second: number,
-  ms: number,
-  timeZone: string,
-): Date {
-  const dtf = new Intl.DateTimeFormat('en-US', {
-    timeZone,
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-    hour12: false,
-  });
-
-  const readParts = (instant: Date) => {
-    const parts = dtf.formatToParts(instant);
-    const map: Record<string, string> = {};
-    for (const part of parts) {
-      if (part.type !== 'literal') {
-        map[part.type] = part.value;
-      }
-    }
-    return map;
-  };
-
-  const desiredUtc = Date.UTC(year, month - 1, day, hour, minute, second, ms);
-  let ts = desiredUtc;
-
-  for (let i = 0; i < 5; i++) {
-    const p = readParts(new Date(ts));
-    const actualUtc = Date.UTC(
-      Number(p.year),
-      Number(p.month) - 1,
-      Number(p.day),
-      Number(p.hour),
-      Number(p.minute),
-      Number(p.second),
-    );
-    const diff = desiredUtc - actualUtc;
-    if (Math.abs(diff) < 1) {
-      break;
-    }
-    ts += diff;
-  }
-
-  return new Date(ts);
-}
-
 /**
  * End of duty day: 23:59:59.999 in the project timezone for the lesson's calendar date.
  */
 export function getDutyDeadline(scheduledAt: Date, timeZone = APP_TIMEZONE): Date {
-  const ymd = getCalendarDateInTimezone(scheduledAt, timeZone);
-  const [y, m, d] = ymd.split('-').map(Number);
-  return zonedWallClockToUtc(y, m, d, 23, 59, 59, 999, timeZone);
+  return endOfZonedDay(getCalendarDateInTimezone(scheduledAt, timeZone), timeZone);
 }
 
 export function isCompletedOnTime(

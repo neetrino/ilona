@@ -60,6 +60,7 @@ export class ChatDetailService {
         avatarUrl: string | null;
         role: string;
         status: string | null;
+        lastSeenAt: Date | null;
       };
     }>;
   }> {

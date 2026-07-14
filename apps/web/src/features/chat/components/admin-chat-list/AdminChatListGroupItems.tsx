@@ -1,9 +1,12 @@
 'use client';
 
+import { useMemo } from 'react';
 import { useTranslations } from 'next-intl';
-import { Badge } from '@/shared/components/ui/badge';
+import { useAuthStore } from '@/features/auth/store/auth.store';
 import { getInitials } from '@/shared/components/ui/avatar';
 import { getGroupIconComponent } from '@/features/groups';
+import { formatChatListPreview } from '../../utils';
+import { ChatUnreadBadge } from '../ChatUnreadBadge';
 import {
   ADMIN_CHAT_LIST_ITEM_SUBTITLE_CLASS,
   ADMIN_CHAT_LIST_ITEM_TITLE_CLASS,
@@ -15,6 +18,7 @@ interface AdminChatListGroupItemsProps {
   items: AdminChatListViewModel['sortedGroupItems'];
   groupUnreadMap: AdminChatListViewModel['groupUnreadMap'];
   activeChat: AdminChatListViewModel['activeChat'];
+  getGroupLastMessage: AdminChatListViewModel['getGroupLastMessage'];
   onSelectChat: AdminChatListViewModel['onSelectChat'];
   onSelectGroup: AdminChatListViewModel['handleSelectGroup'];
 }
@@ -23,10 +27,24 @@ export function AdminChatListGroupItems({
   items,
   groupUnreadMap,
   activeChat,
+  getGroupLastMessage,
   onSelectChat,
   onSelectGroup,
 }: AdminChatListGroupItemsProps) {
   const tChat = useTranslations('chat');
+  const currentUserId = useAuthStore((state) => state.user?.id);
+  const messagePreviewLabels = useMemo(
+    () => ({
+      noMessagesYet: tChat('noMessagesYet'),
+      voiceMessage: tChat('voiceMessage'),
+      photo: tChat('photo'),
+      video: tChat('video'),
+      attachment: tChat('attachment'),
+      systemMessage: tChat('systemMessage'),
+      message: tChat('message'),
+    }),
+    [tChat],
+  );
 
   return (
     <div className="divide-y divide-slate-100">
@@ -34,6 +52,7 @@ export function AdminChatListGroupItems({
         if (item.kind === 'custom') {
           const chat = item.chat;
           const unread = groupUnreadMap.get(chat.id) || 0;
+          const lastMessage = getGroupLastMessage(chat.id) ?? chat.lastMessage;
           const isActive =
             activeChat?.type === 'GROUP' && !activeChat.groupId && activeChat.id === chat.id;
 
@@ -51,17 +70,24 @@ export function AdminChatListGroupItems({
                   <h3 className={ADMIN_CHAT_LIST_ITEM_TITLE_CLASS}>
                     {chat.name || tChat('groupChatLabel')}
                   </h3>
-                  {unread > 0 && (
-                    <Badge
-                      variant="error"
-                      className="flex h-5 min-w-[20px] flex-shrink-0 items-center justify-center px-1.5"
-                    >
-                      {unread}
-                    </Badge>
-                  )}
+                  <ChatUnreadBadge
+                    count={unread}
+                    label={tChat('unreadCount', { count: unread })}
+                  />
                 </div>
                 <p className={ADMIN_CHAT_LIST_ITEM_SUBTITLE_CLASS}>
-                  {tChat('groupChatParticipants', { count: chat.participants?.length ?? 0 })}
+                  {formatChatListPreview({
+                    message: lastMessage,
+                    labels: messagePreviewLabels,
+                    unreadCount: unread,
+                    unreadLabel:
+                      unread > 0 ? tChat('unreadCount', { count: unread }) : undefined,
+                    isGroup: true,
+                    currentUserId,
+                    emptyFallback: tChat('groupChatParticipants', {
+                      count: chat.participants?.length ?? 0,
+                    }),
+                  })}
                 </p>
               </div>
             </button>
@@ -70,6 +96,7 @@ export function AdminChatListGroupItems({
 
         const group = item.group;
         const unread = groupUnreadMap.get(group.id) || 0;
+        const lastMessage = getGroupLastMessage(group.id);
         const isActive = activeChat?.type === 'GROUP' && activeChat.groupId === group.id;
         const GroupListIcon = getGroupIconComponent(group.iconKey);
 
@@ -89,18 +116,23 @@ export function AdminChatListGroupItems({
             <div className="min-w-0 flex-1">
               <div className="flex items-center justify-between gap-2">
                 <h3 className={ADMIN_CHAT_LIST_ITEM_TITLE_CLASS}>{group.name}</h3>
-                {unread > 0 && (
-                  <Badge
-                    variant="error"
-                    className="flex h-5 min-w-[20px] flex-shrink-0 items-center justify-center px-1.5"
-                  >
-                    {unread}
-                  </Badge>
-                )}
+                <ChatUnreadBadge
+                  count={unread}
+                  label={tChat('unreadCount', { count: unread })}
+                />
               </div>
-              {group.center && (
-                <p className={ADMIN_CHAT_LIST_ITEM_SUBTITLE_CLASS}>{group.center.name}</p>
-              )}
+              <p className={ADMIN_CHAT_LIST_ITEM_SUBTITLE_CLASS}>
+                {formatChatListPreview({
+                  message: lastMessage,
+                  labels: messagePreviewLabels,
+                  unreadCount: unread,
+                  unreadLabel:
+                    unread > 0 ? tChat('unreadCount', { count: unread }) : undefined,
+                  isGroup: true,
+                  currentUserId,
+                  emptyFallback: group.center?.name,
+                })}
+              </p>
             </div>
           </button>
         );

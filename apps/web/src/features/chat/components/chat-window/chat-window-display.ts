@@ -1,4 +1,5 @@
 import type { Chat } from '../../types';
+import { resolveChatAvatarUrl } from '../../utils/chat-avatar';
 import { formatDisplayName, getInitialsFromParts } from '../../utils/chat-utils';
 
 export function getOtherParticipant(chat: Chat, currentUserId?: string) {
@@ -16,10 +17,15 @@ export function getChatTitle(chat: Chat, currentUserId: string | undefined, fall
     : fallback;
 }
 
-export function getChatAvatarUrl(chat: Chat, currentUserId?: string) {
+export function getChatAvatarUrl(
+  chat: Chat,
+  currentUserId?: string,
+  brandLogoUrl?: string | null,
+) {
   if (chat.type === 'GROUP') return null;
   const other = getOtherParticipant(chat, currentUserId);
-  return other?.user.avatarUrl ?? null;
+  if (!other) return null;
+  return resolveChatAvatarUrl(other.user.avatarUrl, other.user.role, brandLogoUrl);
 }
 
 export function getChatAvatarInitials(

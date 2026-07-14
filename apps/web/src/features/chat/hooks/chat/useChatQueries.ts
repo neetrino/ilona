@@ -24,8 +24,13 @@ export function useMessages(chatId: string, enabled = true) {
     queryKey: chatKeys.messages(chatId),
     queryFn: ({ pageParam }) => fetchMessages(chatId, pageParam),
     initialPageParam: undefined as string | undefined,
-    getNextPageParam: (lastPage) => lastPage.nextCursor || undefined,
+    getNextPageParam: (lastPage) =>
+      lastPage.hasMore ? lastPage.nextCursor || undefined : undefined,
     enabled: enabled && !!chatId,
+    // Always load the latest page from the API when opening a chat.
+    // Socket must not leave a one-message cache that blocks history forever.
+    staleTime: 0,
+    refetchOnMount: 'always',
   });
 }
 

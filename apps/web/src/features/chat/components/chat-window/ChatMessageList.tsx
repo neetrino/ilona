@@ -11,9 +11,15 @@ interface ChatMessageListProps {
   ui: ChatThemeTokens;
   messages: Message[];
   isLoading: boolean;
-  hasNextPage: boolean;
   isFetchingNextPage: boolean;
   currentUserId?: string;
+  currentUserAvatar?: {
+    avatarUrl?: string | null;
+    firstName?: string | null;
+    lastName?: string | null;
+    role?: string | null;
+  };
+  canDeleteAnyMessage: boolean;
   focusedMessageId: string | null;
   isMobileViewport: boolean;
   mobileDeleteMessageId: string | null;
@@ -24,13 +30,13 @@ interface ChatMessageListProps {
     inactiveManager: string;
     unknownUser: string;
   };
+  brandLogoUrl: string | null;
   messagesContainerRef: React.RefObject<HTMLDivElement | null>;
   messagesEndRef: React.RefObject<HTMLDivElement | null>;
   registerMessageElement: (messageId: string, el: HTMLDivElement | null) => void;
-  onFetchNextPage: () => void;
   onMessagesContainerClick: () => void;
   onOpenDeleteMessage: (messageId: string) => void;
-  onOwnMessageTap: (messageId: string, event: React.MouseEvent) => void;
+  onDeletableMessageTap: (messageId: string, event: React.MouseEvent) => void;
 }
 
 export function ChatMessageList({
@@ -38,25 +44,25 @@ export function ChatMessageList({
   ui,
   messages,
   isLoading,
-  hasNextPage,
   isFetchingNextPage,
   currentUserId,
+  currentUserAvatar,
+  canDeleteAnyMessage,
   focusedMessageId,
   isMobileViewport,
   mobileDeleteMessageId,
   messageIdToDelete,
   isDeletingMessage,
   senderLabels,
+  brandLogoUrl,
   messagesContainerRef,
   messagesEndRef,
   registerMessageElement,
-  onFetchNextPage,
   onMessagesContainerClick,
   onOpenDeleteMessage,
-  onOwnMessageTap,
+  onDeletableMessageTap,
 }: ChatMessageListProps) {
   const tChat = useTranslations('chat');
-  const tCommon = useTranslations('common');
 
   return (
     <div
@@ -67,15 +73,9 @@ export function ChatMessageList({
         ui.messagesBg,
       )}
     >
-      {hasNextPage && (
-        <div className="text-center">
-          <button
-            onClick={onFetchNextPage}
-            disabled={isFetchingNextPage}
-            className={ui.loadMore}
-          >
-            {isFetchingNextPage ? tCommon('loading') : tChat('loadEarlierMessages')}
-          </button>
+      {isFetchingNextPage && (
+        <div className="flex items-center justify-center py-2">
+          <div className={cn('h-5 w-5 animate-spin rounded-full', ui.spinner)} />
         </div>
       )}
 
@@ -97,15 +97,18 @@ export function ChatMessageList({
             chat={chat}
             ui={ui}
             currentUserId={currentUserId}
+            currentUserAvatar={currentUserAvatar}
+            canDeleteAnyMessage={canDeleteAnyMessage}
             focusedMessageId={focusedMessageId}
             isMobileViewport={isMobileViewport}
             mobileDeleteMessageId={mobileDeleteMessageId}
             messageIdToDelete={messageIdToDelete}
             isDeletingMessage={isDeletingMessage}
             senderLabels={senderLabels}
+            brandLogoUrl={brandLogoUrl}
             registerMessageElement={registerMessageElement}
             onOpenDeleteMessage={onOpenDeleteMessage}
-            onOwnMessageTap={onOwnMessageTap}
+            onDeletableMessageTap={onDeletableMessageTap}
           />
         ))
       )}

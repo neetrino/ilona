@@ -1,5 +1,12 @@
 import { BadRequestException, ConflictException, Injectable } from '@nestjs/common';
 import { LessonCreationSource, LessonStatus, Prisma } from '@ilona/database';
+import {
+  endOfZonedDay,
+  enumerateYmdRange,
+  startOfZonedDay,
+  wallTimeToUtc,
+  ymdWeekday,
+} from '@ilona/types';
 import { PrismaService } from '../prisma/prisma.service';
 import {
   type GroupCalendarStored,
@@ -12,18 +19,10 @@ import { resolveRotatingTeacherId } from '../groups/group-teacher-rotation';
 
 const MAX_OCCURRENCES = 200;
 
-function parseYmd(ymd: string): Date {
-  const d = new Date(`${ymd}T00:00:00`);
-  if (Number.isNaN(d.getTime())) {
+function assertValidYmd(ymd: string): void {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(ymd) || Number.isNaN(Date.parse(`${ymd}T00:00:00Z`))) {
     throw new BadRequestException(`Invalid calendar date: ${ymd}`);
   }
-  return d;
-}
-
-function endOfDayFromYmd(ymd: string): Date {
-  const d = parseYmd(ymd);
-  d.setHours(23, 59, 59, 999);
-  return d;
 }
 
 function slotDurationMinutes(startTime: string, endTime: string): number {
@@ -37,13 +36,14 @@ function enumerateOccurrences(
   dateFromYmd: string,
   dateToYmd: string,
 ): Array<{ at: Date; duration: number; slot: GroupWeeklySlot }> {
-  const startDay = parseYmd(dateFromYmd);
-  startDay.setHours(0, 0, 0, 0);
-  const endBoundary = endOfDayFromYmd(dateToYmd);
+  assertValidYmd(dateFromYmd);
+  assertValidYmd(dateToYmd);
+  const startDay = startOfZonedDay(dateFromYmd);
+  const endBoundary = endOfZonedDay(dateToYmd);
   const out: Array<{ at: Date; duration: number; slot: GroupWeeklySlot }> = [];
-  const cur = new Date(startDay);
-  while (cur <= endBoundary) {
-    const dow = cur.getDay();
+
+  for (const ymd of enumerateYmdRange(dateFromYmd, dateToYmd)) {
+    const dow = ymdWeekday(ymd);
     for (const slot of weeklySlots) {
       if (slot.dayOfWeek !== dow) continue;
       const dur = slotDurationMinutes(slot.startTime, slot.endTime);
@@ -53,14 +53,11 @@ function enumerateOccurrences(
       if (dur < 15 || dur > 240) {
         throw new BadRequestException('Each slot must be between 15 and 240 minutes');
       }
-      const [h, m] = slot.startTime.split(':').map(Number);
-      const at = new Date(cur);
-      at.setHours(h, m, 0, 0);
+      const at = wallTimeToUtc(ymd, slot.startTime);
       if (at >= startDay && at <= endBoundary) {
         out.push({ at, duration: dur, slot });
       }
     }
-    cur.setDate(cur.getDate() + 1);
   }
   out.sort((a, b) => a.at.getTime() - b.at.getTime());
   return out;
@@ -143,9 +140,9 @@ export class GroupScheduleLessonsService {
 
     const dateFrom = params.calendar.dateFrom;
     const dateTo = params.calendar.dateTo;
-    const fromD = parseYmd(dateFrom);
-    const toD = parseYmd(dateTo);
-    if (toD < fromD) {
+    assertValidYmd(dateFrom);
+    assertValidYmd(dateTo);
+    if (dateTo < dateFrom) {
       throw new BadRequestException('Calendar end date must be on or after start date');
     }
 
@@ -184,9 +181,8 @@ export class GroupScheduleLessonsService {
       throw new BadRequestException('No lessons match the selected weekdays in this date range.');
     }
 
-    const rangeStart = parseYmd(dateFrom);
-    rangeStart.setHours(0, 0, 0, 0);
-    const rangeEnd = endOfDayFromYmd(dateTo);
+    const rangeStart = startOfZonedDay(dateFrom);
+    const rangeEnd = endOfZonedDay(dateTo);
 
     const replaceMode = oldKey === null || needsReplace;
 
@@ -198,9 +194,8 @@ export class GroupScheduleLessonsService {
     let deleteStart = rangeStart;
     let deleteEnd = rangeEnd;
     if (replaceMode && prev.calendar) {
-      const prevStart = parseYmd(prev.calendar.dateFrom);
-      prevStart.setHours(0, 0, 0, 0);
-      const prevEnd = endOfDayFromYmd(prev.calendar.dateTo);
+      const prevStart = startOfZonedDay(prev.calendar.dateFrom);
+      const prevEnd = endOfZonedDay(prev.calendar.dateTo);
       deleteStart = minDate(rangeStart, prevStart);
       deleteEnd = maxDate(rangeEnd, prevEnd);
     }

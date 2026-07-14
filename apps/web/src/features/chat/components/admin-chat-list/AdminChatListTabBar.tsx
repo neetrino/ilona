@@ -2,7 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 import { cn } from '@/shared/lib/utils';
-import { Badge } from '@/shared/components/ui/badge';
+import { ChatUnreadBadge } from '../ChatUnreadBadge';
 import type { AdminChatListViewModel } from './admin-chat-list.types';
 
 interface AdminChatListTabBarProps {
@@ -28,33 +28,21 @@ export function AdminChatListTabBar({
     );
 
   const tabUnreadBadgeClass =
-    'flex h-4 min-w-[18px] shrink-0 items-center justify-center px-1 text-xs sm:absolute sm:-right-0.5 sm:-top-0.5 sm:min-w-[16px] sm:px-0.5 sm:text-[10px] sm:leading-none';
+    'h-4 min-w-[18px] px-1 text-xs sm:absolute sm:-right-0.5 sm:-top-0.5 sm:min-w-[16px] sm:px-0.5 sm:text-[10px] sm:leading-none';
 
   return (
     <div className="mx-auto grid w-full max-w-full grid-cols-3 gap-2 sm:grid-cols-[0.82fr_1.09fr_1.09fr] sm:gap-1.5">
       <button type="button" onClick={() => onTabChange('groups')} className={tabButtonClass('groups')}>
         <span className="sm:px-0.5">{tChat('groups')}</span>
-        {unreadCounts.groups > 0 && (
-          <Badge variant="error" className={tabUnreadBadgeClass}>
-            {unreadCounts.groups}
-          </Badge>
-        )}
+        <ChatUnreadBadge count={unreadCounts.groups} className={tabUnreadBadgeClass} />
       </button>
       <button type="button" onClick={() => onTabChange('teachers')} className={tabButtonClass('teachers')}>
         <span className="sm:px-0.5">{tChat('teachersTab')}</span>
-        {unreadCounts.teachers > 0 && (
-          <Badge variant="error" className={tabUnreadBadgeClass}>
-            {unreadCounts.teachers}
-          </Badge>
-        )}
+        <ChatUnreadBadge count={unreadCounts.teachers} className={tabUnreadBadgeClass} />
       </button>
       <button type="button" onClick={() => onTabChange('students')} className={tabButtonClass('students')}>
         <span className="sm:px-0.5">{tChat('students')}</span>
-        {unreadCounts.students > 0 && (
-          <Badge variant="error" className={tabUnreadBadgeClass}>
-            {unreadCounts.students}
-          </Badge>
-        )}
+        <ChatUnreadBadge count={unreadCounts.students} className={tabUnreadBadgeClass} />
       </button>
     </div>
   );

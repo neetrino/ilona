@@ -2,9 +2,9 @@ import { PrismaClient } from '../src/generated/client';
 import { config } from 'dotenv';
 import { resolve } from 'path';
 
-// Load environment variables from root .env.local or .env
-config({ path: resolve(__dirname, '../../../.env.local') });
+// Load environment variables from root .env (fallback: .env.local)
 config({ path: resolve(__dirname, '../../../.env') });
+config({ path: resolve(__dirname, '../../../.env.local') });
 
 const prisma = new PrismaClient();
 

@@ -2,6 +2,7 @@ import { AddLessonForm } from '@/features/lessons';
 import { BulkDeleteConfirmationDialog } from '@/features/lessons/components/BulkDeleteConfirmationDialog';
 import { SubstituteLessonModal } from '@/app/[locale]/(admin)/admin/daily-duties/components/SubstituteLessonModal';
 import { AdminLessonDetailSheet } from '@/app/[locale]/(admin)/admin/daily-duties/components/AdminLessonDetailSheet';
+import { formatAppDateTime } from '@/shared/lib/app-timezone';
 import { cn } from '@/shared/lib/utils';
 import { useTranslations } from 'next-intl';
 import type { Lesson } from '@/features/lessons';
@@ -98,10 +99,7 @@ export function DailyDutiesOverlays({
             singleDelete.lesson ? (
               t('deleteLessonPermanentFor', {
                 group: singleDelete.lesson.group?.name ?? t('unknownGroup'),
-                datetime: new Date(singleDelete.lesson.scheduledAt).toLocaleString(undefined, {
-                  dateStyle: 'medium',
-                  timeStyle: 'short',
-                }),
+                datetime: formatAppDateTime(singleDelete.lesson.scheduledAt),
               })
             ) : (
               t('deleteLessonPermanent')

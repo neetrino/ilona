@@ -18,6 +18,7 @@ interface ChatWindowHeaderProps {
   avatarInitials: string;
   typingNames: string[];
   onlineStatus: boolean | null;
+  presenceLabel: string | null;
   isConnected: boolean;
   isMobileConversation: boolean;
   isAdminOrManager: boolean;
@@ -43,6 +44,7 @@ export function ChatWindowHeader({
   avatarInitials,
   typingNames,
   onlineStatus,
+  presenceLabel,
   isConnected,
   isMobileConversation,
   isAdminOrManager,
@@ -118,9 +120,9 @@ export function ChatWindowHeader({
               verb: typingNames.length === 1 ? tChat('typingOne') : tChat('typingMany'),
             })}
           </p>
-        ) : onlineStatus !== null ? (
+        ) : presenceLabel ? (
           <p className={cn('text-xs', onlineStatus ? 'text-green-600' : ui.muted)}>
-            {onlineStatus ? tChat('online') : tChat('offline')}
+            {presenceLabel}
           </p>
         ) : (
           <p className={cn('text-xs', ui.muted)}>
@@ -175,7 +177,7 @@ export function ChatWindowHeader({
               <OnlineStatusDot
                 variant="inline"
                 isOnline={onlineStatus}
-                title={onlineStatus ? tChat('online') : tChat('offline')}
+                title={presenceLabel ?? (onlineStatus ? tChat('online') : tChat('offline'))}
               />
             ) : (
               <div

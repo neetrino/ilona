@@ -23,6 +23,7 @@ export {
   useTeacherUnreadCounts,
   useStudentUnreadCounts,
   chatKeys,
+  applyChatReadReceiptInCache,
   clearChatUnreadInCache,
   isPendingMessageId,
 } from './useChat';
@@ -33,3 +34,4 @@ export {
 } from './useSocket';
 
 export { useChatMessageNavigation } from './useChatMessageNavigation';
+export { useEscapeToLeaveChatConversation } from './useEscapeToLeaveChatConversation';

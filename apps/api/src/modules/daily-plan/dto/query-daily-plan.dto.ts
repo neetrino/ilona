@@ -2,7 +2,7 @@ import { IsOptional, IsString, IsISO8601, IsInt, Min, Max } from 'class-validato
 import { Transform } from 'class-transformer';
 
 export class QueryDailyPlanDto {
-  /** Free-text search across topic titles, resource titles, and skill kinds. */
+  /** Free-text search: teacher name, group, center, topic, and resource fields. */
   @IsString()
   @IsOptional()
   search?: string;

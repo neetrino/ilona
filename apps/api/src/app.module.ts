@@ -59,7 +59,8 @@ import { AppController } from './app.controller';
     ConfigModule.forRoot({
       isGlobal: true,
       load: [appConfig, jwtConfig, redisConfig],
-      envFilePath: ['.env.local', '.env'],
+      // Later files override earlier ones — prefer repo-root / cwd `.env`
+      envFilePath: ['.env.local', '.env', '../../.env'],
     }),
 
     CacheModule.registerAsync({
@@ -133,7 +134,7 @@ import { AppController } from './app.controller';
   providers: [
     // Correlation ID and request logging
     CorrelationIdMiddleware,
-    // Production: no stack/sensitive data in error responses; uses ConfigService (.env.local)
+    // Production: no stack/sensitive data in error responses; uses ConfigService (.env)
     {
       provide: APP_FILTER,
       useClass: AllExceptionsFilter,

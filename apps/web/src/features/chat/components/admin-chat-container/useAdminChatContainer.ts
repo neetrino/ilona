@@ -8,7 +8,13 @@ import { fetchChat } from '../../api/chat.api';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuthStore, getDashboardPath } from '@/features/auth/store/auth.store';
 import { useChatStore } from '../../store/chat.store';
-import { useSocket, useChatDetail, chatKeys, clearChatUnreadInCache } from '../../hooks';
+import {
+  useSocket,
+  useChatDetail,
+  chatKeys,
+  clearChatUnreadInCache,
+  useEscapeToLeaveChatConversation,
+} from '../../hooks';
 import type { Chat } from '../../types';
 import type {
   AdminChatContainerProps,
@@ -80,18 +86,21 @@ export function useAdminChatContainer({
     }
   }, [searchParams, urlRevision]);
 
+  const activeChatId = activeChat?.id ?? null;
+
+  // URL → store only. Handlers update the URL; a reverse sync effect caused an infinite loop.
   useEffect(() => {
     if (isInitialMount.current) return;
 
     if (!conversationIdFromUrl) {
-      if (activeChat) {
+      if (activeChatId) {
         setActiveChat(null);
         setMobileListVisible(true);
       }
       return;
     }
 
-    if (activeChat?.id === conversationIdFromUrl) return;
+    if (activeChatId === conversationIdFromUrl) return;
 
     let cancelled = false;
     fetchChat(conversationIdFromUrl)
@@ -115,7 +124,7 @@ export function useAdminChatContainer({
   }, [
     conversationIdFromUrl,
     urlRevision,
-    activeChat,
+    activeChatId,
     replaceSearchParams,
     setActiveChat,
     setMobileListVisible,
@@ -182,25 +191,6 @@ export function useAdminChatContainer({
     activeChat,
   ]);
 
-  useEffect(() => {
-    if (isInitialMount.current) return;
-
-    const conversationIdInUrl = readUrlSearchParam('conversationId', searchParams, urlRevision);
-    if (activeChat) {
-      if (activeChat.id !== conversationIdInUrl) {
-        replaceSearchParams((params) => {
-          params.set('conversationId', activeChat.id);
-          if (!params.get('tab') && activeTab) params.set('tab', activeTab);
-        });
-      }
-    } else if (conversationIdInUrl) {
-      replaceSearchParams((params) => {
-        params.delete('conversationId');
-        clearChatDeleteGroupParam(params);
-      });
-    }
-  }, [activeChat, activeTab, replaceSearchParams, searchParams, urlRevision]);
-
   const handleBackToPrevious = useCallback(() => {
     const safeReturnTo = resolveAdminReturnToPath(returnTo);
     if (safeReturnTo) {
@@ -251,6 +241,8 @@ export function useAdminChatContainer({
       clearChatDeleteGroupParam(params);
     });
   }, [replaceSearchParams, setActiveChat, setMobileListVisible]);
+
+  useEscapeToLeaveChatConversation(Boolean(activeChat), handleBack);
 
   useEffect(() => {
     if (activeChat && !isMobileListVisible) {

@@ -10,11 +10,15 @@ import {
 } from './voice-recorder.constants';
 import type { VoiceRecorderProps, VoiceRecorderViewModel } from './voice-recorder.types';
 import {
-  detectBlobSilence,
-  formatVoiceRecorderDuration,
+  acquireMicrophoneStream,
   createAudioContext,
+  createVoiceMediaRecorder,
+  detectBlobSilence,
+  ensureAudioContextRunning,
+  formatVoiceRecorderDuration,
   getExtensionFromMimeType,
   getSupportedMimeType,
+  shouldOmitMediaRecorderTimeslice,
 } from './voice-recorder.util';
 
 export function useVoiceRecorder({
@@ -99,17 +103,22 @@ export function useVoiceRecorder({
   const handleRecorderStop = useCallback(
     async (mimeType: string) => {
       const recorder = recorderRef.current;
-      if (recorder?.state !== 'inactive' && 'requestData' in recorder!) {
+      // Only flush pending timeslice chunks when we used start(timeslice).
+      if (
+        !shouldOmitMediaRecorderTimeslice() &&
+        recorder &&
+        recorder.state !== 'inactive' &&
+        typeof recorder.requestData === 'function'
+      ) {
         try {
-          (recorder as MediaRecorder & { requestData: () => void }).requestData();
+          recorder.requestData();
         } catch {
           // Ignore if not supported
         }
+        await new Promise((resolve) => setTimeout(resolve, 100));
       }
 
-      await new Promise((resolve) => setTimeout(resolve, 100));
-
-      const selectedMimeType = mimeType || recorder?.mimeType || 'audio/webm';
+      const selectedMimeType = mimeType || recorder?.mimeType || 'audio/mp4';
       const blob = new Blob(chunksRef.current, { type: selectedMimeType });
 
       if (blob.size === 0) {
@@ -161,9 +170,11 @@ export function useVoiceRecorder({
       });
       setDurationSec(0);
 
-      const stream = await navigator.mediaDevices.getUserMedia({
-        audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true },
-      });
+      if (typeof MediaRecorder === 'undefined') {
+        throw new Error(tChat('noSupportedAudioFormat'));
+      }
+
+      const stream = await acquireMicrophoneStream();
 
       const audioTracks = stream.getAudioTracks();
       if (audioTracks.length === 0) throw new Error(tChat('noAudioTrack'));
@@ -176,6 +187,7 @@ export function useVoiceRecorder({
 
       try {
         const audioContext = createAudioContext();
+        await ensureAudioContextRunning(audioContext);
         audioContextRef.current = audioContext;
         const source = audioContext.createMediaStreamSource(stream);
         const analyser = audioContext.createAnalyser();
@@ -216,18 +228,17 @@ export function useVoiceRecorder({
         console.warn('[VoiceRecorder] Failed to setup audio analysis:', audioError);
       }
 
-      const mimeType = getSupportedMimeType();
-      if (!mimeType) throw new Error(tChat('noSupportedAudioFormat'));
-
-      const recorder = new MediaRecorder(stream, { mimeType });
+      const preferredMimeType = getSupportedMimeType();
+      const recorder = createVoiceMediaRecorder(stream, preferredMimeType);
       recorderRef.current = recorder;
+      const resolvedMimeType = recorder.mimeType || preferredMimeType || 'audio/mp4';
 
       recorder.ondataavailable = (event) => {
         if (event.data?.size > 0) chunksRef.current.push(event.data);
       };
 
       recorder.onstop = () => {
-        void handleRecorderStop(mimeType);
+        void handleRecorderStop(resolvedMimeType);
       };
 
       recorder.onerror = (event) => {
@@ -236,7 +247,12 @@ export function useVoiceRecorder({
       };
 
       startedAtRef.current = Date.now();
-      recorder.start(VOICE_RECORDER_TIMESLICE_MS);
+      // Safari/iOS: timeslice often yields empty blobs; collect one final blob on stop.
+      if (shouldOmitMediaRecorderTimeslice()) {
+        recorder.start();
+      } else {
+        recorder.start(VOICE_RECORDER_TIMESLICE_MS);
+      }
       isRecordingRef.current = true;
       setIsRecording(true);
 

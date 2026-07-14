@@ -10,6 +10,7 @@ import { Avatar } from '@/shared/components/ui/avatar';
 import { AdminListPagination } from '@/shared/components/ui';
 import { User } from 'lucide-react';
 import Image from 'next/image';
+import { formatAppDate, formatAppTimeRange } from '@/shared/lib/app-timezone';
 import { cn } from '@/shared/lib/utils';
 import { DailyDutiesListActionPill } from '@/shared/components/daily-duties/DailyDutiesListActionPill';
 import { getLessonActionsDerived, type LessonActionId } from '@/shared/lib/daily-duties/lesson-action-states';
@@ -160,16 +161,14 @@ export function LessonListTableMobileCards({
                         </svg>
                         <div className="min-w-0">
                           <p className="text-left text-[11px] font-medium text-[#1f2937]">
-                            {new Date(lesson.scheduledAt).toLocaleDateString(
-                              locale === 'hy' ? 'hy-AM' : 'en-GB',
-                              { weekday: 'short', month: 'short', day: 'numeric' },
-                            )}
+                            {formatAppDate(lesson.scheduledAt, locale, {
+                              weekday: 'short',
+                              month: 'short',
+                              day: 'numeric',
+                            })}
                           </p>
-                          <p className="mt-0.5 text-left text-[2rem] leading-none font-medium text-[#111827]">
-                            {new Date(lesson.scheduledAt).toLocaleTimeString(
-                              locale === 'hy' ? 'hy-AM' : 'en-US',
-                              { hour: '2-digit', minute: '2-digit', hour12: false },
-                            )}
+                          <p className="mt-0.5 text-left text-[1.65rem] leading-none font-medium tabular-nums text-[#111827]">
+                            {formatAppTimeRange(lesson.scheduledAt, lesson.duration)}
                           </p>
                         </div>
                       </div>

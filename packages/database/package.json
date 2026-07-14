@@ -27,7 +27,7 @@
     "db:seed": "tsx prisma/seed.ts",
     "db:reset": "prisma migrate reset",
     "db:apply-obligations": "node scripts/apply-migration.js",
-    "db:add-lesson-rate": "dotenv -e ../../.env.local -- tsx scripts/add-lesson-rate-column.ts",
+    "db:add-lesson-rate": "dotenv -e ../../.env -- tsx scripts/add-lesson-rate-column.ts",
     "db:add-color-hex": "tsx scripts/apply-color-hex-migration.ts",
     "db:reconcile-phase0": "tsx scripts/reconcile-phase0-schema.ts",
     "typecheck": "tsc --noEmit",

@@ -26,6 +26,7 @@ export function VoiceMessagePlayerControls({ vm }: VoiceMessagePlayerControlsPro
           ref={vm.audioRef}
           src={vm.proxiedUrl}
           preload="metadata"
+          playsInline
           className="sr-only"
           onError={vm.handleError}
           onCanPlay={vm.handleCanPlay}

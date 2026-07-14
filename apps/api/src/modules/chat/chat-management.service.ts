@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { CreateChatDto, CreateCustomGroupChatDto } from './dto';
+import { PrismaService } from '../prisma/prisma.service';
 import { ChatUserChatsService } from './chat-user-chats.service';
 import { ChatDetailService } from './chat-detail.service';
 import { ChatDirectService } from './chat-direct.service';
@@ -13,6 +14,7 @@ import { JwtPayload } from '../../common/types/auth.types';
 @Injectable()
 export class ChatManagementService {
   constructor(
+    private readonly prisma: PrismaService,
     private readonly userChatsService: ChatUserChatsService,
     private readonly detailService: ChatDetailService,
     private readonly directService: ChatDirectService,
@@ -72,5 +74,25 @@ export class ChatManagementService {
 
   getOnlineUsers(_chatId: string, onlineUserIds: Set<string>): string[] {
     return Array.from(onlineUserIds);
+  }
+
+  async touchUserLastSeen(userId: string): Promise<Date> {
+    const now = new Date();
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { lastSeenAt: now },
+      select: { id: true },
+    });
+    return now;
+  }
+
+  async getUsersLastSeen(
+    userIds: string[],
+  ): Promise<Array<{ id: string; lastSeenAt: Date | null }>> {
+    if (userIds.length === 0) return [];
+    return this.prisma.user.findMany({
+      where: { id: { in: userIds } },
+      select: { id: true, lastSeenAt: true },
+    });
   }
 }

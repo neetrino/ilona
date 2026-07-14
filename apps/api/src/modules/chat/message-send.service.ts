@@ -175,10 +175,13 @@ export class MessageSendService {
       }
     }
 
+    // Persist the DB-validated user id only — never accept identity from the client DTO.
+    const verifiedSenderId = senderUser.id;
+
     const message = await this.prisma.message.create({
       data: {
         chatId: dto.chatId,
-        senderId,
+        senderId: verifiedSenderId,
         type: messageType,
         content: dto.content,
         fileUrl: dto.fileUrl,
@@ -193,6 +196,15 @@ export class MessageSendService {
         },
       },
     });
+
+    if (message.senderId !== verifiedSenderId) {
+      this.logger.error('[sendMessage] persisted senderId mismatch', {
+        expected: verifiedSenderId,
+        actual: message.senderId,
+        chatId: dto.chatId,
+      });
+      throw new BadRequestException('Failed to persist message sender');
+    }
 
     await this.prisma.chat.update({
       where: { id: dto.chatId },

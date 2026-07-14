@@ -12,9 +12,19 @@ import {
   getMessageSenderDisplay,
   getInitialsFromParts,
 } from '../../utils/chat-utils';
+import { resolveChatAvatarUrl } from '../../utils/chat-avatar';
 import { isPendingMessageId } from '../../hooks';
+import { getMessageDeliveryStatus } from '../../utils/message-delivery-status';
 import { VoiceMessagePlayer } from '../VoiceMessagePlayer';
 import { getSubstituteVoiceLabel, isVocabularyMessage } from './chat-message-meta';
+import { MessageDeliveryTicks } from './MessageDeliveryTicks';
+
+interface ChatCurrentUserAvatar {
+  avatarUrl?: string | null;
+  firstName?: string | null;
+  lastName?: string | null;
+  role?: string | null;
+}
 
 interface ChatMessageItemProps {
   message: Message;
@@ -22,6 +32,8 @@ interface ChatMessageItemProps {
   chat: Chat;
   ui: ChatThemeTokens;
   currentUserId?: string;
+  currentUserAvatar?: ChatCurrentUserAvatar;
+  canDeleteAnyMessage: boolean;
   focusedMessageId: string | null;
   isMobileViewport: boolean;
   mobileDeleteMessageId: string | null;
@@ -32,9 +44,10 @@ interface ChatMessageItemProps {
     inactiveManager: string;
     unknownUser: string;
   };
+  brandLogoUrl: string | null;
   registerMessageElement: (messageId: string, el: HTMLDivElement | null) => void;
   onOpenDeleteMessage: (messageId: string) => void;
-  onOwnMessageTap: (messageId: string, event: React.MouseEvent) => void;
+  onDeletableMessageTap: (messageId: string, event: React.MouseEvent) => void;
 }
 
 export function ChatMessageItem({
@@ -43,15 +56,18 @@ export function ChatMessageItem({
   chat,
   ui,
   currentUserId,
+  currentUserAvatar,
+  canDeleteAnyMessage,
   focusedMessageId,
   isMobileViewport,
   mobileDeleteMessageId,
   messageIdToDelete,
   isDeletingMessage,
   senderLabels,
+  brandLogoUrl,
   registerMessageElement,
   onOpenDeleteMessage,
-  onOwnMessageTap,
+  onDeletableMessageTap,
 }: ChatMessageItemProps) {
   const tChat = useTranslations('chat');
   const tCommon = useTranslations('common');
@@ -59,10 +75,48 @@ export function ChatMessageItem({
 
   const isOwn = message.senderId === currentUserId;
   const isPending = isPendingMessageId(message.id);
+  const deliveryStatus = isOwn
+    ? getMessageDeliveryStatus(message, chat, currentUserId, isPending)
+    : null;
+  const canDelete = !isPending && (isOwn || canDeleteAnyMessage);
   const senderDisplay = getMessageSenderDisplay(message, senderLabels);
+  const senderAvatarUrl = resolveChatAvatarUrl(
+    message.sender?.avatarUrl ?? (isOwn ? currentUserAvatar?.avatarUrl : null),
+    message.sender?.role ?? (isOwn ? currentUserAvatar?.role : null),
+    brandLogoUrl,
+  );
+  const senderInitials = getInitialsFromParts(
+    message.sender?.firstName ?? (isOwn ? currentUserAvatar?.firstName : null),
+    message.sender?.lastName ?? (isOwn ? currentUserAvatar?.lastName : null),
+  );
   const showDateSeparator = shouldShowDateSeparator(message, prevMessage);
   const isVocabulary = isVocabularyMessage(message);
   const substituteVoiceLabel = getSubstituteVoiceLabel(message, tChat('substituteTeacherDefault'));
+
+  const senderAvatar = (
+    <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center overflow-hidden rounded-full">
+      {senderAvatarUrl ? (
+        <Image
+          src={senderAvatarUrl}
+          alt={senderDisplay.name}
+          width={32}
+          height={32}
+          className="h-full w-full object-cover"
+          unoptimized
+        />
+      ) : (
+        <div
+          className={cn(
+            'flex h-full w-full items-center justify-center text-sm font-medium',
+            ui.skeleton,
+            ui.body,
+          )}
+        >
+          {senderInitials || '?'}
+        </div>
+      )}
+    </div>
+  );
 
   return (
     <div
@@ -80,65 +134,14 @@ export function ChatMessageItem({
         </div>
       )}
 
-      <div className={cn('group flex gap-2', isOwn ? 'justify-end' : 'justify-start')}>
-        {!isOwn && (
-          <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center overflow-hidden rounded-full">
-            {message.sender?.avatarUrl ? (
-              <Image
-                src={message.sender.avatarUrl}
-                alt={senderDisplay.name}
-                width={32}
-                height={32}
-                className="h-full w-full object-cover"
-                unoptimized
-              />
-            ) : (
-              <div
-                className={cn(
-                  'flex h-full w-full items-center justify-center text-sm font-medium',
-                  ui.skeleton,
-                  ui.body,
-                )}
-              >
-                {message.sender
-                  ? getInitialsFromParts(message.sender.firstName, message.sender.lastName)
-                  : '?'}
-              </div>
-            )}
-          </div>
-        )}
+      <div className={cn('flex items-end gap-2', isOwn ? 'justify-end' : 'justify-start')}>
+        {!isOwn ? senderAvatar : null}
 
         <div
-          className={cn('relative max-w-[70%]', isOwn && 'order-first')}
-          data-message-actions={isOwn ? '' : undefined}
-          onClick={isOwn ? (event) => onOwnMessageTap(message.id, event) : undefined}
+          className="max-w-[70%]"
+          data-message-actions={canDelete ? '' : undefined}
+          onClick={canDelete ? (event) => onDeletableMessageTap(message.id, event) : undefined}
         >
-          {isOwn && !isPending && (
-            <button
-              type="button"
-              onClick={(event) => {
-                event.stopPropagation();
-                onOpenDeleteMessage(message.id);
-              }}
-              disabled={isDeletingMessage && messageIdToDelete === message.id}
-              className={cn(
-                'absolute -top-1 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-white transition-opacity hover:bg-red-600 disabled:opacity-50',
-                isMobileViewport
-                  ? mobileDeleteMessageId === message.id
-                    ? 'opacity-100'
-                    : 'opacity-0'
-                  : 'opacity-0 group-hover:opacity-100',
-                isOwn ? '-right-1' : '-left-1',
-              )}
-              title={tChat('deleteMessage')}
-              aria-label={tChat('deleteMessage')}
-            >
-              <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          )}
-
           {!isOwn && chat.type === 'GROUP' && (
             <p className={cn('mb-1 ml-1 text-xs', ui.muted)}>
               <span className={senderDisplay.isInactive ? 'italic opacity-80' : ''}>
@@ -155,6 +158,33 @@ export function ChatMessageItem({
               {substituteVoiceLabel}
             </p>
           )}
+
+          <div className="group/bubble relative inline-block max-w-full">
+            {canDelete && (
+              <button
+                type="button"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  onOpenDeleteMessage(message.id);
+                }}
+                disabled={isDeletingMessage && messageIdToDelete === message.id}
+                className={cn(
+                  'absolute -top-1 z-10 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-white transition-opacity hover:bg-red-600 disabled:opacity-50',
+                  isMobileViewport
+                    ? mobileDeleteMessageId === message.id
+                      ? 'opacity-100'
+                      : 'opacity-0'
+                    : 'opacity-0 group-hover/bubble:opacity-100',
+                  isOwn ? '-right-1' : '-left-1',
+                )}
+                title={tChat('deleteMessage')}
+                aria-label={tChat('deleteMessage')}
+              >
+                <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            )}
 
           <div
             className={cn(
@@ -185,6 +215,7 @@ export function ChatMessageItem({
               <p className="whitespace-pre-wrap break-words text-sm">{message.content}</p>
             )}
           </div>
+          </div>
 
           <div
             className={cn(
@@ -196,8 +227,19 @@ export function ChatMessageItem({
             {message.isEdited && (
               <span className={cn('text-xs', ui.subtle)}>{tChat('edited')}</span>
             )}
+            {deliveryStatus ? (
+              <MessageDeliveryTicks
+                status={deliveryStatus}
+                sentLabel={tChat('messageSent')}
+                readLabel={tChat('messageRead')}
+                sendingLabel={tChat('sendingMessage')}
+                className={ui.subtle}
+              />
+            ) : null}
           </div>
         </div>
+
+        {isOwn ? senderAvatar : null}
       </div>
     </div>
   );

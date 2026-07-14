@@ -177,7 +177,11 @@ export function LessonListTableBodyRow({
       )}
       <td className="px-4 py-3 text-center align-middle">
         <div className="flex origin-center scale-[0.88] justify-center">
-          <LessonListDateCell dateStr={lesson.scheduledAt} locale={locale} />
+          <LessonListDateCell
+            dateStr={lesson.scheduledAt}
+            locale={locale}
+            durationMinutes={lesson.duration}
+          />
         </div>
       </td>
       {!hideTeacherColumn && (

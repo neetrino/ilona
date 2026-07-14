@@ -84,6 +84,17 @@ export function useDailyDutiesPage(mode: DailyDutiesMode) {
     () => new Set(DAILY_DUTIES_STATUS_FILTER_VALUES),
   );
 
+  const preferTodayWithinSameMonth = useCallback((anchor: Date): Date => {
+    const today = new Date();
+    if (
+      anchor.getFullYear() === today.getFullYear() &&
+      anchor.getMonth() === today.getMonth()
+    ) {
+      return today;
+    }
+    return anchor;
+  }, []);
+
   const readAnchorDateFromUrl = useCallback((): Date => {
     const view = readViewModeFromUrl();
     if (view === 'month') {
@@ -91,7 +102,9 @@ export function useDailyDutiesPage(mode: DailyDutiesMode) {
         readUrlSearchParam('month', searchParams, urlRevision),
       );
       if (parsedMonth) {
-        return parsedMonth;
+        // Month URL is year-month only (day collapses to 1). Keep "today" as the
+        // anchor while viewing the current month so List/Week return stays on Today.
+        return preferTodayWithinSameMonth(parsedMonth);
       }
     } else {
       const parsedWeek = parseDailyDutiesWeekParam(
@@ -102,18 +115,22 @@ export function useDailyDutiesPage(mode: DailyDutiesMode) {
       }
     }
     return new Date();
-  }, [readViewModeFromUrl, searchParams, urlRevision]);
+  }, [preferTodayWithinSameMonth, readViewModeFromUrl, searchParams, urlRevision]);
 
   const [currentDate, setCurrentDate] = useState(() => {
     if (typeof window === 'undefined') {
       return new Date();
     }
     const params = new URLSearchParams(window.location.search);
-    return (
-      parseDailyDutiesWeekParam(params.get('week')) ??
-      parseDailyDutiesMonthParam(params.get('month')) ??
-      new Date()
-    );
+    const fromWeek = parseDailyDutiesWeekParam(params.get('week'));
+    if (fromWeek) {
+      return fromWeek;
+    }
+    const fromMonth = parseDailyDutiesMonthParam(params.get('month'));
+    if (fromMonth) {
+      return preferTodayWithinSameMonth(fromMonth);
+    }
+    return new Date();
   });
   const didSeedPeriodInUrlRef = useRef(false);
   const [isAddLessonOpen, setIsAddLessonOpen] = useState(
@@ -144,12 +161,20 @@ export function useDailyDutiesPage(mode: DailyDutiesMode) {
 
   const updateViewModeInUrl = (nextMode: DailyDutiesViewMode) => {
     setPendingViewMode(nextMode);
+    // Month URL drops the day (→ 1st). Leaving month for list/week in the current
+    // month must restore today so Today stays selected.
+    const leavingMonth = viewMode === 'month' && nextMode !== 'month';
+    const anchor = leavingMonth ? preferTodayWithinSameMonth(currentDate) : currentDate;
+    if (leavingMonth) {
+      setCurrentDate(anchor);
+    }
+
     const updates: SearchParamUpdates = { view: nextMode === 'list' ? null : nextMode };
     if (nextMode === 'month') {
-      updates.month = formatDailyDutiesMonthParam(currentDate);
+      updates.month = formatDailyDutiesMonthParam(anchor);
       updates.week = null;
     } else {
-      updates.week = formatDailyDutiesWeekParam(currentDate);
+      updates.week = formatDailyDutiesWeekParam(anchor);
       updates.month = null;
     }
     replaceParams(updates);
@@ -469,6 +494,18 @@ export function useDailyDutiesPage(mode: DailyDutiesMode) {
   const weekHeader = `${weekDates[0].toLocaleDateString('en-GB', { month: 'short', day: 'numeric' })} - ${weekDates[6].toLocaleDateString('en-GB', { month: 'short', day: 'numeric', year: 'numeric' })}`;
   const monthHeader = currentDate.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
 
+  const isTodayPeriod = useMemo(() => {
+    const today = new Date();
+    if (viewMode === 'month') {
+      return (
+        currentDate.getFullYear() === today.getFullYear() &&
+        currentDate.getMonth() === today.getMonth()
+      );
+    }
+    const todayKey = formatScheduleDate(today);
+    return weekDates.some((date) => formatScheduleDate(date) === todayKey);
+  }, [currentDate, viewMode, weekDates]);
+
   const handleSearchChange = useCallback(
     (value: string) => {
       setSearchQuery(value);
@@ -569,6 +606,7 @@ export function useDailyDutiesPage(mode: DailyDutiesMode) {
     monthHeader,
     navigatePeriod,
     goToToday,
+    isTodayPeriod,
     stats,
     searchQuery,
     selectedTeacherIds,

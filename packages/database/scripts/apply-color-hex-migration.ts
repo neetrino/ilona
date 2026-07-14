@@ -8,11 +8,14 @@ import { resolve } from 'path';
 import { existsSync } from 'fs';
 import { PrismaClient } from '../src/generated/client';
 
-// Load .env.local from project root (same as main.ts)
+// Load .env from project root (fallback: .env.local)
 const possibleRootPaths = [
-  resolve(process.cwd(), '.env.local'),           // If running from root
-  resolve(process.cwd(), '../../.env.local'),    // If running from packages/database
-  resolve(__dirname, '../../../.env.local'),     // If running from scripts
+  resolve(process.cwd(), '.env'),
+  resolve(process.cwd(), '../../.env'),
+  resolve(__dirname, '../../../.env'),
+  resolve(process.cwd(), '.env.local'),
+  resolve(process.cwd(), '../../.env.local'),
+  resolve(__dirname, '../../../.env.local'),
 ];
 
 let envPath: string | undefined;
@@ -26,22 +29,15 @@ for (const path of possibleRootPaths) {
 if (envPath) {
   config({ path: envPath });
   console.log(`✅ Loaded environment from: ${envPath}`);
-  // Also try .env as fallback
-  const envFallback = envPath.replace('.env.local', '.env');
-  if (existsSync(envFallback)) {
-    config({ path: envFallback });
-  }
 } else {
-  // Fallback: try loading from current working directory
-  config({ path: resolve(process.cwd(), '.env.local') });
   config({ path: resolve(process.cwd(), '.env') });
-  console.log('⚠️  No .env.local found, trying default locations...');
+  console.log('⚠️  No .env found, trying default locations...');
 }
 
 // Check if DATABASE_URL is set
 if (!process.env.DATABASE_URL) {
   console.error('❌ Error: DATABASE_URL environment variable is not set.');
-  console.error('Please ensure .env.local exists in the project root with DATABASE_URL.');
+  console.error('Please ensure .env exists in the project root with DATABASE_URL.');
   process.exit(1);
 }
 

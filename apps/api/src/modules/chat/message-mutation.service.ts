@@ -6,13 +6,17 @@ import {
   Logger,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { MessageType } from '@ilona/database';
+import { MessageType, UserRole } from '@ilona/database';
 import { UpdateMessageDto } from './dto';
 import { StorageService } from '../storage/storage.service';
 import { ChatManagementService } from './chat-management.service';
 import { chatSenderPublicSelect, mapMessageWithSender } from './chat-message-sender.util';
 import { JwtPayload } from '../../common/types/auth.types';
 import { extractStorageKeyFromFileUrl } from './message-storage.util';
+
+function canModerateChatMessages(role: UserRole | undefined): boolean {
+  return role === UserRole.ADMIN || role === UserRole.MANAGER;
+}
 
 @Injectable()
 export class MessageMutationService {
@@ -82,7 +86,8 @@ export class MessageMutationService {
       authUser,
     );
 
-    if (message.senderId !== userId) {
+    const isOwner = message.senderId === userId;
+    if (!isOwner && !canModerateChatMessages(authUser?.role)) {
       throw new ForbiddenException('You can only delete your own messages');
     }
 

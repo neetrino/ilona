@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import type { DailyPlan, DailyPlanResourceKind } from './types';
-import { DailyPlanCard } from './DailyPlanCard';
+import { DailyPlanCardsGrid } from './DailyPlanCardsGrid';
 import { useIsIPad } from '@/shared/hooks/useIsIPad';
 import {
   ADMIN_PRIMARY_BUTTON_CLASS,
@@ -26,10 +26,18 @@ interface DailyPlanListSectionProps {
   deletingPlanId?: string | null;
   deleteError?: string | null;
   showCreate?: boolean;
+  /** When set, list is split into My / Others (or All if My is hidden). */
+  currentUserId?: string | null;
+  /** Teacher pages always show My section even when empty. */
+  alwaysShowMineSection?: boolean;
 }
 
 const MOBILE_PAGE_SIZE = 5;
 const IPAD_PAGE_SIZE = 10;
+
+function slicePage(items: DailyPlan[], page: number, pageSize: number): DailyPlan[] {
+  return items.slice(page * pageSize, page * pageSize + pageSize);
+}
 
 export function DailyPlanListSection({
   search,
@@ -46,6 +54,8 @@ export function DailyPlanListSection({
   deletingPlanId = null,
   deleteError = null,
   showCreate = true,
+  currentUserId = null,
+  alwaysShowMineSection = false,
 }: DailyPlanListSectionProps) {
   const t = useTranslations('dailyPlanPage');
   const tCommon = useTranslations('common');
@@ -64,20 +74,42 @@ export function DailyPlanListSection({
   const pageSize = isIPad ? IPAD_PAGE_SIZE : MOBILE_PAGE_SIZE;
   const [mobilePage, setMobilePage] = useState(0);
   const cardsStartRef = useRef<HTMLDivElement | null>(null);
-  const totalPages = Math.max(1, Math.ceil(items.length / pageSize));
+
+  const { mine, others, showMineSection } = useMemo(() => {
+    if (!currentUserId) {
+      return { mine: [] as DailyPlan[], others: items, showMineSection: false };
+    }
+    const own: DailyPlan[] = [];
+    const rest: DailyPlan[] = [];
+    for (const plan of items) {
+      if (plan.teacher.user.id === currentUserId) {
+        own.push(plan);
+      } else {
+        rest.push(plan);
+      }
+    }
+    return {
+      mine: own,
+      others: rest,
+      showMineSection: alwaysShowMineSection || own.length > 0,
+    };
+  }, [alwaysShowMineSection, currentUserId, items]);
+
+  const activeItems = showMineSection ? others : items;
+  const totalPages = Math.max(1, Math.ceil(activeItems.length / pageSize));
   const safePage = Math.min(mobilePage, totalPages - 1);
-  const mobileItems = useMemo(
-    () =>
-      items.slice(
-        safePage * pageSize,
-        safePage * pageSize + pageSize,
-      ),
-    [items, safePage, pageSize],
+  const mobileActiveItems = useMemo(
+    () => slicePage(activeItems, safePage, pageSize),
+    [activeItems, safePage, pageSize],
+  );
+  const mobileMineItems = useMemo(
+    () => slicePage(mine, 0, pageSize),
+    [mine, pageSize],
   );
 
   useEffect(() => {
     setMobilePage(0);
-  }, [trimmedSearch, items.length]);
+  }, [trimmedSearch, items.length, showMineSection]);
 
   const goToMobilePage = (nextPage: number) => {
     setMobilePage(nextPage);
@@ -88,6 +120,10 @@ export function DailyPlanListSection({
       });
     });
   };
+
+  const emptyMessage = trimmedSearch
+    ? emptySearchMessage(trimmedSearch)
+    : emptyDefaultMessage;
 
   return (
     <div className="space-y-6">
@@ -116,16 +152,16 @@ export function DailyPlanListSection({
           </svg>
         </div>
         {showCreate && (
-        <button
-          type="button"
-          onClick={onCreate}
-          className={cn(
-            ADMIN_PRIMARY_BUTTON_CLASS,
-            'shrink-0 bg-[#1010a3] text-white transition-colors hover:bg-[#1010a3]/90',
-          )}
-        >
-          {createLabel}
-        </button>
+          <button
+            type="button"
+            onClick={onCreate}
+            className={cn(
+              ADMIN_PRIMARY_BUTTON_CLASS,
+              'shrink-0 bg-[#1010a3] text-white transition-colors hover:bg-[#1010a3]/90',
+            )}
+          >
+            {createLabel}
+          </button>
         )}
       </div>
       {deleteError && (
@@ -142,80 +178,98 @@ export function DailyPlanListSection({
         </div>
       ) : items.length === 0 ? (
         <div className="bg-white border border-slate-200 rounded-xl p-10 text-center text-sm text-slate-500">
-          {trimmedSearch ? emptySearchMessage(trimmedSearch) : emptyDefaultMessage}
+          {emptyMessage}
         </div>
       ) : (
-        <div className="space-y-4">
-          <div ref={cardsStartRef} className="md:hidden" />
-          <div className="grid grid-cols-1 gap-4 md:hidden">
-          {mobileItems.map((plan) => (
-            <DailyPlanCard
-              key={plan.id}
-              plan={plan}
-              kindLabel={kindLabel}
-              onView={() => onView(plan)}
-              onEdit={() => onEdit(plan)}
-              onDelete={onDelete ? () => onDelete(plan) : undefined}
-              isDeletePending={isDeletePending}
-            />
-          ))}
-          </div>
-          <div className="hidden grid-cols-1 gap-4 md:grid md:grid-cols-2">
-            {items.map((plan) => (
-              <DailyPlanCard
-                key={`desktop-${plan.id}`}
-                plan={plan}
-                kindLabel={kindLabel}
-                onView={() => onView(plan)}
-                onEdit={() => onEdit(plan)}
-                onDelete={onDelete ? () => onDelete(plan) : undefined}
-                isDeletePending={isDeletePending}
-              />
-            ))}
-          </div>
-          {items.length > pageSize && (
-            <div className="flex items-center justify-between text-sm text-[#8b8b90] md:hidden">
-              <span>
-                {safePage * pageSize + 1}-
-                {Math.min((safePage + 1) * pageSize, items.length)} / {items.length}
-              </span>
-              <div className="flex items-center gap-3">
-                <button
-                  type="button"
-                  className={`inline-flex h-9 w-9 items-center justify-center rounded-full border transition-colors ${
-                    safePage === 0
-                      ? 'border-[#d9dde8] bg-[#f1f1f4] text-[#9aa3b5]'
-                      : 'border-[rgba(14,14,16,0.12)] bg-white text-[#3b3b40] hover:bg-[#f6f6f7]'
-                  }`}
-                  disabled={safePage === 0}
-                  onClick={() => goToMobilePage(Math.max(0, safePage - 1))}
-                  aria-label={tCommon('previousPage')}
-                >
-                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                  </svg>
-                </button>
-                <span className="inline-flex h-9 min-w-9 items-center justify-center rounded-full bg-[#1010a3] px-3 text-xs font-semibold text-white">
-                  {safePage + 1}
-                </span>
-                <button
-                  type="button"
-                  className={`inline-flex h-9 w-9 items-center justify-center rounded-full border transition-colors ${
-                    safePage >= totalPages - 1
-                      ? 'border-[#d9dde8] bg-[#f1f1f4] text-[#9aa3b5]'
-                      : 'border-[rgba(14,14,16,0.12)] bg-white text-[#3b3b40] hover:bg-[#f6f6f7]'
-                  }`}
-                  disabled={safePage >= totalPages - 1}
-                  onClick={() => goToMobilePage(Math.min(totalPages - 1, safePage + 1))}
-                  aria-label={tCommon('nextPage')}
-                >
-                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </button>
-              </div>
-            </div>
+        <div className="space-y-8">
+          {showMineSection && (
+            <section className="space-y-3">
+              <h2 className="text-base font-semibold text-[#111827]">{t('sectionMine')}</h2>
+              {mine.length === 0 ? (
+                <div className="bg-white border border-slate-200 rounded-xl p-8 text-center text-sm text-slate-500">
+                  {emptyMessage}
+                </div>
+              ) : (
+                <DailyPlanCardsGrid
+                  items={mine}
+                  mobileItems={mobileMineItems}
+                  kindLabel={kindLabel}
+                  onView={onView}
+                  onEdit={onEdit}
+                  onDelete={onDelete}
+                  isDeletePending={isDeletePending}
+                />
+              )}
+            </section>
           )}
+
+          <section className="space-y-3">
+            <h2 className="text-base font-semibold text-[#111827]">
+              {showMineSection ? t('sectionOthers') : t('sectionAll')}
+            </h2>
+            {activeItems.length === 0 ? (
+              <div className="bg-white border border-slate-200 rounded-xl p-8 text-center text-sm text-slate-500">
+                {emptyMessage}
+              </div>
+            ) : (
+              <>
+                <DailyPlanCardsGrid
+                  items={activeItems}
+                  mobileItems={mobileActiveItems}
+                  kindLabel={kindLabel}
+                  onView={onView}
+                  onEdit={onEdit}
+                  onDelete={onDelete}
+                  isDeletePending={isDeletePending}
+                  cardsStartRef={cardsStartRef}
+                />
+                {activeItems.length > pageSize && (
+                  <div className="flex items-center justify-between text-sm text-[#8b8b90] md:hidden">
+                    <span>
+                      {safePage * pageSize + 1}-
+                      {Math.min((safePage + 1) * pageSize, activeItems.length)} /{' '}
+                      {activeItems.length}
+                    </span>
+                    <div className="flex items-center gap-3">
+                      <button
+                        type="button"
+                        className={`inline-flex h-9 w-9 items-center justify-center rounded-full border transition-colors ${
+                          safePage === 0
+                            ? 'border-[#d9dde8] bg-[#f1f1f4] text-[#9aa3b5]'
+                            : 'border-[rgba(14,14,16,0.12)] bg-white text-[#3b3b40] hover:bg-[#f6f6f7]'
+                        }`}
+                        disabled={safePage === 0}
+                        onClick={() => goToMobilePage(Math.max(0, safePage - 1))}
+                        aria-label={tCommon('previousPage')}
+                      >
+                        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                        </svg>
+                      </button>
+                      <span className="inline-flex h-9 min-w-9 items-center justify-center rounded-full bg-[#1010a3] px-3 text-xs font-semibold text-white">
+                        {safePage + 1}
+                      </span>
+                      <button
+                        type="button"
+                        className={`inline-flex h-9 w-9 items-center justify-center rounded-full border transition-colors ${
+                          safePage >= totalPages - 1
+                            ? 'border-[#d9dde8] bg-[#f1f1f4] text-[#9aa3b5]'
+                            : 'border-[rgba(14,14,16,0.12)] bg-white text-[#3b3b40] hover:bg-[#f6f6f7]'
+                        }`}
+                        disabled={safePage >= totalPages - 1}
+                        onClick={() => goToMobilePage(Math.min(totalPages - 1, safePage + 1))}
+                        aria-label={tCommon('nextPage')}
+                      >
+                        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+          </section>
         </div>
       )}
     </div>

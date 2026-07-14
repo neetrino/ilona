@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useAuthStore } from '@/features/auth/store/auth.store';
+import { useLogo } from '@/features/settings/hooks/useSettings';
 import {
   useMessages,
   useSocket,
@@ -14,9 +15,11 @@ import { useChatStore } from '../store/chat.store';
 import type { Chat } from '../types';
 import { DeleteConfirmationDialog } from '@/shared/components/ui';
 import { api } from '@/shared/lib/api';
+import { getFullApiUrl } from '@/shared/lib/api-url-utils';
 import { VocabularyModal } from './VocabularyModal';
 import { AddMembersModal } from './AddMembersModal';
 import { getChatThemeForRole, isPortalChatRole } from '../lib/chat-theme';
+import { formatChatLastSeen } from '../utils/chat-last-seen';
 import { useIsLgViewport } from '@/shared/hooks/useIsLgViewport';
 import { ChatWindowHeader } from './chat-window/ChatWindowHeader';
 import { ChatMessageList } from './chat-window/ChatMessageList';
@@ -47,6 +50,8 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
   const tCommon = useTranslations('common');
   const locale = useLocale();
   const { user } = useAuthStore();
+  const { data: logoData } = useLogo();
+  const brandLogoUrl = getFullApiUrl(logoData?.logoUrl);
   const senderLabels = useMemo(
     () => ({
       formerManager: tChat('formerManager'),
@@ -65,7 +70,9 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
   const isMobileViewport = isLgViewport === false;
   const addMessageToCache = useAddMessageToCache();
   const createDirectChat = useCreateDirectChat();
-  const { getTypingUsers, addTypingUser } = useChatStore();
+  const { getTypingUsers, addTypingUser, seedPresenceFromChat } = useChatStore();
+  const presenceByUserId = useChatStore((state) => state.presenceByUserId);
+  const [presenceTick, setPresenceTick] = useState(0);
 
   const isTeacher = user?.role === 'TEACHER';
   const isGroupChat = chat.type === 'GROUP';
@@ -105,6 +112,7 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
     markAsRead,
     isUserOnline,
     deleteMessage,
+    joinChat,
   } = useSocket({
     onTypingStart: ({ chatId, userId }) => {
       if (chatId === chat.id && userId !== user?.id) {
@@ -120,8 +128,30 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
     },
   });
 
+  // New DMs are not in the socket room from the initial connection — join when opened.
+  useEffect(() => {
+    if (!chat.id || !isConnected) return;
+    void joinChat(chat.id);
+  }, [chat.id, isConnected, joinChat]);
+
+  useEffect(() => {
+    seedPresenceFromChat(chat);
+  }, [chat, seedPresenceFromChat]);
+
+  useEffect(() => {
+    if (chat.type !== 'DIRECT') return;
+    const timer = window.setInterval(() => {
+      setPresenceTick((value) => value + 1);
+    }, 60_000);
+    return () => window.clearInterval(timer);
+  }, [chat.type, chat.id]);
+
+  // Pages: [newest page, older, …]. Reverse so history renders top→bottom.
   const messages = useMemo(
-    () => messagesData?.pages.flatMap((page) => page.items) ?? [],
+    () =>
+      messagesData?.pages
+        ? [...messagesData.pages].reverse().flatMap((page) => page.items)
+        : [],
     [messagesData],
   );
 
@@ -130,11 +160,16 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
     [messages],
   );
 
-  const { messagesEndRef, messagesContainerRef } = useChatWindowScroll(
-    chat.id,
+  const { messagesEndRef, messagesContainerRef } = useChatWindowScroll({
+    chatId: chat.id,
     isLoading,
-    messages.length,
-  );
+    messagesLength: messages.length,
+    hasNextPage: Boolean(hasNextPage),
+    isFetchingNextPage,
+    onLoadOlder: () => {
+      void fetchNextPage();
+    },
+  });
 
   const {
     focusedMessageId,
@@ -199,7 +234,7 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
     mobileDeleteMessageId,
     handleOpenDeleteMessage,
     handleMessagesContainerClick,
-    handleOwnMessageTap,
+    handleDeletableMessageTap,
     handleDeleteMessageDialogOpenChange,
     handleConfirmDeleteMessage,
   } = useChatMessageDelete({
@@ -239,13 +274,25 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
   };
 
   const chatTitle = getChatTitle(chat, user?.id, tChat('chatTitle'));
-  const chatAvatarUrl = getChatAvatarUrl(chat, user?.id);
+  const chatAvatarUrl = getChatAvatarUrl(chat, user?.id, brandLogoUrl);
   const chatAvatarInitials = getChatAvatarInitials(chat, user?.id, tChat('groupChat'));
   const typingNames = getTypingNames(chat, getTypingUsers(chat.id));
+  const otherUserId = otherParticipant?.userId;
+  const otherPresence = otherUserId ? presenceByUserId[otherUserId] : undefined;
   const onlineStatus =
-    chat.type === 'GROUP' || !otherParticipant
+    chat.type === 'GROUP' || !otherUserId
       ? null
-      : isUserOnline(chat.id, otherParticipant.userId);
+      : Boolean(otherPresence?.isOnline || isUserOnline(chat.id, otherUserId));
+
+  const presenceLabel =
+    chat.type === 'DIRECT' && otherUserId
+      ? formatChatLastSeen(
+          Boolean(onlineStatus),
+          otherPresence?.lastSeenAt ?? otherParticipant?.user.lastSeenAt,
+          (key, values) => (values ? tChat(key, values) : tChat(key)),
+        )
+      : null;
+  void presenceTick;
 
   const isMobileConversation = Boolean(onBack);
   const isAdminPortalChat = user?.role === 'ADMIN' || user?.role === 'MANAGER';
@@ -262,6 +309,7 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
         avatarInitials={chatAvatarInitials}
         typingNames={typingNames}
         onlineStatus={onlineStatus}
+        presenceLabel={presenceLabel}
         isConnected={isConnected}
         isMobileConversation={isMobileConversation}
         isAdminOrManager={isAdminOrManager}
@@ -284,22 +332,32 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
         ui={ui}
         messages={filteredMessages}
         isLoading={isLoading}
-        hasNextPage={Boolean(hasNextPage)}
         isFetchingNextPage={isFetchingNextPage}
         currentUserId={user?.id}
+        currentUserAvatar={
+          user
+            ? {
+                avatarUrl: user.avatarUrl,
+                firstName: user.firstName,
+                lastName: user.lastName,
+                role: user.role,
+              }
+            : undefined
+        }
+        canDeleteAnyMessage={isAdminOrManager}
         focusedMessageId={focusedMessageId}
         isMobileViewport={isMobileViewport}
         mobileDeleteMessageId={mobileDeleteMessageId}
         messageIdToDelete={messageIdToDelete}
         isDeletingMessage={isDeletingMessage}
         senderLabels={senderLabels}
+        brandLogoUrl={brandLogoUrl}
         messagesContainerRef={messagesContainerRef}
         messagesEndRef={messagesEndRef}
         registerMessageElement={registerMessageElement}
-        onFetchNextPage={() => fetchNextPage()}
         onMessagesContainerClick={handleMessagesContainerClick}
         onOpenDeleteMessage={handleOpenDeleteMessage}
-        onOwnMessageTap={handleOwnMessageTap}
+        onDeletableMessageTap={handleDeletableMessageTap}
       />
 
       <ChatComposer
