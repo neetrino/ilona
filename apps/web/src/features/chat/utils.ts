@@ -1,3 +1,4 @@
+import { formatDisplayName } from '@/shared/components/ui/avatar';
 import type { Message } from './types';
 
 /**
@@ -8,6 +9,12 @@ type PartialMessage = {
   content?: string | null;
   fileName?: string | null;
   isSystem?: boolean;
+  senderId?: string;
+  sender?: {
+    id?: string;
+    firstName?: string | null;
+    lastName?: string | null;
+  } | null;
 } | null | undefined;
 
 export type MessagePreviewLabels = {
@@ -70,4 +77,53 @@ export function formatMessagePreview(
   }
 
   return labels.message;
+}
+
+export type ChatListPreviewOptions = {
+  message: Message | PartialMessage;
+  labels: MessagePreviewLabels;
+  unreadCount?: number;
+  /** Pre-formatted via t('unreadCount', { count }) */
+  unreadLabel?: string;
+  isGroup?: boolean;
+  currentUserId?: string | null;
+  /** Fallback when there is no message (e.g. phone) */
+  emptyFallback?: string;
+};
+
+/**
+ * Chat list subtitle: shows unread count + optional sender (groups) + preview.
+ * Example: "3 չկարդացված · Admin User: Hello"
+ */
+export function formatChatListPreview(options: ChatListPreviewOptions): string {
+  const {
+    message,
+    labels,
+    unreadCount = 0,
+    unreadLabel,
+    isGroup = false,
+    currentUserId,
+    emptyFallback,
+  } = options;
+
+  if (!message) {
+    if (unreadCount > 0 && unreadLabel) return unreadLabel;
+    return emptyFallback || labels.noMessagesYet;
+  }
+
+  let preview = formatMessagePreview(message, labels);
+  const sender = message.sender;
+  const senderId = message.senderId ?? sender?.id;
+  if (isGroup && sender && senderId && senderId !== currentUserId) {
+    const senderName = formatDisplayName(sender.firstName, sender.lastName);
+    if (senderName) {
+      preview = `${senderName}: ${preview}`;
+    }
+  }
+
+  if (unreadCount > 0 && unreadLabel) {
+    return `${unreadLabel} · ${preview}`;
+  }
+
+  return preview;
 }

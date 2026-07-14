@@ -14,8 +14,10 @@ import {
 } from '../../utils/chat-utils';
 import { resolveChatAvatarUrl } from '../../utils/chat-avatar';
 import { isPendingMessageId } from '../../hooks';
+import { getMessageDeliveryStatus } from '../../utils/message-delivery-status';
 import { VoiceMessagePlayer } from '../VoiceMessagePlayer';
 import { getSubstituteVoiceLabel, isVocabularyMessage } from './chat-message-meta';
+import { MessageDeliveryTicks } from './MessageDeliveryTicks';
 
 interface ChatCurrentUserAvatar {
   avatarUrl?: string | null;
@@ -73,6 +75,9 @@ export function ChatMessageItem({
 
   const isOwn = message.senderId === currentUserId;
   const isPending = isPendingMessageId(message.id);
+  const deliveryStatus = isOwn
+    ? getMessageDeliveryStatus(message, chat, currentUserId, isPending)
+    : null;
   const canDelete = !isPending && (isOwn || canDeleteAnyMessage);
   const senderDisplay = getMessageSenderDisplay(message, senderLabels);
   const senderAvatarUrl = resolveChatAvatarUrl(
@@ -222,6 +227,15 @@ export function ChatMessageItem({
             {message.isEdited && (
               <span className={cn('text-xs', ui.subtle)}>{tChat('edited')}</span>
             )}
+            {deliveryStatus ? (
+              <MessageDeliveryTicks
+                status={deliveryStatus}
+                sentLabel={tChat('messageSent')}
+                readLabel={tChat('messageRead')}
+                sendingLabel={tChat('sendingMessage')}
+                className={ui.subtle}
+              />
+            ) : null}
           </div>
         </div>
 

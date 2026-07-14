@@ -1,8 +1,9 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
+import { useAuthStore } from '@/features/auth/store/auth.store';
 import { cn } from '@/shared/lib/utils';
-import { formatMessagePreview } from '../../utils';
+import { formatChatListPreview } from '../../utils';
 import { getGroupIconComponent } from '@/features/groups';
 import type { TeacherChatListViewModel } from './teacher-chat-list.types';
 
@@ -26,6 +27,7 @@ export function TeacherChatListGroupItems({
   onGroupClick,
 }: TeacherChatListGroupItemsProps) {
   const tChat = useTranslations('chat');
+  const currentUserId = useAuthStore((state) => state.user?.id);
 
   return (
     <>
@@ -66,17 +68,25 @@ export function TeacherChatListGroupItems({
                     {formatTime(lastMsg?.createdAt || chat.updatedAt)}
                   </span>
                 </div>
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between gap-2">
                   <p
                     className={cn(
                       'truncate text-sm',
                       unread > 0 ? 'font-medium text-slate-700' : 'text-slate-500',
                     )}
                   >
-                    {formatMessagePreview(lastMsg, messagePreviewLabels)}
+                    {formatChatListPreview({
+                      message: lastMsg,
+                      labels: messagePreviewLabels,
+                      unreadCount: unread,
+                      unreadLabel:
+                        unread > 0 ? tChat('unreadCount', { count: unread }) : undefined,
+                      isGroup: true,
+                      currentUserId,
+                    })}
                   </p>
                   {unread > 0 && (
-                    <span className="ml-2 flex-shrink-0 rounded-full bg-primary px-2 py-0.5 text-xs text-primary-foreground">
+                    <span className="ml-2 flex h-5 min-w-[1.25rem] flex-shrink-0 items-center justify-center rounded-full bg-primary px-1.5 text-xs text-primary-foreground">
                       {unread}
                     </span>
                   )}
@@ -142,11 +152,20 @@ export function TeacherChatListGroupItems({
                     hasUnread ? 'font-medium text-slate-700' : 'text-slate-500',
                   )}
                 >
-                  {formatMessagePreview(group.lastMessage, messagePreviewLabels)}
+                  {formatChatListPreview({
+                    message: group.lastMessage,
+                    labels: messagePreviewLabels,
+                    unreadCount: unread,
+                    unreadLabel: hasUnread
+                      ? tChat('unreadCount', { count: unread })
+                      : undefined,
+                    isGroup: true,
+                    currentUserId,
+                  })}
                 </p>
                 {showBadge && (
                   <span
-                    className="ml-1 min-w-[1.25rem] flex-shrink-0 rounded-full bg-primary px-2 py-0.5 text-center text-xs text-primary-foreground"
+                    className="ml-1 flex h-5 min-w-[1.25rem] flex-shrink-0 items-center justify-center rounded-full bg-primary px-1.5 text-center text-xs text-primary-foreground"
                     aria-label={tChat('unreadCount', { count })}
                   >
                     {count}

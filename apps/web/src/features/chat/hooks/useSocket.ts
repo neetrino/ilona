@@ -25,6 +25,7 @@ import { markChatAsRead, sendMessageHttp } from '../api/chat.api';
 import { useChatStore } from '../store/chat.store';
 import {
   chatKeys,
+  applyChatReadReceiptInCache,
   clearChatUnreadInCache,
   createOptimisticTextMessage,
   PENDING_MESSAGE_ID_PREFIX,
@@ -248,9 +249,14 @@ export function useSocket(options: UseSocketOptions = {}) {
       })
     );
 
-    // Chat read event - update cache when chat is marked as read
-    // Note: This is handled in markAsRead callback, but we keep this for completeness
-    // (in case other clients mark as read, though we don't need to update our cache for that)
+    // Peer opened the chat — flip own-message ticks to double-check
+    unsubscribers.push(
+      onSocketEvent('chat:read', (data) => {
+        const readAt =
+          typeof data.readAt === 'string' ? data.readAt : new Date(data.readAt).toISOString();
+        applyChatReadReceiptInCache(queryClient, data.chatId, data.userId, readAt);
+      }),
+    );
 
     // Cleanup
     return () => {

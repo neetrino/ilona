@@ -6,7 +6,7 @@ import { useLogo } from '@/features/settings/hooks/useSettings';
 import { cn } from '@/shared/lib/utils';
 import { getFullApiUrl } from '@/shared/lib/api-url-utils';
 import { resolveChatAvatarUrl } from '../../utils/chat-avatar';
-import { formatMessagePreview } from '../../utils';
+import { formatChatListPreview } from '../../utils';
 import type { TeacherChatListViewModel } from './teacher-chat-list.types';
 
 interface TeacherChatListAdminItemProps {
@@ -79,7 +79,7 @@ export function TeacherChatListAdminItem({
               </span>
             )}
           </div>
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-2">
             {admin.chatId ? (
               <>
                 <p
@@ -88,10 +88,18 @@ export function TeacherChatListAdminItem({
                     (admin.unreadCount || 0) > 0 ? 'font-medium text-slate-700' : 'text-slate-500',
                   )}
                 >
-                  {formatMessagePreview(admin.lastMessage, messagePreviewLabels)}
+                  {formatChatListPreview({
+                    message: admin.lastMessage,
+                    labels: messagePreviewLabels,
+                    unreadCount: admin.unreadCount || 0,
+                    unreadLabel:
+                      (admin.unreadCount || 0) > 0
+                        ? tChat('unreadCount', { count: admin.unreadCount || 0 })
+                        : undefined,
+                  })}
                 </p>
                 {(admin.unreadCount || 0) > 0 && (
-                  <span className="ml-2 flex-shrink-0 rounded-full bg-primary px-2 py-0.5 text-xs text-primary-foreground">
+                  <span className="ml-2 flex h-5 min-w-[1.25rem] flex-shrink-0 items-center justify-center rounded-full bg-primary px-1.5 text-xs text-primary-foreground">
                     {admin.unreadCount}
                   </span>
                 )}

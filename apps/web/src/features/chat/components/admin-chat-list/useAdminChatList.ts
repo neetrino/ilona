@@ -166,6 +166,28 @@ export function useAdminChatList({
     [presenceByUserId],
   );
 
+  const getUserLastMessage = useCallback(
+    (userId: string) => {
+      const chat = chats.find(
+        (c) => c.type === 'DIRECT' && c.participants.some((p) => p.userId === userId),
+      );
+      return chat?.lastMessage;
+    },
+    [chats],
+  );
+
+  const getGroupLastMessage = useCallback(
+    (groupIdOrChatId: string) => {
+      const chat = chats.find(
+        (c) =>
+          c.type === 'GROUP' &&
+          (c.groupId === groupIdOrChatId || c.id === groupIdOrChatId),
+      );
+      return chat?.lastMessage;
+    },
+    [chats],
+  );
+
   const handleSelectUser = useCallback(
     async (userId: string) => {
       try {
@@ -215,6 +237,8 @@ export function useAdminChatList({
     activeChat,
     getUserUnreadCount,
     getUserOnlineStatus,
+    getUserLastMessage,
+    getGroupLastMessage,
     handleSelectUser,
     handleSelectGroup,
     onSelectChat,

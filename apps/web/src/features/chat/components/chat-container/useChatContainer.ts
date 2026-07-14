@@ -8,7 +8,13 @@ import { useAppSearchUrl } from '@/shared/hooks/useAppSearchUrl';
 import { useAuthStore, getDashboardPath } from '@/features/auth/store/auth.store';
 import { useMyTeachers } from '@/features/students/hooks/useStudents';
 import { useChatStore } from '../../store/chat.store';
-import { useSocket, useChats, useCreateDirectChat, clearChatUnreadInCache } from '../../hooks';
+import {
+  useSocket,
+  useChats,
+  useCreateDirectChat,
+  clearChatUnreadInCache,
+  useEscapeToLeaveChatConversation,
+} from '../../hooks';
 import { fetchChat } from '../../api/chat.api';
 import { getChatThemeForRole } from '../../lib/chat-theme';
 import type { Chat } from '../../types';
@@ -251,6 +257,8 @@ export function useChatContainer({
       params.delete('conversationId');
     });
   }, [replaceSearchParams, setActiveChat, setMobileListVisible]);
+
+  useEscapeToLeaveChatConversation(Boolean(activeChat), handleBack);
 
   useEffect(() => {
     if (activeChat && !isMobileListVisible) {

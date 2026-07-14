@@ -7,6 +7,7 @@ export {
   pushMessageToCache,
   upsertIncomingMessageInCache,
   removeMessageFromMessagesCache,
+  applyChatReadReceiptInCache,
   clearChatUnreadInCache,
 } from './chat/chat-cache.util';
 

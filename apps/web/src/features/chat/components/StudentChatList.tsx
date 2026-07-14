@@ -12,7 +12,7 @@ import type { AssignedTeacher } from '@/features/students/api/students.api';
 import { cn } from '@/shared/lib/utils';
 import { getFullApiUrl } from '@/shared/lib/api-url-utils';
 import { getChatTheme } from '../lib/chat-theme';
-import { formatMessagePreview } from '../utils';
+import { formatChatListPreview } from '../utils';
 import { resolveChatAvatarUrl } from '../utils/chat-avatar';
 import { formatChatListTime, sortChatListItems } from '../utils/chat-utils';
 import Image from 'next/image';
@@ -320,19 +320,28 @@ export function StudentChatList({ onSelectChat }: StudentChatListProps) {
                         {formatTime(chat.lastMessage?.createdAt || chat.updatedAt)}
                       </span>
                     </div>
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between gap-2">
                       <p
                         className={cn(
                           'truncate text-sm',
                           hasUnread ? 'font-medium text-[#3b3b40]' : ui.muted,
                         )}
                       >
-                        {formatMessagePreview(chat.lastMessage, messagePreviewLabels)}
+                        {formatChatListPreview({
+                          message: chat.lastMessage,
+                          labels: messagePreviewLabels,
+                          unreadCount: chat.unreadCount || 0,
+                          unreadLabel: hasUnread
+                            ? tChat('unreadCount', { count: chat.unreadCount || 0 })
+                            : undefined,
+                          isGroup: info.isGroup,
+                          currentUserId: user?.id,
+                        })}
                       </p>
                       {hasUnread && (
                         <span
                           className={cn(
-                            'ml-2 flex-shrink-0 rounded-full px-2 py-0.5 text-xs',
+                            'ml-2 flex h-5 min-w-[1.25rem] flex-shrink-0 items-center justify-center rounded-full px-1.5 text-xs',
                             ui.unreadBadge,
                           )}
                         >

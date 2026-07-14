@@ -1,9 +1,12 @@
 'use client';
 
+import { useMemo } from 'react';
 import Image from 'next/image';
+import { useTranslations } from 'next-intl';
 import { formatPhoneForDisplay } from '@/shared/lib/utils';
 import { Badge } from '@/shared/components/ui/badge';
 import { getInitials } from '@/shared/components/ui/avatar';
+import { formatChatListPreview } from '../../utils';
 import { OnlineStatusDot } from '../OnlineStatusDot';
 import {
   ADMIN_CHAT_LIST_ITEM_SUBTITLE_CLASS,
@@ -17,6 +20,7 @@ interface AdminChatListTeacherItemsProps {
   activeChat: AdminChatListViewModel['activeChat'];
   getUserUnreadCount: AdminChatListViewModel['getUserUnreadCount'];
   getUserOnlineStatus: AdminChatListViewModel['getUserOnlineStatus'];
+  getUserLastMessage: AdminChatListViewModel['getUserLastMessage'];
   onSelectUser: AdminChatListViewModel['handleSelectUser'];
 }
 
@@ -25,15 +29,34 @@ export function AdminChatListTeacherItems({
   activeChat,
   getUserUnreadCount,
   getUserOnlineStatus,
+  getUserLastMessage,
   onSelectUser,
 }: AdminChatListTeacherItemsProps) {
+  const tChat = useTranslations('chat');
+  const messagePreviewLabels = useMemo(
+    () => ({
+      noMessagesYet: tChat('noMessagesYet'),
+      voiceMessage: tChat('voiceMessage'),
+      photo: tChat('photo'),
+      video: tChat('video'),
+      attachment: tChat('attachment'),
+      systemMessage: tChat('systemMessage'),
+      message: tChat('message'),
+    }),
+    [tChat],
+  );
+
   return (
     <div className="divide-y divide-slate-100">
       {teachers.map((teacher) => {
         const unread = getUserUnreadCount(teacher.id);
+        const lastMessage = getUserLastMessage(teacher.id);
         const isActive =
           activeChat?.type === 'DIRECT' &&
           activeChat.participants.some((p) => p.userId === teacher.id);
+        const phoneFallback = teacher.phone
+          ? formatPhoneForDisplay(teacher.phone)
+          : undefined;
 
         return (
           <button
@@ -70,9 +93,16 @@ export function AdminChatListTeacherItems({
                   </Badge>
                 )}
               </div>
-              {teacher.phone && (
-                <p className={ADMIN_CHAT_LIST_ITEM_SUBTITLE_CLASS}>{formatPhoneForDisplay(teacher.phone)}</p>
-              )}
+              <p className={ADMIN_CHAT_LIST_ITEM_SUBTITLE_CLASS}>
+                {formatChatListPreview({
+                  message: lastMessage,
+                  labels: messagePreviewLabels,
+                  unreadCount: unread,
+                  unreadLabel:
+                    unread > 0 ? tChat('unreadCount', { count: unread }) : undefined,
+                  emptyFallback: phoneFallback,
+                })}
+              </p>
             </div>
           </button>
         );

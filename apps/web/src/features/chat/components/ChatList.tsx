@@ -10,7 +10,7 @@ import type { Chat } from '../types';
 import { cn } from '@/shared/lib/utils';
 import { getFullApiUrl } from '@/shared/lib/api-url-utils';
 import { formatDisplayName, getInitialsFromParts } from '@/shared/components/ui/avatar';
-import { formatMessagePreview } from '../utils';
+import { formatChatListPreview } from '../utils';
 import { resolveChatAvatarUrl } from '../utils/chat-avatar';
 import { formatChatListTime, sortChatListItems } from '../utils/chat-utils';
 import Image from 'next/image';
@@ -235,17 +235,26 @@ export function ChatList({ onSelectChat }: ChatListProps) {
                       {formatTime(chat.lastMessage?.createdAt || chat.updatedAt)}
                     </span>
                   </div>
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between gap-2">
                     <p
                       className={cn(
                         'text-sm truncate',
                         hasUnread ? 'text-slate-700 font-medium' : 'text-slate-500'
                       )}
                     >
-                      {formatMessagePreview(chat.lastMessage, messagePreviewLabels)}
+                      {formatChatListPreview({
+                        message: chat.lastMessage,
+                        labels: messagePreviewLabels,
+                        unreadCount: chat.unreadCount || 0,
+                        unreadLabel: hasUnread
+                          ? tChat('unreadCount', { count: chat.unreadCount || 0 })
+                          : undefined,
+                        isGroup: info.isGroup,
+                        currentUserId: user?.id,
+                      })}
                     </p>
                     {hasUnread && (
-                      <span className="ml-2 px-2 py-0.5 bg-primary text-primary-foreground text-xs rounded-full flex-shrink-0">
+                      <span className="ml-2 flex h-5 min-w-[1.25rem] flex-shrink-0 items-center justify-center rounded-full bg-primary px-1.5 text-xs text-primary-foreground">
                         {chat.unreadCount}
                       </span>
                     )}

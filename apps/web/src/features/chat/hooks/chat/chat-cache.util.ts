@@ -55,18 +55,29 @@ function createMessagesCacheSeed(message: Message): MessagesInfiniteData {
   };
 }
 
+function shouldIncrementUnread(chatId: string, message: Message): boolean {
+  const { user } = useAuthStore.getState();
+  if (!user?.id || message.senderId === user.id) return false;
+  const { activeChat } = useChatStore.getState();
+  // Open conversation is marked read immediately — do not inflate the badge.
+  return activeChat?.id !== chatId;
+}
+
+function bumpUnread(count: number | undefined, shouldBump: boolean): number {
+  return shouldBump ? (count || 0) + 1 : count || 0;
+}
+
 function updateChatListForMessage(
   queryClient: QueryClient,
   chatId: string,
   message: Message,
 ) {
+  const now = new Date().toISOString();
+  const lastMessageAt = message.createdAt || now;
+  const incrementUnread = shouldIncrementUnread(chatId, message);
+
   queryClient.setQueryData(chatKeys.list(), (oldData: Chat[] | undefined) => {
     if (!oldData) return oldData;
-
-    const now = new Date().toISOString();
-    const lastMessageAt = message.createdAt || now;
-    const { user } = useAuthStore.getState();
-    const isFromOtherUser = message.senderId !== user?.id;
 
     return sortChatListItems(
       oldData.map((chat) => {
@@ -77,7 +88,7 @@ function updateChatListForMessage(
           lastMessage: message,
           lastMessageAt,
           updatedAt: now,
-          unreadCount: isFromOtherUser ? (chat.unreadCount || 0) + 1 : chat.unreadCount,
+          unreadCount: bumpUnread(chat.unreadCount, incrementUnread),
         };
       }),
       (chat) => ({
@@ -87,6 +98,75 @@ function updateChatListForMessage(
         unreadCount: chat.unreadCount,
       }),
     );
+  });
+
+  const teacherLastMessage = {
+    id: message.id,
+    type: message.type,
+    content: message.content,
+    fileName: message.fileName,
+    createdAt: message.createdAt,
+    sender: message.sender
+      ? {
+          id: message.sender.id,
+          firstName: message.sender.firstName,
+          lastName: message.sender.lastName,
+        }
+      : { id: message.senderId, firstName: '', lastName: '' },
+  };
+
+  queryClient.setQueriesData<TeacherGroup[]>(
+    { queryKey: [...chatKeys.all, 'teacher', 'groups'] },
+    (oldData) => {
+      if (!oldData) return oldData;
+      return oldData.map((group) =>
+        group.chatId === chatId
+          ? {
+              ...group,
+              lastMessage: teacherLastMessage,
+              unreadCount: bumpUnread(group.unreadCount, incrementUnread),
+              updatedAt: now,
+            }
+          : group,
+      );
+    },
+  );
+
+  queryClient.setQueriesData<TeacherStudent[]>(
+    { queryKey: [...chatKeys.all, 'teacher', 'students'] },
+    (oldData) => {
+      if (!oldData) return oldData;
+      return oldData.map((student) =>
+        student.chatId === chatId
+          ? {
+              ...student,
+              lastMessage: teacherLastMessage,
+              unreadCount: bumpUnread(student.unreadCount, incrementUnread),
+              updatedAt: now,
+            }
+          : student,
+      );
+    },
+  );
+
+  queryClient.setQueryData(chatKeys.teacherAdmin(), (oldData: TeacherAdmin | null | undefined) => {
+    if (!oldData || oldData.chatId !== chatId) return oldData;
+    return {
+      ...oldData,
+      lastMessage: teacherLastMessage,
+      unreadCount: bumpUnread(oldData.unreadCount, incrementUnread),
+      updatedAt: now,
+    };
+  });
+
+  queryClient.setQueryData(chatKeys.studentAdmin(), (oldData: StudentAdmin | null | undefined) => {
+    if (!oldData || oldData.chatId !== chatId) return oldData;
+    return {
+      ...oldData,
+      lastMessage: teacherLastMessage,
+      unreadCount: bumpUnread(oldData.unreadCount, incrementUnread),
+      updatedAt: now,
+    };
   });
 }
 
@@ -178,6 +258,46 @@ export function removeMessageFromMessagesCache(
       };
     },
   );
+}
+
+function patchChatParticipantLastRead(
+  chat: Chat,
+  userId: string,
+  readAt: string,
+): Chat {
+  return {
+    ...chat,
+    participants: chat.participants.map((participant) =>
+      participant.userId === userId ? { ...participant, lastReadAt: readAt } : participant,
+    ),
+  };
+}
+
+/** Apply peer read receipt so own-message ticks can flip to double-check. */
+export function applyChatReadReceiptInCache(
+  queryClient: QueryClient,
+  chatId: string,
+  userId: string,
+  readAt: string | Date,
+): void {
+  const readAtIso = typeof readAt === 'string' ? readAt : new Date(readAt).toISOString();
+
+  queryClient.setQueryData(chatKeys.detail(chatId), (oldData: Chat | undefined) => {
+    if (!oldData) return oldData;
+    return patchChatParticipantLastRead(oldData, userId, readAtIso);
+  });
+
+  queryClient.setQueryData(chatKeys.list(), (oldData: Chat[] | undefined) => {
+    if (!oldData) return oldData;
+    return oldData.map((chat) =>
+      chat.id === chatId ? patchChatParticipantLastRead(chat, userId, readAtIso) : chat,
+    );
+  });
+
+  const { activeChat, setActiveChat } = useChatStore.getState();
+  if (activeChat?.id === chatId) {
+    setActiveChat(patchChatParticipantLastRead(activeChat, userId, readAtIso));
+  }
 }
 
 export function clearChatUnreadInCache(queryClient: QueryClient, chatId: string): void {

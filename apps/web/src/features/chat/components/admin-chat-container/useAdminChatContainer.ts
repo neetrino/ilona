@@ -8,7 +8,13 @@ import { fetchChat } from '../../api/chat.api';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuthStore, getDashboardPath } from '@/features/auth/store/auth.store';
 import { useChatStore } from '../../store/chat.store';
-import { useSocket, useChatDetail, chatKeys, clearChatUnreadInCache } from '../../hooks';
+import {
+  useSocket,
+  useChatDetail,
+  chatKeys,
+  clearChatUnreadInCache,
+  useEscapeToLeaveChatConversation,
+} from '../../hooks';
 import type { Chat } from '../../types';
 import type {
   AdminChatContainerProps,
@@ -235,6 +241,8 @@ export function useAdminChatContainer({
       clearChatDeleteGroupParam(params);
     });
   }, [replaceSearchParams, setActiveChat, setMobileListVisible]);
+
+  useEscapeToLeaveChatConversation(Boolean(activeChat), handleBack);
 
   useEffect(() => {
     if (activeChat && !isMobileListVisible) {

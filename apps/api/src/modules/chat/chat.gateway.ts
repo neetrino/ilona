@@ -380,13 +380,14 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       const authUser = this.requireSocketUser(client);
       await this.chatService.markAsRead(data.chatId, authUser.sub, authUser);
 
+      const readAt = new Date().toISOString();
       client.to(`chat:${data.chatId}`).emit('chat:read', {
         chatId: data.chatId,
         userId: authUser.sub,
-        readAt: new Date(),
+        readAt,
       });
 
-      return { success: true };
+      return { success: true, readAt };
     } catch (error) {
       return { success: false, error: (error as Error).message };
     }

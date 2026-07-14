@@ -1539,7 +1539,7 @@
     "backToChatList": "Վերադառնալ զրույցների ցուցակ",
     "previousMessage": "Նախորդ հաղորդագրություն",
     "nextMessage": "Հաջորդ հաղորդագրություն",
-    "unreadCount": "{count} չկարդացված",
+    "unreadCount": "{count} նոր",
     "failedOpenGroupChat": "Խմբային զրույցը բացել չհաջողվեց։ Կրկին փորձեք։",
     "adminOnlyCreateGroupChat": "Այս խմբային զրույցը կարող է ստեղծել միայն ադմինը։ Խնդրում ենք խնդրել ադմինին նախ բացել խմբային զրույցը։",
     "recording": "Ձայնագրում... {duration}",
@@ -1561,7 +1561,9 @@
     "manager": "Կառավարիչ",
     "openChat": "Բացել զրույցը",
     "recordingError": "Ձայնագրման սխալ է տեղի ունեցել",
-    "teachersTab": "Ուսուցիչներ"
+    "teachersTab": "Ուսուցիչներ",
+    "messageSent": "Ուղարկված",
+    "messageRead": "Տեսել է"
   },
   "finance": {
     "title": "Ֆինանսներ",
