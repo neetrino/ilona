@@ -17,12 +17,20 @@ import { isPendingMessageId } from '../../hooks';
 import { VoiceMessagePlayer } from '../VoiceMessagePlayer';
 import { getSubstituteVoiceLabel, isVocabularyMessage } from './chat-message-meta';
 
+interface ChatCurrentUserAvatar {
+  avatarUrl?: string | null;
+  firstName?: string | null;
+  lastName?: string | null;
+  role?: string | null;
+}
+
 interface ChatMessageItemProps {
   message: Message;
   prevMessage?: Message;
   chat: Chat;
   ui: ChatThemeTokens;
   currentUserId?: string;
+  currentUserAvatar?: ChatCurrentUserAvatar;
   canDeleteAnyMessage: boolean;
   focusedMessageId: string | null;
   isMobileViewport: boolean;
@@ -46,6 +54,7 @@ export function ChatMessageItem({
   chat,
   ui,
   currentUserId,
+  currentUserAvatar,
   canDeleteAnyMessage,
   focusedMessageId,
   isMobileViewport,
@@ -67,13 +76,42 @@ export function ChatMessageItem({
   const canDelete = !isPending && (isOwn || canDeleteAnyMessage);
   const senderDisplay = getMessageSenderDisplay(message, senderLabels);
   const senderAvatarUrl = resolveChatAvatarUrl(
-    message.sender?.avatarUrl,
-    message.sender?.role,
+    message.sender?.avatarUrl ?? (isOwn ? currentUserAvatar?.avatarUrl : null),
+    message.sender?.role ?? (isOwn ? currentUserAvatar?.role : null),
     brandLogoUrl,
+  );
+  const senderInitials = getInitialsFromParts(
+    message.sender?.firstName ?? (isOwn ? currentUserAvatar?.firstName : null),
+    message.sender?.lastName ?? (isOwn ? currentUserAvatar?.lastName : null),
   );
   const showDateSeparator = shouldShowDateSeparator(message, prevMessage);
   const isVocabulary = isVocabularyMessage(message);
   const substituteVoiceLabel = getSubstituteVoiceLabel(message, tChat('substituteTeacherDefault'));
+
+  const senderAvatar = (
+    <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center overflow-hidden rounded-full">
+      {senderAvatarUrl ? (
+        <Image
+          src={senderAvatarUrl}
+          alt={senderDisplay.name}
+          width={32}
+          height={32}
+          className="h-full w-full object-cover"
+          unoptimized
+        />
+      ) : (
+        <div
+          className={cn(
+            'flex h-full w-full items-center justify-center text-sm font-medium',
+            ui.skeleton,
+            ui.body,
+          )}
+        >
+          {senderInitials || '?'}
+        </div>
+      )}
+    </div>
+  );
 
   return (
     <div
@@ -91,36 +129,11 @@ export function ChatMessageItem({
         </div>
       )}
 
-      <div className={cn('flex gap-2', isOwn ? 'justify-end' : 'justify-start')}>
-        {!isOwn && (
-          <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center overflow-hidden rounded-full">
-            {senderAvatarUrl ? (
-              <Image
-                src={senderAvatarUrl}
-                alt={senderDisplay.name}
-                width={32}
-                height={32}
-                className="h-full w-full object-cover"
-                unoptimized
-              />
-            ) : (
-              <div
-                className={cn(
-                  'flex h-full w-full items-center justify-center text-sm font-medium',
-                  ui.skeleton,
-                  ui.body,
-                )}
-              >
-                {message.sender
-                  ? getInitialsFromParts(message.sender.firstName, message.sender.lastName)
-                  : '?'}
-              </div>
-            )}
-          </div>
-        )}
+      <div className={cn('flex items-end gap-2', isOwn ? 'justify-end' : 'justify-start')}>
+        {!isOwn ? senderAvatar : null}
 
         <div
-          className={cn('max-w-[70%]', isOwn && 'order-first')}
+          className="max-w-[70%]"
           data-message-actions={canDelete ? '' : undefined}
           onClick={canDelete ? (event) => onDeletableMessageTap(message.id, event) : undefined}
         >
@@ -211,6 +224,8 @@ export function ChatMessageItem({
             )}
           </div>
         </div>
+
+        {isOwn ? senderAvatar : null}
       </div>
     </div>
   );

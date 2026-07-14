@@ -14,6 +14,12 @@ interface ChatMessageListProps {
   hasNextPage: boolean;
   isFetchingNextPage: boolean;
   currentUserId?: string;
+  currentUserAvatar?: {
+    avatarUrl?: string | null;
+    firstName?: string | null;
+    lastName?: string | null;
+    role?: string | null;
+  };
   canDeleteAnyMessage: boolean;
   focusedMessageId: string | null;
   isMobileViewport: boolean;
@@ -43,6 +49,7 @@ export function ChatMessageList({
   hasNextPage,
   isFetchingNextPage,
   currentUserId,
+  currentUserAvatar,
   canDeleteAnyMessage,
   focusedMessageId,
   isMobileViewport,
@@ -101,6 +108,7 @@ export function ChatMessageList({
             chat={chat}
             ui={ui}
             currentUserId={currentUserId}
+            currentUserAvatar={currentUserAvatar}
             canDeleteAnyMessage={canDeleteAnyMessage}
             focusedMessageId={focusedMessageId}
             isMobileViewport={isMobileViewport}

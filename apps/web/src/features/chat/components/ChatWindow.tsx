@@ -298,6 +298,16 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
         hasNextPage={Boolean(hasNextPage)}
         isFetchingNextPage={isFetchingNextPage}
         currentUserId={user?.id}
+        currentUserAvatar={
+          user
+            ? {
+                avatarUrl: user.avatarUrl,
+                firstName: user.firstName,
+                lastName: user.lastName,
+                role: user.role,
+              }
+            : undefined
+        }
         canDeleteAnyMessage={isAdminOrManager}
         focusedMessageId={focusedMessageId}
         isMobileViewport={isMobileViewport}
