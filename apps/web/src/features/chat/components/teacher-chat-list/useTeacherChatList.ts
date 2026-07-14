@@ -58,7 +58,12 @@ export function useTeacherChatList({ onSelectChat }: TeacherChatListProps): Teac
   const { data: admin, isLoading: isLoadingAdmin } = useTeacherAdmin();
   const { counts: unreadCounts } = useTeacherUnreadCounts();
   const createDirectChat = useCreateDirectChat();
-  const { isUserOnline } = useSocket();
+  useSocket();
+  const presenceByUserId = useChatStore((state) => state.presenceByUserId);
+  const isUserOnline = useCallback(
+    (_chatId: string, userId: string) => Boolean(presenceByUserId[userId]?.isOnline),
+    [presenceByUserId],
+  );
 
   const formatTime = useCallback(
     (dateStr?: string) => formatChatListTime(dateStr, locale, tChat('yesterday')),

@@ -31,7 +31,8 @@ export function useAdminChatList({
   const [searchQuery, setSearchQuery] = useState('');
   const { counts: unreadCounts } = useAdminUnreadCounts();
   const { data: chats = [] } = useChats();
-  const { isUserOnline } = useSocket();
+  useSocket();
+  const presenceByUserId = useChatStore((state) => state.presenceByUserId);
 
   const tabLabels: Record<AdminChatTab, string> = useMemo(
     () => ({
@@ -161,14 +162,8 @@ export function useAdminChatList({
   }, [customGroupChats, groups, searchQuery, chats, groupUnreadMap]);
 
   const getUserOnlineStatus = useCallback(
-    (userId: string): boolean => {
-      const chat = chats.find(
-        (c) => c.type === 'DIRECT' && c.participants.some((p) => p.userId === userId),
-      );
-      if (!chat) return false;
-      return isUserOnline(chat.id, userId);
-    },
-    [chats, isUserOnline],
+    (userId: string): boolean => Boolean(presenceByUserId[userId]?.isOnline),
+    [presenceByUserId],
   );
 
   const handleSelectUser = useCallback(

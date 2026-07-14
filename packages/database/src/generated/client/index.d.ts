@@ -4227,6 +4227,7 @@ export namespace Prisma {
     role: $Enums.UserRole | null
     status: $Enums.UserStatus | null
     lastLoginAt: Date | null
+    lastSeenAt: Date | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -4242,6 +4243,7 @@ export namespace Prisma {
     role: $Enums.UserRole | null
     status: $Enums.UserStatus | null
     lastLoginAt: Date | null
+    lastSeenAt: Date | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -4257,6 +4259,7 @@ export namespace Prisma {
     role: number
     status: number
     lastLoginAt: number
+    lastSeenAt: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -4274,6 +4277,7 @@ export namespace Prisma {
     role?: true
     status?: true
     lastLoginAt?: true
+    lastSeenAt?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -4289,6 +4293,7 @@ export namespace Prisma {
     role?: true
     status?: true
     lastLoginAt?: true
+    lastSeenAt?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -4304,6 +4309,7 @@ export namespace Prisma {
     role?: true
     status?: true
     lastLoginAt?: true
+    lastSeenAt?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -4392,6 +4398,7 @@ export namespace Prisma {
     role: $Enums.UserRole
     status: $Enums.UserStatus
     lastLoginAt: Date | null
+    lastSeenAt: Date | null
     createdAt: Date
     updatedAt: Date
     _count: UserCountAggregateOutputType | null
@@ -4424,6 +4431,7 @@ export namespace Prisma {
     role?: boolean
     status?: boolean
     lastLoginAt?: boolean
+    lastSeenAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     chatParticipants?: boolean | User$chatParticipantsArgs<ExtArgs>
@@ -4449,6 +4457,7 @@ export namespace Prisma {
     role?: boolean
     status?: boolean
     lastLoginAt?: boolean
+    lastSeenAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }, ExtArgs["result"]["user"]>
@@ -4464,6 +4473,7 @@ export namespace Prisma {
     role?: boolean
     status?: boolean
     lastLoginAt?: boolean
+    lastSeenAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
@@ -4506,6 +4516,7 @@ export namespace Prisma {
       role: $Enums.UserRole
       status: $Enums.UserStatus
       lastLoginAt: Date | null
+      lastSeenAt: Date | null
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["user"]>
@@ -4920,6 +4931,7 @@ export namespace Prisma {
     readonly role: FieldRef<"User", 'UserRole'>
     readonly status: FieldRef<"User", 'UserStatus'>
     readonly lastLoginAt: FieldRef<"User", 'DateTime'>
+    readonly lastSeenAt: FieldRef<"User", 'DateTime'>
     readonly createdAt: FieldRef<"User", 'DateTime'>
     readonly updatedAt: FieldRef<"User", 'DateTime'>
   }
@@ -36379,6 +36391,7 @@ export namespace Prisma {
     role: 'role',
     status: 'status',
     lastLoginAt: 'lastLoginAt',
+    lastSeenAt: 'lastSeenAt',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
@@ -37262,6 +37275,7 @@ export namespace Prisma {
     role?: EnumUserRoleFilter<"User"> | $Enums.UserRole
     status?: EnumUserStatusFilter<"User"> | $Enums.UserStatus
     lastLoginAt?: DateTimeNullableFilter<"User"> | Date | string | null
+    lastSeenAt?: DateTimeNullableFilter<"User"> | Date | string | null
     createdAt?: DateTimeFilter<"User"> | Date | string
     updatedAt?: DateTimeFilter<"User"> | Date | string
     chatParticipants?: ChatParticipantListRelationFilter
@@ -37286,6 +37300,7 @@ export namespace Prisma {
     role?: SortOrder
     status?: SortOrder
     lastLoginAt?: SortOrderInput | SortOrder
+    lastSeenAt?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     chatParticipants?: ChatParticipantOrderByRelationAggregateInput
@@ -37313,6 +37328,7 @@ export namespace Prisma {
     role?: EnumUserRoleFilter<"User"> | $Enums.UserRole
     status?: EnumUserStatusFilter<"User"> | $Enums.UserStatus
     lastLoginAt?: DateTimeNullableFilter<"User"> | Date | string | null
+    lastSeenAt?: DateTimeNullableFilter<"User"> | Date | string | null
     createdAt?: DateTimeFilter<"User"> | Date | string
     updatedAt?: DateTimeFilter<"User"> | Date | string
     chatParticipants?: ChatParticipantListRelationFilter
@@ -37337,6 +37353,7 @@ export namespace Prisma {
     role?: SortOrder
     status?: SortOrder
     lastLoginAt?: SortOrderInput | SortOrder
+    lastSeenAt?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: UserCountOrderByAggregateInput
@@ -37358,6 +37375,7 @@ export namespace Prisma {
     role?: EnumUserRoleWithAggregatesFilter<"User"> | $Enums.UserRole
     status?: EnumUserStatusWithAggregatesFilter<"User"> | $Enums.UserStatus
     lastLoginAt?: DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
+    lastSeenAt?: DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
     createdAt?: DateTimeWithAggregatesFilter<"User"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"User"> | Date | string
   }
@@ -40055,6 +40073,7 @@ export namespace Prisma {
     role: $Enums.UserRole
     status?: $Enums.UserStatus
     lastLoginAt?: Date | string | null
+    lastSeenAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     chatParticipants?: ChatParticipantCreateNestedManyWithoutUserInput
@@ -40079,6 +40098,7 @@ export namespace Prisma {
     role: $Enums.UserRole
     status?: $Enums.UserStatus
     lastLoginAt?: Date | string | null
+    lastSeenAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     chatParticipants?: ChatParticipantUncheckedCreateNestedManyWithoutUserInput
@@ -40103,6 +40123,7 @@ export namespace Prisma {
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastSeenAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     chatParticipants?: ChatParticipantUpdateManyWithoutUserNestedInput
@@ -40127,6 +40148,7 @@ export namespace Prisma {
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastSeenAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     chatParticipants?: ChatParticipantUncheckedUpdateManyWithoutUserNestedInput
@@ -40151,6 +40173,7 @@ export namespace Prisma {
     role: $Enums.UserRole
     status?: $Enums.UserStatus
     lastLoginAt?: Date | string | null
+    lastSeenAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -40166,6 +40189,7 @@ export namespace Prisma {
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastSeenAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -40181,6 +40205,7 @@ export namespace Prisma {
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastSeenAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -43277,6 +43302,7 @@ export namespace Prisma {
     role?: SortOrder
     status?: SortOrder
     lastLoginAt?: SortOrder
+    lastSeenAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -43292,6 +43318,7 @@ export namespace Prisma {
     role?: SortOrder
     status?: SortOrder
     lastLoginAt?: SortOrder
+    lastSeenAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -43307,6 +43334,7 @@ export namespace Prisma {
     role?: SortOrder
     status?: SortOrder
     lastLoginAt?: SortOrder
+    lastSeenAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -50285,6 +50313,7 @@ export namespace Prisma {
     role: $Enums.UserRole
     status?: $Enums.UserStatus
     lastLoginAt?: Date | string | null
+    lastSeenAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     chatParticipants?: ChatParticipantCreateNestedManyWithoutUserInput
@@ -50308,6 +50337,7 @@ export namespace Prisma {
     role: $Enums.UserRole
     status?: $Enums.UserStatus
     lastLoginAt?: Date | string | null
+    lastSeenAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     chatParticipants?: ChatParticipantUncheckedCreateNestedManyWithoutUserInput
@@ -50392,6 +50422,7 @@ export namespace Prisma {
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastSeenAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     chatParticipants?: ChatParticipantUpdateManyWithoutUserNestedInput
@@ -50415,6 +50446,7 @@ export namespace Prisma {
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastSeenAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     chatParticipants?: ChatParticipantUncheckedUpdateManyWithoutUserNestedInput
@@ -51815,6 +51847,7 @@ export namespace Prisma {
     role: $Enums.UserRole
     status?: $Enums.UserStatus
     lastLoginAt?: Date | string | null
+    lastSeenAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     chatParticipants?: ChatParticipantCreateNestedManyWithoutUserInput
@@ -51838,6 +51871,7 @@ export namespace Prisma {
     role: $Enums.UserRole
     status?: $Enums.UserStatus
     lastLoginAt?: Date | string | null
+    lastSeenAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     chatParticipants?: ChatParticipantUncheckedCreateNestedManyWithoutUserInput
@@ -52153,6 +52187,7 @@ export namespace Prisma {
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastSeenAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     chatParticipants?: ChatParticipantUpdateManyWithoutUserNestedInput
@@ -52176,6 +52211,7 @@ export namespace Prisma {
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastSeenAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     chatParticipants?: ChatParticipantUncheckedUpdateManyWithoutUserNestedInput
@@ -52920,6 +52956,7 @@ export namespace Prisma {
     role: $Enums.UserRole
     status?: $Enums.UserStatus
     lastLoginAt?: Date | string | null
+    lastSeenAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     chatParticipants?: ChatParticipantCreateNestedManyWithoutUserInput
@@ -52943,6 +52980,7 @@ export namespace Prisma {
     role: $Enums.UserRole
     status?: $Enums.UserStatus
     lastLoginAt?: Date | string | null
+    lastSeenAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     chatParticipants?: ChatParticipantUncheckedCreateNestedManyWithoutUserInput
@@ -53401,6 +53439,7 @@ export namespace Prisma {
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastSeenAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     chatParticipants?: ChatParticipantUpdateManyWithoutUserNestedInput
@@ -53424,6 +53463,7 @@ export namespace Prisma {
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastSeenAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     chatParticipants?: ChatParticipantUncheckedUpdateManyWithoutUserNestedInput
@@ -54706,6 +54746,7 @@ export namespace Prisma {
     role: $Enums.UserRole
     status?: $Enums.UserStatus
     lastLoginAt?: Date | string | null
+    lastSeenAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     chatParticipants?: ChatParticipantCreateNestedManyWithoutUserInput
@@ -54729,6 +54770,7 @@ export namespace Prisma {
     role: $Enums.UserRole
     status?: $Enums.UserStatus
     lastLoginAt?: Date | string | null
+    lastSeenAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     chatParticipants?: ChatParticipantUncheckedCreateNestedManyWithoutUserInput
@@ -54908,6 +54950,7 @@ export namespace Prisma {
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastSeenAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     chatParticipants?: ChatParticipantUpdateManyWithoutUserNestedInput
@@ -54931,6 +54974,7 @@ export namespace Prisma {
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastSeenAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     chatParticipants?: ChatParticipantUncheckedUpdateManyWithoutUserNestedInput
@@ -56052,6 +56096,7 @@ export namespace Prisma {
     role: $Enums.UserRole
     status?: $Enums.UserStatus
     lastLoginAt?: Date | string | null
+    lastSeenAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     crmLeadsAssignedManager?: CrmLeadCreateNestedManyWithoutAssignedManagerInput
@@ -56075,6 +56120,7 @@ export namespace Prisma {
     role: $Enums.UserRole
     status?: $Enums.UserStatus
     lastLoginAt?: Date | string | null
+    lastSeenAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     crmLeadsAssignedManager?: CrmLeadUncheckedCreateNestedManyWithoutAssignedManagerInput
@@ -56147,6 +56193,7 @@ export namespace Prisma {
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastSeenAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     crmLeadsAssignedManager?: CrmLeadUpdateManyWithoutAssignedManagerNestedInput
@@ -56170,6 +56217,7 @@ export namespace Prisma {
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastSeenAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     crmLeadsAssignedManager?: CrmLeadUncheckedUpdateManyWithoutAssignedManagerNestedInput
@@ -56220,6 +56268,7 @@ export namespace Prisma {
     role: $Enums.UserRole
     status?: $Enums.UserStatus
     lastLoginAt?: Date | string | null
+    lastSeenAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     chatParticipants?: ChatParticipantCreateNestedManyWithoutUserInput
@@ -56243,6 +56292,7 @@ export namespace Prisma {
     role: $Enums.UserRole
     status?: $Enums.UserStatus
     lastLoginAt?: Date | string | null
+    lastSeenAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     chatParticipants?: ChatParticipantUncheckedCreateNestedManyWithoutUserInput
@@ -56315,6 +56365,7 @@ export namespace Prisma {
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastSeenAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     chatParticipants?: ChatParticipantUpdateManyWithoutUserNestedInput
@@ -56338,6 +56389,7 @@ export namespace Prisma {
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastSeenAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     chatParticipants?: ChatParticipantUncheckedUpdateManyWithoutUserNestedInput
@@ -56361,6 +56413,7 @@ export namespace Prisma {
     role: $Enums.UserRole
     status?: $Enums.UserStatus
     lastLoginAt?: Date | string | null
+    lastSeenAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     chatParticipants?: ChatParticipantCreateNestedManyWithoutUserInput
@@ -56384,6 +56437,7 @@ export namespace Prisma {
     role: $Enums.UserRole
     status?: $Enums.UserStatus
     lastLoginAt?: Date | string | null
+    lastSeenAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     chatParticipants?: ChatParticipantUncheckedCreateNestedManyWithoutUserInput
@@ -56423,6 +56477,7 @@ export namespace Prisma {
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastSeenAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     chatParticipants?: ChatParticipantUpdateManyWithoutUserNestedInput
@@ -56446,6 +56501,7 @@ export namespace Prisma {
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastSeenAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     chatParticipants?: ChatParticipantUncheckedUpdateManyWithoutUserNestedInput
@@ -57501,6 +57557,7 @@ export namespace Prisma {
     role: $Enums.UserRole
     status?: $Enums.UserStatus
     lastLoginAt?: Date | string | null
+    lastSeenAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     chatParticipants?: ChatParticipantCreateNestedManyWithoutUserInput
@@ -57524,6 +57581,7 @@ export namespace Prisma {
     role: $Enums.UserRole
     status?: $Enums.UserStatus
     lastLoginAt?: Date | string | null
+    lastSeenAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     chatParticipants?: ChatParticipantUncheckedCreateNestedManyWithoutUserInput
@@ -57591,6 +57649,7 @@ export namespace Prisma {
     role: $Enums.UserRole
     status?: $Enums.UserStatus
     lastLoginAt?: Date | string | null
+    lastSeenAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     chatParticipants?: ChatParticipantCreateNestedManyWithoutUserInput
@@ -57614,6 +57673,7 @@ export namespace Prisma {
     role: $Enums.UserRole
     status?: $Enums.UserStatus
     lastLoginAt?: Date | string | null
+    lastSeenAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     chatParticipants?: ChatParticipantUncheckedCreateNestedManyWithoutUserInput
@@ -57888,6 +57948,7 @@ export namespace Prisma {
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastSeenAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     chatParticipants?: ChatParticipantUpdateManyWithoutUserNestedInput
@@ -57911,6 +57972,7 @@ export namespace Prisma {
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastSeenAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     chatParticipants?: ChatParticipantUncheckedUpdateManyWithoutUserNestedInput
@@ -57990,6 +58052,7 @@ export namespace Prisma {
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastSeenAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     chatParticipants?: ChatParticipantUpdateManyWithoutUserNestedInput
@@ -58013,6 +58076,7 @@ export namespace Prisma {
     role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
     status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
     lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastSeenAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     chatParticipants?: ChatParticipantUncheckedUpdateManyWithoutUserNestedInput

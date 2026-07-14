@@ -70,35 +70,56 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
       // Track socket
       const existingSockets = this.userSockets.get(payload.sub) || [];
+      const isFirstSocket = existingSockets.length === 0;
       this.userSockets.set(payload.sub, [...existingSockets, client.id]);
 
       this.logger.log(`User ${payload.email} connected`);
 
+      await this.chatService.touchUserLastSeen(payload.sub);
+
       // Get user's chats and join rooms
-      const chats = (await this.chatService.getUserChats(payload.sub, payload)) as Array<{ id: string }>;
-      chats.forEach((chat: { id: string }) => {
+      const chats = (await this.chatService.getUserChats(payload.sub, payload)) as Array<{
+        id: string;
+        participants?: Array<{ userId: string; user?: { lastSeenAt?: Date | string | null } }>;
+      }>;
+
+      const partnerIds = new Set<string>();
+      chats.forEach((chat) => {
         void client.join(`chat:${chat.id}`);
-        
-        // Track online status
+
         if (!this.onlineUsers.has(chat.id)) {
           this.onlineUsers.set(chat.id, new Set());
         }
         this.onlineUsers.get(chat.id)?.add(payload.sub);
 
-        // Notify others in chat
-        client.to(`chat:${chat.id}`).emit('user:online', {
-          chatId: chat.id,
-          userId: payload.sub,
+        chat.participants?.forEach((participant) => {
+          if (participant.userId !== payload.sub) {
+            partnerIds.add(participant.userId);
+          }
         });
+
+        if (isFirstSocket) {
+          client.to(`chat:${chat.id}`).emit('user:online', {
+            chatId: chat.id,
+            userId: payload.sub,
+          });
+        }
       });
 
-      // Send online users to connected client
+      const partnersLastSeen = await this.chatService.getUsersLastSeen(Array.from(partnerIds));
+      const presence = partnersLastSeen.map((partner) => ({
+        userId: partner.id,
+        isOnline: this.userSockets.has(partner.id),
+        lastSeenAt: partner.lastSeenAt ? partner.lastSeenAt.toISOString() : null,
+      }));
+
       client.emit('connection:success', {
         userId: payload.sub,
-        chats: chats.map((chat: { id: string }) => ({
+        chats: chats.map((chat) => ({
           id: chat.id,
           onlineUsers: Array.from(this.onlineUsers.get(chat.id) || []),
         })),
+        presence,
       });
     } catch (error) {
       const isTokenExpired = error && typeof error === 'object' && 'name' in error && (error as Error).name === 'TokenExpiredError';
@@ -116,29 +137,52 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     if (!client.user) return;
 
     const userId = client.user.sub;
-    
+    const email = client.user.email;
+
     // Remove socket from tracking
     const sockets = this.userSockets.get(userId) || [];
     const remainingSockets = sockets.filter((id) => id !== client.id);
-    
+
     if (remainingSockets.length === 0) {
       this.userSockets.delete(userId);
 
-      // User is completely offline - notify all chats
-      this.onlineUsers.forEach((users, chatId) => {
-        if (users.has(userId)) {
-          users.delete(userId);
-          this.server.to(`chat:${chatId}`).emit('user:offline', {
-            chatId,
-            userId,
+      void this.chatService
+        .touchUserLastSeen(userId)
+        .then((lastSeenAt) => {
+          const lastSeenIso = lastSeenAt.toISOString();
+          this.onlineUsers.forEach((users, chatId) => {
+            if (users.has(userId)) {
+              users.delete(userId);
+              this.server.to(`chat:${chatId}`).emit('user:offline', {
+                chatId,
+                userId,
+                lastSeenAt: lastSeenIso,
+              });
+            }
           });
-        }
-      });
+        })
+        .catch((error: unknown) => {
+          this.logger.warn(
+            `Failed to persist lastSeenAt for ${userId}: ${
+              error instanceof Error ? error.message : String(error)
+            }`,
+          );
+          this.onlineUsers.forEach((users, chatId) => {
+            if (users.has(userId)) {
+              users.delete(userId);
+              this.server.to(`chat:${chatId}`).emit('user:offline', {
+                chatId,
+                userId,
+                lastSeenAt: new Date().toISOString(),
+              });
+            }
+          });
+        });
     } else {
       this.userSockets.set(userId, remainingSockets);
     }
 
-    this.logger.log(`User ${client.user.email} disconnected`);
+    this.logger.log(`User ${email} disconnected`);
   }
 
   /**
@@ -355,7 +399,12 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   ) {
     try {
       const authUser = this.requireSocketUser(client);
-      await this.chatService.getChatById(data.chatId, authUser.sub, authUser.role, authUser);
+      const chat = await this.chatService.getChatById(
+        data.chatId,
+        authUser.sub,
+        authUser.role,
+        authUser,
+      );
 
       void client.join(`chat:${data.chatId}`);
 
@@ -364,14 +413,33 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       }
       this.onlineUsers.get(data.chatId)?.add(authUser.sub);
 
+      // Prefer global socket map so online status is correct even if peer
+      // has not joined this room yet (e.g. newly created DM).
+      const roomOnline = this.onlineUsers.get(data.chatId) ?? new Set<string>();
+      for (const participant of chat.participants) {
+        if (this.userSockets.has(participant.userId)) {
+          roomOnline.add(participant.userId);
+        }
+      }
+      this.onlineUsers.set(data.chatId, roomOnline);
+
       client.to(`chat:${data.chatId}`).emit('user:online', {
         chatId: data.chatId,
         userId: authUser.sub,
       });
 
+      const presence = chat.participants.map((participant) => ({
+        userId: participant.userId,
+        isOnline: this.userSockets.has(participant.userId),
+        lastSeenAt: participant.user.lastSeenAt
+          ? new Date(participant.user.lastSeenAt).toISOString()
+          : null,
+      }));
+
       return {
         success: true,
         onlineUsers: Array.from(this.onlineUsers.get(data.chatId) || []),
+        presence,
       };
     } catch (error) {
       return { success: false, error: (error as Error).message };

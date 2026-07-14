@@ -5,8 +5,15 @@ import type { SocketEvents } from '../types';
 
 // Socket instance
 let socket: Socket | null = null;
+/** JWT currently bound to the live socket (reuse connection across useSocket callers). */
+let activeAuthToken: string | null = null;
 /** userId reported by the server for the active socket connection */
 let socketAuthenticatedUserId: string | null = null;
+
+const connectHandlers = new Set<() => void>();
+const disconnectHandlers = new Set<() => void>();
+const errorHandlers = new Set<(error: Error) => void>();
+let tokenExpiredHandler: (() => Promise<string | null>) | null = null;
 
 function getWebSocketUrl(): string {
   if (process.env.NEXT_PUBLIC_API_URL) {
@@ -29,6 +36,7 @@ const WS_URL = getWebSocketUrl();
 
 export interface SocketOptions {
   token: string;
+  force?: boolean;
   onConnect?: () => void;
   onDisconnect?: () => void;
   onError?: (error: Error) => void;
@@ -43,14 +51,65 @@ function destroySocketInstance(instance: Socket | null): void {
   instance.disconnect();
 }
 
+function notifyConnect(): void {
+  connectHandlers.forEach((handler) => handler());
+}
+
+function notifyDisconnect(): void {
+  disconnectHandlers.forEach((handler) => handler());
+}
+
+function notifyError(error: Error): void {
+  errorHandlers.forEach((handler) => handler(error));
+}
+
+/**
+ * Register connect/disconnect listeners without recreating the socket.
+ * Safe for multiple concurrent useSocket() callers (list + window).
+ */
+export function registerSocketLifecycle(handlers: {
+  onConnect?: () => void;
+  onDisconnect?: () => void;
+  onError?: (error: Error) => void;
+}): () => void {
+  if (handlers.onConnect) connectHandlers.add(handlers.onConnect);
+  if (handlers.onDisconnect) disconnectHandlers.add(handlers.onDisconnect);
+  if (handlers.onError) errorHandlers.add(handlers.onError);
+
+  return () => {
+    if (handlers.onConnect) connectHandlers.delete(handlers.onConnect);
+    if (handlers.onDisconnect) disconnectHandlers.delete(handlers.onDisconnect);
+    if (handlers.onError) errorHandlers.delete(handlers.onError);
+  };
+}
+
+function canReuseSocket(token: string, force?: boolean): boolean {
+  if (force || !socket || activeAuthToken !== token) return false;
+  // Keep the same connection while it is up or still trying to reconnect.
+  return socket.connected || Boolean(socket.active);
+}
+
 /**
  * Initialize and get socket connection.
- * Always tears down any existing connection so a new token = new identity.
+ * Reuses the existing socket when the token is unchanged so nested useSocket
+ * callers do not wipe presence event listeners.
  */
 export function initSocket(options: SocketOptions): Socket {
+  if (options.onTokenExpired) {
+    tokenExpiredHandler = options.onTokenExpired;
+  }
+
+  if (canReuseSocket(options.token, options.force) && socket) {
+    if (socket.connected) {
+      options.onConnect?.();
+    }
+    return socket;
+  }
+
   destroySocketInstance(socket);
   socket = null;
   socketAuthenticatedUserId = null;
+  activeAuthToken = options.token;
 
   socket = io(`${WS_URL}/chat`, {
     auth: { token: options.token },
@@ -64,13 +123,13 @@ export function initSocket(options: SocketOptions): Socket {
 
   socket.on('connect', () => {
     console.log('[Socket] Connected');
-    options.onConnect?.();
+    notifyConnect();
   });
 
   socket.on('disconnect', (reason) => {
     console.log('[Socket] Disconnected:', reason);
     socketAuthenticatedUserId = null;
-    options.onDisconnect?.();
+    notifyDisconnect();
   });
 
   socket.on('connect_error', async (error) => {
@@ -81,10 +140,11 @@ export function initSocket(options: SocketOptions): Socket {
       error.message?.includes('jwt') ||
       error.message?.includes('TokenExpiredError')
     ) {
-      if (options.onTokenExpired) {
+      if (tokenExpiredHandler) {
         try {
-          const newToken = await options.onTokenExpired();
+          const newToken = await tokenExpiredHandler();
           if (newToken && socket) {
+            activeAuthToken = newToken;
             socket.auth = { token: newToken };
             socket.connect();
             return;
@@ -95,14 +155,15 @@ export function initSocket(options: SocketOptions): Socket {
       }
     }
 
-    options.onError?.(error);
+    notifyError(error);
   });
 
   socket.on('connection:error', async (data: { code?: string; message?: string }) => {
-    if (data?.code === 'TOKEN_EXPIRED' && options.onTokenExpired) {
+    if (data?.code === 'TOKEN_EXPIRED' && tokenExpiredHandler) {
       try {
-        const newToken = await options.onTokenExpired();
+        const newToken = await tokenExpiredHandler();
         if (newToken && socket) {
+          activeAuthToken = newToken;
           socket.auth = { token: newToken };
           socket.connect();
           return;
@@ -111,7 +172,7 @@ export function initSocket(options: SocketOptions): Socket {
         console.error('[Socket] Failed to refresh token after TOKEN_EXPIRED:', e);
       }
     }
-    options.onError?.(new Error(data?.message ?? 'Connection error'));
+    notifyError(new Error(data?.message ?? 'Connection error'));
   });
 
   socket.on('connection:success', (data: { userId?: string }) => {
@@ -137,6 +198,8 @@ export function disconnectSocket(): void {
   destroySocketInstance(socket);
   socket = null;
   socketAuthenticatedUserId = null;
+  activeAuthToken = null;
+  tokenExpiredHandler = null;
 }
 
 export function isSocketConnected(): boolean {
@@ -225,9 +288,12 @@ export function emitMarkAsRead(chatId: string): Promise<{ success: boolean }> {
   });
 }
 
-export function emitJoinChat(
-  chatId: string,
-): Promise<{ success: boolean; onlineUsers?: string[] }> {
+export function emitJoinChat(chatId: string): Promise<{
+  success: boolean;
+  onlineUsers?: string[];
+  presence?: Array<{ userId: string; isOnline: boolean; lastSeenAt?: string | null }>;
+  error?: string;
+}> {
   return new Promise((resolve) => {
     if (!socket?.connected) {
       resolve({ success: false });
@@ -237,7 +303,12 @@ export function emitJoinChat(
     socket.emit(
       'chat:join',
       { chatId },
-      (response: { success: boolean; onlineUsers?: string[] }) => {
+      (response: {
+        success: boolean;
+        onlineUsers?: string[];
+        presence?: Array<{ userId: string; isOnline: boolean; lastSeenAt?: string | null }>;
+        error?: string;
+      }) => {
         resolve(response);
       },
     );

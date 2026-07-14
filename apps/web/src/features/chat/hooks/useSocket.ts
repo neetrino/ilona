@@ -10,6 +10,7 @@ import {
   getSocket,
   getSocketAuthenticatedUserId,
   setSocketAuthenticatedUserId,
+  registerSocketLifecycle,
   onSocketEvent,
   emitSendMessage,
   emitEditMessage,
@@ -21,6 +22,7 @@ import {
   emitSendVocabulary,
 } from '../lib/socket';
 import { markChatAsRead, sendMessageHttp } from '../api/chat.api';
+import { useChatStore } from '../store/chat.store';
 import {
   chatKeys,
   clearChatUnreadInCache,
@@ -52,56 +54,41 @@ export function useSocket(options: UseSocketOptions = {}) {
   const optionsRef = useRef(options);
   optionsRef.current = options;
 
-  // Initialize socket connection
-  // Only initialize once, socket.io handles reconnection and token refresh
+  // Initialize / reuse shared socket; multiple callers must not tear it down.
   useEffect(() => {
     if (!token) {
-      // If no token, disconnect socket
       disconnectSocket();
       setIsConnected(false);
       return;
     }
 
-    let socketInitialized = false;
+    const unregisterLifecycle = registerSocketLifecycle({
+      onConnect: () => setIsConnected(true),
+      onDisconnect: () => setIsConnected(false),
+      onError: (error) => {
+        console.error('[useSocket] Error:', error);
+      },
+    });
 
-    const initializeSocket = async (currentToken: string) => {
-      if (socketInitialized) return;
-      
-      initSocket({
-        token: currentToken,
-        onConnect: () => {
-          setIsConnected(true);
-          socketInitialized = true;
-        },
-        onDisconnect: () => {
-          setIsConnected(false);
-          socketInitialized = false;
-        },
-        onError: (error) => {
-          console.error('[useSocket] Error:', error);
-        },
-        onTokenExpired: async () => {
-          try {
-            const refreshed = await refreshTokenFn?.();
-            if (refreshed) {
-              const newTokens = useAuthStore.getState().tokens;
-              return newTokens?.accessToken || null;
-            }
-          } catch (refreshError) {
-            console.error('[useSocket] Failed to refresh token:', refreshError);
+    initSocket({
+      token,
+      onTokenExpired: async () => {
+        try {
+          const refreshed = await refreshTokenFn?.();
+          if (refreshed) {
+            return useAuthStore.getState().tokens?.accessToken || null;
           }
-          return null;
-        },
-      });
-    };
+        } catch (refreshError) {
+          console.error('[useSocket] Failed to refresh token:', refreshError);
+        }
+        return null;
+      },
+    });
 
-    void initializeSocket(token);
+    setIsConnected(isSocketConnected());
 
-    // Only cleanup on unmount or when token becomes null
-    // Don't disconnect on token refresh - socket.io handles that via onTokenExpired
     return () => {
-      // Only disconnect if we're actually unmounting (no token)
-      // The check happens at the start of the effect
+      unregisterLifecycle();
     };
   }, [token, refreshTokenFn]);
 
@@ -127,8 +114,7 @@ export function useSocket(options: UseSocketOptions = {}) {
           if (accessToken) {
             initSocket({
               token: accessToken,
-              onConnect: () => setIsConnected(true),
-              onDisconnect: () => setIsConnected(false),
+              force: true,
               onTokenExpired: async () => {
                 try {
                   const refreshed = await refreshTokenFn?.();
@@ -151,8 +137,14 @@ export function useSocket(options: UseSocketOptions = {}) {
         const newOnlineUsers = new Map<string, Set<string>>();
         data.chats.forEach((chat) => {
           newOnlineUsers.set(chat.id, new Set(chat.onlineUsers));
+          chat.onlineUsers.forEach((userId) => {
+            useChatStore.getState().setUserOnline(userId);
+          });
         });
         setOnlineUsers(newOnlineUsers);
+        if (data.presence?.length) {
+          useChatStore.getState().mergePresence(data.presence);
+        }
       })
     );
 
@@ -228,6 +220,7 @@ export function useSocket(options: UseSocketOptions = {}) {
     // Online status
     unsubscribers.push(
       onSocketEvent('user:online', (data) => {
+        useChatStore.getState().setUserOnline(data.userId);
         setOnlineUsers((prev) => {
           const newMap = new Map(prev);
           const chatUsers = newMap.get(data.chatId) || new Set();
@@ -241,6 +234,7 @@ export function useSocket(options: UseSocketOptions = {}) {
 
     unsubscribers.push(
       onSocketEvent('user:offline', (data) => {
+        useChatStore.getState().setUserOffline(data.userId, data.lastSeenAt);
         setOnlineUsers((prev) => {
           const newMap = new Map(prev);
           const chatUsers = newMap.get(data.chatId);
@@ -405,7 +399,23 @@ export function useSocket(options: UseSocketOptions = {}) {
 
   // Join chat
   const joinChat = useCallback(async (chatId: string) => {
-    return emitJoinChat(chatId);
+    const result = await emitJoinChat(chatId);
+    if (result.success) {
+      if (result.presence?.length) {
+        useChatStore.getState().mergePresence(result.presence);
+      }
+      if (result.onlineUsers?.length) {
+        setOnlineUsers((prev) => {
+          const next = new Map(prev);
+          next.set(chatId, new Set(result.onlineUsers));
+          return next;
+        });
+        result.onlineUsers.forEach((userId) => {
+          useChatStore.getState().setUserOnline(userId);
+        });
+      }
+    }
+    return result;
   }, []);
 
   // Send vocabulary (teacher feature)
@@ -416,13 +426,10 @@ export function useSocket(options: UseSocketOptions = {}) {
     []
   );
 
-  // Check if user is online in a chat
-  const isUserOnline = useCallback(
-    (chatId: string, userId: string) => {
-      return onlineUsers.get(chatId)?.has(userId) ?? false;
-    },
-    [onlineUsers]
-  );
+  // Shared presence store — consistent for every role / hook instance
+  const isUserOnline = useCallback((_chatId: string, userId: string) => {
+    return useChatStore.getState().isUserPresent(userId);
+  }, []);
 
   // Get online users for a chat
   const getOnlineUsers = useCallback(

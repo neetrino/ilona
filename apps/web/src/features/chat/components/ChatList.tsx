@@ -32,8 +32,9 @@ export function ChatList({ onSelectChat }: ChatListProps) {
   // Fetch chats from API
   const { data: chats = [], isLoading } = useChats();
 
-  // Socket for online status
-  const { isConnected, isUserOnline } = useSocket();
+  // Shared presence (all roles / hook instances)
+  const { isConnected } = useSocket();
+  const presenceByUserId = useChatStore((state) => state.presenceByUserId);
 
   const messagePreviewLabels = useMemo(
     () => ({
@@ -181,7 +182,7 @@ export function ChatList({ onSelectChat }: ChatListProps) {
             const isActive = activeChat?.id === chat.id;
             const hasUnread = (chat.unreadCount || 0) > 0;
             const isOnline = info.otherUserId
-              ? isUserOnline(chat.id, info.otherUserId)
+              ? Boolean(presenceByUserId[info.otherUserId]?.isOnline)
               : false;
 
             return (

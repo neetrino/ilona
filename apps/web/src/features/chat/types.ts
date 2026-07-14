@@ -8,6 +8,13 @@ export interface ChatUser {
   avatarUrl?: string;
   role: string;
   status?: string;
+  lastSeenAt?: string | null;
+}
+
+export interface ChatPresenceEntry {
+  userId: string;
+  isOnline: boolean;
+  lastSeenAt?: string | null;
 }
 
 export interface ChatParticipant {
@@ -81,6 +88,7 @@ export interface SocketEvents {
   'connection:success': {
     userId: string;
     chats: { id: string; onlineUsers: string[] }[];
+    presence?: ChatPresenceEntry[];
   };
 
   // Messages
@@ -97,7 +105,7 @@ export interface SocketEvents {
 
   // Online status
   'user:online': { chatId: string; userId: string };
-  'user:offline': { chatId: string; userId: string };
+  'user:offline': { chatId: string; userId: string; lastSeenAt?: string | null };
 }
 
 // Send events

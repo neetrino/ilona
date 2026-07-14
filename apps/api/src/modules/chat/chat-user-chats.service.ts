@@ -51,6 +51,7 @@ export class ChatUserChatsService {
                   lastName: true,
                   avatarUrl: true,
                   role: true,
+                  lastSeenAt: true,
                 },
               },
             },

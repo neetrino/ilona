@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { disconnectSocket } from '../lib/socket';
-import type { Chat, Message } from '../types';
+import type { Chat, ChatPresenceEntry, Message } from '../types';
 
 const CHAT_STATE_STORAGE_KEY_PREFIX = 'chat-state-';
 
@@ -8,6 +8,11 @@ interface TypingUser {
   chatId: string;
   userId: string;
   timestamp: number;
+}
+
+export interface ChatPresenceState {
+  isOnline: boolean;
+  lastSeenAt: string | null;
 }
 
 interface ChatState {
@@ -19,6 +24,15 @@ interface ChatState {
   // Active chat (current account's selection; derived from activeChatByAccount[accountKey])
   activeChat: Chat | null;
   setActiveChat: (chat: Chat | null) => void;
+
+  // Shared across hook instances so online/offline stays consistent for every role
+  presenceByUserId: Record<string, ChatPresenceState>;
+  setUserOnline: (userId: string) => void;
+  setUserOffline: (userId: string, lastSeenAt?: string | null) => void;
+  mergePresence: (entries: ChatPresenceEntry[]) => void;
+  seedPresenceFromChat: (chat: Chat) => void;
+  isUserPresent: (userId: string) => boolean;
+  getUserLastSeenAt: (userId: string) => string | null;
 
   // Typing indicators
   typingUsers: TypingUser[];
@@ -115,7 +129,61 @@ export const useChatStore = create<ChatState>((set, get) => ({
     } else {
       set({ activeChat: chat, replyTo: null, editingMessage: null });
     }
+    if (chat) {
+      get().seedPresenceFromChat(chat);
+    }
   },
+
+  presenceByUserId: {},
+  setUserOnline: (userId) => {
+    set((state) => ({
+      presenceByUserId: {
+        ...state.presenceByUserId,
+        [userId]: {
+          isOnline: true,
+          lastSeenAt: state.presenceByUserId[userId]?.lastSeenAt ?? null,
+        },
+      },
+    }));
+  },
+  setUserOffline: (userId, lastSeenAt) => {
+    set((state) => ({
+      presenceByUserId: {
+        ...state.presenceByUserId,
+        [userId]: {
+          isOnline: false,
+          lastSeenAt:
+            lastSeenAt ?? state.presenceByUserId[userId]?.lastSeenAt ?? new Date().toISOString(),
+        },
+      },
+    }));
+  },
+  mergePresence: (entries) => {
+    if (entries.length === 0) return;
+    set((state) => {
+      const next = { ...state.presenceByUserId };
+      for (const entry of entries) {
+        next[entry.userId] = {
+          isOnline: entry.isOnline,
+          lastSeenAt: entry.lastSeenAt ?? next[entry.userId]?.lastSeenAt ?? null,
+        };
+      }
+      return { presenceByUserId: next };
+    });
+  },
+  seedPresenceFromChat: (chat) => {
+    const entries: ChatPresenceEntry[] = chat.participants.map((participant) => {
+      const existing = get().presenceByUserId[participant.userId];
+      return {
+        userId: participant.userId,
+        isOnline: existing?.isOnline ?? false,
+        lastSeenAt: existing?.lastSeenAt ?? participant.user.lastSeenAt ?? null,
+      };
+    });
+    get().mergePresence(entries);
+  },
+  isUserPresent: (userId) => Boolean(get().presenceByUserId[userId]?.isOnline),
+  getUserLastSeenAt: (userId) => get().presenceByUserId[userId]?.lastSeenAt ?? null,
 
   // Typing indicators
   typingUsers: [],
@@ -189,6 +257,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
       accountKey: null,
       activeChatByAccount: {},
       activeChat: null,
+      presenceByUserId: {},
       typingUsers: [],
       isMobileListVisible: true,
       drafts: new Map(),

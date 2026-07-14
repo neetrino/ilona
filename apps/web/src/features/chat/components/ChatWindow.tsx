@@ -19,6 +19,7 @@ import { getFullApiUrl } from '@/shared/lib/api-url-utils';
 import { VocabularyModal } from './VocabularyModal';
 import { AddMembersModal } from './AddMembersModal';
 import { getChatThemeForRole, isPortalChatRole } from '../lib/chat-theme';
+import { formatChatLastSeen } from '../utils/chat-last-seen';
 import { useIsLgViewport } from '@/shared/hooks/useIsLgViewport';
 import { ChatWindowHeader } from './chat-window/ChatWindowHeader';
 import { ChatMessageList } from './chat-window/ChatMessageList';
@@ -69,7 +70,9 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
   const isMobileViewport = isLgViewport === false;
   const addMessageToCache = useAddMessageToCache();
   const createDirectChat = useCreateDirectChat();
-  const { getTypingUsers, addTypingUser } = useChatStore();
+  const { getTypingUsers, addTypingUser, seedPresenceFromChat } = useChatStore();
+  const presenceByUserId = useChatStore((state) => state.presenceByUserId);
+  const [presenceTick, setPresenceTick] = useState(0);
 
   const isTeacher = user?.role === 'TEACHER';
   const isGroupChat = chat.type === 'GROUP';
@@ -130,6 +133,18 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
     if (!chat.id || !isConnected) return;
     void joinChat(chat.id);
   }, [chat.id, isConnected, joinChat]);
+
+  useEffect(() => {
+    seedPresenceFromChat(chat);
+  }, [chat, seedPresenceFromChat]);
+
+  useEffect(() => {
+    if (chat.type !== 'DIRECT') return;
+    const timer = window.setInterval(() => {
+      setPresenceTick((value) => value + 1);
+    }, 60_000);
+    return () => window.clearInterval(timer);
+  }, [chat.type, chat.id]);
 
   const messages = useMemo(
     () => messagesData?.pages.flatMap((page) => page.items) ?? [],
@@ -253,10 +268,22 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
   const chatAvatarUrl = getChatAvatarUrl(chat, user?.id, brandLogoUrl);
   const chatAvatarInitials = getChatAvatarInitials(chat, user?.id, tChat('groupChat'));
   const typingNames = getTypingNames(chat, getTypingUsers(chat.id));
+  const otherUserId = otherParticipant?.userId;
+  const otherPresence = otherUserId ? presenceByUserId[otherUserId] : undefined;
   const onlineStatus =
-    chat.type === 'GROUP' || !otherParticipant
+    chat.type === 'GROUP' || !otherUserId
       ? null
-      : isUserOnline(chat.id, otherParticipant.userId);
+      : Boolean(otherPresence?.isOnline || isUserOnline(chat.id, otherUserId));
+
+  const presenceLabel =
+    chat.type === 'DIRECT' && otherUserId
+      ? formatChatLastSeen(
+          Boolean(onlineStatus),
+          otherPresence?.lastSeenAt ?? otherParticipant?.user.lastSeenAt,
+          (key, values) => (values ? tChat(key, values) : tChat(key)),
+        )
+      : null;
+  void presenceTick;
 
   const isMobileConversation = Boolean(onBack);
   const isAdminPortalChat = user?.role === 'ADMIN' || user?.role === 'MANAGER';
@@ -273,6 +300,7 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
         avatarInitials={chatAvatarInitials}
         typingNames={typingNames}
         onlineStatus={onlineStatus}
+        presenceLabel={presenceLabel}
         isConnected={isConnected}
         isMobileConversation={isMobileConversation}
         isAdminOrManager={isAdminOrManager}

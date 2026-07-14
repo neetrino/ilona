@@ -42,6 +42,14 @@ export class ChatService {
     return this.chatManagementService.getOnlineUsers(chatId, onlineUserIds);
   }
 
+  touchUserLastSeen(userId: string): Promise<Date> {
+    return this.chatManagementService.touchUserLastSeen(userId);
+  }
+
+  getUsersLastSeen(userIds: string[]): Promise<Array<{ id: string; lastSeenAt: Date | null }>> {
+    return this.chatManagementService.getUsersLastSeen(userIds);
+  }
+
   // Message Methods
   async getMessage(messageId: string): Promise<unknown> {
     return this.messageService.getMessage(messageId);
