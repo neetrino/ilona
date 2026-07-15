@@ -148,18 +148,6 @@ export function LandingHeroSection({ tr, isHy }: LandingSectionProps) {
             </div>
           </motion.div>
       
-          <motion.div {...heroCtaMotion} className="absolute left-3 right-3 top-[615px] z-20">
-            <Link
-              href="/login"
-              className={cn(
-                'inline-flex h-[56px] w-full items-center justify-center rounded-[999px] bg-white text-[14px] font-semibold text-[#1447e6] shadow-[0px_10px_15px_-3px_rgba(0,0,0,0.1),0px_4px_6px_-4px_rgba(0,0,0,0.1)]',
-                BUTTON_HOVER_CLASS,
-              )}
-            >
-              {tr('Register Now', 'Գրանցվել հիմա')}
-            </Link>
-          </motion.div>
-      
           <motion.div {...heroCtaMotion} className="absolute left-3 right-3 top-[685px] z-20">
             <Link
               href="#branches"
@@ -210,18 +198,6 @@ export function LandingHeroSection({ tr, isHy }: LandingSectionProps) {
           </motion.p>
       
           <motion.div {...heroCtaMotion} className="absolute left-[36px] top-[586px]">
-            <Link
-              href="/login"
-              className={cn(
-                'inline-flex h-[56px] w-[180.633px] items-center justify-center rounded-[16777200px] bg-white text-[16px] font-semibold tracking-[-0.3125px] text-[#1447e6] shadow-[0px_20px_25px_-5px_rgba(0,0,0,0.1),0px_8px_10px_-6px_rgba(0,0,0,0.1)]',
-                heroIntroVisibilityClass,
-                BUTTON_HOVER_CLASS,
-              )}
-            >
-              {tr('Register Now', 'Գրանցվել հիմա')}
-            </Link>
-          </motion.div>
-          <motion.div {...heroCtaMotion} className="absolute left-[237px] top-[586px]">
             <Link
               href="#branches"
               className={cn(
