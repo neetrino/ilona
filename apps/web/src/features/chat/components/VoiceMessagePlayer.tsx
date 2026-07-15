@@ -16,5 +16,5 @@ export function VoiceMessagePlayer(props: VoiceMessagePlayerProps) {
     );
   }
 
-  return <VoiceMessagePlayerControls vm={vm} />;
+  return <VoiceMessagePlayerControls vm={vm} variant={props.variant ?? 'default'} />;
 }

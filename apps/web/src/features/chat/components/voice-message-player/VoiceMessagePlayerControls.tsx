@@ -3,15 +3,24 @@
 import { useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import { cn } from '@/shared/lib/utils';
-import { VOICE_BUBBLE_CLASS, WAVEFORM_BAR_COUNT } from './voice-message-player.constants';
+import {
+  VOICE_BUBBLE_CLASS,
+  VOICE_BUBBLE_TO_TEACHER_CLASS,
+  WAVEFORM_BAR_COUNT,
+} from './voice-message-player.constants';
 import { formatSpeedLabel, generateWaveformLevels } from './voice-message-player.util';
 import type { useVoiceMessagePlayer } from './useVoiceMessagePlayer';
+import type { VoiceMessagePlayerVariant } from './voice-message-player.types';
 
 type VoiceMessagePlayerControlsProps = {
   vm: ReturnType<typeof useVoiceMessagePlayer>;
+  variant?: VoiceMessagePlayerVariant;
 };
 
-export function VoiceMessagePlayerControls({ vm }: VoiceMessagePlayerControlsProps) {
+export function VoiceMessagePlayerControls({
+  vm,
+  variant = 'default',
+}: VoiceMessagePlayerControlsProps) {
   const tChat = useTranslations('chat');
   const tCommon = useTranslations('common');
 
@@ -27,6 +36,18 @@ export function VoiceMessagePlayerControls({ vm }: VoiceMessagePlayerControlsPro
         ? Math.max(0, vm.totalLabelSec - vm.currentTimeSec)
         : vm.totalLabelSec
       : 0;
+
+  const isToTeacher = variant === 'toTeacher';
+  const bubbleClass = isToTeacher ? VOICE_BUBBLE_TO_TEACHER_CLASS : VOICE_BUBBLE_CLASS;
+  const accentClass = isToTeacher ? 'text-amber-800' : 'text-white';
+  const waveClass = isToTeacher ? 'bg-amber-800' : 'bg-white';
+  const speedBtnClass = isToTeacher
+    ? 'rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-xs font-semibold tabular-nums leading-none text-amber-800 transition-colors hover:bg-amber-200'
+    : 'rounded-full bg-white/25 px-2 py-0.5 text-xs font-semibold tabular-nums leading-none text-white backdrop-blur-[1px] transition-colors hover:bg-white/35';
+  const loadingOverlayClass = isToTeacher ? 'bg-amber-100/70' : 'bg-[#1010a3]/55';
+  const spinnerClass = isToTeacher
+    ? 'border-2 border-amber-800 border-t-transparent'
+    : 'border-2 border-white border-t-transparent';
 
   return (
     <div className="relative w-full min-w-[260px] max-w-[360px]">
@@ -50,14 +71,17 @@ export function VoiceMessagePlayerControls({ vm }: VoiceMessagePlayerControlsPro
       <div
         className={cn(
           'relative flex min-h-[4rem] min-w-0 items-center gap-3.5 overflow-hidden rounded-full px-5 py-3',
-          VOICE_BUBBLE_CLASS,
+          bubbleClass,
         )}
       >
         <button
           type="button"
           onClick={vm.isPlaying ? vm.handlePauseClick : vm.handlePlayClick}
           disabled={vm.hasError}
-          className="relative z-[1] flex h-10 w-10 shrink-0 touch-manipulation items-center justify-center text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+          className={cn(
+            'relative z-[1] flex h-10 w-10 shrink-0 touch-manipulation items-center justify-center transition-opacity hover:opacity-90 disabled:opacity-50',
+            accentClass,
+          )}
           title={vm.isPlaying ? tCommon('pause') : tCommon('play')}
           aria-label={vm.isPlaying ? tCommon('pause') : tCommon('play')}
         >
@@ -94,8 +118,9 @@ export function VoiceMessagePlayerControls({ vm }: VoiceMessagePlayerControlsPro
               <span
                 key={index}
                 className={cn(
-                  'min-w-0 flex-1 self-center rounded-full bg-white',
-                  isPlayed ? 'opacity-100' : 'opacity-45',
+                  'min-w-0 flex-1 self-center rounded-full',
+                  waveClass,
+                  isPlayed ? 'opacity-100' : 'opacity-40',
                   !vm.isScrubbing && 'transition-opacity duration-75',
                 )}
                 style={{ height: `${Math.round(level * 100)}%`, maxWidth: '4px' }}
@@ -105,14 +130,19 @@ export function VoiceMessagePlayerControls({ vm }: VoiceMessagePlayerControlsPro
         </div>
 
         <div className="flex w-[3.25rem] shrink-0 flex-col items-end justify-center gap-1.5">
-          <span className="whitespace-nowrap text-sm font-medium tabular-nums leading-none text-white">
+          <span
+            className={cn(
+              'whitespace-nowrap text-sm font-medium tabular-nums leading-none',
+              accentClass,
+            )}
+          >
             {vm.formatVoiceDuration(timeLabelSec)}
           </span>
           {showSpeedControl ? (
             <button
               type="button"
               onClick={vm.cyclePlaybackSpeed}
-              className="rounded-full bg-white/25 px-2 py-0.5 text-xs font-semibold tabular-nums leading-none text-white backdrop-blur-[1px] transition-colors hover:bg-white/35"
+              className={speedBtnClass}
               title={`Playback speed: ${formatSpeedLabel(vm.playbackSpeed)}. Click to change.`}
               aria-label={`Playback speed ${formatSpeedLabel(vm.playbackSpeed)}`}
             >
@@ -122,8 +152,13 @@ export function VoiceMessagePlayerControls({ vm }: VoiceMessagePlayerControlsPro
         </div>
 
         {vm.isLoading ? (
-          <div className="pointer-events-none absolute inset-0 flex items-center justify-center rounded-full bg-[#1010a3]/55">
-            <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+          <div
+            className={cn(
+              'pointer-events-none absolute inset-0 flex items-center justify-center rounded-full',
+              loadingOverlayClass,
+            )}
+          >
+            <div className={cn('h-5 w-5 animate-spin rounded-full', spinnerClass)} />
           </div>
         ) : null}
       </div>

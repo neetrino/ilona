@@ -16,7 +16,7 @@ import { resolveChatAvatarUrl } from '../../utils/chat-avatar';
 import { isPendingMessageId } from '../../hooks';
 import { getMessageDeliveryStatus } from '../../utils/message-delivery-status';
 import { VoiceMessagePlayer } from '../VoiceMessagePlayer';
-import { getSubstituteVoiceLabel, isVocabularyMessage } from './chat-message-meta';
+import { getSubstituteVoiceLabel, isVocabularyMessage, isVoiceToTeacherMessage } from './chat-message-meta';
 import { MessageDeliveryTicks } from './MessageDeliveryTicks';
 
 interface ChatCurrentUserAvatar {
@@ -185,6 +185,7 @@ export function ChatMessageItem({
                 fileUrl={message.fileUrl}
                 duration={message.duration}
                 fileName={message.fileName}
+                variant={isVoiceToTeacherMessage(message) ? 'toTeacher' : 'default'}
               />
             </div>
           ) : (

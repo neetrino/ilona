@@ -29,3 +29,16 @@ export function getSubstituteVoiceLabel(message: Message, defaultLabel: string):
 
   return defaultLabel;
 }
+
+export function isVoiceToTeacherMessage(message: Message): boolean {
+  return (
+    message.type === 'VOICE' &&
+    Boolean(
+      message.metadata &&
+        typeof message.metadata === 'object' &&
+        message.metadata !== null &&
+        'voiceToTeacher' in message.metadata &&
+        message.metadata.voiceToTeacher === true,
+    )
+  );
+}
