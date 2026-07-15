@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useTranslations } from 'next-intl';
-import { useCreateGroup, type CreateGroupDto } from '@/features/groups';
+import { useCreateGroup, type CreateGroupDto, type GroupScheduleEntry } from '@/features/groups';
 import { useCenters } from '@/features/centers';
 import { useTeachers } from '@/features/teachers';
 import { useState, useEffect, useMemo, useCallback } from 'react';
@@ -12,6 +12,8 @@ import { getErrorMessage } from '@/shared/lib/api';
 import type { GroupIconKey } from '@ilona/types';
 import { filterTeachersForCenter } from '../../lib/center-scoped-teachers';
 import { DEFAULT_GROUP_LEVEL } from '../../lib/group-level-options';
+import { defaultMonthDateRange } from '../../group-schedule-utils';
+import { validateGroupCalendarSchedule } from '../../lib/validate-group-calendar-schedule';
 import { useSheetStackZIndex } from '@/shared/lib/sheet-stack';
 import { usePortalSheetDrag } from '@/shared/hooks/usePortalSheetDrag';
 import type { CreateGroupFormData, CreateGroupFormProps } from './create-group-form.types';
@@ -32,13 +34,10 @@ export function useCreateGroupForm({ open, onOpenChange }: CreateGroupFormProps)
           teacherId: z.string().min(1, tForm('noTeacherAssigned')),
           secondTeacherId: z.string().min(1, tForm('noTeacherAssigned')),
         })
-        .refine(
-          (data) => data.teacherId !== data.secondTeacherId,
-          {
-            message: tForm('teachersMustDiffer'),
-            path: ['secondTeacherId'],
-          },
-        ),
+        .refine((data) => data.teacherId !== data.secondTeacherId, {
+          message: tForm('teachersMustDiffer'),
+          path: ['secondTeacherId'],
+        }),
     [tVal, tForm],
   );
 
@@ -48,6 +47,9 @@ export function useCreateGroupForm({ open, onOpenChange }: CreateGroupFormProps)
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(open);
   const [iconKey, setIconKey] = useState<GroupIconKey | null>(null);
+  const [schedule, setSchedule] = useState<GroupScheduleEntry[]>([]);
+  const [dateFrom, setDateFrom] = useState(() => defaultMonthDateRange().from);
+  const [dateTo, setDateTo] = useState(() => defaultMonthDateRange().to);
   const createGroup = useCreateGroup();
 
   const { data: centersData, isLoading: isLoadingCenters } = useCenters({
@@ -137,6 +139,7 @@ export function useCreateGroupForm({ open, onOpenChange }: CreateGroupFormProps)
 
   useEffect(() => {
     if (open) {
+      const range = defaultMonthDateRange();
       reset({
         name: '',
         level: DEFAULT_GROUP_LEVEL,
@@ -146,10 +149,26 @@ export function useCreateGroupForm({ open, onOpenChange }: CreateGroupFormProps)
         secondTeacherId: '',
       });
       setIconKey(null);
+      setSchedule([]);
+      setDateFrom(range.from);
+      setDateTo(range.to);
       setErrorMessage(null);
       setSuccessMessage(null);
     }
   }, [open, reset, defaultCenterId]);
+
+  const scheduleValidationError = useMemo(
+    () =>
+      validateGroupCalendarSchedule({
+        schedule,
+        dateFrom,
+        dateTo,
+        requireSlots: true,
+        tForm,
+        tVal,
+      }),
+    [schedule, dateFrom, dateTo, tForm, tVal],
+  );
 
   const requestClose = useCallback(() => {
     setIsDialogOpen(false);
@@ -175,6 +194,19 @@ export function useCreateGroupForm({ open, onOpenChange }: CreateGroupFormProps)
       return;
     }
 
+    const calendarError = validateGroupCalendarSchedule({
+      schedule,
+      dateFrom,
+      dateTo,
+      requireSlots: true,
+      tForm,
+      tVal,
+    });
+    if (calendarError) {
+      setErrorMessage(calendarError);
+      return;
+    }
+
     try {
       const payload: CreateGroupDto = {
         name: data.name,
@@ -183,6 +215,11 @@ export function useCreateGroupForm({ open, onOpenChange }: CreateGroupFormProps)
         centerId: data.centerId,
         teacherId: data.teacherId,
         secondTeacherId: data.secondTeacherId.trim(),
+        schedule,
+        calendarPlan: {
+          dateFrom,
+          dateTo,
+        },
         ...(iconKey ? { iconKey } : {}),
       };
 
@@ -191,6 +228,7 @@ export function useCreateGroupForm({ open, onOpenChange }: CreateGroupFormProps)
       setSuccessMessage(tForm('createdSuccess'));
       setErrorMessage(null);
 
+      const range = defaultMonthDateRange();
       reset({
         name: '',
         level: DEFAULT_GROUP_LEVEL,
@@ -200,6 +238,9 @@ export function useCreateGroupForm({ open, onOpenChange }: CreateGroupFormProps)
         secondTeacherId: '',
       });
       setIconKey(null);
+      setSchedule([]);
+      setDateFrom(range.from);
+      setDateTo(range.to);
       setTimeout(() => {
         onOpenChange(false);
         setSuccessMessage(null);
@@ -247,5 +288,12 @@ export function useCreateGroupForm({ open, onOpenChange }: CreateGroupFormProps)
     isLoadingCenters,
     isLoadingTeachers,
     isFormBusy,
+    schedule,
+    setSchedule,
+    dateFrom,
+    dateTo,
+    setDateFrom,
+    setDateTo,
+    scheduleValidationError,
   };
 }

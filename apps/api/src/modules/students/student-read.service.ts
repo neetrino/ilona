@@ -28,8 +28,41 @@ export class StudentReadService {
             teacher: {
               include: {
                 user: {
-                  select: { id: true, firstName: true, lastName: true, email: true },
+                  select: {
+                    id: true,
+                    firstName: true,
+                    lastName: true,
+                    email: true,
+                    phone: true,
+                  },
                 },
+              },
+            },
+            secondTeacher: {
+              include: {
+                user: {
+                  select: {
+                    id: true,
+                    firstName: true,
+                    lastName: true,
+                    email: true,
+                    phone: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+        teacher: {
+          select: {
+            id: true,
+            user: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+                email: true,
+                phone: true,
               },
             },
           },
@@ -107,10 +140,11 @@ export class StudentReadService {
       // Check if teacher is assigned to this student
       // Teacher is assigned if:
       // 1. Student has direct teacherId assignment matching this teacher, OR
-      // 2. Student is in a group that has this teacher assigned
+      // 2. Student is in a group where this teacher is Teacher 1 or Teacher 2
       const isAssigned =
         student.teacherId === teacher.id ||
-        (student.group?.teacherId === teacher.id);
+        student.group?.teacherId === teacher.id ||
+        student.group?.secondTeacherId === teacher.id;
 
       if (!isAssigned) {
         throw new ForbiddenException('You do not have access to this student');
@@ -143,8 +177,18 @@ export class StudentReadService {
       ORDER BY h."joinedAt" DESC
     `;
 
+    const resolvedTeacher =
+      student.teacher ??
+      (student.group?.teacher
+        ? {
+            id: student.group.teacher.id,
+            user: student.group.teacher.user,
+          }
+        : null);
+
     return {
       ...student,
+      teacher: resolvedTeacher,
       groupHistory: groupHistory.map((entry) => ({
         id: entry.id,
         groupId: entry.groupId,

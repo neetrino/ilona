@@ -2,17 +2,31 @@
 
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 import { useTranslations } from 'next-intl';
-import { useUpdateGroup, useGroup, type UpdateGroupDto } from '@/features/groups';
+import {
+  useUpdateGroup,
+  useGroup,
+  type UpdateGroupDto,
+  type GroupScheduleEntry,
+} from '@/features/groups';
 import { useCenters } from '@/features/centers';
 import { useTeachers } from '@/features/teachers';
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { getErrorMessage } from '@/shared/lib/api';
 import { isGroupIconKey, type GroupIconKey } from '@ilona/types';
 import { filterTeachersForCenter } from '../../lib/center-scoped-teachers';
+import {
+  defaultMonthDateRange,
+  normalizeGroupSchedulePayload,
+} from '../../group-schedule-utils';
+import { validateGroupCalendarSchedule } from '../../lib/validate-group-calendar-schedule';
 import { useSheetStackZIndex } from '@/shared/lib/sheet-stack';
 import { usePortalSheetDrag } from '@/shared/hooks/usePortalSheetDrag';
+import {
+  buildEditGroupPayload,
+  isGroupScheduleRegenerationRequired,
+} from './edit-group-form-payload';
+import { createUpdateGroupFormSchema } from './edit-group-form-schema';
 import type { EditGroupFormProps, UpdateGroupFormData } from './edit-group-form.types';
 
 export function useEditGroupForm({
@@ -22,30 +36,13 @@ export function useEditGroupForm({
   onToggleActive,
   isStatusTogglePending = false,
 }: EditGroupFormProps) {
-
   const tForm = useTranslations('groups.form');
   const tGroups = useTranslations('groups');
   const tVal = useTranslations('groups.validation');
   const tCommon = useTranslations('common');
 
   const updateGroupSchema = useMemo(
-    () =>
-      z
-        .object({
-          name: z.string().min(2, tVal('nameMin')).max(100, tVal('nameMax')).optional(),
-          level: z.string().max(50, tVal('levelMax')).optional().or(z.literal('')),
-          description: z.string().max(500, tVal('descriptionMax')).optional().or(z.literal('')),
-          centerId: z.string().min(1, tVal('centerRequired')).optional().or(z.literal('')),
-          teacherId: z.string().min(1, tForm('noTeacherAssigned')),
-          secondTeacherId: z.string().min(1, tForm('noTeacherAssigned')),
-        })
-        .refine(
-          (data) => data.teacherId !== data.secondTeacherId,
-          {
-            message: tForm('teachersMustDiffer'),
-            path: ['secondTeacherId'],
-          },
-        ),
+    () => createUpdateGroupFormSchema(tVal, tForm),
     [tVal, tForm],
   );
 
@@ -55,6 +52,11 @@ export function useEditGroupForm({
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(open);
   const [iconKey, setIconKey] = useState<GroupIconKey | null>(null);
+  const [schedule, setSchedule] = useState<GroupScheduleEntry[]>([]);
+  const [dateFrom, setDateFrom] = useState(() => defaultMonthDateRange().from);
+  const [dateTo, setDateTo] = useState(() => defaultMonthDateRange().to);
+  const [regenerateDialogOpen, setRegenerateDialogOpen] = useState(false);
+  const pendingPayloadRef = useRef<UpdateGroupDto | null>(null);
   const updateGroup = useUpdateGroup();
   const { data: group, isLoading } = useGroup(groupId, open);
 
@@ -87,32 +89,56 @@ export function useEditGroupForm({
   });
 
   const isGroupActive = group?.isActive ?? true;
-  const isFormBusy = isSubmitting || updateGroup.isPending || isStatusTogglePending;
+  const isFormBusy =
+    isSubmitting || updateGroup.isPending || isStatusTogglePending || regenerateDialogOpen;
   const watchedTeacherId = watch('teacherId');
   const watchedCenterId = watch('centerId');
   const watchedSecondTeacherId = watch('secondTeacherId');
 
-  const hasCenterSelected = Boolean(watchedCenterId);
   const teachersForCenter = useMemo(
     () => filterTeachersForCenter(teachers, watchedCenterId),
     [teachers, watchedCenterId],
   );
   const teacherDropdownDisabled =
-    isSubmitting || updateGroup.isPending || isLoadingTeachers || !hasCenterSelected;
-  const teacherPlaceholder = hasCenterSelected ? tForm('noTeacherAssigned') : tForm('selectCenterFirst');
+    isSubmitting || updateGroup.isPending || isLoadingTeachers || !watchedCenterId;
+  const teacherPlaceholder = watchedCenterId
+    ? tForm('noTeacherAssigned')
+    : tForm('selectCenterFirst');
+
+  const hadCalendar = useMemo(() => {
+    if (!group) return false;
+    return Boolean(normalizeGroupSchedulePayload(group.schedule).calendar);
+  }, [group]);
+
+  const scheduleValidationError = useMemo(
+    () =>
+      validateGroupCalendarSchedule({
+        schedule,
+        dateFrom,
+        dateTo,
+        requireSlots: false,
+        tForm,
+        tVal,
+      }),
+    [schedule, dateFrom, dateTo, tForm, tVal],
+  );
 
   useEffect(() => {
-    if (group) {
-      reset({
-        name: group.name,
-        level: group.level || '',
-        description: group.description || '',
-        centerId: group.centerId,
-        teacherId: group.teacherId || '',
-        secondTeacherId: group.secondTeacherId || '',
-      });
-      setIconKey(isGroupIconKey(group.iconKey) ? group.iconKey : null);
-    }
+    if (!group) return;
+    const { weeklySlots, calendar } = normalizeGroupSchedulePayload(group.schedule);
+    const range = defaultMonthDateRange();
+    reset({
+      name: group.name,
+      level: group.level || '',
+      description: group.description || '',
+      centerId: group.centerId,
+      teacherId: group.teacherId || '',
+      secondTeacherId: group.secondTeacherId || '',
+    });
+    setIconKey(isGroupIconKey(group.iconKey) ? group.iconKey : null);
+    setSchedule(weeklySlots);
+    setDateFrom(calendar?.dateFrom ?? range.from);
+    setDateTo(calendar?.dateTo ?? range.to);
   }, [group, reset]);
 
   useEffect(() => {
@@ -123,6 +149,8 @@ export function useEditGroupForm({
     if (!open) {
       setErrorMessage(null);
       setSuccessMessage(null);
+      setRegenerateDialogOpen(false);
+      pendingPayloadRef.current = null;
     }
   }, [open]);
 
@@ -139,20 +167,38 @@ export function useEditGroupForm({
   });
 
   useEffect(() => {
-    if (!isDialogOpen) {
-      resetDrag();
-    }
+    if (!isDialogOpen) resetDrag();
   }, [isDialogOpen, resetDrag]);
 
-  const buildPayload = (data: UpdateGroupFormData): UpdateGroupDto => ({
-    name: data.name,
-    level: data.level || undefined,
-    description: data.description || undefined,
-    centerId: data.centerId && data.centerId.trim() !== '' ? data.centerId : undefined,
-    teacherId: data.teacherId || undefined,
-    secondTeacherId: data.secondTeacherId ? data.secondTeacherId : null,
-    iconKey,
-  });
+  const finishSuccess = useCallback(() => {
+    setSuccessMessage(tForm('updatedSuccess'));
+    setErrorMessage(null);
+    setRegenerateDialogOpen(false);
+    pendingPayloadRef.current = null;
+    setTimeout(() => {
+      onOpenChange(false);
+      setSuccessMessage(null);
+    }, 1500);
+  }, [tForm, onOpenChange]);
+
+  const submitPayload = useCallback(
+    async (payload: UpdateGroupDto) => {
+      try {
+        await updateGroup.mutateAsync({ id: groupId, data: payload });
+        finishSuccess();
+      } catch (error: unknown) {
+        if (isGroupScheduleRegenerationRequired(error)) {
+          pendingPayloadRef.current = payload;
+          setRegenerateDialogOpen(true);
+          setErrorMessage(null);
+          return;
+        }
+        setErrorMessage(getErrorMessage(error, tForm('failedUpdate')));
+        setSuccessMessage(null);
+      }
+    },
+    [updateGroup, groupId, finishSuccess, tForm],
+  );
 
   const onSubmit = async (data: UpdateGroupFormData) => {
     setErrorMessage(null);
@@ -166,54 +212,62 @@ export function useEditGroupForm({
       return;
     }
 
-    try {
-      await updateGroup.mutateAsync({ id: groupId, data: buildPayload(data) });
-      setSuccessMessage(tForm('updatedSuccess'));
-      setErrorMessage(null);
-      setTimeout(() => {
-        onOpenChange(false);
-        setSuccessMessage(null);
-      }, 1500);
-    } catch (error: unknown) {
-      const message = getErrorMessage(error, tForm('failedUpdate'));
-      setErrorMessage(message);
-      setSuccessMessage(null);
+    const calendarError = validateGroupCalendarSchedule({
+      schedule,
+      dateFrom,
+      dateTo,
+      requireSlots: false,
+      tForm,
+      tVal,
+    });
+    if (calendarError) {
+      setErrorMessage(calendarError);
+      return;
     }
+
+    await submitPayload(
+      buildEditGroupPayload({
+        data,
+        iconKey,
+        schedule,
+        dateFrom,
+        dateTo,
+        hadCalendar,
+      }),
+    );
   };
+
+  const onConfirmRegenerate = useCallback(async () => {
+    const pending = pendingPayloadRef.current;
+    if (!pending) {
+      setRegenerateDialogOpen(false);
+      return;
+    }
+    await submitPayload({ ...pending, confirmReplaceGeneratedLessons: true });
+  }, [submitPayload]);
 
   return {
     tForm,
     tGroups,
-    tVal,
     tCommon,
-    updateGroupSchema,
-    resolver,
     errorMessage,
-    setErrorMessage,
     successMessage,
-    setSuccessMessage,
     isDialogOpen,
-    setIsDialogOpen,
     iconKey,
     setIconKey,
     updateGroup,
-    group,
     isLoading,
     centers,
-    teachers,
     register,
     handleSubmit,
     errors,
     isSubmitting,
-    reset,
-    watch,
     setValue,
     isGroupActive,
     isFormBusy,
     watchedTeacherId,
     watchedCenterId,
     watchedSecondTeacherId,
-    hasCenterSelected,
     teachersForCenter,
     teacherDropdownDisabled,
     teacherPlaceholder,
@@ -228,6 +282,15 @@ export function useEditGroupForm({
     dragStyle,
     onSubmit,
     onToggleActive,
-    isStatusTogglePending,
+    schedule,
+    setSchedule,
+    dateFrom,
+    dateTo,
+    setDateFrom,
+    setDateTo,
+    scheduleValidationError,
+    regenerateDialogOpen,
+    setRegenerateDialogOpen,
+    onConfirmRegenerate,
   };
 }

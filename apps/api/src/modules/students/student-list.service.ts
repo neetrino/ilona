@@ -43,7 +43,10 @@ export class StudentListService {
         return { items: [], total: 0, page: 1, pageSize: take, totalPages: 0, totalMonthlyFees: 0 };
       }
       const groups = await this.prisma.group.findMany({
-        where: { teacherId: teacher.id, isActive: true },
+        where: {
+          isActive: true,
+          OR: [{ teacherId: teacher.id }, { secondTeacherId: teacher.id }],
+        },
         select: { id: true },
       });
       teacherGroupIds = groups.map((g) => g.id);

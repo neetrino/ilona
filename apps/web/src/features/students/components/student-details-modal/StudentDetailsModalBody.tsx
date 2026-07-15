@@ -59,6 +59,19 @@ export function StudentDetailsModalBody(props: StudentDetailsModalBodyProps) {
     basePath,
   } = props;
 
+  const assignedTeacher = student?.teacher ?? student?.group?.teacher;
+  const secondTeacher =
+    student?.group?.secondTeacher &&
+    student.group.secondTeacher.id !== assignedTeacher?.id
+      ? student.group.secondTeacher
+      : null;
+  const assignedTeacherName = assignedTeacher
+    ? `${assignedTeacher.user.firstName} ${assignedTeacher.user.lastName}`
+    : '—';
+  const secondTeacherName = secondTeacher
+    ? `${secondTeacher.user.firstName} ${secondTeacher.user.lastName}`
+    : null;
+
   return (
     <div
       className="overflow-y-auto px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-4 min-[1367px]:p-6"
@@ -255,11 +268,17 @@ export function StudentDetailsModalBody(props: StudentDetailsModalBodyProps) {
               <div className="rounded-lg border border-slate-200 bg-slate-50/60 p-4 space-y-1 min-[1367px]:min-w-0 min-[1367px]:flex-1">
                 <label className="text-sm font-medium text-slate-600">{t('teacher')}</label>
                 <p className="text-slate-800 text-sm sm:text-base break-words">
-                  {student.teacher
-                    ? `${student.teacher.user.firstName} ${student.teacher.user.lastName}`
-                    : '—'}
+                  {assignedTeacherName}
                 </p>
               </div>
+              {secondTeacherName && (
+                <div className="rounded-lg border border-slate-200 bg-slate-50/60 p-4 space-y-1 min-[1367px]:min-w-0 min-[1367px]:flex-1">
+                  <label className="text-sm font-medium text-slate-600">{t('teacher2')}</label>
+                  <p className="text-slate-800 text-sm sm:text-base break-words">
+                    {secondTeacherName}
+                  </p>
+                </div>
+              )}
               {(student.center?.name || student.group?.center?.name) && (
                 <div className="rounded-lg border border-slate-200 bg-slate-50/60 p-4 space-y-1 sm:col-span-2 min-[1367px]:col-span-1 min-[1367px]:min-w-0 min-[1367px]:flex-1">
                   <label className="text-sm font-medium text-slate-600 flex items-center gap-2">

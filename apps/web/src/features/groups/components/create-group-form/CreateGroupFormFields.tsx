@@ -9,6 +9,7 @@ import {
 } from '@/shared/lib/admin-control-theme';
 import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
 import { GroupIconPicker } from '../GroupIconPicker';
+import { GroupCalendarScheduleSection } from '../GroupCalendarScheduleSection';
 import { teacherOptionLabel } from '../../lib/center-scoped-teachers';
 import { GROUP_LEVEL_SEGMENT_OPTIONS } from '../../lib/group-level-options';
 import { ADMIN_TEXTAREA_CLASS } from '../edit-group-form/edit-group-form.constants';
@@ -45,6 +46,13 @@ export function CreateGroupFormFields(props: CreateGroupFormFieldsProps) {
     isLoadingTeachers,
     isFormBusy,
     requestClose,
+    schedule,
+    setSchedule,
+    dateFrom,
+    dateTo,
+    setDateFrom,
+    setDateTo,
+    scheduleValidationError,
   } = props;
 
   return (
@@ -234,6 +242,17 @@ export function CreateGroupFormFields(props: CreateGroupFormFieldsProps) {
         <p className="text-sm text-slate-500">{tForm('loadingTeachers')}</p>
       ) : null}
 
+      <GroupCalendarScheduleSection
+        schedule={schedule}
+        onScheduleChange={setSchedule}
+        dateFrom={dateFrom}
+        dateTo={dateTo}
+        onDateFromChange={setDateFrom}
+        onDateToChange={setDateTo}
+        disabled={isFormBusy}
+        adminControls
+      />
+
       <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end">
         <Button
           type="button"
@@ -246,7 +265,13 @@ export function CreateGroupFormFields(props: CreateGroupFormFieldsProps) {
         </Button>
         <Button
           type="submit"
-          disabled={isFormBusy || isLoadingCenters || isLoadingTeachers || centers.length === 0}
+          disabled={
+            isFormBusy ||
+            isLoadingCenters ||
+            isLoadingTeachers ||
+            centers.length === 0 ||
+            Boolean(scheduleValidationError)
+          }
           className={cn(ADMIN_PRIMARY_BUTTON_CLASS, 'bg-primary text-primary-foreground hover:bg-primary/90')}
         >
           {isSubmitting || createGroup.isPending ? tForm('creating') : tForm('createGroup')}
