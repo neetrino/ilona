@@ -3,11 +3,11 @@
  *
  * Occurrences are ordered chronologically (0, 1, 2, …):
  * - Even index → Teacher 1 (`teacherId`) unless `secondTeacherStartsFirstWeek`
- * - Odd index → the other teacher
+ * - Odd index → Teacher 2 (`secondTeacherId`)
  * - Then alternates every lesson
  *
  * Note: `secondTeacherStartsFirstWeek` is the persisted field name; it means
- * Teacher 2 takes the first lesson (index 0), not a calendar week.
+ * Teacher 2 takes the first lesson (index 0). By default Teacher 1 starts.
  */
 
 export function resolveRotatingTeacherId(params: {

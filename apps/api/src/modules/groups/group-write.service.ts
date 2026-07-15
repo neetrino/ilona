@@ -43,6 +43,7 @@ export class GroupWriteService {
     this.teacherValidation.validateGroupTeachers({
       teacherId: dto.teacherId,
       secondTeacherId: dto.secondTeacherId,
+      requireBoth: true,
     });
 
     const teacherIdsToValidate = [dto.teacherId, dto.secondTeacherId].filter(Boolean) as string[];
@@ -147,6 +148,7 @@ export class GroupWriteService {
     this.teacherValidation.validateGroupTeachers({
       teacherId: nextTeacherId,
       secondTeacherId: nextSecondTeacherId,
+      requireBoth: true,
     });
 
     const nextCenterId = dto.centerId !== undefined ? dto.centerId : currentGroup.centerId;
