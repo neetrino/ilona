@@ -61,7 +61,7 @@ export function StudentPaymentPendingCard({ payments }: StudentPaymentPendingCar
       <div className="mt-4 flex justify-end">
         <Link
           href={`/${locale}/student/payments`}
-          className="inline-flex h-10 items-center gap-1 rounded-full bg-[#59ad0b] pl-4 pr-1 text-[0.8125rem] font-semibold italic text-white"
+          className="inline-flex h-10 items-center gap-2 rounded-full bg-[#59ad0b] pl-4 pr-1 text-[0.8125rem] font-semibold italic text-white"
         >
           {t('payment.payNow')}
           <span className="flex h-[1.8125rem] w-[1.8125rem] items-center justify-center rounded-[1.25rem] bg-white">

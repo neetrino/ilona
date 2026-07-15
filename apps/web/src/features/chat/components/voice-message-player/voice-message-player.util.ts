@@ -70,7 +70,8 @@ export function persistPlaybackSpeed(userId: string | null, speed: PlaybackSpeed
 }
 
 export function formatSpeedLabel(speed: PlaybackSpeed): string {
-  return speed === 1 ? '1x' : `${speed}x`;
+  if (speed === 1.5) return '1,5x';
+  return `${speed}x`;
 }
 
 export function formatVoiceDuration(seconds: number): string {
@@ -105,4 +106,40 @@ export function getAudioErrorMessage(error: MediaError): string {
     default:
       return 'Unknown error';
   }
+}
+
+/** Deterministic pseudo-waveform heights (0.12–1) — varied bar-to-bar like a real voice wave. */
+export function generateWaveformLevels(seed: string, count: number): number[] {
+  let hash = 0;
+  for (let i = 0; i < seed.length; i += 1) {
+    hash = (hash * 31 + seed.charCodeAt(i)) | 0;
+  }
+
+  const nextNoise = () => {
+    hash = (hash * 1664525 + 1013904223) | 0;
+    return (hash >>> 0) / 4294967295;
+  };
+
+  const levels: number[] = [];
+  for (let i = 0; i < count; i += 1) {
+    const t = i / Math.max(1, count - 1);
+    // Soft edges so bars stay inside the pill visually.
+    const edge = Math.sin(t * Math.PI);
+    const edgeSoft = 0.28 + 0.72 * edge;
+
+    // Several overlapping frequencies + strong noise = irregular adjacent heights.
+    const a = nextNoise();
+    const b = nextNoise();
+    const c = nextNoise();
+    const spike = a > 0.82 ? 0.35 + b * 0.4 : 0;
+    const dip = a < 0.18 ? -0.25 * c : 0;
+    const wave =
+      0.22 * Math.sin(t * Math.PI * 7.3 + a * 6) +
+      0.18 * Math.sin(t * Math.PI * 13.1 + b * 4) +
+      0.12 * Math.sin(t * Math.PI * 21.7 + c * 8);
+
+    const raw = edgeSoft * (0.28 + a * 0.55 + wave + spike + dip);
+    levels.push(Math.min(1, Math.max(0.12, raw)));
+  }
+  return levels;
 }

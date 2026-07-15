@@ -66,8 +66,8 @@ export function FeedbacksTabStudentSheet({
       >
         <PortalFormSheetDragHandle dragHandleProps={dragHandleProps} />
 
-        <div className="shrink-0 bg-transparent px-4 pb-6 pt-1 min-[1367px]:px-6 min-[1367px]:pb-5 min-[1367px]:pt-6">
-          <DialogPrimitive.Title className="break-words text-xl font-semibold leading-snug text-[#1010a3] min-[1367px]:text-lg min-[1367px]:text-[#3b3b40]">
+        <div className="shrink-0 bg-transparent px-4 pb-6 pt-1 tablet:px-6 tablet:pb-5 tablet:pt-6">
+          <DialogPrimitive.Title className="break-words text-xl font-semibold leading-snug text-[#1010a3] tablet:text-lg tablet:text-[#3b3b40]">
             {displayName || t('editFeedback')}
           </DialogPrimitive.Title>
           {student && hasSavedFeedback ? (

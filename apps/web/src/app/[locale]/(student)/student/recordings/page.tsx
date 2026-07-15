@@ -1,10 +1,13 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useQuery } from '@tanstack/react-query';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
-import { VoiceMessagePlayer } from '@/features/chat/components/VoiceMessagePlayer';
+import {
+  VoiceMessagePlayer,
+  type VoiceMessagePlayerHandle,
+} from '@/features/chat/components/VoiceMessagePlayer';
 import {
   fetchStudentVoiceToTeacherRecordings,
   type VoiceToTeacherRecording,
@@ -53,31 +56,49 @@ function VoiceToTeacherPlayback({
   recording,
   isActive,
   onPlay,
+  onEnded,
 }: {
   recording: VoiceToTeacherRecording;
   isActive: boolean;
   onPlay: (id: string) => void;
+  onEnded: () => void;
 }) {
-  if (isActive) {
-    return (
-      <VoiceMessagePlayer
-        fileUrl={recording.fileUrl}
-        duration={recording.duration}
-        fileName={recording.fileName}
-      />
-    );
-  }
-  return <StudentPlayButton onClick={() => onPlay(recording.id)} />;
+  // Keep the player mounted so play() stays inside the click user-gesture.
+  const playerRef = useRef<VoiceMessagePlayerHandle>(null);
+
+  return (
+    <>
+      <div className={isActive ? undefined : 'hidden'}>
+        <VoiceMessagePlayer
+          ref={playerRef}
+          fileUrl={recording.fileUrl}
+          duration={recording.duration}
+          fileName={recording.fileName}
+          onEnded={onEnded}
+        />
+      </div>
+      {isActive ? null : (
+        <StudentPlayButton
+          onClick={() => {
+            onPlay(recording.id);
+            playerRef.current?.play();
+          }}
+        />
+      )}
+    </>
+  );
 }
 
 function VoiceToTeacherCard({
   recording,
   isActive,
   onPlay,
+  onEnded,
 }: {
   recording: VoiceToTeacherRecording;
   isActive: boolean;
   onPlay: (id: string) => void;
+  onEnded: () => void;
 }) {
   const t = useTranslations('recordings');
   const teacherName = recording.teacher
@@ -86,14 +107,23 @@ function VoiceToTeacherCard({
 
   return (
     <StudentInnerCard>
-      <div className="mb-3 flex flex-wrap items-center gap-2">
-        <StudentBadge variant="warning">{t('voiceToTeacher')}</StudentBadge>
-        <span className="text-xs text-[#8b8b90]">{formatVoiceTimestamp(recording.createdAt)}</span>
-      </div>
-      <p className="text-sm font-semibold text-[#1010a3]">{teacherName}</p>
-      <p className="mt-1 text-sm text-[#8b8b90]">{formatDuration(recording.duration, t)}</p>
-      <div className="mt-3">
-        <VoiceToTeacherPlayback recording={recording} isActive={isActive} onPlay={onPlay} />
+      <div className={`flex gap-3 ${isActive ? 'flex-col' : 'items-center'}`}>
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <StudentBadge variant="warning">{t('voiceToTeacher')}</StudentBadge>
+            <span className="text-xs text-[#8b8b90]">{formatVoiceTimestamp(recording.createdAt)}</span>
+          </div>
+          <p className="mt-1.5 truncate text-sm font-semibold text-[#1010a3]">{teacherName}</p>
+          <p className="mt-0.5 text-sm text-[#8b8b90]">{formatDuration(recording.duration, t)}</p>
+        </div>
+        <div className={isActive ? 'w-full' : 'shrink-0'}>
+          <VoiceToTeacherPlayback
+            recording={recording}
+            isActive={isActive}
+            onPlay={onPlay}
+            onEnded={onEnded}
+          />
+        </div>
       </div>
     </StudentInnerCard>
   );
@@ -103,10 +133,12 @@ function VoiceToTeacherRow({
   recording,
   isActive,
   onPlay,
+  onEnded,
 }: {
   recording: VoiceToTeacherRecording;
   isActive: boolean;
   onPlay: (id: string) => void;
+  onEnded: () => void;
 }) {
   const t = useTranslations('recordings');
   const teacherName = recording.teacher
@@ -115,20 +147,25 @@ function VoiceToTeacherRow({
 
   return (
     <StudentTableRow>
-      <StudentTd>
+      <StudentTd className="align-middle">
         <StudentBadge variant="warning">{t('voiceToTeacher')}</StudentBadge>
       </StudentTd>
-      <StudentTd className="whitespace-nowrap">
+      <StudentTd className="align-middle whitespace-nowrap">
         <span className="text-[#3b3b40]">{formatVoiceTimestamp(recording.createdAt)}</span>
       </StudentTd>
-      <StudentTd>
+      <StudentTd className="align-middle">
         <span className="font-medium text-[#1010a3]">{teacherName}</span>
       </StudentTd>
-      <StudentTd>
+      <StudentTd className="align-middle">
         <span className="text-[#8b8b90]">{formatDuration(recording.duration, t)}</span>
       </StudentTd>
-      <StudentTd>
-        <VoiceToTeacherPlayback recording={recording} isActive={isActive} onPlay={onPlay} />
+      <StudentTd className="align-middle">
+        <VoiceToTeacherPlayback
+          recording={recording}
+          isActive={isActive}
+          onPlay={onPlay}
+          onEnded={onEnded}
+        />
       </StudentTd>
     </StudentTableRow>
   );
@@ -239,6 +276,7 @@ export default function StudentRecordingsPage() {
                   recording={recording}
                   isActive={activeRecordingId === recording.id}
                   onPlay={setActiveRecordingId}
+                  onEnded={() => setActiveRecordingId(null)}
                 />
               ))
             )}
@@ -277,6 +315,7 @@ export default function StudentRecordingsPage() {
                       recording={recording}
                       isActive={activeRecordingId === recording.id}
                       onPlay={setActiveRecordingId}
+                      onEnded={() => setActiveRecordingId(null)}
                     />
                   ))
                 )}

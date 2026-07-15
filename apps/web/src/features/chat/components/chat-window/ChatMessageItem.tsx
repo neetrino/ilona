@@ -16,7 +16,7 @@ import { resolveChatAvatarUrl } from '../../utils/chat-avatar';
 import { isPendingMessageId } from '../../hooks';
 import { getMessageDeliveryStatus } from '../../utils/message-delivery-status';
 import { VoiceMessagePlayer } from '../VoiceMessagePlayer';
-import { getSubstituteVoiceLabel, isVocabularyMessage } from './chat-message-meta';
+import { getSubstituteVoiceLabel, isVocabularyMessage, isVoiceToTeacherMessage } from './chat-message-meta';
 import { MessageDeliveryTicks } from './MessageDeliveryTicks';
 
 interface ChatCurrentUserAvatar {
@@ -179,35 +179,40 @@ export function ChatMessageItem({
               </button>
             )}
 
-          <div
-            className={cn(
-              'rounded-2xl px-4 py-2',
-              isPending && 'opacity-70',
-              isVocabulary
-                ? 'rounded-lg border-2 border-purple-300 bg-gradient-to-br from-purple-500 to-purple-600 text-white'
-                : isOwn
-                  ? ui.ownBubble
-                  : ui.otherBubble,
-            )}
-          >
-            {message.type === 'VOICE' && message.fileUrl ? (
+          {message.type === 'VOICE' && message.fileUrl ? (
+            <div className={cn(isPending && 'opacity-70')}>
               <VoiceMessagePlayer
                 fileUrl={message.fileUrl}
                 duration={message.duration}
                 fileName={message.fileName}
+                variant={isVoiceToTeacherMessage(message) ? 'toTeacher' : 'default'}
               />
-            ) : isVocabulary ? (
-              <div>
-                <div className="mb-2 flex items-center gap-2 border-b border-purple-400/30 pb-2">
-                  <span className="text-lg">📚</span>
-                  <span className="font-semibold">{tChat('vocabularyWords')}</span>
+            </div>
+          ) : (
+            <div
+              className={cn(
+                'rounded-2xl px-4 py-2',
+                isPending && 'opacity-70',
+                isVocabulary
+                  ? 'rounded-lg border-2 border-purple-300 bg-gradient-to-br from-purple-500 to-purple-600 text-white'
+                  : isOwn
+                    ? ui.ownBubble
+                    : ui.otherBubble,
+              )}
+            >
+              {isVocabulary ? (
+                <div>
+                  <div className="mb-2 flex items-center gap-2 border-b border-purple-400/30 pb-2">
+                    <span className="text-lg">📚</span>
+                    <span className="font-semibold">{tChat('vocabularyWords')}</span>
+                  </div>
+                  <p className="whitespace-pre-wrap break-words text-sm">{message.content}</p>
                 </div>
+              ) : (
                 <p className="whitespace-pre-wrap break-words text-sm">{message.content}</p>
-              </div>
-            ) : (
-              <p className="whitespace-pre-wrap break-words text-sm">{message.content}</p>
-            )}
-          </div>
+              )}
+            </div>
+          )}
           </div>
 
           <div

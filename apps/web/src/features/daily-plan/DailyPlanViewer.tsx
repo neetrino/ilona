@@ -82,15 +82,15 @@ export function DailyPlanViewer({ plan, onClose }: DailyPlanViewerProps) {
         <DialogPrimitive.Content ref={scrollContentProps.ref} onOpenAutoFocus={(event) => event.preventDefault()} style={{ ...dragStyle, ...contentStyle }} {...stackedSheetDialogHandlers} {...portalSheetLayerProps}
           aria-describedby={undefined}
           className={cn(
-            'fixed inset-x-0 bottom-[7px] top-auto z-50 grid w-full translate-y-0 lg:bottom-0 [@media(min-width:1024px)_and_(max-width:1366px)_and_(min-height:1000px)]:bottom-0',
-            'duration-700 ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out min-[1367px]:duration-350 min-[1367px]:ease-[cubic-bezier(0.22,1,0.36,1)]',
+            'fixed inset-x-0 bottom-[7px] top-auto z-50 grid w-full translate-y-0',
+            'duration-700 ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out',
             'data-[state=open]:slide-in-from-bottom-full data-[state=closed]:slide-out-to-bottom-full',
-            'h-[calc(94dvh+7px)] [@media(min-width:1024px)_and_(max-width:1366px)_and_(min-height:1000px)]:h-[56dvh] grid-rows-[auto_auto_1fr] gap-0 overflow-hidden rounded-t-[22px] border border-slate-200 bg-white shadow-xl min-[1367px]:grid-rows-[auto_1fr]',
+            'h-[calc(94dvh+7px)] grid-rows-[auto_auto_1fr] gap-0 overflow-hidden rounded-t-[22px] border border-slate-200 bg-white shadow-xl',
             PORTAL_DESKTOP_SIDE_SHEET_CLASS,
           )}
         >
           <div
-            className="relative flex h-9 w-full items-center justify-center bg-white min-[1367px]:hidden"
+            className="relative flex h-9 w-full items-center justify-center bg-white tablet:hidden"
             {...{ [PORTAL_SHEET_DRAG_HANDLE_ATTR]: '' }}
           >
             <div
@@ -126,7 +126,7 @@ export function DailyPlanViewer({ plan, onClose }: DailyPlanViewerProps) {
             <button
               type="button"
               onClick={requestClose}
-              className="hidden rounded-lg p-2 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900 min-[1367px]:inline-flex"
+              className="hidden rounded-lg p-2 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900 tablet:inline-flex"
               aria-label={tCommon('close')}
             >
               <X className="size-5" />
@@ -134,7 +134,7 @@ export function DailyPlanViewer({ plan, onClose }: DailyPlanViewerProps) {
           </header>
 
           <div
-            className="space-y-4 overflow-y-auto p-5"
+            className="min-h-0 flex-1 space-y-4 overflow-y-auto p-5 tablet:pb-[calc(5rem+env(safe-area-inset-bottom))] lg:pb-8"
           >
             {plan.topics.map((topic) => (
               <div

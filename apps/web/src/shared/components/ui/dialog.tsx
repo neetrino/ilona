@@ -38,25 +38,25 @@ const DialogOverlay = React.forwardRef<
 DialogOverlay.displayName = DialogPrimitive.Overlay.displayName;
 
 const SHEET_CONTENT_CLASS =
-  'fixed inset-x-0 bottom-[7px] top-auto z-50 grid w-full max-h-[calc(94dvh+7px)] translate-x-0 translate-y-0 gap-4 overflow-y-auto overscroll-contain rounded-t-[22px] border border-slate-200 bg-background p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] shadow-xl duration-700 ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=open]:slide-in-from-bottom-full data-[state=closed]:slide-out-to-bottom-full lg:overflow-y-auto lg:px-6 lg:py-6 lg:pb-6 ' +
+  'fixed inset-x-0 bottom-[7px] top-auto z-50 grid w-full max-h-[calc(94dvh+7px)] translate-x-0 translate-y-0 gap-4 overflow-y-auto overscroll-contain rounded-t-[22px] border border-slate-200 bg-background p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] shadow-xl duration-700 ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=open]:slide-in-from-bottom-full data-[state=closed]:slide-out-to-bottom-full lg:overflow-y-auto tablet:px-6 tablet:py-6 tablet:pb-6 ' +
   DIALOG_LG_DESKTOP_SIDE_SHEET_CLASS;
 
 const CENTERED_CONTENT_CLASS =
   'fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 rounded-[15px] border bg-background p-6 shadow-lg duration-200 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%]';
 
-/** Admin portal bottom sheet on mobile; lg+ opens as a right-side panel. */
+/** Admin portal bottom sheet on mobile; tablet+ opens as a right-side panel. */
 const PORTAL_SHEET_CONTENT_CLASS =
   'fixed inset-x-0 bottom-[7px] top-auto z-50 grid w-full translate-y-0 duration-700 ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=open]:slide-in-from-bottom-full data-[state=closed]:slide-out-to-bottom-full h-[calc(94dvh+7px)] grid-rows-[auto_1fr] gap-0 overflow-hidden rounded-t-[22px] border border-slate-200 bg-[#f8f9fb] shadow-xl lg:bg-background ' +
   DIALOG_LG_DESKTOP_SIDE_SHEET_CLASS;
 
 const PORTAL_SHEET_BODY_CLASS =
-  'min-h-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-y-contain px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-4 [touch-action:pan-y] [-webkit-overflow-scrolling:touch] [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden lg:px-6 lg:pb-6 lg:pt-6';
+  'min-h-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-y-contain px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-4 [touch-action:pan-y] [-webkit-overflow-scrolling:touch] [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden tablet:px-6 tablet:pb-[calc(5rem+env(safe-area-inset-bottom))] tablet:pt-6 lg:pb-8';
 
 type DialogContentProps = React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content> & {
   overlayClassName?: string;
-  /** Bottom sheet on mobile, right side sheet on lg+ (default: true). */
+  /** Bottom sheet on mobile, right side sheet on tablet+ (default: true). */
   sheet?: boolean;
-  /** Admin-style portal sheet on mobile; lg+ opens as a right-side panel. */
+  /** Admin-style portal sheet on mobile; tablet+ opens as a right-side panel. */
   variant?: 'default' | 'portal';
   /** Hide the top-right close control on mobile (sheet closed via drag handle). */
   hideCloseButton?: boolean;
@@ -167,7 +167,7 @@ const DialogContent = React.forwardRef<
           <div
             className={cn(
               'relative flex h-9 w-full shrink-0 items-center justify-center',
-              isPortalSheet ? 'bg-[#f8f9fb] lg:hidden' : 'lg:hidden',
+              isPortalSheet ? 'bg-[#f8f9fb] tablet:hidden' : 'tablet:hidden',
             )}
             {...{ [PORTAL_SHEET_DRAG_HANDLE_ATTR]: '' }}
           >
@@ -189,7 +189,7 @@ const DialogContent = React.forwardRef<
           <DialogPrimitive.Close
             className={cn(
               closeButtonClasses,
-              'hidden lg:inline-flex lg:items-center lg:justify-center',
+              'hidden tablet:inline-flex lg:items-center lg:justify-center',
               useSheet && 'top-3 lg:top-4',
             )}
           >
@@ -199,7 +199,7 @@ const DialogContent = React.forwardRef<
         ) : null}
         {isPortalSheet ? (
           <DialogPrimitive.Close
-            className={cn(closeButtonClasses, 'hidden lg:inline-flex lg:items-center lg:justify-center lg:top-4')}
+            className={cn(closeButtonClasses, 'hidden tablet:inline-flex lg:items-center lg:justify-center lg:top-4')}
           >
             <X className="h-4 w-4" />
             <span className="sr-only">{t('close')}</span>

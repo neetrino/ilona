@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState, type TouchEvent } from 'react';
-import { PORTAL_DESKTOP_MIN_WIDTH } from '@/shared/lib/role-routes';
+import { PORTAL_SIDE_SHEET_MIN_WIDTH } from '@/shared/lib/role-routes';
 
 type UsePortalSheetDragOptions = {
   onClose: () => void;
@@ -38,7 +38,7 @@ type UsePortalSheetDragResult = {
 
 function isMobileSheetViewport(): boolean {
   if (typeof window === 'undefined') return false;
-  return !window.matchMedia(`(min-width: ${PORTAL_DESKTOP_MIN_WIDTH}px)`).matches;
+  return !window.matchMedia(`(min-width: ${PORTAL_SIDE_SHEET_MIN_WIDTH}px)`).matches;
 }
 
 function isScrollableElement(element: HTMLElement): boolean {

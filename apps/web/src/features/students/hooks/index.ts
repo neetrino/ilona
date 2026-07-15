@@ -8,6 +8,7 @@ export {
   useDeleteStudent,
   useDeleteStudentsBulk,
   useMyProfile,
+  useMyTeachers,
   useMyDashboard,
   useMyAssignedStudents,
   studentKeys,

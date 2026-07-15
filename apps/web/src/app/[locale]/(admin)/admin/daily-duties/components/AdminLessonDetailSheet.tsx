@@ -79,9 +79,9 @@ export function AdminLessonDetailSheet({
         sheetContentRef={scrollContentProps.ref} contentClassName={portalFormSheetContentClass('2xl')} contentProps={{ 'aria-describedby': undefined }}>
           <PortalFormSheetDragHandle dragHandleProps={dragHandleProps} />
 
-          <div className={cn(PORTAL_FORM_SHEET_HEADER_CLASS, 'pb-3 pt-2 min-[1367px]:pb-5 min-[1367px]:pt-6')}>
+          <div className={cn(PORTAL_FORM_SHEET_HEADER_CLASS, 'pb-3 pt-2 tablet:pb-5 tablet:pt-6')}>
             <div className="flex items-center justify-between gap-3">
-              <DialogPrimitive.Title className="min-w-0 flex-1 break-words text-xl font-semibold leading-snug text-[#1010a3] min-[1367px]:text-lg min-[1367px]:text-[#3b3b40]">
+              <DialogPrimitive.Title className="min-w-0 flex-1 break-words text-xl font-semibold leading-snug text-[#1010a3] tablet:text-lg tablet:text-[#3b3b40]">
                 {title}
               </DialogPrimitive.Title>
               {showAdminActions && lessonId ? (
@@ -93,7 +93,7 @@ export function AdminLessonDetailSheet({
                 />
               ) : null}
             </div>
-            <p className="mt-1 hidden text-sm text-[#8b8b90] min-[1367px]:block">{subtitle}</p>
+            <p className="mt-1 hidden text-sm text-[#8b8b90] tablet:block">{subtitle}</p>
           </div>
 
           <PortalFormSheetScrollArea className="min-h-0 flex-1">

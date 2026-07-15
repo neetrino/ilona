@@ -33,6 +33,7 @@ export interface Group {
   secondTeacherId?: string | null;
   secondTeacherStartsFirstWeek?: boolean;
   isActive: boolean;
+  deactivationReason?: string | null;
   createdAt: Date;
   updatedAt: Date;
 }

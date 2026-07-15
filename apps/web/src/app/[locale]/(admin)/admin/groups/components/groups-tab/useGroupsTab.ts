@@ -137,11 +137,14 @@ export function useGroupsTab({
     }
   };
 
-  const handleConfirmGroupStatus = async () => {
+  const handleConfirmGroupStatus = async (reason?: string) => {
     if (!statusDialog) return;
     setStatusDialogError(null);
     try {
-      await toggleGroupActive.mutateAsync(statusDialog.groupId);
+      await toggleGroupActive.mutateAsync({
+        id: statusDialog.groupId,
+        reason,
+      });
       setStatusDialog(null);
     } catch (err: unknown) {
       setStatusDialogError(getErrorMessage(err, t('statusUpdateFailed')));

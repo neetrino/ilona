@@ -13,7 +13,7 @@ export function CenterDetailsModalHeader({ center, onClose, closeLabel }: Center
   const color = center?.colorHex ?? '#253046';
   return (
     <div
-      className="flex items-center justify-between gap-4 bg-white px-4 py-[1.125rem] sm:px-6 sm:py-4"
+      className="flex shrink-0 items-center justify-between gap-4 bg-white px-4 py-[1.125rem] sm:px-6 sm:py-4"
       style={{ borderBottom: '1px solid #e2e8f0' }}
     >
       <div className="flex min-w-0 items-center gap-3">
@@ -38,7 +38,7 @@ export function CenterDetailsModalHeader({ center, onClose, closeLabel }: Center
       <button
         type="button"
         onClick={onClose}
-        className="hidden rounded-lg p-2 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900 min-[1367px]:inline-flex"
+        className="hidden rounded-lg p-2 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900 tablet:inline-flex"
         aria-label={closeLabel}
       >
         <X className="size-5" />

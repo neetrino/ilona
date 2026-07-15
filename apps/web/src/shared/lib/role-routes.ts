@@ -13,6 +13,9 @@ export function stripLocaleFromPath(path: string): string {
 /** Tailwind `lg` — docked sidebar and desktop admin entry from this width up. */
 export const PORTAL_DESKTOP_MIN_WIDTH = 1024;
 
+/** Tailwind `tablet` — right-side sheets from this width (all iPads: mini / Air / Pro). */
+export const PORTAL_SIDE_SHEET_MIN_WIDTH = 744;
+
 export function getAdminPortalBasePath(role?: UserRole | null): '/admin' | '/manager' {
   return role === 'MANAGER' ? MANAGER_BASE_PATH : ADMIN_BASE_PATH;
 }

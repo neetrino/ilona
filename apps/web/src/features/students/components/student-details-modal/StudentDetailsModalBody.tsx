@@ -74,7 +74,7 @@ export function StudentDetailsModalBody(props: StudentDetailsModalBodyProps) {
 
   return (
     <div
-      className="overflow-y-auto px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-4 min-[1367px]:p-6"
+      className="min-h-0 flex-1 overflow-y-auto px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-4 tablet:p-6 tablet:pb-[calc(5rem+env(safe-area-inset-bottom))] lg:pb-8"
     >
       {!studentId ? (
         <p className="text-slate-500">{t('noStudentSelected')}</p>

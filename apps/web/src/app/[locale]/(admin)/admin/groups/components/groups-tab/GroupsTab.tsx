@@ -170,17 +170,22 @@ export function GroupsTab(props: GroupsTabProps) {
             state.openGroupStatusDialog(state.editGroupId, editingGroup?.isActive ?? true);
           }
         }}
-        onDeleteFromEdit={() => {
-          if (state.editGroupId) {
-            state.handleDeleteClick(state.editGroupId);
-          }
-        }}
+        onDeleteFromEdit={
+          state.portalBasePath === '/manager'
+            ? undefined
+            : () => {
+                if (state.editGroupId) {
+                  state.handleDeleteClick(state.editGroupId);
+                }
+              }
+        }
         isStatusTogglePending={state.isGroupStatusTogglePending}
         statusDialog={state.statusDialog}
         onStatusDialogOpenChange={state.closeGroupStatusDialog}
         onConfirmGroupStatus={state.handleConfirmGroupStatus}
         statusTogglePending={state.isGroupStatusTogglePending}
         statusDialogError={state.statusDialogError}
+        requireDeactivationReason={state.portalBasePath === '/manager'}
         deleteGroupId={state.deleteGroupId}
         onDeleteGroupIdChange={(open) => !open && state.setDeleteGroupId(null)}
         onDeleteConfirm={state.handleDeleteConfirm}

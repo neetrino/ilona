@@ -17,10 +17,16 @@ import {
   setActiveAudioElement,
 } from './voice-message-player.util';
 
-export function useVoiceMessagePlayer({ fileUrl, duration: durationProp }: VoiceMessagePlayerProps) {
+export function useVoiceMessagePlayer({
+  fileUrl,
+  duration: durationProp,
+  onEnded,
+}: VoiceMessagePlayerProps) {
   const { user } = useAuthStore();
   const ui = getChatThemeForRole(user?.role);
   const userId = user?.id ?? null;
+  const onEndedRef = useRef(onEnded);
+  onEndedRef.current = onEnded;
 
   const [hasError, setHasError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -38,7 +44,10 @@ export function useVoiceMessagePlayer({ fileUrl, duration: durationProp }: Voice
   const proxiedUrl = getProxiedFileUrl(fileUrl) || fileUrl;
 
   useEffect(() => {
-    setPlaybackSpeed(getStoredPlaybackSpeed(userId));
+    const stored = getStoredPlaybackSpeed(userId);
+    setPlaybackSpeed(
+      (PLAYBACK_SPEED_OPTIONS as readonly number[]).includes(stored) ? stored : 1,
+    );
   }, [userId]);
 
   useEffect(() => {
@@ -99,6 +108,21 @@ export function useVoiceMessagePlayer({ fileUrl, duration: durationProp }: Voice
     seekToRatio((clientX - rect.left) / rect.width);
   };
 
+  const playFromCurrentPosition = () => {
+    const el = audioRef.current;
+    if (!el || hasError) return;
+    pauseOtherAudio(el);
+    setActiveAudioElement(el);
+    void el
+      .play()
+      .then(() => {
+        setIsLoading(false);
+      })
+      .catch(() => {
+        setIsLoading(false);
+      });
+  };
+
   const endScrubbing = (target: HTMLDivElement, pointerId: number) => {
     isScrubbingRef.current = false;
     setIsScrubbing(false);
@@ -125,7 +149,10 @@ export function useVoiceMessagePlayer({ fileUrl, duration: durationProp }: Voice
 
   const handleProgressPointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
     if (!isScrubbingRef.current) return;
+    seekFromClientX(e.clientX);
     endScrubbing(e.currentTarget, e.pointerId);
+    // Click / scrub on the wave starts (or resumes) playback from that spot.
+    playFromCurrentPosition();
   };
 
   const handleProgressPointerCancel = (e: React.PointerEvent<HTMLDivElement>) => {
@@ -148,6 +175,9 @@ export function useVoiceMessagePlayer({ fileUrl, duration: durationProp }: Voice
     } else if (e.key === 'End') {
       e.preventDefault();
       seekToRatio(1);
+    } else if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      playFromCurrentPosition();
     }
   };
 
@@ -211,13 +241,12 @@ export function useVoiceMessagePlayer({ fileUrl, duration: durationProp }: Voice
     const el = audioRef.current;
     if (el) {
       clearActiveAudioIfMatch(el);
+      el.currentTime = 0;
     }
     setIsPlaying(false);
-    const dur = getEffectiveDuration(el, durationProp);
-    if (dur > 0) {
-      setProgress(100);
-      setCurrentTimeSec(dur);
-    }
+    setProgress(0);
+    setCurrentTimeSec(0);
+    onEndedRef.current?.();
   };
 
   const handleTimeUpdate = () => {
@@ -277,7 +306,7 @@ export function useVoiceMessagePlayer({ fileUrl, duration: durationProp }: Voice
 
   const cyclePlaybackSpeed = () => {
     const idx = PLAYBACK_SPEED_OPTIONS.indexOf(playbackSpeed);
-    const next = PLAYBACK_SPEED_OPTIONS[(idx + 1) % PLAYBACK_SPEED_OPTIONS.length];
+    const next = PLAYBACK_SPEED_OPTIONS[(idx < 0 ? 0 : idx + 1) % PLAYBACK_SPEED_OPTIONS.length];
     setPlaybackSpeed(next);
     persistPlaybackSpeed(userId, next);
   };

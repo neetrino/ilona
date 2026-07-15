@@ -141,7 +141,7 @@ export function ChatComposer({
                       mobileComposerBtnClass,
                       'border border-amber-200 bg-amber-100 text-amber-800 transition-colors hover:bg-amber-200',
                     )
-                  : 'flex flex-shrink-0 items-center gap-1.5 rounded-lg border border-amber-200 bg-amber-100 px-2.5 py-2 text-amber-800 transition-colors hover:bg-amber-200'
+                  : 'flex flex-shrink-0 items-center gap-1.5 rounded-[0.875rem] border border-amber-200 bg-amber-100 px-2.5 py-2 text-amber-800 transition-colors hover:bg-amber-200'
               }
               title={tChat('sendVoiceToTeacherTitle')}
               aria-label={tChat('sendVoiceToTeacherTitle')}

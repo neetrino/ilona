@@ -10,7 +10,7 @@ import {
   Query,
 } from '@nestjs/common';
 import { GroupsService } from './groups.service';
-import { CreateGroupDto, UpdateGroupDto, QueryGroupDto } from './dto';
+import { CreateGroupDto, UpdateGroupDto, QueryGroupDto, ToggleGroupActiveDto } from './dto';
 import { Roles, CurrentUser } from '../../common/decorators';
 import { UserRole } from '@ilona/database';
 import { JwtPayload } from '../../common/types/auth.types';
@@ -87,8 +87,12 @@ export class GroupsController {
 
   @Patch(':id/toggle-active')
   @Roles(UserRole.ADMIN, UserRole.MANAGER)
-  async toggleActive(@Param('id') id: string, @CurrentUser() user?: JwtPayload) {
-    return this.groupsService.toggleActive(id, user);
+  async toggleActive(
+    @Param('id') id: string,
+    @Body() dto: ToggleGroupActiveDto,
+    @CurrentUser() user?: JwtPayload,
+  ) {
+    return this.groupsService.toggleActive(id, user, dto?.reason);
   }
 
   @Patch(':id/assign-teacher')

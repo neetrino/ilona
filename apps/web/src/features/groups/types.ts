@@ -40,6 +40,7 @@ export interface Group {
   description?: string;
   maxStudents: number;
   isActive: boolean;
+  deactivationReason?: string | null;
   centerId: string;
   teacherId?: string | null;
   secondTeacherId?: string | null;

@@ -7,6 +7,7 @@ import { AdminPaginationControls } from '@/shared/components/ui';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { fetchTeachers } from '@/features/teachers/api/teachers.api';
 import { TeacherDetailsModal, TeacherShowcaseCard, type Teacher } from '@/features/teachers';
+import { useMyTeachers } from '@/features/students/hooks/useStudents';
 import { useIsIPad } from '@/shared/hooks/useIsIPad';
 import { cn } from '@/shared/lib/utils';
 import { Sparkles } from 'lucide-react';
@@ -21,6 +22,30 @@ import {
 const PAGE_SIZE = 100;
 const MOBILE_TEACHERS_PAGE_SIZE = 5;
 const DESKTOP_TEACHERS_PAGE_SIZE = 8;
+
+function prioritizeAssignedTeachers(
+  teachers: Teacher[],
+  assignedTeacherIds: string[],
+): Teacher[] {
+  if (assignedTeacherIds.length === 0) {
+    return teachers;
+  }
+
+  const byId = new Map(teachers.map((teacher) => [teacher.id, teacher]));
+  const assigned: Teacher[] = [];
+  const assignedIdSet = new Set<string>();
+
+  for (const id of assignedTeacherIds) {
+    const teacher = byId.get(id);
+    if (teacher && !assignedIdSet.has(id)) {
+      assigned.push(teacher);
+      assignedIdSet.add(id);
+    }
+  }
+
+  const rest = teachers.filter((teacher) => !assignedIdSet.has(teacher.id));
+  return [...assigned, ...rest];
+}
 
 type TeachersPaginationProps = {
   page: number;
@@ -81,10 +106,22 @@ export default function StudentOurTeachersPage() {
   const desktopTeachersStartRef = useRef<HTMLDivElement | null>(null);
   const isIPad = useIsIPad();
 
-  const { data: teachers = [], isLoading, error } = useQuery({
+  const {
+    data: allTeachers = [],
+    isLoading: isLoadingAll,
+    error,
+  } = useQuery({
     queryKey: ['student', 'our-teachers', 'all'],
     queryFn: fetchAllTeachers,
   });
+  const { data: myTeachers = [], isLoading: isLoadingMine } = useMyTeachers();
+
+  const teachers = useMemo(() => {
+    const assignedIds = myTeachers.map((teacher) => teacher.id);
+    return prioritizeAssignedTeachers(allTeachers, assignedIds);
+  }, [allTeachers, myTeachers]);
+
+  const isLoading = isLoadingAll || isLoadingMine;
 
   const totalMobilePages = Math.max(1, Math.ceil(teachers.length / MOBILE_TEACHERS_PAGE_SIZE));
   const safeMobilePage = Math.min(Math.max(0, mobilePage), totalMobilePages - 1);

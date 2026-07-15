@@ -88,7 +88,7 @@ export function TeacherDetailsDrawer({
     <>
       {/* Overlay */}
       <div
-        className={stackedSheetOverlayClassName('fixed inset-0 bg-black/50 z-[60] transition-opacity animate-in fade-in-0', isBaseLayer)}
+        className={stackedSheetOverlayClassName('fixed inset-0 bg-black/50 transition-opacity animate-in fade-in-0', isBaseLayer)}
         style={overlayStyle}
         {...portalSheetLayerProps}
         onClick={onClose}
@@ -98,7 +98,7 @@ export function TeacherDetailsDrawer({
       {/* Drawer */}
       <div
         className={cn(
-          'fixed right-0 top-0 bottom-0 z-[70]',
+          'fixed right-0 top-0 bottom-0',
           'w-full sm:w-[480px] lg:w-[600px]',
           CUSTOM_DESKTOP_SIDE_PANEL_CLASS,
           'bg-white shadow-2xl',

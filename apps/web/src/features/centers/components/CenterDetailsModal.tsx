@@ -40,15 +40,15 @@ export function CenterDetailsModal(props: CenterDetailsModalProps) {
           {...stackedSheetDialogHandlers}
           {...portalSheetLayerProps}
           className={cn(
-            'fixed inset-x-0 bottom-[7px] top-auto z-50 grid w-full translate-y-0 lg:bottom-0 [@media(min-width:1024px)_and_(max-width:1366px)_and_(min-height:1000px)]:bottom-0',
-            'duration-700 ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out min-[1367px]:duration-350 min-[1367px]:ease-[cubic-bezier(0.22,1,0.36,1)]',
+            'fixed inset-x-0 bottom-[7px] top-auto z-50 grid w-full translate-y-0',
+            'duration-700 ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out',
             'data-[state=open]:slide-in-from-bottom-full data-[state=closed]:slide-out-to-bottom-full',
-            'h-[calc(94dvh+7px)] [@media(min-width:1024px)_and_(max-width:1366px)_and_(min-height:1000px)]:h-[56dvh] grid-rows-[auto_auto_auto_1fr] gap-0 overflow-hidden rounded-t-[22px] border border-slate-200 bg-[#f8f9fb] shadow-xl min-[1367px]:grid-rows-[auto_auto_1fr]',
+            'h-[calc(94dvh+7px)] grid-rows-[auto_auto_auto_1fr] gap-0 overflow-hidden rounded-t-[22px] border border-slate-200 bg-[#f8f9fb] shadow-xl',
             PORTAL_DESKTOP_SIDE_SHEET_CLASS,
           )}
         >
           <div
-            className="relative flex h-9 w-full items-center justify-center bg-white min-[1367px]:hidden"
+            className="relative flex h-9 w-full items-center justify-center bg-white tablet:hidden"
             {...{ [PORTAL_SHEET_DRAG_HANDLE_ATTR]: '' }}
           >
             <div
@@ -73,7 +73,7 @@ export function CenterDetailsModal(props: CenterDetailsModalProps) {
           />
 
           <div
-            className="overflow-y-auto px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-4 min-[1367px]:p-6"
+            className="min-h-0 flex-1 overflow-y-auto px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-4 tablet:p-6 tablet:pb-[calc(5rem+env(safe-area-inset-bottom))] lg:pb-8"
           >
             {modal.isLoading && <p className="text-sm text-slate-500">{tCommon('loading')}</p>}
             {modal.error && (
