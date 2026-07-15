@@ -25,8 +25,9 @@ const HEADER_CELL_X = '!px-4';
 const CELL_CLIP = 'overflow-hidden align-middle';
 
 const COL = {
-  checkbox: `!w-10 !min-w-10 !max-w-10 shrink-0 ${HEADER_CELL_X} ${CELL_CLIP}`,
-  student: `!min-w-[12rem] ${HEADER_CELL_X} ${CELL_CLIP}`,
+  /** No right pad — gap after the status dot comes from student `pl-2.5` (matches `ml-2.5` before the dot). */
+  checkbox: `!w-14 !min-w-14 !max-w-14 shrink-0 !pl-4 !pr-0 ${CELL_CLIP}`,
+  student: `!min-w-[12rem] !pl-2.5 !pr-4 ${CELL_CLIP}`,
   center: `!min-w-[10rem] ${HEADER_CELL_X} ${CELL_CLIP}`,
   group: `!min-w-[10rem] ${HEADER_CELL_X} ${CELL_CLIP}`,
   register: `!min-w-[7rem] ${HEADER_CELL_X} ${CELL_CLIP} text-center`,
@@ -337,16 +338,41 @@ export function createStudentsTableColumns({
       ),
       render: (row: TeacherAssignedItem) => {
         const name = isOnboardingItem(row) ? `${row.firstName ?? ''} ${row.lastName ?? ''}`.trim() : `${row.user?.firstName ?? ''} ${row.user?.lastName ?? ''}`.trim();
+        const status = isOnboardingItem(row) ? undefined : row.user?.status;
+        const statusDotClass =
+          status === 'ACTIVE'
+            ? 'bg-emerald-500'
+            : status === 'SUSPENDED'
+              ? 'bg-amber-500'
+              : 'bg-red-500';
+        const statusTitle =
+          status === 'ACTIVE'
+            ? 'Active'
+            : status === 'SUSPENDED'
+              ? 'Suspended'
+              : 'Inactive';
         return (
-          <input
-            type="checkbox"
-            className="w-4 h-4 rounded border-[rgba(14,14,16,0.12)] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-            checked={selectedStudentIds.has(getItemId(row))}
-            onChange={() => onToggleSelect(getItemId(row))}
+          <div
+            className="flex items-center"
             onClick={(e) => e.stopPropagation()}
-            disabled={isDeleting || isLoading}
-            aria-label={t('selectItem', { name: name || tCommon('onboarding') })}
-          />
+          >
+            <input
+              type="checkbox"
+              className="h-4 w-4 shrink-0 cursor-pointer rounded border-[rgba(14,14,16,0.12)] disabled:cursor-not-allowed disabled:opacity-50"
+              checked={selectedStudentIds.has(getItemId(row))}
+              onChange={() => onToggleSelect(getItemId(row))}
+              disabled={isDeleting || isLoading}
+              aria-label={t('selectItem', { name: name || tCommon('onboarding') })}
+            />
+            <span
+              className={cn(
+                'ml-3.5 inline-block h-2 w-2 shrink-0 rounded-full',
+                statusDotClass,
+              )}
+              title={statusTitle}
+              aria-hidden
+            />
+          </div>
         );
       },
       className: COL.checkbox,
