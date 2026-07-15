@@ -75,9 +75,6 @@ export function useDailyPlanEditor({
     );
   };
 
-  const addTopic = () => setTopics((prev) => [...prev, emptyTopic()]);
-  const removeTopic = (idx: number) => setTopics((prev) => prev.filter((_, i) => i !== idx));
-
   const handleSave = async () => {
     setError(null);
     const cleanTopics: DailyPlanTopicInput[] = topics
@@ -161,8 +158,6 @@ export function useDailyPlanEditor({
     scrollContentProps,
     updateTopic,
     updateResource,
-    addTopic,
-    removeTopic,
     handleSave,
     onClose,
   };

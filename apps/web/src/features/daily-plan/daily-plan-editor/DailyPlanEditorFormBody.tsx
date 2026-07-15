@@ -86,27 +86,12 @@ export function DailyPlanEditorFormBody({ vm }: DailyPlanEditorFormBodyProps) {
               mode={vm.mode}
               planId={vm.plan?.id}
               readOnly={vm.readOnly}
-              canRemove={vm.topics.length > 1}
               kindLabel={vm.kindLabel}
               onTopicChange={vm.updateTopic}
               onResourceChange={vm.updateResource}
-              onRemoveTopic={vm.removeTopic}
             />
           ))}
         </div>
-
-        {!vm.readOnly && (
-          <button
-            type="button"
-            onClick={vm.addTopic}
-            className={cn(
-              ADMIN_OUTLINE_BUTTON_CLASS,
-              'w-full shrink-0 border-2 border-dashed border-slate-300 text-slate-600 hover:bg-slate-50 active:scale-100',
-            )}
-          >
-            {t('addAnotherTopic')}
-          </button>
-        )}
 
         <div className="flex shrink-0 justify-end gap-2 pt-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] min-[1367px]:pb-4">
           <button
