@@ -1,52 +1,27 @@
 /**
- * Weekly teacher rotation for groups with two assigned teachers.
+ * Lesson-by-lesson teacher rotation for groups with two assigned teachers.
  *
- * Anchor: ISO week (Mon–Sun) that contains the schedule start date (`dateFrom`).
- * - That week → Teacher 1 main (`teacherId`) unless `secondTeacherStartsFirstWeek`
- * - Next ISO week → the other teacher
- * - Then alternates every ISO week
+ * Occurrences are ordered chronologically (0, 1, 2, …):
+ * - Even index → Teacher 1 (`teacherId`) unless `secondTeacherStartsFirstWeek`
+ * - Odd index → the other teacher
+ * - Then alternates every lesson
+ *
+ * Note: `secondTeacherStartsFirstWeek` is the persisted field name; it means
+ * Teacher 2 takes the first lesson (index 0), not a calendar week.
  */
 
-function parseYmd(ymd: string): Date {
-  const d = new Date(`${ymd}T00:00:00`);
-  d.setHours(0, 0, 0, 0);
-  return d;
-}
-
-/** Monday 00:00 local for the ISO week containing `date`. */
-export function startOfIsoWeek(date: Date): Date {
-  const d = new Date(date);
-  d.setHours(0, 0, 0, 0);
-  const day = d.getDay();
-  const diff = day === 0 ? -6 : 1 - day;
-  d.setDate(d.getDate() + diff);
-  return d;
-}
-
-/** 0-based ISO week index since the schedule start week. */
-export function weekIndexSinceScheduleStart(lessonDate: Date, scheduleStartDateYmd: string): number {
-  const anchor = startOfIsoWeek(parseYmd(scheduleStartDateYmd));
-  const lessonWeek = startOfIsoWeek(lessonDate);
-  const diffMs = lessonWeek.getTime() - anchor.getTime();
-  return Math.floor(diffMs / (7 * 24 * 60 * 60 * 1000));
-}
-
 export function resolveRotatingTeacherId(params: {
-  lessonDate: Date;
+  lessonIndex: number;
   teacherId: string;
   secondTeacherId: string;
-  scheduleStartDateYmd: string;
+  /** When true, Teacher 2 teaches lesson index 0. */
   secondTeacherStartsFirstWeek?: boolean;
 }): string {
-  const weekIndex = weekIndexSinceScheduleStart(params.lessonDate, params.scheduleStartDateYmd);
-  const teacher1Week = weekIndex % 2 === 0;
-  const useTeacher1 = params.secondTeacherStartsFirstWeek ? !teacher1Week : teacher1Week;
+  const teacher1Lesson = params.lessonIndex % 2 === 0;
+  const useTeacher1 = params.secondTeacherStartsFirstWeek
+    ? !teacher1Lesson
+    : teacher1Lesson;
   return useTeacher1 ? params.teacherId : params.secondTeacherId;
-}
-
-/** @deprecated Use weekIndexSinceScheduleStart */
-export function weekIndexSinceAnchor(lessonDate: Date, anchorDateYmd: string): number {
-  return weekIndexSinceScheduleStart(lessonDate, anchorDateYmd);
 }
 
 export function groupTeacherIds(group: {
