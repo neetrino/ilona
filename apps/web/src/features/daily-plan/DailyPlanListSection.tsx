@@ -65,6 +65,8 @@ export function DailyPlanListSection({
       LISTENING: t('resourceKinds.LISTENING'),
       WRITING: t('resourceKinds.WRITING'),
       SPEAKING: t('resourceKinds.SPEAKING'),
+      GRAMMAR: t('resourceKinds.GRAMMAR'),
+      CHALLENGE: t('resourceKinds.CHALLENGE'),
     }),
     [t],
   );

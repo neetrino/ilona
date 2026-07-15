@@ -24,6 +24,8 @@ const RESOURCE_KINDS = new Set<string>([
   DailyPlanResourceKind.LISTENING,
   DailyPlanResourceKind.WRITING,
   DailyPlanResourceKind.SPEAKING,
+  DailyPlanResourceKind.GRAMMAR,
+  DailyPlanResourceKind.CHALLENGE,
 ]);
 
 const dailyPlanInclude = {
@@ -66,6 +68,42 @@ type DailyPlanWithRelations = Prisma.DailyPlanGetPayload<{
   include: typeof dailyPlanInclude;
 }>;
 
+function normalizeResource(res: DailyPlanTopicInputDto['resources'][number]): {
+  kind: DailyPlanResourceKind;
+  title: string;
+  link: string | null;
+  description: string | null;
+} {
+  if (!RESOURCE_KINDS.has(res.kind)) {
+    throw new BadRequestException(`Unsupported resource kind: ${res.kind}`);
+  }
+  const kind = res.kind as DailyPlanResourceKind;
+  const description = res.description?.trim() || null;
+
+  if (kind === DailyPlanResourceKind.CHALLENGE) {
+    if (!description) {
+      throw new BadRequestException('Challenge requires a description');
+    }
+    return {
+      kind,
+      title: res.title?.trim() || 'Challenge',
+      link: null,
+      description,
+    };
+  }
+
+  const title = res.title?.trim() ?? '';
+  if (!title) {
+    throw new BadRequestException(`Title is required for ${kind}`);
+  }
+  return {
+    kind,
+    title,
+    link: res.link?.trim() || null,
+    description,
+  };
+}
+
 function normalizeTopics(topics: DailyPlanTopicInputDto[]): {
   title: string;
   order: number;
@@ -82,17 +120,7 @@ function normalizeTopics(topics: DailyPlanTopicInputDto[]): {
     title: topic.title.trim(),
     order: idx,
     resources: {
-      create: topic.resources.map((res) => {
-        if (!RESOURCE_KINDS.has(res.kind)) {
-          throw new BadRequestException(`Unsupported resource kind: ${res.kind}`);
-        }
-        return {
-          kind: res.kind as DailyPlanResourceKind,
-          title: res.title.trim(),
-          link: res.link?.trim() || null,
-          description: res.description?.trim() || null,
-        };
-      }),
+      create: topic.resources.map(normalizeResource),
     },
   }));
 }
@@ -327,17 +355,10 @@ export class DailyPlanService {
           const topicInput = dto.topics[i];
           await tx.dailyPlanResource.createMany({
             data: topicInput.resources.map((res) => {
-              if (!RESOURCE_KINDS.has(res.kind)) {
-                throw new BadRequestException(
-                  `Unsupported resource kind: ${res.kind}`,
-                );
-              }
+              const normalized = normalizeResource(res);
               return {
                 topicId: newTopics[i].id,
-                kind: res.kind as DailyPlanResourceKind,
-                title: res.title.trim(),
-                link: res.link?.trim() || null,
-                description: res.description?.trim() || null,
+                ...normalized,
               };
             }),
           });

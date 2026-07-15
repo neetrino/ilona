@@ -1755,11 +1755,14 @@
     "addAnotherTopic": "+ Ավելացնել ևս մեկ թեմա",
     "linkOptionalPlaceholder": "https://… (ըստ ցանկության)",
     "descriptionOptional": "Նկարագրություն (ըստ ցանկության)",
+    "descriptionPlaceholder": "Նկարագրություն",
     "resourceKinds": {
       "READING": "Ընթերցանություն",
       "LISTENING": "Լսում",
       "WRITING": "Գրավոր",
-      "SPEAKING": "Խոսք"
+      "SPEAKING": "Խոսք",
+      "GRAMMAR": "Քերականություն",
+      "CHALLENGE": "Challenge"
     }
   },
   "analytics": {

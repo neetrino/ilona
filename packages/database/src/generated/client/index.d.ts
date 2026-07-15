@@ -303,7 +303,9 @@ export const DailyPlanResourceKind: {
   READING: 'READING',
   LISTENING: 'LISTENING',
   WRITING: 'WRITING',
-  SPEAKING: 'SPEAKING'
+  SPEAKING: 'SPEAKING',
+  GRAMMAR: 'GRAMMAR',
+  CHALLENGE: 'CHALLENGE'
 };
 
 export type DailyPlanResourceKind = (typeof DailyPlanResourceKind)[keyof typeof DailyPlanResourceKind]
@@ -7887,7 +7889,7 @@ export namespace Prisma {
       teacherId: string | null
       secondTeacherId: string | null
       /**
-       * When true, Teacher 2 leads the first ISO week of the monthly rotation; otherwise Teacher 1 (main).
+       * When true, Teacher 2 teaches the first generated lesson; otherwise Teacher 1 (main).
        */
       secondTeacherStartsFirstWeek: boolean
       schedule: Prisma.JsonValue | null

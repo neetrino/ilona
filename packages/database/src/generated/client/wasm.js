@@ -663,7 +663,9 @@ exports.DailyPlanResourceKind = exports.$Enums.DailyPlanResourceKind = {
   READING: 'READING',
   LISTENING: 'LISTENING',
   WRITING: 'WRITING',
-  SPEAKING: 'SPEAKING'
+  SPEAKING: 'SPEAKING',
+  GRAMMAR: 'GRAMMAR',
+  CHALLENGE: 'CHALLENGE'
 };
 
 exports.CrmLeadStatus = exports.$Enums.CrmLeadStatus = {

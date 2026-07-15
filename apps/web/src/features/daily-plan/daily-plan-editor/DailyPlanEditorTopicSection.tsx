@@ -5,6 +5,7 @@ import { cn } from '@/shared/lib/utils';
 import { ADMIN_FORM_INPUT_CLASS } from '@/shared/lib/admin-control-theme';
 import type { DailyPlanResourceKind } from '../types';
 import { DailyPlanAutoResizeTextarea } from './DailyPlanAutoResizeTextarea';
+import { DAILY_PLAN_DESCRIPTION_ONLY_KINDS } from './daily-plan-editor.constants';
 import type { DraftTopic } from './daily-plan-editor.types';
 
 interface DailyPlanEditorTopicSectionProps {
@@ -62,42 +63,51 @@ export function DailyPlanEditorTopicSection({
       </div>
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-        {topic.resources.map((resource) => (
-          <div key={resource.kind} className="space-y-3">
-            <div className="text-xs font-semibold uppercase tracking-wide text-[#1010a3]">
-              {kindLabel[resource.kind]}
+        {topic.resources.map((resource) => {
+          const isDescriptionOnly = DAILY_PLAN_DESCRIPTION_ONLY_KINDS.has(resource.kind);
+          return (
+            <div key={resource.kind} className="space-y-3">
+              <div className="text-xs font-semibold uppercase tracking-wide text-[#1010a3]">
+                {kindLabel[resource.kind]}
+              </div>
+              {!isDescriptionOnly && (
+                <>
+                  <input
+                    type="text"
+                    value={resource.title}
+                    onChange={(e) =>
+                      onResourceChange(topicIndex, resource.kind, { title: e.target.value })
+                    }
+                    disabled={readOnly}
+                    placeholder={tCommon('title')}
+                    className={ADMIN_FORM_INPUT_CLASS}
+                  />
+                  <input
+                    type="url"
+                    value={resource.link}
+                    onChange={(e) =>
+                      onResourceChange(topicIndex, resource.kind, { link: e.target.value })
+                    }
+                    disabled={readOnly}
+                    placeholder={t('linkOptionalPlaceholder')}
+                    className={ADMIN_FORM_INPUT_CLASS}
+                  />
+                </>
+              )}
+              <DailyPlanAutoResizeTextarea
+                value={resource.description}
+                onChange={(description) =>
+                  onResourceChange(topicIndex, resource.kind, { description })
+                }
+                disabled={readOnly}
+                placeholder={
+                  isDescriptionOnly ? t('descriptionPlaceholder') : t('descriptionOptional')
+                }
+                resizeStorageKey={`${mode}-${planId ?? 'draft'}-${topicIndex}-${resource.kind}`}
+              />
             </div>
-            <input
-              type="text"
-              value={resource.title}
-              onChange={(e) =>
-                onResourceChange(topicIndex, resource.kind, { title: e.target.value })
-              }
-              disabled={readOnly}
-              placeholder={tCommon('title')}
-              className={ADMIN_FORM_INPUT_CLASS}
-            />
-            <input
-              type="url"
-              value={resource.link}
-              onChange={(e) =>
-                onResourceChange(topicIndex, resource.kind, { link: e.target.value })
-              }
-              disabled={readOnly}
-              placeholder={t('linkOptionalPlaceholder')}
-              className={ADMIN_FORM_INPUT_CLASS}
-            />
-            <DailyPlanAutoResizeTextarea
-              value={resource.description}
-              onChange={(description) =>
-                onResourceChange(topicIndex, resource.kind, { description })
-              }
-              disabled={readOnly}
-              placeholder={t('descriptionOptional')}
-              resizeStorageKey={`${mode}-${planId ?? 'draft'}-${topicIndex}-${resource.kind}`}
-            />
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

@@ -10,13 +10,15 @@ import {
 import { Type } from 'class-transformer';
 
 export class DailyPlanResourceInputDto {
-  /** READING | LISTENING | WRITING | SPEAKING — validated against enum in service. */
+  /** READING | LISTENING | WRITING | SPEAKING | GRAMMAR | CHALLENGE — validated against enum in service. */
   @IsString()
   kind!: string;
 
+  /** Required for skill sections; optional for CHALLENGE (description-only). */
   @IsString()
+  @IsOptional()
   @MaxLength(200)
-  title!: string;
+  title?: string;
 
   @IsString()
   @IsOptional()

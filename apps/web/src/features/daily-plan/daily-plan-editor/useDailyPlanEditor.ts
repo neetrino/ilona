@@ -36,6 +36,8 @@ export function useDailyPlanEditor({
       LISTENING: t('resourceKinds.LISTENING'),
       WRITING: t('resourceKinds.WRITING'),
       SPEAKING: t('resourceKinds.SPEAKING'),
+      GRAMMAR: t('resourceKinds.GRAMMAR'),
+      CHALLENGE: t('resourceKinds.CHALLENGE'),
     }),
     [t],
   );
@@ -82,12 +84,22 @@ export function useDailyPlanEditor({
       .map((topic) => ({
         title: topic.title.trim(),
         resources: topic.resources
-          .filter((resource) => resource.title.trim())
+          .filter((resource) =>
+            resource.kind === 'CHALLENGE'
+              ? resource.description.trim().length > 0
+              : resource.title.trim().length > 0,
+          )
           .map((resource) => ({
             kind: resource.kind,
-            title: resource.title.trim(),
-            link: resource.link.trim() || undefined,
-            description: resource.description.trim() || undefined,
+            ...(resource.kind === 'CHALLENGE'
+              ? {
+                  description: resource.description.trim(),
+                }
+              : {
+                  title: resource.title.trim(),
+                  link: resource.link.trim() || undefined,
+                  description: resource.description.trim() || undefined,
+                }),
           })),
       }))
       .filter((topic) => topic.title.length > 0);

@@ -1755,11 +1755,14 @@
     "addAnotherTopic": "+ Add another topic",
     "linkOptionalPlaceholder": "https://… (optional)",
     "descriptionOptional": "Description (optional)",
+    "descriptionPlaceholder": "Description",
     "resourceKinds": {
       "READING": "Reading",
       "LISTENING": "Listening",
       "WRITING": "Writing",
-      "SPEAKING": "Speaking"
+      "SPEAKING": "Speaking",
+      "GRAMMAR": "Grammar",
+      "CHALLENGE": "Challenge"
     }
   },
   "analytics": {
