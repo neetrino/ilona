@@ -24,6 +24,8 @@ export interface GroupCalendarScheduleSectionProps {
    * `range` (Add Lesson): explicit From/To window.
    */
   mode?: 'rolling' | 'range';
+  /** Submit-time / external validation message shown under weekly slots. */
+  sectionError?: string | null;
 }
 
 export function GroupCalendarScheduleSection({
@@ -36,10 +38,12 @@ export function GroupCalendarScheduleSection({
   disabled,
   adminControls = false,
   mode = 'range',
+  sectionError = null,
 }: GroupCalendarScheduleSectionProps) {
   const t = useTranslations('groups');
   const tCommon = useTranslations('common');
   const slotError = schedule.length > 0 ? scheduleSlotsValidationError(schedule) : null;
+  const displayError = sectionError || slotError;
   const isRolling = mode === 'rolling';
 
   const handleDateFromChange = useCallback(
@@ -119,7 +123,7 @@ export function GroupCalendarScheduleSection({
           disabled={disabled}
           adminControls={adminControls}
         />
-        {slotError && <p className="text-xs text-red-600">{slotError}</p>}
+        {displayError ? <p className="text-sm text-red-600">{displayError}</p> : null}
       </div>
     </div>
   );

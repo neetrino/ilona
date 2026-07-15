@@ -56,6 +56,7 @@ export function useEditGroupForm({
   const [dateFrom, setDateFrom] = useState(() => defaultMonthDateRange().from);
   const [dateTo, setDateTo] = useState(() => defaultMonthDateRange().to);
   const [regenerateDialogOpen, setRegenerateDialogOpen] = useState(false);
+  const [scheduleSectionError, setScheduleSectionError] = useState<string | null>(null);
   const pendingPayloadRef = useRef<UpdateGroupDto | null>(null);
   const updateGroup = useUpdateGroup();
   const { data: group, isLoading } = useGroup(groupId, open);
@@ -110,18 +111,20 @@ export function useEditGroupForm({
     return Boolean(normalizeGroupSchedulePayload(group.schedule).calendar);
   }, [group]);
 
-  const scheduleValidationError = useMemo(
-    () =>
-      validateGroupCalendarSchedule({
-        schedule,
-        dateFrom,
-        dateTo,
-        requireSlots: false,
-        tForm,
-        tVal,
-      }),
-    [schedule, dateFrom, dateTo, tForm, tVal],
-  );
+  const handleScheduleChange = useCallback((next: GroupScheduleEntry[]) => {
+    setSchedule(next);
+    setScheduleSectionError(null);
+  }, []);
+
+  const handleDateFromChange = useCallback((next: string) => {
+    setDateFrom(next);
+    setScheduleSectionError(null);
+  }, []);
+
+  const handleDateToChange = useCallback((next: string) => {
+    setDateTo(next);
+    setScheduleSectionError(null);
+  }, []);
 
   useEffect(() => {
     if (!group) return;
@@ -149,6 +152,7 @@ export function useEditGroupForm({
     if (!open) {
       setErrorMessage(null);
       setSuccessMessage(null);
+      setScheduleSectionError(null);
       setRegenerateDialogOpen(false);
       pendingPayloadRef.current = null;
     }
@@ -216,14 +220,15 @@ export function useEditGroupForm({
       schedule,
       dateFrom,
       dateTo,
-      requireSlots: false,
+      requireSlots: true,
       tForm,
       tVal,
     });
     if (calendarError) {
-      setErrorMessage(calendarError);
+      setScheduleSectionError(calendarError);
       return;
     }
+    setScheduleSectionError(null);
 
     await submitPayload(
       buildEditGroupPayload({
@@ -283,12 +288,12 @@ export function useEditGroupForm({
     onSubmit,
     onToggleActive,
     schedule,
-    setSchedule,
+    setSchedule: handleScheduleChange,
     dateFrom,
     dateTo,
-    setDateFrom,
-    setDateTo,
-    scheduleValidationError,
+    setDateFrom: handleDateFromChange,
+    setDateTo: handleDateToChange,
+    scheduleSectionError,
     regenerateDialogOpen,
     setRegenerateDialogOpen,
     onConfirmRegenerate,
