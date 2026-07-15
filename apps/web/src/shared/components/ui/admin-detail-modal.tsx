@@ -59,7 +59,7 @@ export function AdminDetailModal({
   return (
     <div
       className={stackedSheetOverlayClassName(
-        'fixed inset-0 bg-black/50 min-[1367px]:bg-black/60',
+        'fixed inset-0 bg-black/50 tablet:bg-black/60',
         isBaseLayer,
       )}
       style={overlayStyle}
@@ -73,7 +73,7 @@ export function AdminDetailModal({
         className={cn(
           portalCardClass,
           'fixed inset-x-0 bottom-0 flex max-h-[92vh] w-full flex-col rounded-t-3xl shadow-2xl sm:max-h-[92vh]',
-          'min-[1367px]:bottom-auto min-[1367px]:top-auto',
+          'tablet:bottom-auto tablet:top-auto',
           CUSTOM_DESKTOP_SIDE_PANEL_CLASS,
           'p-0',
         )}

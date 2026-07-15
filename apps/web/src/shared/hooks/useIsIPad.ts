@@ -20,7 +20,7 @@ export function useIsIPad(): boolean {
         (platform === 'MacIntel' && touchPoints > 1) ||
         (/Macintosh/i.test(userAgent) && /Mobile/i.test(userAgent));
       const isTabletTouchViewport = window.matchMedia(
-        '(min-width: 768px) and (max-width: 1368px)',
+        '(min-width: 744px) and (max-width: 1368px)',
       ).matches;
       setIsIPad(isAppleIPadUa || (hasTouch && isTabletTouchViewport));
     };

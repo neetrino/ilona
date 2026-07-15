@@ -125,7 +125,7 @@ export function StudentFeedbackModal({
           aria-describedby={undefined}
         >
           <div
-            className="relative flex h-9 w-full items-center justify-center bg-white min-[1367px]:hidden"
+            className="relative flex h-9 w-full items-center justify-center bg-white tablet:hidden"
             {...{ [PORTAL_SHEET_DRAG_HANDLE_ATTR]: '' }}
           >
             <div
@@ -138,18 +138,18 @@ export function StudentFeedbackModal({
 
           <DialogPrimitive.Title className="sr-only">{t('teacherFeedback')}</DialogPrimitive.Title>
 
-          <div className="relative z-40 shrink-0 border-b border-slate-200 bg-white px-4 py-3 min-[1367px]:px-6">
+          <div className="relative z-40 shrink-0 border-b border-slate-200 bg-white px-4 py-3 tablet:px-6">
             <div className="flex w-full items-center justify-between gap-2">
               <div className="flex min-w-0 flex-1 items-center gap-2">
                 <MessageCircle className="h-5 w-5 shrink-0 text-[#1010a3]" aria-hidden="true" />
-                <h2 className="truncate text-[1.0625rem] font-semibold text-[#3b3b40] min-[1367px]:text-lg">
+                <h2 className="truncate text-[1.0625rem] font-semibold text-[#3b3b40] tablet:text-lg">
                   {t('teacherFeedback')}
                 </h2>
               </div>
               <DialogPrimitive.Close
                 className={cn(
                   ADMIN_ICON_BUTTON_SM_CLASS,
-                  'hidden shrink-0 text-slate-500 hover:bg-slate-100 hover:text-slate-900 min-[1367px]:inline-flex',
+                  'hidden shrink-0 text-slate-500 hover:bg-slate-100 hover:text-slate-900 tablet:inline-flex',
                 )}
                 aria-label={tCommon('close')}
               >
@@ -158,7 +158,7 @@ export function StudentFeedbackModal({
             </div>
           </div>
 
-          <PortalFormSheetScrollArea className="pt-4 min-[1367px]:pt-6">
+          <PortalFormSheetScrollArea className="pt-4 tablet:pt-6">
             {!student ? (
               open && studentIdFromUrl ? (
                 <div className="flex items-center justify-center py-12">

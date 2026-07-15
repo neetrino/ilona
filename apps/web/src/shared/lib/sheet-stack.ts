@@ -16,6 +16,7 @@ const DATE_PICKER_POPOVER_ATTR = 'data-date-picker-popover';
 const BASE_Z_INDEX = 50;
 const LAYER_STEP = 20;
 const MOBILE_SHEET_LAYER_STEP = 4;
+/** Cap under bottom nav while visible; original desktop stack from 1367px. */
 const MOBILE_SHEET_MEDIA_QUERY = '(max-width: 1366px)';
 const MOBILE_SHEET_MAX_CONTENT_Z_INDEX = PORTAL_MOBILE_BOTTOM_NAV_Z_INDEX - 1;
 

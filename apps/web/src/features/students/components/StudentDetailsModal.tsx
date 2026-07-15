@@ -86,16 +86,16 @@ export function StudentDetailsModal(props: StudentDetailsModalProps) {
       <DialogPrimitive.Overlay style={overlayStyle} {...portalSheetLayerProps} className={stackedSheetOverlayClassName('fixed inset-0 z-50 bg-black/60 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0', isBaseLayer)} />
       <DialogPrimitive.Content ref={scrollContentProps.ref} style={{ ...dragStyle, ...contentStyle }} {...stackedSheetDialogHandlers} {...portalSheetLayerProps}
         className={cn(
-          'fixed inset-x-0 bottom-[7px] top-auto z-50 grid w-full translate-y-0 lg:bottom-0 [@media(min-width:1024px)_and_(max-width:1366px)_and_(min-height:1000px)]:bottom-0',
-          'duration-700 ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out min-[1367px]:duration-350 min-[1367px]:ease-[cubic-bezier(0.22,1,0.36,1)]',
+          'fixed inset-x-0 bottom-[7px] top-auto z-50 grid w-full translate-y-0',
+          'duration-700 ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out',
           'data-[state=open]:slide-in-from-bottom-full data-[state=closed]:slide-out-to-bottom-full',
-          'h-[calc(94dvh+7px)] [@media(min-width:1024px)_and_(max-width:1366px)_and_(min-height:1000px)]:h-[56dvh] grid-rows-[auto_auto_1fr] gap-0 overflow-hidden rounded-t-[22px] border border-slate-200 bg-[#f8f9fb] shadow-xl',
+          'h-[calc(94dvh+7px)] grid-rows-[auto_auto_1fr] gap-0 overflow-hidden rounded-t-[22px] border border-slate-200 bg-[#f8f9fb] shadow-xl',
           PORTAL_DESKTOP_SIDE_SHEET_CLASS,
         )}
         aria-describedby={undefined}
       >
       <div
-        className="relative flex h-9 w-full items-center justify-center bg-white min-[1367px]:hidden"
+        className="relative flex h-9 w-full items-center justify-center bg-white tablet:hidden"
         {...{ [PORTAL_SHEET_DRAG_HANDLE_ATTR]: '' }}
       >
         <div
@@ -106,7 +106,7 @@ export function StudentDetailsModal(props: StudentDetailsModalProps) {
         <div className="h-1.5 w-14 rounded-full bg-slate-400" />
       </div>
       <DialogPrimitive.Title className="sr-only">{t('studentDetails')}</DialogPrimitive.Title>
-      <div className="relative z-40 flex w-full shrink-0 items-center justify-between gap-2 border-b border-slate-200 bg-white px-4 py-3 min-[1367px]:px-6">
+      <div className="relative z-40 flex w-full shrink-0 items-center justify-between gap-2 border-b border-slate-200 bg-white px-4 py-3 tablet:px-6">
         <div className="flex min-w-0 flex-1 items-center gap-2">
           <Image
             src="/students-logo.webp"
@@ -115,7 +115,7 @@ export function StudentDetailsModal(props: StudentDetailsModalProps) {
             width={20}
             height={20}
           />
-          <h2 className="mt-0.5 truncate text-[1.0625rem] font-semibold text-[#3b3b40] min-[1367px]:mt-0 min-[1367px]:text-lg">
+          <h2 className="mt-0.5 truncate text-[1.0625rem] font-semibold text-[#3b3b40] tablet:mt-0 tablet:text-lg">
             {t('studentDetails')}
           </h2>
         </div>
@@ -202,7 +202,7 @@ export function StudentDetailsModal(props: StudentDetailsModalProps) {
             onClick={requestClose}
             className={cn(
               ADMIN_ICON_BUTTON_SM_CLASS,
-              'hidden shrink-0 text-slate-500 hover:bg-slate-100 hover:text-slate-900 min-[1367px]:inline-flex',
+              'hidden shrink-0 text-slate-500 hover:bg-slate-100 hover:text-slate-900 tablet:inline-flex',
             )}
             aria-label={tCommon('close')}
           >

@@ -108,21 +108,21 @@ export function SubstituteLessonModal({
   return (
     <DialogPrimitive.Root open={isDialogOpen} onOpenChange={(nextOpen) => !nextOpen && requestClose()}>
       <DialogPrimitive.Portal>
-        <DialogPrimitive.Overlay style={overlayStyle} {...portalSheetLayerProps} className={stackedSheetOverlayClassName(PORTAL_FORM_SHEET_OVERLAY_CLASS, isBaseLayer, 'z-[60]')} />
+        <DialogPrimitive.Overlay style={overlayStyle} {...portalSheetLayerProps} className={stackedSheetOverlayClassName(PORTAL_FORM_SHEET_OVERLAY_CLASS, isBaseLayer)} />
         <DialogPrimitive.Content ref={scrollContentProps.ref} style={{ ...dragStyle, ...contentStyle }} {...stackedSheetDialogHandlers} {...portalSheetLayerProps}
-          className={cn(portalFormSheetContentClass('xl'), 'z-[60]')}
+          className={portalFormSheetContentClass('xl')}
           aria-describedby={undefined}
         >
           <PortalFormSheetDragHandle dragHandleProps={dragHandleProps} />
 
-          <div className={cn(PORTAL_FORM_SHEET_HEADER_CLASS, 'pb-3 pt-2 min-[1367px]:pb-5 min-[1367px]:pt-6')}>
-            <DialogPrimitive.Title className="break-words text-xl font-semibold leading-snug text-[#1010a3] min-[1367px]:text-lg min-[1367px]:text-[#3b3b40]">
+          <div className={cn(PORTAL_FORM_SHEET_HEADER_CLASS, 'pb-3 pt-2 tablet:pb-5 tablet:pt-6')}>
+            <DialogPrimitive.Title className="break-words text-xl font-semibold leading-snug text-[#1010a3] tablet:text-lg tablet:text-[#3b3b40]">
               {t('substituteTeacherLesson')}
             </DialogPrimitive.Title>
           </div>
 
           <PortalFormSheetScrollArea
-            className="min-h-0 flex-1 pb-[calc(5.5rem+env(safe-area-inset-bottom))] min-[1367px]:pb-6"
+            className="min-h-0 flex-1 pb-[calc(5.5rem+env(safe-area-inset-bottom))] tablet:pb-[calc(5rem+env(safe-area-inset-bottom))] lg:pb-6"
           >
             {isLoading || !lesson ? (
               <p className="text-sm text-[#3b3b40]">{t('loadingLesson')}</p>

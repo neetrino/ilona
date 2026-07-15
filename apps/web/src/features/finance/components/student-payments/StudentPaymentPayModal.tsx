@@ -67,7 +67,7 @@ export function StudentPaymentPayModal({
         <div className={cn(PORTAL_FORM_SHEET_HEADER_CLASS, 'border-b-0')}>
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0 flex-1">
-              <DialogPrimitive.Title className="break-words text-xl font-semibold leading-snug text-[#1010a3] min-[1367px]:text-lg min-[1367px]:text-[#3b3b40]">
+              <DialogPrimitive.Title className="break-words text-xl font-semibold leading-snug text-[#1010a3] tablet:text-lg tablet:text-[#3b3b40]">
                 {t('pay')}
               </DialogPrimitive.Title>
             </div>

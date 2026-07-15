@@ -78,7 +78,7 @@ export function EditTeacherForm(props: EditTeacherFormProps) {
       >
         <PortalFormSheetDragHandle dragHandleProps={form.dragHandleProps} />
         <DialogPrimitive.Title className="sr-only">{form.tForm('editTitle')}</DialogPrimitive.Title>
-        <div className="shrink-0 bg-[#f8f9fb] px-4 pb-4 pt-3 min-[1367px]:px-6 min-[1367px]:pb-5 min-[1367px]:pt-6">
+        <div className="shrink-0 bg-[#f8f9fb] px-4 pb-4 pt-3 tablet:px-6 tablet:pb-5 tablet:pt-6">
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0 flex-1">
               <h2 className="text-lg font-semibold text-[#3b3b40]">{form.tForm('editTitle')}</h2>
@@ -87,7 +87,7 @@ export function EditTeacherForm(props: EditTeacherFormProps) {
           </div>
         </div>
         <div
-          className="min-h-0 overflow-y-auto overscroll-y-contain [touch-action:pan-y] [-webkit-overflow-scrolling:touch] px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-4 min-[1367px]:px-6 min-[1367px]:pb-6 min-[1367px]:pt-5"
+          className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain [touch-action:pan-y] [-webkit-overflow-scrolling:touch] px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-4 tablet:px-6 tablet:pb-[calc(5rem+env(safe-area-inset-bottom))] tablet:pt-5 lg:pb-8"
         >
           {form.isLoadingTeacher ? (
             <div className="flex items-center justify-center py-4">

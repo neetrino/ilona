@@ -137,7 +137,7 @@ export function DailyPlanEditorFormBody({
         'shrink-0 border-t border-slate-200/80 bg-white px-5 pt-3',
         isPage
           ? 'sticky bottom-0 rounded-b-[22px] pb-4 md:px-8'
-          : 'pb-[calc(4.5rem+env(safe-area-inset-bottom))] min-[1367px]:pb-4',
+          : 'pb-[calc(4.5rem+env(safe-area-inset-bottom))] tablet:pb-[calc(5rem+env(safe-area-inset-bottom))] lg:pb-4',
       )}
     >
       <div className={cn('flex', isPage ? 'justify-start' : 'justify-end')}>

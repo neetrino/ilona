@@ -40,17 +40,17 @@ export function EditStudentForm(props: EditStudentFormProps) {
           {...portalSheetLayerProps}
           onOpenAutoFocus={(event) => event.preventDefault()}
           className={cn(
-            'fixed inset-x-0 bottom-[7px] top-auto z-50 grid w-full translate-y-0 lg:bottom-0 [@media(min-width:1024px)_and_(max-width:1366px)_and_(min-height:1000px)]:bottom-0',
-            'duration-700 ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out min-[1367px]:duration-350 min-[1367px]:ease-[cubic-bezier(0.22,1,0.36,1)]',
+            'fixed inset-x-0 bottom-[7px] top-auto z-50 grid w-full translate-y-0',
+            'duration-700 ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out',
             'data-[state=open]:slide-in-from-bottom-full data-[state=closed]:slide-out-to-bottom-full',
-            'h-[calc(94dvh+7px)] [@media(min-width:1024px)_and_(max-width:1366px)_and_(min-height:1000px)]:h-[56dvh] grid-rows-[auto_auto_1fr] gap-0 overflow-hidden rounded-t-[22px] border border-slate-200 bg-[#f8f9fb] shadow-xl',
+            'h-[calc(94dvh+7px)] grid-rows-[auto_auto_1fr] gap-0 overflow-hidden rounded-t-[22px] border border-slate-200 bg-[#f8f9fb] shadow-xl',
             PORTAL_DESKTOP_SIDE_SHEET_CLASS,
           )}
           aria-describedby={undefined}
         >
           <PortalFormSheetDragHandle dragHandleProps={form.dragHandleProps} />
           <DialogPrimitive.Title className="sr-only">{form.tForm('editTitle')}</DialogPrimitive.Title>
-          <div className="shrink-0 bg-[#f8f9fb] px-4 pb-4 pt-3 min-[1367px]:px-6 min-[1367px]:pb-5 min-[1367px]:pt-6">
+          <div className="shrink-0 bg-[#f8f9fb] px-4 pb-4 pt-3 tablet:px-6 tablet:pb-5 tablet:pt-6">
             <div className="flex items-center justify-between gap-4">
               <h2 className="min-w-0 text-lg font-semibold text-[#3b3b40]">{form.tForm('editTitle')}</h2>
               <DialogPrimitive.Close
@@ -65,7 +65,7 @@ export function EditStudentForm(props: EditStudentFormProps) {
             </div>
           </div>
           <div
-            className="min-h-0 overflow-y-auto overflow-x-hidden overscroll-y-contain [touch-action:pan-y] [-webkit-overflow-scrolling:touch] px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-4 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden min-[1367px]:px-6 min-[1367px]:pb-6 min-[1367px]:pt-0"
+            className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-y-contain [touch-action:pan-y] [-webkit-overflow-scrolling:touch] px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-4 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden tablet:px-6 tablet:pb-[calc(5rem+env(safe-area-inset-bottom))] tablet:pt-0 lg:pb-8"
           >
             {form.isLoadingStudent ? (
               <div className="flex items-center justify-center py-8">

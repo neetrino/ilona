@@ -58,7 +58,7 @@ export function VocabularyModal({
   return (
     <>
       <div className={stackedSheetOverlayClassName(CUSTOM_MODAL_OVERLAY_CLASS, isBaseLayer)} onClick={onClose} aria-hidden="true" />
-      <div style={contentStyle} {...portalSheetLayerProps} className={cn(CUSTOM_MODAL_PANEL_CLASS, 'max-w-md mx-4 min-[1367px]:mx-0')}>
+      <div style={contentStyle} {...portalSheetLayerProps} className={cn(CUSTOM_MODAL_PANEL_CLASS, 'max-w-md mx-4 tablet:mx-0')}>
         <div className="p-4 border-b border-slate-200 bg-gradient-to-r from-purple-600 to-purple-700">
           <h3 className="text-lg font-semibold text-white flex items-center gap-2">
             <span>📚</span>

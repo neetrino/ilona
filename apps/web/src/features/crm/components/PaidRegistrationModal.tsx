@@ -286,7 +286,7 @@ export function PaidRegistrationModal({
                 assignedCenterDisplay={isManager ? managerCenterLabel : null}
               />
 
-              <div className="flex flex-col-reverse gap-2 pt-4 sm:flex-row sm:justify-end min-[1367px]:pt-6">
+              <div className="flex flex-col-reverse gap-2 pt-4 sm:flex-row sm:justify-end tablet:pt-6">
                 <Button
                   type="button"
                   variant="outline"

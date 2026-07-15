@@ -63,7 +63,7 @@ export function CenterDetailsModalTabBar({
   }, [activeTab, counts?.groups, counts?.students, counts?.teachers]);
 
   return (
-    <div className="overflow-x-auto border-b border-[#e6e8ee] bg-white px-2 pt-2.5 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden sm:overflow-visible sm:border-slate-200 sm:px-3 sm:pt-2">
+    <div className="shrink-0 overflow-x-auto border-b border-[#e6e8ee] bg-white px-2 pt-2.5 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden sm:overflow-visible sm:border-slate-200 sm:px-3 sm:pt-2">
       <div
         ref={tabsTrackRef}
         role="tablist"

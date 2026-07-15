@@ -37,8 +37,8 @@ export function CreateCenterForm(props: CreateCenterFormProps) {
           {...stackedSheetDialogHandlers}
           {...portalSheetLayerProps}
           className={cn(
-            'fixed inset-x-0 bottom-[7px] top-auto z-50 grid w-full translate-y-0 lg:bottom-0 [@media(min-width:1024px)_and_(max-width:1366px)_and_(min-height:1000px)]:bottom-0',
-            'duration-700 ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out min-[1367px]:duration-350 min-[1367px]:ease-[cubic-bezier(0.22,1,0.36,1)]',
+            'fixed inset-x-0 bottom-[7px] top-auto z-50 grid w-full translate-y-0',
+            'duration-700 ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out',
             'data-[state=open]:slide-in-from-bottom-full data-[state=closed]:slide-out-to-bottom-full',
             EDIT_CENTER_DIALOG_GRID_ROWS,
             PORTAL_DESKTOP_SIDE_SHEET_CLASS,
@@ -47,7 +47,7 @@ export function CreateCenterForm(props: CreateCenterFormProps) {
         >
           <PortalFormSheetDragHandle dragHandleProps={form.dragHandleProps} />
           <DialogPrimitive.Title className="sr-only">{tForm('addTitle')}</DialogPrimitive.Title>
-          <div className="shrink-0 bg-[#f8f9fb] px-4 pb-4 pt-3 min-[1367px]:px-6 min-[1367px]:pb-5 min-[1367px]:pt-6">
+          <div className="shrink-0 bg-[#f8f9fb] px-4 pb-4 pt-3 tablet:px-6 tablet:pb-5 tablet:pt-6">
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0 flex-1">
                 <h2 className="text-lg font-semibold text-[#3b3b40]">{tForm('addTitle')}</h2>
@@ -55,7 +55,7 @@ export function CreateCenterForm(props: CreateCenterFormProps) {
               <DialogPrimitive.Close
                 className={cn(
                   ADMIN_ICON_BUTTON_SM_CLASS,
-                  'hidden text-slate-500 hover:bg-slate-100 hover:text-slate-700 min-[1367px]:inline-flex',
+                  'hidden text-slate-500 hover:bg-slate-100 hover:text-slate-700 tablet:inline-flex',
                 )}
                 aria-label={tCommon('close')}
               >
@@ -64,7 +64,7 @@ export function CreateCenterForm(props: CreateCenterFormProps) {
             </div>
           </div>
           <div
-            className="min-h-0 overflow-y-auto overscroll-y-contain [touch-action:pan-y] [-webkit-overflow-scrolling:touch] px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] min-[1367px]:px-6 min-[1367px]:pb-6"
+            className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain [touch-action:pan-y] [-webkit-overflow-scrolling:touch] px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] tablet:px-6 tablet:pb-[calc(5rem+env(safe-area-inset-bottom))] lg:pb-8"
           >
             <CreateCenterFormFields {...form} />
           </div>

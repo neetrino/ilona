@@ -74,7 +74,7 @@ export function AddMembersModal({
   return (
     <>
       <div className={stackedSheetOverlayClassName(CUSTOM_MODAL_OVERLAY_CLASS, isBaseLayer)} onClick={onClose} aria-hidden="true" />
-      <div style={contentStyle} {...portalSheetLayerProps} className={cn(CUSTOM_MODAL_PANEL_CLASS, 'max-w-md mx-4 min-[1367px]:mx-0 max-h-[80vh]')}>
+      <div style={contentStyle} {...portalSheetLayerProps} className={cn(CUSTOM_MODAL_PANEL_CLASS, 'max-w-md mx-4 tablet:mx-0 max-h-[80vh]')}>
         <div className="p-4 border-b border-slate-200">
           <h3 className="text-lg font-semibold text-slate-800">{tChat('addMembers')}</h3>
           <p className="text-sm text-slate-500 mt-1">

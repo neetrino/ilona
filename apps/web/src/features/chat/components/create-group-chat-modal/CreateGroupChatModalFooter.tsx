@@ -18,7 +18,7 @@ export function CreateGroupChatModalFooter({
   'tChat' | 'tCommon' | 'name' | 'createChatPending' | 'createChatError' | 'requestClose' | 'handleSubmit'
 >) {
   return (
-    <div className="shrink-0 space-y-3 border-t border-[rgba(14,14,16,0.07)] bg-[#f8f9fb] px-4 pt-3 pb-[calc(4.5rem+env(safe-area-inset-bottom))] min-[1367px]:px-6 min-[1367px]:py-6 min-[1367px]:pb-6">
+    <div className="shrink-0 space-y-3 border-t border-[rgba(14,14,16,0.07)] bg-[#f8f9fb] px-4 pt-3 pb-[calc(4.5rem+env(safe-area-inset-bottom))] tablet:px-6 tablet:pt-6 tablet:pb-[calc(5rem+env(safe-area-inset-bottom))] lg:pb-6">
       {createChatError != null && (
         <div className="rounded-[15px] border border-red-200 bg-red-50 p-3">
           <p className="text-sm text-red-600">

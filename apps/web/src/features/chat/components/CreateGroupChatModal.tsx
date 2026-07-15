@@ -48,7 +48,7 @@ export function CreateGroupChatModal(props: CreateGroupChatModalProps) {
 
           <DialogPrimitive.Title className="sr-only">{vm.tChat('createGroupChat')}</DialogPrimitive.Title>
 
-          <div className="shrink-0 bg-[#f8f9fb] px-4 pb-4 pt-3 min-[1367px]:px-6 min-[1367px]:pb-5 min-[1367px]:pt-6">
+          <div className="shrink-0 bg-[#f8f9fb] px-4 pb-4 pt-3 tablet:px-6 tablet:pb-5 tablet:pt-6">
             <div className="flex items-start justify-between gap-4">
               <h2 className="min-w-0 flex-1 text-lg font-semibold text-[#3b3b40]">
                 {vm.tChat('createGroupChat')}
@@ -56,7 +56,7 @@ export function CreateGroupChatModal(props: CreateGroupChatModalProps) {
               <DialogPrimitive.Close
                 className={cn(
                   ADMIN_ICON_BUTTON_SM_CLASS,
-                  'hidden text-slate-500 hover:bg-slate-100 hover:text-slate-700 min-[1367px]:inline-flex',
+                  'hidden text-slate-500 hover:bg-slate-100 hover:text-slate-700 tablet:inline-flex',
                 )}
                 aria-label={vm.tCommon('close')}
               >
@@ -66,7 +66,7 @@ export function CreateGroupChatModal(props: CreateGroupChatModalProps) {
           </div>
 
           <div
-            className="min-h-0 overflow-y-auto overscroll-y-contain bg-[#f8f9fb] [touch-action:pan-y] [-webkit-overflow-scrolling:touch] px-4 min-[1367px]:px-6"
+            className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain bg-[#f8f9fb] [touch-action:pan-y] [-webkit-overflow-scrolling:touch] px-4 pb-4 tablet:px-6 tablet:pb-[calc(5rem+env(safe-area-inset-bottom))] lg:pb-8"
           >
             <CreateGroupChatModalFormSection {...vm} />
             <div className="mt-4 pb-2">
