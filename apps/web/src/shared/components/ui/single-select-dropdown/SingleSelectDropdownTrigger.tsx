@@ -1,5 +1,6 @@
 'use client';
 
+import { X } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
 import {
   DROPDOWN_CHEVRON_CLASS,
@@ -25,10 +26,13 @@ interface SingleSelectDropdownTriggerProps {
   isLoading: boolean;
   disabled: boolean;
   error: string | null;
+  allowDeselect: boolean;
+  clearLabel: string;
   triggerClassName?: string;
   triggerRef: React.RefObject<HTMLButtonElement | null>;
   onPointerDown: (event: React.PointerEvent<HTMLButtonElement>) => void;
   onKeyDown: (event: React.KeyboardEvent<HTMLButtonElement>) => void;
+  onClear: () => void;
 }
 
 export function SingleSelectDropdownTrigger({
@@ -42,11 +46,16 @@ export function SingleSelectDropdownTrigger({
   isLoading,
   disabled,
   error,
+  allowDeselect,
+  clearLabel,
   triggerClassName,
   triggerRef,
   onPointerDown,
   onKeyDown,
+  onClear,
 }: SingleSelectDropdownTriggerProps) {
+  const showClear = allowDeselect && hasSelection && !disabled && !isLoading;
+
   return (
     <>
       {label && (
@@ -84,18 +93,35 @@ export function SingleSelectDropdownTrigger({
           >
             {isLoading ? 'Loading...' : displayText}
           </span>
-          <svg
-            className={cn(
-              DROPDOWN_CHEVRON_CLASS,
-              hasSelection && DROPDOWN_CHEVRON_SELECTED_CLASS,
-              isOpen && 'rotate-180',
+          <span className="flex shrink-0 items-center gap-0.5">
+            {showClear && (
+              <span
+                role="button"
+                tabIndex={-1}
+                aria-label={clearLabel}
+                className="inline-flex rounded-[8px] p-0.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
+                onPointerDown={(event) => {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  onClear();
+                }}
+              >
+                <X className="size-3.5" />
+              </span>
             )}
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-          </svg>
+            <svg
+              className={cn(
+                DROPDOWN_CHEVRON_CLASS,
+                hasSelection && DROPDOWN_CHEVRON_SELECTED_CLASS,
+                isOpen && 'rotate-180',
+              )}
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </span>
         </div>
       </button>
     </>

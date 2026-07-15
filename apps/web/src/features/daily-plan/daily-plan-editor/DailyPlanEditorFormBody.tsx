@@ -68,6 +68,7 @@ export function DailyPlanEditorFormBody({
               placeholder={tCalendar('selectGroup')}
               disabled={vm.isLoadingGroups || vm.readOnly}
               isLoading={vm.isLoadingGroups}
+              allowDeselect
             />
           )}
         </div>
