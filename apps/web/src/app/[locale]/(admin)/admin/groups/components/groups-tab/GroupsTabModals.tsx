@@ -22,9 +22,10 @@ interface GroupsTabModalsProps {
   isStatusTogglePending: boolean;
   statusDialog: { groupId: string; wasActive: boolean } | null;
   onStatusDialogOpenChange: (open: boolean) => void;
-  onConfirmGroupStatus: () => void;
+  onConfirmGroupStatus: (reason?: string) => void;
   statusTogglePending: boolean;
   statusDialogError: string | null;
+  requireDeactivationReason?: boolean;
   deleteGroupId: string | null;
   onDeleteGroupIdChange: (open: boolean) => void;
   onDeleteConfirm: () => void;
@@ -61,6 +62,7 @@ export function GroupsTabModals({
   onConfirmGroupStatus,
   statusTogglePending,
   statusDialogError,
+  requireDeactivationReason = false,
   deleteGroupId,
   onDeleteGroupIdChange,
   onDeleteConfirm,
@@ -107,6 +109,7 @@ export function GroupsTabModals({
         }
         isLoading={statusTogglePending}
         error={statusDialogError ?? undefined}
+        requireReason={requireDeactivationReason}
       />
 
       <DeleteConfirmationDialog

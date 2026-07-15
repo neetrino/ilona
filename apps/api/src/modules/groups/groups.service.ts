@@ -54,8 +54,8 @@ export class GroupsService {
     return this.writeService.delete(id, currentUser);
   }
 
-  toggleActive(id: string, currentUser?: JwtPayload) {
-    return this.writeService.toggleActive(id, currentUser);
+  toggleActive(id: string, currentUser?: JwtPayload, reason?: string) {
+    return this.writeService.toggleActive(id, currentUser, reason);
   }
 
   assignTeacher(groupId: string, teacherId: string, currentUser?: JwtPayload) {

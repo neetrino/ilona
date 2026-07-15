@@ -185,6 +185,7 @@ export function GroupsTab(props: GroupsTabProps) {
         onConfirmGroupStatus={state.handleConfirmGroupStatus}
         statusTogglePending={state.isGroupStatusTogglePending}
         statusDialogError={state.statusDialogError}
+        requireDeactivationReason={state.portalBasePath === '/manager'}
         deleteGroupId={state.deleteGroupId}
         onDeleteGroupIdChange={(open) => !open && state.setDeleteGroupId(null)}
         onDeleteConfirm={state.handleDeleteConfirm}

@@ -1,7 +1,7 @@
 import { Injectable, BadRequestException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateGroupDto, UpdateGroupDto } from './dto';
-import { Prisma } from '@ilona/database';
+import { Prisma, UserRole } from '@ilona/database';
 import { GroupScheduleLessonsService } from '../lessons/group-schedule-lessons.service';
 import {
   buildScheduleJson,
@@ -257,11 +257,23 @@ export class GroupWriteService {
     return this.prisma.group.delete({ where: { id } });
   }
 
-  async toggleActive(id: string, currentUser?: JwtPayload) {
+  async toggleActive(id: string, currentUser?: JwtPayload, reason?: string) {
     const group = await this.queryService.findById(id, currentUser);
+    const nextIsActive = !group.isActive;
+    const trimmedReason = reason?.trim() ?? '';
+
+    if (!nextIsActive && currentUser?.role === UserRole.MANAGER) {
+      if (!trimmedReason) {
+        throw new BadRequestException('Deactivation reason is required');
+      }
+    }
+
     return this.prisma.group.update({
       where: { id },
-      data: { isActive: !group.isActive },
+      data: {
+        isActive: nextIsActive,
+        deactivationReason: nextIsActive ? null : trimmedReason || null,
+      },
     });
   }
 }

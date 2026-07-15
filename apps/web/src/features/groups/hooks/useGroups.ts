@@ -205,9 +205,10 @@ export function useToggleGroupActive() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (id: string) => toggleGroupActive(id),
+    mutationFn: ({ id, reason }: { id: string; reason?: string }) =>
+      toggleGroupActive(id, reason),
     // Optimistic update for better UX
-    onMutate: async (id) => {
+    onMutate: async ({ id }) => {
       // Cancel any outgoing refetches
       await queryClient.cancelQueries({ queryKey: groupKeys.detail(id) });
       await queryClient.cancelQueries({ queryKey: groupKeys.lists() });
@@ -248,7 +249,7 @@ export function useToggleGroupActive() {
 
       return { previousGroup, previousLists };
     },
-    onError: (err, id, context) => {
+    onError: (err, { id }, context) => {
       // Rollback on error
       if (context?.previousGroup) {
         queryClient.setQueryData(groupKeys.detail(id), context.previousGroup);
@@ -259,7 +260,7 @@ export function useToggleGroupActive() {
         });
       }
     },
-    onSuccess: (_, id) => {
+    onSuccess: (_, { id }) => {
       // Invalidate to refetch and ensure consistency
       queryClient.invalidateQueries({ queryKey: groupKeys.detail(id) });
       queryClient.invalidateQueries({ queryKey: groupKeys.lists() });

@@ -93,6 +93,8 @@ model Group {
   secondTeacherStartsFirstWeek Boolean               @default(false)
   schedule                     Json?
   isActive                     Boolean               @default(true)
+  /// Set when a manager deactivates the group; cleared on reactivate.
+  deactivationReason           String?
   createdAt                    DateTime              @default(now())
   updatedAt                    DateTime              @updatedAt
   chat                         Chat?

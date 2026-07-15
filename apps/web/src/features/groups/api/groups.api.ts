@@ -79,8 +79,8 @@ export async function deleteGroup(id: string): Promise<{ success: boolean }> {
 /**
  * Toggle group active status
  */
-export async function toggleGroupActive(id: string): Promise<Group> {
-  return api.patch<Group>(`${GROUPS_ENDPOINT}/${id}/toggle-active`, {});
+export async function toggleGroupActive(id: string, reason?: string): Promise<Group> {
+  return api.patch<Group>(`${GROUPS_ENDPOINT}/${id}/toggle-active`, reason ? { reason } : {});
 }
 
 /**

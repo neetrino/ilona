@@ -7558,6 +7558,7 @@ export namespace Prisma {
     secondTeacherId: string | null
     secondTeacherStartsFirstWeek: boolean | null
     isActive: boolean | null
+    deactivationReason: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -7574,6 +7575,7 @@ export namespace Prisma {
     secondTeacherId: string | null
     secondTeacherStartsFirstWeek: boolean | null
     isActive: boolean | null
+    deactivationReason: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -7591,6 +7593,7 @@ export namespace Prisma {
     secondTeacherStartsFirstWeek: number
     schedule: number
     isActive: number
+    deactivationReason: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -7617,6 +7620,7 @@ export namespace Prisma {
     secondTeacherId?: true
     secondTeacherStartsFirstWeek?: true
     isActive?: true
+    deactivationReason?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -7633,6 +7637,7 @@ export namespace Prisma {
     secondTeacherId?: true
     secondTeacherStartsFirstWeek?: true
     isActive?: true
+    deactivationReason?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -7650,6 +7655,7 @@ export namespace Prisma {
     secondTeacherStartsFirstWeek?: true
     schedule?: true
     isActive?: true
+    deactivationReason?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -7754,6 +7760,7 @@ export namespace Prisma {
     secondTeacherStartsFirstWeek: boolean
     schedule: JsonValue | null
     isActive: boolean
+    deactivationReason: string | null
     createdAt: Date
     updatedAt: Date
     _count: GroupCountAggregateOutputType | null
@@ -7790,6 +7797,7 @@ export namespace Prisma {
     secondTeacherStartsFirstWeek?: boolean
     schedule?: boolean
     isActive?: boolean
+    deactivationReason?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     chat?: boolean | Group$chatArgs<ExtArgs>
@@ -7818,6 +7826,7 @@ export namespace Prisma {
     secondTeacherStartsFirstWeek?: boolean
     schedule?: boolean
     isActive?: boolean
+    deactivationReason?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     center?: boolean | CenterDefaultArgs<ExtArgs>
@@ -7838,6 +7847,7 @@ export namespace Prisma {
     secondTeacherStartsFirstWeek?: boolean
     schedule?: boolean
     isActive?: boolean
+    deactivationReason?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
@@ -7894,6 +7904,10 @@ export namespace Prisma {
       secondTeacherStartsFirstWeek: boolean
       schedule: Prisma.JsonValue | null
       isActive: boolean
+      /**
+       * Set when a manager deactivates the group; cleared on reactivate.
+       */
+      deactivationReason: string | null
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["group"]>
@@ -8311,6 +8325,7 @@ export namespace Prisma {
     readonly secondTeacherStartsFirstWeek: FieldRef<"Group", 'Boolean'>
     readonly schedule: FieldRef<"Group", 'Json'>
     readonly isActive: FieldRef<"Group", 'Boolean'>
+    readonly deactivationReason: FieldRef<"Group", 'String'>
     readonly createdAt: FieldRef<"Group", 'DateTime'>
     readonly updatedAt: FieldRef<"Group", 'DateTime'>
   }
@@ -36445,6 +36460,7 @@ export namespace Prisma {
     secondTeacherStartsFirstWeek: 'secondTeacherStartsFirstWeek',
     schedule: 'schedule',
     isActive: 'isActive',
+    deactivationReason: 'deactivationReason',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
@@ -37568,6 +37584,7 @@ export namespace Prisma {
     secondTeacherStartsFirstWeek?: BoolFilter<"Group"> | boolean
     schedule?: JsonNullableFilter<"Group">
     isActive?: BoolFilter<"Group"> | boolean
+    deactivationReason?: StringNullableFilter<"Group"> | string | null
     createdAt?: DateTimeFilter<"Group"> | Date | string
     updatedAt?: DateTimeFilter<"Group"> | Date | string
     chat?: XOR<ChatNullableRelationFilter, ChatWhereInput> | null
@@ -37595,6 +37612,7 @@ export namespace Prisma {
     secondTeacherStartsFirstWeek?: SortOrder
     schedule?: SortOrderInput | SortOrder
     isActive?: SortOrder
+    deactivationReason?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     chat?: ChatOrderByWithRelationInput
@@ -37625,6 +37643,7 @@ export namespace Prisma {
     secondTeacherStartsFirstWeek?: BoolFilter<"Group"> | boolean
     schedule?: JsonNullableFilter<"Group">
     isActive?: BoolFilter<"Group"> | boolean
+    deactivationReason?: StringNullableFilter<"Group"> | string | null
     createdAt?: DateTimeFilter<"Group"> | Date | string
     updatedAt?: DateTimeFilter<"Group"> | Date | string
     chat?: XOR<ChatNullableRelationFilter, ChatWhereInput> | null
@@ -37652,6 +37671,7 @@ export namespace Prisma {
     secondTeacherStartsFirstWeek?: SortOrder
     schedule?: SortOrderInput | SortOrder
     isActive?: SortOrder
+    deactivationReason?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: GroupCountOrderByAggregateInput
@@ -37677,6 +37697,7 @@ export namespace Prisma {
     secondTeacherStartsFirstWeek?: BoolWithAggregatesFilter<"Group"> | boolean
     schedule?: JsonNullableWithAggregatesFilter<"Group">
     isActive?: BoolWithAggregatesFilter<"Group"> | boolean
+    deactivationReason?: StringNullableWithAggregatesFilter<"Group"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"Group"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Group"> | Date | string
   }
@@ -40415,6 +40436,7 @@ export namespace Prisma {
     secondTeacherStartsFirstWeek?: boolean
     schedule?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
+    deactivationReason?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     chat?: ChatCreateNestedOneWithoutGroupInput
@@ -40442,6 +40464,7 @@ export namespace Prisma {
     secondTeacherStartsFirstWeek?: boolean
     schedule?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
+    deactivationReason?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     chat?: ChatUncheckedCreateNestedOneWithoutGroupInput
@@ -40463,6 +40486,7 @@ export namespace Prisma {
     secondTeacherStartsFirstWeek?: BoolFieldUpdateOperationsInput | boolean
     schedule?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    deactivationReason?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     chat?: ChatUpdateOneWithoutGroupNestedInput
@@ -40490,6 +40514,7 @@ export namespace Prisma {
     secondTeacherStartsFirstWeek?: BoolFieldUpdateOperationsInput | boolean
     schedule?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    deactivationReason?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     chat?: ChatUncheckedUpdateOneWithoutGroupNestedInput
@@ -40514,6 +40539,7 @@ export namespace Prisma {
     secondTeacherStartsFirstWeek?: boolean
     schedule?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
+    deactivationReason?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -40528,6 +40554,7 @@ export namespace Prisma {
     secondTeacherStartsFirstWeek?: BoolFieldUpdateOperationsInput | boolean
     schedule?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    deactivationReason?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -40545,6 +40572,7 @@ export namespace Prisma {
     secondTeacherStartsFirstWeek?: BoolFieldUpdateOperationsInput | boolean
     schedule?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    deactivationReason?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -43654,6 +43682,7 @@ export namespace Prisma {
     secondTeacherStartsFirstWeek?: SortOrder
     schedule?: SortOrder
     isActive?: SortOrder
+    deactivationReason?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -43674,6 +43703,7 @@ export namespace Prisma {
     secondTeacherId?: SortOrder
     secondTeacherStartsFirstWeek?: SortOrder
     isActive?: SortOrder
+    deactivationReason?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -43690,6 +43720,7 @@ export namespace Prisma {
     secondTeacherId?: SortOrder
     secondTeacherStartsFirstWeek?: SortOrder
     isActive?: SortOrder
+    deactivationReason?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -49937,6 +49968,7 @@ export namespace Prisma {
     secondTeacherStartsFirstWeek?: boolean
     schedule?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
+    deactivationReason?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     chat?: ChatCreateNestedOneWithoutGroupInput
@@ -49962,6 +49994,7 @@ export namespace Prisma {
     secondTeacherStartsFirstWeek?: boolean
     schedule?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
+    deactivationReason?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     chat?: ChatUncheckedCreateNestedOneWithoutGroupInput
@@ -50159,6 +50192,7 @@ export namespace Prisma {
     secondTeacherStartsFirstWeek?: BoolFilter<"Group"> | boolean
     schedule?: JsonNullableFilter<"Group">
     isActive?: BoolFilter<"Group"> | boolean
+    deactivationReason?: StringNullableFilter<"Group"> | string | null
     createdAt?: DateTimeFilter<"Group"> | Date | string
     updatedAt?: DateTimeFilter<"Group"> | Date | string
   }
@@ -51484,6 +51518,7 @@ export namespace Prisma {
     secondTeacherStartsFirstWeek?: boolean
     schedule?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
+    deactivationReason?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     chat?: ChatCreateNestedOneWithoutGroupInput
@@ -51509,6 +51544,7 @@ export namespace Prisma {
     secondTeacherStartsFirstWeek?: boolean
     schedule?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
+    deactivationReason?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     chat?: ChatUncheckedCreateNestedOneWithoutGroupInput
@@ -51540,6 +51576,7 @@ export namespace Prisma {
     secondTeacherStartsFirstWeek?: boolean
     schedule?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
+    deactivationReason?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     chat?: ChatCreateNestedOneWithoutGroupInput
@@ -51565,6 +51602,7 @@ export namespace Prisma {
     secondTeacherStartsFirstWeek?: boolean
     schedule?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
+    deactivationReason?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     chat?: ChatUncheckedCreateNestedOneWithoutGroupInput
@@ -52741,6 +52779,7 @@ export namespace Prisma {
     secondTeacherStartsFirstWeek?: boolean
     schedule?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
+    deactivationReason?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     chat?: ChatCreateNestedOneWithoutGroupInput
@@ -52767,6 +52806,7 @@ export namespace Prisma {
     secondTeacherStartsFirstWeek?: boolean
     schedule?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
+    deactivationReason?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     chat?: ChatUncheckedCreateNestedOneWithoutGroupInput
@@ -53200,6 +53240,7 @@ export namespace Prisma {
     secondTeacherStartsFirstWeek?: BoolFieldUpdateOperationsInput | boolean
     schedule?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    deactivationReason?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     chat?: ChatUpdateOneWithoutGroupNestedInput
@@ -53226,6 +53267,7 @@ export namespace Prisma {
     secondTeacherStartsFirstWeek?: BoolFieldUpdateOperationsInput | boolean
     schedule?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    deactivationReason?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     chat?: ChatUncheckedUpdateOneWithoutGroupNestedInput
@@ -53933,6 +53975,7 @@ export namespace Prisma {
     secondTeacherStartsFirstWeek?: boolean
     schedule?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
+    deactivationReason?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     chat?: ChatCreateNestedOneWithoutGroupInput
@@ -53959,6 +54002,7 @@ export namespace Prisma {
     secondTeacherStartsFirstWeek?: boolean
     schedule?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
+    deactivationReason?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     chat?: ChatUncheckedCreateNestedOneWithoutGroupInput
@@ -54070,6 +54114,7 @@ export namespace Prisma {
     secondTeacherStartsFirstWeek?: BoolFieldUpdateOperationsInput | boolean
     schedule?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    deactivationReason?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     chat?: ChatUpdateOneWithoutGroupNestedInput
@@ -54096,6 +54141,7 @@ export namespace Prisma {
     secondTeacherStartsFirstWeek?: BoolFieldUpdateOperationsInput | boolean
     schedule?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    deactivationReason?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     chat?: ChatUncheckedUpdateOneWithoutGroupNestedInput
@@ -54198,6 +54244,7 @@ export namespace Prisma {
     secondTeacherStartsFirstWeek?: boolean
     schedule?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
+    deactivationReason?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     chat?: ChatCreateNestedOneWithoutGroupInput
@@ -54224,6 +54271,7 @@ export namespace Prisma {
     secondTeacherStartsFirstWeek?: boolean
     schedule?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
+    deactivationReason?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     chat?: ChatUncheckedCreateNestedOneWithoutGroupInput
@@ -54463,6 +54511,7 @@ export namespace Prisma {
     secondTeacherStartsFirstWeek?: BoolFieldUpdateOperationsInput | boolean
     schedule?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    deactivationReason?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     chat?: ChatUpdateOneWithoutGroupNestedInput
@@ -54489,6 +54538,7 @@ export namespace Prisma {
     secondTeacherStartsFirstWeek?: BoolFieldUpdateOperationsInput | boolean
     schedule?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    deactivationReason?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     chat?: ChatUncheckedUpdateOneWithoutGroupNestedInput
@@ -55886,6 +55936,7 @@ export namespace Prisma {
     secondTeacherStartsFirstWeek?: boolean
     schedule?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
+    deactivationReason?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     crmLeads?: CrmLeadCreateNestedManyWithoutGroupInput
@@ -55912,6 +55963,7 @@ export namespace Prisma {
     secondTeacherStartsFirstWeek?: boolean
     schedule?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
+    deactivationReason?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     crmLeads?: CrmLeadUncheckedCreateNestedManyWithoutGroupInput
@@ -56008,6 +56060,7 @@ export namespace Prisma {
     secondTeacherStartsFirstWeek?: BoolFieldUpdateOperationsInput | boolean
     schedule?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    deactivationReason?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     crmLeads?: CrmLeadUpdateManyWithoutGroupNestedInput
@@ -56034,6 +56087,7 @@ export namespace Prisma {
     secondTeacherStartsFirstWeek?: BoolFieldUpdateOperationsInput | boolean
     schedule?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    deactivationReason?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     crmLeads?: CrmLeadUncheckedUpdateManyWithoutGroupNestedInput
@@ -56676,6 +56730,7 @@ export namespace Prisma {
     secondTeacherStartsFirstWeek?: boolean
     schedule?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
+    deactivationReason?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     chat?: ChatCreateNestedOneWithoutGroupInput
@@ -56702,6 +56757,7 @@ export namespace Prisma {
     secondTeacherStartsFirstWeek?: boolean
     schedule?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
+    deactivationReason?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     chat?: ChatUncheckedCreateNestedOneWithoutGroupInput
@@ -56900,6 +56956,7 @@ export namespace Prisma {
     secondTeacherStartsFirstWeek?: BoolFieldUpdateOperationsInput | boolean
     schedule?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    deactivationReason?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     chat?: ChatUpdateOneWithoutGroupNestedInput
@@ -56926,6 +56983,7 @@ export namespace Prisma {
     secondTeacherStartsFirstWeek?: BoolFieldUpdateOperationsInput | boolean
     schedule?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    deactivationReason?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     chat?: ChatUncheckedUpdateOneWithoutGroupNestedInput
@@ -57114,6 +57172,7 @@ export namespace Prisma {
     secondTeacherStartsFirstWeek?: boolean
     schedule?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
+    deactivationReason?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     chat?: ChatCreateNestedOneWithoutGroupInput
@@ -57140,6 +57199,7 @@ export namespace Prisma {
     secondTeacherStartsFirstWeek?: boolean
     schedule?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
+    deactivationReason?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     chat?: ChatUncheckedCreateNestedOneWithoutGroupInput
@@ -57310,6 +57370,7 @@ export namespace Prisma {
     secondTeacherStartsFirstWeek?: BoolFieldUpdateOperationsInput | boolean
     schedule?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    deactivationReason?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     chat?: ChatUpdateOneWithoutGroupNestedInput
@@ -57336,6 +57397,7 @@ export namespace Prisma {
     secondTeacherStartsFirstWeek?: BoolFieldUpdateOperationsInput | boolean
     schedule?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    deactivationReason?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     chat?: ChatUncheckedUpdateOneWithoutGroupNestedInput
@@ -57703,6 +57765,7 @@ export namespace Prisma {
     secondTeacherStartsFirstWeek?: boolean
     schedule?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
+    deactivationReason?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     chat?: ChatCreateNestedOneWithoutGroupInput
@@ -57729,6 +57792,7 @@ export namespace Prisma {
     secondTeacherStartsFirstWeek?: boolean
     schedule?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
+    deactivationReason?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     chat?: ChatUncheckedCreateNestedOneWithoutGroupInput
@@ -58112,6 +58176,7 @@ export namespace Prisma {
     secondTeacherStartsFirstWeek?: BoolFieldUpdateOperationsInput | boolean
     schedule?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    deactivationReason?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     chat?: ChatUpdateOneWithoutGroupNestedInput
@@ -58138,6 +58203,7 @@ export namespace Prisma {
     secondTeacherStartsFirstWeek?: BoolFieldUpdateOperationsInput | boolean
     schedule?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    deactivationReason?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     chat?: ChatUncheckedUpdateOneWithoutGroupNestedInput
@@ -59055,6 +59121,7 @@ export namespace Prisma {
     secondTeacherStartsFirstWeek?: boolean
     schedule?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
+    deactivationReason?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -59204,6 +59271,7 @@ export namespace Prisma {
     secondTeacherStartsFirstWeek?: BoolFieldUpdateOperationsInput | boolean
     schedule?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    deactivationReason?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     chat?: ChatUpdateOneWithoutGroupNestedInput
@@ -59229,6 +59297,7 @@ export namespace Prisma {
     secondTeacherStartsFirstWeek?: BoolFieldUpdateOperationsInput | boolean
     schedule?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    deactivationReason?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     chat?: ChatUncheckedUpdateOneWithoutGroupNestedInput
@@ -59252,6 +59321,7 @@ export namespace Prisma {
     secondTeacherStartsFirstWeek?: BoolFieldUpdateOperationsInput | boolean
     schedule?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    deactivationReason?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -59933,6 +60003,7 @@ export namespace Prisma {
     secondTeacherStartsFirstWeek?: boolean
     schedule?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
+    deactivationReason?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -59949,6 +60020,7 @@ export namespace Prisma {
     secondTeacherStartsFirstWeek?: boolean
     schedule?: NullableJsonNullValueInput | InputJsonValue
     isActive?: boolean
+    deactivationReason?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -60259,6 +60331,7 @@ export namespace Prisma {
     secondTeacherStartsFirstWeek?: BoolFieldUpdateOperationsInput | boolean
     schedule?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    deactivationReason?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     chat?: ChatUpdateOneWithoutGroupNestedInput
@@ -60284,6 +60357,7 @@ export namespace Prisma {
     secondTeacherStartsFirstWeek?: BoolFieldUpdateOperationsInput | boolean
     schedule?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    deactivationReason?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     chat?: ChatUncheckedUpdateOneWithoutGroupNestedInput
@@ -60307,6 +60381,7 @@ export namespace Prisma {
     secondTeacherStartsFirstWeek?: BoolFieldUpdateOperationsInput | boolean
     schedule?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    deactivationReason?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -60321,6 +60396,7 @@ export namespace Prisma {
     secondTeacherStartsFirstWeek?: BoolFieldUpdateOperationsInput | boolean
     schedule?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    deactivationReason?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     chat?: ChatUpdateOneWithoutGroupNestedInput
@@ -60346,6 +60422,7 @@ export namespace Prisma {
     secondTeacherStartsFirstWeek?: BoolFieldUpdateOperationsInput | boolean
     schedule?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    deactivationReason?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     chat?: ChatUncheckedUpdateOneWithoutGroupNestedInput
@@ -60369,6 +60446,7 @@ export namespace Prisma {
     secondTeacherStartsFirstWeek?: BoolFieldUpdateOperationsInput | boolean
     schedule?: NullableJsonNullValueInput | InputJsonValue
     isActive?: BoolFieldUpdateOperationsInput | boolean
+    deactivationReason?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
