@@ -9,7 +9,6 @@ import {
   UnpaidStudentsBlock,
   GroupsWithCapacityBlock,
   AtRiskStudentsBlock,
-  RevenueBlock,
   BranchScheduleBlock,
 } from '@/features/dashboard';
 import { useAuthStore } from '@/features/auth/store/auth.store';
@@ -51,8 +50,6 @@ export default function AdminDashboardPage() {
     <DashboardLayout title={t('title')} subtitle={subtitle}>
       <div className={portalPageStackClass}>
         <AdminDashboardHero isManager={isManager} />
-
-        {!isManager && <RevenueBlock />}
 
         <div className="grid w-full min-w-0 grid-cols-1 gap-[clamp(0.75rem,1.5vw,1.5rem)] lg:grid-cols-2">
           {!isManager && <UnpaidStudentsBlock />}

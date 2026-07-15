@@ -15,6 +15,5 @@ export {
   UnpaidStudentsBlock,
   GroupsWithCapacityBlock,
   AtRiskStudentsBlock,
-  RevenueBlock,
   BranchScheduleBlock,
 } from './components';
