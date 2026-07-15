@@ -1,12 +1,16 @@
 import { Controller, Get } from '@nestjs/common';
 import { SkipThrottle } from '@nestjs/throttler';
 import { Public } from './common/decorators/public.decorator';
+import { RedisHealthService } from './common/redis/redis-health.service';
 import { PrismaService } from './modules/prisma/prisma.service';
 
 @Controller()
 @SkipThrottle({ default: true }) // health, warmup, root: do not count toward rate limit
 export class AppController {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly redisHealth: RedisHealthService,
+  ) {}
 
   @Get()
   @Public()
@@ -28,6 +32,23 @@ export class AppController {
       database: health.healthy
         ? { connected: true, latency: `${health.latency}ms` }
         : { connected: false, error: health.error },
+      timestamp: new Date().toISOString(),
+    };
+  }
+
+  @Get('health/redis')
+  @Public()
+  async checkRedisHealth() {
+    const health = await this.redisHealth.checkHealth();
+    return {
+      status: health.healthy ? 'healthy' : 'unhealthy',
+      redis: {
+        configured: health.configured,
+        connected: health.healthy,
+        latency: health.latencyMs != null ? `${health.latencyMs}ms` : null,
+        keyPrefix: health.keyPrefix,
+        ...(health.error ? { error: health.error } : {}),
+      },
       timestamp: new Date().toISOString(),
     };
   }

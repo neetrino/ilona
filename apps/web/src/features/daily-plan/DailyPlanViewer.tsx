@@ -54,6 +54,8 @@ export function DailyPlanViewer({ plan, onClose }: DailyPlanViewerProps) {
     LISTENING: t('resourceKinds.LISTENING'),
     WRITING: t('resourceKinds.WRITING'),
     SPEAKING: t('resourceKinds.SPEAKING'),
+    GRAMMAR: t('resourceKinds.GRAMMAR'),
+    CHALLENGE: t('resourceKinds.CHALLENGE'),
   };
 
   const requestClose = useCallback(() => {
@@ -145,7 +147,9 @@ export function DailyPlanViewer({ plan, onClose }: DailyPlanViewerProps) {
                     {topic.resources.map((resource) => (
                       <li key={resource.id}>
                         <span className="mr-2 font-medium text-[#1010a3]">{kindLabel[resource.kind]}:</span>
-                        {resource.link ? (
+                        {resource.kind === 'CHALLENGE' ? (
+                          <span>{resource.description}</span>
+                        ) : resource.link ? (
                           <a
                             href={resource.link}
                             target="_blank"
@@ -157,7 +161,9 @@ export function DailyPlanViewer({ plan, onClose }: DailyPlanViewerProps) {
                         ) : (
                           <span>{resource.title}</span>
                         )}
-                        {resource.description ? ` — ${resource.description}` : ''}
+                        {resource.kind !== 'CHALLENGE' && resource.description
+                          ? ` — ${resource.description}`
+                          : ''}
                       </li>
                     ))}
                   </ul>

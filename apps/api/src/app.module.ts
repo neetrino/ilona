@@ -11,7 +11,11 @@ import { jwtConfig } from './config/jwt.config';
 import { redisConfig } from './config/redis.config';
 
 // Redis
-import { isUpstashConfigured } from './common/redis/upstash.client';
+import { RedisModule } from './common/redis/redis.module';
+import {
+  isUpstashConfigured,
+  pingUpstashRedis,
+} from './common/redis/upstash.client';
 import { createUpstashCacheStore } from './common/redis/upstash-cache.store';
 import { UpstashThrottlerStorage } from './common/redis/upstash-throttler.storage';
 
@@ -65,24 +69,34 @@ import { AppController } from './app.controller';
 
     CacheModule.registerAsync({
       isGlobal: true,
-      useFactory: (): CacheModuleOptions => {
+      useFactory: async (): Promise<CacheModuleOptions> => {
         const ttl = 2 * 60 * 1000;
 
-        if (isUpstashConfigured()) {
-          Logger.log('Cache: Upstash Redis', 'AppModule');
-          return {
-            store: createUpstashCacheStore(),
-            ttl,
-          };
+        if (!isUpstashConfigured()) {
+          Logger.warn('Cache: in-memory (Upstash env not set)', 'AppModule');
+          return { ttl };
         }
 
-        Logger.warn('Cache: in-memory (Upstash env not set)', 'AppModule');
-        return { ttl };
+        const ping = await pingUpstashRedis();
+        if (!ping.ok) {
+          Logger.error(
+            `Cache: Upstash ping failed (${ping.error}), falling back to in-memory`,
+            undefined,
+            'AppModule',
+          );
+          return { ttl };
+        }
+
+        Logger.log('Cache: Upstash Redis', 'AppModule');
+        return {
+          store: createUpstashCacheStore(),
+          ttl,
+        };
       },
     }),
 
     ThrottlerModule.forRootAsync({
-      useFactory: () => {
+      useFactory: async () => {
         const throttlers = [
           {
             name: 'default',
@@ -91,20 +105,31 @@ import { AppController } from './app.controller';
           },
         ];
 
-        if (isUpstashConfigured()) {
-          Logger.log('Rate limit: Upstash Redis', 'AppModule');
-          return {
-            throttlers,
-            storage: new UpstashThrottlerStorage(),
-          };
+        if (!isUpstashConfigured()) {
+          Logger.warn('Rate limit: in-memory (Upstash env not set)', 'AppModule');
+          return throttlers;
         }
 
-        Logger.warn('Rate limit: in-memory (Upstash env not set)', 'AppModule');
-        return throttlers;
+        const ping = await pingUpstashRedis();
+        if (!ping.ok) {
+          Logger.error(
+            `Rate limit: Upstash ping failed (${ping.error}), falling back to in-memory`,
+            undefined,
+            'AppModule',
+          );
+          return throttlers;
+        }
+
+        Logger.log('Rate limit: Upstash Redis', 'AppModule');
+        return {
+          throttlers,
+          storage: new UpstashThrottlerStorage(),
+        };
       },
     }),
 
     // Global modules (RequestContext must be before Prisma so middleware can use it)
+    RedisModule,
     RequestContextModule,
     PrismaModule,
 

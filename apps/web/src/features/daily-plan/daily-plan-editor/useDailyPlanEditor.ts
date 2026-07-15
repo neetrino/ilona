@@ -4,9 +4,8 @@ import { useMemo, useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { useCreateDailyPlan, useUpdateDailyPlan } from '../hooks';
 import { useMyGroups } from '@/features/groups/hooks/useGroups';
-import { usePortalSheetDrag } from '@/shared/hooks/usePortalSheetDrag';
 import type { DailyPlanResourceKind, DailyPlanTopicInput } from '../types';
-import { emptyTopic, toDrafts } from './daily-plan-editor.util';
+import { insertResourceAfterKind, toDrafts } from './daily-plan-editor.util';
 import type { DailyPlanEditorProps, DraftResource, DraftTopic } from './daily-plan-editor.types';
 
 export function useDailyPlanEditor({
@@ -24,7 +23,6 @@ export function useDailyPlanEditor({
   const [topics, setTopics] = useState<DraftTopic[]>([]);
   const [error, setError] = useState<string | null>(null);
 
-  const { dragStyle, dragHandleProps, scrollContentProps, resetDrag } = usePortalSheetDrag({ onClose });
   const create = useCreateDailyPlan();
   const update = useUpdateDailyPlan();
   const { data: myGroups = [], isLoading: isLoadingGroups } = useMyGroups();
@@ -36,6 +34,8 @@ export function useDailyPlanEditor({
       LISTENING: t('resourceKinds.LISTENING'),
       WRITING: t('resourceKinds.WRITING'),
       SPEAKING: t('resourceKinds.SPEAKING'),
+      GRAMMAR: t('resourceKinds.GRAMMAR'),
+      CHALLENGE: t('resourceKinds.CHALLENGE'),
     }),
     [t],
   );
@@ -48,15 +48,13 @@ export function useDailyPlanEditor({
     setTopics(draft.topics);
   }, [plan, initialGroupId]);
 
-  useEffect(() => () => resetDrag(), [resetDrag]);
-
   const updateTopic = (idx: number, patch: Partial<DraftTopic>) => {
     setTopics((prev) => prev.map((topic, i) => (i === idx ? { ...topic, ...patch } : topic)));
   };
 
   const updateResource = (
     topicIdx: number,
-    kind: DailyPlanResourceKind,
+    resourceKey: string,
     patch: Partial<DraftResource>,
   ) => {
     setTopics((prev) =>
@@ -66,15 +64,39 @@ export function useDailyPlanEditor({
           : {
               ...topic,
               resources: topic.resources.map((res) =>
-                res.kind === kind ? { ...res, ...patch } : res,
+                res.key === resourceKey ? { ...res, ...patch } : res,
               ),
             },
       ),
     );
   };
 
-  const addTopic = () => setTopics((prev) => [...prev, emptyTopic()]);
-  const removeTopic = (idx: number) => setTopics((prev) => prev.filter((_, i) => i !== idx));
+  const addResource = (topicIdx: number, kind: DailyPlanResourceKind) => {
+    setTopics((prev) =>
+      prev.map((topic, i) =>
+        i !== topicIdx
+          ? topic
+          : { ...topic, resources: insertResourceAfterKind(topic.resources, kind) },
+      ),
+    );
+  };
+
+  const removeResource = (topicIdx: number, resourceKey: string) => {
+    setTopics((prev) =>
+      prev.map((topic, i) => {
+        if (i !== topicIdx) return topic;
+        const target = topic.resources.find((resource) => resource.key === resourceKey);
+        if (!target) return topic;
+        const sameKindCount = topic.resources.filter((resource) => resource.kind === target.kind)
+          .length;
+        if (sameKindCount <= 1) return topic;
+        return {
+          ...topic,
+          resources: topic.resources.filter((resource) => resource.key !== resourceKey),
+        };
+      }),
+    );
+  };
 
   const handleSave = async () => {
     setError(null);
@@ -82,12 +104,22 @@ export function useDailyPlanEditor({
       .map((topic) => ({
         title: topic.title.trim(),
         resources: topic.resources
-          .filter((resource) => resource.title.trim())
+          .filter((resource) =>
+            resource.kind === 'CHALLENGE'
+              ? resource.description.trim().length > 0
+              : resource.title.trim().length > 0,
+          )
           .map((resource) => ({
             kind: resource.kind,
-            title: resource.title.trim(),
-            link: resource.link.trim() || undefined,
-            description: resource.description.trim() || undefined,
+            ...(resource.kind === 'CHALLENGE'
+              ? {
+                  description: resource.description.trim(),
+                }
+              : {
+                  title: resource.title.trim(),
+                  link: resource.link.trim() || undefined,
+                  description: resource.description.trim() || undefined,
+                }),
           })),
       }))
       .filter((topic) => topic.title.length > 0);
@@ -144,13 +176,10 @@ export function useDailyPlanEditor({
     isGroupLocked,
     selectedGroupName,
     isSaving,
-    dragStyle,
-    dragHandleProps,
-    scrollContentProps,
     updateTopic,
     updateResource,
-    addTopic,
-    removeTopic,
+    addResource,
+    removeResource,
     handleSave,
     onClose,
   };

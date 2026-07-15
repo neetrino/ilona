@@ -1752,14 +1752,18 @@
     "saveFailed": "Failed to save",
     "selectedGroup": "Selected group",
     "topicTitlePlaceholder": "Topic {number} title",
-    "addAnotherTopic": "+ Add another topic",
     "linkOptionalPlaceholder": "https://… (optional)",
     "descriptionOptional": "Description (optional)",
+    "descriptionPlaceholder": "Description",
+    "addResource": "Add another {kind}",
+    "removeResource": "Remove",
     "resourceKinds": {
       "READING": "Reading",
       "LISTENING": "Listening",
       "WRITING": "Writing",
-      "SPEAKING": "Speaking"
+      "SPEAKING": "Speaking",
+      "GRAMMAR": "Grammar",
+      "CHALLENGE": "Challenge"
     }
   },
   "analytics": {

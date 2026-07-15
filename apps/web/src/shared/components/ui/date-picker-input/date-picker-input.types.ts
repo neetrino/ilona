@@ -56,7 +56,7 @@ export interface DatePickerInputViewModel {
   selectDate: (date: Date) => void;
   handleClear: () => void;
   handleToday: () => void;
-  setDraftText: React.Dispatch<React.SetStateAction<string>>;
+  handleDraftTextChange: (raw: string) => void;
   handleInputFocus: () => void;
   handleInputBlur: (event: React.FocusEvent<HTMLInputElement>) => void;
   handleInputKeyDown: (event: React.KeyboardEvent<HTMLInputElement>) => void;

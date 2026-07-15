@@ -49,10 +49,13 @@ export function SingleSelectDropdown(props: SingleSelectDropdownProps) {
           isLoading={vm.isLoading}
           disabled={vm.disabled}
           error={vm.error}
+          allowDeselect={vm.allowDeselect}
+          clearLabel={vm.clearLabel}
           triggerClassName={props.triggerClassName}
           triggerRef={vm.triggerRef}
           onPointerDown={vm.handleTriggerPointerDown}
           onKeyDown={vm.handleTriggerKeyDown}
+          onClear={vm.handleClear}
         />
         <SingleSelectDropdownMenu
           isOpen={vm.isOpen}

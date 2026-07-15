@@ -12,7 +12,6 @@ import {
 } from '@/shared/lib/sheet-stack';
 import { PORTAL_DESKTOP_SIDE_SHEET_CLASS } from '@/shared/lib/portal-form-sheet-classes';
 import { ADMIN_ICON_BUTTON_SM_CLASS } from '@/shared/lib/admin-control-theme';
-import { PORTAL_SHEET_DRAG_HANDLE_ATTR } from '@/shared/hooks/usePortalSheetDrag';
 import { useDailyPlanEditor } from './daily-plan-editor/useDailyPlanEditor';
 import { DailyPlanEditorFormBody } from './daily-plan-editor/DailyPlanEditorFormBody';
 import type { DailyPlanEditorProps } from './daily-plan-editor/daily-plan-editor.types';
@@ -38,30 +37,20 @@ export function DailyPlanEditor(props: DailyPlanEditorProps) {
           )}
         />
         <DialogPrimitive.Content
-          ref={vm.scrollContentProps.ref}
           onOpenAutoFocus={(event) => event.preventDefault()}
-          style={{ ...vm.dragStyle, ...contentStyle }}
+          style={contentStyle}
           {...stackedSheetDialogHandlers}
           {...portalSheetLayerProps}
           className={cn(
             'fixed inset-x-0 bottom-[7px] top-auto z-50 grid w-full translate-y-0 lg:bottom-0 [@media(min-width:1024px)_and_(max-width:1366px)_and_(min-height:1000px)]:bottom-0',
             'duration-700 ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out min-[1367px]:duration-350 min-[1367px]:ease-[cubic-bezier(0.22,1,0.36,1)]',
             'data-[state=open]:slide-in-from-bottom-full data-[state=closed]:slide-out-to-bottom-full',
-            'h-[calc(94dvh+7px)] [@media(min-width:1024px)_and_(max-width:1366px)_and_(min-height:1000px)]:h-[56dvh] grid-rows-[auto_auto_1fr] gap-0 overflow-hidden rounded-t-[22px] bg-white shadow-xl',
+            'h-[calc(94dvh+7px)] [@media(min-width:1024px)_and_(max-width:1366px)_and_(min-height:1000px)]:h-[56dvh] grid-rows-[auto_1fr] gap-0 overflow-hidden rounded-t-[22px] bg-white shadow-xl',
             PORTAL_DESKTOP_SIDE_SHEET_CLASS,
-            'min-[1367px]:grid-rows-[auto_1fr]',
           )}
           aria-describedby={undefined}
         >
           <DialogPrimitive.Title className="sr-only">{modalTitle}</DialogPrimitive.Title>
-
-          <div
-            className="relative flex h-9 w-full shrink-0 items-center justify-center bg-white min-[1367px]:hidden"
-            {...{ [PORTAL_SHEET_DRAG_HANDLE_ATTR]: '' }}
-          >
-            <div className="absolute inset-x-0 -top-2 h-14" {...vm.dragHandleProps} />
-            <div className="h-1.5 w-14 rounded-full bg-slate-400" />
-          </div>
 
           <header className="flex shrink-0 items-center justify-between bg-white p-4">
             <h2 className="text-lg font-semibold text-[#1010a3]">{modalTitle}</h2>
@@ -70,7 +59,7 @@ export function DailyPlanEditor(props: DailyPlanEditorProps) {
               onClick={props.onClose}
               className={cn(
                 ADMIN_ICON_BUTTON_SM_CLASS,
-                'hidden text-slate-500 hover:bg-slate-100 hover:text-slate-900 min-[1367px]:inline-flex',
+                'inline-flex text-slate-500 hover:bg-slate-100 hover:text-slate-900',
               )}
               aria-label={tCommon('close')}
             >

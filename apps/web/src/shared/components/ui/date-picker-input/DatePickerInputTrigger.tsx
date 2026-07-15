@@ -30,7 +30,7 @@ export function DatePickerInputTrigger({
         autoComplete="off"
         data-role="date-trigger"
         value={vm.inputValue}
-        onChange={(event) => vm.setDraftText(event.target.value)}
+        onChange={(event) => vm.handleDraftTextChange(event.target.value)}
         onFocus={vm.handleInputFocus}
         onBlur={vm.handleInputBlur}
         onKeyDown={vm.handleInputKeyDown}

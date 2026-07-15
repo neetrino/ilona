@@ -33,7 +33,9 @@ export function useDailyPlanViewSheet(items: DailyPlan[]) {
 
   const openView = useCallback(
     (plan: DailyPlan) => {
-      setParams({ [DAILY_PLAN_VIEW_PARAM]: plan.id });
+      setParams({
+        [DAILY_PLAN_VIEW_PARAM]: plan.id,
+      });
     },
     [setParams],
   );

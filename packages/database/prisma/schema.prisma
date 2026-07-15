@@ -790,6 +790,8 @@ enum DailyPlanResourceKind {
   LISTENING
   WRITING
   SPEAKING
+  GRAMMAR
+  CHALLENGE
 }
 
 enum CefrLevel {

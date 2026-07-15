@@ -1,8 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import type { ThrottlerStorage } from '@nestjs/throttler';
+import { toThrottleKey } from './redis-keys';
 import { getUpstashRedis } from './upstash.client';
-
-const STORAGE_PREFIX = 'throttle:';
 
 interface ThrottlerStorageRecord {
   totalHits: number;
@@ -41,7 +40,7 @@ export class UpstashThrottlerStorage implements ThrottlerStorage {
     throttlerName: string,
   ): Promise<ThrottlerStorageRecord> {
     const redis = getUpstashRedis();
-    const storageKey = `${STORAGE_PREFIX}${key}`;
+    const storageKey = toThrottleKey(key);
     const now = Date.now();
     const ttlMs = ttl;
     const blockDurationMs = blockDuration;
@@ -77,11 +76,7 @@ export class UpstashThrottlerStorage implements ThrottlerStorage {
       timeToExpire = secondsUntil(record.expiresAt, now);
     }
 
-    const redisTtlSeconds = Math.max(
-      timeToExpire,
-      timeToBlockExpire,
-      1,
-    );
+    const redisTtlSeconds = Math.max(timeToExpire, timeToBlockExpire, 1);
 
     await redis.set(storageKey, record, { ex: redisTtlSeconds });
 

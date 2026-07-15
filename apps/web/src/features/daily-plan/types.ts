@@ -1,4 +1,10 @@
-export type DailyPlanResourceKind = 'READING' | 'LISTENING' | 'WRITING' | 'SPEAKING';
+export type DailyPlanResourceKind =
+  | 'READING'
+  | 'LISTENING'
+  | 'WRITING'
+  | 'SPEAKING'
+  | 'GRAMMAR'
+  | 'CHALLENGE';
 
 export interface DailyPlanResource {
   id: string;
@@ -67,7 +73,7 @@ export interface DailyPlanList {
 
 export interface DailyPlanResourceInput {
   kind: DailyPlanResourceKind;
-  title: string;
+  title?: string;
   link?: string;
   description?: string;
 }

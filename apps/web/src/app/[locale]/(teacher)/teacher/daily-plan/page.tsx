@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import { useParams, useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { useAuthStore } from '@/features/auth/store/auth.store';
@@ -17,10 +18,12 @@ import { DailyPlanViewer } from '@/features/daily-plan/DailyPlanViewer';
 export default function TeacherDailyPlanPage() {
   const t = useTranslations('nav');
   const tDaily = useTranslations('dailyPlanPage');
+  const params = useParams();
+  const router = useRouter();
+  const locale = params.locale as string;
   const { user } = useAuthStore();
   const [search, setSearch] = useState('');
   const [editing, setEditing] = useState<DailyPlan | null>(null);
-  const [creating, setCreating] = useState(false);
   const [deletingPlanId, setDeletingPlanId] = useState<string | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
@@ -41,7 +44,7 @@ export default function TeacherDailyPlanPage() {
       <DailyPlanListSection
         search={search}
         onSearchChange={setSearch}
-        onCreate={() => setCreating(true)}
+        onCreate={() => router.push(`/${locale}/teacher/daily-plan/new`)}
         createLabel="+ New Daily Plan"
         items={items}
         isLoading={isLoading}
@@ -76,16 +79,12 @@ export default function TeacherDailyPlanPage() {
         }}
       />
 
-      {(creating || editing) && (
+      {editing && (
         <DailyPlanEditor
-          mode={creating ? 'create' : 'edit'}
-          plan={editing ?? undefined}
-          onClose={() => {
-            setCreating(false);
-            setEditing(null);
-          }}
+          mode="edit"
+          plan={editing}
+          onClose={() => setEditing(null)}
           onSaved={() => {
-            setCreating(false);
             setEditing(null);
             refetch();
           }}

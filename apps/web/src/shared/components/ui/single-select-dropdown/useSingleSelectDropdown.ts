@@ -122,6 +122,13 @@ export function useSingleSelectDropdown({
     [allowDeselect, value, onValueChange, closeMenu],
   );
 
+  const handleClear = useCallback(() => {
+    if (!allowDeselect || disabled || isLoading) return;
+    onValueChange(null);
+    closeMenu();
+    triggerRef.current?.focus();
+  }, [allowDeselect, disabled, isLoading, onValueChange, closeMenu]);
+
   const setOpenWithSelectedIndex = useCallback(() => {
     const selectedIndex = Math.max(0, filteredOptions.findIndex((option) => option.id === value));
     setActiveIndex(selectedIndex);
@@ -257,8 +264,11 @@ export function useSingleSelectDropdown({
     options,
     resolvedSearchPlaceholder,
     resolvedNoSearchResultsMessage,
+    allowDeselect,
+    clearLabel: t('clear'),
     closeMenu,
     handleSelect,
+    handleClear,
     handleTriggerPointerDown,
     handleTriggerKeyDown,
     handleMenuKeyDown,

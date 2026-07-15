@@ -1752,14 +1752,18 @@
     "saveFailed": "Պահպանել չհաջողվեց",
     "selectedGroup": "Ընտրված խումբ",
     "topicTitlePlaceholder": "Թեմա {number} վերնագիր",
-    "addAnotherTopic": "+ Ավելացնել ևս մեկ թեմա",
     "linkOptionalPlaceholder": "https://… (ըստ ցանկության)",
     "descriptionOptional": "Նկարագրություն (ըստ ցանկության)",
+    "descriptionPlaceholder": "Նկարագրություն",
+    "addResource": "Ավելացնել ևս մեկ {kind}",
+    "removeResource": "Հեռացնել",
     "resourceKinds": {
       "READING": "Ընթերցանություն",
       "LISTENING": "Լսում",
       "WRITING": "Գրավոր",
-      "SPEAKING": "Խոսք"
+      "SPEAKING": "Խոսք",
+      "GRAMMAR": "Քերականություն",
+      "CHALLENGE": "Challenge"
     }
   },
   "analytics": {

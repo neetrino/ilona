@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import { useParams, useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { useAuthStore } from '@/features/auth/store/auth.store';
@@ -13,16 +14,20 @@ import type { DailyPlan } from '@/features/daily-plan/types';
 import { DailyPlanEditor } from '@/features/daily-plan/DailyPlanEditor';
 import { DailyPlanListSection } from '@/features/daily-plan/DailyPlanListSection';
 import { DailyPlanViewer } from '@/features/daily-plan/DailyPlanViewer';
+import { getAdminPortalBasePath } from '@/shared/lib/role-routes';
 
 export default function AdminDailyPlanPage() {
   const tNav = useTranslations('nav');
   const t = useTranslations('dailyPlanPage');
+  const params = useParams();
+  const router = useRouter();
+  const locale = params.locale as string;
   const { user } = useAuthStore();
   const isAdmin = user?.role === 'ADMIN';
+  const portalBasePath = getAdminPortalBasePath(user?.role);
 
   const [search, setSearch] = useState('');
   const [editing, setEditing] = useState<DailyPlan | null>(null);
-  const [creating, setCreating] = useState(false);
   const [deletingPlanId, setDeletingPlanId] = useState<string | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
@@ -40,7 +45,7 @@ export default function AdminDailyPlanPage() {
       <DailyPlanListSection
         search={search}
         onSearchChange={setSearch}
-        onCreate={() => setCreating(true)}
+        onCreate={() => router.push(`/${locale}${portalBasePath}/daily-plan/new`)}
         createLabel="+ New Daily Plan"
         showCreate={isAdmin}
         items={items}
@@ -75,16 +80,12 @@ export default function AdminDailyPlanPage() {
         }}
       />
 
-      {(creating || editing) && (
+      {editing && (
         <DailyPlanEditor
-          mode={creating ? 'create' : 'edit'}
-          plan={editing ?? undefined}
-          onClose={() => {
-            setCreating(false);
-            setEditing(null);
-          }}
+          mode="edit"
+          plan={editing}
+          onClose={() => setEditing(null)}
           onSaved={() => {
-            setCreating(false);
             setEditing(null);
             refetch();
           }}

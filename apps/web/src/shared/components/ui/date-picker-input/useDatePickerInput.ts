@@ -6,6 +6,7 @@ import { format } from 'date-fns';
 import { enGB, hy } from 'date-fns/locale';
 import { computePopoverPosition } from './date-picker-popover-position.util';
 import type { DatePickerInputProps, DatePickerInputViewModel } from './date-picker-input.types';
+import { formatDmyInputValue } from '@/shared/lib/dmy-date';
 import {
   buildYearList,
   createCalendarDays,
@@ -214,6 +215,10 @@ export function useDatePickerInput({
     setMonthDate(parsed);
   }, [allowClear, disabled, draftText, emitChange, isOutOfRange, required]);
 
+  const handleDraftTextChange = React.useCallback((raw: string) => {
+    setDraftText((previous) => formatDmyInputValue(raw, previous));
+  }, []);
+
   const handleInputFocus = () => {
     setDraftText(displayValue);
     setIsEditing(true);
@@ -304,7 +309,7 @@ export function useDatePickerInput({
     selectDate,
     handleClear,
     handleToday,
-    setDraftText,
+    handleDraftTextChange,
     handleInputFocus,
     handleInputBlur,
     handleInputKeyDown,
