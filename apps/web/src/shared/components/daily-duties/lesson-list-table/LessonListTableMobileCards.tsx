@@ -15,6 +15,7 @@ import { cn } from '@/shared/lib/utils';
 import { DailyDutiesListActionPill } from '@/shared/components/daily-duties/DailyDutiesListActionPill';
 import { getLessonActionsDerived, type LessonActionId } from '@/shared/lib/daily-duties/lesson-action-states';
 import { teacherDailyDutiesRowSection } from '@/shared/lib/daily-duties/teacher-daily-duties-list-order';
+import { formatLessonGroupTeachersLabel } from '@/shared/lib/daily-duties/format-lesson-group-teachers';
 import type { LessonListCardRow } from './lesson-list-table.types';
 import { OBLIGATION_IDS } from './lesson-list-table.constants';
 
@@ -176,9 +177,7 @@ export function LessonListTableMobileCards({
                         <div className="flex items-start gap-2">
                           <User className="mt-0.5 h-5 w-5 shrink-0 text-green-500" aria-hidden />
                           <p className="line-clamp-2 text-[1.2rem] leading-tight font-medium text-[#111827]">
-                            {lesson.teacher?.user
-                              ? `${lesson.teacher.user.firstName} ${lesson.teacher.user.lastName}`
-                              : tCal('unknownTeacher')}
+                            {formatLessonGroupTeachersLabel(lesson, tCal('unknownTeacher'))}
                           </p>
                         </div>
                       </div>

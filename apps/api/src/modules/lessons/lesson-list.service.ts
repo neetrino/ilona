@@ -241,6 +241,32 @@ export class LessonListService {
               name: true,
               level: true,
               center: { select: { id: true, name: true } },
+              teacher: {
+                select: {
+                  id: true,
+                  user: {
+                    select: {
+                      id: true,
+                      firstName: true,
+                      lastName: true,
+                      avatarUrl: true,
+                    },
+                  },
+                },
+              },
+              secondTeacher: {
+                select: {
+                  id: true,
+                  user: {
+                    select: {
+                      id: true,
+                      firstName: true,
+                      lastName: true,
+                      avatarUrl: true,
+                    },
+                  },
+                },
+              },
             },
           },
           teacher: {
