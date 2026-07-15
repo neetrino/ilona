@@ -11,7 +11,7 @@ import {
 } from '@/features/groups';
 import { useCenters } from '@/features/centers';
 import { useTeachers } from '@/features/teachers';
-import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { getErrorMessage } from '@/shared/lib/api';
 import { isGroupIconKey, type GroupIconKey } from '@ilona/types';
 import { filterTeachersForCenter } from '../../lib/center-scoped-teachers';
@@ -22,10 +22,7 @@ import {
 import { validateGroupCalendarSchedule } from '../../lib/validate-group-calendar-schedule';
 import { useSheetStackZIndex } from '@/shared/lib/sheet-stack';
 import { usePortalSheetDrag } from '@/shared/hooks/usePortalSheetDrag';
-import {
-  buildEditGroupPayload,
-  isGroupScheduleRegenerationRequired,
-} from './edit-group-form-payload';
+import { buildEditGroupPayload } from './edit-group-form-payload';
 import { createUpdateGroupFormSchema } from './edit-group-form-schema';
 import type { EditGroupFormProps, UpdateGroupFormData } from './edit-group-form.types';
 
@@ -55,9 +52,7 @@ export function useEditGroupForm({
   const [schedule, setSchedule] = useState<GroupScheduleEntry[]>([]);
   const [dateFrom, setDateFrom] = useState(() => defaultMonthDateRange().from);
   const [dateTo, setDateTo] = useState(() => defaultMonthDateRange().to);
-  const [regenerateDialogOpen, setRegenerateDialogOpen] = useState(false);
   const [scheduleSectionError, setScheduleSectionError] = useState<string | null>(null);
-  const pendingPayloadRef = useRef<UpdateGroupDto | null>(null);
   const updateGroup = useUpdateGroup();
   const { data: group, isLoading } = useGroup(groupId, open);
 
@@ -90,8 +85,7 @@ export function useEditGroupForm({
   });
 
   const isGroupActive = group?.isActive ?? true;
-  const isFormBusy =
-    isSubmitting || updateGroup.isPending || isStatusTogglePending || regenerateDialogOpen;
+  const isFormBusy = isSubmitting || updateGroup.isPending || isStatusTogglePending;
   const watchedTeacherId = watch('teacherId');
   const watchedCenterId = watch('centerId');
   const watchedSecondTeacherId = watch('secondTeacherId');
@@ -153,8 +147,6 @@ export function useEditGroupForm({
       setErrorMessage(null);
       setSuccessMessage(null);
       setScheduleSectionError(null);
-      setRegenerateDialogOpen(false);
-      pendingPayloadRef.current = null;
     }
   }, [open]);
 
@@ -177,8 +169,6 @@ export function useEditGroupForm({
   const finishSuccess = useCallback(() => {
     setSuccessMessage(tForm('updatedSuccess'));
     setErrorMessage(null);
-    setRegenerateDialogOpen(false);
-    pendingPayloadRef.current = null;
     setTimeout(() => {
       onOpenChange(false);
       setSuccessMessage(null);
@@ -191,12 +181,6 @@ export function useEditGroupForm({
         await updateGroup.mutateAsync({ id: groupId, data: payload });
         finishSuccess();
       } catch (error: unknown) {
-        if (isGroupScheduleRegenerationRequired(error)) {
-          pendingPayloadRef.current = payload;
-          setRegenerateDialogOpen(true);
-          setErrorMessage(null);
-          return;
-        }
         setErrorMessage(getErrorMessage(error, tForm('failedUpdate')));
         setSuccessMessage(null);
       }
@@ -242,15 +226,6 @@ export function useEditGroupForm({
     );
   };
 
-  const onConfirmRegenerate = useCallback(async () => {
-    const pending = pendingPayloadRef.current;
-    if (!pending) {
-      setRegenerateDialogOpen(false);
-      return;
-    }
-    await submitPayload({ ...pending, confirmReplaceGeneratedLessons: true });
-  }, [submitPayload]);
-
   return {
     tForm,
     tGroups,
@@ -294,8 +269,5 @@ export function useEditGroupForm({
     setDateFrom: handleDateFromChange,
     setDateTo: handleDateToChange,
     scheduleSectionError,
-    regenerateDialogOpen,
-    setRegenerateDialogOpen,
-    onConfirmRegenerate,
   };
 }

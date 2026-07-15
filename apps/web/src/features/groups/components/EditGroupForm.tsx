@@ -14,7 +14,6 @@ import { PortalFormSheetDragHandle } from '@/shared/components/ui/portal-form-sh
 import { X, Trash2 } from 'lucide-react';
 import { useEditGroupForm } from './edit-group-form/useEditGroupForm';
 import { EditGroupFormFields } from './edit-group-form/EditGroupFormFields';
-import { EditGroupFormRegenerateDialog } from './edit-group-form/EditGroupFormRegenerateDialog';
 import type { EditGroupFormProps } from './edit-group-form/edit-group-form.types';
 
 export type { EditGroupFormProps } from './edit-group-form/edit-group-form.types';
@@ -169,14 +168,6 @@ export function EditGroupForm(props: EditGroupFormProps) {
             </div>
           </DialogPrimitive.Content>
         </DialogPrimitive.Portal>
-      <EditGroupFormRegenerateDialog
-        open={form.regenerateDialogOpen}
-        onOpenChange={form.setRegenerateDialogOpen}
-        tForm={form.tForm}
-        onConfirmRegenerate={() => {
-          void form.onConfirmRegenerate();
-        }}
-      />
     </DialogPrimitive.Root>
   );
 }

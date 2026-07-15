@@ -64,7 +64,6 @@ describe('GroupScheduleLessonsService — lesson-by-lesson teacher rotation', ()
       previousTeacherId: null,
       previousSecondTeacherId: null,
       previousSecondTeacherStartsFirstWeek: null,
-      confirmReplaceGeneratedLessons: false,
     });
 
     expect(createMany).toHaveBeenCalledTimes(1);
@@ -110,7 +109,6 @@ describe('GroupScheduleLessonsService — lesson-by-lesson teacher rotation', ()
       previousTeacherId: null,
       previousSecondTeacherId: null,
       previousSecondTeacherStartsFirstWeek: null,
-      confirmReplaceGeneratedLessons: false,
     });
 
     const created = getCreateManyData(createMany);

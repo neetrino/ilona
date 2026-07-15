@@ -1,16 +1,6 @@
-import { ApiError } from '@/shared/lib/api';
 import type { GroupScheduleEntry, UpdateGroupDto } from '../../types';
-import { REGENERATE_CONFIRM_MESSAGE } from './edit-group-form.constants';
 import type { UpdateGroupFormData } from './edit-group-form.types';
 import type { GroupIconKey } from '@ilona/types';
-
-export function isGroupScheduleRegenerationRequired(error: unknown): boolean {
-  return (
-    error instanceof ApiError &&
-    error.statusCode === 409 &&
-    error.message === REGENERATE_CONFIRM_MESSAGE
-  );
-}
 
 export function buildEditGroupPayload(params: {
   data: UpdateGroupFormData;

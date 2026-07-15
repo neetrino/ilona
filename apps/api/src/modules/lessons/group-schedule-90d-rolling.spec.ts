@@ -83,7 +83,6 @@ describe('90-day rolling schedule — real behavior checks', () => {
         previousTeacherId: null,
         previousSecondTeacherId: null,
         previousSecondTeacherStartsFirstWeek: null,
-        confirmReplaceGeneratedLessons: false,
       });
 
       const created = getCreateManyData(createMany);

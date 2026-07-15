@@ -1,4 +1,4 @@
-import { BadRequestException, ConflictException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { LessonCreationSource, LessonStatus, Prisma } from '@ilona/database';
 import { endOfZonedDay, startOfZonedDay, toYmd } from '@ilona/types';
 import { PrismaService } from '../prisma/prisma.service';
@@ -66,7 +66,6 @@ export class GroupScheduleLessonsService {
     previousTeacherId: string | null;
     previousSecondTeacherId: string | null;
     previousSecondTeacherStartsFirstWeek: boolean | null;
-    confirmReplaceGeneratedLessons: boolean;
   }): Promise<Prisma.InputJsonValue | typeof Prisma.JsonNull | undefined> {
     const teacherId = params.teacherId ?? null;
     const secondTeacherId = params.secondTeacherId ?? null;
@@ -120,10 +119,6 @@ export class GroupScheduleLessonsService {
 
     const needsReplace = oldKey !== null && (newKey !== oldKey || teachersChanged);
 
-    if (needsReplace && !params.confirmReplaceGeneratedLessons) {
-      throw new ConflictException('GROUP_SCHEDULE_REGENERATION_CONFIRMATION_REQUIRED');
-    }
-
     const isRolling = calendarWithRolling.rolling !== false;
     const todayYmd = toYmd(new Date());
     const regenFromYmd =
@@ -140,7 +135,7 @@ export class GroupScheduleLessonsService {
     const replaceMode = oldKey === null || needsReplace;
 
     let suppressed = new Set(calendarWithRolling.suppressedSlotStarts ?? []);
-    if (needsReplace && params.confirmReplaceGeneratedLessons) {
+    if (needsReplace) {
       suppressed = new Set(
         [...suppressed].filter((iso) => {
           const t = Date.parse(iso);
