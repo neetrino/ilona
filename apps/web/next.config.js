@@ -1,7 +1,10 @@
+const path = require('node:path');
 const createNextIntlPlugin = require('next-intl/plugin');
 const { getLanIpv4Addresses } = require('./scripts/lan-ipv4.cjs');
 
 const withNextIntl = createNextIntlPlugin('./src/config/i18n.ts');
+/** Pin Turbopack to the monorepo root so stray parent lockfiles (e.g. %USERPROFILE%) are ignored. */
+const monorepoRoot = path.join(__dirname, '../..');
 
 function getDevelopmentAllowedDevOrigins() {
   return [
@@ -18,7 +21,10 @@ const nextConfig = {
     allowedDevOrigins: getDevelopmentAllowedDevOrigins(),
   }),
   // Turbopack (replaces deprecated experimental.turbo)
-  turbopack: {},
+  turbopack: {
+    root: monorepoRoot,
+  },
+  outputFileTracingRoot: monorepoRoot,
   images: {
     formats: ['image/webp'],
     remotePatterns: [
