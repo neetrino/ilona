@@ -126,8 +126,8 @@ export class StudentUpdateService {
     const previousGroupId = student.groupId ?? null;
     const joinedAtForNewGroup = dto.registerDate ? new Date(dto.registerDate) : new Date();
 
-    return this.prisma.$transaction(async (tx) => {
-      const updatedStudent = await tx.student.update({
+    const updatedStudent = await this.prisma.$transaction(async (tx) => {
+      const next = await tx.student.update({
         where: { id },
         data: updateData,
         include: {
@@ -171,11 +171,49 @@ export class StudentUpdateService {
         tx,
         id,
         previousGroupId,
-        updatedStudent.groupId ?? null,
+        next.groupId ?? null,
         joinedAtForNewGroup,
       );
 
-      return updatedStudent;
+      return next;
     });
+
+    // Keep group chat membership in sync so new members see full chat history immediately.
+    if (dto.groupId !== undefined) {
+      const nextGroupId = updatedStudent.groupId ?? null;
+      if (previousGroupId && previousGroupId !== nextGroupId) {
+        const oldChat = await this.prisma.chat.findUnique({
+          where: { groupId: previousGroupId },
+          select: { id: true },
+        });
+        if (oldChat) {
+          await this.prisma.chatParticipant.updateMany({
+            where: { chatId: oldChat.id, userId: student.user.id },
+            data: { leftAt: new Date() },
+          });
+        }
+      }
+      if (nextGroupId && nextGroupId !== previousGroupId) {
+        const newChat = await this.prisma.chat.findUnique({
+          where: { groupId: nextGroupId },
+          select: { id: true },
+        });
+        if (newChat) {
+          await this.prisma.chatParticipant.upsert({
+            where: {
+              chatId_userId: { chatId: newChat.id, userId: student.user.id },
+            },
+            update: { leftAt: null },
+            create: {
+              chatId: newChat.id,
+              userId: student.user.id,
+              isAdmin: false,
+            },
+          });
+        }
+      }
+    }
+
+    return updatedStudent;
   }
 }

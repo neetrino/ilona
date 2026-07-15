@@ -8,10 +8,13 @@ import {
   Body,
   Param,
   Query,
+  Headers,
+  UnauthorizedException,
   ForbiddenException,
   BadRequestException,
 } from '@nestjs/common';
 import { LessonsService } from './lessons.service';
+import { GroupScheduleRollingService } from './group-schedule-rolling.service';
 import { PrismaService } from '../prisma/prisma.service';
 import {
   CreateLessonDto,
@@ -22,17 +25,38 @@ import {
   CreateRecurringLessonDto,
   SetSubstituteByGroupDayDto,
 } from './dto';
-import { Roles, CurrentUser } from '../../common/decorators';
+import { Roles, CurrentUser, Public } from '../../common/decorators';
 import { UserRole, LessonStatus } from '@ilona/database';
 import { JwtPayload } from '../../common/types/auth.types';
 import { getManagerCenterIdOrThrow } from '../../common/utils/manager-scope.util';
+import { SkipThrottle } from '@nestjs/throttler';
 
 @Controller('lessons')
 export class LessonsController {
   constructor(
     private readonly lessonsService: LessonsService,
+    private readonly groupScheduleRollingService: GroupScheduleRollingService,
     private readonly prisma: PrismaService,
   ) {}
+
+  /**
+   * Cron: extend rolling group calendars by 90 days when the horizon is near.
+   * Secured by CRON_SECRET (Bearer), same pattern as Vercel → Nest warmup.
+   */
+  @Post('cron/extend-group-schedules')
+  @Public()
+  @SkipThrottle({ default: true })
+  async extendGroupSchedules(
+    @Headers('authorization') authorization?: string,
+  ): Promise<unknown> {
+    const cronSecret = process.env.CRON_SECRET;
+    if (cronSecret) {
+      if (authorization !== `Bearer ${cronSecret}`) {
+        throw new UnauthorizedException('Invalid cron secret');
+      }
+    }
+    return this.groupScheduleRollingService.extendAllRollingWindows();
+  }
 
   @Get()
   @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.TEACHER, UserRole.STUDENT)

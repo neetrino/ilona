@@ -62,6 +62,7 @@ export class GroupWriteService {
           dateTo: dto.calendarPlan.dateTo,
           topic: dto.calendarPlan.topic,
           description: dto.calendarPlan.description,
+          rolling: true,
           suppressedSlotStarts: [],
         }
       : null;
@@ -197,6 +198,7 @@ export class GroupWriteService {
         dateTo: calendarPlan.dateTo,
         topic: calendarPlan.topic,
         description: calendarPlan.description,
+        rolling: prevParsed.calendar?.rolling !== false,
         suppressedSlotStarts: prevParsed.calendar?.suppressedSlotStarts ?? [],
       };
     }

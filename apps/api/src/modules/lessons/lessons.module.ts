@@ -14,6 +14,7 @@ import { LessonActionsService } from './lesson-actions.service';
 import { LessonSchedulingService } from './lesson-scheduling.service';
 import { LessonStatisticsService } from './lesson-statistics.service';
 import { GroupScheduleLessonsService } from './group-schedule-lessons.service';
+import { GroupScheduleRollingService } from './group-schedule-rolling.service';
 import { FinanceModule } from '../finance/finance.module';
 
 @Module({
@@ -34,7 +35,8 @@ import { FinanceModule } from '../finance/finance.module';
     LessonSchedulingService,
     LessonStatisticsService,
     GroupScheduleLessonsService,
+    GroupScheduleRollingService,
   ],
-  exports: [LessonsService, GroupScheduleLessonsService],
+  exports: [LessonsService, GroupScheduleLessonsService, GroupScheduleRollingService],
 })
 export class LessonsModule {}

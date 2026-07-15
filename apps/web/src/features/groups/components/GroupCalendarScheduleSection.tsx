@@ -19,6 +19,11 @@ export interface GroupCalendarScheduleSectionProps {
   onDateToChange: (next: string) => void;
   disabled?: boolean;
   adminControls?: boolean;
+  /**
+   * `rolling` (group create/edit): only start date — lessons auto-extend every 90 days.
+   * `range` (Add Lesson): explicit From/To window.
+   */
+  mode?: 'rolling' | 'range';
 }
 
 export function GroupCalendarScheduleSection({
@@ -30,10 +35,12 @@ export function GroupCalendarScheduleSection({
   onDateToChange,
   disabled,
   adminControls = false,
+  mode = 'range',
 }: GroupCalendarScheduleSectionProps) {
   const t = useTranslations('groups');
   const tCommon = useTranslations('common');
   const slotError = schedule.length > 0 ? scheduleSlotsValidationError(schedule) : null;
+  const isRolling = mode === 'rolling';
 
   const handleDateFromChange = useCallback(
     (next: string) => {
@@ -55,13 +62,13 @@ export function GroupCalendarScheduleSection({
       <div className="space-y-2">
         <Label className="text-sm font-medium">{t('calendarSchedule')}</Label>
         <p className="text-xs text-slate-500">
-          {t('scheduleHelperText')}
+          {isRolling ? t('scheduleHelperTextRolling') : t('scheduleHelperText')}
         </p>
       </div>
 
-      <div className="grid grid-cols-2 gap-2 sm:gap-3">
-        <div className="min-w-0 space-y-1">
-          <Label htmlFor="schedule-date-from">{tCommon('from')}</Label>
+      {isRolling ? (
+        <div className="space-y-1">
+          <Label htmlFor="schedule-date-from">{t('scheduleStartDate')}</Label>
           <DatePickerInput
             id="schedule-date-from"
             value={dateFrom}
@@ -73,20 +80,36 @@ export function GroupCalendarScheduleSection({
             )}
           />
         </div>
-        <div className="min-w-0 space-y-1">
-          <Label htmlFor="schedule-date-to">{tCommon('to')}</Label>
-          <DatePickerInput
-            id="schedule-date-to"
-            value={dateTo}
-            onValueChange={onDateToChange}
-            disabled={disabled}
-            className={cn(
-              'w-full border border-slate-300 bg-white text-sm',
-              adminControls ? ADMIN_DATE_INPUT_CLASS : 'rounded-md px-3 py-2',
-            )}
-          />
+      ) : (
+        <div className="grid grid-cols-2 gap-2 sm:gap-3">
+          <div className="min-w-0 space-y-1">
+            <Label htmlFor="schedule-date-from">{tCommon('from')}</Label>
+            <DatePickerInput
+              id="schedule-date-from"
+              value={dateFrom}
+              onValueChange={handleDateFromChange}
+              disabled={disabled}
+              className={cn(
+                'w-full border border-slate-300 bg-white text-sm',
+                adminControls ? ADMIN_DATE_INPUT_CLASS : 'rounded-md px-3 py-2',
+              )}
+            />
+          </div>
+          <div className="min-w-0 space-y-1">
+            <Label htmlFor="schedule-date-to">{tCommon('to')}</Label>
+            <DatePickerInput
+              id="schedule-date-to"
+              value={dateTo}
+              onValueChange={onDateToChange}
+              disabled={disabled}
+              className={cn(
+                'w-full border border-slate-300 bg-white text-sm',
+                adminControls ? ADMIN_DATE_INPUT_CLASS : 'rounded-md px-3 py-2',
+              )}
+            />
+          </div>
         </div>
-      </div>
+      )}
 
       <div className="space-y-2">
         <Label>{t('weeklyTimeSlots')}</Label>
