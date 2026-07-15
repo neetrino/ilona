@@ -16,8 +16,8 @@ const DATE_PICKER_POPOVER_ATTR = 'data-date-picker-popover';
 const BASE_Z_INDEX = 50;
 const LAYER_STEP = 20;
 const MOBILE_SHEET_LAYER_STEP = 4;
-/** Cap under bottom nav while visible; original desktop stack from 1367px. */
-const MOBILE_SHEET_MEDIA_QUERY = '(max-width: 1366px)';
+/** Cap under bottom nav on phone/iPad; desktop stack from iPad Pro landscape (1366). */
+const MOBILE_SHEET_MEDIA_QUERY = '(max-width: 1365px)';
 const MOBILE_SHEET_MAX_CONTENT_Z_INDEX = PORTAL_MOBILE_BOTTOM_NAV_Z_INDEX - 1;
 
 /** Keep backdrop darkness from the first sheet when stacking additional layers. */
