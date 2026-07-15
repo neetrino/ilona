@@ -119,7 +119,8 @@ export function AdminRecordingsPageView({
         </div>
       </div>
 
-      <div className="flex flex-col md:flex-row md:items-end gap-4 mb-6">
+      <div className="flex w-full min-w-0 flex-col">
+      <div className="flex flex-col gap-4 md:flex-row md:items-end">
         <div className="flex-1">
           <label
             htmlFor="rec-search"
@@ -161,7 +162,7 @@ export function AdminRecordingsPageView({
         </button>
       </div>
 
-      <div className="mb-3 text-sm text-[#8b8b90]">
+      <div className="mb-2 mt-10 text-sm text-[#8b8b90]">
         {t('studentsShown', { count: visibleRecordings.length })}
       </div>
 
@@ -426,6 +427,7 @@ export function AdminRecordingsPageView({
           />
         </div>
       )}
+      </div>
     </div>
   );
 }
