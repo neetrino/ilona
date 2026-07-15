@@ -30,6 +30,18 @@ describe('group-teacher-rotation', () => {
     expect(resolveTeacher(3)).toBe(TEACHER_2);
   });
 
+  it('follows Mon→Wed→Fri→Mon as T1, T2, T1, T2 (lesson index order)', () => {
+    // Same pattern as schedule generation for Mon/Wed/Fri slots.
+    const sequence = [0, 1, 2, 3].map((i) => resolveTeacher(i));
+    expect(sequence).toEqual([TEACHER_1, TEACHER_2, TEACHER_1, TEACHER_2]);
+  });
+
+  it('never assigns the same teacher to two consecutive lessons by default', () => {
+    for (let i = 0; i < 20; i++) {
+      expect(resolveTeacher(i)).not.toBe(resolveTeacher(i + 1));
+    }
+  });
+
   it('assigns Teacher 2 to the first lesson when secondTeacherStartsFirstWeek is true', () => {
     expect(resolveTeacher(0, true)).toBe(TEACHER_2);
   });
