@@ -148,7 +148,7 @@ export function LandingHeroSection({ tr, isHy }: LandingSectionProps) {
             </div>
           </motion.div>
       
-          <motion.div {...heroCtaMotion} className="absolute left-3 right-3 top-[685px] z-20">
+          <motion.div {...heroCtaMotion} className="absolute left-3 right-3 top-[740px] z-20">
             <Link
               href="#branches"
               className={cn(
