@@ -7,7 +7,6 @@ import { cn } from '@/shared/lib/utils';
 import {
   ADMIN_DATE_INPUT_CLASS,
   ADMIN_FORM_INPUT_CLASS,
-  ADMIN_OUTLINE_BUTTON_CLASS,
   ADMIN_PRIMARY_BUTTON_CLASS,
 } from '@/shared/lib/admin-control-theme';
 import { DailyPlanEditorTopicSection } from './DailyPlanEditorTopicSection';
