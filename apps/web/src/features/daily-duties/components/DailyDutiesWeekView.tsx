@@ -7,6 +7,7 @@ import {
   isCalendarToday,
 } from './daily-duties-display.util';
 import { DailyDutiesLessonStatusUnderName } from '@/shared/lib/daily-duties/DailyDutiesLessonStatusBadge';
+import { getLessonGroupTeacherNames } from '@/shared/lib/daily-duties/format-lesson-group-teachers';
 
 interface DailyDutiesWeekViewProps {
   weekDates: Date[];
@@ -14,6 +15,7 @@ interface DailyDutiesWeekViewProps {
   isLoading: boolean;
   isTeacherMode: boolean;
   hasActiveFilters: boolean;
+  onLessonClick: (lessonId: string) => void;
 }
 
 export function DailyDutiesWeekView({
@@ -22,12 +24,13 @@ export function DailyDutiesWeekView({
   isLoading,
   isTeacherMode,
   hasActiveFilters,
+  onLessonClick,
 }: DailyDutiesWeekViewProps) {
   const t = useTranslations('dailyDuties');
 
   return (
     <div className="w-full min-w-0 overflow-x-auto rounded-[15px] border border-[rgba(14,14,16,0.07)] bg-white [-webkit-overflow-scrolling:touch]">
-      <div className="min-w-[42rem]">
+      <div className="min-w-[56rem]">
         <div className="grid grid-cols-7 border-b border-[rgba(14,14,16,0.07)]">
           {weekDates.map((date, i) => (
             <div
@@ -79,29 +82,45 @@ export function DailyDutiesWeekView({
                   </p>
                 ) : (
                   <div className="space-y-2">
-                    {dayLessons.map((lesson) => (
-                      <div
-                        key={lesson.id}
-                        className={`rounded-[15px] border-l-4 p-2 text-xs ${getWeekLessonCardClass(lesson)}`}
-                      >
-                        <p className="truncate font-medium text-[#3b3b40]">
-                          {formatDailyDutiesLessonTime(lesson.scheduledAt, lesson.duration)}
-                        </p>
-                        <p className="truncate text-[#3b3b40]">
-                          {lesson.group?.name || t('lessonUnknown')}
-                        </p>
-                        <DailyDutiesLessonStatusUnderName lesson={lesson} />
-                        {lesson.substituteTeacher?.user && (
-                          <p
-                            className="mt-0.5 truncate text-amber-800"
-                            title={t('substituteTeacherTitle')}
-                          >
-                            {t('substituteShort')} {lesson.substituteTeacher.user.firstName}{' '}
-                            {lesson.substituteTeacher.user.lastName}
+                    {dayLessons.map((lesson) => {
+                      const teacherNames = getLessonGroupTeacherNames(
+                        lesson,
+                        t('unknownTeacher'),
+                      );
+
+                      return (
+                        <button
+                          key={lesson.id}
+                          type="button"
+                          onClick={() => onLessonClick(lesson.id)}
+                          className={`w-full min-w-0 rounded-[15px] border-l-4 p-2 text-left text-xs transition hover:brightness-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 ${getWeekLessonCardClass(lesson)}`}
+                        >
+                          <p className="font-medium break-words text-[#3b3b40]">
+                            {formatDailyDutiesLessonTime(lesson.scheduledAt, lesson.duration)}
                           </p>
-                        )}
-                      </div>
-                    ))}
+                          <p className="break-words text-[#3b3b40]">
+                            {lesson.group?.name || t('lessonUnknown')}
+                          </p>
+                          <div className="mt-0.5 space-y-0.5 text-[#8b8b90]">
+                            {teacherNames.map((name) => (
+                              <p key={name} className="break-words leading-snug">
+                                {name}
+                              </p>
+                            ))}
+                          </div>
+                          <DailyDutiesLessonStatusUnderName lesson={lesson} />
+                          {lesson.substituteTeacher?.user && (
+                            <p
+                              className="mt-0.5 break-words text-amber-800"
+                              title={t('substituteTeacherTitle')}
+                            >
+                              {t('substituteShort')} {lesson.substituteTeacher.user.firstName}{' '}
+                              {lesson.substituteTeacher.user.lastName}
+                            </p>
+                          )}
+                        </button>
+                      );
+                    })}
                   </div>
                 )}
               </div>

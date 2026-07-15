@@ -108,7 +108,7 @@ export class GroupScheduleLessonsService {
 
   /**
    * Creates/updates GROUP_SCHEDULE lessons from weekly slots + calendar range.
-   * Assigns teachers via alternating weekly rotation between the two group teachers.
+   * Assigns teachers via lesson-by-lesson rotation between the two group teachers.
    */
   async syncAfterGroupSaved(params: {
     groupId: string;
@@ -232,16 +232,16 @@ export class GroupScheduleLessonsService {
 
     const toCreate: Prisma.LessonCreateManyInput[] = [];
 
-    for (const { at, duration, slot } of occurrences) {
+    for (let lessonIndex = 0; lessonIndex < occurrences.length; lessonIndex++) {
+      const { at, duration, slot } = occurrences[lessonIndex];
       const iso = at.toISOString();
       if (suppressed.has(iso)) continue;
       if (existingGroupTimes.has(at.getTime())) continue;
 
       const assignedTeacherId = resolveRotatingTeacherId({
-        lessonDate: at,
+        lessonIndex,
         teacherId,
         secondTeacherId,
-        scheduleStartDateYmd: dateFrom,
         secondTeacherStartsFirstWeek: params.secondTeacherStartsFirstWeek,
       });
 

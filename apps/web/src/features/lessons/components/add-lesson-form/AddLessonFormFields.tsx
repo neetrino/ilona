@@ -89,7 +89,7 @@ export function AddLessonFormFields(form: AddLessonFormFieldsProps) {
             ) : form.selectedGroupTeachers[0] ? (
               <>
                 <Label htmlFor="teacherId">
-                  {tGroupsForm('teacher1Main')} <span className="text-red-500">*</span>
+                  {tGroupsForm('teacher1')} <span className="text-red-500">*</span>
                 </Label>
                 <div
                   id="teacherId"
@@ -117,7 +117,7 @@ export function AddLessonFormFields(form: AddLessonFormFieldsProps) {
         {form.hasGroup && form.selectedGroupTeachers.length > 1 ? (
           <div className="space-y-2">
             <Label htmlFor={`teacherId-${form.selectedGroupTeachers[1].id}`}>
-              {tGroupsForm('teacher2')}
+                  {tGroupsForm('teacher2')} <span className="text-red-500">*</span>
             </Label>
             <div
               id={`teacherId-${form.selectedGroupTeachers[1].id}`}

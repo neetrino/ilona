@@ -11,6 +11,7 @@ import { CheckCircle2, Pencil } from 'lucide-react';
 import type { Lesson } from '@/features/lessons';
 import { cn } from '@/shared/lib/utils';
 import type { TeacherDailyDutiesRowCategory } from '@/shared/lib/daily-duties/teacher-daily-duties-list-order';
+import { formatLessonGroupTeachersLabel } from '@/shared/lib/daily-duties/format-lesson-group-teachers';
 import type { ScheduleCardDayStatus } from '@/features/schedule/schedule-dates';
 import { getLessonActionsDerived, type LessonActionId } from '@/shared/lib/daily-duties/lesson-action-states';
 import { DailyDutiesListActionPill } from '@/shared/components/daily-duties/DailyDutiesListActionPill';
@@ -81,9 +82,7 @@ export function LessonListTableBodyRow({
     return m;
   }, [actions]);
 
-  const teacherName = lesson.teacher?.user
-    ? `${lesson.teacher.user.firstName} ${lesson.teacher.user.lastName}`
-    : t('unknownTeacher');
+  const teacherName = formatLessonGroupTeachersLabel(lesson, t('unknownTeacher'));
 
   const getRowColor = () => {
     const status = lesson.dailyDutiesStatus;
@@ -186,7 +185,9 @@ export function LessonListTableBodyRow({
       </td>
       {!hideTeacherColumn && (
         <td className="px-4 py-3 text-center align-middle">
-          <p className="text-sm text-slate-700">{teacherName}</p>
+          <p className="text-sm text-slate-700" title={teacherName}>
+            {teacherName}
+          </p>
           {lesson.substituteTeacher?.user && (
             <p className="mt-1 text-xs text-amber-800">
               {t('substituteShort')} {lesson.substituteTeacher.user.firstName}{' '}

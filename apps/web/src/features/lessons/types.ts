@@ -61,6 +61,24 @@ export interface Lesson {
       id: string;
       name: string;
     };
+    teacher?: {
+      id: string;
+      user: {
+        id: string;
+        firstName: string;
+        lastName: string;
+        avatarUrl?: string;
+      };
+    } | null;
+    secondTeacher?: {
+      id: string;
+      user: {
+        id: string;
+        firstName: string;
+        lastName: string;
+        avatarUrl?: string;
+      };
+    } | null;
     _count?: {
       students: number;
     };

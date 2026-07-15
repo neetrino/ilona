@@ -72,6 +72,8 @@ export function computeGenerationKey(
         teacherId,
         secondTeacherId,
         secondTeacherStartsFirstWeek,
+        /** Bump when teacher assignment algorithm changes so schedules re-generate. */
+        teacherRotation: 'lesson',
         normalized,
         dateFrom,
         dateTo,

@@ -89,7 +89,7 @@ model Group {
   centerId             String
   teacherId              String?
   secondTeacherId        String?
-  /// When true, Teacher 2 leads the first ISO week of the monthly rotation; otherwise Teacher 1 (main).
+  /// When true, Teacher 2 teaches the first generated lesson; otherwise Teacher 1 (main).
   secondTeacherStartsFirstWeek Boolean @default(false)
   schedule               Json?
   isActive               Boolean   @default(true)

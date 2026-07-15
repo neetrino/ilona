@@ -43,7 +43,7 @@ export interface Group {
   centerId: string;
   teacherId?: string | null;
   secondTeacherId?: string | null;
-  /** When true, Teacher 2 leads the first ISO week of rotation; default false = Teacher 1 main. */
+  /** When true, Teacher 2 teaches the first generated lesson; default false = Teacher 1. */
   secondTeacherStartsFirstWeek?: boolean;
   /** Legacy array, or `{ weeklySlots, calendar }` when calendar generation is used. */
   schedule?: GroupScheduleEntry[] | { weeklySlots: GroupScheduleEntry[]; calendar?: unknown } | null;
