@@ -22,7 +22,6 @@ export default function AdminDailyPlanPage() {
 
   const [search, setSearch] = useState('');
   const [editing, setEditing] = useState<DailyPlan | null>(null);
-  const [creating, setCreating] = useState(false);
   const [deletingPlanId, setDeletingPlanId] = useState<string | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
@@ -33,14 +32,15 @@ export default function AdminDailyPlanPage() {
   const { data, isLoading, refetch } = useDailyPlans(filters);
   const items = data?.items ?? [];
   const remove = useDeleteDailyPlan();
-  const { viewing, openView, closeView } = useDailyPlanViewSheet(items);
+  const { viewing, openView, closeView, isCreating, openCreate, closeCreate } =
+    useDailyPlanViewSheet(items);
 
   return (
     <DashboardLayout title={tNav('dailyPlan')} subtitle={t('subtitleAll')}>
       <DailyPlanListSection
         search={search}
         onSearchChange={setSearch}
-        onCreate={() => setCreating(true)}
+        onCreate={openCreate}
         createLabel="+ New Daily Plan"
         showCreate={isAdmin}
         items={items}
@@ -51,6 +51,7 @@ export default function AdminDailyPlanPage() {
         onView={openView}
         onEdit={(plan) => {
           if (plan.canEdit) {
+            closeCreate();
             setEditing(plan);
           }
         }}
@@ -75,16 +76,16 @@ export default function AdminDailyPlanPage() {
         }}
       />
 
-      {(creating || editing) && (
+      {(isCreating || editing) && (
         <DailyPlanEditor
-          mode={creating ? 'create' : 'edit'}
+          mode={isCreating ? 'create' : 'edit'}
           plan={editing ?? undefined}
           onClose={() => {
-            setCreating(false);
+            closeCreate();
             setEditing(null);
           }}
           onSaved={() => {
-            setCreating(false);
+            closeCreate();
             setEditing(null);
             refetch();
           }}

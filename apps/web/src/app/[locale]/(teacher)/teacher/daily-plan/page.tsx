@@ -20,7 +20,6 @@ export default function TeacherDailyPlanPage() {
   const { user } = useAuthStore();
   const [search, setSearch] = useState('');
   const [editing, setEditing] = useState<DailyPlan | null>(null);
-  const [creating, setCreating] = useState(false);
   const [deletingPlanId, setDeletingPlanId] = useState<string | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
@@ -31,7 +30,8 @@ export default function TeacherDailyPlanPage() {
   const { data, isLoading, refetch } = useDailyPlans(filters);
   const items = data?.items ?? [];
   const remove = useDeleteDailyPlan();
-  const { viewing, openView, closeView } = useDailyPlanViewSheet(items);
+  const { viewing, openView, closeView, isCreating, openCreate, closeCreate } =
+    useDailyPlanViewSheet(items);
 
   return (
     <DashboardLayout
@@ -41,7 +41,7 @@ export default function TeacherDailyPlanPage() {
       <DailyPlanListSection
         search={search}
         onSearchChange={setSearch}
-        onCreate={() => setCreating(true)}
+        onCreate={openCreate}
         createLabel="+ New Daily Plan"
         items={items}
         isLoading={isLoading}
@@ -52,6 +52,7 @@ export default function TeacherDailyPlanPage() {
         onView={openView}
         onEdit={(plan) => {
           if (plan.canEdit) {
+            closeCreate();
             setEditing(plan);
           }
         }}
@@ -76,16 +77,16 @@ export default function TeacherDailyPlanPage() {
         }}
       />
 
-      {(creating || editing) && (
+      {(isCreating || editing) && (
         <DailyPlanEditor
-          mode={creating ? 'create' : 'edit'}
+          mode={isCreating ? 'create' : 'edit'}
           plan={editing ?? undefined}
           onClose={() => {
-            setCreating(false);
+            closeCreate();
             setEditing(null);
           }}
           onSaved={() => {
-            setCreating(false);
+            closeCreate();
             setEditing(null);
             refetch();
           }}
