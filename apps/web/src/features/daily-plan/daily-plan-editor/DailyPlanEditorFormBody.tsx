@@ -30,7 +30,10 @@ export function DailyPlanEditorFormBody({
   const isPage = variant === 'page';
 
   const fields = (
-    <div className={cn('flex flex-col gap-6', isPage ? 'p-5 md:p-8' : 'p-5')}>
+    <div
+      ref={vm.formTopRef}
+      className={cn('flex flex-col gap-6', isPage ? 'p-5 md:p-8' : 'p-5')}
+    >
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
         <div>
           <label htmlFor="dp-date" className="mb-1.5 block text-sm font-medium text-[#1010a3]">
@@ -61,7 +64,11 @@ export function DailyPlanEditorFormBody({
           ) : (
             <SingleSelectDropdown
               id="dp-group"
-              triggerClassName={ADMIN_FORM_INPUT_CLASS}
+              triggerClassName={cn(
+                ADMIN_FORM_INPUT_CLASS,
+                vm.fieldErrors.group &&
+                  'border-red-500 focus:!border-red-500 focus:!ring-0 focus:!ring-offset-0',
+              )}
               options={vm.myGroups.map((group) => ({ id: group.id, label: group.name }))}
               value={vm.groupId || null}
               onValueChange={(next) => vm.setGroupId(next ?? '')}
@@ -69,6 +76,7 @@ export function DailyPlanEditorFormBody({
               disabled={vm.isLoadingGroups || vm.readOnly}
               isLoading={vm.isLoadingGroups}
               allowDeselect
+              error={vm.fieldErrors.group ? tCalendar('selectGroup') : null}
             />
           )}
         </div>
@@ -84,7 +92,13 @@ export function DailyPlanEditorFormBody({
               onChange={(e) => vm.updateTopic(0, { title: e.target.value })}
               disabled={vm.readOnly}
               placeholder={tDailyPlan('topicTitlePlaceholder', { number: 1 })}
-              className={cn(ADMIN_FORM_INPUT_CLASS, 'w-full')}
+              aria-invalid={vm.fieldErrors.title}
+              className={cn(
+                ADMIN_FORM_INPUT_CLASS,
+                'w-full',
+                vm.fieldErrors.title &&
+                  'border-red-500 focus:!border-red-500 focus:!ring-0 focus:!ring-offset-0',
+              )}
             />
           </div>
         ) : null}

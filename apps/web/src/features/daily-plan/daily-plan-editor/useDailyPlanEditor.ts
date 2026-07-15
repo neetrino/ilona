@@ -1,12 +1,17 @@
 'use client';
 
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo, useState, useEffect, useRef, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
 import { useCreateDailyPlan, useUpdateDailyPlan } from '../hooks';
 import { useMyGroups } from '@/features/groups/hooks/useGroups';
 import type { DailyPlanResourceKind, DailyPlanTopicInput } from '../types';
 import { insertResourceAfterKind, toDrafts } from './daily-plan-editor.util';
 import type { DailyPlanEditorProps, DraftResource, DraftTopic } from './daily-plan-editor.types';
+
+export type DailyPlanFieldErrors = {
+  group: boolean;
+  title: boolean;
+};
 
 export function useDailyPlanEditor({
   mode,
@@ -19,9 +24,14 @@ export function useDailyPlanEditor({
 }: DailyPlanEditorProps) {
   const t = useTranslations('dailyPlanPage');
   const [date, setDate] = useState('');
-  const [groupId, setGroupId] = useState('');
+  const [groupId, setGroupIdState] = useState('');
   const [topics, setTopics] = useState<DraftTopic[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<DailyPlanFieldErrors>({
+    group: false,
+    title: false,
+  });
+  const formTopRef = useRef<HTMLDivElement>(null);
 
   const create = useCreateDailyPlan();
   const update = useUpdateDailyPlan();
@@ -44,12 +54,24 @@ export function useDailyPlanEditor({
     const draft = toDrafts(plan);
     const resolvedGroupId = plan ? draft.groupId : (initialGroupId ?? draft.groupId);
     setDate(draft.date);
-    setGroupId(resolvedGroupId);
+    setGroupIdState(resolvedGroupId);
     setTopics(draft.topics);
+    setFieldErrors({ group: false, title: false });
+    setError(null);
   }, [plan, initialGroupId]);
+
+  const setGroupId = useCallback((next: string) => {
+    setGroupIdState(next);
+    if (next) {
+      setFieldErrors((prev) => (prev.group ? { ...prev, group: false } : prev));
+    }
+  }, []);
 
   const updateTopic = (idx: number, patch: Partial<DraftTopic>) => {
     setTopics((prev) => prev.map((topic, i) => (i === idx ? { ...topic, ...patch } : topic)));
+    if (idx === 0 && patch.title !== undefined && patch.title.trim().length > 0) {
+      setFieldErrors((prev) => (prev.title ? { ...prev, title: false } : prev));
+    }
   };
 
   const updateResource = (
@@ -100,6 +122,25 @@ export function useDailyPlanEditor({
 
   const handleSave = async () => {
     setError(null);
+    const titleMissing = !(topics[0]?.title.trim());
+    const groupMissing = !groupId && !isGroupLocked;
+
+    if (titleMissing || groupMissing) {
+      setFieldErrors({ group: groupMissing, title: titleMissing });
+      requestAnimationFrame(() => {
+        const node = formTopRef.current;
+        if (!node) return;
+        node.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        const focusTarget = titleMissing
+          ? node.querySelector<HTMLElement>('#dp-title')
+          : node.querySelector<HTMLElement>('#dp-group');
+        focusTarget?.focus?.({ preventScroll: true });
+      });
+      return;
+    }
+
+    setFieldErrors({ group: false, title: false });
+
     const cleanTopics: DailyPlanTopicInput[] = topics
       .map((topic) => ({
         title: topic.title.trim(),
@@ -124,15 +165,6 @@ export function useDailyPlanEditor({
       }))
       .filter((topic) => topic.title.length > 0);
 
-    if (cleanTopics.length === 0) {
-      setError(t('addTopicRequired'));
-      return;
-    }
-    if (!groupId) {
-      setError(t('selectGroupRequired'));
-      return;
-    }
-
     try {
       if (mode === 'create') {
         await create.mutateAsync({
@@ -151,6 +183,9 @@ export function useDailyPlanEditor({
     } catch (err) {
       const message = err instanceof Error ? err.message : t('saveFailed');
       setError(message);
+      requestAnimationFrame(() => {
+        formTopRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
     }
   };
 
@@ -170,6 +205,8 @@ export function useDailyPlanEditor({
     setGroupId,
     topics,
     error,
+    fieldErrors,
+    formTopRef,
     kindLabel,
     myGroups,
     isLoadingGroups,
