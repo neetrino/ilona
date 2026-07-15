@@ -350,9 +350,6 @@ export function useAdminRecordingsPage() {
     [safePage, visibleRecordings, recordingsPageSize],
   );
 
-  const rangeStart = visibleRecordings.length === 0 ? 0 : safePage * recordingsPageSize + 1;
-  const rangeEnd = Math.min((safePage + 1) * recordingsPageSize, visibleRecordings.length);
-
   const clearAllFilters = () => {
     setSelectedGroupIds(new Set());
     setSelectedStudentUserIds(new Set());
@@ -398,8 +395,6 @@ export function useAdminRecordingsPage() {
     paginatedRecordings,
     safePage,
     totalPages,
-    rangeStart,
-    rangeEnd,
     clearAllFilters,
     goToPage,
   };

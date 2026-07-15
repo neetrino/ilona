@@ -13,6 +13,8 @@ export { PublicAssetImage } from './public-asset-image';
 export { DataTable } from './data-table';
 export { AdminListPagination } from './AdminListPagination';
 export type { AdminListPaginationProps } from './AdminListPagination';
+export { AdminPaginationControls, getAdminPaginationItems } from './AdminPaginationControls';
+export type { AdminPaginationControlsProps } from './AdminPaginationControls';
 export { Badge } from './badge';
 export { Checkbox } from './checkbox';
 export { FilterDropdown } from './filter-dropdown';

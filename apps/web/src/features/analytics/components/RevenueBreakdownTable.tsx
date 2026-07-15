@@ -149,9 +149,6 @@ export function RevenueBreakdownTable({
 
   const totalPages = mobilePageSize ? Math.max(1, Math.ceil(revenue.length / mobilePageSize)) : 1;
   const safePage = Math.min(page, totalPages);
-  const rangeStart =
-    !mobilePageSize || revenue.length === 0 ? 0 : (safePage - 1) * mobilePageSize + 1;
-  const rangeEnd = mobilePageSize ? Math.min(revenue.length, safePage * mobilePageSize) : revenue.length;
   const paginatedRevenue = useMemo(
     () =>
       mobilePageSize
@@ -207,11 +204,7 @@ export function RevenueBreakdownTable({
         <AnalyticsMobilePagination
           page={safePage}
           totalPages={totalPages}
-          start={rangeStart}
-          end={rangeEnd}
-          total={revenue.length}
-          onPrevious={() => goToPage(Math.max(1, safePage - 1))}
-          onNext={() => goToPage(Math.min(totalPages, safePage + 1))}
+          onGoToPage={goToPage}
         />
       ) : null}
     </div>

@@ -10,7 +10,7 @@ import {
   studentInputClass,
   studentTableHeadClass,
 } from '@/features/student-ui';
-import { DatePickerInput } from '@/shared/components/ui';
+import { AdminPaginationControls, DatePickerInput } from '@/shared/components/ui';
 import { cn } from '@/shared/lib/utils';
 import { VoiceMessagePlayer } from '@/features/chat/components/VoiceMessagePlayer';
 import { MultiSelectChipsDropdown } from '@/shared/components/ui/multi-select-chips-dropdown';
@@ -56,8 +56,6 @@ export function TeacherRecordingsPageContent({
   goToPage,
   safePage,
   totalPages,
-  rangeStart,
-  rangeEnd,
 }: TeacherRecordingsPageContentProps) {
   const tCommon = useTranslations('common');
 
@@ -368,52 +366,14 @@ export function TeacherRecordingsPageContent({
       </StudentCard>
 
       {visibleRecordings.length > 0 && (
-        <div
-          className={cn(
-            'mt-4 flex items-center text-sm text-[#8b8b90]',
-            isIPad ? 'justify-start gap-4' : 'justify-between sm:justify-start sm:gap-4',
-          )}
-        >
-          <span>
-            Showing {rangeStart}-{rangeEnd} of {visibleRecordings.length}
-          </span>
-          <div className="flex items-center gap-3">
-            <button
-              type="button"
-              className={cn(
-                'inline-flex h-10 w-10 items-center justify-center rounded-full border transition-colors',
-                safePage === 0
-                  ? 'border-[#d9dde8] bg-[#f1f1f4] text-[#9aa3b5]'
-                  : 'border-[rgba(14,14,16,0.12)] bg-white text-[#3b3b40] hover:bg-[#f6f6f7]',
-              )}
-              disabled={safePage === 0}
-              onClick={() => goToPage(Math.max(0, safePage - 1))}
-              aria-label={tCommon('previousPage')}
-            >
-              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-              </svg>
-            </button>
-            <span className="inline-flex h-10 min-w-10 items-center justify-center rounded-full bg-[#1010a3] px-3 text-sm font-semibold text-white">
-              {safePage + 1}
-            </span>
-            <button
-              type="button"
-              className={cn(
-                'inline-flex h-10 w-10 items-center justify-center rounded-full border transition-colors',
-                safePage >= totalPages - 1
-                  ? 'border-[#d9dde8] bg-[#f1f1f4] text-[#9aa3b5]'
-                  : 'border-[rgba(14,14,16,0.12)] bg-white text-[#3b3b40] hover:bg-[#f6f6f7]',
-              )}
-              disabled={safePage >= totalPages - 1}
-              onClick={() => goToPage(Math.min(totalPages - 1, safePage + 1))}
-              aria-label={tCommon('nextPage')}
-            >
-              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </button>
-          </div>
+        <div className="mt-4 flex items-center justify-center lg:justify-start">
+          <AdminPaginationControls
+            page={safePage}
+            totalPages={totalPages}
+            onPageChange={goToPage}
+            previousLabel={tCommon('previousPage')}
+            nextLabel={tCommon('nextPage')}
+          />
         </div>
       )}
     </StudentPageStack>

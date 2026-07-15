@@ -79,8 +79,6 @@ export function TeachersList({
   const safeTotalPages = Math.max(1, totalPages);
   const safePage = Math.min(Math.max(0, page), safeTotalPages - 1);
   const hasTeachers = totalTeachers > 0;
-  const showingStart = hasTeachers ? safePage * PAGE_SIZE + 1 : 0;
-  const showingEnd = hasTeachers ? Math.min((safePage + 1) * PAGE_SIZE, totalTeachers) : 0;
   const teacherColumns = createTeachersTableColumns({
     t,
     tStatus,
@@ -153,11 +151,6 @@ export function TeachersList({
         onPageChange={onPageChange}
         previousLabel={tc('previousCardsPage')}
         nextLabel={tc('nextCardsPage')}
-        summary={t('showing', {
-          start: showingStart,
-          end: showingEnd,
-          total: totalTeachers,
-        })}
         disabled={isDeleting || isUpdating || !hasTeachers}
         hideWhenSinglePage={false}
         withFooter

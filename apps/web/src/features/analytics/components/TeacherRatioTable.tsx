@@ -134,9 +134,6 @@ export function TeacherRatioTable({
 
   const totalPages = mobilePageSize ? Math.max(1, Math.ceil(sorted.length / mobilePageSize)) : 1;
   const safePage = Math.min(page, totalPages);
-  const rangeStart =
-    !mobilePageSize || sorted.length === 0 ? 0 : (safePage - 1) * mobilePageSize + 1;
-  const rangeEnd = mobilePageSize ? Math.min(sorted.length, safePage * mobilePageSize) : sorted.length;
   const paginatedTeachers = useMemo(
     () =>
       mobilePageSize
@@ -197,11 +194,7 @@ export function TeacherRatioTable({
         <AnalyticsMobilePagination
           page={safePage}
           totalPages={totalPages}
-          start={rangeStart}
-          end={rangeEnd}
-          total={sorted.length}
-          onPrevious={() => goToPage(Math.max(1, safePage - 1))}
-          onNext={() => goToPage(Math.min(totalPages, safePage + 1))}
+          onGoToPage={goToPage}
         />
       ) : null}
     </div>

@@ -201,12 +201,6 @@ export function useTeacherRecordingsPage() {
       ),
     [safePage, visibleRecordings, recordingsPageSize],
   );
-  const rangeStart =
-    visibleRecordings.length === 0 ? 0 : safePage * recordingsPageSize + 1;
-  const rangeEnd = Math.min(
-    (safePage + 1) * recordingsPageSize,
-    visibleRecordings.length,
-  );
 
   useEffect(() => {
     setSelectedRecordingIds((prev) => {
@@ -287,7 +281,5 @@ export function useTeacherRecordingsPage() {
     goToPage,
     safePage,
     totalPages,
-    rangeStart,
-    rangeEnd,
   };
 }
