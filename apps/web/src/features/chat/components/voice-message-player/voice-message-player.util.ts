@@ -70,7 +70,8 @@ export function persistPlaybackSpeed(userId: string | null, speed: PlaybackSpeed
 }
 
 export function formatSpeedLabel(speed: PlaybackSpeed): string {
-  return speed === 1 ? '1x' : `${speed}x`;
+  if (speed === 1.5) return '1,5x';
+  return `${speed}x`;
 }
 
 export function formatVoiceDuration(seconds: number): string {
@@ -105,4 +106,23 @@ export function getAudioErrorMessage(error: MediaError): string {
     default:
       return 'Unknown error';
   }
+}
+
+/** Deterministic pseudo-waveform heights (0.18–1) from a seed string. */
+export function generateWaveformLevels(seed: string, count: number): number[] {
+  let hash = 0;
+  for (let i = 0; i < seed.length; i += 1) {
+    hash = (hash * 31 + seed.charCodeAt(i)) | 0;
+  }
+
+  const levels: number[] = [];
+  for (let i = 0; i < count; i += 1) {
+    hash = (hash * 1664525 + 1013904223) | 0;
+    const noise = (hash >>> 0) / 4294967295;
+    const envelope = 0.35 + 0.65 * Math.sin((i / count) * Math.PI);
+    const midBump = 0.55 + 0.45 * Math.sin((i / count) * Math.PI * 2.4);
+    const level = Math.min(1, Math.max(0.18, envelope * midBump * (0.45 + noise * 0.7)));
+    levels.push(level);
+  }
+  return levels;
 }

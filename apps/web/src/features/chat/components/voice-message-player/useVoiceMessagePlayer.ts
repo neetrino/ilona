@@ -38,7 +38,10 @@ export function useVoiceMessagePlayer({ fileUrl, duration: durationProp }: Voice
   const proxiedUrl = getProxiedFileUrl(fileUrl) || fileUrl;
 
   useEffect(() => {
-    setPlaybackSpeed(getStoredPlaybackSpeed(userId));
+    const stored = getStoredPlaybackSpeed(userId);
+    setPlaybackSpeed(
+      (PLAYBACK_SPEED_OPTIONS as readonly number[]).includes(stored) ? stored : 1,
+    );
   }, [userId]);
 
   useEffect(() => {
@@ -211,13 +214,11 @@ export function useVoiceMessagePlayer({ fileUrl, duration: durationProp }: Voice
     const el = audioRef.current;
     if (el) {
       clearActiveAudioIfMatch(el);
+      el.currentTime = 0;
     }
     setIsPlaying(false);
-    const dur = getEffectiveDuration(el, durationProp);
-    if (dur > 0) {
-      setProgress(100);
-      setCurrentTimeSec(dur);
-    }
+    setProgress(0);
+    setCurrentTimeSec(0);
   };
 
   const handleTimeUpdate = () => {
@@ -277,7 +278,7 @@ export function useVoiceMessagePlayer({ fileUrl, duration: durationProp }: Voice
 
   const cyclePlaybackSpeed = () => {
     const idx = PLAYBACK_SPEED_OPTIONS.indexOf(playbackSpeed);
-    const next = PLAYBACK_SPEED_OPTIONS[(idx + 1) % PLAYBACK_SPEED_OPTIONS.length];
+    const next = PLAYBACK_SPEED_OPTIONS[(idx < 0 ? 0 : idx + 1) % PLAYBACK_SPEED_OPTIONS.length];
     setPlaybackSpeed(next);
     persistPlaybackSpeed(userId, next);
   };
