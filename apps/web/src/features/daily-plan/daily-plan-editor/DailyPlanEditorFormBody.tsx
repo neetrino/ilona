@@ -24,7 +24,6 @@ export function DailyPlanEditorFormBody({
   vm,
   variant = 'sheet',
 }: DailyPlanEditorFormBodyProps) {
-  const t = useTranslations('dailyPlanPage');
   const tCommon = useTranslations('common');
   const tCalendar = useTranslations('dailyDuties');
   const isPage = variant === 'page';
