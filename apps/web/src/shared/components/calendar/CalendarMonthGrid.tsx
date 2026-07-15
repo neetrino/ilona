@@ -34,12 +34,17 @@ export type CalendarMonthGridProps<T> = {
   getSortTime?: (lesson: T) => number;
   renderLesson: CalendarMonthGridRenderLesson<T>;
   isLoading?: boolean;
+  /** Cap lessons shown per day cell (e.g. 3). Omit to use viewport-based default. */
   maxVisibleOverride?: number;
   highlightToday?: boolean;
   /** Student schedule board color system */
   theme?: 'default' | 'student';
   className?: string;
   scrollAreaClassName?: string;
+  /** When true, clicking a day cell opens the full-day lessons dialog. */
+  openDayDialogOnCellClick?: boolean;
+  /** Label for overflow: `count` → "+1", `more` → "+1 more". Default `more`. */
+  overflowLabel?: 'count' | 'more';
 };
 
 type DayDialogState<T> = {
@@ -69,6 +74,8 @@ export function CalendarMonthGrid<T>({
   theme = 'default',
   className,
   scrollAreaClassName,
+  openDayDialogOnCellClick = false,
+  overflowLabel = 'more',
 }: CalendarMonthGridProps<T>) {
   const isStudent = theme === 'student';
   const maxFromViewport = useMaxVisibleInCell(maxVisibleOverride);
@@ -212,10 +219,29 @@ export function CalendarMonthGrid<T>({
                   const cap = maxFromViewport;
                   const shown = dayLessons.slice(0, cap);
                   const hidden = Math.max(0, dayLessons.length - cap);
+                  const cellOpensDialog =
+                    openDayDialogOnCellClick && dayLessons.length > 0;
 
                   return (
                     <div
                       key={dayIndex}
+                      role={cellOpensDialog ? 'button' : undefined}
+                      tabIndex={cellOpensDialog ? 0 : undefined}
+                      onClick={
+                        cellOpensDialog
+                          ? () => setDayDialog({ date, lessons: dayLessons })
+                          : undefined
+                      }
+                      onKeyDown={
+                        cellOpensDialog
+                          ? (event) => {
+                              if (event.key === 'Enter' || event.key === ' ') {
+                                event.preventDefault();
+                                setDayDialog({ date, lessons: dayLessons });
+                              }
+                            }
+                          : undefined
+                      }
                       className={cn(
                         'group/cell box-border min-h-0 min-w-0 max-w-full border-r p-0.5 last:border-r-0',
                         isStudent ? 'border-[rgba(14,14,16,0.07)]' : 'border-slate-100/80',
@@ -227,6 +253,8 @@ export function CalendarMonthGrid<T>({
                             ? 'bg-[#ddecff]/50 ring-1 ring-inset ring-[#1010a3]/20'
                             : 'bg-sky-50/90 ring-1 ring-inset ring-sky-200/60'),
                         !showToday && 'bg-white/70',
+                        cellOpensDialog &&
+                          'cursor-pointer transition-colors hover:bg-slate-50/90',
                       )}
                     >
                       <p
@@ -243,14 +271,14 @@ export function CalendarMonthGrid<T>({
                       >
                         {date.getDate()}
                       </p>
-                      <div
-                        className="mt-0.5 min-h-0 min-w-0 max-w-full flex-1"
-                      >
+                      <div className="mt-0.5 min-h-0 min-w-0 max-w-full flex-1">
                         <ul className="m-0 flex min-w-0 list-none flex-col gap-0.5 p-0 sm:gap-1">
                           {shown.map((lesson) => (
                             <li
                               key={getLessonKey(lesson)}
                               className="min-w-0"
+                              onClick={(event) => event.stopPropagation()}
+                              onKeyDown={(event) => event.stopPropagation()}
                             >
                               {renderLesson({ lesson, variant: 'cell' })}
                             </li>
@@ -258,21 +286,34 @@ export function CalendarMonthGrid<T>({
                         </ul>
                         {hidden > 0 && (
                           <div className="mt-0.5 sm:mt-1">
-                            <button
-                              type="button"
-                              onClick={() =>
-                                setDayDialog({ date, lessons: dayLessons })
-                              }
-                              className={cn(
-                                'w-full max-w-full truncate rounded border px-1 py-0.5 text-left text-[9px] font-medium transition sm:text-[10px]',
-                                isStudent
-                                  ? 'border-[rgba(14,14,16,0.07)] bg-[#f6f6f7] text-[#1010a3] hover:bg-[#ddecff]/60'
-                                  : 'border-slate-200/90 bg-slate-50/90 text-slate-600 hover:border-slate-300 hover:bg-slate-100/90',
-                              )}
-                              aria-label={`View ${hidden} more lesson${hidden === 1 ? '' : 's'} for ${date.toDateString()}`}
-                            >
-                              +{hidden} more
-                            </button>
+                            {cellOpensDialog ? (
+                              <p
+                                className={cn(
+                                  'w-full max-w-full truncate px-1 py-0.5 text-left text-[9px] font-medium sm:text-[10px]',
+                                  isStudent ? 'text-[#1010a3]' : 'text-slate-600',
+                                )}
+                              >
+                                +{hidden}
+                                {overflowLabel === 'more' ? ' more' : ''}
+                              </p>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setDayDialog({ date, lessons: dayLessons })
+                                }
+                                className={cn(
+                                  'w-full max-w-full truncate rounded border px-1 py-0.5 text-left text-[9px] font-medium transition sm:text-[10px]',
+                                  isStudent
+                                    ? 'border-[rgba(14,14,16,0.07)] bg-[#f6f6f7] text-[#1010a3] hover:bg-[#ddecff]/60'
+                                    : 'border-slate-200/90 bg-slate-50/90 text-slate-600 hover:border-slate-300 hover:bg-slate-100/90',
+                                )}
+                                aria-label={`View ${hidden} more lesson${hidden === 1 ? '' : 's'} for ${date.toDateString()}`}
+                              >
+                                +{hidden}
+                                {overflowLabel === 'more' ? ' more' : ''}
+                              </button>
+                            )}
                           </div>
                         )}
                       </div>

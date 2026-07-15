@@ -29,6 +29,9 @@ export function DailyDutiesMonthView({
           getSortTime={(l) => new Date(l.scheduledAt).getTime()}
           isLoading={isLoading}
           scrollAreaClassName="overflow-y-visible overscroll-auto"
+          maxVisibleOverride={3}
+          openDayDialogOnCellClick
+          overflowLabel="count"
           renderLesson={({ lesson, variant }) => (
             <button
               type="button"
