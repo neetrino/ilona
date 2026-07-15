@@ -9,6 +9,7 @@ import {
 } from '@/shared/lib/admin-control-theme';
 import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
 import { GroupIconPicker } from '../GroupIconPicker';
+import { GroupCalendarScheduleSection } from '../GroupCalendarScheduleSection';
 import { teacherOptionLabel } from '../../lib/center-scoped-teachers';
 import { ADMIN_TEXTAREA_CLASS } from './edit-group-form.constants';
 import type { UpdateGroupFormData } from './edit-group-form.types';
@@ -45,6 +46,13 @@ export function EditGroupFormFields(props: EditGroupFormFieldsProps) {
     isLoadingTeachers,
     isFormBusy,
     requestClose,
+    schedule,
+    setSchedule,
+    dateFrom,
+    dateTo,
+    setDateFrom,
+    setDateTo,
+    scheduleValidationError,
   } = props;
 
   return (
@@ -228,6 +236,17 @@ export function EditGroupFormFields(props: EditGroupFormFieldsProps) {
             <p className="text-sm text-slate-500">{tForm('loadingTeachers')}</p>
           )}
 
+          <GroupCalendarScheduleSection
+            schedule={schedule}
+            onScheduleChange={setSchedule}
+            dateFrom={dateFrom}
+            dateTo={dateTo}
+            onDateFromChange={setDateFrom}
+            onDateToChange={setDateTo}
+            disabled={isFormBusy}
+            adminControls
+          />
+
           <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end">
             <Button
               type="button"
@@ -244,7 +263,8 @@ export function EditGroupFormFields(props: EditGroupFormFieldsProps) {
                 isFormBusy ||
                 isLoadingCenters ||
                 isLoadingTeachers ||
-                centers.length === 0
+                centers.length === 0 ||
+                Boolean(scheduleValidationError)
               }
               className={cn(ADMIN_PRIMARY_BUTTON_CLASS, 'bg-primary text-primary-foreground hover:bg-primary/90')}
             >

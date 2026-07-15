@@ -958,6 +958,7 @@
       "selectBothTeachers": "Նշանակեք երկու ուսուցիչ խմբին։",
       "chooseCalendarDateRange": "Ընտրեք օրացույցի միջակայքի սկիզբ և ավարտի ամսաթվերը։",
       "endDateOnOrAfterStart": "Ավարտի ամսաթիվը պետք է լինի սկզբի ամսաթվից հետո կամ նույնը։",
+      "addAtLeastOneWeeklySlot": "Ավելացրեք առնվազն մեկ շաբաթական ժամամիջոց՝ օրացույցի դասեր ստեղծելու համար։",
       "namePlaceholder": "Beginner English A1",
       "levelPlaceholder": "A1, A2, B1 և այլն",
       "replaceLessonsTitle": "Փոխարինե՞լ ավտոմատ ստեղծված դասերը",

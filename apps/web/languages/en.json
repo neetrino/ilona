@@ -958,6 +958,7 @@
       "selectBothTeachers": "Assign both teachers to the group.",
       "chooseCalendarDateRange": "Choose a start and end date for the calendar range.",
       "endDateOnOrAfterStart": "End date must be on or after the start date.",
+      "addAtLeastOneWeeklySlot": "Add at least one weekly time slot to generate calendar lessons.",
       "namePlaceholder": "Beginner English A1",
       "levelPlaceholder": "A1, A2, B1, etc.",
       "replaceLessonsTitle": "Replace auto-generated lessons?",
