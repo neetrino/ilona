@@ -43,9 +43,10 @@ steps:
       - "5"
       - --concurrency
       - "80"
-      - --set-env-vars
+      # --update-* merges into the existing revision; --set-* would wipe Console-added vars (API_URL, R2_*, …)
+      - --update-env-vars
       - NODE_ENV=production,API_PREFIX=api,CORS_ORIGIN=https://ilona-web.vercel.app
-      - --set-secrets
+      - --update-secrets
       - DATABASE_URL=DATABASE_URL:latest,JWT_SECRET=JWT_SECRET:latest
 
 images:
