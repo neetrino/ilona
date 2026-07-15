@@ -26,11 +26,12 @@ export function DailyPlanEditorFormBody({
 }: DailyPlanEditorFormBodyProps) {
   const tCommon = useTranslations('common');
   const tCalendar = useTranslations('dailyDuties');
+  const tDailyPlan = useTranslations('dailyPlanPage');
   const isPage = variant === 'page';
 
   const fields = (
     <div className={cn('flex flex-col gap-6', isPage ? 'p-5 md:p-8' : 'p-5')}>
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
         <div>
           <label htmlFor="dp-date" className="mb-1.5 block text-sm font-medium text-[#1010a3]">
             {tCommon('date')}
@@ -71,6 +72,22 @@ export function DailyPlanEditorFormBody({
             />
           )}
         </div>
+        {vm.topics[0] ? (
+          <div>
+            <label htmlFor="dp-title" className="mb-1.5 block text-sm font-medium text-[#1010a3]">
+              {tCommon('title')}
+            </label>
+            <input
+              id="dp-title"
+              type="text"
+              value={vm.topics[0].title}
+              onChange={(e) => vm.updateTopic(0, { title: e.target.value })}
+              disabled={vm.readOnly}
+              placeholder={tDailyPlan('topicTitlePlaceholder', { number: 1 })}
+              className={cn(ADMIN_FORM_INPUT_CLASS, 'w-full')}
+            />
+          </div>
+        ) : null}
       </div>
 
       {vm.error && (
@@ -89,6 +106,7 @@ export function DailyPlanEditorFormBody({
             planId={vm.plan?.id}
             readOnly={vm.readOnly}
             kindLabel={vm.kindLabel}
+            hideTitle={idx === 0}
             onTopicChange={vm.updateTopic}
             onResourceChange={vm.updateResource}
             onAddResource={vm.addResource}
@@ -104,11 +122,11 @@ export function DailyPlanEditorFormBody({
       className={cn(
         'shrink-0 border-t border-slate-200/80 bg-white px-5 pt-3',
         isPage
-          ? 'sticky bottom-0 pb-4 md:px-8'
+          ? 'sticky bottom-0 rounded-b-[22px] pb-4 md:px-8'
           : 'pb-[calc(4.5rem+env(safe-area-inset-bottom))] min-[1367px]:pb-4',
       )}
     >
-      <div className="flex justify-end">
+      <div className={cn('flex', isPage ? 'justify-start' : 'justify-end')}>
         <button
           type="button"
           onClick={vm.handleSave}

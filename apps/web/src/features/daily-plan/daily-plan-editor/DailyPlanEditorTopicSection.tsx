@@ -21,6 +21,7 @@ interface DailyPlanEditorTopicSectionProps {
   planId?: string;
   readOnly: boolean;
   kindLabel: Record<DailyPlanResourceKind, string>;
+  hideTitle?: boolean;
   onTopicChange: (index: number, patch: Partial<DraftTopic>) => void;
   onResourceChange: (
     topicIndex: number,
@@ -38,6 +39,7 @@ export function DailyPlanEditorTopicSection({
   planId,
   readOnly,
   kindLabel,
+  hideTitle = false,
   onTopicChange,
   onResourceChange,
   onAddResource,
@@ -47,14 +49,16 @@ export function DailyPlanEditorTopicSection({
 
   return (
     <div className="space-y-4">
-      <input
-        type="text"
-        value={topic.title}
-        onChange={(e) => onTopicChange(topicIndex, { title: e.target.value })}
-        disabled={readOnly}
-        placeholder={t('topicTitlePlaceholder', { number: topicIndex + 1 })}
-        className={cn(ADMIN_FORM_INPUT_CLASS, 'w-full')}
-      />
+      {!hideTitle ? (
+        <input
+          type="text"
+          value={topic.title}
+          onChange={(e) => onTopicChange(topicIndex, { title: e.target.value })}
+          disabled={readOnly}
+          placeholder={t('topicTitlePlaceholder', { number: topicIndex + 1 })}
+          className={cn(ADMIN_FORM_INPUT_CLASS, 'w-full')}
+        />
+      ) : null}
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         {DAILY_PLAN_RESOURCE_KINDS.map((kind) => {
