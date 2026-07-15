@@ -9,7 +9,6 @@ import {
   useSocket,
   useAddMessageToCache,
   useCreateDirectChat,
-  useChatMessageNavigation,
 } from '../hooks';
 import { useChatStore } from '../store/chat.store';
 import type { Chat } from '../types';
@@ -171,19 +170,6 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
     },
   });
 
-  const {
-    focusedMessageId,
-    registerMessageElement,
-    goToPrevious,
-    goToNext,
-    canGoPrevious,
-    canGoNext,
-  } = useChatMessageNavigation({
-    navigableMessageIds: filteredMessages.map((m) => m.id),
-    chatId: chat.id,
-    endAnchorRef: messagesEndRef,
-  });
-
   const markAsReadRef = useRef(markAsRead);
   markAsReadRef.current = markAsRead;
 
@@ -315,16 +301,10 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
         isAdminOrManager={isAdminOrManager}
         isGroupChat={isGroupChat}
         isTeacher={isTeacher}
-        showMessageNavigation={!isLoading && filteredMessages.length >= 2}
-        navigationVariant={isPortalChatRole(user?.role) ? 'student' : 'default'}
         onBack={onBack}
         onAddMembers={() => setShowAddMembersModal(true)}
         onOpenVocabulary={() => setShowVocabularyModal(true)}
         onDeleteGroup={canDeleteGroup ? handleOpenGroupDelete : undefined}
-        onPrevious={goToPrevious}
-        onNext={goToNext}
-        canGoPrevious={canGoPrevious}
-        canGoNext={canGoNext}
       />
 
       <ChatMessageList
@@ -345,7 +325,6 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
             : undefined
         }
         canDeleteAnyMessage={isAdminOrManager}
-        focusedMessageId={focusedMessageId}
         isMobileViewport={isMobileViewport}
         mobileDeleteMessageId={mobileDeleteMessageId}
         messageIdToDelete={messageIdToDelete}
@@ -354,7 +333,6 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
         brandLogoUrl={brandLogoUrl}
         messagesContainerRef={messagesContainerRef}
         messagesEndRef={messagesEndRef}
-        registerMessageElement={registerMessageElement}
         onMessagesContainerClick={handleMessagesContainerClick}
         onOpenDeleteMessage={handleOpenDeleteMessage}
         onDeletableMessageTap={handleDeletableMessageTap}

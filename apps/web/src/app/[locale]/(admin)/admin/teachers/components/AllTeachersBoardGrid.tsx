@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import type { useTranslations as useTranslationsType } from 'next-intl';
 import { TeacherCard } from './TeacherCard';
 import type { Teacher } from '@/features/teachers';
+import { AdminPaginationControls } from '@/shared/components/ui';
 import { useIsIPad } from '@/shared/hooks/useIsIPad';
 import { cn } from '@/shared/lib/utils';
 
@@ -115,57 +116,14 @@ export function AllTeachersBoardGrid({
         ))}
       </div>
       {teachers.length > teachersPageSize && (
-        <div
-          className={cn(
-            'flex items-center text-sm text-[#8b8b90]',
-            isIPad ? 'justify-start gap-4' : 'justify-between sm:hidden',
-          )}
-        >
-          <span>
-            {safeMobileTeachersPage * teachersPageSize + 1}-
-            {Math.min((safeMobileTeachersPage + 1) * teachersPageSize, teachers.length)} / {teachers.length}
-          </span>
-          <div className="flex items-center gap-3">
-            <button
-              type="button"
-              className={cn(
-                'inline-flex h-9 w-9 items-center justify-center rounded-full border transition-colors focus:outline-none focus-visible:outline-none focus-visible:ring-0',
-                safeMobileTeachersPage === 0
-                  ? 'border-[#d9dde8] bg-[#f1f1f4] text-[#9aa3b5]'
-                  : 'border-[rgba(14,14,16,0.12)] bg-white text-[#3b3b40] hover:bg-[#f6f6f7]',
-              )}
-              disabled={safeMobileTeachersPage === 0}
-              onClick={() => goToMobileTeachersPage(Math.max(0, safeMobileTeachersPage - 1))}
-              aria-label={tc('previousCardsPage')}
-            >
-              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-              </svg>
-            </button>
-            <span className="inline-flex h-9 min-w-9 items-center justify-center rounded-full bg-[#1010a3] px-3 text-xs font-semibold text-white">
-              {safeMobileTeachersPage + 1}
-            </span>
-            <button
-              type="button"
-              className={cn(
-                'inline-flex h-9 w-9 items-center justify-center rounded-full border transition-colors focus:outline-none focus-visible:outline-none focus-visible:ring-0',
-                safeMobileTeachersPage >= totalMobileTeachersPages - 1
-                  ? 'border-[#d9dde8] bg-[#f1f1f4] text-[#9aa3b5]'
-                  : 'border-[rgba(14,14,16,0.12)] bg-white text-[#3b3b40] hover:bg-[#f6f6f7]',
-              )}
-              disabled={safeMobileTeachersPage >= totalMobileTeachersPages - 1}
-              onClick={() =>
-                goToMobileTeachersPage(
-                  Math.min(totalMobileTeachersPages - 1, safeMobileTeachersPage + 1),
-                )
-              }
-              aria-label={tc('nextCardsPage')}
-            >
-              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </button>
-          </div>
+        <div className="flex items-center justify-center sm:hidden">
+          <AdminPaginationControls
+            page={safeMobileTeachersPage}
+            totalPages={totalMobileTeachersPages}
+            onPageChange={goToMobileTeachersPage}
+            previousLabel={tc('previousCardsPage')}
+            nextLabel={tc('nextCardsPage')}
+          />
         </div>
       )}
     </div>

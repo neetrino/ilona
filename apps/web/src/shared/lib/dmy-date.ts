@@ -4,11 +4,100 @@ export const ISO_DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 const MIN_YEAR = 1900;
 const MAX_YEAR = 2100;
 
+type SegmentLengths = [number, number, number];
+
 function buildDmyString(digits: string): string {
   if (digits.length === 0) return '';
   if (digits.length <= 2) return digits;
   if (digits.length <= 4) return `${digits.slice(0, 2)}/${digits.slice(2)}`;
   return `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4)}`;
+}
+
+function parseSegmentLengths(formatted: string): SegmentLengths {
+  const [day = '', month = '', year = ''] = formatted.split('/');
+  return [
+    day.replace(/\D/g, '').length,
+    month.replace(/\D/g, '').length,
+    year.replace(/\D/g, '').length,
+  ];
+}
+
+function joinByLengths(digits: string, lengths: SegmentLengths): string {
+  let offset = 0;
+  const day = digits.slice(offset, offset + lengths[0]);
+  offset += lengths[0];
+  const month = digits.slice(offset, offset + lengths[1]);
+  offset += lengths[1];
+  const year = digits.slice(offset, offset + lengths[2]);
+
+  let nextDay = day;
+  let nextMonth = month;
+  if (nextDay.length === 2) nextDay = clampSegment(nextDay, 1, 31);
+  if (nextMonth.length === 2) nextMonth = clampSegment(nextMonth, 1, 12);
+
+  if (!nextMonth && !year) return nextDay;
+  if (!year) return `${nextDay}/${nextMonth}`;
+  return `${nextDay}/${nextMonth}/${year}`;
+}
+
+function lengthsAfterDeleting(
+  lengths: SegmentLengths,
+  deleteAt: number,
+  removed: number,
+): SegmentLengths {
+  const deleteEnd = deleteAt + removed;
+  let pos = 0;
+  const next: SegmentLengths = [0, 0, 0];
+  for (let index = 0; index < 3; index += 1) {
+    const start = pos;
+    const end = pos + lengths[index];
+    const overlap = Math.max(0, Math.min(end, deleteEnd) - Math.max(start, deleteAt));
+    next[index] = lengths[index] - overlap;
+    pos = end;
+  }
+  return next;
+}
+
+function lengthsAfterInserting(
+  lengths: SegmentLengths,
+  insertAt: number,
+  insertedCount: number,
+): SegmentLengths {
+  const maxBySegment: SegmentLengths = [2, 2, 4];
+  let pos = 0;
+  const next: SegmentLengths = [...lengths];
+  for (let index = 0; index < 3; index += 1) {
+    const start = pos;
+    const end = pos + lengths[index];
+    if (insertAt >= start && insertAt <= end) {
+      next[index] = Math.min(maxBySegment[index], lengths[index] + insertedCount);
+      return next;
+    }
+    pos = end;
+  }
+  next[2] = Math.min(4, lengths[2] + insertedCount);
+  return next;
+}
+
+export function countDigitsBefore(value: string, caret: number): number {
+  let count = 0;
+  const limit = Math.max(0, Math.min(caret, value.length));
+  for (let index = 0; index < limit; index += 1) {
+    if (/\d/.test(value[index] ?? '')) count += 1;
+  }
+  return count;
+}
+
+export function caretPosAfterDigits(formatted: string, digitCount: number): number {
+  if (digitCount <= 0) return 0;
+  let counted = 0;
+  for (let index = 0; index < formatted.length; index += 1) {
+    if (/\d/.test(formatted[index] ?? '')) {
+      counted += 1;
+      if (counted === digitCount) return index + 1;
+    }
+  }
+  return formatted.length;
 }
 
 function isValidYearPrefix(prefix: string): boolean {
@@ -117,24 +206,121 @@ function appendDmyDigit(current: string, digit: string): string {
   return current;
 }
 
-/**
- * Formats manual DD/MM/YYYY input while typing.
- * Clamps day to 01–31 and month to 01–12 while typing.
- */
-export function formatDmyInputValue(raw: string, previousFormatted = ''): string {
-  const allDigits = raw.replace(/\D/g, '');
-  const prevDigits = previousFormatted.replace(/\D/g, '');
-
-  if (allDigits.length < prevDigits.length) {
-    return buildDmyString(allDigits);
-  }
-
+function formatAppendedDigits(prevDigits: string, nextDigits: string): string {
   let result = prevDigits;
-  for (const digit of allDigits.slice(prevDigits.length)) {
+  for (const digit of nextDigits.slice(prevDigits.length)) {
     result = appendDmyDigit(result, digit);
   }
-
   return buildDmyString(result);
+}
+
+/**
+ * Formats manual DD/MM/YYYY input while typing.
+ * Pass `caretStart` so mid-field edits keep day/month/year segments instead of
+ * re-packing digits from scratch (which made Backspace jump to the year).
+ */
+export function formatDmyInputValue(
+  raw: string,
+  previousFormatted = '',
+  caretStart: number | null = null,
+): string {
+  const allDigitsRaw = raw.replace(/\D/g, '');
+  const prevDigits = previousFormatted.replace(/\D/g, '');
+  const prevLengths = parseSegmentLengths(previousFormatted);
+
+  // Digits unchanged (e.g. only a slash was deleted) — restore separators.
+  if (allDigitsRaw === prevDigits) {
+    if (!prevDigits) return '';
+    if (prevLengths[0] + prevLengths[1] + prevLengths[2] === prevDigits.length) {
+      return joinByLengths(prevDigits, prevLengths);
+    }
+    return buildDmyString(prevDigits);
+  }
+
+  if (!prevDigits) {
+    return formatAppendedDigits('', allDigitsRaw.slice(0, 8));
+  }
+
+  if (allDigitsRaw.length > prevDigits.length && allDigitsRaw.startsWith(prevDigits)) {
+    return formatAppendedDigits(prevDigits, allDigitsRaw.slice(0, 8));
+  }
+
+  if (allDigitsRaw.length < prevDigits.length && prevDigits.startsWith(allDigitsRaw) && caretStart === null) {
+    return buildDmyString(allDigitsRaw);
+  }
+
+  if (allDigitsRaw.length === prevDigits.length && allDigitsRaw.length === 8) {
+    return joinByLengths(allDigitsRaw, [2, 2, 4]);
+  }
+
+  if (caretStart === null) {
+    if (allDigitsRaw.length < prevDigits.length) {
+      return buildDmyString(allDigitsRaw.slice(0, 8));
+    }
+    return formatAppendedDigits(prevDigits, allDigitsRaw.slice(0, 8));
+  }
+
+  const digitsBeforeCaret = countDigitsBefore(raw, caretStart);
+
+  if (allDigitsRaw.length < prevDigits.length) {
+    const removed = prevDigits.length - allDigitsRaw.length;
+    const deleteAt = digitsBeforeCaret;
+    const nextDigits = prevDigits.slice(0, deleteAt) + prevDigits.slice(deleteAt + removed);
+    const nextLengths = lengthsAfterDeleting(prevLengths, deleteAt, removed);
+    return joinByLengths(nextDigits, nextLengths);
+  }
+
+  if (allDigitsRaw.length > prevDigits.length) {
+    const insertedCount = allDigitsRaw.length - prevDigits.length;
+    const insertAt = Math.max(0, digitsBeforeCaret - insertedCount);
+    const insertedDigits = allDigitsRaw.slice(insertAt, insertAt + insertedCount);
+    const targetLengths = lengthsAfterInserting(prevLengths, insertAt, insertedCount);
+    const maxDigits = targetLengths[0] + targetLengths[1] + targetLengths[2];
+
+    if (prevDigits.length >= maxDigits) {
+      const overwriteAt = Math.min(insertAt, Math.max(0, prevDigits.length - 1));
+      const nextDigits =
+        prevDigits.slice(0, overwriteAt) +
+        (insertedDigits[0] ?? '') +
+        prevDigits.slice(overwriteAt + 1);
+      const lengthsForFull: SegmentLengths =
+        prevLengths[0] + prevLengths[1] + prevLengths[2] === 8 ? [2, 2, 4] : prevLengths;
+      return joinByLengths(nextDigits.slice(0, 8), lengthsForFull);
+    }
+
+    const nextDigits = (
+      prevDigits.slice(0, insertAt) +
+      insertedDigits +
+      prevDigits.slice(insertAt)
+    ).slice(0, maxDigits);
+    return joinByLengths(nextDigits, targetLengths);
+  }
+
+  if (prevLengths[0] + prevLengths[1] + prevLengths[2] === allDigitsRaw.length) {
+    return joinByLengths(allDigitsRaw, prevLengths);
+  }
+
+  return buildDmyString(allDigitsRaw.slice(0, 8));
+}
+
+export type DmyInputChangeResult = {
+  value: string;
+  caret: number;
+};
+
+/** Formats the next value and returns where the caret should sit after React updates. */
+export function applyDmyInputChange(
+  raw: string,
+  previousFormatted: string,
+  caretStart: number | null,
+): DmyInputChangeResult {
+  const value = formatDmyInputValue(raw, previousFormatted, caretStart);
+  const digitCount =
+    caretStart === null ? value.replace(/\D/g, '').length : countDigitsBefore(raw, caretStart);
+  return {
+    value,
+    caret: caretPosAfterDigits(value, digitCount),
+  };
 }
 
 export function parseDmyToIso(value: string): string | undefined {

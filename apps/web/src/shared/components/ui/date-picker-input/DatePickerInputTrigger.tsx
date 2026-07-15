@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 import { CalendarDays } from 'lucide-react';
+import { applyDmyInputChange } from '@/shared/lib/dmy-date';
 import { cn } from '@/shared/lib/utils';
 import { isDesktopViewport } from './date-picker-input.util';
 import type { DatePickerInputViewModel } from './date-picker-input.types';
@@ -19,18 +20,49 @@ export function DatePickerInputTrigger({
   React.InputHTMLAttributes<HTMLInputElement>,
   'type' | 'onChange' | 'value' | 'defaultValue' | 'id' | 'name' | 'min' | 'max' | 'disabled' | 'required' | 'placeholder' | 'className' | 'onBlur'
 >) {
+  const localInputRef = React.useRef<HTMLInputElement | null>(null);
+  const pendingCaretRef = React.useRef<number | null>(null);
+
+  const setInputRef = React.useCallback(
+    (node: HTMLInputElement | null) => {
+      localInputRef.current = node;
+      if (typeof inputRef === 'function') {
+        inputRef(node);
+      } else if (inputRef) {
+        inputRef.current = node;
+      }
+    },
+    [inputRef],
+  );
+
+  React.useLayoutEffect(() => {
+    const input = localInputRef.current;
+    const caret = pendingCaretRef.current;
+    if (!input || caret === null) return;
+    input.setSelectionRange(caret, caret);
+    pendingCaretRef.current = null;
+  }, [vm.inputValue]);
+
   return (
     <div className="relative w-full" data-date-anchor>
       <input
         {...rest}
-        ref={inputRef}
+        ref={setInputRef}
         id={vm.triggerId}
         type="text"
         inputMode="numeric"
         autoComplete="off"
         data-role="date-trigger"
         value={vm.inputValue}
-        onChange={(event) => vm.handleDraftTextChange(event.target.value)}
+        onChange={(event) => {
+          const { value, caret } = applyDmyInputChange(
+            event.target.value,
+            vm.inputValue,
+            event.target.selectionStart,
+          );
+          pendingCaretRef.current = caret;
+          vm.handleDraftTextChange(value);
+        }}
         onFocus={vm.handleInputFocus}
         onBlur={vm.handleInputBlur}
         onKeyDown={vm.handleInputKeyDown}

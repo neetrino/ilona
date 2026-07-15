@@ -3,7 +3,7 @@
 import { useTranslations } from 'next-intl';
 import { Input, Label } from '@/shared/components/ui';
 import { ADMIN_FORM_INPUT_CLASS } from '@/shared/lib/admin-control-theme';
-import { formatDmyInputValue } from '../../student-dob-date';
+import { applyDmyInputChange } from '../../student-dob-date';
 import { computeAgeFromDob } from '../../student-account-form.schema';
 import {
   CRM_LAYOUT_SECTION_HEADING,
@@ -53,12 +53,19 @@ export function StudentAccountCrmProfileSections({
               placeholder={tForm('dateOfBirthPlaceholder')}
               value={watchedDateOfBirth}
               onChange={(e) => {
-                const next = formatDmyInputValue(e.target.value, watchedDateOfBirth);
+                const { value: next, caret } = applyDmyInputChange(
+                  e.target.value,
+                  watchedDateOfBirth,
+                  e.target.selectionStart,
+                );
                 setValue('dateOfBirth', next, { shouldValidate: true, shouldDirty: true });
                 const fromDob = computeAgeFromDob(next.trim() || undefined);
                 if (fromDob !== undefined) {
                   setValue('manualAge', undefined, { shouldDirty: true, shouldValidate: true });
                 }
+                requestAnimationFrame(() => {
+                  e.target.setSelectionRange(caret, caret);
+                });
               }}
               className={ADMIN_FORM_INPUT_CLASS}
               disabled={isSubmitting}
@@ -106,12 +113,20 @@ export function StudentAccountCrmProfileSections({
               inputMode="numeric"
               placeholder={tForm('firstLessonDatePlaceholder')}
               value={watchedFirstLessonDate}
-              onChange={(e) =>
-                setValue('firstLessonDate', formatDmyInputValue(e.target.value, watchedFirstLessonDate), {
+              onChange={(e) => {
+                const { value: next, caret } = applyDmyInputChange(
+                  e.target.value,
+                  watchedFirstLessonDate,
+                  e.target.selectionStart,
+                );
+                setValue('firstLessonDate', next, {
                   shouldValidate: true,
                   shouldDirty: true,
-                })
-              }
+                });
+                requestAnimationFrame(() => {
+                  e.target.setSelectionRange(caret, caret);
+                });
+              }}
               className={ADMIN_FORM_INPUT_CLASS}
               disabled={isSubmitting}
             />

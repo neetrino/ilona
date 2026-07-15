@@ -37,7 +37,7 @@ export function DailyPlanEditorPage({
       <div className="flex items-center gap-3">
         <ChatBackButton onClick={goBack} aria-label={tCommon('back')} />
       </div>
-      <div className="rounded-[22px] border border-slate-200 bg-white shadow-sm">
+      <div className="overflow-hidden rounded-[22px] border border-slate-200 bg-white shadow-sm">
         <DailyPlanEditorFormBody vm={vm} variant="page" />
       </div>
     </div>

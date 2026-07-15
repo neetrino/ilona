@@ -6,7 +6,6 @@ import { cn } from '@/shared/lib/utils';
 import type { ChatThemeTokens } from '../../lib/chat-theme';
 import type { Chat } from '../../types';
 import { ChatBackButton } from '../ChatBackButton';
-import { MessageNavigationControls } from '../MessageNavigationControls';
 import { OnlineStatusDot } from '../OnlineStatusDot';
 import { ChatWindowHeaderMenu } from './ChatWindowHeaderMenu';
 
@@ -24,16 +23,10 @@ interface ChatWindowHeaderProps {
   isAdminOrManager: boolean;
   isGroupChat: boolean;
   isTeacher: boolean;
-  showMessageNavigation: boolean;
-  navigationVariant: 'default' | 'student';
   onBack?: () => void;
   onAddMembers: () => void;
   onOpenVocabulary: () => void;
   onDeleteGroup?: () => void;
-  onPrevious: () => void;
-  onNext: () => void;
-  canGoPrevious: boolean;
-  canGoNext: boolean;
 }
 
 export function ChatWindowHeader({
@@ -50,16 +43,10 @@ export function ChatWindowHeader({
   isAdminOrManager,
   isGroupChat,
   isTeacher,
-  showMessageNavigation,
-  navigationVariant,
   onBack,
   onAddMembers,
   onOpenVocabulary,
   onDeleteGroup,
-  onPrevious,
-  onNext,
-  canGoPrevious,
-  canGoNext,
 }: ChatWindowHeaderProps) {
   const tChat = useTranslations('chat');
 
@@ -162,15 +149,6 @@ export function ChatWindowHeader({
             <span className="hidden sm:inline">{tChat('vocabulary')}</span>
           </button>
         )}
-        {showMessageNavigation ? (
-          <MessageNavigationControls
-            variant={navigationVariant}
-            onPrevious={onPrevious}
-            onNext={onNext}
-            canGoPrevious={canGoPrevious}
-            canGoNext={canGoNext}
-          />
-        ) : null}
         <div className="flex shrink-0 items-center gap-1">
           <div className="flex h-9 w-7 shrink-0 items-center justify-center pl-1.5 min-[1367px]:w-9 min-[1367px]:pl-2">
             {chat.type === 'DIRECT' && onlineStatus !== null ? (

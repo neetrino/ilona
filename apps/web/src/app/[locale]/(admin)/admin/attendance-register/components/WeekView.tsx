@@ -259,7 +259,7 @@ export function WeekView({
           onPageChange={goToMobileCardsPage}
           previousLabel={tCommon('previousCardsPage')}
           nextLabel={tCommon('nextCardsPage')}
-          align="between"
+          align="start"
         />
       </div>
 

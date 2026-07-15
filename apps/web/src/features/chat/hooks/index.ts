@@ -33,5 +33,4 @@ export {
   useSocketStatus,
 } from './useSocket';
 
-export { useChatMessageNavigation } from './useChatMessageNavigation';
 export { useEscapeToLeaveChatConversation } from './useEscapeToLeaveChatConversation';

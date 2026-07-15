@@ -53,31 +53,33 @@ function isViewportOverlay(element: HTMLElement): boolean {
   );
 }
 
-function isForeignPortalSheetTarget(target: Element, currentLayer: HTMLElement): boolean {
-  const foreignDialog = target.closest('[role="dialog"]');
+/**
+ * Radix dispatches outside events on the clicked node (`event.target`), not on
+ * Dialog.Content. Overlay clicks must dismiss; only interactions with another
+ * sheet/dialog content (or portaled menus) should be blocked.
+ */
+function shouldPreventOutsideDismiss(target: Element): boolean {
   if (
-    foreignDialog instanceof HTMLElement &&
-    foreignDialog !== currentLayer &&
-    !currentLayer.contains(foreignDialog)
+    target.closest(`[${SINGLE_SELECT_DROPDOWN_MENU_ATTR}]`) ||
+    target.closest(`[${SINGLE_SELECT_DROPDOWN_BACKDROP_ATTR}]`) ||
+    target.closest(`[${DATE_PICKER_POPOVER_ATTR}]`)
   ) {
+    return true;
+  }
+
+  // Own (or any) full-viewport overlay is a valid dismiss target.
+  if (target instanceof HTMLElement && isViewportOverlay(target)) {
+    return false;
+  }
+
+  const foreignDialog = target.closest('[role="dialog"]');
+  if (foreignDialog instanceof HTMLElement) {
     return true;
   }
 
   const foreignLayer = target.closest(`[${PORTAL_SHEET_LAYER_ATTR}]`);
-  if (
-    foreignLayer instanceof HTMLElement &&
-    foreignLayer !== currentLayer &&
-    !currentLayer.contains(foreignLayer)
-  ) {
+  if (foreignLayer instanceof HTMLElement && !isViewportOverlay(foreignLayer)) {
     return true;
-  }
-
-  let node: Element | null = target;
-  while (node && node !== currentLayer) {
-    if (node instanceof HTMLElement && isViewportOverlay(node) && !currentLayer.contains(node)) {
-      return true;
-    }
-    node = node.parentElement;
   }
 
   return false;
@@ -85,30 +87,10 @@ function isForeignPortalSheetTarget(target: Element, currentLayer: HTMLElement):
 
 export function preventStackedSheetDismiss(event: Event): void {
   const target = event.target;
-  if (target instanceof Element) {
-    if (
-      target.closest(`[${SINGLE_SELECT_DROPDOWN_MENU_ATTR}]`) ||
-      target.closest(`[${SINGLE_SELECT_DROPDOWN_BACKDROP_ATTR}]`) ||
-      target.closest(`[${DATE_PICKER_POPOVER_ATTR}]`)
-    ) {
-      event.preventDefault();
-      return;
-    }
-  }
+  if (!(target instanceof Element)) return;
 
-  const current = event.currentTarget;
-  if (!(current instanceof HTMLElement)) return;
-
-  if (target instanceof Element && isForeignPortalSheetTarget(target, current)) {
+  if (shouldPreventOutsideDismiss(target)) {
     event.preventDefault();
-    return;
-  }
-
-  const active = document.activeElement;
-  if (active instanceof Element && active !== current) {
-    if (isForeignPortalSheetTarget(active, current)) {
-      event.preventDefault();
-    }
   }
 }
 

@@ -4,7 +4,7 @@ import { useTranslations, useLocale } from 'next-intl';
 import type { CrmLead } from '@/features/crm/types';
 import { useCrmStatusLabels } from '@/features/crm/hooks/useCrmStatusLabels';
 import { formatPhoneForDisplay, cn } from '@/shared/lib/utils';
-import { useIsIPad } from '@/shared/hooks/useIsIPad';
+import { AdminPaginationControls } from '@/shared/components/ui';
 import { LessonListDateCell } from '@/shared/components/daily-duties/LessonListDateCell';
 
 function CrmListDateTimeCell({
@@ -65,13 +65,10 @@ export function ListTable({
   const tc = useTranslations('common');
   const locale = useLocale();
   const statusLabels = useCrmStatusLabels();
-  const isIPad = useIsIPad();
   const pageSize = 10;
   const safeTotalPages = Math.max(1, totalPages);
   const safePage = Math.min(Math.max(0, page), safeTotalPages - 1);
   const hasLeads = totalLeads > 0;
-  const showingStart = hasLeads ? safePage * pageSize + 1 : 0;
-  const showingEnd = hasLeads ? Math.min((safePage + 1) * pageSize, totalLeads) : 0;
 
   const headers = [
     tc('name'),
@@ -180,49 +177,15 @@ export function ListTable({
       </table>
       </div>
       <div className="border-t border-[rgba(14,14,16,0.07)] px-4 py-3 sm:px-5">
-        <div className={`flex items-center text-sm text-[#8b8b90] ${isIPad ? 'justify-start gap-4' : 'justify-between lg:justify-start lg:gap-4'}`}>
-          <span>
-            {t('showingLeads', {
-              start: showingStart,
-              end: showingEnd,
-              total: totalLeads,
-            })}
-          </span>
-          <div className="flex items-center gap-3">
-            <button
-              type="button"
-              className={`inline-flex h-9 w-9 items-center justify-center rounded-full border transition-colors ${
-                safePage === 0 || deleteInProgress || !hasLeads
-                  ? 'border-[#d9dde8] bg-[#f1f1f4] text-[#9aa3b5]'
-                  : 'border-[rgba(14,14,16,0.12)] bg-white text-[#3b3b40] hover:bg-[#f6f6f7]'
-              }`}
-              disabled={safePage === 0 || deleteInProgress || !hasLeads}
-              onClick={() => onPageChange(Math.max(0, safePage - 1))}
-              aria-label={tc('previousPage')}
-            >
-              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-              </svg>
-            </button>
-            <span className="inline-flex h-9 min-w-9 items-center justify-center rounded-full bg-[#1010a3] px-3 text-xs font-semibold text-white">
-              {hasLeads ? safePage + 1 : 0}
-            </span>
-            <button
-              type="button"
-              className={`inline-flex h-9 w-9 items-center justify-center rounded-full border transition-colors ${
-                safePage >= safeTotalPages - 1 || deleteInProgress || !hasLeads
-                  ? 'border-[#d9dde8] bg-[#f1f1f4] text-[#9aa3b5]'
-                  : 'border-[rgba(14,14,16,0.12)] bg-white text-[#3b3b40] hover:bg-[#f6f6f7]'
-              }`}
-              disabled={safePage >= safeTotalPages - 1 || deleteInProgress || !hasLeads}
-              onClick={() => onPageChange(Math.min(safeTotalPages - 1, safePage + 1))}
-              aria-label={tc('nextPage')}
-            >
-              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </button>
-          </div>
+        <div className="flex items-center justify-center lg:justify-start">
+          <AdminPaginationControls
+            page={safePage}
+            totalPages={safeTotalPages}
+            onPageChange={onPageChange}
+            previousLabel={tc('previousPage')}
+            nextLabel={tc('nextPage')}
+            disabled={deleteInProgress || !hasLeads}
+          />
         </div>
       </div>
     </div>

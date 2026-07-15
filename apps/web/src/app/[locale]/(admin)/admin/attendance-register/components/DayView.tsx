@@ -259,7 +259,7 @@ export function DayView({
         onPageChange={goToMobileCardsPage}
         previousLabel={tCommon('previousCardsPage')}
         nextLabel={tCommon('nextCardsPage')}
-        align="between"
+        align="start"
       />
       </div>
       <div className="hidden space-y-6 md:block">

@@ -99,8 +99,6 @@ export function AdminAnalyticsPage() {
   const [riskPage, setRiskPage] = useState(1);
   const riskTotalPages = Math.max(1, Math.ceil(students.length / ANALYTICS_TABLE_PAGE_SIZE));
   const safeRiskPage = Math.min(riskPage, riskTotalPages);
-  const riskRangeStart = students.length === 0 ? 0 : (safeRiskPage - 1) * ANALYTICS_TABLE_PAGE_SIZE + 1;
-  const riskRangeEnd = Math.min(students.length, safeRiskPage * ANALYTICS_TABLE_PAGE_SIZE);
   const riskPaginatedStudents = useMemo(
     () =>
       students.slice(
@@ -417,11 +415,7 @@ export function AdminAnalyticsPage() {
             <AnalyticsMobilePagination
               page={safeRiskPage}
               totalPages={riskTotalPages}
-              start={riskRangeStart}
-              end={riskRangeEnd}
-              total={students.length}
-              onPrevious={() => goToRiskPage(Math.max(1, safeRiskPage - 1))}
-              onNext={() => goToRiskPage(Math.min(riskTotalPages, safeRiskPage + 1))}
+              onGoToPage={goToRiskPage}
             />
           )}
         </div>

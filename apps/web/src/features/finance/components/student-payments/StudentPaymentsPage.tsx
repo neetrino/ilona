@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { usePortalSheetDrag } from '@/shared/hooks/usePortalSheetDrag';
 import { useMyPayments, useMyPaymentsSummary, useProcessMyPayment } from '@/features/finance';
+import { AdminPaginationControls } from '@/shared/components/ui';
 import { cn, formatCurrency } from '@/shared/lib/utils';
 import type { Payment } from '@/features/finance/api/student-finance.api';
 import {
@@ -257,49 +258,14 @@ export function StudentPaymentsPage() {
                 ))}
               </div>
               {payments.length > MOBILE_PAYMENTS_PAGE_SIZE && (
-                <div className="flex items-center justify-between pt-2 pb-2 text-sm text-[#8b8b90] md:hidden">
-                  <span>
-                    {safeMobilePage * MOBILE_PAYMENTS_PAGE_SIZE + 1}-
-                    {Math.min((safeMobilePage + 1) * MOBILE_PAYMENTS_PAGE_SIZE, payments.length)} /{' '}
-                    {payments.length}
-                  </span>
-                  <div className="flex items-center gap-3">
-                    <button
-                      type="button"
-                      className={cn(
-                        'inline-flex h-9 w-9 items-center justify-center rounded-full border transition-colors focus:outline-none focus-visible:outline-none focus-visible:ring-0',
-                        safeMobilePage === 0
-                          ? 'border-[#d9dde8] bg-[#f1f1f4] text-[#9aa3b5]'
-                          : 'border-[rgba(14,14,16,0.12)] bg-white text-[#3b3b40] hover:bg-[#f6f6f7]',
-                      )}
-                      disabled={safeMobilePage === 0}
-                      onClick={() => goToMobilePage(Math.max(0, safeMobilePage - 1))}
-                      aria-label={tCommon('back')}
-                    >
-                      <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                      </svg>
-                    </button>
-                    <span className="inline-flex h-9 min-w-9 items-center justify-center rounded-full bg-[#1010a3] px-3 text-xs font-semibold text-white">
-                      {safeMobilePage + 1}
-                    </span>
-                    <button
-                      type="button"
-                      className={cn(
-                        'inline-flex h-9 w-9 items-center justify-center rounded-full border transition-colors focus:outline-none focus-visible:outline-none focus-visible:ring-0',
-                        safeMobilePage >= totalMobilePages - 1
-                          ? 'border-[#d9dde8] bg-[#f1f1f4] text-[#9aa3b5]'
-                          : 'border-[rgba(14,14,16,0.12)] bg-white text-[#3b3b40] hover:bg-[#f6f6f7]',
-                      )}
-                      disabled={safeMobilePage >= totalMobilePages - 1}
-                      onClick={() => goToMobilePage(Math.min(totalMobilePages - 1, safeMobilePage + 1))}
-                      aria-label={tCommon('next')}
-                    >
-                      <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
-                    </button>
-                  </div>
+                <div className="flex items-center justify-center pt-2 pb-2 md:hidden">
+                  <AdminPaginationControls
+                    page={safeMobilePage}
+                    totalPages={totalMobilePages}
+                    onPageChange={goToMobilePage}
+                    previousLabel={tCommon('back')}
+                    nextLabel={tCommon('next')}
+                  />
                 </div>
               )}
               <StudentTableShell className="hidden p-0 md:block">
