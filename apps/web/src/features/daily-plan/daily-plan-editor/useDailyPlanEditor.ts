@@ -4,7 +4,6 @@ import { useMemo, useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { useCreateDailyPlan, useUpdateDailyPlan } from '../hooks';
 import { useMyGroups } from '@/features/groups/hooks/useGroups';
-import { usePortalSheetDrag } from '@/shared/hooks/usePortalSheetDrag';
 import type { DailyPlanResourceKind, DailyPlanTopicInput } from '../types';
 import { insertResourceAfterKind, toDrafts } from './daily-plan-editor.util';
 import type { DailyPlanEditorProps, DraftResource, DraftTopic } from './daily-plan-editor.types';
@@ -24,7 +23,6 @@ export function useDailyPlanEditor({
   const [topics, setTopics] = useState<DraftTopic[]>([]);
   const [error, setError] = useState<string | null>(null);
 
-  const { dragStyle, dragHandleProps, scrollContentProps, resetDrag } = usePortalSheetDrag({ onClose });
   const create = useCreateDailyPlan();
   const update = useUpdateDailyPlan();
   const { data: myGroups = [], isLoading: isLoadingGroups } = useMyGroups();
@@ -49,8 +47,6 @@ export function useDailyPlanEditor({
     setGroupId(resolvedGroupId);
     setTopics(draft.topics);
   }, [plan, initialGroupId]);
-
-  useEffect(() => () => resetDrag(), [resetDrag]);
 
   const updateTopic = (idx: number, patch: Partial<DraftTopic>) => {
     setTopics((prev) => prev.map((topic, i) => (i === idx ? { ...topic, ...patch } : topic)));
@@ -180,9 +176,6 @@ export function useDailyPlanEditor({
     isGroupLocked,
     selectedGroupName,
     isSaving,
-    dragStyle,
-    dragHandleProps,
-    scrollContentProps,
     updateTopic,
     updateResource,
     addResource,

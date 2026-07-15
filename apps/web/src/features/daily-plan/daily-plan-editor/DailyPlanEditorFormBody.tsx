@@ -24,78 +24,80 @@ export function DailyPlanEditorFormBody({ vm }: DailyPlanEditorFormBodyProps) {
   const tCalendar = useTranslations('dailyDuties');
 
   return (
-    <div
-      className="min-h-0 flex-1 overflow-y-auto overscroll-contain [-webkit-overflow-scrolling:touch]"
-    >
-      <div className="flex flex-col gap-6 p-5">
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-          <div>
-            <label htmlFor="dp-date" className="mb-1.5 block text-sm font-medium text-[#1010a3]">
-              {tCommon('date')}
-            </label>
-            <DatePickerInput
-              id="dp-date"
-              value={vm.date}
-              onValueChange={vm.setDate}
-              disabled={vm.readOnly}
-              className={ADMIN_DATE_INPUT_CLASS}
-            />
-          </div>
-          <div>
-            <label htmlFor="dp-group" className="mb-1.5 block text-sm font-medium text-[#1010a3]">
-              {tCommon('group')}
-            </label>
-            {vm.isGroupLocked ? (
-              <div
-                id="dp-group"
-                className={cn(
-                  ADMIN_FORM_INPUT_CLASS,
-                  'flex items-center bg-slate-50 text-slate-700',
-                )}
-              >
-                {vm.selectedGroupName}
-              </div>
-            ) : (
-              <SingleSelectDropdown
-                id="dp-group"
-                triggerClassName={ADMIN_FORM_INPUT_CLASS}
-                options={vm.myGroups.map((group) => ({ id: group.id, label: group.name }))}
-                value={vm.groupId || null}
-                onValueChange={(next) => vm.setGroupId(next ?? '')}
-                placeholder={tCalendar('selectGroup')}
-                disabled={vm.isLoadingGroups || vm.readOnly}
-                isLoading={vm.isLoadingGroups}
+    <div className="flex min-h-0 flex-1 flex-col">
+      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain [-webkit-overflow-scrolling:touch]">
+        <div className="flex flex-col gap-6 p-5">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div>
+              <label htmlFor="dp-date" className="mb-1.5 block text-sm font-medium text-[#1010a3]">
+                {tCommon('date')}
+              </label>
+              <DatePickerInput
+                id="dp-date"
+                value={vm.date}
+                onValueChange={vm.setDate}
+                disabled={vm.readOnly}
+                className={ADMIN_DATE_INPUT_CLASS}
               />
-            )}
+            </div>
+            <div>
+              <label htmlFor="dp-group" className="mb-1.5 block text-sm font-medium text-[#1010a3]">
+                {tCommon('group')}
+              </label>
+              {vm.isGroupLocked ? (
+                <div
+                  id="dp-group"
+                  className={cn(
+                    ADMIN_FORM_INPUT_CLASS,
+                    'flex items-center bg-slate-50 text-slate-700',
+                  )}
+                >
+                  {vm.selectedGroupName}
+                </div>
+              ) : (
+                <SingleSelectDropdown
+                  id="dp-group"
+                  triggerClassName={ADMIN_FORM_INPUT_CLASS}
+                  options={vm.myGroups.map((group) => ({ id: group.id, label: group.name }))}
+                  value={vm.groupId || null}
+                  onValueChange={(next) => vm.setGroupId(next ?? '')}
+                  placeholder={tCalendar('selectGroup')}
+                  disabled={vm.isLoadingGroups || vm.readOnly}
+                  isLoading={vm.isLoadingGroups}
+                />
+              )}
+            </div>
+          </div>
+
+          {vm.error && (
+            <div className="rounded-[15px] border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600">
+              {vm.error}
+            </div>
+          )}
+
+          <div className="space-y-6">
+            {vm.topics.map((topic, idx) => (
+              <DailyPlanEditorTopicSection
+                key={idx}
+                topic={topic}
+                topicIndex={idx}
+                mode={vm.mode}
+                planId={vm.plan?.id}
+                readOnly={vm.readOnly}
+                kindLabel={vm.kindLabel}
+                onTopicChange={vm.updateTopic}
+                onResourceChange={vm.updateResource}
+                onAddResource={vm.addResource}
+                onRemoveResource={vm.removeResource}
+              />
+            ))}
           </div>
         </div>
+      </div>
 
-        {vm.error && (
-          <div className="rounded-[15px] border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600">
-            {vm.error}
-          </div>
-        )}
-
-        <div className="space-y-6">
-          {vm.topics.map((topic, idx) => (
-            <DailyPlanEditorTopicSection
-              key={idx}
-              topic={topic}
-              topicIndex={idx}
-              mode={vm.mode}
-              planId={vm.plan?.id}
-              readOnly={vm.readOnly}
-              kindLabel={vm.kindLabel}
-              onTopicChange={vm.updateTopic}
-              onResourceChange={vm.updateResource}
-              onAddResource={vm.addResource}
-              onRemoveResource={vm.removeResource}
-            />
-          ))}
-        </div>
-
-        {!vm.readOnly && (
-          <div className="flex shrink-0 justify-end pt-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] min-[1367px]:pb-4">
+      {!vm.readOnly && (
+        <div className="shrink-0 border-t border-slate-200/80 bg-white px-5 pt-3 pb-[calc(4.5rem+env(safe-area-inset-bottom))] min-[1367px]:pb-4">
+          <div className="flex justify-end">
             <button
               type="button"
               onClick={vm.handleSave}
@@ -108,8 +110,8 @@ export function DailyPlanEditorFormBody({ vm }: DailyPlanEditorFormBodyProps) {
               {vm.isSaving ? tCommon('saving') : tCommon('save')}
             </button>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }
