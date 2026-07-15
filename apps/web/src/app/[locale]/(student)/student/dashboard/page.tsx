@@ -6,6 +6,7 @@ import { useMyDashboard } from '@/features/students';
 import { StudentNotesBlock } from '@/features/student-notes';
 import {
   StudentDashboardHero,
+  StudentDashboardMyPeopleCards,
   StudentDashboardStatCards,
   StudentUpcomingLessonsCard,
   StudentProgressCard,
@@ -40,6 +41,8 @@ export default function StudentDashboardPage() {
     <DashboardLayout title="" variant="student">
       <div className="flex w-full min-w-0 flex-col gap-5 lg:gap-6">
         <StudentDashboardHero />
+
+        <StudentDashboardMyPeopleCards />
 
         <StudentDashboardStatCards
           isLoading={isLoading}
