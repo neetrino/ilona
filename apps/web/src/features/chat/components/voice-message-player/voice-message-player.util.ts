@@ -108,21 +108,38 @@ export function getAudioErrorMessage(error: MediaError): string {
   }
 }
 
-/** Deterministic pseudo-waveform heights (0.18–1) from a seed string. */
+/** Deterministic pseudo-waveform heights (0.12–1) — varied bar-to-bar like a real voice wave. */
 export function generateWaveformLevels(seed: string, count: number): number[] {
   let hash = 0;
   for (let i = 0; i < seed.length; i += 1) {
     hash = (hash * 31 + seed.charCodeAt(i)) | 0;
   }
 
+  const nextNoise = () => {
+    hash = (hash * 1664525 + 1013904223) | 0;
+    return (hash >>> 0) / 4294967295;
+  };
+
   const levels: number[] = [];
   for (let i = 0; i < count; i += 1) {
-    hash = (hash * 1664525 + 1013904223) | 0;
-    const noise = (hash >>> 0) / 4294967295;
-    const envelope = 0.35 + 0.65 * Math.sin((i / count) * Math.PI);
-    const midBump = 0.55 + 0.45 * Math.sin((i / count) * Math.PI * 2.4);
-    const level = Math.min(1, Math.max(0.18, envelope * midBump * (0.45 + noise * 0.7)));
-    levels.push(level);
+    const t = i / Math.max(1, count - 1);
+    // Soft edges so bars stay inside the pill visually.
+    const edge = Math.sin(t * Math.PI);
+    const edgeSoft = 0.28 + 0.72 * edge;
+
+    // Several overlapping frequencies + strong noise = irregular adjacent heights.
+    const a = nextNoise();
+    const b = nextNoise();
+    const c = nextNoise();
+    const spike = a > 0.82 ? 0.35 + b * 0.4 : 0;
+    const dip = a < 0.18 ? -0.25 * c : 0;
+    const wave =
+      0.22 * Math.sin(t * Math.PI * 7.3 + a * 6) +
+      0.18 * Math.sin(t * Math.PI * 13.1 + b * 4) +
+      0.12 * Math.sin(t * Math.PI * 21.7 + c * 8);
+
+    const raw = edgeSoft * (0.28 + a * 0.55 + wave + spike + dip);
+    levels.push(Math.min(1, Math.max(0.12, raw)));
   }
   return levels;
 }

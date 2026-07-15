@@ -21,10 +21,11 @@ export function VoiceMessagePlayerControls({ vm }: VoiceMessagePlayerControlsPro
   );
 
   const showSpeedControl = vm.isPlaying || vm.currentTimeSec > 0.05;
-  const timeLabelSec = showSpeedControl
-    ? vm.currentTimeSec
-    : vm.totalLabelSec > 0
-      ? vm.totalLabelSec
+  const timeLabelSec =
+    vm.totalLabelSec > 0
+      ? showSpeedControl
+        ? Math.max(0, vm.totalLabelSec - vm.currentTimeSec)
+        : vm.totalLabelSec
       : 0;
 
   return (

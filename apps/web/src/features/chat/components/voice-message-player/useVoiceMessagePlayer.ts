@@ -102,6 +102,21 @@ export function useVoiceMessagePlayer({ fileUrl, duration: durationProp }: Voice
     seekToRatio((clientX - rect.left) / rect.width);
   };
 
+  const playFromCurrentPosition = () => {
+    const el = audioRef.current;
+    if (!el || hasError) return;
+    pauseOtherAudio(el);
+    setActiveAudioElement(el);
+    void el
+      .play()
+      .then(() => {
+        setIsLoading(false);
+      })
+      .catch(() => {
+        setIsLoading(false);
+      });
+  };
+
   const endScrubbing = (target: HTMLDivElement, pointerId: number) => {
     isScrubbingRef.current = false;
     setIsScrubbing(false);
@@ -128,7 +143,10 @@ export function useVoiceMessagePlayer({ fileUrl, duration: durationProp }: Voice
 
   const handleProgressPointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
     if (!isScrubbingRef.current) return;
+    seekFromClientX(e.clientX);
     endScrubbing(e.currentTarget, e.pointerId);
+    // Click / scrub on the wave starts (or resumes) playback from that spot.
+    playFromCurrentPosition();
   };
 
   const handleProgressPointerCancel = (e: React.PointerEvent<HTMLDivElement>) => {
@@ -151,6 +169,9 @@ export function useVoiceMessagePlayer({ fileUrl, duration: durationProp }: Voice
     } else if (e.key === 'End') {
       e.preventDefault();
       seekToRatio(1);
+    } else if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      playFromCurrentPosition();
     }
   };
 
