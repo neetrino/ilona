@@ -6,7 +6,12 @@ import { cn } from '@/shared/lib/utils';
 import { ADMIN_FORM_INPUT_CLASS } from '@/shared/lib/admin-control-theme';
 import type { DailyPlanResourceKind } from '../types';
 import { DailyPlanEditorResourceFields } from './DailyPlanEditorResourceFields';
-import { DAILY_PLAN_RESOURCE_KINDS } from './daily-plan-editor.constants';
+import {
+  DAILY_PLAN_KIND_ADD_BUTTON_CLASS,
+  DAILY_PLAN_KIND_SURFACE_CLASS,
+  DAILY_PLAN_KIND_TITLE_CLASS,
+  DAILY_PLAN_RESOURCE_KINDS,
+} from './daily-plan-editor.constants';
 import type { DraftResource, DraftTopic } from './daily-plan-editor.types';
 
 interface DailyPlanEditorTopicSectionProps {
@@ -55,8 +60,19 @@ export function DailyPlanEditorTopicSection({
         {DAILY_PLAN_RESOURCE_KINDS.map((kind) => {
           const resources = topic.resources.filter((resource) => resource.kind === kind);
           return (
-            <div key={kind} className="space-y-3">
-              <div className="text-xs font-semibold uppercase tracking-wide text-[#1010a3]">
+            <div
+              key={kind}
+              className={cn(
+                'space-y-3 rounded-[15px] border p-4',
+                DAILY_PLAN_KIND_SURFACE_CLASS[kind],
+              )}
+            >
+              <div
+                className={cn(
+                  'text-xs font-semibold uppercase tracking-wide',
+                  DAILY_PLAN_KIND_TITLE_CLASS[kind],
+                )}
+              >
                 {kindLabel[kind]}
               </div>
               {resources.map((resource) => (
@@ -78,7 +94,10 @@ export function DailyPlanEditorTopicSection({
                 <button
                   type="button"
                   onClick={() => onAddResource(topicIndex, kind)}
-                  className="inline-flex w-full items-center justify-center gap-1 rounded-[15px] border border-dashed border-slate-300 bg-white px-3 py-2 text-xs font-medium text-slate-600 hover:border-slate-400 hover:bg-slate-50"
+                  className={cn(
+                    'inline-flex w-full items-center justify-center gap-1 rounded-[15px] border border-dashed bg-white/80 px-3 py-2 text-xs font-medium',
+                    DAILY_PLAN_KIND_ADD_BUTTON_CLASS[kind],
+                  )}
                 >
                   <Plus className="size-3.5" />
                   {t('addResource', { kind: kindLabel[kind] })}

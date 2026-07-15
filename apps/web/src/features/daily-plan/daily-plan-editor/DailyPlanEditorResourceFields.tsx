@@ -37,7 +37,7 @@ export function DailyPlanEditorResourceFields({
     <div
       className={cn(
         'space-y-3',
-        canRemove && 'rounded-[15px] border border-slate-200/80 bg-slate-50/40 p-3',
+        canRemove && 'rounded-[15px] border border-slate-200 bg-white p-3',
       )}
     >
       {canRemove && !readOnly && (
