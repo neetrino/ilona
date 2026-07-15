@@ -62,6 +62,7 @@ export class GroupWriteService {
           dateTo: dto.calendarPlan.dateTo,
           topic: dto.calendarPlan.topic,
           description: dto.calendarPlan.description,
+          rolling: true,
           suppressedSlotStarts: [],
         }
       : null;
@@ -103,7 +104,6 @@ export class GroupWriteService {
       previousTeacherId: null,
       previousSecondTeacherId: null,
       previousSecondTeacherStartsFirstWeek: null,
-      confirmReplaceGeneratedLessons: false,
     });
 
     if (syncedSchedule !== undefined) {
@@ -175,7 +175,7 @@ export class GroupWriteService {
     const {
       schedule: scheduleDto,
       calendarPlan,
-      confirmReplaceGeneratedLessons,
+      confirmReplaceGeneratedLessons: _confirmReplaceGeneratedLessons,
       teacherId: _dtoTeacherId,
       secondTeacherId,
       secondTeacherStartsFirstWeek: _dtoSecondTeacherStartsFirstWeek,
@@ -197,6 +197,7 @@ export class GroupWriteService {
         dateTo: calendarPlan.dateTo,
         topic: calendarPlan.topic,
         description: calendarPlan.description,
+        rolling: prevParsed.calendar?.rolling !== false,
         suppressedSlotStarts: prevParsed.calendar?.suppressedSlotStarts ?? [],
       };
     }
@@ -224,7 +225,6 @@ export class GroupWriteService {
       previousTeacherId: currentGroup.teacherId,
       previousSecondTeacherId: currentGroup.secondTeacherId,
       previousSecondTeacherStartsFirstWeek: currentGroup.secondTeacherStartsFirstWeek,
-      confirmReplaceGeneratedLessons: confirmReplaceGeneratedLessons ?? false,
     });
     if (synced !== undefined) {
       finalSchedule = synced;

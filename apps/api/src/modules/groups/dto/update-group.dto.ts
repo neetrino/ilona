@@ -4,6 +4,10 @@ import { Type } from 'class-transformer';
 import { CreateGroupDto, GroupCalendarPlanDto } from './create-group.dto';
 
 export class UpdateGroupDto extends PartialType(OmitType(CreateGroupDto, ['calendarPlan'] as const)) {
+  /**
+   * @deprecated No longer required — schedule regeneration runs automatically on save.
+   * Kept optional so older clients sending the field do not fail validation.
+   */
   @IsOptional()
   @IsBoolean()
   confirmReplaceGeneratedLessons?: boolean;

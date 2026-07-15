@@ -43,8 +43,8 @@ export function formatLocalYmd(date: Date): string {
   return `${y}-${m}-${d}`;
 }
 
-/** Default span from schedule start to end date (inclusive offset in days). */
-export const GROUP_SCHEDULE_DEFAULT_DURATION_DAYS = 30;
+/** Default / rolling horizon length for group calendar lessons (days). */
+export const GROUP_SCHEDULE_DEFAULT_DURATION_DAYS = 90;
 
 export function addDaysToYmd(ymd: string, days: number): string {
   const d = parseYmd(ymd);

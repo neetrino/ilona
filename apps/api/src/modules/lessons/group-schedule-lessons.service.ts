@@ -1,12 +1,6 @@
-import { BadRequestException, ConflictException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { LessonCreationSource, LessonStatus, Prisma } from '@ilona/database';
-import {
-  endOfZonedDay,
-  enumerateYmdRange,
-  startOfZonedDay,
-  wallTimeToUtc,
-  ymdWeekday,
-} from '@ilona/types';
+import { endOfZonedDay, startOfZonedDay, toYmd } from '@ilona/types';
 import { PrismaService } from '../prisma/prisma.service';
 import {
   type GroupCalendarStored,
@@ -16,64 +10,14 @@ import {
   parseGroupSchedulePayload,
 } from '../groups/group-schedule-payload';
 import { resolveRotatingTeacherId } from '../groups/group-teacher-rotation';
-
-const MAX_OCCURRENCES = 200;
-
-function assertValidYmd(ymd: string): void {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(ymd) || Number.isNaN(Date.parse(`${ymd}T00:00:00Z`))) {
-    throw new BadRequestException(`Invalid calendar date: ${ymd}`);
-  }
-}
-
-function slotDurationMinutes(startTime: string, endTime: string): number {
-  const [sh, sm] = startTime.split(':').map(Number);
-  const [eh, em] = endTime.split(':').map(Number);
-  return eh * 60 + em - (sh * 60 + sm);
-}
-
-function enumerateOccurrences(
-  weeklySlots: GroupWeeklySlot[],
-  dateFromYmd: string,
-  dateToYmd: string,
-): Array<{ at: Date; duration: number; slot: GroupWeeklySlot }> {
-  assertValidYmd(dateFromYmd);
-  assertValidYmd(dateToYmd);
-  const startDay = startOfZonedDay(dateFromYmd);
-  const endBoundary = endOfZonedDay(dateToYmd);
-  const out: Array<{ at: Date; duration: number; slot: GroupWeeklySlot }> = [];
-
-  for (const ymd of enumerateYmdRange(dateFromYmd, dateToYmd)) {
-    const dow = ymdWeekday(ymd);
-    for (const slot of weeklySlots) {
-      if (slot.dayOfWeek !== dow) continue;
-      const dur = slotDurationMinutes(slot.startTime, slot.endTime);
-      if (dur <= 0) {
-        throw new BadRequestException('End time must be after start time for each weekly slot');
-      }
-      if (dur < 15 || dur > 240) {
-        throw new BadRequestException('Each slot must be between 15 and 240 minutes');
-      }
-      const at = wallTimeToUtc(ymd, slot.startTime);
-      if (at >= startDay && at <= endBoundary) {
-        out.push({ at, duration: dur, slot });
-      }
-    }
-  }
-  out.sort((a, b) => a.at.getTime() - b.at.getTime());
-  return out;
-}
-
-function intervalsOverlap(aStart: Date, aEnd: Date, bStart: Date, bEnd: Date): boolean {
-  return aStart < bEnd && bStart < aEnd;
-}
-
-function minDate(a: Date, b: Date): Date {
-  return a.getTime() <= b.getTime() ? a : b;
-}
-
-function maxDate(a: Date, b: Date): Date {
-  return a.getTime() >= b.getTime() ? a : b;
-}
+import {
+  assertValidYmd,
+  assertOccurrenceBatchSize,
+  enumerateOccurrences,
+  intervalsOverlap,
+  maxDate,
+  minDate,
+} from './group-schedule-lessons.util';
 
 @Injectable()
 export class GroupScheduleLessonsService {
@@ -109,6 +53,7 @@ export class GroupScheduleLessonsService {
   /**
    * Creates/updates GROUP_SCHEDULE lessons from weekly slots + calendar range.
    * Assigns teachers via lesson-by-lesson rotation between the two group teachers.
+   * Rolling calendars keep past lessons on replace (regen from today forward).
    */
   async syncAfterGroupSaved(params: {
     groupId: string;
@@ -121,25 +66,32 @@ export class GroupScheduleLessonsService {
     previousTeacherId: string | null;
     previousSecondTeacherId: string | null;
     previousSecondTeacherStartsFirstWeek: boolean | null;
-    confirmReplaceGeneratedLessons: boolean;
   }): Promise<Prisma.InputJsonValue | typeof Prisma.JsonNull | undefined> {
     const teacherId = params.teacherId ?? null;
     const secondTeacherId = params.secondTeacherId ?? null;
     const prev = parseGroupSchedulePayload(params.previousScheduleJson);
 
+    const calendarWithRolling =
+      params.calendar == null
+        ? null
+        : {
+            ...params.calendar,
+            rolling: params.calendar.rolling !== false,
+          };
+
     if (
       !teacherId ||
       !secondTeacherId ||
       params.weeklySlots.length === 0 ||
-      !params.calendar ||
-      !params.calendar.dateFrom ||
-      !params.calendar.dateTo
+      !calendarWithRolling ||
+      !calendarWithRolling.dateFrom ||
+      !calendarWithRolling.dateTo
     ) {
-      return buildScheduleJson(params.weeklySlots, params.calendar);
+      return buildScheduleJson(params.weeklySlots, calendarWithRolling);
     }
 
-    const dateFrom = params.calendar.dateFrom;
-    const dateTo = params.calendar.dateTo;
+    const dateFrom = calendarWithRolling.dateFrom;
+    const dateTo = calendarWithRolling.dateTo;
     assertValidYmd(dateFrom);
     assertValidYmd(dateTo);
     if (dateTo < dateFrom) {
@@ -167,34 +119,37 @@ export class GroupScheduleLessonsService {
 
     const needsReplace = oldKey !== null && (newKey !== oldKey || teachersChanged);
 
-    if (needsReplace && !params.confirmReplaceGeneratedLessons) {
-      throw new ConflictException('GROUP_SCHEDULE_REGENERATION_CONFIRMATION_REQUIRED');
-    }
+    const isRolling = calendarWithRolling.rolling !== false;
+    const todayYmd = toYmd(new Date());
+    const regenFromYmd =
+      needsReplace && isRolling && todayYmd > dateFrom ? todayYmd : dateFrom;
 
-    const occurrences = enumerateOccurrences(params.weeklySlots, dateFrom, dateTo);
-    if (occurrences.length > MAX_OCCURRENCES) {
-      throw new BadRequestException(
-        `Cannot generate more than ${MAX_OCCURRENCES} lessons at once. Narrow the date range or weekdays.`,
-      );
-    }
+    const occurrences = enumerateOccurrences(params.weeklySlots, regenFromYmd, dateTo);
+    assertOccurrenceBatchSize(occurrences.length);
     if (occurrences.length === 0) {
       throw new BadRequestException('No lessons match the selected weekdays in this date range.');
     }
 
-    const rangeStart = startOfZonedDay(dateFrom);
+    const rangeStart = startOfZonedDay(regenFromYmd);
     const rangeEnd = endOfZonedDay(dateTo);
-
     const replaceMode = oldKey === null || needsReplace;
 
-    let suppressed = new Set(params.calendar.suppressedSlotStarts ?? []);
-    if (needsReplace && params.confirmReplaceGeneratedLessons) {
-      suppressed = new Set();
+    let suppressed = new Set(calendarWithRolling.suppressedSlotStarts ?? []);
+    if (needsReplace) {
+      suppressed = new Set(
+        [...suppressed].filter((iso) => {
+          const t = Date.parse(iso);
+          return !Number.isNaN(t) && t < rangeStart.getTime();
+        }),
+      );
     }
 
     let deleteStart = rangeStart;
     let deleteEnd = rangeEnd;
     if (replaceMode && prev.calendar) {
-      const prevStart = startOfZonedDay(prev.calendar.dateFrom);
+      const prevStart = startOfZonedDay(
+        isRolling && todayYmd > prev.calendar.dateFrom ? todayYmd : prev.calendar.dateFrom,
+      );
       const prevEnd = endOfZonedDay(prev.calendar.dateTo);
       deleteStart = minDate(rangeStart, prevStart);
       deleteEnd = maxDate(rangeEnd, prevEnd);
@@ -209,6 +164,17 @@ export class GroupScheduleLessonsService {
         },
       });
     }
+
+    const lessonIndexOffset =
+      regenFromYmd > dateFrom
+        ? await this.prisma.lesson.count({
+            where: {
+              groupId: params.groupId,
+              creationSource: LessonCreationSource.GROUP_SCHEDULE,
+              scheduledAt: { lt: rangeStart },
+            },
+          })
+        : 0;
 
     const existingSameGroup = await this.prisma.lesson.findMany({
       where: {
@@ -239,7 +205,7 @@ export class GroupScheduleLessonsService {
       if (existingGroupTimes.has(at.getTime())) continue;
 
       const assignedTeacherId = resolveRotatingTeacherId({
-        lessonIndex,
+        lessonIndex: lessonIndexOffset + lessonIndex,
         teacherId,
         secondTeacherId,
         secondTeacherStartsFirstWeek: params.secondTeacherStartsFirstWeek,
@@ -267,8 +233,8 @@ export class GroupScheduleLessonsService {
         teacherId: assignedTeacherId,
         scheduledAt: at,
         duration,
-        topic: params.calendar.topic ?? null,
-        description: params.calendar.description ?? slot.notes ?? null,
+        topic: calendarWithRolling.topic ?? null,
+        description: calendarWithRolling.description ?? slot.notes ?? null,
         status: LessonStatus.SCHEDULED,
         creationSource: LessonCreationSource.GROUP_SCHEDULE,
       });
@@ -280,11 +246,11 @@ export class GroupScheduleLessonsService {
 
     if (!replaceMode && oldKey === newKey && !teachersChanged) {
       const data: Prisma.LessonUpdateManyMutationInput = {};
-      if (params.calendar.topic !== undefined) {
-        data.topic = params.calendar.topic;
+      if (calendarWithRolling.topic !== undefined) {
+        data.topic = calendarWithRolling.topic;
       }
-      if (params.calendar.description !== undefined) {
-        data.description = params.calendar.description;
+      if (calendarWithRolling.description !== undefined) {
+        data.description = calendarWithRolling.description;
       }
       if (Object.keys(data).length > 0) {
         await this.prisma.lesson.updateMany({
@@ -299,7 +265,8 @@ export class GroupScheduleLessonsService {
     }
 
     const storedCalendar: GroupCalendarStored = {
-      ...params.calendar,
+      ...calendarWithRolling,
+      rolling: true,
       generationKey: newKey,
       suppressedSlotStarts: [...suppressed],
     };

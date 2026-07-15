@@ -114,7 +114,7 @@ export interface UpdateGroupDto {
   schedule?: GroupScheduleEntry[] | null;
   /** Omit to leave unchanged; `null` clears calendar metadata (does not delete lessons). */
   calendarPlan?: GroupCalendarPlanDto | null;
-  /** Required when the server responds with regeneration confirmation (HTTP 409). */
+  /** @deprecated Ignored — schedule regeneration runs automatically on save. */
   confirmReplaceGeneratedLessons?: boolean;
   isActive?: boolean;
   iconKey?: string | null;

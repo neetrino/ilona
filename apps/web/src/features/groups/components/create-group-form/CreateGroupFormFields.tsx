@@ -52,11 +52,11 @@ export function CreateGroupFormFields(props: CreateGroupFormFieldsProps) {
     dateTo,
     setDateFrom,
     setDateTo,
-    scheduleValidationError,
+    scheduleSectionError,
   } = props;
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
       {successMessage ? (
         <div className="rounded-[15px] border border-green-200 bg-green-50 p-3">
           <p className="text-sm text-green-600">{successMessage}</p>
@@ -167,7 +167,7 @@ export function CreateGroupFormFields(props: CreateGroupFormFieldsProps) {
           </>
         )}
         {errors.centerId?.message ? (
-          <p className="hidden text-sm text-red-600 min-[1367px]:block">{errors.centerId.message}</p>
+          <p className="text-sm text-red-600">{errors.centerId.message}</p>
         ) : null}
       </div>
 
@@ -205,6 +205,9 @@ export function CreateGroupFormFields(props: CreateGroupFormFieldsProps) {
             error={errors.teacherId?.message ?? null}
             disabled={teacherDropdownDisabled}
           />
+          {errors.teacherId?.message ? (
+            <p className="text-sm text-red-600">{errors.teacherId.message}</p>
+          ) : null}
         </div>
 
         <div className="min-w-0 space-y-2">
@@ -235,6 +238,9 @@ export function CreateGroupFormFields(props: CreateGroupFormFieldsProps) {
             error={errors.secondTeacherId?.message ?? null}
             disabled={teacherDropdownDisabled}
           />
+          {errors.secondTeacherId?.message ? (
+            <p className="text-sm text-red-600">{errors.secondTeacherId.message}</p>
+          ) : null}
         </div>
       </div>
 
@@ -251,6 +257,8 @@ export function CreateGroupFormFields(props: CreateGroupFormFieldsProps) {
         onDateToChange={setDateTo}
         disabled={isFormBusy}
         adminControls
+        mode="rolling"
+        sectionError={scheduleSectionError}
       />
 
       <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:justify-end">
@@ -265,13 +273,7 @@ export function CreateGroupFormFields(props: CreateGroupFormFieldsProps) {
         </Button>
         <Button
           type="submit"
-          disabled={
-            isFormBusy ||
-            isLoadingCenters ||
-            isLoadingTeachers ||
-            centers.length === 0 ||
-            Boolean(scheduleValidationError)
-          }
+          disabled={isFormBusy || isLoadingCenters || isLoadingTeachers || centers.length === 0}
           className={cn(ADMIN_PRIMARY_BUTTON_CLASS, 'bg-primary text-primary-foreground hover:bg-primary/90')}
         >
           {isSubmitting || createGroup.isPending ? tForm('creating') : tForm('createGroup')}

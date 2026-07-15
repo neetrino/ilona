@@ -50,6 +50,7 @@ export function useCreateGroupForm({ open, onOpenChange }: CreateGroupFormProps)
   const [schedule, setSchedule] = useState<GroupScheduleEntry[]>([]);
   const [dateFrom, setDateFrom] = useState(() => defaultMonthDateRange().from);
   const [dateTo, setDateTo] = useState(() => defaultMonthDateRange().to);
+  const [scheduleSectionError, setScheduleSectionError] = useState<string | null>(null);
   const createGroup = useCreateGroup();
 
   const { data: centersData, isLoading: isLoadingCenters } = useCenters({
@@ -154,21 +155,24 @@ export function useCreateGroupForm({ open, onOpenChange }: CreateGroupFormProps)
       setDateTo(range.to);
       setErrorMessage(null);
       setSuccessMessage(null);
+      setScheduleSectionError(null);
     }
   }, [open, reset, defaultCenterId]);
 
-  const scheduleValidationError = useMemo(
-    () =>
-      validateGroupCalendarSchedule({
-        schedule,
-        dateFrom,
-        dateTo,
-        requireSlots: true,
-        tForm,
-        tVal,
-      }),
-    [schedule, dateFrom, dateTo, tForm, tVal],
-  );
+  const handleScheduleChange = useCallback((next: GroupScheduleEntry[]) => {
+    setSchedule(next);
+    setScheduleSectionError(null);
+  }, []);
+
+  const handleDateFromChange = useCallback((next: string) => {
+    setDateFrom(next);
+    setScheduleSectionError(null);
+  }, []);
+
+  const handleDateToChange = useCallback((next: string) => {
+    setDateTo(next);
+    setScheduleSectionError(null);
+  }, []);
 
   const requestClose = useCallback(() => {
     setIsDialogOpen(false);
@@ -203,9 +207,10 @@ export function useCreateGroupForm({ open, onOpenChange }: CreateGroupFormProps)
       tVal,
     });
     if (calendarError) {
-      setErrorMessage(calendarError);
+      setScheduleSectionError(calendarError);
       return;
     }
+    setScheduleSectionError(null);
 
     try {
       const payload: CreateGroupDto = {
@@ -289,11 +294,11 @@ export function useCreateGroupForm({ open, onOpenChange }: CreateGroupFormProps)
     isLoadingTeachers,
     isFormBusy,
     schedule,
-    setSchedule,
+    setSchedule: handleScheduleChange,
     dateFrom,
     dateTo,
-    setDateFrom,
-    setDateTo,
-    scheduleValidationError,
+    setDateFrom: handleDateFromChange,
+    setDateTo: handleDateToChange,
+    scheduleSectionError,
   };
 }

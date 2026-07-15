@@ -11,12 +11,19 @@ export interface GroupWeeklySlot {
 
 /** Calendar generation metadata stored inside group.schedule JSON. */
 export interface GroupCalendarStored {
+  /** Schedule start date (user-facing). */
   dateFrom: string;
+  /** Farthest date lessons have been generated through (rolling horizon). */
   dateTo: string;
   topic?: string;
   description?: string;
   generationKey?: string;
   suppressedSlotStarts?: string[];
+  /**
+   * When true (default for new calendars), cron extends dateTo in 90-day steps.
+   * Past lessons are kept; only the new window is appended.
+   */
+  rolling?: boolean;
 }
 
 export type GroupScheduleStored =
