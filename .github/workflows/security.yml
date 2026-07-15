@@ -29,9 +29,18 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      # Fail on high or critical vulnerabilities (security 8.1)
+      # npm retired legacy /security/audits (HTTP 410). Only pnpm >=11 talks to
+      # /advisories/bulk, and it needs Node >=22.13. Repo stays on packageManager
+      # pnpm@8.15.0 — strip the pin for this step so pnpm 11 does not re-exec as 8.x.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
       - name: Audit dependencies (fail on high/critical)
-        run: pnpm audit --audit-level=high
+        run: |
+          node -e "const fs=require('fs'); const p=JSON.parse(fs.readFileSync('package.json','utf8')); delete p.packageManager; fs.writeFileSync('package.json', JSON.stringify(p, null, 2) + '\n');"
+          npm install -g pnpm@11.13.0
+          pnpm audit --audit-level=high
 
   no-secrets-committed:
     name: No .env committed
