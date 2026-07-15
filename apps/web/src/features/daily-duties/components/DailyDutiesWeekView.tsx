@@ -7,6 +7,7 @@ import {
   isCalendarToday,
 } from './daily-duties-display.util';
 import { DailyDutiesLessonStatusUnderName } from '@/shared/lib/daily-duties/DailyDutiesLessonStatusBadge';
+import { formatLessonGroupTeachersLabel } from '@/shared/lib/daily-duties/format-lesson-group-teachers';
 
 interface DailyDutiesWeekViewProps {
   weekDates: Date[];
@@ -14,6 +15,7 @@ interface DailyDutiesWeekViewProps {
   isLoading: boolean;
   isTeacherMode: boolean;
   hasActiveFilters: boolean;
+  onLessonClick: (lessonId: string) => void;
 }
 
 export function DailyDutiesWeekView({
@@ -22,6 +24,7 @@ export function DailyDutiesWeekView({
   isLoading,
   isTeacherMode,
   hasActiveFilters,
+  onLessonClick,
 }: DailyDutiesWeekViewProps) {
   const t = useTranslations('dailyDuties');
 
@@ -79,29 +82,41 @@ export function DailyDutiesWeekView({
                   </p>
                 ) : (
                   <div className="space-y-2">
-                    {dayLessons.map((lesson) => (
-                      <div
-                        key={lesson.id}
-                        className={`rounded-[15px] border-l-4 p-2 text-xs ${getWeekLessonCardClass(lesson)}`}
-                      >
-                        <p className="truncate font-medium text-[#3b3b40]">
-                          {formatDailyDutiesLessonTime(lesson.scheduledAt, lesson.duration)}
-                        </p>
-                        <p className="truncate text-[#3b3b40]">
-                          {lesson.group?.name || t('lessonUnknown')}
-                        </p>
-                        <DailyDutiesLessonStatusUnderName lesson={lesson} />
-                        {lesson.substituteTeacher?.user && (
-                          <p
-                            className="mt-0.5 truncate text-amber-800"
-                            title={t('substituteTeacherTitle')}
-                          >
-                            {t('substituteShort')} {lesson.substituteTeacher.user.firstName}{' '}
-                            {lesson.substituteTeacher.user.lastName}
+                    {dayLessons.map((lesson) => {
+                      const teachersLabel = formatLessonGroupTeachersLabel(
+                        lesson,
+                        t('unknownTeacher'),
+                      );
+
+                      return (
+                        <button
+                          key={lesson.id}
+                          type="button"
+                          onClick={() => onLessonClick(lesson.id)}
+                          className={`w-full rounded-[15px] border-l-4 p-2 text-left text-xs transition hover:brightness-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 ${getWeekLessonCardClass(lesson)}`}
+                        >
+                          <p className="truncate font-medium text-[#3b3b40]">
+                            {formatDailyDutiesLessonTime(lesson.scheduledAt, lesson.duration)}
                           </p>
-                        )}
-                      </div>
-                    ))}
+                          <p className="truncate text-[#3b3b40]">
+                            {lesson.group?.name || t('lessonUnknown')}
+                          </p>
+                          <p className="truncate text-[#8b8b90]" title={teachersLabel}>
+                            {teachersLabel}
+                          </p>
+                          <DailyDutiesLessonStatusUnderName lesson={lesson} />
+                          {lesson.substituteTeacher?.user && (
+                            <p
+                              className="mt-0.5 truncate text-amber-800"
+                              title={t('substituteTeacherTitle')}
+                            >
+                              {t('substituteShort')} {lesson.substituteTeacher.user.firstName}{' '}
+                              {lesson.substituteTeacher.user.lastName}
+                            </p>
+                          )}
+                        </button>
+                      );
+                    })}
                   </div>
                 )}
               </div>

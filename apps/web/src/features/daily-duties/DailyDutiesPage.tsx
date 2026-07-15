@@ -74,6 +74,7 @@ export function DailyDutiesPage({ mode }: DailyDutiesPageProps) {
             isLoading={dailyDuties.isLoading}
             isTeacherMode={dailyDuties.isTeacherMode}
             hasActiveFilters={hasActiveFilters}
+            onLessonClick={(lessonId) => dailyDuties.handleOpenLessonDetail(lessonId)}
           />
         )}
 
