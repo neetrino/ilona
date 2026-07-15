@@ -45,6 +45,9 @@ export function DailyDutiesMonthView({
             >
               {formatDailyDutiesLessonTime(lesson.scheduledAt, lesson.duration)} ·{' '}
               {lesson.group?.name ?? t('lessonUnknown')}
+              {lesson.teacher?.user
+                ? ` · ${lesson.teacher.user.firstName} ${lesson.teacher.user.lastName}`
+                : ''}
               {lesson.substituteTeacher?.user
                 ? ` · ${t('substituteShort')} ${lesson.substituteTeacher.user.firstName[0]}.`
                 : ''}

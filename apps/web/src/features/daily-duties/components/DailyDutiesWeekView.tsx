@@ -7,7 +7,7 @@ import {
   isCalendarToday,
 } from './daily-duties-display.util';
 import { DailyDutiesLessonStatusUnderName } from '@/shared/lib/daily-duties/DailyDutiesLessonStatusBadge';
-import { getLessonGroupTeacherNames } from '@/shared/lib/daily-duties/format-lesson-group-teachers';
+import { getLessonAssignedTeacherName } from '@/shared/lib/daily-duties/format-lesson-group-teachers';
 
 interface DailyDutiesWeekViewProps {
   weekDates: Date[];
@@ -83,7 +83,7 @@ export function DailyDutiesWeekView({
                 ) : (
                   <div className="space-y-2">
                     {dayLessons.map((lesson) => {
-                      const teacherNames = getLessonGroupTeacherNames(
+                      const teacherName = getLessonAssignedTeacherName(
                         lesson,
                         t('unknownTeacher'),
                       );
@@ -101,13 +101,9 @@ export function DailyDutiesWeekView({
                           <p className="break-words text-[#3b3b40]">
                             {lesson.group?.name || t('lessonUnknown')}
                           </p>
-                          <div className="mt-0.5 space-y-0.5 text-[#8b8b90]">
-                            {teacherNames.map((name) => (
-                              <p key={name} className="break-words leading-snug">
-                                {name}
-                              </p>
-                            ))}
-                          </div>
+                          <p className="mt-0.5 break-words leading-snug text-[#8b8b90]">
+                            {teacherName}
+                          </p>
                           <DailyDutiesLessonStatusUnderName lesson={lesson} />
                           {lesson.substituteTeacher?.user && (
                             <p
