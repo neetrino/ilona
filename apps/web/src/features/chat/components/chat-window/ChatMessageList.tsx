@@ -20,7 +20,6 @@ interface ChatMessageListProps {
     role?: string | null;
   };
   canDeleteAnyMessage: boolean;
-  focusedMessageId: string | null;
   isMobileViewport: boolean;
   mobileDeleteMessageId: string | null;
   messageIdToDelete: string | null;
@@ -33,7 +32,6 @@ interface ChatMessageListProps {
   brandLogoUrl: string | null;
   messagesContainerRef: React.RefObject<HTMLDivElement | null>;
   messagesEndRef: React.RefObject<HTMLDivElement | null>;
-  registerMessageElement: (messageId: string, el: HTMLDivElement | null) => void;
   onMessagesContainerClick: () => void;
   onOpenDeleteMessage: (messageId: string) => void;
   onDeletableMessageTap: (messageId: string, event: React.MouseEvent) => void;
@@ -48,7 +46,6 @@ export function ChatMessageList({
   currentUserId,
   currentUserAvatar,
   canDeleteAnyMessage,
-  focusedMessageId,
   isMobileViewport,
   mobileDeleteMessageId,
   messageIdToDelete,
@@ -57,7 +54,6 @@ export function ChatMessageList({
   brandLogoUrl,
   messagesContainerRef,
   messagesEndRef,
-  registerMessageElement,
   onMessagesContainerClick,
   onOpenDeleteMessage,
   onDeletableMessageTap,
@@ -99,14 +95,12 @@ export function ChatMessageList({
             currentUserId={currentUserId}
             currentUserAvatar={currentUserAvatar}
             canDeleteAnyMessage={canDeleteAnyMessage}
-            focusedMessageId={focusedMessageId}
             isMobileViewport={isMobileViewport}
             mobileDeleteMessageId={mobileDeleteMessageId}
             messageIdToDelete={messageIdToDelete}
             isDeletingMessage={isDeletingMessage}
             senderLabels={senderLabels}
             brandLogoUrl={brandLogoUrl}
-            registerMessageElement={registerMessageElement}
             onOpenDeleteMessage={onOpenDeleteMessage}
             onDeletableMessageTap={onDeletableMessageTap}
           />

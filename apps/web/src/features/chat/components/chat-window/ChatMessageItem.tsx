@@ -34,7 +34,6 @@ interface ChatMessageItemProps {
   currentUserId?: string;
   currentUserAvatar?: ChatCurrentUserAvatar;
   canDeleteAnyMessage: boolean;
-  focusedMessageId: string | null;
   isMobileViewport: boolean;
   mobileDeleteMessageId: string | null;
   messageIdToDelete: string | null;
@@ -45,7 +44,6 @@ interface ChatMessageItemProps {
     unknownUser: string;
   };
   brandLogoUrl: string | null;
-  registerMessageElement: (messageId: string, el: HTMLDivElement | null) => void;
   onOpenDeleteMessage: (messageId: string) => void;
   onDeletableMessageTap: (messageId: string, event: React.MouseEvent) => void;
 }
@@ -58,14 +56,12 @@ export function ChatMessageItem({
   currentUserId,
   currentUserAvatar,
   canDeleteAnyMessage,
-  focusedMessageId,
   isMobileViewport,
   mobileDeleteMessageId,
   messageIdToDelete,
   isDeletingMessage,
   senderLabels,
   brandLogoUrl,
-  registerMessageElement,
   onOpenDeleteMessage,
   onDeletableMessageTap,
 }: ChatMessageItemProps) {
@@ -119,10 +115,7 @@ export function ChatMessageItem({
   );
 
   return (
-    <div
-      ref={(el) => registerMessageElement(message.id, el)}
-      className={cn('scroll-mt-8 rounded-lg', focusedMessageId === message.id && ui.focusMessage)}
-    >
+    <div className="rounded-lg">
       {showDateSeparator && (
         <div className="my-4 flex items-center justify-center">
           <span className={cn('rounded-full px-3 py-1 text-xs', ui.datePill)}>
