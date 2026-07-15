@@ -37,10 +37,41 @@ export function PaymentMobileCard({
           year: 'numeric',
         });
 
+  const payTitle =
+    !canPay && windowReason === 'past'
+      ? t('paymentPeriodEnded')
+      : !canPay && windowReason === 'future'
+        ? t('paymentNotYetAvailable', { month: monthLabel })
+        : undefined;
+
   return (
     <article className="rounded-[1.125rem] border border-[rgba(14,14,16,0.07)] bg-white p-6 shadow-sm">
-      <h3 className="text-lg font-semibold tracking-tight text-[#1010a3]">{monthLabel}</h3>
-      {description ? <p className="mt-1.5 text-sm text-[#8b8b90]">{description}</p> : null}
+      <div className="flex items-center gap-3">
+        <div className="min-w-0 flex-1">
+          <h3 className="truncate text-lg font-semibold tracking-tight text-[#1010a3]">{monthLabel}</h3>
+          {description ? <p className="mt-1.5 text-sm text-[#8b8b90]">{description}</p> : null}
+        </div>
+        <div className="shrink-0">
+          {unpaid ? (
+            <StudentPrimaryButton
+              type="button"
+              onClick={() => canPay && onPay(payment)}
+              disabled={!canPay || isProcessing}
+              className="min-h-10 pl-4 pr-1.5 text-sm"
+              title={payTitle}
+            >
+              {t('pay')}
+              <span className="flex h-[1.8125rem] w-[1.8125rem] items-center justify-center rounded-[1.25rem] bg-white text-[#1010a3]">
+                <svg className="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 24 24" aria-hidden>
+                  <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z" />
+                </svg>
+              </span>
+            </StudentPrimaryButton>
+          ) : (
+            <span className="text-sm font-semibold text-[#0a7a3e]">{t('paid')}</span>
+          )}
+        </div>
+      </div>
 
       <div className="mt-2">
         <PaymentMobileField label={tCommon('group') ?? 'Group'}>
@@ -85,26 +116,6 @@ export function PaymentMobileCard({
           </div>
         </PaymentMobileField>
       </div>
-
-      {unpaid ? (
-        <StudentPrimaryButton
-          type="button"
-          onClick={() => canPay && onPay(payment)}
-          disabled={!canPay || isProcessing}
-          className="mt-6 min-h-12 w-full text-base"
-          title={
-            !canPay && windowReason === 'past'
-              ? t('paymentPeriodEnded')
-              : !canPay && windowReason === 'future'
-                ? t('paymentNotYetAvailable', { month: monthLabel })
-                : undefined
-          }
-        >
-          {t('pay')}
-        </StudentPrimaryButton>
-      ) : (
-        <p className="mt-6 text-center text-base font-semibold text-[#0a7a3e]">{t('paid')}</p>
-      )}
     </article>
   );
 }

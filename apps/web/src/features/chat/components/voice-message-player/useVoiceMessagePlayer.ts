@@ -17,10 +17,16 @@ import {
   setActiveAudioElement,
 } from './voice-message-player.util';
 
-export function useVoiceMessagePlayer({ fileUrl, duration: durationProp }: VoiceMessagePlayerProps) {
+export function useVoiceMessagePlayer({
+  fileUrl,
+  duration: durationProp,
+  onEnded,
+}: VoiceMessagePlayerProps) {
   const { user } = useAuthStore();
   const ui = getChatThemeForRole(user?.role);
   const userId = user?.id ?? null;
+  const onEndedRef = useRef(onEnded);
+  onEndedRef.current = onEnded;
 
   const [hasError, setHasError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -240,6 +246,7 @@ export function useVoiceMessagePlayer({ fileUrl, duration: durationProp }: Voice
     setIsPlaying(false);
     setProgress(0);
     setCurrentTimeSec(0);
+    onEndedRef.current?.();
   };
 
   const handleTimeUpdate = () => {

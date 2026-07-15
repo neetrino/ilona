@@ -334,18 +334,18 @@ export function StudentPaymentsPage() {
 
                     return (
                       <StudentTableRow key={payment.id}>
-                        <StudentTd>
+                        <StudentTd className="align-middle">
                           <p className="font-semibold text-[#1010a3]">{monthLabel}</p>
                           {description ? (
                             <p className="mt-0.5 text-xs text-[#8b8b90]">{description}</p>
                           ) : null}
                         </StudentTd>
-                        <StudentTd className="text-center">
+                        <StudentTd className="align-middle text-center">
                           <span className="text-[#3b3b40]">{groupName ?? '—'}</span>
                         </StudentTd>
                         <StudentTd
                           className={cn(
-                            'text-center font-semibold',
+                            'align-middle text-center font-semibold',
                             payment.status === 'PAID'
                               ? 'text-[#0a7a3e]'
                               : payment.status === 'OVERDUE'
@@ -360,7 +360,7 @@ export function StudentPaymentsPage() {
                             <PaymentStatusBadge status={payment.status} t={t} />
                           </div>
                         </StudentTd>
-                        <StudentTd className="text-center">
+                        <StudentTd className="align-middle text-center">
                           <span className="text-[#8b8b90]">{dateLabel}</span>
                           {unpaid && !canPay && windowReason === 'past' && (
                             <p className="mt-1 text-xs text-[#8b4a00]" role="status">
@@ -373,13 +373,13 @@ export function StudentPaymentsPage() {
                             </p>
                           )}
                         </StudentTd>
-                        <StudentTd className="text-right">
+                        <StudentTd className="align-middle text-right">
                           {unpaid ? (
                             <StudentPrimaryButton
                               type="button"
                               onClick={() => canPay && openPayModal(payment)}
                               disabled={!canPay || processPaymentMutation.isPending}
-                              className="min-h-9 px-4 text-xs"
+                              className="min-h-10 pl-4 pr-1.5 text-xs"
                               title={
                                 !canPay && windowReason === 'past'
                                   ? t('paymentPeriodEnded')
@@ -389,6 +389,16 @@ export function StudentPaymentsPage() {
                               }
                             >
                               {t('pay')}
+                              <span className="flex h-[1.8125rem] w-[1.8125rem] items-center justify-center rounded-[1.25rem] bg-white text-[#1010a3]">
+                                <svg
+                                  className="h-3.5 w-3.5"
+                                  fill="currentColor"
+                                  viewBox="0 0 24 24"
+                                  aria-hidden
+                                >
+                                  <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z" />
+                                </svg>
+                              </span>
                             </StudentPrimaryButton>
                           ) : (
                             <span className="text-sm font-semibold text-[#0a7a3e]">{t('paid')}</span>
