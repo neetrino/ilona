@@ -6,13 +6,10 @@ import { useDailyPlan } from './hooks';
 import type { DailyPlan } from './types';
 
 export const DAILY_PLAN_VIEW_PARAM = 'planId';
-export const DAILY_PLAN_SHEET_VIEW_PARAM = 'view';
-export const DAILY_PLAN_NEW_VIEW = 'newdailyplan';
 
 export function useDailyPlanViewSheet(items: DailyPlan[]) {
   const { readParam, setParams, removeParams } = useAppSearchUrl();
   const planIdFromUrl = readParam(DAILY_PLAN_VIEW_PARAM);
-  const isCreating = readParam(DAILY_PLAN_SHEET_VIEW_PARAM) === DAILY_PLAN_NEW_VIEW;
 
   const planFromList = useMemo(() => {
     if (!planIdFromUrl) {
@@ -38,7 +35,6 @@ export function useDailyPlanViewSheet(items: DailyPlan[]) {
     (plan: DailyPlan) => {
       setParams({
         [DAILY_PLAN_VIEW_PARAM]: plan.id,
-        [DAILY_PLAN_SHEET_VIEW_PARAM]: null,
       });
     },
     [setParams],
@@ -48,16 +44,5 @@ export function useDailyPlanViewSheet(items: DailyPlan[]) {
     removeParams([DAILY_PLAN_VIEW_PARAM]);
   }, [removeParams]);
 
-  const openCreate = useCallback(() => {
-    setParams({
-      [DAILY_PLAN_SHEET_VIEW_PARAM]: DAILY_PLAN_NEW_VIEW,
-      [DAILY_PLAN_VIEW_PARAM]: null,
-    });
-  }, [setParams]);
-
-  const closeCreate = useCallback(() => {
-    removeParams([DAILY_PLAN_SHEET_VIEW_PARAM]);
-  }, [removeParams]);
-
-  return { viewing, openView, closeView, isCreating, openCreate, closeCreate };
+  return { viewing, openView, closeView };
 }

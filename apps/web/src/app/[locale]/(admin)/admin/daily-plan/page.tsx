@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import { useParams, useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { useAuthStore } from '@/features/auth/store/auth.store';
@@ -13,12 +14,17 @@ import type { DailyPlan } from '@/features/daily-plan/types';
 import { DailyPlanEditor } from '@/features/daily-plan/DailyPlanEditor';
 import { DailyPlanListSection } from '@/features/daily-plan/DailyPlanListSection';
 import { DailyPlanViewer } from '@/features/daily-plan/DailyPlanViewer';
+import { getAdminPortalBasePath } from '@/shared/lib/role-routes';
 
 export default function AdminDailyPlanPage() {
   const tNav = useTranslations('nav');
   const t = useTranslations('dailyPlanPage');
+  const params = useParams();
+  const router = useRouter();
+  const locale = params.locale as string;
   const { user } = useAuthStore();
   const isAdmin = user?.role === 'ADMIN';
+  const portalBasePath = getAdminPortalBasePath(user?.role);
 
   const [search, setSearch] = useState('');
   const [editing, setEditing] = useState<DailyPlan | null>(null);
@@ -32,15 +38,14 @@ export default function AdminDailyPlanPage() {
   const { data, isLoading, refetch } = useDailyPlans(filters);
   const items = data?.items ?? [];
   const remove = useDeleteDailyPlan();
-  const { viewing, openView, closeView, isCreating, openCreate, closeCreate } =
-    useDailyPlanViewSheet(items);
+  const { viewing, openView, closeView } = useDailyPlanViewSheet(items);
 
   return (
     <DashboardLayout title={tNav('dailyPlan')} subtitle={t('subtitleAll')}>
       <DailyPlanListSection
         search={search}
         onSearchChange={setSearch}
-        onCreate={openCreate}
+        onCreate={() => router.push(`/${locale}${portalBasePath}/daily-plan/new`)}
         createLabel="+ New Daily Plan"
         showCreate={isAdmin}
         items={items}
@@ -51,7 +56,6 @@ export default function AdminDailyPlanPage() {
         onView={openView}
         onEdit={(plan) => {
           if (plan.canEdit) {
-            closeCreate();
             setEditing(plan);
           }
         }}
@@ -76,16 +80,12 @@ export default function AdminDailyPlanPage() {
         }}
       />
 
-      {(isCreating || editing) && (
+      {editing && (
         <DailyPlanEditor
-          mode={isCreating ? 'create' : 'edit'}
-          plan={editing ?? undefined}
-          onClose={() => {
-            closeCreate();
-            setEditing(null);
-          }}
+          mode="edit"
+          plan={editing}
+          onClose={() => setEditing(null)}
           onSaved={() => {
-            closeCreate();
             setEditing(null);
             refetch();
           }}
