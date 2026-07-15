@@ -6,7 +6,7 @@ import { ActionButtons, Avatar } from '@/shared/components/ui';
 import { SelectAllCheckbox } from '@/shared/components/ui/select-all-checkbox';
 import { InlineSelect } from '@/features/students';
 import { cn, formatCurrency, formatPhoneForDisplay } from '@/shared/lib/utils';
-import { formatDmyInputValue, parseDmyToIso } from '@/shared/lib/dmy-date';
+import { applyDmyInputChange, parseDmyToIso } from '@/shared/lib/dmy-date';
 import { getErrorMessage } from '@/shared/lib/api';
 import type { Student, TeacherAssignedItem } from '@/features/students';
 import { getItemId, isOnboardingItem } from '@/features/students';
@@ -232,7 +232,17 @@ function RegisterDateCell({
           type="text"
           value={localValue}
           placeholder={tCommon('dateFormatPlaceholder')}
-          onChange={(e) => setLocalValue(formatDmyInputValue(e.target.value, localValue))}
+          onChange={(e) => {
+            const { value: next, caret } = applyDmyInputChange(
+              e.target.value,
+              localValue,
+              e.target.selectionStart,
+            );
+            setLocalValue(next);
+            requestAnimationFrame(() => {
+              e.target.setSelectionRange(caret, caret);
+            });
+          }}
           onBlur={handleBlur}
           onKeyDown={handleKeyDown}
           disabled={saving}
