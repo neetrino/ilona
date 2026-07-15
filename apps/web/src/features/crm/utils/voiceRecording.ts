@@ -74,10 +74,13 @@ export function selectSupportedAudioMimeType(): string | null {
     return null;
   }
 
+  // Prefer MP4/AAC: Safari/iOS cannot play WebM/Opus recorded on desktop Chrome.
   const candidates = [
+    'audio/mp4;codecs=mp4a.40.2',
+    'audio/mp4',
+    'audio/aac',
     'audio/webm;codecs=opus',
     'audio/webm',
-    'audio/mp4',
     'audio/ogg;codecs=opus',
     'audio/ogg',
   ] as const;

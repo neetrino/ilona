@@ -283,11 +283,14 @@ export class StorageController {
       
       const contentType = contentTypeMap[ext] || 'application/octet-stream';
       
-      // Set CORS headers explicitly
+      // CORS + Range-friendly headers for iOS Safari <audio>/<video>
       res.setHeader('Access-Control-Allow-Origin', '*');
-      res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-      res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+      res.setHeader('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS');
+      res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Range');
+      res.setHeader('Access-Control-Expose-Headers', 'Content-Length, Content-Range, Accept-Ranges');
+      res.setHeader('Accept-Ranges', 'bytes');
       res.setHeader('Content-Type', contentType);
+      res.setHeader('Content-Length', String(fileBuffer.length));
       res.setHeader('Cache-Control', 'public, max-age=31536000'); // Cache for 1 year
       res.send(fileBuffer);
     } catch (error) {
@@ -355,11 +358,14 @@ export class StorageController {
       
       const contentType = contentTypeMap[ext] || 'application/octet-stream';
       
-      // Set CORS headers explicitly
+      // CORS + Range-friendly headers for iOS Safari <audio>/<video>
       res.setHeader('Access-Control-Allow-Origin', '*');
-      res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-      res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+      res.setHeader('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS');
+      res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Range');
+      res.setHeader('Access-Control-Expose-Headers', 'Content-Length, Content-Range, Accept-Ranges');
+      res.setHeader('Accept-Ranges', 'bytes');
       res.setHeader('Content-Type', contentType);
+      res.setHeader('Content-Length', String(fileBuffer.length));
       res.setHeader('Cache-Control', 'public, max-age=31536000'); // Cache for 1 year
       res.send(fileBuffer);
     } catch (error) {

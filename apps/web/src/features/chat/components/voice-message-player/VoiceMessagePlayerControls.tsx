@@ -30,19 +30,19 @@ export function VoiceMessagePlayerControls({ vm }: VoiceMessagePlayerControlsPro
           className="sr-only"
           onError={vm.handleError}
           onCanPlay={vm.handleCanPlay}
+          onLoadedData={vm.handleCanPlay}
           onLoadStart={vm.handleLoadStart}
           onPlay={vm.handlePlay}
           onPause={vm.handlePause}
           onEnded={vm.handleEnded}
           onTimeUpdate={vm.handleTimeUpdate}
-          onLoadedMetadata={vm.syncDurationFromElement}
-          crossOrigin="anonymous"
+          onLoadedMetadata={vm.handleLoadedMetadata}
         />
         <div className="flex items-center gap-2">
           <button
             type="button"
             onClick={vm.isPlaying ? vm.handlePauseClick : vm.handlePlayClick}
-            disabled={vm.isLoading}
+            disabled={vm.hasError}
             className={cn(
               'flex h-10 w-10 flex-shrink-0 touch-manipulation items-center justify-center transition-opacity hover:opacity-90 disabled:opacity-50',
               vm.ui.voicePlayCircle,
