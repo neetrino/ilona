@@ -7,13 +7,13 @@ export const PORTAL_FORM_SHEET_OVERLAY_CLASS =
 export const PORTAL_FORM_SHEET_MOBILE_BASE_CLASS =
   'fixed inset-x-0 bottom-[7px] top-auto z-50 grid w-full translate-y-0 duration-700 ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=open]:slide-in-from-bottom-full data-[state=closed]:slide-out-to-bottom-full h-[calc(94dvh+7px)] grid-rows-[auto_auto_1fr] gap-0 overflow-hidden rounded-t-[22px] border border-slate-200 bg-[#f8f9fb] shadow-xl';
 
-/** Right-side panel: 75% on iPad/tablet; original half-width from 1367px (desktop unchanged). Flex so body can scroll to end. */
+/** Right-side panel: 75% on iPad/tablet with a small bottom gap; original half-width flush from 1367px. */
 export const PORTAL_DESKTOP_SIDE_SHEET_CLASS =
-  'tablet:fixed tablet:inset-y-0 tablet:right-0 tablet:left-auto tablet:top-0 tablet:bottom-0 tablet:!w-[75%] tablet:!max-w-none tablet:h-full tablet:max-h-none tablet:m-0 tablet:translate-x-0 tablet:translate-y-0 tablet:rounded-none tablet:rounded-l-2xl tablet:border-y-0 tablet:border-r-0 tablet:border-l tablet:border-slate-200 tablet:shadow-2xl tablet:flex tablet:flex-col tablet:overflow-hidden tablet:duration-350 tablet:ease-[cubic-bezier(0.22,1,0.36,1)] tablet:data-[state=open]:slide-in-from-right tablet:data-[state=closed]:slide-out-to-right tablet:data-[state=open]:fade-in-0 tablet:data-[state=closed]:fade-out-0 tablet:data-[state=open]:slide-in-from-bottom-0 tablet:data-[state=closed]:slide-out-to-bottom-0 tablet:data-[state=open]:zoom-in-100 tablet:data-[state=closed]:zoom-out-100 min-[1367px]:!w-1/2';
+  'tablet:fixed tablet:top-0 tablet:bottom-1.5 tablet:right-0 tablet:left-auto tablet:!w-[75%] tablet:!max-w-none tablet:max-h-none tablet:m-0 tablet:translate-x-0 tablet:translate-y-0 tablet:rounded-none tablet:rounded-l-2xl tablet:border-y-0 tablet:border-r-0 tablet:border-l tablet:border-slate-200 tablet:shadow-2xl tablet:flex tablet:flex-col tablet:overflow-hidden tablet:duration-350 tablet:ease-[cubic-bezier(0.22,1,0.36,1)] tablet:data-[state=open]:slide-in-from-right tablet:data-[state=closed]:slide-out-to-right tablet:data-[state=open]:fade-in-0 tablet:data-[state=closed]:fade-out-0 tablet:data-[state=open]:slide-in-from-bottom-0 tablet:data-[state=closed]:slide-out-to-bottom-0 tablet:data-[state=open]:zoom-in-100 tablet:data-[state=closed]:zoom-out-100 min-[1367px]:inset-y-0 min-[1367px]:bottom-0 min-[1367px]:h-full min-[1367px]:!w-1/2';
 
 /** Same layout for custom drawer panels (non-Radix). */
 export const CUSTOM_DESKTOP_SIDE_PANEL_CLASS =
-  'tablet:fixed tablet:inset-y-0 tablet:right-0 tablet:left-auto tablet:top-0 tablet:bottom-0 tablet:!w-[75%] tablet:!max-w-none tablet:h-full tablet:max-h-none tablet:rounded-none tablet:rounded-l-2xl tablet:border-l tablet:border-slate-200 tablet:shadow-2xl tablet:flex tablet:flex-col tablet:overflow-hidden tablet:animate-in tablet:slide-in-from-right tablet:duration-350 tablet:ease-[cubic-bezier(0.22,1,0.36,1)] min-[1367px]:!w-1/2';
+  'tablet:fixed tablet:top-0 tablet:bottom-1.5 tablet:right-0 tablet:left-auto tablet:!w-[75%] tablet:!max-w-none tablet:max-h-none tablet:rounded-none tablet:rounded-l-2xl tablet:border-l tablet:border-slate-200 tablet:shadow-2xl tablet:flex tablet:flex-col tablet:overflow-hidden tablet:animate-in tablet:slide-in-from-right tablet:duration-350 tablet:ease-[cubic-bezier(0.22,1,0.36,1)] min-[1367px]:inset-y-0 min-[1367px]:bottom-0 min-[1367px]:h-full min-[1367px]:!w-1/2';
 
 /** Overlay for hand-rolled modals. */
 export const CUSTOM_MODAL_OVERLAY_CLASS = 'fixed inset-0 z-50 bg-black/50 tablet:bg-black/60';
@@ -26,9 +26,9 @@ export const CUSTOM_MODAL_PANEL_CLASS = cn(
   CUSTOM_DESKTOP_SIDE_PANEL_CLASS,
 );
 
-/** DialogContent tablet+ right side sheet; half width restored on desktop 1367+. */
+/** DialogContent tablet+ right side sheet; half width flush on desktop 1367+. */
 export const DIALOG_LG_DESKTOP_SIDE_SHEET_CLASS =
-  'tablet:fixed tablet:inset-y-0 tablet:right-0 tablet:left-auto tablet:top-0 tablet:bottom-0 tablet:!w-[75%] tablet:!max-w-none tablet:h-full tablet:max-h-none tablet:m-0 tablet:translate-x-0 tablet:translate-y-0 tablet:rounded-none tablet:rounded-l-2xl tablet:border-y-0 tablet:border-r-0 tablet:border-l tablet:border-slate-200 tablet:shadow-2xl tablet:overflow-hidden tablet:flex tablet:flex-col tablet:gap-0 tablet:p-0 tablet:duration-300 tablet:ease-[cubic-bezier(0.22,1,0.36,1)] tablet:data-[state=open]:slide-in-from-right tablet:data-[state=closed]:slide-out-to-right tablet:data-[state=open]:fade-in-0 tablet:data-[state=closed]:fade-out-0 tablet:data-[state=open]:slide-in-from-bottom-0 tablet:data-[state=closed]:slide-out-to-bottom-0 tablet:data-[state=open]:zoom-in-100 tablet:data-[state=closed]:zoom-out-100 min-[1367px]:!w-1/2';
+  'tablet:fixed tablet:top-0 tablet:bottom-1.5 tablet:right-0 tablet:left-auto tablet:!w-[75%] tablet:!max-w-none tablet:max-h-none tablet:m-0 tablet:translate-x-0 tablet:translate-y-0 tablet:rounded-none tablet:rounded-l-2xl tablet:border-y-0 tablet:border-r-0 tablet:border-l tablet:border-slate-200 tablet:shadow-2xl tablet:overflow-hidden tablet:flex tablet:flex-col tablet:gap-0 tablet:p-0 tablet:duration-300 tablet:ease-[cubic-bezier(0.22,1,0.36,1)] tablet:data-[state=open]:slide-in-from-right tablet:data-[state=closed]:slide-out-to-right tablet:data-[state=open]:fade-in-0 tablet:data-[state=closed]:fade-out-0 tablet:data-[state=open]:slide-in-from-bottom-0 tablet:data-[state=closed]:slide-out-to-bottom-0 tablet:data-[state=open]:zoom-in-100 tablet:data-[state=closed]:zoom-out-100 min-[1367px]:inset-y-0 min-[1367px]:bottom-0 min-[1367px]:h-full min-[1367px]:!w-1/2';
 
 
 export function portalFormSheetContentClass(_maxWidth: 'xl' | '2xl' | '3xl' = '2xl'): string {
