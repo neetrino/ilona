@@ -177,22 +177,19 @@ export default function AdminSchedulePage() {
   }, [selectedCenterNames]);
   const centerFilterBlock = !managerCenterId ? (
     <div className="w-full md:w-[20rem]">
-      <div className="relative mb-1.5 flex items-center justify-center">
-        <label className="block text-xs font-semibold uppercase tracking-wide text-slate-600">
-          Centers
-        </label>
-        {hasPendingCenterSelection && (
+      {hasPendingCenterSelection && (
+        <div className="mb-1.5 flex items-center justify-end">
           <button
             type="button"
             onClick={() =>
               setAppliedSelectedCenterIds(new Set(draftSelectedCenterIds))
             }
-            className="absolute right-0 text-[11px] font-semibold text-[#1010a3] transition-colors hover:text-[#0d0d85]"
+            className="text-[11px] font-semibold text-[#1010a3] transition-colors hover:text-[#0d0d85]"
           >
             Save
           </button>
-        )}
-      </div>
+        </div>
+      )}
       <MultiSelectChipsDropdown
         options={centerOptions}
         selectedIds={draftSelectedCenterIds}
