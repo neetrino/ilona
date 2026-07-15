@@ -64,12 +64,25 @@ export function useVoiceMessagePlayer({ fileUrl, duration: durationProp }: Voice
       setProgress(0);
       setCurrentTimeSec(0);
       setMediaDurationSec(0);
+      setHasError(false);
+      setIsLoading(true);
+      setIsPlaying(false);
     }
   }, [proxiedUrl]);
 
+  // iOS Safari often never fires `canplay` with preload=metadata until play().
+  // Do not leave the UI stuck waiting forever.
+  useEffect(() => {
+    if (!isLoading || !proxiedUrl) return;
+    const timeoutId = window.setTimeout(() => {
+      setIsLoading(false);
+    }, 4000);
+    return () => window.clearTimeout(timeoutId);
+  }, [isLoading, proxiedUrl]);
+
   const seekToRatio = (ratio: number) => {
     const el = audioRef.current;
-    if (!el || isLoading) return;
+    if (!el || hasError) return;
     const dur = getEffectiveDuration(el, durationProp);
     if (dur <= 0) return;
     const clamped = Math.max(0, Math.min(1, ratio));
@@ -97,7 +110,7 @@ export function useVoiceMessagePlayer({ fileUrl, duration: durationProp }: Voice
   };
 
   const handleProgressPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
-    if (isLoading) return;
+    if (hasError) return;
     e.preventDefault();
     isScrubbingRef.current = true;
     setIsScrubbing(true);
@@ -121,7 +134,7 @@ export function useVoiceMessagePlayer({ fileUrl, duration: durationProp }: Voice
   };
 
   const handleProgressKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
-    if (isLoading) return;
+    if (hasError) return;
     const step = 0.05;
     if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') {
       e.preventDefault();
@@ -159,13 +172,21 @@ export function useVoiceMessagePlayer({ fileUrl, duration: durationProp }: Voice
     }
   };
 
-  const handleCanPlay = () => {
+  const markReady = () => {
     setIsLoading(false);
     setHasError(false);
     if (audioRef.current) {
       audioRef.current.playbackRate = playbackSpeed;
     }
     syncDurationFromElement();
+  };
+
+  const handleCanPlay = () => {
+    markReady();
+  };
+
+  const handleLoadedMetadata = () => {
+    markReady();
   };
 
   const handlePlay = () => {
@@ -175,6 +196,7 @@ export function useVoiceMessagePlayer({ fileUrl, duration: durationProp }: Voice
       setActiveAudioElement(currentAudio);
     }
     setIsPlaying(true);
+    setIsLoading(false);
   };
 
   const handlePause = () => {
@@ -213,15 +235,21 @@ export function useVoiceMessagePlayer({ fileUrl, duration: durationProp }: Voice
 
   const handlePlayClick = () => {
     const el = audioRef.current;
-    if (!el) return;
+    if (!el || hasError) return;
     pauseOtherAudio(el);
+    setActiveAudioElement(el);
     const dur = getEffectiveDuration(el, durationProp);
     if (dur > 0 && el.currentTime >= dur - 0.15) {
       el.currentTime = 0;
       setProgress(0);
       setCurrentTimeSec(0);
     }
-    el.play().catch(() => {});
+    // iOS requires a user gesture to start decode/playback; never block play on loading.
+    void el.play().then(() => {
+      setIsLoading(false);
+    }).catch(() => {
+      setIsLoading(false);
+    });
   };
 
   const handlePauseClick = () => {
@@ -229,6 +257,11 @@ export function useVoiceMessagePlayer({ fileUrl, duration: durationProp }: Voice
   };
 
   const handleLoadStart = () => {
+    const el = audioRef.current;
+    // iOS can re-fire loadstart on seek/buffer; keep controls usable once metadata exists.
+    if (el && el.readyState >= HTMLMediaElement.HAVE_METADATA) {
+      return;
+    }
     setIsLoading(true);
     setHasError(false);
   };
@@ -269,6 +302,7 @@ export function useVoiceMessagePlayer({ fileUrl, duration: durationProp }: Voice
     progressTrackRef,
     handleError,
     handleCanPlay,
+    handleLoadedMetadata,
     handleLoadStart,
     handlePlay,
     handlePause,
