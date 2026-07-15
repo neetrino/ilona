@@ -18,7 +18,7 @@ interface GroupsTabModalsProps {
   onEditGroupOpenChange: (open: boolean) => void;
   groups: Group[];
   onToggleActiveFromEdit: () => void;
-  onDeleteFromEdit: () => void;
+  onDeleteFromEdit?: () => void;
   isStatusTogglePending: boolean;
   statusDialog: { groupId: string; wasActive: boolean } | null;
   onStatusDialogOpenChange: (open: boolean) => void;
