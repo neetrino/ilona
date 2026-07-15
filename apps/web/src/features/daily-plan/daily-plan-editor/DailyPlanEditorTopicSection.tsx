@@ -81,7 +81,7 @@ export function DailyPlanEditorTopicSection({
                   className="inline-flex w-full items-center justify-center gap-1 rounded-[15px] border border-dashed border-slate-300 bg-white px-3 py-2 text-xs font-medium text-slate-600 hover:border-slate-400 hover:bg-slate-50"
                 >
                   <Plus className="size-3.5" />
-                  {t('addResource')}
+                  {t('addResource', { kind: kindLabel[kind] })}
                 </button>
               )}
             </div>

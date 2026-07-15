@@ -1755,7 +1755,7 @@
     "linkOptionalPlaceholder": "https://… (optional)",
     "descriptionOptional": "Description (optional)",
     "descriptionPlaceholder": "Description",
-    "addResource": "Add another",
+    "addResource": "Add another {kind}",
     "removeResource": "Remove",
     "resourceKinds": {
       "READING": "Reading",

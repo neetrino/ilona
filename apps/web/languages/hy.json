@@ -1755,7 +1755,7 @@
     "linkOptionalPlaceholder": "https://… (ըստ ցանկության)",
     "descriptionOptional": "Նկարագրություն (ըստ ցանկության)",
     "descriptionPlaceholder": "Նկարագրություն",
-    "addResource": "Ավելացնել ևս մեկը",
+    "addResource": "Ավելացնել ևս մեկ {kind}",
     "removeResource": "Հեռացնել",
     "resourceKinds": {
       "READING": "Ընթերցանություն",
