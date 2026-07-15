@@ -25,6 +25,7 @@
     "db:migrate:dev": "node scripts/prisma-with-root-env.cjs migrate dev",
     "db:studio": "node scripts/prisma-with-root-env.cjs studio",
     "db:seed": "tsx prisma/seed.ts",
+    "db:ensure-demo-managers": "tsx scripts/ensure-demo-managers.ts",
     "db:reset": "prisma migrate reset",
     "db:apply-obligations": "node scripts/apply-migration.js",
     "db:add-lesson-rate": "dotenv -e ../../.env -- tsx scripts/add-lesson-rate-column.ts",
