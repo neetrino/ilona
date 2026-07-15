@@ -6,6 +6,21 @@ const TEACHER_1 = 'teacher-anna';
 const TEACHER_2 = 'teacher-ellen';
 const GROUP_ID = 'group-idaho';
 
+type CreatedLessonRow = {
+  teacherId: string;
+  scheduledAt: Date;
+};
+
+function getCreateManyData(createManyMock: Mock): CreatedLessonRow[] {
+  const firstCall = createManyMock.mock.calls[0] as unknown as
+    | [{ data: CreatedLessonRow[] }]
+    | undefined;
+  if (!firstCall?.[0]?.data) {
+    throw new Error('Expected lesson.createMany to be called with { data }');
+  }
+  return firstCall[0].data;
+}
+
 describe('GroupScheduleLessonsService — lesson-by-lesson teacher rotation', () => {
   let service: GroupScheduleLessonsService;
   let createMany: Mock;
@@ -53,10 +68,7 @@ describe('GroupScheduleLessonsService — lesson-by-lesson teacher rotation', ()
     });
 
     expect(createMany).toHaveBeenCalledTimes(1);
-    const created = createMany.mock.calls[0][0].data as Array<{
-      teacherId: string;
-      scheduledAt: Date;
-    }>;
+    const created = getCreateManyData(createMany);
 
     expect(created).toHaveLength(6);
 
@@ -101,7 +113,7 @@ describe('GroupScheduleLessonsService — lesson-by-lesson teacher rotation', ()
       confirmReplaceGeneratedLessons: false,
     });
 
-    const created = createMany.mock.calls[0][0].data as Array<{ teacherId: string }>;
+    const created = getCreateManyData(createMany);
     expect(created.map((l) => l.teacherId)).toEqual([TEACHER_2, TEACHER_1]);
   });
 });
