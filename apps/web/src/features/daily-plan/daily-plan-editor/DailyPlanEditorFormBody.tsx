@@ -89,22 +89,14 @@ export function DailyPlanEditorFormBody({ vm }: DailyPlanEditorFormBodyProps) {
               kindLabel={vm.kindLabel}
               onTopicChange={vm.updateTopic}
               onResourceChange={vm.updateResource}
+              onAddResource={vm.addResource}
+              onRemoveResource={vm.removeResource}
             />
           ))}
         </div>
 
-        <div className="flex shrink-0 justify-end gap-2 pt-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] min-[1367px]:pb-4">
-          <button
-            type="button"
-            onClick={vm.onClose}
-            className={cn(
-              ADMIN_OUTLINE_BUTTON_CLASS,
-              'text-slate-700 hover:bg-slate-50 disabled:opacity-60',
-            )}
-          >
-            {tCommon('cancel')}
-          </button>
-          {!vm.readOnly && (
+        {!vm.readOnly && (
+          <div className="flex shrink-0 justify-end pt-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] min-[1367px]:pb-4">
             <button
               type="button"
               onClick={vm.handleSave}
@@ -116,8 +108,8 @@ export function DailyPlanEditorFormBody({ vm }: DailyPlanEditorFormBodyProps) {
             >
               {vm.isSaving ? tCommon('saving') : tCommon('save')}
             </button>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );

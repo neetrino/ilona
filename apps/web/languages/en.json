@@ -1755,6 +1755,8 @@
     "linkOptionalPlaceholder": "https://… (optional)",
     "descriptionOptional": "Description (optional)",
     "descriptionPlaceholder": "Description",
+    "addResource": "Add another",
+    "removeResource": "Remove",
     "resourceKinds": {
       "READING": "Reading",
       "LISTENING": "Listening",

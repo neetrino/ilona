@@ -11,6 +11,8 @@ export interface DailyPlanEditorProps {
 }
 
 export interface DraftResource {
+  /** Client-only identity for list updates when multiple items share a kind. */
+  key: string;
   kind: DailyPlanResourceKind;
   title: string;
   link: string;

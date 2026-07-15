@@ -70,7 +70,7 @@ export function DailyPlanEditor(props: DailyPlanEditorProps) {
               onClick={props.onClose}
               className={cn(
                 ADMIN_ICON_BUTTON_SM_CLASS,
-                'hidden text-slate-500 hover:bg-slate-100 hover:text-slate-900 min-[1367px]:inline-flex',
+                'inline-flex text-slate-500 hover:bg-slate-100 hover:text-slate-900',
               )}
               aria-label={tCommon('close')}
             >

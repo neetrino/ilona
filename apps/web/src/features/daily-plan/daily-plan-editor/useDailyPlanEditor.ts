@@ -6,7 +6,7 @@ import { useCreateDailyPlan, useUpdateDailyPlan } from '../hooks';
 import { useMyGroups } from '@/features/groups/hooks/useGroups';
 import { usePortalSheetDrag } from '@/shared/hooks/usePortalSheetDrag';
 import type { DailyPlanResourceKind, DailyPlanTopicInput } from '../types';
-import { emptyTopic, toDrafts } from './daily-plan-editor.util';
+import { insertResourceAfterKind, toDrafts } from './daily-plan-editor.util';
 import type { DailyPlanEditorProps, DraftResource, DraftTopic } from './daily-plan-editor.types';
 
 export function useDailyPlanEditor({
@@ -58,7 +58,7 @@ export function useDailyPlanEditor({
 
   const updateResource = (
     topicIdx: number,
-    kind: DailyPlanResourceKind,
+    resourceKey: string,
     patch: Partial<DraftResource>,
   ) => {
     setTopics((prev) =>
@@ -68,10 +68,37 @@ export function useDailyPlanEditor({
           : {
               ...topic,
               resources: topic.resources.map((res) =>
-                res.kind === kind ? { ...res, ...patch } : res,
+                res.key === resourceKey ? { ...res, ...patch } : res,
               ),
             },
       ),
+    );
+  };
+
+  const addResource = (topicIdx: number, kind: DailyPlanResourceKind) => {
+    setTopics((prev) =>
+      prev.map((topic, i) =>
+        i !== topicIdx
+          ? topic
+          : { ...topic, resources: insertResourceAfterKind(topic.resources, kind) },
+      ),
+    );
+  };
+
+  const removeResource = (topicIdx: number, resourceKey: string) => {
+    setTopics((prev) =>
+      prev.map((topic, i) => {
+        if (i !== topicIdx) return topic;
+        const target = topic.resources.find((resource) => resource.key === resourceKey);
+        if (!target) return topic;
+        const sameKindCount = topic.resources.filter((resource) => resource.kind === target.kind)
+          .length;
+        if (sameKindCount <= 1) return topic;
+        return {
+          ...topic,
+          resources: topic.resources.filter((resource) => resource.key !== resourceKey),
+        };
+      }),
     );
   };
 
@@ -158,6 +185,8 @@ export function useDailyPlanEditor({
     scrollContentProps,
     updateTopic,
     updateResource,
+    addResource,
+    removeResource,
     handleSave,
     onClose,
   };
