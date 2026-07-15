@@ -44,6 +44,7 @@ export function StudentDetails({
   const lastName = student.user?.lastName || '';
   const na = t('notAvailable');
   const assignedTeacher = student.teacher ?? student.group?.teacher;
+  const secondTeacher = student.group?.secondTeacher;
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -196,6 +197,14 @@ export function StudentDetails({
                   <label className="text-sm font-medium text-[#8b8b90]">{t('teacher')}</label>
                   <p className="text-[#3b3b40] mt-1">
                     {assignedTeacher.user.firstName} {assignedTeacher.user.lastName}
+                  </p>
+                </div>
+              )}
+              {secondTeacher && secondTeacher.id !== assignedTeacher?.id && (
+                <div>
+                  <label className="text-sm font-medium text-[#8b8b90]">{t('teacher2')}</label>
+                  <p className="text-[#3b3b40] mt-1">
+                    {secondTeacher.user.firstName} {secondTeacher.user.lastName}
                   </p>
                 </div>
               )}

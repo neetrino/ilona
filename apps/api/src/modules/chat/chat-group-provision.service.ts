@@ -31,6 +31,7 @@ export class ChatGroupProvisionService {
         id: true,
         name: true,
         teacherId: true,
+        secondTeacherId: true,
         isActive: true,
         centerId: true,
       },
@@ -75,9 +76,13 @@ export class ChatGroupProvisionService {
       },
     });
 
-    if (group.teacherId) {
+    const groupTeacherIds = [group.teacherId, group.secondTeacherId].filter(
+      (id): id is string => Boolean(id),
+    );
+
+    for (const groupTeacherId of groupTeacherIds) {
       const teacher = await db.teacher.findUnique({
-        where: { id: group.teacherId },
+        where: { id: groupTeacherId },
         select: { userId: true },
       });
       if (teacher) {
@@ -88,7 +93,7 @@ export class ChatGroupProvisionService {
               userId: teacher.userId,
             },
           },
-          update: { leftAt: null },
+          update: { leftAt: null, isAdmin: true },
           create: {
             chatId: newChat.id,
             userId: teacher.userId,

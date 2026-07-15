@@ -38,6 +38,19 @@ export class StudentReadService {
                 },
               },
             },
+            secondTeacher: {
+              include: {
+                user: {
+                  select: {
+                    id: true,
+                    firstName: true,
+                    lastName: true,
+                    email: true,
+                    phone: true,
+                  },
+                },
+              },
+            },
           },
         },
         teacher: {
@@ -127,10 +140,11 @@ export class StudentReadService {
       // Check if teacher is assigned to this student
       // Teacher is assigned if:
       // 1. Student has direct teacherId assignment matching this teacher, OR
-      // 2. Student is in a group that has this teacher assigned
+      // 2. Student is in a group where this teacher is Teacher 1 or Teacher 2
       const isAssigned =
         student.teacherId === teacher.id ||
-        (student.group?.teacherId === teacher.id);
+        student.group?.teacherId === teacher.id ||
+        student.group?.secondTeacherId === teacher.id;
 
       if (!isAssigned) {
         throw new ForbiddenException('You do not have access to this student');

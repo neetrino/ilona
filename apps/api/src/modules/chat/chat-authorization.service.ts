@@ -188,14 +188,17 @@ export class ChatAuthorizationService {
       return true;
     }
 
-    // Check group assignment
+    // Check group assignment (Teacher 1 or Teacher 2)
     if (student.groupId) {
       const group = await this.prisma.group.findUnique({
         where: { id: student.groupId },
-        select: { teacherId: true },
+        select: { teacherId: true, secondTeacherId: true },
       });
 
-      if (group?.teacherId === teacher.id) {
+      if (
+        group?.teacherId === teacher.id ||
+        group?.secondTeacherId === teacher.id
+      ) {
         return true;
       }
     }

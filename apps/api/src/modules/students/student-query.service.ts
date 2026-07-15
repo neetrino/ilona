@@ -32,21 +32,22 @@ export class StudentQueryService {
     if (groupId) {
       const group = await this.prisma.group.findUnique({
         where: { id: groupId },
-        select: { teacherId: true },
+        select: { teacherId: true, secondTeacherId: true },
       });
       if (!group) {
         throw new NotFoundException(`Group with ID ${groupId} not found`);
       }
-      if (group.teacherId !== teacherId) {
+      if (group.teacherId !== teacherId && group.secondTeacherId !== teacherId) {
         throw new NotFoundException('Group is not assigned to this teacher');
       }
       where.groupId = groupId;
     } else {
-      // Include students assigned via direct teacherId OR via group (group.teacherId = teacherId)
+      // Include students assigned via direct teacherId OR via group (Teacher 1 or Teacher 2)
       // so that Admin-assigned students (groupId set, teacherId possibly unset) appear in My Students
       where.OR = [
         { teacherId },
         { group: { teacherId } },
+        { group: { secondTeacherId: teacherId } },
       ];
     }
 
@@ -274,14 +275,14 @@ export class StudentQueryService {
    * Get teachers assigned to a student
    * Returns teachers from:
    * 1. Direct teacherId assignment
-   * 2. Group's teacher (if student is in a group)
+   * 2. Group's Teacher 1 and Teacher 2 (if student is in a group)
    */
   async getMyTeachers(userId: string) {
     const student = await this.prisma.student.findUnique({
       where: { userId },
       include: {
         group: {
-          select: { teacherId: true },
+          select: { teacherId: true, secondTeacherId: true },
         },
       },
     });
@@ -297,9 +298,12 @@ export class StudentQueryService {
       teacherIds.add(student.teacherId);
     }
 
-    // Add group's teacher if student is in a group
+    // Add group's teachers if student is in a group
     if (student.group?.teacherId) {
       teacherIds.add(student.group.teacherId);
+    }
+    if (student.group?.secondTeacherId) {
+      teacherIds.add(student.group.secondTeacherId);
     }
 
     if (teacherIds.size === 0) {

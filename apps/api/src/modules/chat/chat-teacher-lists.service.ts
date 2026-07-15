@@ -168,7 +168,11 @@ export class ChatTeacherListsService {
     }
 
     const where: Prisma.StudentWhereInput = {
-      teacherId: teacher.id,
+      OR: [
+        { teacherId: teacher.id },
+        { group: { teacherId: teacher.id } },
+        { group: { secondTeacherId: teacher.id } },
+      ],
       user: {
         status: 'ACTIVE',
         ...(search && {
