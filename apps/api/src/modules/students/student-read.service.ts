@@ -28,8 +28,28 @@ export class StudentReadService {
             teacher: {
               include: {
                 user: {
-                  select: { id: true, firstName: true, lastName: true, email: true },
+                  select: {
+                    id: true,
+                    firstName: true,
+                    lastName: true,
+                    email: true,
+                    phone: true,
+                  },
                 },
+              },
+            },
+          },
+        },
+        teacher: {
+          select: {
+            id: true,
+            user: {
+              select: {
+                id: true,
+                firstName: true,
+                lastName: true,
+                email: true,
+                phone: true,
               },
             },
           },
@@ -143,8 +163,18 @@ export class StudentReadService {
       ORDER BY h."joinedAt" DESC
     `;
 
+    const resolvedTeacher =
+      student.teacher ??
+      (student.group?.teacher
+        ? {
+            id: student.group.teacher.id,
+            user: student.group.teacher.user,
+          }
+        : null);
+
     return {
       ...student,
+      teacher: resolvedTeacher,
       groupHistory: groupHistory.map((entry) => ({
         id: entry.id,
         groupId: entry.groupId,

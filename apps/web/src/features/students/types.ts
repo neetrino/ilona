@@ -84,6 +84,16 @@ export interface StudentGroup {
     id: string;
     name: string;
   };
+  teacher?: {
+    id: string;
+    user: {
+      id: string;
+      firstName: string;
+      lastName: string;
+      email?: string;
+      phone?: string;
+    };
+  } | null;
 }
 
 /** Onboarding entry: lead assigned to teacher/group from CRM, not yet a full student */

@@ -43,6 +43,7 @@ export function StudentDetails({
   const firstName = student.user?.firstName || '';
   const lastName = student.user?.lastName || '';
   const na = t('notAvailable');
+  const assignedTeacher = student.teacher ?? student.group?.teacher;
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -190,11 +191,11 @@ export function StudentDetails({
                   <p className="text-[#3b3b40] mt-1">{student.group.center.name}</p>
                 </div>
               )}
-              {student.teacher && (
+              {assignedTeacher && (
                 <div>
                   <label className="text-sm font-medium text-[#8b8b90]">{t('teacher')}</label>
                   <p className="text-[#3b3b40] mt-1">
-                    {student.teacher.user.firstName} {student.teacher.user.lastName}
+                    {assignedTeacher.user.firstName} {assignedTeacher.user.lastName}
                   </p>
                 </div>
               )}
