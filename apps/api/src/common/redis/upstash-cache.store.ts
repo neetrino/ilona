@@ -1,11 +1,6 @@
 import type { Milliseconds, Store } from 'cache-manager';
+import { toCacheKey } from './redis-keys';
 import { getUpstashRedis } from './upstash.client';
-
-const KEY_PREFIX = 'cache:';
-
-function toFullKey(key: string): string {
-  return `${KEY_PREFIX}${key}`;
-}
 
 function ttlSeconds(ttl?: Milliseconds): number | undefined {
   if (ttl == null || ttl <= 0) {
@@ -20,12 +15,12 @@ export function createUpstashCacheStore(): Store {
 
   return {
     async get<T>(key: string): Promise<T | undefined> {
-      const value = await redis.get<T>(toFullKey(key));
+      const value = await redis.get<T>(toCacheKey(key));
       return value ?? undefined;
     },
 
     async set<T>(key: string, data: T, ttl?: Milliseconds): Promise<void> {
-      const fullKey = toFullKey(key);
+      const fullKey = toCacheKey(key);
       const ex = ttlSeconds(ttl);
 
       if (ex != null) {
@@ -37,7 +32,7 @@ export function createUpstashCacheStore(): Store {
     },
 
     async del(key: string): Promise<void> {
-      await redis.del(toFullKey(key));
+      await redis.del(toCacheKey(key));
     },
 
     async reset(): Promise<void> {
@@ -49,14 +44,14 @@ export function createUpstashCacheStore(): Store {
       await Promise.all(
         args.map(([key, value]) =>
           ex != null
-            ? redis.set(toFullKey(key), value, { ex })
-            : redis.set(toFullKey(key), value),
+            ? redis.set(toCacheKey(key), value, { ex })
+            : redis.set(toCacheKey(key), value),
         ),
       );
     },
 
     async mget(...keys: string[]): Promise<unknown[]> {
-      return Promise.all(keys.map((key) => redis.get(toFullKey(key))));
+      return Promise.all(keys.map((key) => redis.get(toCacheKey(key))));
     },
 
     async mdel(...keys: string[]): Promise<void> {
@@ -64,7 +59,7 @@ export function createUpstashCacheStore(): Store {
         return;
       }
 
-      await redis.del(...keys.map(toFullKey));
+      await redis.del(...keys.map(toCacheKey));
     },
 
     keys(): Promise<string[]> {
@@ -73,7 +68,7 @@ export function createUpstashCacheStore(): Store {
     },
 
     async ttl(key: string): Promise<number> {
-      const seconds = await redis.ttl(toFullKey(key));
+      const seconds = await redis.ttl(toCacheKey(key));
       if (seconds <= 0) {
         return seconds;
       }

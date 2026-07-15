@@ -1,34 +1,23 @@
 import { Redis } from '@upstash/redis';
+import {
+  getUpstashRestToken,
+  getUpstashRestUrl,
+  isUpstashEnvConfigured,
+} from './redis-env';
 
 let client: Redis | null = null;
 
-/** Strip wrapping quotes some env loaders leave on Windows / nested dotenv. */
-function cleanEnv(value: string | undefined): string {
-  if (!value) return '';
-  const trimmed = value.trim();
-  if (
-    (trimmed.startsWith('"') && trimmed.endsWith('"')) ||
-    (trimmed.startsWith("'") && trimmed.endsWith("'"))
-  ) {
-    return trimmed.slice(1, -1).trim();
-  }
-  return trimmed;
-}
-
 export function isUpstashConfigured(): boolean {
-  return Boolean(
-    cleanEnv(process.env.UPSTASH_REDIS_REST_URL) &&
-      cleanEnv(process.env.UPSTASH_REDIS_REST_TOKEN),
-  );
+  return isUpstashEnvConfigured();
 }
 
 export function getUpstashRedis(): Redis {
-  const url = cleanEnv(process.env.UPSTASH_REDIS_REST_URL);
-  const token = cleanEnv(process.env.UPSTASH_REDIS_REST_TOKEN);
+  const url = getUpstashRestUrl();
+  const token = getUpstashRestToken();
 
-  if (!url || !token) {
+  if (!isUpstashEnvConfigured()) {
     throw new Error(
-      'Upstash Redis is not configured. Set UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN.',
+      'Upstash Redis is not configured. Set UPSTASH_REDIS_REST_URL (https://...) and UPSTASH_REDIS_REST_TOKEN.',
     );
   }
 
@@ -37,4 +26,22 @@ export function getUpstashRedis(): Redis {
   }
 
   return client;
+}
+
+/** Ping Upstash; returns true when reachable. Does not throw. */
+export async function pingUpstashRedis(): Promise<{ ok: boolean; error?: string }> {
+  if (!isUpstashConfigured()) {
+    return { ok: false, error: 'not_configured' };
+  }
+
+  try {
+    const result = await getUpstashRedis().ping();
+    if (result !== 'PONG') {
+      return { ok: false, error: `unexpected_ping_response:${String(result)}` };
+    }
+    return { ok: true };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    return { ok: false, error: message };
+  }
 }

@@ -62,15 +62,18 @@ export function useFinanceDashboard(dateFrom?: string, dateTo?: string) {
 
 // ============ PAYMENTS ============
 
+/**
+ * Payments list — refresh via cache invalidation (mutations) and window focus.
+ * No aggressive polling: a 3s interval was ~40 req/min per open dashboard tab.
+ */
 export function usePayments(filters?: PaymentFilters) {
   return useQuery({
     queryKey: financeKeys.paymentsList(filters),
     queryFn: () => fetchPayments(filters),
-    staleTime: 0,
-    refetchOnMount: 'always',
+    staleTime: 30_000,
     refetchOnWindowFocus: true,
-    refetchInterval: 3000,
-    refetchIntervalInBackground: true,
+    refetchInterval: false,
+    refetchIntervalInBackground: false,
   });
 }
 
