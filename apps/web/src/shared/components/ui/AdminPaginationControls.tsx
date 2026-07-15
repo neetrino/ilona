@@ -68,11 +68,16 @@ export function AdminPaginationControls({
   const lastDisabled = disabled || safePage >= safeTotalPages - 1;
 
   return (
-    <div className={cn('flex w-full items-center justify-center gap-2 lg:justify-start', className)}>
+    <div
+      className={cn(
+        'relative z-10 flex w-full items-center justify-center gap-2 lg:justify-start',
+        className,
+      )}
+    >
       <button
         type="button"
         className={cn(
-          'inline-flex h-9 items-center justify-center rounded-full px-4 text-sm font-medium transition-colors focus:outline-none focus-visible:outline-none',
+          'inline-flex h-9 shrink-0 items-center justify-center rounded-full px-4 text-sm font-medium transition-colors focus:outline-none focus-visible:outline-none',
           firstDisabled ? PILL_MUTED : PILL_ACTIVE,
         )}
         disabled={firstDisabled}
@@ -88,7 +93,7 @@ export function AdminPaginationControls({
             <span
               key={`ellipsis-${index}`}
               className={cn(
-                'inline-flex h-9 w-9 items-center justify-center rounded-full text-xs font-semibold',
+                'pointer-events-none inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xs font-semibold',
                 PILL_MUTED,
               )}
               aria-hidden
@@ -100,19 +105,26 @@ export function AdminPaginationControls({
 
         const active = item === current1Based;
         const pageIndex = item - 1;
+        const pageDisabled = disabled;
         return (
           <button
-            key={item}
+            key={`page-${item}`}
             type="button"
             className={cn(
-              'inline-flex h-9 w-9 items-center justify-center rounded-full text-sm font-semibold transition-colors focus:outline-none focus-visible:outline-none',
+              'relative z-10 inline-flex h-9 w-9 shrink-0 touch-manipulation items-center justify-center rounded-full text-sm font-semibold transition-colors focus:outline-none focus-visible:outline-none',
               active ? PILL_ACTIVE : PILL_IDLE,
-              (disabled || active) && 'cursor-default',
+              pageDisabled && 'cursor-default opacity-60',
+              active && !pageDisabled && 'cursor-default',
             )}
-            disabled={disabled || active}
+            disabled={pageDisabled}
             aria-current={active ? 'page' : undefined}
             aria-label={`Page ${item}`}
-            onClick={() => onPageChange(pageIndex)}
+            onClick={(event) => {
+              event.preventDefault();
+              event.stopPropagation();
+              if (pageDisabled || active) return;
+              onPageChange(pageIndex);
+            }}
           >
             {item}
           </button>
@@ -122,7 +134,7 @@ export function AdminPaginationControls({
       <button
         type="button"
         className={cn(
-          'inline-flex h-9 items-center justify-center rounded-full px-4 text-sm font-medium transition-colors focus:outline-none focus-visible:outline-none',
+          'inline-flex h-9 shrink-0 items-center justify-center rounded-full px-4 text-sm font-medium transition-colors focus:outline-none focus-visible:outline-none',
           lastDisabled ? PILL_MUTED : PILL_ACTIVE,
         )}
         disabled={lastDisabled}

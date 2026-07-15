@@ -100,7 +100,7 @@ export function StudentsList({
 
   return (
     <>
-      {/* Students Table — scroll inside card so columns never overlap */}
+      {/* Students Table — natural column widths + horizontal scroll (no table-fixed overlap) */}
       <div className="w-full min-w-0">
       <DataTable
         columns={studentColumns}
@@ -116,12 +116,11 @@ export function StudentsList({
         sortOrder={sortOrder}
         onSort={onSort}
         compact
-        tableClassName="table-fixed w-full"
       />
       </div>
 
       {/* Pagination */}
-      <div className="flex items-center justify-center lg:justify-start">
+      <div className="relative z-10 mt-3 flex items-center justify-center lg:justify-start">
         <AdminPaginationControls
           page={page}
           totalPages={totalPages}

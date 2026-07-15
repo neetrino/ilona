@@ -20,21 +20,19 @@ import { useTranslations } from 'next-intl';
 
 const NEW_STUDENT_BADGE_DAYS = 30;
 
-/** Equal header rhythm: same horizontal padding + equal share after the checkbox column. */
+/** Header/data cell rhythm — min widths + overflow clip so cells don't steal clicks from neighbours. */
 const HEADER_CELL_X = '!px-4';
-const DATA_COL_SHARE_MOBILE = '!w-[calc((100%-2.5rem)/7)]';
-const DATA_COL_SHARE_DESKTOP = 'sheet:!w-[calc((100%-2.5rem)/6)]';
-const DATA_COL_SHARE = `${DATA_COL_SHARE_MOBILE} ${DATA_COL_SHARE_DESKTOP}`;
+const CELL_CLIP = 'overflow-hidden align-middle';
 
 const COL = {
-  checkbox: `!w-10 !min-w-10 !max-w-10 shrink-0 ${HEADER_CELL_X} align-middle`,
-  student: `${DATA_COL_SHARE} !min-w-[10rem] ${HEADER_CELL_X} align-middle`,
-  center: `${DATA_COL_SHARE} !min-w-[9rem] ${HEADER_CELL_X} align-middle`,
-  group: `${DATA_COL_SHARE} !min-w-[9rem] ${HEADER_CELL_X} align-middle`,
-  register: `${DATA_COL_SHARE} !min-w-[5.75rem] ${HEADER_CELL_X} align-middle text-center`,
-  monthlyFee: `${DATA_COL_SHARE} !min-w-[6.25rem] ${HEADER_CELL_X} align-middle text-center`,
-  absence: `${DATA_COL_SHARE} !min-w-[4.5rem] ${HEADER_CELL_X} align-middle text-center`,
-  actions: `${DATA_COL_SHARE_MOBILE} !min-w-[7.5rem] shrink-0 ${HEADER_CELL_X} align-middle text-center sheet:!hidden`,
+  checkbox: `!w-10 !min-w-10 !max-w-10 shrink-0 ${HEADER_CELL_X} ${CELL_CLIP}`,
+  student: `!min-w-[12rem] ${HEADER_CELL_X} ${CELL_CLIP}`,
+  center: `!min-w-[10rem] ${HEADER_CELL_X} ${CELL_CLIP}`,
+  group: `!min-w-[10rem] ${HEADER_CELL_X} ${CELL_CLIP}`,
+  register: `!min-w-[7rem] ${HEADER_CELL_X} ${CELL_CLIP} text-center`,
+  monthlyFee: `!min-w-[7rem] ${HEADER_CELL_X} ${CELL_CLIP} text-center`,
+  absence: `!min-w-[5rem] ${HEADER_CELL_X} ${CELL_CLIP} text-center`,
+  actions: `!min-w-[7.5rem] shrink-0 ${HEADER_CELL_X} ${CELL_CLIP} text-center sheet:!hidden`,
 } as const;
 
 const INLINE_SELECT_TABLE_CLASS =
@@ -258,7 +256,7 @@ function RegisterDateCell({
   const displayText = formatRegisterDate(value) || '—';
   return (
     <div
-      className="relative flex min-h-9 min-w-0 items-center justify-center"
+      className="relative z-[1] flex min-h-9 w-full min-w-0 items-center justify-center"
       onClick={(e) => e.stopPropagation()}
     >
       <button
@@ -266,7 +264,7 @@ function RegisterDateCell({
         onClick={() => !disabled && setEditing(true)}
         disabled={disabled || saving}
         className={cn(
-          'h-9 whitespace-nowrap rounded px-1.5 text-sm transition-colors',
+          'flex h-9 w-full min-w-0 items-center justify-center whitespace-nowrap rounded px-1.5 text-sm transition-colors',
           displayText === '—'
             ? 'text-[#8b8b90] hover:text-[#3b3b40]'
             : 'text-[#3b3b40] hover:text-[#1010a3]',
@@ -411,7 +409,7 @@ export function createStudentsTableColumns({
         // Center column = manual `student.centerId` only; never mirror group.center (avoids "auto-select" when group changes).
         const manualCenterId = row.centerId ?? null;
         return (
-          <div className="min-w-0 w-full" onClick={(e) => e.stopPropagation()}>
+          <div className="relative z-[1] min-w-0 w-full" onClick={(e) => e.stopPropagation()}>
             <InlineSelect
               className={INLINE_SELECT_TABLE_CLASS}
               value={manualCenterId}
@@ -444,7 +442,7 @@ export function createStudentsTableColumns({
         );
         const groupPlaceholder = !manualCenterId ? t('form.selectCenterFirst') : t('selectGroup');
         return (
-          <div className="min-w-0 w-full" onClick={(e) => e.stopPropagation()}>
+          <div className="relative z-[1] min-w-0 w-full" onClick={(e) => e.stopPropagation()}>
             <InlineSelect
               className={INLINE_SELECT_TABLE_CLASS}
               value={row.groupId || null}
@@ -489,7 +487,7 @@ export function createStudentsTableColumns({
         if (isOnboardingItem(row)) return <span className="text-[#8b8b90]">—</span>;
         const fee = typeof row.monthlyFee === 'string' ? parseFloat(row.monthlyFee) : Number(row.monthlyFee || 0);
         return (
-          <div className="flex w-full justify-center" onClick={(e) => e.stopPropagation()}>
+          <div className="relative z-[1] flex min-h-9 w-full items-center justify-center">
             <span className="whitespace-nowrap text-sm font-medium tabular-nums text-[#3b3b40]">
               {formatCurrency(fee)}
             </span>
@@ -505,14 +503,14 @@ export function createStudentsTableColumns({
       render: (row: TeacherAssignedItem) => {
         if (isOnboardingItem(row)) {
           return (
-            <div className="w-full flex justify-center" onClick={(e) => e.stopPropagation()}>
+            <div className="relative z-[1] flex min-h-9 w-full items-center justify-center">
               <span className="text-[#8b8b90]">—</span>
             </div>
           );
         }
         const absencesThisMonth = row.attendanceSummary?.absences ?? 0;
         return (
-          <div className="flex w-full justify-center" onClick={(e) => e.stopPropagation()}>
+          <div className="relative z-[1] flex min-h-9 w-full items-center justify-center">
             <span className="inline-flex min-w-[1.25rem] justify-center text-sm font-medium tabular-nums text-[#3b3b40]">
               {absencesThisMonth}
             </span>
