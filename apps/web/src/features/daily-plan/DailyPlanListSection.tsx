@@ -1,10 +1,17 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import type { DailyPlan, DailyPlanResourceKind } from './types';
 import { DailyPlanCardsGrid } from './DailyPlanCardsGrid';
+import {
+  DailyPlanListFilters,
+  type DailyPlanTeacherOption,
+} from './DailyPlanListFilters';
 import { useIsIPad } from '@/shared/hooks/useIsIPad';
+import { useOutsidePress } from '@/shared/hooks/useOutsidePress';
+import { isDatePickerEventTarget } from '@/shared/components/ui/date-picker-input/date-picker-input.util';
+import { SINGLE_SELECT_DROPDOWN_MENU_ATTR } from '@/shared/components/ui/single-select-dropdown/single-select-dropdown.constants';
 import {
   ADMIN_PRIMARY_BUTTON_CLASS,
   ADMIN_SEARCH_INPUT_CLASS,
@@ -15,6 +22,16 @@ import { cn } from '@/shared/lib/utils';
 interface DailyPlanListSectionProps {
   search: string;
   onSearchChange: (value: string) => void;
+  /** When true, focusing search opens teacher/date filters. */
+  enableStructuredFilters?: boolean;
+  teacherId?: string;
+  onTeacherIdChange?: (value: string | null) => void;
+  dateFrom?: string;
+  onDateFromChange?: (value: string) => void;
+  dateTo?: string;
+  onDateToChange?: (value: string) => void;
+  teacherOptions?: DailyPlanTeacherOption[];
+  isLoadingTeachers?: boolean;
   onCreate: () => void;
   createLabel: string;
   items: DailyPlan[];
@@ -40,9 +57,24 @@ function slicePage(items: DailyPlan[], page: number, pageSize: number): DailyPla
   return items.slice(page * pageSize, page * pageSize + pageSize);
 }
 
+function isFilterPortalTarget(target: EventTarget | null): boolean {
+  if (!(target instanceof Element)) return false;
+  if (isDatePickerEventTarget(target)) return true;
+  return Boolean(target.closest(`[${SINGLE_SELECT_DROPDOWN_MENU_ATTR}]`));
+}
+
 export function DailyPlanListSection({
   search,
   onSearchChange,
+  enableStructuredFilters = false,
+  teacherId = '',
+  onTeacherIdChange,
+  dateFrom = '',
+  onDateFromChange,
+  dateTo = '',
+  onDateToChange,
+  teacherOptions = [],
+  isLoadingTeachers = false,
   onCreate,
   createLabel,
   items,
@@ -72,11 +104,33 @@ export function DailyPlanListSection({
     [t],
   );
   const trimmedSearch = search.trim();
+  const hasStructuredFilters = Boolean(teacherId || dateFrom || dateTo);
+  const hasAnyFilters = Boolean(trimmedSearch || hasStructuredFilters);
   const isDeletePending = deletingPlanId !== null;
   const isIPad = useIsIPad();
   const pageSize = isIPad ? IPAD_PAGE_SIZE : MOBILE_PAGE_SIZE;
   const [mobilePage, setMobilePage] = useState(0);
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const cardsStartRef = useRef<HTMLDivElement | null>(null);
+  const searchFiltersRef = useRef<HTMLDivElement | null>(null);
+
+  const showFilters =
+    enableStructuredFilters && (filtersOpen || hasStructuredFilters);
+
+  const closeFiltersIfIdle = useCallback(() => {
+    if (!hasStructuredFilters) {
+      setFiltersOpen(false);
+    }
+  }, [hasStructuredFilters]);
+
+  useOutsidePress(
+    searchFiltersRef,
+    (event) => {
+      if (isFilterPortalTarget(event.target)) return;
+      closeFiltersIfIdle();
+    },
+    { enabled: showFilters },
+  );
 
   const { mine, others, showMineSection } = useMemo(() => {
     if (!currentUserId) {
@@ -112,7 +166,7 @@ export function DailyPlanListSection({
 
   useEffect(() => {
     setMobilePage(0);
-  }, [trimmedSearch, items.length, showMineSection]);
+  }, [trimmedSearch, teacherId, dateFrom, dateTo, items.length, showMineSection]);
 
   const goToMobilePage = (nextPage: number) => {
     setMobilePage(nextPage);
@@ -124,35 +178,121 @@ export function DailyPlanListSection({
     });
   };
 
-  const emptyMessage = trimmedSearch
-    ? emptySearchMessage(trimmedSearch)
+  const emptyMessage = hasAnyFilters
+    ? trimmedSearch
+      ? emptySearchMessage(trimmedSearch)
+      : t('empty')
     : emptyDefaultMessage;
+
+  const clearStructuredFilters = () => {
+    onTeacherIdChange?.(null);
+    onDateFromChange?.('');
+    onDateToChange?.('');
+  };
+
+  const openStructuredFilters = () => {
+    if (enableStructuredFilters) {
+      setFiltersOpen(true);
+    }
+  };
+
+  const toggleStructuredFilters = () => {
+    if (!enableStructuredFilters) return;
+    if (showFilters && !hasStructuredFilters) {
+      setFiltersOpen(false);
+      return;
+    }
+    setFiltersOpen(true);
+  };
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center gap-3">
-        <div className="flex-1 relative">
-          <input
-            type="search"
-            value={search}
-            onChange={(event) => onSearchChange(event.target.value)}
-            placeholder={t('searchPlaceholder')}
-            className={ADMIN_SEARCH_INPUT_CLASS}
-          />
-          <svg
-            className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#8b8b90]"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            aria-hidden="true"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M21 21l-4.35-4.35M16 10a6 6 0 11-12 0 6 6 0 0112 0z"
+      <div
+        className={cn(
+          'flex flex-col gap-3 md:flex-row',
+          enableStructuredFilters ? 'md:items-start' : 'md:items-center',
+        )}
+      >
+        <div ref={searchFiltersRef} className="flex-1 space-y-3">
+          <div className="relative">
+            <input
+              type="search"
+              value={search}
+              onChange={(event) => onSearchChange(event.target.value)}
+              onFocus={openStructuredFilters}
+              onClick={openStructuredFilters}
+              placeholder={t('searchPlaceholder')}
+              className={cn(
+                ADMIN_SEARCH_INPUT_CLASS,
+                enableStructuredFilters && 'pr-11',
+              )}
+              aria-expanded={enableStructuredFilters ? showFilters : undefined}
+              aria-controls={enableStructuredFilters ? 'daily-plan-search-filters' : undefined}
             />
-          </svg>
+            <svg
+              className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-[#8b8b90]"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M21 21l-4.35-4.35M16 10a6 6 0 11-12 0 6 6 0 0112 0z"
+              />
+            </svg>
+            {enableStructuredFilters ? (
+              <button
+                type="button"
+                onClick={toggleStructuredFilters}
+                className={cn(
+                  'absolute right-2 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-[10px] transition-colors',
+                  showFilters || hasStructuredFilters
+                    ? 'bg-[#1010a3]/10 text-[#1010a3]'
+                    : 'text-[#8b8b90] hover:bg-[#f5f5f7] hover:text-[#3b3b40]',
+                )}
+                aria-label={t('openFilters')}
+                aria-expanded={showFilters}
+                aria-controls="daily-plan-search-filters"
+              >
+                <svg
+                  className="h-5 w-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M3 4h18M6 12h12M10 20h4"
+                  />
+                </svg>
+                {hasStructuredFilters ? (
+                  <span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-[#1010a3]" />
+                ) : null}
+              </button>
+            ) : null}
+          </div>
+          {showFilters && onTeacherIdChange && onDateFromChange && onDateToChange ? (
+            <div id="daily-plan-search-filters">
+              <DailyPlanListFilters
+                teacherId={teacherId}
+                onTeacherIdChange={onTeacherIdChange}
+                dateFrom={dateFrom}
+                onDateFromChange={onDateFromChange}
+                dateTo={dateTo}
+                onDateToChange={onDateToChange}
+                teacherOptions={teacherOptions}
+                isLoadingTeachers={isLoadingTeachers}
+                onClear={clearStructuredFilters}
+                hasActiveFilters={hasStructuredFilters}
+              />
+            </div>
+          ) : null}
         </div>
         {showCreate && (
           <button

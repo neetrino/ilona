@@ -19,7 +19,7 @@ export class TeachersController {
   constructor(private readonly teachersService: TeachersService) {}
 
   @Get()
-  @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.STUDENT)
+  @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.STUDENT, UserRole.TEACHER)
   async findAll(@Query() query: QueryTeacherDto, @CurrentUser() user?: JwtPayload): Promise<unknown> {
     return this.teachersService.findAll({
       skip: query.skip,
