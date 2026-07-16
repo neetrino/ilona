@@ -5,8 +5,8 @@ import { motion, useReducedMotion } from 'framer-motion';
 import type { DailyPlan, DailyPlanResourceKind } from './types';
 import { DailyPlanCard } from './DailyPlanCard';
 import {
-  dailyPlanCardContainerVariants,
   dailyPlanCardItemVariants,
+  dailyPlanCardViewport,
 } from './dailyPlanCardAnimations';
 
 interface DailyPlanCardsGridProps {
@@ -67,19 +67,16 @@ function DailyPlanCardsGridList({
   }
 
   return (
-    <motion.div
-      key={signature}
-      className={className}
-      variants={dailyPlanCardContainerVariants}
-      initial="hidden"
-      animate="visible"
-    >
+    <div key={signature} className={className}>
       {items.map((plan, index) => (
         <motion.div
           key={plan.id}
           className="h-full min-w-0"
           custom={index}
           variants={dailyPlanCardItemVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={dailyPlanCardViewport}
         >
           <DailyPlanCard
             plan={plan}
@@ -91,7 +88,7 @@ function DailyPlanCardsGridList({
           />
         </motion.div>
       ))}
-    </motion.div>
+    </div>
   );
 }
 
@@ -116,7 +113,7 @@ export function DailyPlanCardsGrid({
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 overflow-x-clip">
       {cardsStartRef ? <div ref={cardsStartRef} className="md:hidden" /> : null}
       <DailyPlanCardsGridList
         {...sharedListProps}
