@@ -214,7 +214,7 @@ export function useStudentsPage() {
   // Fetch teachers, groups, and centers for filters and dropdowns
   const { data: teachersData } = useTeachers({ take: 50, status: 'ACTIVE' });
   const { data: groupsData } = useGroups({ take: 50, isActive: true });
-  const { data: centersData } = useCenters({ isActive: true });
+  const { data: centersData } = useCenters({ isActive: true, take: 100 });
 
   // Convert filters to arrays for API
   const teacherIdsArray = useMemo(() => 
@@ -285,8 +285,20 @@ export function useStudentsPage() {
   const allCenters = useMemo(() => {
     const centers = centersData?.items || [];
     if (!managerCenterId) return centers;
-    return centers.filter((center) => center.id === managerCenterId);
-  }, [centersData?.items, managerCenterId]);
+    const scoped = centers.filter((center) => center.id === managerCenterId);
+    if (scoped.length > 0) return scoped;
+    // Centers list may omit the manager branch (pagination / stale cache). Recover from student rows.
+    for (const student of students) {
+      if (isOnboardingItem(student)) continue;
+      if (student.center?.id === managerCenterId) {
+        return [{ id: student.center.id, name: student.center.name }];
+      }
+      if (student.group?.center?.id === managerCenterId) {
+        return [{ id: student.group.center.id, name: student.group.center.name }];
+      }
+    }
+    return scoped;
+  }, [centersData?.items, managerCenterId, students]);
 
   // Group students by center for board view
   const studentsByCenter = useMemo(() => 
@@ -358,6 +370,7 @@ export function useStudentsPage() {
 
   // Handle bulk delete click
   const handleBulkDeleteClick = () => {
+    if (user?.role === 'MANAGER') return;
     if (selectedStudentIds.size === 0) return;
     setBulkDeleteError(null);
     setBulkDeleteSuccess(false);
@@ -366,6 +379,7 @@ export function useStudentsPage() {
 
   // Handle bulk delete confirmation
   const handleBulkDeleteConfirm = async () => {
+    if (user?.role === 'MANAGER') return;
     if (selectedStudentIds.size === 0) return;
 
     setBulkDeleteError(null);
@@ -412,6 +426,7 @@ export function useStudentsPage() {
 
   // Handle delete button click
   const handleDeleteClick = (student: Student) => {
+    if (user?.role === 'MANAGER') return;
     setSelectedStudent(student);
     setDeleteError(null);
     setDeleteSuccess(false);
@@ -420,6 +435,7 @@ export function useStudentsPage() {
 
   // Handle delete confirmation
   const handleDeleteConfirm = async () => {
+    if (user?.role === 'MANAGER') return;
     if (!selectedStudent) return;
 
     setDeleteError(null);
@@ -535,15 +551,18 @@ export function useStudentsPage() {
 
   // Handle inline updates
   const handleGroupChange = async (studentId: string, groupId: string | null) => {
+    const row = students.find((s): s is Student => !isOnboardingItem(s) && s.id === studentId);
     const allGroups = groupsData?.items ?? [];
     const group = groupId ? allGroups.find((g) => g.id === groupId) : undefined;
     const teacherId = groupId ? resolveTeacherIdFromGroup(group) : undefined;
+    const shouldSyncCenter = Boolean(groupId && group?.centerId && !row?.centerId);
 
     await updateStudent.mutateAsync({
       id: studentId,
       data: {
         groupId: groupId === null ? null : groupId,
         teacherId: groupId === null ? null : teacherId,
+        ...(shouldSyncCenter ? { centerId: group!.centerId } : {}),
       },
     });
   };
@@ -721,6 +740,7 @@ export function useStudentsPage() {
     activeStudents,
     studentsWithGroup,
     totalFees,
+    isManager: user?.role === 'MANAGER',
     
     // Handlers
     setSearchQuery,

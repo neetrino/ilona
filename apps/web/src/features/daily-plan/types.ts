@@ -24,6 +24,8 @@ export interface DailyPlanTopic {
 export interface DailyPlanCenterRef {
   id: string;
   name: string;
+  colorHex?: string | null;
+  address?: string | null;
 }
 
 export interface DailyPlanGroupRef {

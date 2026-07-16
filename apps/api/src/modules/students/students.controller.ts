@@ -121,13 +121,13 @@ export class StudentsController {
   }
 
   @Delete('bulk')
-  @Roles(UserRole.ADMIN, UserRole.MANAGER)
+  @Roles(UserRole.ADMIN)
   async deleteBulk(@Body() body: { ids: string[] }, @CurrentUser() user?: JwtPayload) {
     return this.studentsService.deleteMany(body.ids ?? [], user);
   }
 
   @Delete(':id')
-  @Roles(UserRole.ADMIN, UserRole.MANAGER)
+  @Roles(UserRole.ADMIN)
   async delete(@Param('id') id: string, @CurrentUser() user?: JwtPayload) {
     return this.studentsService.delete(id, user);
   }

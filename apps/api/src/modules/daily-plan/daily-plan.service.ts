@@ -39,7 +39,7 @@ const dailyPlanInclude = {
       name: true,
       level: true,
       centerId: true,
-      center: { select: { id: true, name: true } },
+      center: { select: { id: true, name: true, colorHex: true, address: true } },
     },
   },
   lesson: {
@@ -51,7 +51,7 @@ const dailyPlanInclude = {
           id: true,
           name: true,
           centerId: true,
-          center: { select: { id: true, name: true } },
+          center: { select: { id: true, name: true, colorHex: true, address: true } },
         },
       },
     },
@@ -168,11 +168,14 @@ export class DailyPlanService {
 
   private assertPlanEditAccess(plan: DailyPlanWithRelations, user: JwtPayload): void {
     if (!this.canUserEditPlan(plan, user)) {
-      throw new ForbiddenException('You can only edit your own daily plans');
+      throw new ForbiddenException('You do not have permission to edit this daily plan');
     }
   }
 
   private canUserEditPlan(plan: DailyPlanWithRelations, user: JwtPayload): boolean {
+    if (user.role === UserRole.ADMIN || user.role === UserRole.MANAGER) {
+      return true;
+    }
     return plan.teacher.user.id === user.sub;
   }
 

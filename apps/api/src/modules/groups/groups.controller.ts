@@ -36,12 +36,13 @@ export class GroupsController {
   }
 
   @Get('my-groups')
-  @Roles(UserRole.TEACHER, UserRole.ADMIN)
+  @Roles(UserRole.TEACHER, UserRole.ADMIN, UserRole.MANAGER)
   async getMyGroups(@CurrentUser() user: JwtPayload) {
-    if (user.role === UserRole.ADMIN) {
+    if (user.role === UserRole.ADMIN || user.role === UserRole.MANAGER) {
+      // Staff can assign any active group when editing daily plans across branches.
       const { items } = await this.groupsService.findAll({
         isActive: true,
-        currentUser: user,
+        take: 500,
       });
       return items;
     }

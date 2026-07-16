@@ -1,11 +1,11 @@
 'use client';
 
-import type { ReactNode } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 import { Calendar, Link2, MapPin, Pencil, Trash2, Users } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
-import { getAppDateLocaleTag } from '@/shared/lib/utils';
+import { getAppDateLocaleTag, getContrastColor, lightenColor } from '@/shared/lib/utils';
 import { ADMIN_ICON_BUTTON_SM_CLASS } from '@/shared/lib/admin-control-theme';
-import type { DailyPlan, DailyPlanResourceKind } from './types';
+import type { DailyPlan, DailyPlanCenterRef, DailyPlanResourceKind } from './types';
 
 function formatCardDate(value: string, locale: string): string {
   const date = new Date(value);
@@ -37,8 +37,8 @@ function teacherName(plan: DailyPlan): string {
   return `${plan.teacher.user.firstName} ${plan.teacher.user.lastName}`.trim();
 }
 
-function centerName(plan: DailyPlan): string | null {
-  return plan.group?.center?.name ?? plan.lesson?.group?.center?.name ?? null;
+function resolveCenter(plan: DailyPlan): DailyPlanCenterRef | null {
+  return plan.group?.center ?? plan.lesson?.group?.center ?? null;
 }
 
 function MetaChip({ icon, label }: { icon: ReactNode; label: string }) {
@@ -49,6 +49,41 @@ function MetaChip({ icon, label }: { icon: ReactNode; label: string }) {
       </span>
       <span className="truncate text-[11px] font-medium text-[#374151]" title={label}>
         {label}
+      </span>
+    </div>
+  );
+}
+
+function BranchChip({ name, colorHex }: { name: string; colorHex?: string | null }) {
+  const primaryColor = colorHex?.trim() || '#253046';
+  const softBg = lightenColor(primaryColor, 0.82);
+  const softBorder = lightenColor(primaryColor, 0.55);
+  const iconContrast = getContrastColor(primaryColor);
+
+  const chipStyle: CSSProperties = {
+    backgroundColor: softBg,
+    borderColor: softBorder,
+  };
+
+  const iconStyle: CSSProperties = {
+    backgroundColor: primaryColor,
+    color: iconContrast === 'white' ? '#ffffff' : '#0f172a',
+  };
+
+  return (
+    <div
+      className="inline-flex w-fit max-w-full items-center gap-1.5 rounded-lg border px-2 py-1 shadow-[0_1px_2px_rgba(15,23,42,0.04)]"
+      style={chipStyle}
+      title={name}
+    >
+      <span
+        className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md shadow-[0_1px_2px_rgba(15,23,42,0.12)]"
+        style={iconStyle}
+      >
+        <MapPin className="h-3 w-3" aria-hidden="true" />
+      </span>
+      <span className="truncate text-[11px] font-semibold" style={{ color: primaryColor }}>
+        {name}
       </span>
     </div>
   );
@@ -75,10 +110,13 @@ export function DailyPlanCard({
   const t = useTranslations('dailyPlanPage');
   const tCommon = useTranslations('common');
 
-  const branch = centerName(plan);
+  const center = resolveCenter(plan);
+  const branch = center?.name ?? null;
+  const branchAddress = center?.address?.trim() || null;
   const groupName = plan.group?.name ?? plan.lesson?.group?.name ?? null;
   const level = plan.group?.level ?? null;
-  const hasMetaChips = Boolean(groupName || level);
+  const showGroupChip = Boolean(groupName && groupName !== branch);
+  const hasMetaChips = Boolean(branch || showGroupChip || level);
 
   return (
     <article
@@ -108,24 +146,25 @@ export function DailyPlanCard({
       <div className="mt-2.5 flex min-h-[2rem] shrink-0 flex-wrap items-center gap-2">
         {hasMetaChips ? (
           <>
-            {groupName && (
+            {branch ? <BranchChip name={branch} colorHex={center?.colorHex} /> : null}
+            {showGroupChip && groupName ? (
               <MetaChip icon={<Users className="h-3 w-3" aria-hidden="true" />} label={groupName} />
-            )}
-            {level && (
+            ) : null}
+            {level ? (
               <span className="inline-flex w-fit shrink-0 items-center rounded-lg bg-[#eef2ff] px-2 py-1 text-[11px] font-semibold text-[#1010a3]">
                 {level}
               </span>
-            )}
+            ) : null}
           </>
         ) : null}
       </div>
 
       <div className="mt-2.5 flex min-h-[2.75rem] shrink-0 flex-col justify-start gap-1.5">
-        {branch ? (
+        {branchAddress ? (
           <div className="flex items-center gap-2 text-sm text-[#6b7280]">
             <MapPin className="h-4 w-4 shrink-0 text-[#9ca3af]" aria-hidden="true" />
-            <span className="truncate" title={branch}>
-              {branch}
+            <span className="truncate" title={branchAddress}>
+              {branchAddress}
             </span>
           </div>
         ) : null}
@@ -139,9 +178,9 @@ export function DailyPlanCard({
         ) : null}
       </div>
 
-      {/* Details / topics */}
-      <div className="mt-4 flex min-h-0 flex-1 flex-col border-t border-[#e5e7eb] pt-3">
-        <div className="min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain pr-0.5">
+      {/* Details / topics — no nested scroll so page wheel always works over cards */}
+      <div className="mt-4 flex flex-1 flex-col border-t border-[#e5e7eb] pt-3">
+        <div className="flex-1 space-y-3">
           {plan.topics.length > 0 ? (
             plan.topics.map((topic) => (
               <div key={topic.id} className="rounded-xl bg-[#f0f4ff] p-3">

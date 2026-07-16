@@ -27,7 +27,8 @@ interface StudentsFiltersProps {
   onAddStudent: () => void;
   selectedStudentIds: Set<string>;
   allSelected: boolean;
-  onBulkDelete: () => void;
+  onBulkDelete?: () => void;
+  allowDelete?: boolean;
   statusFilterOptions: Array<{ id: string; label: string }>;
   teacherFilterOptions: Array<{ id: string; label: string }>;
   groupFilterOptions: Array<{ id: string; label: string }>;
@@ -58,6 +59,7 @@ export function StudentsFilters({
   selectedStudentIds,
   allSelected,
   onBulkDelete,
+  allowDelete = true,
   statusFilterOptions,
   teacherFilterOptions,
   groupFilterOptions,
@@ -105,7 +107,7 @@ export function StudentsFilters({
             )}
           />
         </div>
-        {selectedStudentIds.size > 0 && (
+        {allowDelete && selectedStudentIds.size > 0 && onBulkDelete ? (
           <Button
             className={cn(
               toolbarControlClass,
@@ -118,7 +120,7 @@ export function StudentsFilters({
               ? t('deleteAll', { count: selectedStudentIds.size })
               : t('deleteSelected', { count: selectedStudentIds.size })}
           </Button>
-        )}
+        ) : null}
         {isLg ? (
           <ListBoardViewToggle
             value={viewMode}

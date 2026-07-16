@@ -7,7 +7,7 @@ import type { Center } from '@ilona/types';
  */
 export function groupStudentsByCenter(
   students: TeacherAssignedItem[],
-  centers: Center[],
+  centers: Array<Pick<Center, 'id'>>,
   viewMode: 'list' | 'board'
 ): Record<string, TeacherAssignedItem[]> {
   if (viewMode !== 'board') return {};

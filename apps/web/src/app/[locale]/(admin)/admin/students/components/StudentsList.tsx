@@ -21,7 +21,7 @@ interface StudentsListProps {
   onSelectAll: () => void;
   onToggleSelect: (studentId: string) => void;
   onEdit: (student: Student) => void;
-  onDelete: (student: Student) => void;
+  onDelete?: (student: Student) => void;
   onDeactivate: (student: Student) => void;
   onShowFeedback: (student: Student) => void;
   onView: (student: Student) => void;

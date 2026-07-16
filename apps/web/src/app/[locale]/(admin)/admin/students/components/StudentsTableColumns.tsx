@@ -79,6 +79,24 @@ function buildGroupOptionsForRow(
   return withCurrent.map(mapGroupToOption);
 }
 
+/** Keep the assigned center visible even when manager-scoped options omit it. */
+function ensureCurrentCenterInOptions(
+  options: SelectOption[],
+  centerId: string | null,
+  center: Student['center'] | undefined,
+): SelectOption[] {
+  if (!centerId || options.some((option) => option.id === centerId)) {
+    return options;
+  }
+  return [
+    {
+      id: centerId,
+      label: center?.name ?? centerId,
+    },
+    ...options,
+  ];
+}
+
 function getRiskBadge(
   derivedRisk: Student['derivedRiskLabel'] | undefined,
   labels: { highRisk: string; risk: string },
@@ -289,7 +307,7 @@ interface StudentsTableColumnsProps {
   onSelectAll: () => void;
   onToggleSelect: (studentId: string) => void;
   onEdit: (student: Student) => void;
-  onDelete: (student: Student) => void;
+  onDelete?: (student: Student) => void;
   onDeactivate: (student: Student) => void;
   onShowFeedback: (student: Student) => void;
   onGroupChange: (studentId: string, groupId: string | null) => Promise<void>;
@@ -432,14 +450,22 @@ export function createStudentsTableColumns({
       className: COL.center,
       render: (row: TeacherAssignedItem) => {
         if (isOnboardingItem(row)) return <span className="text-[#8b8b90]">—</span>;
-        // Center column = manual `student.centerId` only; never mirror group.center (avoids "auto-select" when group changes).
+        // Prefer explicit student.centerId; fall back to group.center for display when unset
+        // (same effective center used on the student detail page).
         const manualCenterId = row.centerId ?? null;
+        const displayCenterId = manualCenterId ?? row.group?.center?.id ?? null;
+        const displayCenter = row.center ?? row.group?.center ?? null;
+        const centerOptionsForRow = ensureCurrentCenterInOptions(
+          centerOptions,
+          displayCenterId,
+          displayCenter,
+        );
         return (
           <div className="relative z-[1] min-w-0 w-full" onClick={(e) => e.stopPropagation()}>
             <InlineSelect
               className={INLINE_SELECT_TABLE_CLASS}
-              value={manualCenterId}
-              options={centerOptions}
+              value={displayCenterId}
+              options={centerOptionsForRow}
               onChange={async (centerId) => {
                 await onCenterChange(row.id, centerId);
               }}
@@ -460,7 +486,7 @@ export function createStudentsTableColumns({
       className: COL.group,
       render: (row: TeacherAssignedItem) => {
         if (isOnboardingItem(row)) return <span className="text-[#8b8b90]">—</span>;
-        const manualCenterId = row.centerId ?? null;
+        const manualCenterId = row.centerId ?? row.group?.center?.id ?? null;
         const groupOptionsForRow = buildGroupOptionsForRow(
           manualCenterId,
           row.groupId || null,
@@ -580,7 +606,7 @@ export function createStudentsTableColumns({
             <ActionButtons
               onEdit={() => onEdit(student)}
               onDisable={() => onDeactivate(student)}
-              onDelete={() => onDelete(student)}
+              onDelete={onDelete ? () => onDelete(student) : undefined}
               isActive={isActive}
               disabled={isUpdating || isDeleting}
               ariaLabels={{

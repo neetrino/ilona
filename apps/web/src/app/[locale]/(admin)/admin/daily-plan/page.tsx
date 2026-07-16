@@ -25,6 +25,8 @@ export default function AdminDailyPlanPage() {
   const locale = params.locale as string;
   const { user } = useAuthStore();
   const isAdmin = user?.role === 'ADMIN';
+  const isManager = user?.role === 'MANAGER';
+  const canManagePlans = isAdmin || isManager;
   const portalBasePath = getAdminPortalBasePath(user?.role);
 
   const [search, setSearch] = useState('');
@@ -85,7 +87,7 @@ export default function AdminDailyPlanPage() {
         isLoadingTeachers={isLoadingTeachers}
         onCreate={() => router.push(`/${locale}${portalBasePath}/daily-plan/new`)}
         createLabel="+ New Daily Plan"
-        showCreate={isAdmin}
+        showCreate={canManagePlans}
         items={items}
         isLoading={isLoading}
         currentUserId={user?.id}
