@@ -9,10 +9,15 @@ import {
 } from '@/features/chat/api/chat.api';
 import { chatKeys } from '@/features/chat/hooks/useChat';
 import { useIsIPad } from '@/shared/hooks/useIsIPad';
+import { useAppSearchUrl } from '@/shared/hooks/useAppSearchUrl';
+import { readUrlSearchParam } from '@/shared/lib/url-search-params';
 import {
   FILTERS_STORAGE_KEY,
   IPAD_RECORDINGS_PAGE_SIZE,
   RECORDINGS_PAGE_SIZE,
+  STUDENT_VOICE_USER_ID_PARAM,
+  STUDENT_VOICE_VIEW,
+  STUDENT_VOICE_VIEW_PARAM,
 } from './admin-recordings.constants';
 import {
   directoryStudentGroupKey,
@@ -27,6 +32,7 @@ export function useAdminRecordingsPage() {
   const t = useTranslations('recordings');
   const tCommon = useTranslations('common');
   const isIPad = useIsIPad();
+  const { searchParams, urlRevision, replaceParams } = useAppSearchUrl();
   const recordingsPageSize = isIPad ? IPAD_RECORDINGS_PAGE_SIZE : RECORDINGS_PAGE_SIZE;
   const [selectedGroupIds, setSelectedGroupIds] = useState<Set<string>>(
     () => new Set(),
@@ -39,13 +45,19 @@ export function useAdminRecordingsPage() {
   const [dateTo, setDateTo] = useState('');
   const [page, setPage] = useState(0);
   const [activeRecordingId, setActiveRecordingId] = useState<string | null>(null);
-  const [selectedStudent, setSelectedStudent] = useState<{
-    studentUserId: string;
-    studentFullName: string;
-    groupName: string;
-  } | null>(null);
   const [isHydrated, setIsHydrated] = useState(false);
   const cardsListStartRef = useRef<HTMLDivElement | null>(null);
+
+  const voiceViewFromUrl =
+    readUrlSearchParam(STUDENT_VOICE_VIEW_PARAM, searchParams, urlRevision) ===
+    STUDENT_VOICE_VIEW
+      ? STUDENT_VOICE_VIEW
+      : null;
+  const studentUserIdFromUrl = readUrlSearchParam(
+    STUDENT_VOICE_USER_ID_PARAM,
+    searchParams,
+    urlRevision,
+  );
 
   // Hydrate filters from localStorage
   useEffect(() => {
@@ -120,6 +132,27 @@ export function useAdminRecordingsPage() {
         .sort((a, b) => a.fullName.localeCompare(b.fullName)),
     [allStudents, t],
   );
+
+  const selectedStudent = useMemo(() => {
+    if (voiceViewFromUrl !== STUDENT_VOICE_VIEW || !studentUserIdFromUrl) {
+      return null;
+    }
+    const fromDirectory = studentDirectory.find(
+      (student) => student.userId === studentUserIdFromUrl,
+    );
+    if (fromDirectory) {
+      return {
+        studentUserId: fromDirectory.userId,
+        studentFullName: fromDirectory.fullName,
+        groupName: fromDirectory.groupName,
+      };
+    }
+    return {
+      studentUserId: studentUserIdFromUrl,
+      studentFullName: '',
+      groupName: '',
+    };
+  }, [voiceViewFromUrl, studentUserIdFromUrl, studentDirectory]);
 
   const groupOptions = useMemo(() => {
     const map = new Map<string, { id: string; name: string }>();
@@ -375,15 +408,24 @@ export function useAdminRecordingsPage() {
 
   const openStudentHistory = (row: StudentRecordingRow) => {
     setActiveRecordingId(null);
-    setSelectedStudent({
-      studentUserId: row.studentUserId,
-      studentFullName: row.studentFullName,
-      groupName: row.groupName,
-    });
+    replaceParams(
+      {
+        [STUDENT_VOICE_VIEW_PARAM]: STUDENT_VOICE_VIEW,
+        [STUDENT_VOICE_USER_ID_PARAM]: row.studentUserId,
+      },
+      { mode: 'push' },
+    );
   };
 
   const closeStudentHistory = () => {
-    setSelectedStudent(null);
+    setActiveRecordingId(null);
+    replaceParams(
+      {
+        [STUDENT_VOICE_VIEW_PARAM]: null,
+        [STUDENT_VOICE_USER_ID_PARAM]: null,
+      },
+      { mode: 'push' },
+    );
   };
 
   return {

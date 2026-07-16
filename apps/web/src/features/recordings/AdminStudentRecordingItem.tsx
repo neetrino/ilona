@@ -7,7 +7,6 @@ import { cn } from '@/shared/lib/utils';
 import {
   formatDateTime,
   formatRecordingDuration,
-  formatRecordingTime,
 } from './admin-recordings.utils';
 
 interface AdminStudentRecordingItemProps {
@@ -51,9 +50,6 @@ export function AdminStudentRecordingItem({
         <div className="min-w-0 flex-1">
           <p className="text-sm font-semibold text-[#3b3b40]">
             {t('recordingN', { n: indexInDay })}
-          </p>
-          <p className="mt-0.5 text-sm text-[#8b8b90]">
-            {formatRecordingTime(recording.createdAt, locale)}
           </p>
         </div>
         <span className="inline-flex shrink-0 rounded-md border border-amber-200 bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-800">

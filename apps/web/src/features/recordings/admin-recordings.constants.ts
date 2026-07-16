@@ -7,3 +7,8 @@ export const FILTERS_STORAGE_KEY = 'admin-recordings:filters-v3';
 export const LEGACY_FILTERS_KEY = 'admin-recordings:filters-v2';
 export const LEGACY_GROUP_KEY = 'admin-recordings:selected-group';
 export const LEGACY_STUDENT_KEY = 'admin-recordings:selected-student';
+
+/** Query: `?view=studentvoice&studentUserId=...` keeps the history sheet open across refresh. */
+export const STUDENT_VOICE_VIEW = 'studentvoice';
+export const STUDENT_VOICE_VIEW_PARAM = 'view';
+export const STUDENT_VOICE_USER_ID_PARAM = 'studentUserId';

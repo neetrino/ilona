@@ -135,21 +135,16 @@ export function AdminStudentRecordingsSheet({
             <div className="space-y-6 pb-2">
               {dayGroups.map((group) => (
                 <section key={group.dayKey} className="space-y-3">
-                  <h3 className="text-sm font-semibold text-[#3b3b40]">
-                    {group.dayLabel}
-                  </h3>
-                  <div className="space-y-3">
-                    {group.recordings.map((recording, index) => (
-                      <AdminStudentRecordingItem
-                        key={recording.id}
-                        recording={recording}
-                        indexInDay={index + 1}
-                        isActive={activeRecordingId === recording.id}
-                        onPlay={setActiveRecordingId}
-                        onEnded={() => setActiveRecordingId(null)}
-                      />
-                    ))}
-                  </div>
+                  {group.recordings.map((recording, index) => (
+                    <AdminStudentRecordingItem
+                      key={recording.id}
+                      recording={recording}
+                      indexInDay={index + 1}
+                      isActive={activeRecordingId === recording.id}
+                      onPlay={setActiveRecordingId}
+                      onEnded={() => setActiveRecordingId(null)}
+                    />
+                  ))}
                 </section>
               ))}
 
