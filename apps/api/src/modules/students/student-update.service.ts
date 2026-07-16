@@ -11,6 +11,7 @@ import { StudentManagerAccessService } from './student-manager-access.service';
 import { StudentReadService } from './student-read.service';
 import { computeAgeFromDob } from './student-crud.util';
 import { syncStudentGroupHistory } from './student-group-history.util';
+import { GroupChatSyncService } from '../groups/group-chat-sync.service';
 
 @Injectable()
 export class StudentUpdateService {
@@ -18,6 +19,7 @@ export class StudentUpdateService {
     private readonly prisma: PrismaService,
     private readonly managerAccess: StudentManagerAccessService,
     private readonly readService: StudentReadService,
+    private readonly chatSync: GroupChatSyncService,
   ) {}
   async update(id: string, dto: UpdateStudentDto, user?: JwtPayload) {
     await this.managerAccess.assertManagerStudentAccess(id, user?.sub, user?.role);
@@ -178,39 +180,14 @@ export class StudentUpdateService {
       return next;
     });
 
-    // Keep group chat membership in sync so new members see full chat history immediately.
+    // Keep group chat membership in sync so the chat appears in the student's list immediately.
     if (dto.groupId !== undefined) {
       const nextGroupId = updatedStudent.groupId ?? null;
       if (previousGroupId && previousGroupId !== nextGroupId) {
-        const oldChat = await this.prisma.chat.findUnique({
-          where: { groupId: previousGroupId },
-          select: { id: true },
-        });
-        if (oldChat) {
-          await this.prisma.chatParticipant.updateMany({
-            where: { chatId: oldChat.id, userId: student.user.id },
-            data: { leftAt: new Date() },
-          });
-        }
+        await this.chatSync.removeStudentFromGroupChat(previousGroupId, student.user.id);
       }
       if (nextGroupId && nextGroupId !== previousGroupId) {
-        const newChat = await this.prisma.chat.findUnique({
-          where: { groupId: nextGroupId },
-          select: { id: true },
-        });
-        if (newChat) {
-          await this.prisma.chatParticipant.upsert({
-            where: {
-              chatId_userId: { chatId: newChat.id, userId: student.user.id },
-            },
-            update: { leftAt: null },
-            create: {
-              chatId: newChat.id,
-              userId: student.user.id,
-              isAdmin: false,
-            },
-          });
-        }
+        await this.chatSync.ensureStudentInGroupChat(nextGroupId, student.user.id);
       }
     }
 

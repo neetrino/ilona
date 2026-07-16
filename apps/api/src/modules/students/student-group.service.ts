@@ -12,12 +12,14 @@ import {
 import { JwtPayload } from '../../common/types/auth.types';
 import { getManagerCenterIdOrThrow } from '../../common/utils/manager-scope.util';
 import { randomUUID } from 'crypto';
+import { GroupChatSyncService } from '../groups/group-chat-sync.service';
 
 @Injectable()
 export class StudentGroupService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly chatService: ChatService,
+    private readonly chatSync: GroupChatSyncService,
   ) {}
 
   async changeGroup(id: string, newGroupId: string | null, user?: JwtPayload): Promise<unknown> {
@@ -100,38 +102,12 @@ export class StudentGroupService {
       }
     });
 
-    // Update chat memberships
-    if (oldGroupId) {
-      const oldChat = await this.prisma.chat.findUnique({
-        where: { groupId: oldGroupId },
-      });
-
-      if (oldChat) {
-        await this.prisma.chatParticipant.updateMany({
-          where: { chatId: oldChat.id, userId: student.user.id },
-          data: { leftAt: new Date() },
-        });
-      }
+    if (oldGroupId && oldGroupId !== newGroupId) {
+      await this.chatSync.removeStudentFromGroupChat(oldGroupId, student.user.id);
     }
 
     if (newGroupId) {
-      const newChat = await this.prisma.chat.findUnique({
-        where: { groupId: newGroupId },
-      });
-
-      if (newChat) {
-        await this.prisma.chatParticipant.upsert({
-          where: {
-            chatId_userId: { chatId: newChat.id, userId: student.user.id },
-          },
-          update: { leftAt: null },
-          create: {
-            chatId: newChat.id,
-            userId: student.user.id,
-            isAdmin: false,
-          },
-        });
-      }
+      await this.chatSync.ensureStudentInGroupChat(newGroupId, student.user.id);
 
       // Automatically create 1:1 direct chat between Student and assigned Teacher (if group has teacher)
       const newGroup = await this.prisma.group.findUnique({

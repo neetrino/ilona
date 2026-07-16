@@ -308,8 +308,11 @@ export function useAddStudentToGroup() {
       queryClient.invalidateQueries({ queryKey: groupKeys.detail(groupId) });
       queryClient.invalidateQueries({ queryKey: groupKeys.lists() });
       queryClient.invalidateQueries({ queryKey: [...groupKeys.all, 'my-groups'] });
-      // Invalidate student queries to refresh student lists
       queryClient.invalidateQueries({ queryKey: ['students', 'my-assigned'] });
+      queryClient.invalidateQueries({ queryKey: chatKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: chatKeys.details() });
+      queryClient.invalidateQueries({ queryKey: [...chatKeys.all, 'admin'] });
+      queryClient.invalidateQueries({ queryKey: [...chatKeys.all, 'teacher'] });
     },
   });
 }
@@ -327,8 +330,11 @@ export function useRemoveStudentFromGroup() {
       queryClient.invalidateQueries({ queryKey: groupKeys.detail(groupId) });
       queryClient.invalidateQueries({ queryKey: groupKeys.lists() });
       queryClient.invalidateQueries({ queryKey: [...groupKeys.all, 'my-groups'] });
-      // Invalidate student queries to refresh student lists
       queryClient.invalidateQueries({ queryKey: ['students', 'my-assigned'] });
+      queryClient.invalidateQueries({ queryKey: chatKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: chatKeys.details() });
+      queryClient.invalidateQueries({ queryKey: [...chatKeys.all, 'admin'] });
+      queryClient.invalidateQueries({ queryKey: [...chatKeys.all, 'teacher'] });
     },
   });
 }

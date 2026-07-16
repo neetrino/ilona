@@ -15,6 +15,7 @@ import { getManagerCenterIdOrThrow } from '../../common/utils/manager-scope.util
 import { randomUUID } from 'crypto';
 import { GroupAccessService } from './group-access.service';
 import { GroupQueryService } from './group-query.service';
+import { GroupChatSyncService } from './group-chat-sync.service';
 
 @Injectable()
 export class GroupMembershipService {
@@ -23,6 +24,7 @@ export class GroupMembershipService {
     private readonly chatService: ChatService,
     private readonly accessService: GroupAccessService,
     private readonly queryService: GroupQueryService,
+    private readonly chatSync: GroupChatSyncService,
   ) {}
 
   async assignTeacher(groupId: string, teacherId: string, currentUser?: JwtPayload) {
@@ -167,20 +169,10 @@ export class GroupMembershipService {
       }
     });
 
-    const chat = await this.prisma.chat.findUnique({ where: { groupId } });
-    if (chat) {
-      await this.prisma.chatParticipant.upsert({
-        where: {
-          chatId_userId: { chatId: chat.id, userId: student.userId },
-        },
-        update: { leftAt: null },
-        create: {
-          chatId: chat.id,
-          userId: student.userId,
-          isAdmin: false,
-        },
-      });
+    if (previousGroupId && previousGroupId !== groupId) {
+      await this.chatSync.removeStudentFromGroupChat(previousGroupId, student.userId);
     }
+    await this.chatSync.ensureStudentInGroupChat(groupId, student.userId);
 
     const groupWithTeacher = await this.prisma.group.findUnique({
       where: { id: groupId },
@@ -228,16 +220,7 @@ export class GroupMembershipService {
       `;
     });
 
-    const chat = await this.prisma.chat.findUnique({ where: { groupId } });
-    if (chat) {
-      await this.prisma.chatParticipant.updateMany({
-        where: {
-          chatId: chat.id,
-          userId: student.userId,
-        },
-        data: { leftAt: new Date() },
-      });
-    }
+    await this.chatSync.removeStudentFromGroupChat(groupId, student.userId);
 
     return { success: true };
   }

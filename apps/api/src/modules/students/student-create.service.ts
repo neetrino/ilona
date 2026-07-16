@@ -23,10 +23,14 @@ import {
   GROUP_CAPACITY_EXCEEDED_MESSAGE,
 } from '../groups/group.constants';
 import { computeAgeFromDob } from './student-crud.util';
+import { GroupChatSyncService } from '../groups/group-chat-sync.service';
 
 @Injectable()
 export class StudentCreateService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly chatSync: GroupChatSyncService,
+  ) {}
   private async prepareStudentCreate(dto: CreateStudentDto, user?: JwtPayload) {
     const existingUser = await this.prisma.user.findUnique({
       where: { email: dto.email },
@@ -202,19 +206,7 @@ export class StudentCreateService {
     }
 
     if (dto.groupId) {
-      const chat = await tx.chat.findUnique({
-        where: { groupId: dto.groupId },
-      });
-
-      if (chat) {
-        await tx.chatParticipant.create({
-          data: {
-            chatId: chat.id,
-            userId: createdUser.id,
-            isAdmin: false,
-          },
-        });
-      }
+      await this.chatSync.ensureStudentInGroupChat(dto.groupId, createdUser.id, tx);
     }
 
     return student;

@@ -22,6 +22,6 @@ import { LessonsModule } from '../lessons/lessons.module';
     GroupWriteService,
     GroupMembershipService,
   ],
-  exports: [GroupsService],
+  exports: [GroupsService, GroupChatSyncService],
 })
 export class GroupsModule {}
