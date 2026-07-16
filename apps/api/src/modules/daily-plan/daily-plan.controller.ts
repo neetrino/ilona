@@ -38,7 +38,7 @@ export class DailyPlanController {
   }
 
   @Post()
-  @Roles(UserRole.TEACHER, UserRole.ADMIN)
+  @Roles(UserRole.TEACHER, UserRole.ADMIN, UserRole.MANAGER)
   async create(
     @Body() dto: CreateDailyPlanDto,
     @CurrentUser() user: JwtPayload,
@@ -47,7 +47,7 @@ export class DailyPlanController {
   }
 
   @Patch(':id')
-  @Roles(UserRole.TEACHER, UserRole.ADMIN)
+  @Roles(UserRole.TEACHER, UserRole.ADMIN, UserRole.MANAGER)
   async update(
     @Param('id') id: string,
     @Body() dto: UpdateDailyPlanDto,
@@ -57,7 +57,7 @@ export class DailyPlanController {
   }
 
   @Delete(':id')
-  @Roles(UserRole.TEACHER, UserRole.ADMIN)
+  @Roles(UserRole.TEACHER, UserRole.ADMIN, UserRole.MANAGER)
   async remove(@Param('id') id: string, @CurrentUser() user: JwtPayload) {
     return this.service.remove(id, user);
   }

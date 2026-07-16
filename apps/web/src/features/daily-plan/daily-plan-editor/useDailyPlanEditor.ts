@@ -38,6 +38,18 @@ export function useDailyPlanEditor({
   const { data: myGroups = [], isLoading: isLoadingGroups } = useMyGroups();
   const isGroupLocked = Boolean(initialLessonId);
 
+  const groupsForSelect = useMemo(() => {
+    if (!plan?.groupId || !plan.group) return myGroups;
+    if (myGroups.some((group) => group.id === plan.groupId)) return myGroups;
+    return [
+      {
+        id: plan.group.id,
+        name: plan.group.name,
+      },
+      ...myGroups,
+    ];
+  }, [myGroups, plan]);
+
   const kindLabel = useMemo(
     (): Record<DailyPlanResourceKind, string> => ({
       READING: t('resourceKinds.READING'),
@@ -191,7 +203,7 @@ export function useDailyPlanEditor({
 
   const isSaving = create.isPending || update.isPending;
   const selectedGroupName =
-    myGroups.find((group) => group.id === groupId)?.name ??
+    groupsForSelect.find((group) => group.id === groupId)?.name ??
     plan?.group?.name ??
     t('selectedGroup');
 
@@ -208,7 +220,7 @@ export function useDailyPlanEditor({
     fieldErrors,
     formTopRef,
     kindLabel,
-    myGroups,
+    myGroups: groupsForSelect,
     isLoadingGroups,
     isGroupLocked,
     selectedGroupName,
