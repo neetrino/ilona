@@ -59,6 +59,18 @@ function createMessagesCacheSeed(message: Message): MessagesInfiniteData {
 
 /** Prevents duplicate socket/handler deliveries from inflating unread badges. */
 const unreadAppliedMessageIds = new Set<string>();
+/** Prevents duplicate message:new deliveries from appending the same message twice. */
+const messagesAppliedIds = new Set<string>();
+
+function rememberAppliedId(set: Set<string>, id: string): boolean {
+  if (set.has(id)) return false;
+  set.add(id);
+  if (set.size > 500) {
+    const oldest = set.values().next().value;
+    if (oldest) set.delete(oldest);
+  }
+  return true;
+}
 
 function shouldIncrementUnread(chatId: string, message: Message): boolean {
   const { user } = useAuthStore.getState();
@@ -66,13 +78,7 @@ function shouldIncrementUnread(chatId: string, message: Message): boolean {
   const { activeChat } = useChatStore.getState();
   // Open conversation is marked read immediately — do not inflate the badge.
   if (activeChat?.id === chatId) return false;
-  if (unreadAppliedMessageIds.has(message.id)) return false;
-  unreadAppliedMessageIds.add(message.id);
-  if (unreadAppliedMessageIds.size > 500) {
-    const oldest = unreadAppliedMessageIds.values().next().value;
-    if (oldest) unreadAppliedMessageIds.delete(oldest);
-  }
-  return true;
+  return rememberAppliedId(unreadAppliedMessageIds, message.id);
 }
 
 function bumpUnread(count: number | undefined, shouldBump: boolean): number {
@@ -262,6 +268,11 @@ export function upsertIncomingMessageInCache(
   chatId: string,
   message: Message,
 ) {
+  // Dedup across room broadcast + fan-out, and across multiple useSocket subscribers.
+  if (!message?.id || !rememberAppliedId(messagesAppliedIds, message.id)) {
+    return;
+  }
+
   // If the conversation has never been opened, do not seed a one-message cache
   // (that blocked history fetch via staleTime). Only update the chat list.
   const existingCache = queryClient.getQueryData<MessagesInfiniteData>(
