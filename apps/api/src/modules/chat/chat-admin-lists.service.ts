@@ -1,11 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { Prisma, UserRole } from '@ilona/database';
-import { formatUserFullName } from './chat-list.util';
+import { formatUserFullName, softDeletedMessageFilter } from './chat-list.util';
+import { ChatUnreadCountService } from './chat-unread-count.service';
 
 @Injectable()
 export class ChatAdminListsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly unreadCountService: ChatUnreadCountService,
+  ) {}
 
   async getAdminStudents(_adminId: string, search?: string, branchCenterId?: string) {
     const where: Prisma.StudentWhereInput = {
@@ -102,7 +106,7 @@ export class ChatAdminListsService {
     }));
   }
 
-  async getAdminGroups(_adminId: string, search?: string, branchCenterId?: string) {
+  async getAdminGroups(adminId: string, search?: string, branchCenterId?: string) {
     const where: Prisma.GroupWhereInput = {
       isActive: true,
       ...(branchCenterId ? { centerId: branchCenterId } : {}),
@@ -122,15 +126,157 @@ export class ChatAdminListsService {
         center: {
           select: { id: true, name: true },
         },
+        chat: {
+          select: {
+            id: true,
+            updatedAt: true,
+            messages: {
+              take: 1,
+              orderBy: { createdAt: 'desc' },
+              where: softDeletedMessageFilter,
+              include: {
+                sender: {
+                  select: { id: true, firstName: true, lastName: true },
+                },
+              },
+            },
+            participants: {
+              where: { userId: adminId, leftAt: null },
+              select: { lastReadAt: true },
+            },
+            _count: { select: { messages: true } },
+          },
+        },
       },
     });
 
-    return groups.map((group) => ({
+    // Join admin into class group chats so unread + socket fan-out work without opening each chat.
+    // lastReadAt = now on first join avoids flooding badges with full history.
+    const chatsMissingAdmin = groups.filter(
+      (group) => group.chat && group.chat.participants.length === 0,
+    );
+    if (chatsMissingAdmin.length > 0) {
+      const joinedAt = new Date();
+      await Promise.all(
+        chatsMissingAdmin.map((group) =>
+          this.prisma.chatParticipant.upsert({
+            where: {
+              chatId_userId: { chatId: group.chat!.id, userId: adminId },
+            },
+            create: {
+              chatId: group.chat!.id,
+              userId: adminId,
+              isAdmin: true,
+              lastReadAt: joinedAt,
+            },
+            update: { leftAt: null },
+          }),
+        ),
+      );
+    }
+
+    const groupsWithChats = groups.filter((g) => g.chat);
+    if (groupsWithChats.length === 0) {
+      return groups.map((group) => this.mapAdminGroupWithoutChat(group));
+    }
+
+    const chatIds = groupsWithChats.map((g) => g.chat!.id);
+    const participantMap = await this.unreadCountService.getParticipantLastReadMap(
+      chatIds,
+      adminId,
+    );
+
+    const chatsNeedingCount = groupsWithChats
+      .filter((group) => {
+        const lastReadAt = participantMap.get(group.chat!.id);
+        return lastReadAt !== undefined && lastReadAt !== null;
+      })
+      .map((group) => ({
+        chatId: group.chat!.id,
+        lastReadAt: participantMap.get(group.chat!.id)!,
+      }));
+
+    const unreadCountMap = await this.unreadCountService.countUnreadAfterLastRead(
+      chatsNeedingCount,
+      adminId,
+      'admin-group',
+    );
+
+    const chatsNeverRead = groupsWithChats.filter((group) => {
+      const lastReadAt = participantMap.get(group.chat!.id);
+      return lastReadAt === undefined || lastReadAt === null;
+    });
+
+    const neverReadCountMap = await this.unreadCountService.countUnreadNeverReadForGroups(
+      chatsNeverRead.map((g) => g.chat!.id),
+      adminId,
+    );
+
+    return groups.map((group) => {
+      if (!group.chat) return this.mapAdminGroupWithoutChat(group);
+
+      const lastReadAt = participantMap.get(group.chat.id);
+      const unreadCount =
+        lastReadAt === undefined || lastReadAt === null
+          ? (neverReadCountMap.get(group.chat.id) ?? group.chat._count.messages)
+          : (unreadCountMap.get(group.chat.id) ?? 0);
+
+      const lastMsg = group.chat.messages[0];
+      const lastMessage = lastMsg
+        ? {
+            id: lastMsg.id,
+            type: lastMsg.type,
+            content: lastMsg.content,
+            fileName: lastMsg.fileName ?? null,
+            createdAt:
+              lastMsg.createdAt instanceof Date
+                ? lastMsg.createdAt.toISOString()
+                : lastMsg.createdAt,
+            sender: lastMsg.sender
+              ? {
+                  id: lastMsg.sender.id,
+                  firstName: lastMsg.sender.firstName,
+                  lastName: lastMsg.sender.lastName,
+                }
+              : null,
+          }
+        : null;
+
+      return {
+        id: group.id,
+        name: group.name,
+        iconKey: group.iconKey,
+        center: group.center ? { id: group.center.id, name: group.center.name } : null,
+        chatId: group.chat.id,
+        lastMessage,
+        unreadCount,
+        messageCount: group.chat._count.messages,
+        updatedAt:
+          group.chat.updatedAt instanceof Date
+            ? group.chat.updatedAt.toISOString()
+            : group.chat.updatedAt,
+      };
+    });
+  }
+
+  private mapAdminGroupWithoutChat(group: {
+    id: string;
+    name: string;
+    iconKey: string | null;
+    updatedAt: Date;
+    center: { id: string; name: string } | null;
+  }) {
+    return {
       id: group.id,
       name: group.name,
       iconKey: group.iconKey,
       center: group.center ? { id: group.center.id, name: group.center.name } : null,
-    }));
+      chatId: null,
+      lastMessage: null,
+      unreadCount: 0,
+      messageCount: 0,
+      updatedAt: group.updatedAt instanceof Date ? group.updatedAt.toISOString() : group.updatedAt,
+    };
   }
 
   async getAdminAllUsers(_adminId: string, search?: string, branchCenterId?: string) {

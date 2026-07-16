@@ -15,6 +15,22 @@ export interface AdminChatGroup {
     id: string;
     name: string;
   } | null;
+  chatId: string | null;
+  lastMessage?: {
+    id: string;
+    type?: string;
+    content: string | null;
+    fileName?: string | null;
+    createdAt: string;
+    sender: {
+      id: string;
+      firstName: string;
+      lastName: string;
+    } | null;
+  } | null;
+  unreadCount: number;
+  messageCount?: number;
+  updatedAt?: string;
 }
 
 /** Admin-only: Fetch all registered users (for add-member picker) */

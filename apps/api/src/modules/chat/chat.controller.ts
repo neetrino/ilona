@@ -146,8 +146,8 @@ export class ChatController {
 
     const message = await this.chatService.sendMessage(dto, senderIdFromAuth, senderRoleFromAuth, user);
 
-    // Broadcast to all chat participants (including sender's other devices) so voice messages appear in real time
-    this.chatGateway.broadcastNewMessage(dto.chatId, message);
+    // Broadcast to room + fan-out to participants/admins not currently in the room
+    await this.chatGateway.notifyNewMessage(dto.chatId, message, senderIdFromAuth, user);
 
     return message;
   }

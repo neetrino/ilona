@@ -3,15 +3,17 @@
 import React from 'react';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { useChats } from './useChatQueries';
+import { useAdminGroups } from './useAdminChatQueries';
 import { useTeacherGroups, useTeacherStudents, useTeacherAdmin } from './useTeacherChatQueries';
 import { useStudentAdmin } from './useStudentChatQueries';
 
 export function useAdminUnreadCounts() {
   const { user } = useAuthStore();
-  const { data: chats = [], isLoading } = useChats();
+  const { data: chats = [], isLoading: isLoadingChats } = useChats();
+  const { data: groups = [], isLoading: isLoadingGroups } = useAdminGroups();
 
   const counts = React.useMemo(() => {
-    if (!user || !chats.length) {
+    if (!user) {
       return {
         groups: 0,
         teachers: 0,
@@ -19,20 +21,18 @@ export function useAdminUnreadCounts() {
       };
     }
 
-    let groupsUnread = 0;
     let teachersUnread = 0;
     let studentsUnread = 0;
+    let customGroupsUnread = 0;
 
     chats.forEach((chat) => {
       const unreadCount = chat.unreadCount || 0;
       if (unreadCount === 0) return;
 
-      if (chat.type === 'GROUP') {
-        groupsUnread += unreadCount;
+      if (chat.type === 'GROUP' && !chat.groupId) {
+        customGroupsUnread += unreadCount;
       } else if (chat.type === 'DIRECT') {
-        const otherParticipant = chat.participants.find(
-          (p) => p.userId !== user.id,
-        );
+        const otherParticipant = chat.participants.find((p) => p.userId !== user.id);
 
         if (otherParticipant?.user?.role === 'TEACHER') {
           teachersUnread += unreadCount;
@@ -42,16 +42,18 @@ export function useAdminUnreadCounts() {
       }
     });
 
+    const classGroupsUnread = groups.reduce((sum, group) => sum + (group.unreadCount || 0), 0);
+
     return {
-      groups: groupsUnread,
+      groups: classGroupsUnread + customGroupsUnread,
       teachers: teachersUnread,
       students: studentsUnread,
     };
-  }, [chats, user]);
+  }, [chats, groups, user]);
 
   return {
     counts,
-    isLoading,
+    isLoading: isLoadingChats || isLoadingGroups,
   };
 }
 

@@ -12,6 +12,7 @@ import type {
   TeacherAdmin,
   TeacherGroup,
   TeacherStudent,
+  AdminChatGroup,
 } from '../../api/chat.api';
 import { useChatStore } from '../../store/chat.store';
 import { chatKeys } from './chat-query-keys';
@@ -138,6 +139,23 @@ function updateChatListForMessage(
 
   queryClient.setQueriesData<TeacherGroup[]>(
     { queryKey: [...chatKeys.all, 'teacher', 'groups'] },
+    (oldData) => {
+      if (!oldData) return oldData;
+      return oldData.map((group) =>
+        group.chatId === chatId
+          ? {
+              ...group,
+              lastMessage: teacherLastMessage,
+              unreadCount: bumpUnread(group.unreadCount, incrementUnread),
+              updatedAt: now,
+            }
+          : group,
+      );
+    },
+  );
+
+  queryClient.setQueriesData<AdminChatGroup[]>(
+    { queryKey: [...chatKeys.all, 'admin', 'groups'] },
     (oldData) => {
       if (!oldData) return oldData;
       return oldData.map((group) =>
@@ -347,6 +365,16 @@ export function clearChatUnreadInCache(queryClient: QueryClient, chatId: string)
 
   queryClient.setQueriesData<TeacherGroup[]>(
     { queryKey: [...chatKeys.all, 'teacher', 'groups'] },
+    (oldData) => {
+      if (!oldData) return oldData;
+      return oldData.map((group) =>
+        group.chatId === chatId ? { ...group, unreadCount: 0 } : group,
+      );
+    },
+  );
+
+  queryClient.setQueriesData<AdminChatGroup[]>(
+    { queryKey: [...chatKeys.all, 'admin', 'groups'] },
     (oldData) => {
       if (!oldData) return oldData;
       return oldData.map((group) =>
