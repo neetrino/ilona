@@ -3,10 +3,11 @@
 import { cn } from '@/shared/lib/utils';
 
 /**
- * Sliding pair before the last page:
- * page 1 → `1 2 . . . 5`
- * page 2 → `2 3 . . . 5`
- * page 3 → `3 4 5` (near the end)
+ * Sliding window with previous page kept visible so users can go back:
+ * page 1 → `1 2 . . . N`
+ * page 2 → `1 2 3 . . . N` (1 stays)
+ * page 3 → `2 3 4 . . . N` (2 moves into the first slot)
+ * near end → previous + current + last pages, no ellipsis
  */
 export function getAdminPaginationItems(
   currentPage1Based: number,
@@ -22,15 +23,19 @@ export function getAdminPaginationItems(
     return [totalPages - 1, totalPages];
   }
 
-  if (current + 1 >= totalPages) {
-    return [current, totalPages];
+  if (current === totalPages - 1) {
+    return [current - 1, current, totalPages];
   }
 
-  if (current + 1 === totalPages - 1) {
-    return [current, current + 1, totalPages];
+  if (current === totalPages - 2) {
+    return [current - 1, current, current + 1, totalPages];
   }
 
-  return [current, current + 1, 'ellipsis', totalPages];
+  if (current === 1) {
+    return [1, 2, 'ellipsis', totalPages];
+  }
+
+  return [current - 1, current, current + 1, 'ellipsis', totalPages];
 }
 
 const PILL_ACTIVE =
