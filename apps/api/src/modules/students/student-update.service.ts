@@ -111,6 +111,10 @@ export class StudentUpdateService {
         if (effectiveCenterId && group.centerId !== effectiveCenterId) {
           throw new BadRequestException('Selected group does not belong to the selected center');
         }
+        // Keep explicit center in sync when student had none yet (list UI otherwise shows Not assigned).
+        if (!effectiveCenterId && group.centerId && updateData.centerId === undefined) {
+          updateData.centerId = group.centerId;
+        }
         if (!group.teacherId) {
           throw new BadRequestException('Selected group has no primary teacher assigned');
         }
