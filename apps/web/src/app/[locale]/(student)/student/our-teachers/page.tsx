@@ -116,10 +116,14 @@ export default function StudentOurTeachersPage() {
   });
   const { data: myTeachers = [], isLoading: isLoadingMine } = useMyTeachers();
 
+  const assignedTeacherIds = useMemo(
+    () => new Set(myTeachers.map((teacher) => teacher.id)),
+    [myTeachers],
+  );
+
   const teachers = useMemo(() => {
-    const assignedIds = myTeachers.map((teacher) => teacher.id);
-    return prioritizeAssignedTeachers(allTeachers, assignedIds);
-  }, [allTeachers, myTeachers]);
+    return prioritizeAssignedTeachers(allTeachers, Array.from(assignedTeacherIds));
+  }, [allTeachers, assignedTeacherIds]);
 
   const isLoading = isLoadingAll || isLoadingMine;
 
@@ -176,6 +180,9 @@ export default function StudentOurTeachersPage() {
       teacher={teacher}
       variant="student"
       onCardClick={() => setSelectedTeacherId(teacher.id)}
+      myTeacherLabel={
+        assignedTeacherIds.has(teacher.id) ? tTeachers('myTeacherBadge') : undefined
+      }
     />
   );
 

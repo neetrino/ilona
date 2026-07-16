@@ -22,6 +22,8 @@ export type TeacherShowcaseCardProps = {
   isMuted?: boolean;
   /** Match student dashboard card styling */
   variant?: 'default' | 'student';
+  /** Diagonal corner ribbon for the student's assigned teachers */
+  myTeacherLabel?: string;
 };
 
 function getTeacherName(teacher: Teacher): string {
@@ -37,6 +39,7 @@ export function TeacherShowcaseCard({
   afterExperience,
   isMuted = false,
   variant = 'default',
+  myTeacherLabel,
 }: TeacherShowcaseCardProps) {
   const isStudent = variant === 'student';
   const fullName = getTeacherName(teacher);
@@ -88,7 +91,9 @@ export function TeacherShowcaseCard({
       onClick={hasCardAction ? onCardClick : undefined}
       onKeyDown={articleIsButton ? handleKeyDown : undefined}
       className={cn(
-        'group overflow-hidden bg-white p-4 transition-all duration-300 sm:flex sm:h-full sm:flex-col md:p-5',
+        'group relative bg-white p-4 transition-all duration-300 sm:flex sm:h-full sm:flex-col md:p-5',
+        // Keep overflow visible when badge is shown so the ribbon text is not clipped.
+        myTeacherLabel ? 'overflow-visible' : 'overflow-hidden',
         isStudent
           ? 'rounded-[1.75rem] border border-[rgba(14,14,16,0.07)] md:rounded-3xl'
           : 'rounded-2xl border border-slate-100 shadow-sm sm:rounded-[1.75rem] sm:border-slate-200 md:rounded-3xl',
@@ -99,6 +104,29 @@ export function TeacherShowcaseCard({
         isMuted && 'opacity-90',
       )}
     >
+      {myTeacherLabel ? (
+        <>
+          <div
+            className={cn(
+              'pointer-events-none absolute left-0 top-0 z-30 h-[7rem] w-[7rem] overflow-hidden',
+              isStudent ? 'rounded-tl-[1.75rem] md:rounded-tl-3xl' : 'rounded-tl-2xl sm:rounded-tl-[1.75rem] md:rounded-tl-3xl',
+            )}
+            aria-hidden="true"
+          >
+            <span
+              className={cn(
+                'absolute left-[-48%] top-[2.15rem] block w-[165%] py-1.5 text-center text-[0.65rem] font-bold uppercase leading-none tracking-wide text-white shadow-md sm:text-[0.7rem]',
+                '-rotate-45',
+                isStudent ? 'bg-[#1010a3]' : 'bg-slate-800',
+              )}
+            >
+              {myTeacherLabel}
+            </span>
+          </div>
+          <span className="sr-only">{myTeacherLabel}</span>
+        </>
+      ) : null}
+
       {headerActions ? (
         <div
           className={cn(
