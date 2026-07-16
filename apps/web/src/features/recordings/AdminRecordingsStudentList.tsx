@@ -98,16 +98,16 @@ export function AdminRecordingsStudentList({
         }`}
       >
         <div className="overflow-x-auto">
-          <table className="w-full">
+          <table className="w-full table-fixed">
             <thead className="border-b border-[rgba(14,14,16,0.07)] bg-[#fafafa]">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-[#8b8b90]">
+                <th className="w-1/3 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-[#8b8b90]">
                   {tCommon('group')}
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-[#8b8b90]">
+                <th className="w-1/3 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-[#8b8b90]">
                   {tCommon('searchTypeStudent')}
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-[#8b8b90]">
+                <th className="w-1/3 px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-[#8b8b90]">
                   {t('recording')}
                 </th>
               </tr>
@@ -148,18 +148,18 @@ export function AdminRecordingsStudentList({
                     }}
                     className="cursor-pointer transition-colors hover:bg-[#fafafa]"
                   >
-                    <td className="px-4 py-3 align-middle text-sm text-[#3b3b40]">
-                      {row.groupName}
+                    <td className="w-1/3 px-4 py-3 align-middle text-sm text-[#3b3b40]">
+                      <span className="block truncate">{row.groupName}</span>
                     </td>
-                    <td className="px-4 py-3 align-middle">
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-sm font-medium text-[#3b3b40]">
+                    <td className="w-1/3 px-4 py-3 align-middle">
+                      <div className="flex min-w-0 items-center gap-1.5">
+                        <span className="truncate text-sm font-medium text-[#3b3b40]">
                           {row.studentFullName}
                         </span>
                         <ChevronRight className="h-4 w-4 shrink-0 text-[#8b8b90]" aria-hidden />
                       </div>
                     </td>
-                    <td className="px-4 py-3 align-middle text-sm text-[#3b3b40]">
+                    <td className="w-1/3 px-4 py-3 align-middle text-sm text-[#3b3b40]">
                       {row.recordingCount > 0 ? (
                         t('voiceCount', { count: row.recordingCount })
                       ) : (
