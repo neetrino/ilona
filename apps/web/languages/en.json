@@ -1113,7 +1113,8 @@
     "recordingN": "Recording {n}",
     "teacher": "Teacher",
     "center": "Center",
-    "createdAt": "Created"
+    "createdAt": "Created",
+    "voiceCount": "{count, plural, one {# voice} other {# voices}}"
   },
   "lessons": {
     "title": "Lessons",

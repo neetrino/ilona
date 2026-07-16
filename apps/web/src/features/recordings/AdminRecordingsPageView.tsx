@@ -27,8 +27,6 @@ export function AdminRecordingsPageView({
   setDateFrom,
   dateTo,
   setDateTo,
-  activeRecordingId,
-  setActiveRecordingId,
   selectedStudent,
   openStudentHistory,
   closeStudentHistory,
@@ -180,8 +178,6 @@ export function AdminRecordingsPageView({
           studentDirectoryLength={studentDirectory.length}
           visibleCount={visibleRecordings.length}
           paginatedRecordings={paginatedRecordings}
-          activeRecordingId={activeRecordingId}
-          setActiveRecordingId={setActiveRecordingId}
           openStudentHistory={openStudentHistory}
           cardsListStartRef={cardsListStartRef}
         />

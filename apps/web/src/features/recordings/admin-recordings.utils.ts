@@ -138,6 +138,7 @@ export interface StudentRecordingRow {
   groupId: string | null;
   groupName: string;
   recording: AdminStudentRecording | null;
+  recordingCount: number;
 }
 
 export function parseStoredFilters(): StoredFilters {

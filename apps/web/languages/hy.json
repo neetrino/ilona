@@ -1113,7 +1113,8 @@
     "recordingN": "Ձայնագրություն {n}",
     "teacher": "Ուսուցիչ",
     "center": "Կենտրոն",
-    "createdAt": "Ստեղծված"
+    "createdAt": "Ստեղծված",
+    "voiceCount": "{count, plural, one {# ձայն} other {# ձայն}}"
   },
   "lessons": {
     "title": "Դասեր",

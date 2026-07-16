@@ -44,7 +44,6 @@ export function useAdminRecordingsPage() {
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
   const [page, setPage] = useState(0);
-  const [activeRecordingId, setActiveRecordingId] = useState<string | null>(null);
   const [isHydrated, setIsHydrated] = useState(false);
   const cardsListStartRef = useRef<HTMLDivElement | null>(null);
 
@@ -314,21 +313,28 @@ export function useAdminRecordingsPage() {
     const fromTs = dateFrom ? new Date(`${dateFrom}T00:00:00`).getTime() : null;
     const toTs = dateTo ? new Date(`${dateTo}T23:59:59.999`).getTime() : null;
     const recordingsByStudent = new Map<string, AdminStudentRecording>();
+    const recordingCountsByStudent = new Map<string, number>();
 
     recordings.forEach((recording) => {
       const ts = new Date(recording.createdAt).getTime();
       if (fromTs !== null && ts < fromTs) return;
       if (toTs !== null && ts > toTs) return;
 
-      const existing = recordingsByStudent.get(recording.student.userId);
+      const userId = recording.student.userId;
+      recordingCountsByStudent.set(
+        userId,
+        (recordingCountsByStudent.get(userId) ?? 0) + 1,
+      );
+
+      const existing = recordingsByStudent.get(userId);
       if (!existing) {
-        recordingsByStudent.set(recording.student.userId, recording);
+        recordingsByStudent.set(userId, recording);
         return;
       }
 
       const existingTs = new Date(existing.createdAt).getTime();
       if (ts > existingTs) {
-        recordingsByStudent.set(recording.student.userId, recording);
+        recordingsByStudent.set(userId, recording);
       }
     });
 
@@ -359,6 +365,7 @@ export function useAdminRecordingsPage() {
         groupId: student.groupId,
         groupName: student.groupName,
         recording: recordingsByStudent.get(student.userId) ?? null,
+        recordingCount: recordingCountsByStudent.get(student.userId) ?? 0,
       }))
       .sort((a, b) => a.studentFullName.localeCompare(b.studentFullName));
   }, [
@@ -407,7 +414,6 @@ export function useAdminRecordingsPage() {
   };
 
   const openStudentHistory = (row: StudentRecordingRow) => {
-    setActiveRecordingId(null);
     replaceParams(
       {
         [STUDENT_VOICE_VIEW_PARAM]: STUDENT_VOICE_VIEW,
@@ -418,7 +424,6 @@ export function useAdminRecordingsPage() {
   };
 
   const closeStudentHistory = () => {
-    setActiveRecordingId(null);
     replaceParams(
       {
         [STUDENT_VOICE_VIEW_PARAM]: null,
@@ -443,8 +448,6 @@ export function useAdminRecordingsPage() {
     setDateFrom,
     dateTo,
     setDateTo,
-    activeRecordingId,
-    setActiveRecordingId,
     selectedStudent,
     openStudentHistory,
     closeStudentHistory,
