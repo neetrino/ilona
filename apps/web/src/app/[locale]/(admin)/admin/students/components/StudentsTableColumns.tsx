@@ -289,7 +289,7 @@ interface StudentsTableColumnsProps {
   onSelectAll: () => void;
   onToggleSelect: (studentId: string) => void;
   onEdit: (student: Student) => void;
-  onDelete: (student: Student) => void;
+  onDelete?: (student: Student) => void;
   onDeactivate: (student: Student) => void;
   onShowFeedback: (student: Student) => void;
   onGroupChange: (studentId: string, groupId: string | null) => Promise<void>;
@@ -580,7 +580,7 @@ export function createStudentsTableColumns({
             <ActionButtons
               onEdit={() => onEdit(student)}
               onDisable={() => onDeactivate(student)}
-              onDelete={() => onDelete(student)}
+              onDelete={onDelete ? () => onDelete(student) : undefined}
               isActive={isActive}
               disabled={isUpdating || isDeleting}
               ariaLabels={{

@@ -358,6 +358,7 @@ export function useStudentsPage() {
 
   // Handle bulk delete click
   const handleBulkDeleteClick = () => {
+    if (user?.role === 'MANAGER') return;
     if (selectedStudentIds.size === 0) return;
     setBulkDeleteError(null);
     setBulkDeleteSuccess(false);
@@ -366,6 +367,7 @@ export function useStudentsPage() {
 
   // Handle bulk delete confirmation
   const handleBulkDeleteConfirm = async () => {
+    if (user?.role === 'MANAGER') return;
     if (selectedStudentIds.size === 0) return;
 
     setBulkDeleteError(null);
@@ -412,6 +414,7 @@ export function useStudentsPage() {
 
   // Handle delete button click
   const handleDeleteClick = (student: Student) => {
+    if (user?.role === 'MANAGER') return;
     setSelectedStudent(student);
     setDeleteError(null);
     setDeleteSuccess(false);
@@ -420,6 +423,7 @@ export function useStudentsPage() {
 
   // Handle delete confirmation
   const handleDeleteConfirm = async () => {
+    if (user?.role === 'MANAGER') return;
     if (!selectedStudent) return;
 
     setDeleteError(null);
@@ -721,6 +725,7 @@ export function useStudentsPage() {
     activeStudents,
     studentsWithGroup,
     totalFees,
+    isManager: user?.role === 'MANAGER',
     
     // Handlers
     setSearchQuery,

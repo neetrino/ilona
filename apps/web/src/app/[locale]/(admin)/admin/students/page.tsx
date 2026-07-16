@@ -80,6 +80,7 @@ export default function StudentsPage() {
     activeStudents,
     studentsWithGroup,
     totalFees,
+    isManager,
     
     // Handlers
     handleSearchChange,
@@ -183,6 +184,7 @@ export default function StudentsPage() {
           activeStudents={activeStudents}
           studentsWithGroup={studentsWithGroup}
           totalFees={totalFees}
+          showTotalMonthlyFees={!isManager}
           t={t}
         />
 
@@ -207,7 +209,8 @@ export default function StudentsPage() {
           onAddStudent={() => setIsAddStudentOpen(true)}
           selectedStudentIds={selectedStudentIds}
           allSelected={allSelected}
-          onBulkDelete={handleBulkDeleteClick}
+          onBulkDelete={isManager ? undefined : handleBulkDeleteClick}
+          allowDelete={!isManager}
           statusFilterOptions={statusFilterOptions}
           teacherFilterOptions={teacherFilterOptions}
           groupFilterOptions={groupFilterOptions}
@@ -235,7 +238,7 @@ export default function StudentsPage() {
             onSelectAll={handleSelectAll}
             onToggleSelect={handleToggleSelect}
             onEdit={handleEditClick}
-            onDelete={handleDeleteClick}
+            onDelete={isManager ? undefined : handleDeleteClick}
             onDeactivate={handleDeactivateClick}
             onShowFeedback={handleShowFeedback}
             onView={handleStudentDetailsOpen}
@@ -354,9 +357,13 @@ export default function StudentsPage() {
         onEdit={(student) => {
           handleEditClick(student);
         }}
-        onDelete={(student) => {
-          handleDeleteClick(student);
-        }}
+        onDelete={
+          isManager
+            ? undefined
+            : (student) => {
+                handleDeleteClick(student);
+              }
+        }
         onDeactivate={handleDeactivateClick}
         onFeedback={handleShowFeedback}
         actionsDisabled={deleteStudent.isPending || updateStudent.isPending}

@@ -9,6 +9,8 @@ interface StudentsStatsProps {
   activeStudents: number;
   studentsWithGroup: number;
   totalFees: number;
+  /** Hide fee total for Manager portal */
+  showTotalMonthlyFees?: boolean;
   t: (key: string, params?: Record<string, string | number>) => string;
 }
 
@@ -17,6 +19,7 @@ export function StudentsStats({
   activeStudents, 
   studentsWithGroup, 
   totalFees,
+  showTotalMonthlyFees = true,
   t 
 }: StudentsStatsProps) {
   const [selectedStatKey, setSelectedStatKey] = useState<null | 'totalStudents' | 'activeStudents' | 'inGroups' | 'totalMonthlyFees'>(null);
@@ -48,11 +51,15 @@ export function StudentsStats({
         type: totalStudents - studentsWithGroup > 0 ? 'warning' : 'positive',
       },
     },
-    {
-      key: 'totalMonthlyFees',
-      title: t('totalMonthlyFees'),
-      value: formatCurrency(totalFees),
-    },
+    ...(showTotalMonthlyFees
+      ? [
+          {
+            key: 'totalMonthlyFees' as const,
+            title: t('totalMonthlyFees'),
+            value: formatCurrency(totalFees),
+          },
+        ]
+      : []),
   ];
 
   const selectedStat = statItems.find((item) => item.key === selectedStatKey) ?? null;
@@ -89,7 +96,13 @@ export function StudentsStats({
         ))}
       </div>
 
-      <div className="hidden w-full min-w-0 grid-cols-2 gap-4 sm:grid lg:grid-cols-4 lg:gap-6">
+      <div
+        className={
+          showTotalMonthlyFees
+            ? 'hidden w-full min-w-0 grid-cols-2 gap-4 sm:grid lg:grid-cols-4 lg:gap-6'
+            : 'hidden w-full min-w-0 grid-cols-2 gap-4 sm:grid lg:grid-cols-3 lg:gap-6'
+        }
+      >
         {statItems.map((item) => (
           <StatCard
             key={item.key}
