@@ -224,14 +224,14 @@ export function TeacherDetailsModal({
                     {allGroups.length === 0 ? (
                       <p className="text-sm text-[#8b8b90]">{t('noGroupsAssigned')}</p>
                     ) : (
-                      <ul className="space-y-2">
+                      <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2 tablet:grid-cols-3">
                         {allGroups.map((group) => (
                           <li
                             key={group.id}
-                            className="rounded-lg border border-[rgba(14,14,16,0.07)] bg-[#fafafa] px-3 py-2"
+                            className="min-w-0 rounded-lg border border-[rgba(14,14,16,0.07)] bg-[#fafafa] px-3 py-2"
                           >
-                            <p className="text-sm font-medium text-[#3b3b40]">{group.name}</p>
-                            <p className="text-xs text-[#8b8b90]">{group.center?.name || '—'}</p>
+                            <p className="truncate text-sm font-medium text-[#3b3b40]">{group.name}</p>
+                            <p className="truncate text-xs text-[#8b8b90]">{group.center?.name || '—'}</p>
                           </li>
                         ))}
                       </ul>
