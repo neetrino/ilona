@@ -39,7 +39,7 @@ const dailyPlanInclude = {
       name: true,
       level: true,
       centerId: true,
-      center: { select: { id: true, name: true } },
+      center: { select: { id: true, name: true, colorHex: true, address: true } },
     },
   },
   lesson: {
@@ -51,7 +51,7 @@ const dailyPlanInclude = {
           id: true,
           name: true,
           centerId: true,
-          center: { select: { id: true, name: true } },
+          center: { select: { id: true, name: true, colorHex: true, address: true } },
         },
       },
     },
