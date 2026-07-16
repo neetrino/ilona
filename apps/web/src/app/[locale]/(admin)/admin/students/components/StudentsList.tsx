@@ -42,10 +42,10 @@ interface StudentsListProps {
 
 export function StudentsList({
   students,
-  totalStudents,
+  totalStudents: _totalStudents,
   totalPages,
   page,
-  pageSize,
+  pageSize: _pageSize,
   onPageChange,
   sortBy,
   sortOrder,

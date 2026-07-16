@@ -15,6 +15,22 @@ export interface AdminChatGroup {
     id: string;
     name: string;
   } | null;
+  chatId: string | null;
+  lastMessage?: {
+    id: string;
+    type?: string;
+    content: string | null;
+    fileName?: string | null;
+    createdAt: string;
+    sender: {
+      id: string;
+      firstName: string;
+      lastName: string;
+    } | null;
+  } | null;
+  unreadCount: number;
+  messageCount?: number;
+  updatedAt?: string;
 }
 
 /** Admin-only: Fetch all registered users (for add-member picker) */
@@ -155,6 +171,8 @@ export interface AdminStudentRecording {
   fileName?: string;
   duration: number;
   createdAt: string;
+  /** Always voice-to-teacher for this endpoint */
+  source?: 'voiceToTeacher';
   student: {
     userId: string;
     firstName: string;
@@ -164,6 +182,15 @@ export interface AdminStudentRecording {
     id: string | null;
     name: string;
   };
+  teacher?: {
+    id: string;
+    firstName: string;
+    lastName: string;
+  } | null;
+  center?: {
+    id: string;
+    name: string;
+  } | null;
 }
 
 export interface AdminStudentRecordingsFilters {
@@ -175,6 +202,8 @@ export interface AdminStudentRecordingsFilters {
   /** Student user ids (message sender ids) */
   studentIds?: string[];
   search?: string;
+  skip?: number;
+  take?: number;
 }
 
 export interface TeacherStudentRecordingsFilters {

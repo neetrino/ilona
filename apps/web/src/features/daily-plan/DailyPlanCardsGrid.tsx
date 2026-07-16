@@ -1,8 +1,13 @@
 'use client';
 
-import type { RefObject } from 'react';
+import { useMemo, type RefObject } from 'react';
+import { motion, useReducedMotion } from 'framer-motion';
 import type { DailyPlan, DailyPlanResourceKind } from './types';
 import { DailyPlanCard } from './DailyPlanCard';
+import {
+  dailyPlanCardItemVariants,
+  dailyPlanCardViewport,
+} from './dailyPlanCardAnimations';
 
 interface DailyPlanCardsGridProps {
   items: DailyPlan[];
@@ -15,6 +20,78 @@ interface DailyPlanCardsGridProps {
   cardsStartRef?: RefObject<HTMLDivElement | null>;
 }
 
+interface DailyPlanCardsGridListProps {
+  items: DailyPlan[];
+  kindLabel: Record<DailyPlanResourceKind, string>;
+  onView: (plan: DailyPlan) => void;
+  onEdit: (plan: DailyPlan) => void;
+  onDelete?: (plan: DailyPlan) => Promise<void>;
+  isDeletePending: boolean;
+  className: string;
+  reducedMotion: boolean;
+}
+
+function resultsSignature(items: DailyPlan[]): string {
+  return items.map((plan) => plan.id).join('|');
+}
+
+function DailyPlanCardsGridList({
+  items,
+  kindLabel,
+  onView,
+  onEdit,
+  onDelete,
+  isDeletePending,
+  className,
+  reducedMotion,
+}: DailyPlanCardsGridListProps) {
+  const signature = useMemo(() => resultsSignature(items), [items]);
+
+  if (reducedMotion) {
+    return (
+      <div className={className}>
+        {items.map((plan) => (
+          <div key={plan.id} className="h-full min-w-0">
+            <DailyPlanCard
+              plan={plan}
+              kindLabel={kindLabel}
+              onView={() => onView(plan)}
+              onEdit={() => onEdit(plan)}
+              onDelete={onDelete ? () => onDelete(plan) : undefined}
+              isDeletePending={isDeletePending}
+            />
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  return (
+    <div key={signature} className={className}>
+      {items.map((plan, index) => (
+        <motion.div
+          key={plan.id}
+          className="h-full min-w-0"
+          custom={index}
+          variants={dailyPlanCardItemVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={dailyPlanCardViewport}
+        >
+          <DailyPlanCard
+            plan={plan}
+            kindLabel={kindLabel}
+            onView={() => onView(plan)}
+            onEdit={() => onEdit(plan)}
+            onDelete={onDelete ? () => onDelete(plan) : undefined}
+            isDeletePending={isDeletePending}
+          />
+        </motion.div>
+      ))}
+    </div>
+  );
+}
+
 export function DailyPlanCardsGrid({
   items,
   kindLabel,
@@ -25,35 +102,29 @@ export function DailyPlanCardsGrid({
   mobileItems,
   cardsStartRef,
 }: DailyPlanCardsGridProps) {
+  const prefersReducedMotion = useReducedMotion() === true;
+  const sharedListProps = {
+    kindLabel,
+    onView,
+    onEdit,
+    onDelete,
+    isDeletePending,
+    reducedMotion: prefersReducedMotion,
+  };
+
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 overflow-x-clip">
       {cardsStartRef ? <div ref={cardsStartRef} className="md:hidden" /> : null}
-      <div className="grid grid-cols-1 gap-4 md:hidden">
-        {mobileItems.map((plan) => (
-          <DailyPlanCard
-            key={plan.id}
-            plan={plan}
-            kindLabel={kindLabel}
-            onView={() => onView(plan)}
-            onEdit={() => onEdit(plan)}
-            onDelete={onDelete ? () => onDelete(plan) : undefined}
-            isDeletePending={isDeletePending}
-          />
-        ))}
-      </div>
-      <div className="hidden grid-cols-1 gap-4 md:grid md:grid-cols-2">
-        {items.map((plan) => (
-          <DailyPlanCard
-            key={`desktop-${plan.id}`}
-            plan={plan}
-            kindLabel={kindLabel}
-            onView={() => onView(plan)}
-            onEdit={() => onEdit(plan)}
-            onDelete={onDelete ? () => onDelete(plan) : undefined}
-            isDeletePending={isDeletePending}
-          />
-        ))}
-      </div>
+      <DailyPlanCardsGridList
+        {...sharedListProps}
+        items={mobileItems}
+        className="grid grid-cols-1 items-stretch gap-4 md:hidden"
+      />
+      <DailyPlanCardsGridList
+        {...sharedListProps}
+        items={items}
+        className="hidden auto-rows-fr grid-cols-1 items-stretch gap-4 md:grid md:grid-cols-2"
+      />
     </div>
   );
 }

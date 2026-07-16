@@ -39,6 +39,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   private onlineUsers: Map<string, Set<string>> = new Map();
   // Track user's socket connections
   private userSockets: Map<string, string[]> = new Map();
+  // Track connected user roles (for class-group unread fan-out to admins)
+  private userRoles: Map<string, string> = new Map();
 
   constructor(
     private readonly chatService: ChatService,
@@ -72,6 +74,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       const existingSockets = this.userSockets.get(payload.sub) || [];
       const isFirstSocket = existingSockets.length === 0;
       this.userSockets.set(payload.sub, [...existingSockets, client.id]);
+      this.userRoles.set(payload.sub, payload.role);
 
       this.logger.log(`User ${payload.email} connected`);
 
@@ -145,10 +148,14 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     if (remainingSockets.length === 0) {
       this.userSockets.delete(userId);
+      this.userRoles.delete(userId);
 
       void this.chatService
         .touchUserLastSeen(userId)
         .then((lastSeenAt) => {
+          // User may have reconnected before this async callback ran.
+          if (this.userSockets.has(userId)) return;
+
           const lastSeenIso = lastSeenAt.toISOString();
           this.onlineUsers.forEach((users, chatId) => {
             if (users.has(userId)) {
@@ -167,6 +174,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
               error instanceof Error ? error.message : String(error)
             }`,
           );
+          if (this.userSockets.has(userId)) return;
+
           this.onlineUsers.forEach((users, chatId) => {
             if (users.has(userId)) {
               users.delete(userId);
@@ -263,6 +272,23 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
   }
 
+  /** Users who already receive room broadcasts — must not also get a direct fan-out. */
+  private async getUserIdsInChatRoom(chatId: string): Promise<Set<string>> {
+    try {
+      const sockets = await this.server.in(`chat:${chatId}`).fetchSockets();
+      const socketIdsInRoom = new Set(sockets.map((entry) => entry.id));
+      const userIds = new Set<string>();
+      for (const [userId, socketIds] of this.userSockets) {
+        if (socketIds.some((socketId) => socketIdsInRoom.has(socketId))) {
+          userIds.add(userId);
+        }
+      }
+      return userIds;
+    } catch {
+      return new Set();
+    }
+  }
+
   private async fanOutNewMessageToParticipants(
     chatId: string,
     senderId: string,
@@ -270,14 +296,47 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     message: unknown,
   ): Promise<void> {
     try {
-      const chat = await this.chatService.getChatById(chatId, senderId, authUser.role, authUser);
+      const chat = (await this.chatService.getChatById(
+        chatId,
+        senderId,
+        authUser.role,
+        authUser,
+      )) as {
+        type?: string;
+        groupId?: string | null;
+        participants: Array<{ userId: string }>;
+      };
+      // Prefer live socket.io room membership over onlineUsers map (can drift on reconnect).
+      const usersInRoom = await this.getUserIdsInChatRoom(chatId);
       const roomMembers = this.onlineUsers.get(chatId);
+      const notified = new Set<string>();
+
       for (const participant of chat.participants) {
         // Room broadcast already reaches anyone currently in the chat room.
         // Only direct-emit to connected users who have not joined this room yet
         // (e.g. brand-new DM before chat:join) — avoids duplicate message:new.
-        if (roomMembers?.has(participant.userId)) continue;
+        if (usersInRoom.has(participant.userId) || roomMembers?.has(participant.userId)) {
+          continue;
+        }
         this.emitToUser(participant.userId, 'message:new', message);
+        notified.add(participant.userId);
+      }
+
+      // Class group chats: notify online admins/managers even before they open the chat
+      // (they may not be ChatParticipants until the admin groups list is loaded).
+      if (chat.type === 'GROUP' && chat.groupId) {
+        for (const [userId, role] of this.userRoles) {
+          if (role !== 'ADMIN' && role !== 'MANAGER') continue;
+          if (userId === senderId) continue;
+          if (
+            notified.has(userId) ||
+            usersInRoom.has(userId) ||
+            roomMembers?.has(userId)
+          ) {
+            continue;
+          }
+          this.emitToUser(userId, 'message:new', message);
+        }
       }
     } catch (error) {
       this.logger.warn(
@@ -294,6 +353,17 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
    */
   broadcastNewMessage(chatId: string, message: unknown): void {
     this.server?.to(`chat:${chatId}`).emit('message:new', message);
+  }
+
+  /** HTTP send path: room broadcast + direct emit to offline-room participants / admins. */
+  async notifyNewMessage(
+    chatId: string,
+    message: unknown,
+    senderId: string,
+    authUser: JwtPayload,
+  ): Promise<void> {
+    this.broadcastNewMessage(chatId, message);
+    await this.fanOutNewMessageToParticipants(chatId, senderId, authUser, message);
   }
 
   @SubscribeMessage('message:edit')

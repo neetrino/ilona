@@ -1,5 +1,8 @@
 import { Injectable } from '@nestjs/common';
+import { Prisma } from '@ilona/database';
 import { PrismaService } from '../prisma/prisma.service';
+
+type DbClient = PrismaService | Prisma.TransactionClient;
 
 @Injectable()
 export class GroupChatSyncService {
@@ -35,6 +38,89 @@ export class GroupChatSyncService {
     }
 
     return chat;
+  }
+
+  /**
+   * Ensure the class group chat exists and the student is an active participant,
+   * so the chat appears immediately in the student's chat list.
+   */
+  async ensureStudentInGroupChat(
+    groupId: string,
+    userId: string,
+    db: DbClient = this.prisma,
+  ): Promise<void> {
+    const group = await db.group.findUnique({
+      where: { id: groupId },
+      select: {
+        id: true,
+        name: true,
+        teacherId: true,
+        secondTeacherId: true,
+      },
+    });
+    if (!group) return;
+
+    let chat = await db.chat.findUnique({ where: { groupId } });
+    if (!chat) {
+      chat = await db.chat.create({
+        data: {
+          type: 'GROUP',
+          name: group.name,
+          groupId,
+        },
+      });
+
+      const teacherIds = [group.teacherId, group.secondTeacherId].filter(
+        (id): id is string => Boolean(id),
+      );
+      for (const teacherId of teacherIds) {
+        const teacher = await db.teacher.findUnique({
+          where: { id: teacherId },
+          select: { userId: true },
+        });
+        if (!teacher) continue;
+        await db.chatParticipant.upsert({
+          where: {
+            chatId_userId: { chatId: chat.id, userId: teacher.userId },
+          },
+          update: { isAdmin: true, leftAt: null },
+          create: {
+            chatId: chat.id,
+            userId: teacher.userId,
+            isAdmin: true,
+          },
+        });
+      }
+    }
+
+    await db.chatParticipant.upsert({
+      where: {
+        chatId_userId: { chatId: chat.id, userId },
+      },
+      update: { leftAt: null },
+      create: {
+        chatId: chat.id,
+        userId,
+        isAdmin: false,
+      },
+    });
+  }
+
+  async removeStudentFromGroupChat(
+    groupId: string,
+    userId: string,
+    db: DbClient = this.prisma,
+  ): Promise<void> {
+    const chat = await db.chat.findUnique({
+      where: { groupId },
+      select: { id: true },
+    });
+    if (!chat) return;
+
+    await db.chatParticipant.updateMany({
+      where: { chatId: chat.id, userId },
+      data: { leftAt: new Date() },
+    });
   }
 
   async syncGroupTeachersInChat(

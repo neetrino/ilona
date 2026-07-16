@@ -12,9 +12,10 @@ import { StudentQueryService } from './student-query.service';
 import { StudentStatisticsService } from './student-statistics.service';
 import { StudentGroupService } from './student-group.service';
 import { ChatModule } from '../chat/chat.module';
+import { GroupsModule } from '../groups/groups.module';
 
 @Module({
-  imports: [ChatModule],
+  imports: [ChatModule, GroupsModule],
   controllers: [StudentsController],
   providers: [
     StudentsService,

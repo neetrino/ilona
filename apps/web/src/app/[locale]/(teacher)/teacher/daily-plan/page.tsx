@@ -14,6 +14,7 @@ import type { DailyPlan } from '@/features/daily-plan/types';
 import { DailyPlanEditor } from '@/features/daily-plan/DailyPlanEditor';
 import { DailyPlanListSection } from '@/features/daily-plan/DailyPlanListSection';
 import { DailyPlanViewer } from '@/features/daily-plan/DailyPlanViewer';
+import { useTeachers } from '@/features/teachers';
 
 export default function TeacherDailyPlanPage() {
   const t = useTranslations('nav');
@@ -23,14 +24,42 @@ export default function TeacherDailyPlanPage() {
   const locale = params.locale as string;
   const { user } = useAuthStore();
   const [search, setSearch] = useState('');
+  const [teacherId, setTeacherId] = useState('');
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
   const [editing, setEditing] = useState<DailyPlan | null>(null);
   const [deletingPlanId, setDeletingPlanId] = useState<string | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
-  const filters = useMemo(
-    () => ({ search: search.trim() || undefined, take: 100 }),
-    [search],
-  );
+  const { data: teachersData, isLoading: isLoadingTeachers } = useTeachers({
+    status: 'ACTIVE',
+    take: 200,
+  });
+
+  const teacherOptions = useMemo(() => {
+    if (!teachersData?.items) return [];
+    return teachersData.items.map((teacher) => ({
+      id: teacher.id,
+      label: `${teacher.user.firstName} ${teacher.user.lastName}`.trim(),
+    }));
+  }, [teachersData]);
+
+  const filters = useMemo(() => {
+    const next: {
+      search?: string;
+      teacherId?: string;
+      dateFrom?: string;
+      dateTo?: string;
+      take: number;
+    } = { take: 100 };
+    const trimmed = search.trim();
+    if (trimmed) next.search = trimmed;
+    if (teacherId) next.teacherId = teacherId;
+    if (dateFrom) next.dateFrom = dateFrom;
+    if (dateTo) next.dateTo = dateTo;
+    return next;
+  }, [search, teacherId, dateFrom, dateTo]);
+
   const { data, isLoading, refetch } = useDailyPlans(filters);
   const items = data?.items ?? [];
   const remove = useDeleteDailyPlan();
@@ -44,14 +73,23 @@ export default function TeacherDailyPlanPage() {
       <DailyPlanListSection
         search={search}
         onSearchChange={setSearch}
+        enableStructuredFilters
+        teacherId={teacherId}
+        onTeacherIdChange={(value) => setTeacherId(value ?? '')}
+        dateFrom={dateFrom}
+        onDateFromChange={setDateFrom}
+        dateTo={dateTo}
+        onDateToChange={setDateTo}
+        teacherOptions={teacherOptions}
+        isLoadingTeachers={isLoadingTeachers}
         onCreate={() => router.push(`/${locale}/teacher/daily-plan/new`)}
         createLabel="+ New Daily Plan"
         items={items}
         isLoading={isLoading}
         currentUserId={user?.id}
         alwaysShowMineSection
-        emptyDefaultMessage="No daily plans yet. Create one to get started."
-        emptySearchMessage={(query) => `No daily plans match "${query}".`}
+        emptyDefaultMessage={tDaily('emptyDefault')}
+        emptySearchMessage={(query) => tDaily('emptySearch', { query })}
         onView={openView}
         onEdit={(plan) => {
           if (plan.canEdit) {
@@ -71,7 +109,7 @@ export default function TeacherDailyPlanPage() {
             await refetch();
           } catch (error) {
             const message =
-              error instanceof Error ? error.message : 'Failed to delete daily plan.';
+              error instanceof Error ? error.message : tDaily('deleteError');
             setDeleteError(message);
           } finally {
             setDeletingPlanId(null);

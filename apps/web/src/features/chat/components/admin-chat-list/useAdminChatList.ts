@@ -71,17 +71,23 @@ export function useAdminChatList({
 
   const groupUnreadMap = useMemo(() => {
     const map = new Map<string, number>();
+
+    groups.forEach((group) => {
+      map.set(group.id, group.unreadCount || 0);
+    });
+
     chats.forEach((chat) => {
-      if (chat.type === 'GROUP' && (chat.unreadCount || 0) > 0) {
-        if (chat.groupId) {
+      if (chat.type !== 'GROUP' || (chat.unreadCount || 0) <= 0) return;
+      if (chat.groupId) {
+        if (!map.has(chat.groupId)) {
           map.set(chat.groupId, chat.unreadCount || 0);
-        } else {
-          map.set(chat.id, chat.unreadCount || 0);
         }
+      } else {
+        map.set(chat.id, chat.unreadCount || 0);
       }
     });
     return map;
-  }, [chats]);
+  }, [chats, groups]);
 
   const getUserUnreadCount = useCallback(
     (userId: string): number => {
@@ -150,10 +156,10 @@ export function useAdminChatList({
       items.push({
         entry: { kind: 'class', group },
         sort: {
-          lastMessage: fullChat?.lastMessage ?? null,
-          lastMessageAt: fullChat?.lastMessageAt,
-          updatedAt: fullChat?.updatedAt,
-          unreadCount: fullChat?.unreadCount ?? groupUnreadMap.get(group.id) ?? 0,
+          lastMessage: fullChat?.lastMessage ?? group.lastMessage ?? null,
+          lastMessageAt: fullChat?.lastMessageAt ?? group.lastMessage?.createdAt,
+          updatedAt: fullChat?.updatedAt ?? group.updatedAt,
+          unreadCount: group.unreadCount ?? fullChat?.unreadCount ?? groupUnreadMap.get(group.id) ?? 0,
         },
       });
     }

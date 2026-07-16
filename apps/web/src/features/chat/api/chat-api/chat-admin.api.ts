@@ -92,6 +92,12 @@ export async function fetchAdminStudentRecordings(
     params.append('studentUserId', filters.studentUserId);
   }
   if (filters?.search) params.append('search', filters.search);
+  if (typeof filters?.skip === 'number' && Number.isFinite(filters.skip)) {
+    params.append('skip', String(Math.max(0, Math.floor(filters.skip))));
+  }
+  if (typeof filters?.take === 'number' && Number.isFinite(filters.take)) {
+    params.append('take', String(Math.max(1, Math.floor(filters.take))));
+  }
 
   const query = params.toString();
   const url = query

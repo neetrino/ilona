@@ -23,6 +23,10 @@ export interface AdminStudentRecordingFilters {
   /** Student user ids (message sender ids) */
   studentIds?: string[];
   search?: string;
+  /** Optional offset for incremental loading */
+  skip?: number;
+  /** Optional page size for incremental loading */
+  take?: number;
 }
 
 export type MessageWithChatForRecordings = Prisma.MessageGetPayload<{

@@ -96,7 +96,7 @@ export function AdminChatListGroupItems({
 
         const group = item.group;
         const unread = groupUnreadMap.get(group.id) || 0;
-        const lastMessage = getGroupLastMessage(group.id);
+        const lastMessage = getGroupLastMessage(group.id) ?? group.lastMessage ?? null;
         const isActive = activeChat?.type === 'GROUP' && activeChat.groupId === group.id;
         const GroupListIcon = getGroupIconComponent(group.iconKey);
 

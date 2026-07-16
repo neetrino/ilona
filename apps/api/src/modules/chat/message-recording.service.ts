@@ -2,7 +2,13 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { Prisma, MessageType, UserRole } from '@ilona/database';
 import type { AdminStudentRecordingFilters, MessageWithChatForRecordings } from './message.types';
-import { adminRecordingMatchesFilters } from './message-recording.util';
+import {
+  ADMIN_STUDENT_RECORDING_INCLUDE,
+  buildAdminRecordingSenderWhere,
+  isVoiceToTeacherAdminRecording,
+  mapAdminStudentRecording,
+} from './message-recording.admin';
+import { applyRecordingPagination } from './message-recording.util';
 
 @Injectable()
 export class MessageRecordingService {
@@ -92,80 +98,28 @@ export class MessageRecordingService {
     filters?: AdminStudentRecordingFilters,
     branchCenterId?: string,
   ) {
+    const effectiveFilters = filters ?? {};
     const messages = await this.prisma.message.findMany({
       where: {
         type: MessageType.VOICE,
         fileUrl: { not: null },
-        sender: {
-          role: UserRole.STUDENT,
-          ...(branchCenterId
-            ? {
-                student: {
-                  OR: [{ group: { centerId: branchCenterId } }, { centerId: branchCenterId }],
-                },
-              }
-            : {}),
-        },
+        sender: buildAdminRecordingSenderWhere(effectiveFilters, branchCenterId),
       },
       orderBy: { createdAt: 'desc' },
-      include: {
-        sender: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            student: {
-              select: {
-                id: true,
-                group: {
-                  select: {
-                    id: true,
-                    name: true,
-                  },
-                },
-              },
-            },
-          },
-        },
-      },
+      include: ADMIN_STUDENT_RECORDING_INCLUDE,
     });
 
-    const normalizedSearch = filters?.search?.trim().toLowerCase();
+    const normalizedSearch = effectiveFilters.search?.trim().toLowerCase();
+    const mapped = messages
+      .filter((message) =>
+        isVoiceToTeacherAdminRecording(message, effectiveFilters, normalizedSearch),
+      )
+      .map(mapAdminStudentRecording);
 
-    return messages
-      .filter((message) => {
-        const meta = message.metadata as Record<string, unknown> | null;
-        if (!meta || meta.voiceToTeacher !== true) return false;
-
-        const groupId = message.sender?.student?.group?.id ?? null;
-        const senderId = message.senderId ?? '';
-        if (!adminRecordingMatchesFilters(senderId, groupId, filters ?? {})) return false;
-
-        if (normalizedSearch) {
-          const fullName = `${message.sender?.firstName ?? ''} ${message.sender?.lastName ?? ''}`
-            .trim()
-            .toLowerCase();
-          if (!fullName.includes(normalizedSearch)) return false;
-        }
-
-        return true;
-      })
-      .map((message) => ({
-        id: message.id,
-        fileUrl: message.fileUrl as string,
-        fileName: message.fileName ?? undefined,
-        duration: message.duration ?? 0,
-        createdAt: message.createdAt,
-        student: {
-          userId: message.sender?.id ?? '',
-          firstName: message.sender?.firstName ?? '',
-          lastName: message.sender?.lastName ?? '',
-        },
-        group: {
-          id: message.sender?.student?.group?.id ?? null,
-          name: message.sender?.student?.group?.name ?? 'Ungrouped',
-        },
-      }));
+    return applyRecordingPagination(mapped, {
+      skip: effectiveFilters.skip,
+      take: effectiveFilters.take,
+    });
   }
 
   async getTeacherStudentRecordings(

@@ -94,7 +94,7 @@ export async function assignTeacher(groupId: string, teacherId: string): Promise
  * Add student to group
  */
 export async function addStudentToGroup(groupId: string, studentId: string): Promise<{ success: boolean }> {
-  return api.post<{ success: boolean }>(`${GROUPS_ENDPOINT}/${groupId}/students`, { studentId });
+  return api.post<{ success: boolean }>(`${GROUPS_ENDPOINT}/${groupId}/students/${studentId}`);
 }
 
 /**

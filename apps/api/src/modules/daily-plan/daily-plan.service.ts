@@ -190,10 +190,11 @@ export class DailyPlanService {
     if (query.lessonId) whereParts.push({ lessonId: query.lessonId });
 
     if (query.dateFrom || query.dateTo) {
+      const dateToDay = query.dateTo?.slice(0, 10);
       whereParts.push({
         date: {
           ...(query.dateFrom ? { gte: new Date(query.dateFrom) } : {}),
-          ...(query.dateTo ? { lte: new Date(query.dateTo) } : {}),
+          ...(dateToDay ? { lte: new Date(`${dateToDay}T23:59:59.999Z`) } : {}),
         },
       });
     }

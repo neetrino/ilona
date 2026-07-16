@@ -146,8 +146,8 @@ export class ChatController {
 
     const message = await this.chatService.sendMessage(dto, senderIdFromAuth, senderRoleFromAuth, user);
 
-    // Broadcast to all chat participants (including sender's other devices) so voice messages appear in real time
-    this.chatGateway.broadcastNewMessage(dto.chatId, message);
+    // Broadcast to room + fan-out to participants/admins not currently in the room
+    await this.chatGateway.notifyNewMessage(dto.chatId, message, senderIdFromAuth, user);
 
     return message;
   }
@@ -276,6 +276,8 @@ export class ChatController {
     @Query('groupIds') groupIds?: string | string[],
     @Query('studentIds') studentIds?: string | string[],
     @Query('search') search?: string,
+    @Query('skip') skipRaw?: string,
+    @Query('take') takeRaw?: string,
   ) {
     const normalizedGroupIds = Array.isArray(groupIds)
       ? groupIds
@@ -288,6 +290,9 @@ export class ChatController {
         ? [studentIds]
         : undefined;
 
+    const skip = skipRaw != null && skipRaw !== '' ? Number(skipRaw) : undefined;
+    const take = takeRaw != null && takeRaw !== '' ? Number(takeRaw) : undefined;
+
     const branchCenterId = user.role === UserRole.MANAGER ? getManagerCenterIdOrThrow(user) : undefined;
     return this.chatService.getAdminStudentRecordings(
       user.sub,
@@ -297,6 +302,8 @@ export class ChatController {
         groupIds: normalizedGroupIds,
         studentIds: normalizedStudentIds,
         search,
+        ...(skip != null && Number.isFinite(skip) ? { skip } : {}),
+        ...(take != null && Number.isFinite(take) ? { take } : {}),
       },
       branchCenterId,
     );
