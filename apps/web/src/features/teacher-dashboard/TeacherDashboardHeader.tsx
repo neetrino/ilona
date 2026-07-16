@@ -6,7 +6,6 @@ import { ChatBackButton } from '@/shared/components/ui/chat-back-button';
 import { LandingNavbarLanguageToggle } from '@/shared/components/layout/LandingNavbarLanguageToggle';
 import { StudentLogoutControl } from '@/shared/components/layout/StudentLogoutControl';
 import { PortalHeaderSearch } from '@/features/search/components/PortalHeaderSearch';
-import { useAuthStore } from '@/features/auth/store/auth.store';
 import { isTeacherPortalSubpage, isTeacherProfilePath, stripLocaleFromPath } from '@/shared/lib/role-routes';
 import { PORTAL_MOBILE_HEADER_ID } from '@/shared/lib/portal-mobile-layout';
 import { cn } from '@/shared/lib/utils';
@@ -25,11 +24,8 @@ export function TeacherDashboardHeader({
   backLabel,
 }: TeacherDashboardHeaderProps) {
   const t = useTranslations('dashboard');
-  const tNav = useTranslations('nav');
   const tCommon = useTranslations('common');
   const pathname = usePathname();
-  const { user } = useAuthStore();
-  const firstName = user?.firstName ?? tNav('user');
   const scrollToTop = () => {
     if (!window.matchMedia('(max-width: 767px)').matches) return;
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -87,9 +83,6 @@ export function TeacherDashboardHeader({
                 </>
               ) : (
                 <>
-                  <p className="truncate text-[0.625rem] tracking-wide text-[#8b8b90] sm:text-[0.6875rem] lg:text-left">
-                    {t('greeting', { name: firstName })}
-                  </p>
                   <h1 className="flex min-h-11 items-center justify-center px-0 text-[1.125rem] font-bold leading-tight tracking-tight sm:px-5 sm:text-[1.5rem] lg:min-h-0 lg:justify-start">
                     <button
                       type="button"

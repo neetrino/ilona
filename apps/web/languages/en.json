@@ -256,7 +256,6 @@
     "titleMy": "My",
     "titleLearning": "Learning",
     "titleTeaching": "Teaching",
-    "greeting": "Hello, {name} 👋",
     "studentRole": "Student",
     "teacherRole": "Teacher",
     "welcomeStudent": "Hello {name}, you are our next success story.",

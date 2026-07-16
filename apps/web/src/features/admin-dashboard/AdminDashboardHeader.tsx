@@ -29,11 +29,9 @@ export function AdminDashboardHeader({
   backLabel,
 }: AdminDashboardHeaderProps) {
   const t = useTranslations('dashboard');
-  const tNav = useTranslations('nav');
   const tCommon = useTranslations('common');
   const pathname = usePathname();
   const { user } = useAuthStore();
-  const firstName = user?.firstName ?? tNav('user');
   const scrollToTop = () => {
     if (!window.matchMedia('(max-width: 767px)').matches) return;
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -102,20 +100,15 @@ export function AdminDashboardHeader({
                   ) : null}
                 </>
               ) : (
-                <>
-                  <p className="truncate text-[0.625rem] tracking-wide text-[#8b8b90] sm:text-[0.6875rem] lg:text-left">
-                    {t('greeting', { name: firstName })}
-                  </p>
-                  <h1 className="flex min-h-11 items-center justify-center px-0 text-[1.125rem] font-bold leading-tight tracking-tight text-[#1010a3] sm:px-5 sm:text-[1.5rem] lg:min-h-0 lg:justify-start">
-                    <button
-                      type="button"
-                      onClick={scrollToTop}
-                      className="max-w-full truncate border-0 bg-transparent p-0 text-inherit cursor-pointer sm:cursor-default"
-                    >
-                      {t('title')}
-                    </button>
-                  </h1>
-                </>
+                <h1 className="flex min-h-11 items-center justify-center px-0 text-[1.125rem] font-bold leading-tight tracking-tight text-[#1010a3] sm:px-5 sm:text-[1.5rem] lg:min-h-0 lg:justify-start">
+                  <button
+                    type="button"
+                    onClick={scrollToTop}
+                    className="max-w-full truncate border-0 bg-transparent p-0 text-inherit cursor-pointer sm:cursor-default"
+                  >
+                    {t('title')}
+                  </button>
+                </h1>
               )}
             </div>
             {onMenuClick ? <div className="h-11 w-11 shrink-0 lg:hidden" aria-hidden /> : null}
