@@ -4,6 +4,12 @@ import type { AdminStudentRecording } from '@/features/chat/api/chat.api';
 import type { Group } from '@/features/groups/types';
 import type { Student, TeacherAssignedItem } from '@/features/students/types';
 import {
+  APP_TIMEZONE,
+  formatAppDate,
+  formatAppDateTime,
+  getZonedParts,
+} from '@/shared/lib/app-timezone';
+import {
   DIRECTORY_PAGE_SIZE,
   FILTERS_STORAGE_KEY,
   LEGACY_FILTERS_KEY,
@@ -11,18 +17,78 @@ import {
   LEGACY_STUDENT_KEY,
 } from './admin-recordings.constants';
 
-export function formatDateTime(value: string): string {
-  return new Date(value).toLocaleString(undefined, {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
+export function formatDateTime(value: string, locale = 'en'): string {
+  return formatAppDateTime(value, locale);
 }
 
 export function formatIsoDay(value: string): string {
-  return new Date(value).toISOString().slice(0, 10);
+  return getZonedParts(new Date(value)).ymd;
+}
+
+export function formatRecordingDayHeading(value: string, locale = 'en'): string {
+  return formatAppDate(value, locale, {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    timeZone: APP_TIMEZONE,
+  });
+}
+
+export function formatRecordingTime(value: string, locale = 'en'): string {
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return '—';
+  return d.toLocaleTimeString(locale === 'hy' ? 'hy-AM' : 'en-GB', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+    timeZone: APP_TIMEZONE,
+  });
+}
+
+export interface RecordingDayGroup {
+  dayKey: string;
+  dayLabel: string;
+  recordings: AdminStudentRecording[];
+}
+
+/** Group recordings by Asia/Yerevan calendar day; days and items newest-first. */
+export function groupRecordingsByDay(
+  recordings: AdminStudentRecording[],
+  locale = 'en',
+): RecordingDayGroup[] {
+  const sorted = [...recordings].sort(
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+  );
+  const map = new Map<string, AdminStudentRecording[]>();
+
+  for (const recording of sorted) {
+    const dayKey = formatIsoDay(recording.createdAt);
+    const list = map.get(dayKey);
+    if (list) {
+      list.push(recording);
+    } else {
+      map.set(dayKey, [recording]);
+    }
+  }
+
+  return Array.from(map.entries()).map(([dayKey, dayRecordings]) => ({
+    dayKey,
+    dayLabel: formatRecordingDayHeading(dayRecordings[0].createdAt, locale),
+    recordings: dayRecordings,
+  }));
+}
+
+export function formatRecordingDuration(
+  seconds: number,
+  t: (
+    key: 'durationHours' | 'durationMinutes',
+    values?: { hours?: number; minutes?: number },
+  ) => string,
+): string {
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  if (hours > 0) return t('durationHours', { hours, minutes });
+  return t('durationMinutes', { minutes });
 }
 
 export function isFullStudent(item: TeacherAssignedItem): item is Student {

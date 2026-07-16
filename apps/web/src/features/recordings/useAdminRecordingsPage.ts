@@ -39,6 +39,11 @@ export function useAdminRecordingsPage() {
   const [dateTo, setDateTo] = useState('');
   const [page, setPage] = useState(0);
   const [activeRecordingId, setActiveRecordingId] = useState<string | null>(null);
+  const [selectedStudent, setSelectedStudent] = useState<{
+    studentUserId: string;
+    studentFullName: string;
+    groupName: string;
+  } | null>(null);
   const [isHydrated, setIsHydrated] = useState(false);
   const cardsListStartRef = useRef<HTMLDivElement | null>(null);
 
@@ -368,6 +373,19 @@ export function useAdminRecordingsPage() {
     });
   };
 
+  const openStudentHistory = (row: StudentRecordingRow) => {
+    setActiveRecordingId(null);
+    setSelectedStudent({
+      studentUserId: row.studentUserId,
+      studentFullName: row.studentFullName,
+      groupName: row.groupName,
+    });
+  };
+
+  const closeStudentHistory = () => {
+    setSelectedStudent(null);
+  };
+
   return {
     tNav,
     t,
@@ -385,6 +403,9 @@ export function useAdminRecordingsPage() {
     setDateTo,
     activeRecordingId,
     setActiveRecordingId,
+    selectedStudent,
+    openStudentHistory,
+    closeStudentHistory,
     cardsListStartRef,
     isLoadingDirectory,
     groupMultiOptions,

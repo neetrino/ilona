@@ -155,6 +155,8 @@ export interface AdminStudentRecording {
   fileName?: string;
   duration: number;
   createdAt: string;
+  /** Always voice-to-teacher for this endpoint */
+  source?: 'voiceToTeacher';
   student: {
     userId: string;
     firstName: string;
@@ -164,6 +166,15 @@ export interface AdminStudentRecording {
     id: string | null;
     name: string;
   };
+  teacher?: {
+    id: string;
+    firstName: string;
+    lastName: string;
+  } | null;
+  center?: {
+    id: string;
+    name: string;
+  } | null;
 }
 
 export interface AdminStudentRecordingsFilters {
@@ -175,6 +186,8 @@ export interface AdminStudentRecordingsFilters {
   /** Student user ids (message sender ids) */
   studentIds?: string[];
   search?: string;
+  skip?: number;
+  take?: number;
 }
 
 export interface TeacherStudentRecordingsFilters {

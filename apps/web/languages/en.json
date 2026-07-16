@@ -1104,7 +1104,16 @@
     "play": "Play",
     "ungrouped": "Ungrouped",
     "durationHours": "{hours}h {minutes}m",
-    "durationMinutes": "{minutes} min"
+    "durationMinutes": "{minutes} min",
+    "studentRecordingHistory": "Recording history",
+    "noVoiceRecordingsForStudent": "No voice recordings were found for the selected student.",
+    "historyLoadError": "Failed to load recording history.",
+    "loadMore": "Load more",
+    "loadingMore": "Loading more…",
+    "recordingN": "Recording {n}",
+    "teacher": "Teacher",
+    "center": "Center",
+    "createdAt": "Created"
   },
   "lessons": {
     "title": "Lessons",

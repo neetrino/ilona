@@ -1104,7 +1104,16 @@
     "play": "Նվագարկել",
     "ungrouped": "Անխմբ",
     "durationHours": "{hours}ժ {minutes}ր",
-    "durationMinutes": "{minutes} րոպե"
+    "durationMinutes": "{minutes} րոպե",
+    "studentRecordingHistory": "Ձայնագրությունների պատմություն",
+    "noVoiceRecordingsForStudent": "Ընտրված աշակերտի համար ձայնագրություններ չեն գտնվել։",
+    "historyLoadError": "Չհաջողվեց բեռնել ձայնագրությունների պատմությունը։",
+    "loadMore": "Բեռնել ավելին",
+    "loadingMore": "Բեռնվում է…",
+    "recordingN": "Ձայնագրություն {n}",
+    "teacher": "Ուսուցիչ",
+    "center": "Կենտրոն",
+    "createdAt": "Ստեղծված"
   },
   "lessons": {
     "title": "Դասեր",
