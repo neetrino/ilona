@@ -313,10 +313,10 @@ export function DailyPlanListSection({
         </div>
       )}
 
-      {isLoading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {isLoading && items.length === 0 ? (
+        <div className="grid grid-cols-1 items-stretch gap-4 md:grid-cols-2">
           {Array.from({ length: 4 }).map((_, idx) => (
-            <div key={idx} className="h-40 rounded-xl bg-slate-100 animate-pulse" />
+            <div key={idx} className="min-h-[20rem] animate-pulse rounded-2xl bg-slate-100" />
           ))}
         </div>
       ) : items.length === 0 ? (

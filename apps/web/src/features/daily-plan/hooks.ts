@@ -1,6 +1,11 @@
 'use client';
 
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  keepPreviousData,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query';
 import {
   createDailyPlan,
   deleteDailyPlan,
@@ -26,6 +31,8 @@ export function useDailyPlans(filters?: DailyPlanFilters, enabled = true) {
     queryFn: () => fetchDailyPlans(filters),
     enabled,
     staleTime: 30 * 1000,
+    /** Keep prior list visible while search/filters refetch so card enter/exit can animate. */
+    placeholderData: keepPreviousData,
     refetchOnWindowFocus: true,
     refetchOnMount: true,
   });

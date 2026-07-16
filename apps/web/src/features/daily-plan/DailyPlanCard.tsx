@@ -82,7 +82,7 @@ export function DailyPlanCard({
 
   return (
     <article
-      className="flex cursor-pointer flex-col rounded-2xl bg-white p-4 shadow-[0_4px_24px_rgba(15,23,42,0.06)] transition-shadow hover:shadow-[0_8px_30px_rgba(15,23,42,0.1)]"
+      className="flex h-full min-h-[20rem] cursor-pointer flex-col rounded-2xl bg-white p-4 shadow-[0_4px_24px_rgba(15,23,42,0.06)] transition-shadow hover:shadow-[0_8px_30px_rgba(15,23,42,0.1)]"
       onClick={onView}
       onKeyDown={(event) => {
         if (event.key === 'Enter' || event.key === ' ') {
@@ -93,120 +93,150 @@ export function DailyPlanCard({
       role="button"
       tabIndex={0}
     >
-      <div className="flex items-start justify-between gap-2">
-        <div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-[#8b8b90]">
-          <Calendar className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-          <span>{formatCardDate(plan.date, locale)}</span>
-        </div>
-        {plan.canEdit && (
-          <div className="flex shrink-0 items-start gap-1" onClick={(e) => e.stopPropagation()}>
-            <button
-              type="button"
-              onClick={onEdit}
-              className={`${ADMIN_ICON_BUTTON_SM_CLASS} text-[#1010a3] hover:bg-[#eef2ff] disabled:opacity-60`}
-              aria-label={t('editDailyPlan')}
-              title={tCommon('edit')}
-              disabled={isDeletePending}
-            >
-              <Pencil className="h-4 w-4" />
-            </button>
-            {onDelete && (
-              <button
-                type="button"
-                onClick={async () => {
-                  if (isDeletePending) return;
-                  if (confirm(t('deleteConfirm'))) {
-                    await onDelete();
-                  }
-                }}
-                className={`${ADMIN_ICON_BUTTON_SM_CLASS} text-red-600 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60`}
-                aria-label={t('deleteDailyPlan')}
-                title={tCommon('delete')}
-                disabled={isDeletePending}
-              >
-                <Trash2 className="h-4 w-4" />
-              </button>
-            )}
-          </div>
-        )}
+      {/* Header */}
+      <div className="flex shrink-0 items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-[#8b8b90]">
+        <Calendar className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+        <span>{formatCardDate(plan.date, locale)}</span>
       </div>
 
-      <h3 className="mt-2 text-lg font-bold leading-snug text-[#111827]">{teacherName(plan)}</h3>
+      {/* Title */}
+      <h3 className="mt-2 line-clamp-2 shrink-0 text-lg font-bold leading-snug text-[#111827]" title={teacherName(plan)}>
+        {teacherName(plan)}
+      </h3>
 
-      {hasMetaChips && (
-        <div className="mt-2.5 flex flex-wrap items-center gap-2">
-          {groupName && (
-            <MetaChip icon={<Users className="h-3 w-3" aria-hidden="true" />} label={groupName} />
-          )}
-          {level && (
-            <span className="inline-flex w-fit shrink-0 items-center rounded-lg bg-[#eef2ff] px-2 py-1 text-[11px] font-semibold text-[#1010a3]">
-              {level}
+      {/* Metadata */}
+      <div className="mt-2.5 flex min-h-[2rem] shrink-0 flex-wrap items-center gap-2">
+        {hasMetaChips ? (
+          <>
+            {groupName && (
+              <MetaChip icon={<Users className="h-3 w-3" aria-hidden="true" />} label={groupName} />
+            )}
+            {level && (
+              <span className="inline-flex w-fit shrink-0 items-center rounded-lg bg-[#eef2ff] px-2 py-1 text-[11px] font-semibold text-[#1010a3]">
+                {level}
+              </span>
+            )}
+          </>
+        ) : null}
+      </div>
+
+      <div className="mt-2.5 flex min-h-[2.75rem] shrink-0 flex-col justify-start gap-1.5">
+        {branch ? (
+          <div className="flex items-center gap-2 text-sm text-[#6b7280]">
+            <MapPin className="h-4 w-4 shrink-0 text-[#9ca3af]" aria-hidden="true" />
+            <span className="truncate" title={branch}>
+              {branch}
             </span>
-          )}
-        </div>
-      )}
+          </div>
+        ) : null}
+        {plan.lesson ? (
+          <div className="flex items-center gap-2 text-sm text-[#6b7280]">
+            <Link2 className="h-4 w-4 shrink-0 text-[#9ca3af]" aria-hidden="true" />
+            <span className="truncate">
+              {t('linkedToLesson', { date: formatLinkedDate(plan.lesson.scheduledAt, locale) })}
+            </span>
+          </div>
+        ) : null}
+      </div>
 
-      {branch && (
-        <div className="mt-2.5 flex items-center gap-2 text-sm text-[#6b7280]">
-          <MapPin className="h-4 w-4 shrink-0 text-[#9ca3af]" aria-hidden="true" />
-          <span className="truncate">{branch}</span>
-        </div>
-      )}
-
-      {plan.lesson && (
-        <div className="mt-1.5 flex items-center gap-2 text-sm text-[#6b7280]">
-          <Link2 className="h-4 w-4 shrink-0 text-[#9ca3af]" aria-hidden="true" />
-          <span className="truncate">
-            {t('linkedToLesson', { date: formatLinkedDate(plan.lesson.scheduledAt, locale) })}
-          </span>
-        </div>
-      )}
-
-      {plan.topics.length > 0 && (
-        <>
-          <div className="mt-4 border-b border-[#e5e7eb]" />
-          <div className="mt-3 space-y-3">
-            {plan.topics.map((topic) => (
+      {/* Details / topics */}
+      <div className="mt-4 flex min-h-0 flex-1 flex-col border-t border-[#e5e7eb] pt-3">
+        <div className="min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain pr-0.5">
+          {plan.topics.length > 0 ? (
+            plan.topics.map((topic) => (
               <div key={topic.id} className="rounded-xl bg-[#f0f4ff] p-3">
-                <h4 className="inline-block border-b-2 border-[#1010a3] pb-0.5 text-sm font-semibold text-[#1010a3]">
+                <h4
+                  className="line-clamp-2 max-w-full border-b-2 border-[#1010a3] pb-0.5 text-sm font-semibold text-[#1010a3]"
+                  title={topic.title}
+                >
                   {topic.title}
                 </h4>
                 {topic.resources.length > 0 ? (
                   <ul className="mt-2 divide-y divide-slate-200/70">
-                    {topic.resources.map((resource) => (
-                      <li
-                        key={resource.id}
-                        className="flex items-center justify-between gap-3 py-2 first:pt-0 last:pb-0"
-                      >
-                        <span className="shrink-0 text-sm font-medium text-[#374151]">
-                          {kindLabel[resource.kind]}
-                        </span>
-                        <span className="min-w-0 truncate text-right text-sm text-[#6b7280]">
-                          {resource.link ? (
-                            <a
-                              href={resource.link}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-[#1010a3] hover:underline"
-                              onClick={(e) => e.stopPropagation()}
-                            >
-                              {resource.description || resource.title}
-                            </a>
-                          ) : (
-                            resource.description || resource.title
-                          )}
-                        </span>
-                      </li>
-                    ))}
+                    {topic.resources.map((resource) => {
+                      const resourceLabel = resource.description || resource.title;
+                      return (
+                        <li
+                          key={resource.id}
+                          className="flex items-center justify-between gap-3 py-2 first:pt-0 last:pb-0"
+                        >
+                          <span className="shrink-0 text-sm font-medium text-[#374151]">
+                            {kindLabel[resource.kind]}
+                          </span>
+                          <span
+                            className="min-w-0 truncate text-right text-sm text-[#6b7280]"
+                            title={resourceLabel}
+                          >
+                            {resource.link ? (
+                              <a
+                                href={resource.link}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-[#1010a3] hover:underline"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                {resourceLabel}
+                              </a>
+                            ) : (
+                              resourceLabel
+                            )}
+                          </span>
+                        </li>
+                      );
+                    })}
                   </ul>
                 ) : (
                   <p className="mt-2 text-xs text-[#8b8b90]">{t('noResources')}</p>
                 )}
               </div>
-            ))}
-          </div>
-        </>
-      )}
+            ))
+          ) : (
+            <p className="text-xs text-[#8b8b90]">{t('noTopics')}</p>
+          )}
+        </div>
+      </div>
+
+      {/* Actions — pinned to equal vertical position across cards */}
+      <div
+        className="mt-auto flex shrink-0 items-center justify-between gap-2 border-t border-[#e5e7eb] pt-3"
+        onClick={(e) => e.stopPropagation()}
+        onKeyDown={(e) => e.stopPropagation()}
+      >
+        <span className="text-sm font-medium text-[#1010a3]">{t('viewDetails')}</span>
+        <div className="flex min-h-8 shrink-0 items-center gap-1">
+          {plan.canEdit ? (
+            <>
+              <button
+                type="button"
+                onClick={onEdit}
+                className={`${ADMIN_ICON_BUTTON_SM_CLASS} text-[#1010a3] hover:bg-[#eef2ff] disabled:opacity-60`}
+                aria-label={t('editDailyPlan')}
+                title={tCommon('edit')}
+                disabled={isDeletePending}
+              >
+                <Pencil className="h-4 w-4" />
+              </button>
+              {onDelete ? (
+                <button
+                  type="button"
+                  onClick={async () => {
+                    if (isDeletePending) return;
+                    if (confirm(t('deleteConfirm'))) {
+                      await onDelete();
+                    }
+                  }}
+                  className={`${ADMIN_ICON_BUTTON_SM_CLASS} text-red-600 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60`}
+                  aria-label={t('deleteDailyPlan')}
+                  title={tCommon('delete')}
+                  disabled={isDeletePending}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              ) : null}
+            </>
+          ) : null}
+        </div>
+      </div>
     </article>
   );
 }
