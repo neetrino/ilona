@@ -65,7 +65,6 @@ export function ListTable({
   const tc = useTranslations('common');
   const locale = useLocale();
   const statusLabels = useCrmStatusLabels();
-  const pageSize = 10;
   const safeTotalPages = Math.max(1, totalPages);
   const safePage = Math.min(Math.max(0, page), safeTotalPages - 1);
   const hasLeads = totalLeads > 0;

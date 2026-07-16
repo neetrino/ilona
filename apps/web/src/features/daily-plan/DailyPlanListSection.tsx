@@ -226,8 +226,6 @@ export function DailyPlanListSection({
                 ADMIN_SEARCH_INPUT_CLASS,
                 enableStructuredFilters && 'pr-11',
               )}
-              aria-expanded={enableStructuredFilters ? showFilters : undefined}
-              aria-controls={enableStructuredFilters ? 'daily-plan-search-filters' : undefined}
             />
             <svg
               className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-[#8b8b90]"
