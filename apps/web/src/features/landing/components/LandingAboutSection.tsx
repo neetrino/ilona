@@ -1,10 +1,64 @@
 'use client';
 
 import Image from 'next/image';
-import { motion } from 'framer-motion';
+import { motion, type Variants } from 'framer-motion';
 import { cn } from '@/shared/lib/utils';
 import { ABOUT_BIG_BEN_IMAGE, ABOUT_FLAG_IMAGE, ABOUT_SUCCESS_ICON, ABOUT_BRANCHES_ICON } from '../landingConstants';
 import type { LandingSectionProps } from '../types';
+
+const mobileAboutViewport = { once: true, amount: 0.2 } as const;
+
+const mobileAboutContainerVariants: Variants = {
+  hidden: {},
+  visible: {
+    transition: { staggerChildren: 0.08, delayChildren: 0.04 },
+  },
+};
+
+const mobileFadeFromLeft: Variants = {
+  hidden: { x: -28, opacity: 0 },
+  visible: {
+    x: 0,
+    opacity: 1,
+    transition: { duration: 0.7, ease: 'easeOut' },
+  },
+};
+
+const mobileBigBenVariants: Variants = {
+  hidden: { x: 36, opacity: 0 },
+  visible: {
+    x: [36, -12, 8, 0],
+    opacity: 1,
+    transition: { duration: 1.1, ease: 'easeOut' },
+  },
+};
+
+const mobileBadgeFromRight: Variants = {
+  hidden: { x: 70, opacity: 0 },
+  visible: {
+    x: 0,
+    opacity: 1,
+    transition: { duration: 0.7, ease: 'easeOut' },
+  },
+};
+
+const mobileBadgeFromLeft: Variants = {
+  hidden: { x: -70, opacity: 0 },
+  visible: {
+    x: 0,
+    opacity: 1,
+    transition: { duration: 0.7, ease: 'easeOut' },
+  },
+};
+
+const mobileStatsVariants: Variants = {
+  hidden: { y: 32, opacity: 0 },
+  visible: {
+    y: 0,
+    opacity: 1,
+    transition: { duration: 0.65, ease: 'easeOut' },
+  },
+};
 
 export function LandingAboutSection({ tr, isHy }: LandingSectionProps) {
 
@@ -14,13 +68,22 @@ export function LandingAboutSection({ tr, isHy }: LandingSectionProps) {
         id="about"
         className="relative scroll-mt-28 overflow-hidden bg-[#dde7ff] max-tablet:z-20 max-tablet:-mt-[200px] max-tablet:pb-0 max-tablet:pt-0 tablet:-mt-[16px] tablet:max-navDesktop:z-10 tablet:max-navDesktop:-mt-[32px] navDesktop:z-auto navDesktop:-mt-[16px] tablet:h-[666px]"
       >
-        <div className="tablet:hidden">
+        <motion.div
+          className="tablet:hidden"
+          initial="hidden"
+          whileInView="visible"
+          viewport={mobileAboutViewport}
+          variants={mobileAboutContainerVariants}
+        >
         <div
           className="pointer-events-none absolute inset-0 bg-[#dde7ff]"
           aria-hidden
         />
       
-        <div className="absolute left-5 top-6 z-30 max-w-[237px]">
+        <motion.div
+          className="absolute left-5 top-6 z-30 max-w-[237px]"
+          variants={mobileFadeFromLeft}
+        >
           <h2 className="text-[30px] font-extrabold leading-[31px] tracking-[0.35px] text-[#0a0a0a]">
             {tr('Ilona English Centre', 'Ilona English Centre')}
           </h2>
@@ -44,10 +107,16 @@ export function LandingAboutSection({ tr, isHy }: LandingSectionProps) {
               )}
             </p>
           </div>
-        </div>
+        </motion.div>
       
-        <div className="relative z-10 mx-auto flex min-h-[640px] w-full flex-col bg-[#dde7ff] px-5 pb-0 pt-[200px]">
-          <div className="pointer-events-none absolute right-[-270px] top-[-80px] z-[1] flex h-[900px] w-[440px] items-center justify-center">
+        <motion.div
+          className="relative z-10 mx-auto flex min-h-[640px] w-full flex-col bg-[#dde7ff] px-5 pb-0 pt-[200px]"
+          variants={mobileAboutContainerVariants}
+        >
+          <motion.div
+            className="pointer-events-none absolute right-[-270px] top-[-80px] z-[1] flex h-[900px] w-[440px] items-center justify-center"
+            variants={mobileBigBenVariants}
+          >
             <div className="-scale-y-100 rotate-[171.43deg]">
               <div className="relative h-[860px] w-[350px]">
                 <Image
@@ -61,35 +130,47 @@ export function LandingAboutSection({ tr, isHy }: LandingSectionProps) {
                 />
               </div>
             </div>
-          </div>
+          </motion.div>
       
-          <div className="absolute right-16 top-[62px] z-10">
+          <motion.div
+            className="absolute right-16 top-[62px] z-10"
+            variants={mobileBadgeFromRight}
+          >
             <div className="rotate-[6deg] rounded-full bg-[#093394] px-4 py-1.5">
               <span className="text-[12px] font-bold leading-[18px] text-white">
                 {tr('15+ Years', '15+ տարի')}
               </span>
             </div>
-          </div>
+          </motion.div>
       
-          <div className="absolute right-12 top-[180px] z-10">
+          <motion.div
+            className="absolute right-12 top-[180px] z-10"
+            variants={mobileBadgeFromRight}
+          >
             <div className="-rotate-[19deg] rounded-full bg-white px-4 py-1.5">
               <span className="text-[13px] font-bold leading-[19.5px] text-[#0025db]">
                 {tr('About IEC', 'IEC-ի մասին')}
               </span>
             </div>
-          </div>
+          </motion.div>
       
-          <div className="absolute right-[72px] top-[310px] z-10">
+          <motion.div
+            className="absolute right-[72px] top-[310px] z-10"
+            variants={mobileBadgeFromLeft}
+          >
             <div className="-rotate-6 rounded-full bg-[#fb2c36] px-4 py-1.5">
               <span className="text-[12px] font-bold leading-[18px] text-white">
                 {tr('Since 2011', '2011-ից')}
               </span>
             </div>
-          </div>
+          </motion.div>
       
           <div className="min-h-1 flex-1" aria-hidden />
       
-          <div className="relative z-10 mb-6 grid shrink-0 grid-cols-2 gap-3">
+          <motion.div
+            className="relative z-10 mb-6 grid shrink-0 grid-cols-2 gap-3"
+            variants={mobileStatsVariants}
+          >
             <div className="rounded-[20px] bg-white px-5 py-5">
               <Image src={ABOUT_SUCCESS_ICON} alt="" width={32} height={32} unoptimized />
               <p className="mt-3 text-[26px] font-bold leading-[39px] tracking-[0.4px] text-[#0a0a0a]">
@@ -108,9 +189,9 @@ export function LandingAboutSection({ tr, isHy }: LandingSectionProps) {
                 {tr('Branches', 'Մասնաճյուղեր')}
               </p>
             </div>
-          </div>
-        </div>
-        </div>
+          </motion.div>
+        </motion.div>
+        </motion.div>
       
         <div className="relative z-10 mx-auto max-tablet:hidden h-full w-full max-w-[1280px] px-6">
           <div className="absolute left-1/2 top-[80px] h-[506px] w-full max-w-[1152px] -translate-x-1/2">
