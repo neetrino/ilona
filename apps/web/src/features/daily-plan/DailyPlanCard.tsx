@@ -178,9 +178,9 @@ export function DailyPlanCard({
         ) : null}
       </div>
 
-      {/* Details / topics */}
-      <div className="mt-4 flex min-h-0 flex-1 flex-col border-t border-[#e5e7eb] pt-3">
-        <div className="min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain pr-0.5">
+      {/* Details / topics — no nested scroll so page wheel always works over cards */}
+      <div className="mt-4 flex flex-1 flex-col border-t border-[#e5e7eb] pt-3">
+        <div className="flex-1 space-y-3">
           {plan.topics.length > 0 ? (
             plan.topics.map((topic) => (
               <div key={topic.id} className="rounded-xl bg-[#f0f4ff] p-3">
