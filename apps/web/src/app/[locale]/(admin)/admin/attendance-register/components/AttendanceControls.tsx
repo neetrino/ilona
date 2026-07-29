@@ -226,10 +226,13 @@ export function AttendanceControls({
         </div>
 
         {/* Absence-type filter (Admin only) or Back to Today button (Teacher) */}
-        <div className="flex items-end">
+        <div className={cn(!showAbsenceTypeFilter && 'flex items-end')}>
           {showAbsenceTypeFilter && onAbsenceFilterChange ? (
-            <div className="w-full">
-              <label className="mb-2 block text-sm font-medium text-[#3b3b40]">
+            <div className="flex w-full items-center gap-3 sm:block">
+              <label
+                htmlFor="attendance-absence-type-filter"
+                className="shrink-0 text-sm font-medium text-[#3b3b40] sm:mb-2 sm:block"
+              >
                 {t('filterByType')}
               </label>
               <SingleSelectDropdown
@@ -241,11 +244,7 @@ export function AttendanceControls({
                 }
                 disabled={safeSelectedGroupIds.length === 0}
                 triggerClassName={ADMIN_FORM_INPUT_CLASS}
-                className="
-                  [&>div>button>div>span]:flex-1
-                  [&>div>button>div>span]:text-center
-                  sm:[&>div>button>div>span]:text-left
-                "
+                className="min-w-0 flex-1 sm:w-full [&>div>button>div>span:first-child]:min-w-0 [&>div>button>div>span:first-child]:flex-1"
               />
             </div>
           ) : (

@@ -5,20 +5,21 @@ export const PORTAL_FORM_SHEET_OVERLAY_CLASS =
 
 /** Bottom sheet on phone; overridden from tablet (744px — all iPads) by PORTAL_DESKTOP_SIDE_SHEET_CLASS. */
 export const PORTAL_FORM_SHEET_MOBILE_BASE_CLASS =
-  'fixed inset-x-0 bottom-[7px] top-auto z-50 grid w-full translate-y-0 duration-700 ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=open]:slide-in-from-bottom-full data-[state=closed]:slide-out-to-bottom-full h-[calc(94dvh+7px)] grid-rows-[auto_auto_1fr] gap-0 overflow-hidden rounded-t-[22px] border border-slate-200 bg-[#f8f9fb] shadow-xl';
+  'fixed inset-x-0 bottom-[7px] top-auto z-50 grid w-full translate-y-0 duration-700 ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=open]:slide-in-from-bottom-full data-[state=closed]:slide-out-to-bottom-full h-[calc(94dvh+7px)] max-h-[calc(94dvh+7px)] grid-rows-[auto_auto_minmax(0,1fr)] gap-0 overflow-hidden rounded-t-[22px] border border-slate-200 bg-[#f8f9fb] shadow-xl';
 
 /**
  * Right-side panel on tablet/iPad / desktop.
  * Portrait: flush, ~70% (slightly narrower than before).
  * Landscape + desktop (≥1366, includes iPad Pro landscape): flush half width.
- * `tablet:h-auto` clears the phone `h-[94dvh]` so top/bottom insets can stretch fully.
+ * `tablet:!h-full` replaces phone `h-[94dvh]` with a definite viewport height so the
+ * inner scroll area can overflow (Safari often ignores height:auto + top/bottom).
  */
 export const PORTAL_DESKTOP_SIDE_SHEET_CLASS =
-  'tablet:fixed tablet:inset-x-auto tablet:inset-y-0 tablet:top-0 tablet:bottom-0 tablet:right-0 tablet:left-auto tablet:h-auto tablet:!max-w-none tablet:max-h-none tablet:m-0 tablet:translate-x-0 tablet:translate-y-0 tablet:rounded-none tablet:rounded-l-2xl tablet:border tablet:border-y-0 tablet:border-r-0 tablet:border-l tablet:border-slate-200 tablet:shadow-2xl tablet:flex tablet:flex-col tablet:overflow-hidden tablet:duration-350 tablet:ease-[cubic-bezier(0.22,1,0.36,1)] tablet:data-[state=open]:slide-in-from-right tablet:data-[state=closed]:slide-out-to-right tablet:data-[state=open]:fade-in-0 tablet:data-[state=closed]:fade-out-0 tablet:data-[state=open]:slide-in-from-bottom-0 tablet:data-[state=closed]:slide-out-to-bottom-0 tablet:data-[state=open]:zoom-in-100 tablet:data-[state=closed]:zoom-out-100 tablet:portrait:!w-[70%] tablet:landscape:!w-1/2 min-[1366px]:!w-1/2';
+  'tablet:fixed tablet:inset-x-auto tablet:inset-y-0 tablet:top-0 tablet:bottom-0 tablet:right-0 tablet:left-auto tablet:!h-full tablet:max-h-[100dvh] tablet:min-h-0 tablet:!max-w-none tablet:m-0 tablet:translate-x-0 tablet:translate-y-0 tablet:rounded-none tablet:rounded-l-2xl tablet:border tablet:border-y-0 tablet:border-r-0 tablet:border-l tablet:border-slate-200 tablet:shadow-2xl tablet:flex tablet:flex-col tablet:overflow-hidden tablet:duration-350 tablet:ease-[cubic-bezier(0.22,1,0.36,1)] tablet:data-[state=open]:slide-in-from-right tablet:data-[state=closed]:slide-out-to-right tablet:data-[state=open]:fade-in-0 tablet:data-[state=closed]:fade-out-0 tablet:data-[state=open]:slide-in-from-bottom-0 tablet:data-[state=closed]:slide-out-to-bottom-0 tablet:data-[state=open]:zoom-in-100 tablet:data-[state=closed]:zoom-out-100 tablet:portrait:!w-[70%] tablet:landscape:!w-1/2 min-[1366px]:!w-1/2';
 
 /** Same layout for custom drawer panels (non-Radix). */
 export const CUSTOM_DESKTOP_SIDE_PANEL_CLASS =
-  'tablet:fixed tablet:inset-x-auto tablet:inset-y-0 tablet:top-0 tablet:bottom-0 tablet:right-0 tablet:left-auto tablet:h-auto tablet:!max-w-none tablet:max-h-none tablet:m-0 tablet:rounded-none tablet:rounded-l-2xl tablet:border-l tablet:border-slate-200 tablet:shadow-2xl tablet:flex tablet:flex-col tablet:overflow-hidden tablet:animate-in tablet:slide-in-from-right tablet:duration-350 tablet:ease-[cubic-bezier(0.22,1,0.36,1)] tablet:portrait:!w-[70%] tablet:landscape:!w-1/2 min-[1366px]:!w-1/2';
+  'tablet:fixed tablet:inset-x-auto tablet:inset-y-0 tablet:top-0 tablet:bottom-0 tablet:right-0 tablet:left-auto tablet:!h-full tablet:max-h-[100dvh] tablet:min-h-0 tablet:!max-w-none tablet:m-0 tablet:rounded-none tablet:rounded-l-2xl tablet:border-l tablet:border-slate-200 tablet:shadow-2xl tablet:flex tablet:flex-col tablet:overflow-hidden tablet:animate-in tablet:slide-in-from-right tablet:duration-350 tablet:ease-[cubic-bezier(0.22,1,0.36,1)] tablet:portrait:!w-[70%] tablet:landscape:!w-1/2 min-[1366px]:!w-1/2';
 
 /** Overlay for hand-rolled modals. */
 export const CUSTOM_MODAL_OVERLAY_CLASS = 'fixed inset-0 z-50 bg-black/50 tablet:bg-black/60';
@@ -27,13 +28,13 @@ export const CUSTOM_MODAL_OVERLAY_CLASS = 'fixed inset-0 z-50 bg-black/50 tablet
 export const CUSTOM_MODAL_PANEL_CLASS = cn(
   'fixed z-50 flex w-full flex-col overflow-hidden bg-white shadow-xl',
   'left-1/2 top-1/2 max-h-[90vh] -translate-x-1/2 -translate-y-1/2 rounded-xl',
-  'tablet:left-auto tablet:top-0 tablet:max-h-none tablet:translate-x-0 tablet:translate-y-0 tablet:rounded-none',
+  'tablet:left-auto tablet:top-0 tablet:translate-x-0 tablet:translate-y-0 tablet:rounded-none',
   CUSTOM_DESKTOP_SIDE_PANEL_CLASS,
 );
 
 /** DialogContent tablet+ right side sheet. */
 export const DIALOG_LG_DESKTOP_SIDE_SHEET_CLASS =
-  'tablet:fixed tablet:inset-x-auto tablet:inset-y-0 tablet:top-0 tablet:bottom-0 tablet:right-0 tablet:left-auto tablet:h-auto tablet:!max-w-none tablet:max-h-none tablet:m-0 tablet:translate-x-0 tablet:translate-y-0 tablet:rounded-none tablet:rounded-l-2xl tablet:border-y-0 tablet:border-r-0 tablet:border-l tablet:border-slate-200 tablet:shadow-2xl tablet:overflow-hidden tablet:flex tablet:flex-col tablet:gap-0 tablet:p-0 tablet:duration-300 tablet:ease-[cubic-bezier(0.22,1,0.36,1)] tablet:data-[state=open]:slide-in-from-right tablet:data-[state=closed]:slide-out-to-right tablet:data-[state=open]:fade-in-0 tablet:data-[state=closed]:fade-out-0 tablet:data-[state=open]:slide-in-from-bottom-0 tablet:data-[state=closed]:slide-out-to-bottom-0 tablet:data-[state=open]:zoom-in-100 tablet:data-[state=closed]:zoom-out-100 tablet:portrait:!w-[70%] tablet:landscape:!w-1/2 min-[1366px]:!w-1/2';
+  'tablet:fixed tablet:inset-x-auto tablet:inset-y-0 tablet:top-0 tablet:bottom-0 tablet:right-0 tablet:left-auto tablet:!h-full tablet:max-h-[100dvh] tablet:min-h-0 tablet:!max-w-none tablet:m-0 tablet:translate-x-0 tablet:translate-y-0 tablet:rounded-none tablet:rounded-l-2xl tablet:border-y-0 tablet:border-r-0 tablet:border-l tablet:border-slate-200 tablet:shadow-2xl tablet:overflow-hidden tablet:flex tablet:flex-col tablet:gap-0 tablet:p-0 tablet:duration-300 tablet:ease-[cubic-bezier(0.22,1,0.36,1)] tablet:data-[state=open]:slide-in-from-right tablet:data-[state=closed]:slide-out-to-right tablet:data-[state=open]:fade-in-0 tablet:data-[state=closed]:fade-out-0 tablet:data-[state=open]:slide-in-from-bottom-0 tablet:data-[state=closed]:slide-out-to-bottom-0 tablet:data-[state=open]:zoom-in-100 tablet:data-[state=closed]:zoom-out-100 tablet:portrait:!w-[70%] tablet:landscape:!w-1/2 min-[1366px]:!w-1/2';
 
 export function portalFormSheetContentClass(_maxWidth: 'xl' | '2xl' | '3xl' = '2xl'): string {
   return cn(PORTAL_FORM_SHEET_MOBILE_BASE_CLASS, PORTAL_DESKTOP_SIDE_SHEET_CLASS);

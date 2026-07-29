@@ -45,7 +45,7 @@ export function DailyPlanEditor(props: DailyPlanEditorProps) {
             'fixed inset-x-0 bottom-[7px] top-auto z-50 grid w-full translate-y-0',
             'duration-700 ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out',
             'data-[state=open]:slide-in-from-bottom-full data-[state=closed]:slide-out-to-bottom-full',
-            'h-[calc(94dvh+7px)] grid-rows-[auto_1fr] gap-0 overflow-hidden rounded-t-[22px] bg-white shadow-xl',
+            'h-[calc(94dvh+7px)] grid-rows-[auto_minmax(0,1fr)] gap-0 overflow-hidden rounded-t-[22px] bg-white shadow-xl',
             PORTAL_DESKTOP_SIDE_SHEET_CLASS,
           )}
           aria-describedby={undefined}

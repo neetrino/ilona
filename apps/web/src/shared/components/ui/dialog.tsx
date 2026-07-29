@@ -46,7 +46,7 @@ const CENTERED_CONTENT_CLASS =
 
 /** Admin portal bottom sheet on mobile; tablet+ opens as a right-side panel. */
 const PORTAL_SHEET_CONTENT_CLASS =
-  'fixed inset-x-0 bottom-[7px] top-auto z-50 grid w-full translate-y-0 duration-700 ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=open]:slide-in-from-bottom-full data-[state=closed]:slide-out-to-bottom-full h-[calc(94dvh+7px)] grid-rows-[auto_1fr] gap-0 overflow-hidden rounded-t-[22px] border border-slate-200 bg-[#f8f9fb] shadow-xl lg:bg-background ' +
+  'fixed inset-x-0 bottom-[7px] top-auto z-50 grid w-full translate-y-0 duration-700 ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=open]:slide-in-from-bottom-full data-[state=closed]:slide-out-to-bottom-full h-[calc(94dvh+7px)] max-h-[calc(94dvh+7px)] grid-rows-[auto_minmax(0,1fr)] gap-0 overflow-hidden rounded-t-[22px] border border-slate-200 bg-[#f8f9fb] shadow-xl lg:bg-background ' +
   DIALOG_LG_DESKTOP_SIDE_SHEET_CLASS;
 
 const PORTAL_SHEET_BODY_CLASS =

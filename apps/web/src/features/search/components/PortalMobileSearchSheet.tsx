@@ -81,8 +81,8 @@ export function PortalMobileSearchSheet({
         )}
         style={dragStyle}
       >
-        <div className="flex h-[72vh] min-h-[26rem] max-h-[80vh] flex-col rounded-t-[1.5rem] border border-b-0 border-[rgba(14,14,16,0.07)] bg-white shadow-[0_-12px_36px_rgba(0,0,0,0.16)]">
-          <PortalFormSheetDragHandle dragHandleProps={dragHandleProps} />
+        <div className="flex h-[72vh] min-h-[26rem] max-h-[80vh] flex-col overflow-hidden rounded-t-[1.5rem] border border-b-0 border-[rgba(14,14,16,0.07)] bg-white shadow-[0_-12px_36px_rgba(0,0,0,0.16)]">
+          <PortalFormSheetDragHandle dragHandleProps={dragHandleProps} className="!bg-white" />
 
           <div className="flex-1 overflow-visible px-4 pt-6 pb-3">
             <GlobalSearchBar
