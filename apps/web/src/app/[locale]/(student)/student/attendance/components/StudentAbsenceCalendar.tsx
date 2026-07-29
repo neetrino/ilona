@@ -414,6 +414,7 @@ export function StudentAbsenceCalendar({
 
       <Dialog open={!!selectedDate} onOpenChange={closeDialog}>
         <DialogContent
+          onOpenAutoFocus={(e) => e.preventDefault()}
           className={cn(
             '!flex !flex-col gap-0 overflow-hidden border border-[rgba(14,14,16,0.07)] !p-0',
             'max-h-[calc(94dvh+7px)]',
