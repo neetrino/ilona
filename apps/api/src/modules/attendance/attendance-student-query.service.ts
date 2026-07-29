@@ -1,7 +1,12 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { Prisma, LessonStatus } from '@ilona/database';
+import { toYmd } from '@ilona/types';
 import { isPlannedAbsencesTableMissing } from './attendance.util';
+
+function calendarDateToPrismaDate(ymd: string): Date {
+  return new Date(`${toYmd(ymd)}T12:00:00.000Z`);
+}
 
 @Injectable()
 export class AttendanceStudentQueryService {
@@ -122,7 +127,7 @@ export class AttendanceStudentQueryService {
       statistics: attendancePayload.statistics,
       plannedAbsences: plannedAbsences.map((p) => ({
         id: p.id,
-        date: p.date.toISOString().split('T')[0],
+        date: toYmd(p.date),
         status: p.status,
         comment: p.comment,
       })),
@@ -142,10 +147,10 @@ export class AttendanceStudentQueryService {
             ? {
                 date: {
                   ...(dateFrom && {
-                    gte: new Date(dateFrom.toISOString().split('T')[0]),
+                    gte: calendarDateToPrismaDate(toYmd(dateFrom)),
                   }),
                   ...(dateTo && {
-                    lte: new Date(dateTo.toISOString().split('T')[0]),
+                    lte: calendarDateToPrismaDate(toYmd(dateTo)),
                   }),
                 },
               }

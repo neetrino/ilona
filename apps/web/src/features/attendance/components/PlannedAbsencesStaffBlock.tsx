@@ -1,16 +1,16 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import { CalendarDays } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
+import { addCalendarDays, endOfZonedDay, startOfZonedDay, toYmd } from '@ilona/types';
 import { useStaffPlannedAbsences } from '../hooks/useAttendance';
 import type { StaffPlannedAbsenceItem } from '../types';
 import {
   Dialog,
   DialogContent,
   DialogTitle,
-  PublicAssetImage,
 } from '@/shared/components/ui';
-import { STUDENT_DASHBOARD_ASSETS } from '@/features/student-dashboard/assets';
 import { cn } from '@/shared/lib/utils';
 
 const PREVIEW_LIMIT = 5;
@@ -20,15 +20,31 @@ type PlannedAbsencesStaffBlockProps = {
   className?: string;
 };
 
-function formatAbsenceDate(date: string, locale: string): string {
-  const parsed = new Date(`${date}T12:00:00`);
-  if (Number.isNaN(parsed.getTime())) return date;
-  return parsed.toLocaleDateString(locale, {
-    weekday: 'short',
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-  });
+function getAbsenceDateParts(date: string, locale: string): { dayLabel: string; dayNumber: string } {
+  const [year, month, day] = date.split('-').map(Number);
+  if (![year, month, day].every((n) => Number.isFinite(n))) {
+    return { dayLabel: '—', dayNumber: '—' };
+  }
+  const parsed = new Date(Date.UTC(year, month - 1, day, 12, 0, 0));
+  return {
+    dayLabel: parsed.toLocaleDateString(locale, { weekday: 'short', timeZone: 'UTC' }),
+    dayNumber: String(day),
+  };
+}
+
+function AbsenceDateBadge({ date, locale }: { date: string; locale: string }) {
+  const { dayLabel, dayNumber } = getAbsenceDateParts(date, locale);
+
+  return (
+    <div className="h-[4.25rem] w-[4.25rem] shrink-0 overflow-hidden rounded-[1rem] border border-[rgba(14,14,16,0.08)] bg-white">
+      <div className="bg-gradient-to-r from-[#ff9330] via-[#ff5f5f] to-[#ff2e88] px-2 py-1 text-center text-[0.625rem] font-semibold uppercase tracking-[0.08em] text-white">
+        {dayLabel}
+      </div>
+      <p className="pt-1.5 text-center text-[1.625rem] font-bold leading-none tracking-[-0.02em] text-[#1010a3]">
+        {dayNumber}
+      </p>
+    </div>
+  );
 }
 
 function PlannedAbsenceCard({
@@ -40,8 +56,6 @@ function PlannedAbsenceCard({
   locale: string;
   detailed?: boolean;
 }) {
-  const formattedDate = formatAbsenceDate(row.date, locale);
-
   return (
     <div
       className={cn(
@@ -50,26 +64,11 @@ function PlannedAbsenceCard({
       )}
     >
       <div className="flex items-start gap-3">
-        <div className="flex h-[2.5rem] w-[2.5rem] shrink-0 items-center justify-center rounded-2xl bg-[#ddecff]">
-          <PublicAssetImage
-            src={STUDENT_DASHBOARD_ASSETS.calendarIcon}
-            alt=""
-            width={18}
-            height={18}
-            className="h-[1.125rem] w-[1.125rem] object-contain"
-          />
-        </div>
+        <AbsenceDateBadge date={row.date} locale={locale} />
         <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-start justify-between gap-2">
-            <div className="min-w-0">
-              <div className="font-semibold tracking-tight text-[#1010a3]">{row.student.name}</div>
-              <div className="mt-0.5 text-xs text-[#8b8b90]">
-                {row.student.group?.name ?? '—'}
-              </div>
-            </div>
-            <span className="inline-flex shrink-0 items-center rounded-full border border-[#1010a3]/12 bg-[#f0f1ff] px-2.5 py-1 text-[0.6875rem] font-medium text-[#1010a3]">
-              {formattedDate}
-            </span>
+          <div className="font-semibold tracking-tight text-[#1010a3]">{row.student.name}</div>
+          <div className="mt-0.5 text-xs text-[#8b8b90]">
+            {row.student.group?.name ?? '—'}
           </div>
           <p
             className={cn(
@@ -94,12 +93,12 @@ export function PlannedAbsencesStaffBlock({
   const [viewAllOpen, setViewAllOpen] = useState(false);
 
   const { dateFrom, dateTo } = useMemo(() => {
-    const from = new Date();
-    from.setHours(0, 0, 0, 0);
-    const to = new Date(from);
-    to.setDate(to.getDate() + 60);
-    to.setHours(23, 59, 59, 999);
-    return { dateFrom: from.toISOString(), dateTo: to.toISOString() };
+    const fromYmd = toYmd(new Date());
+    const toYmdValue = addCalendarDays(fromYmd, 60);
+    return {
+      dateFrom: startOfZonedDay(fromYmd).toISOString(),
+      dateTo: endOfZonedDay(toYmdValue).toISOString(),
+    };
   }, []);
 
   const { data = [], isLoading } = useStaffPlannedAbsences(dateFrom, dateTo, true);
@@ -162,14 +161,11 @@ export function PlannedAbsencesStaffBlock({
         >
           <div className="-mx-4 -mt-4 mb-5 border-b border-[rgba(14,14,16,0.07)] bg-white px-4 pb-5 pt-1 tablet:-mx-6 tablet:-mt-6 tablet:px-6 tablet:pb-6 tablet:pt-2">
             <div className="flex items-start gap-3">
-              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#ddecff]">
-                <PublicAssetImage
-                  src={STUDENT_DASHBOARD_ASSETS.calendarIcon}
-                  alt=""
-                  width={22}
-                  height={22}
-                  className="h-[1.375rem] w-[1.375rem] object-contain"
-                />
+              <div className="flex h-11 w-11 shrink-0 flex-col overflow-hidden rounded-[0.875rem] border border-[rgba(14,14,16,0.08)] bg-white shadow-[0_6px_16px_-10px_rgba(16,16,163,0.45)]">
+                <div className="h-3.5 shrink-0 bg-gradient-to-r from-[#ff9330] via-[#ff5f5f] to-[#ff2e88]" />
+                <div className="flex flex-1 items-center justify-center">
+                  <CalendarDays className="h-4 w-4 text-[#1010a3]" strokeWidth={2.25} aria-hidden />
+                </div>
               </div>
               <div className="min-w-0 flex-1 pr-8">
                 <DialogTitle className="text-left text-lg font-semibold tracking-tight text-[#1010a3] sm:text-xl">

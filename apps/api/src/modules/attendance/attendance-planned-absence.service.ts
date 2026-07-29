@@ -7,9 +7,19 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { Prisma, UserRole, LessonStatus } from '@ilona/database';
+import { endOfZonedDay, startOfZonedDay, toYmd } from '@ilona/types';
 import { AttendanceScopeService } from './attendance-scope.service';
 import { AttendanceSideEffectsService } from './attendance-side-effects.service';
 import { isPlannedAbsencesTableMissing } from './attendance.util';
+
+/** Persist/query `@db.Date` as UTC noon so the calendar day never shifts across TZ. */
+function calendarDateToPrismaDate(ymd: string): Date {
+  return new Date(`${toYmd(ymd)}T12:00:00.000Z`);
+}
+
+function prismaDateToYmd(date: Date): string {
+  return toYmd(date);
+}
 
 @Injectable()
 export class AttendancePlannedAbsenceService {
@@ -30,7 +40,7 @@ export class AttendancePlannedAbsenceService {
       where: { userId },
       include: {
         user: { select: { firstName: true, lastName: true } },
-        group: { select: { id: true, name: true, teacherId: true, centerId: true } },
+        group: { select: { id: true, name: true, teacherId: true, secondTeacherId: true, centerId: true } },
       },
     });
 
@@ -41,8 +51,10 @@ export class AttendancePlannedAbsenceService {
       throw new BadRequestException('You are not assigned to a group yet');
     }
 
-    const dayStart = new Date(`${dateStr}T00:00:00.000Z`);
-    const dayEnd = new Date(`${dateStr}T23:59:59.999Z`);
+    const ymd = toYmd(dateStr);
+    const dayStart = startOfZonedDay(ymd);
+    const dayEnd = endOfZonedDay(ymd);
+    const prismaDate = calendarDateToPrismaDate(ymd);
 
     const lessonsOnDay = await this.prisma.lesson.findMany({
       where: {
@@ -67,7 +79,7 @@ export class AttendancePlannedAbsenceService {
         where: {
           studentId_date: {
             studentId: student.id,
-            date: dayStart,
+            date: prismaDate,
           },
         },
       });
@@ -76,12 +88,12 @@ export class AttendancePlannedAbsenceService {
         where: {
           studentId_date: {
             studentId: student.id,
-            date: dayStart,
+            date: prismaDate,
           },
         },
         create: {
           studentId: student.id,
-          date: dayStart,
+          date: prismaDate,
           comment,
           status: 'planned_absence',
         },
@@ -92,12 +104,12 @@ export class AttendancePlannedAbsenceService {
       });
 
       if (!existingRow) {
-        await this.sideEffects.notifyStaffOfPlannedAbsence(student, dateStr, comment);
+        await this.sideEffects.notifyStaffOfPlannedAbsence(student, ymd, comment);
       }
 
       return {
         id: record.id,
-        date: record.date.toISOString().split('T')[0],
+        date: prismaDateToYmd(record.date),
         status: record.status,
         comment: record.comment,
       };
@@ -148,8 +160,8 @@ export class AttendancePlannedAbsenceService {
     userId: string,
     userRole: UserRole,
   ) {
-    const fromD = new Date(dateFrom.toISOString().split('T')[0]);
-    const toD = new Date(dateTo.toISOString().split('T')[0]);
+    const fromD = calendarDateToPrismaDate(toYmd(dateFrom));
+    const toD = calendarDateToPrismaDate(toYmd(dateTo));
 
     const where: Prisma.PlannedAbsenceWhereInput = {
       date: { gte: fromD, lte: toD },
@@ -160,7 +172,17 @@ export class AttendancePlannedAbsenceService {
       if (!teacher) {
         return [];
       }
-      where.student = { group: { teacherId: teacher.id } };
+      // Same scope as teacher groups: primary, second teacher, or direct student assignment.
+      where.student = {
+        OR: [
+          { teacherId: teacher.id },
+          {
+            group: {
+              OR: [{ teacherId: teacher.id }, { secondTeacherId: teacher.id }],
+            },
+          },
+        ],
+      };
     } else if (userRole === UserRole.MANAGER) {
       const centerId = await this.scope.getManagerCenterId(userId, userRole);
       where.student = { group: { centerId: centerId! } };
@@ -184,7 +206,7 @@ export class AttendancePlannedAbsenceService {
 
       return rows.map((row) => ({
         id: row.id,
-        date: row.date.toISOString().split('T')[0],
+        date: prismaDateToYmd(row.date),
         status: row.status,
         comment: row.comment,
         createdAt: row.createdAt.toISOString(),

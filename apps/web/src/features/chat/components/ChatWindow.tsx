@@ -367,6 +367,7 @@ export function ChatWindow({ chat, onBack, onChatUpdated, onOpenChat }: ChatWind
         isLoading={isLoading}
         isFetchingNextPage={isFetchingNextPage}
         currentUserId={user?.id}
+        currentUserRole={user?.role}
         currentUserAvatar={
           user
             ? {

@@ -13,6 +13,7 @@ interface ChatMessageListProps {
   isLoading: boolean;
   isFetchingNextPage: boolean;
   currentUserId?: string;
+  currentUserRole?: string | null;
   currentUserAvatar?: {
     avatarUrl?: string | null;
     firstName?: string | null;
@@ -44,6 +45,7 @@ export function ChatMessageList({
   isLoading,
   isFetchingNextPage,
   currentUserId,
+  currentUserRole,
   currentUserAvatar,
   canDeleteAnyMessage,
   isMobileViewport,
@@ -93,6 +95,7 @@ export function ChatMessageList({
             chat={chat}
             ui={ui}
             currentUserId={currentUserId}
+            currentUserRole={currentUserRole}
             currentUserAvatar={currentUserAvatar}
             canDeleteAnyMessage={canDeleteAnyMessage}
             isMobileViewport={isMobileViewport}

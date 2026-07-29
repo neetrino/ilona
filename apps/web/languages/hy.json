@@ -418,8 +418,15 @@
     "teacherTips": {
       "feedbackTitle": "Աշակերտի կարծիք",
       "feedbackBody": "Յուրաքանչյուր դասից հետո տրամադրեք կարծիք՝ առաջընթացը հետևելու և ծնողներին տեղեկացնելու համար։",
+      "feedbackCta": "Բացել կարծիքը",
+      "feedbackPending": "{count, plural, one {# դաս սպասում է կարծիքի} other {# դաս սպասում է կարծիքի}}",
+      "feedbackCaughtUp": "Կարծիքների հետ կապված ամեն ինչ արված է։",
       "vocabularyTitle": "Ուղարկել բառապաշարը",
-      "vocabularyBody": "Դասից հետո կիսվեք այսօրվա բառապաշարով՝ աշակերտները նոր բառերը կրկնելու համար։"
+      "vocabularyBody": "Դասից հետո կիսվեք այսօրվա բառապաշարով՝ աշակերտները նոր բառերը կրկնելու համար։",
+      "vocabularyCta": "Ուղարկել բառապաշարը",
+      "vocabularyPending": "{count, plural, one {# դաս սպասում է բառապաշարի} other {# դաս սպասում է բառապաշարի}}",
+      "vocabularyCaughtUp": "Բառապաշարը թարմացված է։",
+      "openDailyDuties": "Բացել օրական պարտականությունները"
     },
     "teacherHero": {
       "titleAccent": "ձեր դասերն ու խմբերը՝ մեկ տեղում։",
@@ -1598,7 +1605,12 @@
     "recordingError": "Ձայնագրման սխալ է տեղի ունեցել",
     "teachersTab": "Ուսուցիչներ",
     "messageSent": "Ուղարկված",
-    "messageRead": "Տեսել է"
+    "messageRead": "Տեսել է",
+    "messageReadReceiptsTitle": "Հաղորդագրության տվյալներ",
+    "seenByCount": "Տեսել են ({count})",
+    "notSeenYetCount": "Դեռ չեն տեսել ({count})",
+    "notSeenYet": "Դեռ չի տեսել",
+    "noOneSeenYet": "Դեռ ոչ ոք չի տեսել այս հաղորդագրությունը"
   },
   "finance": {
     "title": "Ֆինանսներ",

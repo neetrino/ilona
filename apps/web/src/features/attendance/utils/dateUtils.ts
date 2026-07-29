@@ -2,6 +2,7 @@
  * Date utility functions for attendance register views
  */
 
+import { toYmd } from '@ilona/types';
 import { formatLocaleDate } from '@/shared/lib/utils';
 
 export type ViewMode = 'day' | 'week' | 'month';
@@ -26,10 +27,10 @@ function getPageLocaleCode(): string {
 }
 
 /**
- * Get today's date in YYYY-MM-DD format
+ * Get today's date in YYYY-MM-DD format (app timezone).
  */
 export function getTodayDate(): string {
-  return new Date().toISOString().split('T')[0];
+  return toYmd(new Date());
 }
 
 /**
@@ -140,10 +141,11 @@ export function getNextMonth(date: Date): Date {
 }
 
 /**
- * Format date to YYYY-MM-DD
+ * Format date to YYYY-MM-DD in the app timezone (never use toISOString date slice —
+ * that shifts the calendar day for Asia/Yerevan and other UTC+ offsets).
  */
 export function formatDateString(date: Date): string {
-  return date.toISOString().split('T')[0];
+  return toYmd(date);
 }
 
 /**
