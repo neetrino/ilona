@@ -17,6 +17,7 @@ import { api } from '@/shared/lib/api';
 import { getFullApiUrl } from '@/shared/lib/api-url-utils';
 import { VocabularyModal } from './VocabularyModal';
 import { AddMembersModal } from './AddMembersModal';
+import { GroupMembersModal } from './GroupMembersModal';
 import { getChatThemeForRole, isPortalChatRole } from '../lib/chat-theme';
 import { formatChatLastSeen } from '../utils/chat-last-seen';
 import { useIsLgViewport } from '@/shared/hooks/useIsLgViewport';
@@ -63,6 +64,7 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
   const lastMarkedConversationIdRef = useRef<string | null>(null);
   const [showVocabularyModal, setShowVocabularyModal] = useState(false);
   const [showAddMembersModal, setShowAddMembersModal] = useState(false);
+  const [showGroupMembersModal, setShowGroupMembersModal] = useState(false);
   const [isSendingVocabulary, setIsSendingVocabulary] = useState(false);
 
   const isLgViewport = useIsLgViewport();
@@ -303,6 +305,7 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
         isTeacher={isTeacher}
         onBack={onBack}
         onAddMembers={() => setShowAddMembersModal(true)}
+        onViewMembers={isGroupChat ? () => setShowGroupMembersModal(true) : undefined}
         onOpenVocabulary={() => setShowVocabularyModal(true)}
         onDeleteGroup={canDeleteGroup ? handleOpenGroupDelete : undefined}
       />
@@ -379,6 +382,13 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
         onClose={() => setShowAddMembersModal(false)}
         chat={chat}
         onMemberAdded={onChatUpdated}
+      />
+
+      <GroupMembersModal
+        isOpen={showGroupMembersModal}
+        onClose={() => setShowGroupMembersModal(false)}
+        chat={chat}
+        currentUserId={user?.id}
       />
 
       <DeleteConfirmationDialog
