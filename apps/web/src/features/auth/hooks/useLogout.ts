@@ -8,6 +8,7 @@ import { studentKeys } from '@/features/students/hooks/useStudents';
 import { groupKeys } from '@/features/groups/hooks/useGroups';
 import { lessonKeys } from '@/features/lessons/hooks/useLessons';
 import { teacherKeys } from '@/features/teachers/hooks/useTeachers';
+import { attendanceKeys } from '@/features/attendance/hooks/useAttendance';
 
 /**
  * Returns a logout function that clears chat and teacher-scoped caches, then logs out.
@@ -28,6 +29,7 @@ export function useLogout() {
     queryClient.removeQueries({ queryKey: [...groupKeys.all, 'my-groups'] });
     queryClient.removeQueries({ queryKey: lessonKeys.all });
     queryClient.removeQueries({ queryKey: teacherKeys.all });
+    queryClient.removeQueries({ queryKey: attendanceKeys.all });
     logout();
   }, [logout, queryClient]);
 }

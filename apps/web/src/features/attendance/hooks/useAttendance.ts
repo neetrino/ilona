@@ -21,7 +21,13 @@ import { studentKeys } from '@/features/students/hooks/useStudents';
 import { lessonKeys } from '@/features/lessons/hooks/useLessons';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 
-// Query keys
+type Scope = string;
+
+function scopeKey(userId: string | null | undefined): Scope {
+  return userId ?? 'guest';
+}
+
+// Query keys (staff-scoped lists include auth user so role switches never reuse cache)
 export const attendanceKeys = {
   all: ['attendance'] as const,
   lesson: (lessonId: string) => [...attendanceKeys.all, 'lesson', lessonId] as const,
@@ -31,10 +37,10 @@ export const attendanceKeys = {
   atRisk: () => [...attendanceKeys.all, 'at-risk'] as const,
   groupReport: (groupId: string, dateFrom: string, dateTo: string) =>
     [...attendanceKeys.all, 'report', groupId, { dateFrom, dateTo }] as const,
-  myCalendar: (dateFrom?: string, dateTo?: string) =>
-    [...attendanceKeys.all, 'my-calendar', { dateFrom, dateTo }] as const,
-  staffPlanned: (dateFrom: string, dateTo: string) =>
-    [...attendanceKeys.all, 'staff-planned', { dateFrom, dateTo }] as const,
+  myCalendar: (dateFrom?: string, dateTo?: string, userId?: string | null) =>
+    [...attendanceKeys.all, 'my-calendar', { scope: scopeKey(userId) }, { dateFrom, dateTo }] as const,
+  staffPlanned: (dateFrom: string, dateTo: string, userId?: string | null) =>
+    [...attendanceKeys.all, 'staff-planned', { scope: scopeKey(userId) }, { dateFrom, dateTo }] as const,
 };
 
 /**
@@ -80,10 +86,14 @@ export function useStudentAttendance(
 }
 
 export function useMyStudentCalendar(dateFrom?: string, dateTo?: string, enabled = true) {
+  const userId = useAuthStore((s) => s.user?.id ?? null);
+  const { isHydrated, isAuthenticated, tokens } = useAuthStore();
+  const isAuthReady = isHydrated && isAuthenticated && !!tokens?.accessToken;
+
   return useQuery({
-    queryKey: attendanceKeys.myCalendar(dateFrom, dateTo),
+    queryKey: attendanceKeys.myCalendar(dateFrom, dateTo, userId),
     queryFn: () => fetchMyStudentCalendar(dateFrom, dateTo),
-    enabled,
+    enabled: enabled && isAuthReady,
     staleTime: 60 * 1000,
     retry: 2,
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
@@ -112,13 +122,14 @@ export function useDeleteMyPlannedAbsence() {
 }
 
 export function useStaffPlannedAbsences(dateFrom: string, dateTo: string, enabled = true) {
+  const userId = useAuthStore((s) => s.user?.id ?? null);
   const { isHydrated, isAuthenticated, tokens } = useAuthStore();
   const isAuthReady = isHydrated && isAuthenticated && !!tokens?.accessToken;
 
   return useQuery({
-    queryKey: attendanceKeys.staffPlanned(dateFrom, dateTo),
+    queryKey: attendanceKeys.staffPlanned(dateFrom, dateTo, userId),
     queryFn: () => fetchStaffPlannedAbsences(dateFrom, dateTo),
-    enabled: enabled && isAuthReady && !!dateFrom && !!dateTo,
+    enabled: enabled && isAuthReady && !!userId && !!dateFrom && !!dateTo,
     staleTime: 60 * 1000,
   });
 }
