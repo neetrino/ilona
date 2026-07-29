@@ -53,7 +53,7 @@ function AdminChatContent(props: AdminChatContainerProps) {
           onExitComplete={finalizeMobileChatClose}
           className="lg:hidden"
         >
-          <ChatWindow chat={activeChat} onBack={handleMobileBack} onChatUpdated={setActiveChat} />
+          <ChatWindow chat={activeChat} onBack={handleMobileBack} onChatUpdated={setActiveChat} onOpenChat={vm.handleSelectChat} />
         </MobileChatSlidePanel>
       ) : null}
 

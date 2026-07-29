@@ -1593,6 +1593,7 @@
     "stopRecording": "Դադարեցնել ձայնագրությունը",
     "manager": "Կառավարիչ",
     "openChat": "Բացել զրույցը",
+    "openChatWith": "Բացել զրույցը {name}-ի հետ",
     "recordingError": "Ձայնագրման սխալ է տեղի ունեցել",
     "teachersTab": "Ուսուցիչներ",
     "messageSent": "Ուղարկված",

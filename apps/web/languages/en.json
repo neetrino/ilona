@@ -1595,6 +1595,7 @@
     "stopRecording": "Stop recording",
     "manager": "Manager",
     "openChat": "Open chat",
+    "openChatWith": "Open chat with {name}",
     "recordingError": "Recording error occurred",
     "teachersTab": "Teachers"
   },

@@ -34,6 +34,9 @@ interface GroupMembersModalProps {
   currentUserId?: string;
   canAddMembers?: boolean;
   onAddMembers?: () => void;
+  /** Admin/Manager: tap a member to open/create their 1:1 chat */
+  onMemberClick?: (userId: string) => void;
+  isOpeningDirectChat?: boolean;
 }
 
 export function GroupMembersModal({
@@ -45,6 +48,8 @@ export function GroupMembersModal({
   currentUserId,
   canAddMembers = false,
   onAddMembers,
+  onMemberClick,
+  isOpeningDirectChat = false,
 }: GroupMembersModalProps) {
   const tChat = useTranslations('chat');
   const { overlayStyle, contentStyle, isBaseLayer } = useSheetStackZIndex(isOpen);
@@ -168,7 +173,12 @@ export function GroupMembersModal({
 
           <div className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain px-2 pb-[calc(1rem+env(safe-area-inset-bottom))] tablet:pb-4">
             {activeTab === 'members' ? (
-              <GroupInfoMembersPanel chat={chat} currentUserId={currentUserId} />
+              <GroupInfoMembersPanel
+                chat={chat}
+                currentUserId={currentUserId}
+                onMemberClick={onMemberClick}
+                isOpeningDirectChat={isOpeningDirectChat}
+              />
             ) : (
               <GroupInfoSharedPanels
                 activeTab={activeTab}

@@ -13,7 +13,7 @@ interface AdminChatContainerDesktopPaneProps {
 
 export function AdminChatContainerDesktopPane({ vm }: AdminChatContainerDesktopPaneProps) {
   const tChat = useTranslations('chat');
-  const { activeChat, emptyTitle, emptyDescription, handleBack, setActiveChat } = vm;
+  const { activeChat, emptyTitle, emptyDescription, handleBack, setActiveChat, handleSelectChat } = vm;
 
   return (
     <div
@@ -23,7 +23,12 @@ export function AdminChatContainerDesktopPane({ vm }: AdminChatContainerDesktopP
       )}
     >
       {activeChat ? (
-        <ChatWindow chat={activeChat} onBack={handleBack} onChatUpdated={setActiveChat} />
+        <ChatWindow
+          chat={activeChat}
+          onBack={handleBack}
+          onChatUpdated={setActiveChat}
+          onOpenChat={handleSelectChat}
+        />
       ) : (
         <ChatEmptyState
           title={emptyTitle || tChat('selectChat')}

@@ -17,9 +17,17 @@ import {
 interface GroupInfoMembersPanelProps {
   chat: Chat;
   currentUserId?: string;
+  /** Admin/Manager only: open or create a 1:1 chat with the member */
+  onMemberClick?: (userId: string) => void;
+  isOpeningDirectChat?: boolean;
 }
 
-export function GroupInfoMembersPanel({ chat, currentUserId }: GroupInfoMembersPanelProps) {
+export function GroupInfoMembersPanel({
+  chat,
+  currentUserId,
+  onMemberClick,
+  isOpeningDirectChat = false,
+}: GroupInfoMembersPanelProps) {
   const tChat = useTranslations('chat');
   const tRoles = useTranslations('roles');
   const presenceByUserId = useChatStore((state) => state.presenceByUserId);
@@ -39,6 +47,7 @@ export function GroupInfoMembersPanel({ chat, currentUserId }: GroupInfoMembersP
         const name = participantDisplayName(participant);
         const roleKey = roleTranslationKey(participant.user.role);
         const isYou = participant.userId === currentUserId;
+        const canMessage = Boolean(onMemberClick) && !isYou;
         const presence = presenceByUserId[participant.userId];
         const isOnline = Boolean(presence?.isOnline);
         const statusLabel = formatChatLastSeen(
@@ -48,8 +57,8 @@ export function GroupInfoMembersPanel({ chat, currentUserId }: GroupInfoMembersP
         );
         const pillLabel = roleKey ? tRoles(roleKey) : participant.user.role;
 
-        return (
-          <li key={participant.userId} className="flex items-center gap-3 rounded-xl px-3 py-2.5">
+        const content = (
+          <>
             <div className="relative h-11 w-11 shrink-0">
               <div className="flex h-full w-full items-center justify-center overflow-hidden rounded-full bg-primary/15 text-sm font-medium text-primary">
                 {participant.user.avatarUrl ? (
@@ -69,7 +78,7 @@ export function GroupInfoMembersPanel({ chat, currentUserId }: GroupInfoMembersP
                 <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white bg-emerald-500" />
               ) : null}
             </div>
-            <div className="min-w-0 flex-1">
+            <div className="min-w-0 flex-1 text-left">
               <p className="truncate font-medium text-slate-900">
                 {name}
                 {isYou ? (
@@ -82,7 +91,9 @@ export function GroupInfoMembersPanel({ chat, currentUserId }: GroupInfoMembersP
                   isOnline ? 'text-emerald-600' : 'text-slate-500',
                 )}
               >
-                {statusLabel}
+                {canMessage && isOpeningDirectChat
+                  ? tChat('openingChat')
+                  : statusLabel}
               </p>
             </div>
             <span
@@ -93,6 +104,31 @@ export function GroupInfoMembersPanel({ chat, currentUserId }: GroupInfoMembersP
             >
               {pillLabel}
             </span>
+          </>
+        );
+
+        if (canMessage) {
+          return (
+            <li key={participant.userId}>
+              <button
+                type="button"
+                onClick={() => onMemberClick?.(participant.userId)}
+                disabled={isOpeningDirectChat}
+                className={cn(
+                  'flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-colors hover:bg-slate-50',
+                  isOpeningDirectChat && 'cursor-wait opacity-60',
+                )}
+                aria-label={tChat('openChatWith', { name })}
+              >
+                {content}
+              </button>
+            </li>
+          );
+        }
+
+        return (
+          <li key={participant.userId} className="flex items-center gap-3 rounded-xl px-3 py-2.5">
+            {content}
           </li>
         );
       })}

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { useLogo } from '@/features/settings/hooks/useSettings';
@@ -43,9 +43,11 @@ interface ChatWindowProps {
   onSendMessage?: (content: string, type?: string) => void;
   onBack?: () => void;
   onChatUpdated?: (chat: Chat) => void;
+  /** Switch the active conversation (e.g. after opening a DM from group members) */
+  onOpenChat?: (chat: Chat) => void;
 }
 
-export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
+export function ChatWindow({ chat, onBack, onChatUpdated, onOpenChat }: ChatWindowProps) {
   const tChat = useTranslations('chat');
   const tCommon = useTranslations('common');
   const locale = useLocale();
@@ -261,6 +263,24 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
     }
   };
 
+  const handleGroupMemberDirectChat = useCallback(
+    async (memberUserId: string) => {
+      if (!isAdminOrManager || memberUserId === user?.id) return;
+      try {
+        const dmChat = await createDirectChat.mutateAsync(memberUserId);
+        setShowGroupMembersModal(false);
+        if (onOpenChat) {
+          onOpenChat(dmChat);
+        } else if (onChatUpdated) {
+          onChatUpdated(dmChat);
+        }
+      } catch (error) {
+        console.error('Failed to open direct chat with group member:', error);
+      }
+    },
+    [createDirectChat, isAdminOrManager, onChatUpdated, onOpenChat, user?.id],
+  );
+
   const chatTitle = getChatTitle(chat, user?.id, tChat('chatTitle'));
   const chatAvatarUrl = getChatAvatarUrl(chat, user?.id, brandLogoUrl);
   const chatAvatarInitials = getChatAvatarInitials(chat, user?.id, tChat('groupChat'));
@@ -393,6 +413,8 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
         currentUserId={user?.id}
         canAddMembers={isAdminOrManager && isGroupChat}
         onAddMembers={() => setShowAddMembersModal(true)}
+        onMemberClick={isAdminOrManager ? handleGroupMemberDirectChat : undefined}
+        isOpeningDirectChat={createDirectChat.isPending}
       />
 
       <DeleteConfirmationDialog
