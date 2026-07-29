@@ -39,7 +39,7 @@ export function LeadDrawer(props: LeadDrawerProps) {
         )}
       >
         <LeadDrawerHeader onClose={drawer.onClose} />
-        <div className="flex-1 overflow-y-auto p-6 space-y-6">
+        <div className="min-h-0 flex-1 space-y-6 overflow-y-auto overscroll-y-contain p-6 [touch-action:pan-y] [-webkit-overflow-scrolling:touch]">
           {drawer.isLoading ? (
             <div className="animate-pulse space-y-4">
               <div className="h-8 bg-slate-200 rounded w-2/3" />

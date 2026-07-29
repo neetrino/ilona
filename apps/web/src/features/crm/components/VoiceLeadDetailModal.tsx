@@ -39,7 +39,7 @@ export function VoiceLeadDetailModal(props: VoiceLeadDetailModalProps) {
           handleDeleteClick={modal.handleDeleteClick}
           onClose={modal.onClose}
         />
-        <div className="flex-1 overflow-y-auto p-6 space-y-6">
+        <div className="min-h-0 flex-1 space-y-6 overflow-y-auto overscroll-y-contain p-6 [touch-action:pan-y] [-webkit-overflow-scrolling:touch]">
           {!modal.leadId ? (
             <p className="text-slate-500">{t('noLeadSelected')}</p>
           ) : modal.isLoading ? (

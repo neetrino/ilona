@@ -145,10 +145,13 @@ export function CreateLeadModal({
         aria-hidden="true"
       />
       <div style={contentStyle} {...portalSheetLayerProps} className={cn(CUSTOM_MODAL_PANEL_CLASS, 'max-w-lg')} onClick={(e) => e.stopPropagation()}>
-        <div className="border-b border-slate-200 px-6 py-4">
+        <div className="shrink-0 border-b border-slate-200 px-6 py-4">
           <h2 className="text-lg font-semibold text-slate-900">{t('newLead')}</h2>
         </div>
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+        <form
+          onSubmit={handleSubmit}
+          className="min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-y-contain p-6 [touch-action:pan-y] [-webkit-overflow-scrolling:touch]"
+        >
           {error && (
             <p className="text-sm text-red-600 rounded-lg bg-red-50 p-2">{error}</p>
           )}
