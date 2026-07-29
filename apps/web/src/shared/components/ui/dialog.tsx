@@ -173,7 +173,7 @@ const DialogContent = React.forwardRef<
           >
             <div
               className="absolute inset-x-0 -top-2 h-14"
-              style={isPortalSheet ? { touchAction: 'pan-y' } : undefined}
+              style={{ touchAction: 'none' }}
               {...dragHandleProps}
             />
             <div className="h-1.5 w-14 rounded-full bg-slate-400" />

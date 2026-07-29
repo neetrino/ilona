@@ -18,8 +18,8 @@ export const PORTAL_SHEET_DRAG_HANDLE_ATTR = 'data-portal-sheet-drag-handle';
 type DragSource = 'handle' | 'scroll' | null;
 
 export type PortalSheetDragHandleProps = {
+  ref: (node: HTMLDivElement | null) => void;
   onTouchStart: (event: TouchEvent<HTMLDivElement>) => void;
-  onTouchMove: (event: TouchEvent<HTMLDivElement>) => void;
   onTouchEnd: (event: TouchEvent<HTMLDivElement>) => void;
   onTouchCancel: (event: TouchEvent<HTMLDivElement>) => void;
 };
@@ -186,7 +186,10 @@ export function usePortalSheetDrag({
       if (!isDraggingRef.current && !isSheetDragCommittedRef.current) return;
       if (deltaY <= 0 || deltaY <= deltaX) return;
 
-      event.preventDefault();
+      // React touch listeners are passive; only native `{ passive: false }` can cancel.
+      if (event.cancelable) {
+        event.preventDefault();
+      }
       const nextOffset = Math.min(deltaY * 0.95, MAX_DRAG_OFFSET);
       dragOffsetYRef.current = nextOffset;
       setDragOffsetY(nextOffset);
@@ -219,17 +222,26 @@ export function usePortalSheetDrag({
     }, 280);
   }, [enabled, resetDragRefs]);
 
-  const handleDragMove = useCallback(
-    (event: TouchEvent<HTMLDivElement>) => {
-      if (dragSourceRef.current !== 'handle') return;
-      applyDragMove(event);
-    },
-    [applyDragMove],
-  );
-
   const handleDragEnd = useCallback(() => {
     finishDrag();
   }, [finishDrag]);
+
+  const [handleNode, setHandleNode] = useState<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const handleEl = handleNode;
+    if (!handleEl || !enabled) return;
+
+    const onTouchMove = (event: globalThis.TouchEvent) => {
+      if (dragSourceRef.current !== 'handle') return;
+      applyDragMove(event);
+    };
+
+    handleEl.addEventListener('touchmove', onTouchMove, { passive: false });
+    return () => {
+      handleEl.removeEventListener('touchmove', onTouchMove);
+    };
+  }, [applyDragMove, enabled, handleNode]);
 
   useEffect(() => {
     const sheetRoot = sheetRootNode;
@@ -277,6 +289,10 @@ export function usePortalSheetDrag({
     setSheetRootNode(node);
   }, []);
 
+  const setHandleRef = useCallback((node: HTMLDivElement | null) => {
+    setHandleNode(node);
+  }, []);
+
   const dragStyle =
     dragOffsetY > 0 || isSettling
       ? {
@@ -288,8 +304,8 @@ export function usePortalSheetDrag({
   return {
     dragStyle,
     dragHandleProps: {
+      ref: setHandleRef,
       onTouchStart: handleDragStart,
-      onTouchMove: handleDragMove,
       onTouchEnd: handleDragEnd,
       onTouchCancel: handleDragEnd,
     },
