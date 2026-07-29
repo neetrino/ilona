@@ -30,7 +30,7 @@ export function GroupInfoTabBar({ activeTab, onChange }: GroupInfoTabBarProps) {
             className={cn(
               'shrink-0 rounded-lg px-2.5 py-1.5 text-sm font-medium transition-colors',
               isActive
-                ? 'bg-violet-100 text-violet-700'
+                ? 'bg-[#1010a3]/10 text-[#1010a3]'
                 : 'text-slate-500 hover:bg-white hover:text-slate-800',
             )}
           >
