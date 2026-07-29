@@ -20,6 +20,13 @@ import { getChatThemeForRole } from '../../lib/chat-theme';
 import type { Chat } from '../../types';
 import type { ChatContainerProps, ChatContainerViewModel } from './chat-container.types';
 import { getChatContainerLayout, resolveReturnToPath } from './chat-container.util';
+import {
+  chatMatchesConversationParam,
+  clearConversationSearchParams,
+  findChatByConversationSlug,
+  readConversationParam,
+  setConversationSearchParam,
+} from '../../lib/chat-conversation-url';
 
 export function useChatContainer({
   emptyTitle,
@@ -55,10 +62,9 @@ export function useChatContainer({
   const returnToParam = readUrlSearchParam('returnTo', searchParams, urlRevision);
   const returnTo = returnToParam ? decodeURIComponent(returnToParam) : null;
 
-  const conversationIdFromUrl = useMemo(
+  const conversationFromUrl = useMemo(
     () =>
-      readUrlSearchParam('conversationId', searchParams, urlRevision) ||
-      readUrlSearchParam('chatId', searchParams, urlRevision),
+      readConversationParam((key) => readUrlSearchParam(key, searchParams, urlRevision)),
     [searchParams, urlRevision],
   );
 
@@ -90,7 +96,7 @@ export function useChatContainer({
   useEffect(() => {
     if (isInitialMount.current || isLoadingChats) return;
 
-    if (!conversationIdFromUrl) {
+    if (!conversationFromUrl) {
       if (activeChatId) {
         setActiveChat(null);
         setMobileListVisible(true);
@@ -98,27 +104,50 @@ export function useChatContainer({
       return;
     }
 
-    if (activeChatId === conversationIdFromUrl) return;
+    if (
+      activeChat &&
+      chatMatchesConversationParam(activeChat, conversationFromUrl, user?.id, chats)
+    ) {
+      return;
+    }
 
-    const fromList = chats.find((chat) => chat.id === conversationIdFromUrl);
+    if (conversationFromUrl.kind === 'slug') {
+      const matched = findChatByConversationSlug(chats, conversationFromUrl.value, user?.id);
+      if (matched) {
+        setActiveChat(matched);
+        setMobileListVisible(false);
+        return;
+      }
+      replaceSearchParams((params) => {
+        clearConversationSearchParams(params);
+      });
+      return;
+    }
+
+    const fromList = chats.find((chat) => chat.id === conversationFromUrl.value);
     if (fromList) {
       setActiveChat(fromList);
       setMobileListVisible(false);
+      replaceSearchParams((params) => {
+        setConversationSearchParam(params, fromList, user?.id, chats);
+      });
       return;
     }
 
     let cancelled = false;
-    fetchChat(conversationIdFromUrl)
+    fetchChat(conversationFromUrl.value)
       .then((chat) => {
         if (cancelled) return;
         setActiveChat(chat);
         setMobileListVisible(false);
+        replaceSearchParams((params) => {
+          setConversationSearchParam(params, chat, user?.id, chats);
+        });
       })
       .catch(() => {
         if (cancelled) return;
         replaceSearchParams((params) => {
-          params.delete('chatId');
-          params.delete('conversationId');
+          clearConversationSearchParams(params);
         });
       });
 
@@ -126,14 +155,16 @@ export function useChatContainer({
       cancelled = true;
     };
   }, [
-    conversationIdFromUrl,
+    conversationFromUrl,
     urlRevision,
+    activeChat,
     activeChatId,
     chats,
     isLoadingChats,
     replaceSearchParams,
     setActiveChat,
     setMobileListVisible,
+    user?.id,
   ]);
 
   useEffect(() => {
@@ -145,9 +176,7 @@ export function useChatContainer({
       return;
     }
 
-    const chatIdFromUrl = conversationIdFromUrl;
-
-    if (!chatIdFromUrl && !teacherIdFromUrl) {
+    if (!conversationFromUrl && !teacherIdFromUrl) {
       if (activeChatId) {
         setActiveChat(null);
       }
@@ -169,8 +198,7 @@ export function useChatContainer({
           replaceSearchParams((params) => {
             params.delete('type');
             params.delete('teacherId');
-            params.set('conversationId', existingChat.id);
-            params.delete('chatId');
+            setConversationSearchParam(params, existingChat, user?.id, chats);
           });
         } else {
           createDirectChat.mutate(teacher.userId, {
@@ -180,8 +208,7 @@ export function useChatContainer({
               replaceSearchParams((params) => {
                 params.delete('type');
                 params.delete('teacherId');
-                params.set('conversationId', newChat.id);
-                params.delete('chatId');
+                setConversationSearchParam(params, newChat, user?.id, chats);
               });
             },
           });
@@ -191,27 +218,45 @@ export function useChatContainer({
       }
     }
 
-    if (chatIdFromUrl && chats.length > 0) {
-      const chatFromList = chats.find((chat) => chat.id === chatIdFromUrl);
+    if (conversationFromUrl && chats.length > 0) {
+      if (conversationFromUrl.kind === 'slug') {
+        const matched = findChatByConversationSlug(chats, conversationFromUrl.value, user?.id);
+        if (matched) {
+          setActiveChat(matched);
+          setMobileListVisible(false);
+        } else {
+          replaceSearchParams((params) => {
+            clearConversationSearchParams(params);
+          });
+        }
+        isInitialMount.current = false;
+        return;
+      }
+
+      const chatFromList = chats.find((chat) => chat.id === conversationFromUrl.value);
       if (chatFromList) {
         setActiveChat(chatFromList);
         setMobileListVisible(false);
+        replaceSearchParams((params) => {
+          setConversationSearchParam(params, chatFromList, user?.id, chats);
+        });
       } else if (isTeacher || !isStudent) {
-        fetchChat(chatIdFromUrl)
+        fetchChat(conversationFromUrl.value)
           .then((chat) => {
             setActiveChat(chat);
             setMobileListVisible(false);
+            replaceSearchParams((params) => {
+              setConversationSearchParam(params, chat, user?.id, chats);
+            });
           })
           .catch(() => {
             replaceSearchParams((params) => {
-              params.delete('chatId');
-              params.delete('conversationId');
+              clearConversationSearchParams(params);
             });
           });
       } else {
         replaceSearchParams((params) => {
-          params.delete('chatId');
-          params.delete('conversationId');
+          clearConversationSearchParams(params);
         });
       }
       isInitialMount.current = false;
@@ -229,8 +274,9 @@ export function useChatContainer({
     isTeacher,
     isStudent,
     createDirectChat,
-    conversationIdFromUrl,
+    conversationFromUrl,
     activeChatId,
+    user?.id,
   ]);
 
   const handleSelectChat = useCallback(
@@ -242,19 +288,17 @@ export function useChatContainer({
       replaceSearchParams((params) => {
         params.delete('type');
         params.delete('teacherId');
-        params.set('conversationId', chat.id);
-        params.delete('chatId');
+        setConversationSearchParam(params, chat, user?.id, chats);
       });
     },
-    [queryClient, replaceSearchParams, setActiveChat, setMobileListVisible],
+    [chats, queryClient, replaceSearchParams, setActiveChat, setMobileListVisible, user?.id],
   );
 
   const handleBack = useCallback(() => {
     setMobileListVisible(true);
     setActiveChat(null);
     replaceSearchParams((params) => {
-      params.delete('chatId');
-      params.delete('conversationId');
+      clearConversationSearchParams(params);
     });
   }, [replaceSearchParams, setActiveChat, setMobileListVisible]);
 
@@ -274,8 +318,7 @@ export function useChatContainer({
     setMobileListVisible(true);
     setActiveChat(null);
     replaceSearchParams((params) => {
-      params.delete('chatId');
-      params.delete('conversationId');
+      clearConversationSearchParams(params);
     });
   }, [replaceSearchParams, setActiveChat, setMobileListVisible]);
 

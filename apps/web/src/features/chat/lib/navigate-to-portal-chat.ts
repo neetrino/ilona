@@ -1,6 +1,8 @@
 import type { ReadonlyURLSearchParams } from 'next/navigation';
 import type { UserRole } from '@/types';
 import { getAdminPortalBasePath } from '@/shared/lib/role-routes';
+import type { Chat } from '../types';
+import { buildChatConversationSlug } from './chat-conversation-url';
 
 type NavigateToPortalChatParams = {
   router: { push: (href: string) => void };
@@ -26,10 +28,19 @@ export function getPortalChatPath(role: UserRole): string {
 
 export function buildPortalChatHref(
   role: UserRole,
-  params: { conversationId: string; returnTo?: string; tab?: string },
+  params: {
+    chat: Chat;
+    currentUserId?: string;
+    peers?: Chat[];
+    returnTo?: string;
+    tab?: string;
+  },
 ): string {
   const search = new URLSearchParams();
-  search.set('conversationId', params.conversationId);
+  search.set(
+    'conversation',
+    buildChatConversationSlug(params.chat, params.currentUserId, params.peers ?? []),
+  );
   if (params.tab) {
     search.set('tab', params.tab);
   }
