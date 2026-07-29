@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react';
 import { CalendarDays } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
+import { addCalendarDays, endOfZonedDay, startOfZonedDay, toYmd } from '@ilona/types';
 import { useStaffPlannedAbsences } from '../hooks/useAttendance';
 import type { StaffPlannedAbsenceItem } from '../types';
 import {
@@ -24,7 +25,6 @@ function getAbsenceDateParts(date: string, locale: string): { dayLabel: string; 
   if (![year, month, day].every((n) => Number.isFinite(n))) {
     return { dayLabel: '—', dayNumber: '—' };
   }
-  // Noon UTC keeps weekday/day stable for a YYYY-MM-DD calendar value.
   const parsed = new Date(Date.UTC(year, month - 1, day, 12, 0, 0));
   return {
     dayLabel: parsed.toLocaleDateString(locale, { weekday: 'short', timeZone: 'UTC' }),
@@ -93,12 +93,12 @@ export function PlannedAbsencesStaffBlock({
   const [viewAllOpen, setViewAllOpen] = useState(false);
 
   const { dateFrom, dateTo } = useMemo(() => {
-    const from = new Date();
-    from.setHours(0, 0, 0, 0);
-    const to = new Date(from);
-    to.setDate(to.getDate() + 60);
-    to.setHours(23, 59, 59, 999);
-    return { dateFrom: from.toISOString(), dateTo: to.toISOString() };
+    const fromYmd = toYmd(new Date());
+    const toYmdValue = addCalendarDays(fromYmd, 60);
+    return {
+      dateFrom: startOfZonedDay(fromYmd).toISOString(),
+      dateTo: endOfZonedDay(toYmdValue).toISOString(),
+    };
   }, []);
 
   const { data = [], isLoading } = useStaffPlannedAbsences(dateFrom, dateTo, true);

@@ -40,7 +40,7 @@ export class AttendancePlannedAbsenceService {
       where: { userId },
       include: {
         user: { select: { firstName: true, lastName: true } },
-        group: { select: { id: true, name: true, teacherId: true, centerId: true } },
+        group: { select: { id: true, name: true, teacherId: true, secondTeacherId: true, centerId: true } },
       },
     });
 
@@ -172,7 +172,17 @@ export class AttendancePlannedAbsenceService {
       if (!teacher) {
         return [];
       }
-      where.student = { group: { teacherId: teacher.id } };
+      // Same scope as teacher groups: primary, second teacher, or direct student assignment.
+      where.student = {
+        OR: [
+          { teacherId: teacher.id },
+          {
+            group: {
+              OR: [{ teacherId: teacher.id }, { secondTeacherId: teacher.id }],
+            },
+          },
+        ],
+      };
     } else if (userRole === UserRole.MANAGER) {
       const centerId = await this.scope.getManagerCenterId(userId, userRole);
       where.student = { group: { centerId: centerId! } };

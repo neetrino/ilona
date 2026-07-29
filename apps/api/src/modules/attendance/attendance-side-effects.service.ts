@@ -9,9 +9,14 @@ export class AttendanceSideEffectsService {
     student: {
       id: string;
       user: { firstName: string; lastName: string };
-      group: { name: string; teacherId: string | null; centerId: string } | null;
+      group: {
+        name: string;
+        teacherId: string | null;
+        secondTeacherId?: string | null;
+        centerId: string;
+      } | null;
     },
-    dateStr: string,
+    dateStr: string;
     comment: string,
   ) {
     const groupName = student.group?.name ?? '—';
@@ -26,14 +31,15 @@ export class AttendanceSideEffectsService {
     });
     admins.forEach((a) => userIds.add(a.id));
 
-    if (student.group?.teacherId) {
-      const teacher = await this.prisma.teacher.findUnique({
-        where: { id: student.group.teacherId },
+    const teacherIds = [student.group?.teacherId, student.group?.secondTeacherId].filter(
+      (id): id is string => Boolean(id),
+    );
+    if (teacherIds.length > 0) {
+      const teachers = await this.prisma.teacher.findMany({
+        where: { id: { in: teacherIds } },
         select: { userId: true },
       });
-      if (teacher) {
-        userIds.add(teacher.userId);
-      }
+      teachers.forEach((t) => userIds.add(t.userId));
     }
 
     if (student.group?.centerId) {
