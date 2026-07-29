@@ -16,7 +16,7 @@ export class AttendanceSideEffectsService {
         centerId: string;
       } | null;
     },
-    dateStr: string;
+    dateStr: string,
     comment: string,
   ) {
     const groupName = student.group?.name ?? '—';
