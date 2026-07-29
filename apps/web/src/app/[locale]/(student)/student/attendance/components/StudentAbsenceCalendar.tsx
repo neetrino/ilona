@@ -413,115 +413,141 @@ export function StudentAbsenceCalendar({
       </div>
 
       <Dialog open={!!selectedDate} onOpenChange={closeDialog}>
-        <DialogContent className="max-h-[90vh] lg:max-w-md overflow-y-auto border border-[rgba(14,14,16,0.07)] lg:rounded-3xl">
-          <DialogHeader>
-            <DialogTitle className="text-[#1010a3]">
-              {selectedDate &&
-                new Date(selectedDate).toLocaleDateString(undefined, {
-                  weekday: 'long',
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric',
-                })}
-            </DialogTitle>
-          </DialogHeader>
+        <DialogContent
+          className={cn(
+            '!flex !flex-col gap-0 overflow-hidden border border-[rgba(14,14,16,0.07)] !p-0',
+            'max-h-[calc(94dvh+7px)]',
+            'tablet:!w-[min(100%,26rem)] tablet:portrait:!w-[min(100%,26rem)] tablet:landscape:!w-[min(100%,26rem)] min-[1366px]:!w-[26rem]',
+          )}
+        >
+          <div
+            className={cn(
+              'min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pt-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden',
+              'tablet:px-6 tablet:pt-6',
+              !selectedAnalysis?.canReportAbsence &&
+                'pb-[calc(5.5rem+env(safe-area-inset-bottom))] tablet:pb-8',
+              selectedAnalysis?.canReportAbsence && 'pb-4 tablet:pb-4',
+            )}
+          >
+            <DialogHeader className="pr-8 text-left sm:text-left">
+              <DialogTitle className="text-xl font-semibold leading-snug text-[#1010a3] tablet:text-lg">
+                {selectedDate &&
+                  new Date(selectedDate).toLocaleDateString(undefined, {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                  })}
+              </DialogTitle>
+            </DialogHeader>
 
-          {selectedAnalysis?.hasClass && selectedLessons.length > 0 && (
-            <div className="space-y-4 mt-2">
-              <div className="space-y-3">
-                <p className="text-sm font-medium text-[#1010a3]">{t('scheduledSessions')}</p>
-                {selectedLessons.map((lesson) => {
-                  const att = attendanceByLessonId.get(lesson.id);
-                  const lessonTime = new Date(lesson.scheduledAt);
-                  const ended = lessonTime <= now;
-                  return (
-                    <div
-                      key={lesson.id}
-                      className="rounded-[1.125rem] border border-[rgba(14,14,16,0.07)] bg-[#fafafa] p-3"
-                    >
-                      <div className="mb-1 flex items-center justify-between gap-2">
-                        <span className="font-semibold text-[#3b3b40]">{lesson.group.name}</span>
-                        {!ended && (
-                          <span className="text-xs font-medium text-green-700 bg-green-100 px-2 py-0.5 rounded-full">
-                            {t('upcoming')}
-                          </span>
-                        )}
-                        {ended && att && (
-                          <span
-                            className={cn(
-                              'text-xs font-medium px-2 py-0.5 rounded-full',
-                              att.isPresent ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'
-                            )}
-                          >
-                            {att.isPresent ? t('present') : t('absent')}
-                          </span>
-                        )}
-                        {ended && !att && (
-                          <span className="rounded-full bg-[#f6f6f7] px-2 py-0.5 text-xs font-medium text-[#8b8b90]">
-                            {t('legendNotMarked')}
-                          </span>
-                        )}
-                      </div>
-                      {lesson.topic && <p className="text-sm text-[#3b3b40]">{lesson.topic}</p>}
-                      <p className="mt-1 text-xs text-[#8b8b90]">
-                        {lessonTime.toLocaleTimeString(undefined, {
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        })}
-                      </p>
-                      {att && !att.isPresent && att.absenceType && (
-                        <p className="mt-1 text-xs text-[#8b8b90]">
-                          {att.absenceType === 'JUSTIFIED' ? t('justified') : t('unjustified')}
-                        </p>
-                      )}
-                      {att?.note && <p className="mt-1 text-xs text-[#3b3b40]">{att.note}</p>}
-                    </div>
-                  );
-                })}
-              </div>
-
-              {selectedAnalysis.canReportAbsence && (
-                <div className="space-y-3 border-t border-[rgba(14,14,16,0.07)] pt-4">
-                  <p className="text-sm font-medium text-[#1010a3]">{t('reportFutureAbsence')}</p>
-                  {selectedPlanned && (
-                    <p className="text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-md px-3 py-2">
-                      {t('plannedAbsenceNote')}: {selectedPlanned.comment}
-                    </p>
-                  )}
-                  <label className="block text-xs font-medium text-[#8b8b90]">{t('commentOrReason')}</label>
-                  <textarea
-                    className={cn(studentInputClass, 'min-h-[88px] resize-y py-2')}
-                    value={commentDraft}
-                    onChange={(e) => setCommentDraft(e.target.value)}
-                    placeholder={t('plannedAbsencePlaceholder')}
-                    disabled={createPlanned.isPending || deletePlanned.isPending}
-                  />
-                  {formError && <p className="text-sm text-red-600">{formError}</p>}
-                  <div className="flex flex-wrap gap-2">
-                    <StudentPrimaryButton
-                      type="button"
-                      onClick={handleSubmitPlanned}
-                      disabled={createPlanned.isPending || deletePlanned.isPending}
-                    >
-                      {selectedPlanned ? t('updatePlannedAbsence') : t('savePlannedAbsence')}
-                    </StudentPrimaryButton>
-                    {selectedPlanned && (
-                      <StudentGhostButton
-                        type="button"
-                        onClick={handleDeletePlanned}
-                        disabled={createPlanned.isPending || deletePlanned.isPending}
+            {selectedAnalysis?.hasClass && selectedLessons.length > 0 && (
+              <div className="mt-5 space-y-5">
+                <div className="space-y-2.5">
+                  <p className="text-sm font-medium text-[#8b8b90]">{t('scheduledSessions')}</p>
+                  {selectedLessons.map((lesson) => {
+                    const att = attendanceByLessonId.get(lesson.id);
+                    const lessonTime = new Date(lesson.scheduledAt);
+                    const ended = lessonTime <= now;
+                    return (
+                      <div
+                        key={lesson.id}
+                        className="rounded-[1.125rem] border border-[rgba(14,14,16,0.07)] bg-[#fafafa] px-3.5 py-3"
                       >
-                        {t('cancelPlannedAbsence')}
-                      </StudentGhostButton>
-                    )}
-                  </div>
+                        <div className="mb-1 flex items-center justify-between gap-2">
+                          <span className="font-semibold text-[#3b3b40]">{lesson.group.name}</span>
+                          {!ended && (
+                            <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">
+                              {t('upcoming')}
+                            </span>
+                          )}
+                          {ended && att && (
+                            <span
+                              className={cn(
+                                'rounded-full px-2 py-0.5 text-xs font-medium',
+                                att.isPresent
+                                  ? 'bg-emerald-100 text-emerald-800'
+                                  : 'bg-red-100 text-red-800',
+                              )}
+                            >
+                              {att.isPresent ? t('present') : t('absent')}
+                            </span>
+                          )}
+                          {ended && !att && (
+                            <span className="rounded-full bg-[#f6f6f7] px-2 py-0.5 text-xs font-medium text-[#8b8b90]">
+                              {t('legendNotMarked')}
+                            </span>
+                          )}
+                        </div>
+                        {lesson.topic && <p className="text-sm text-[#3b3b40]">{lesson.topic}</p>}
+                        <p className="mt-1 text-xs text-[#8b8b90]">
+                          {lessonTime.toLocaleTimeString(undefined, {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })}
+                        </p>
+                        {att && !att.isPresent && att.absenceType && (
+                          <p className="mt-1 text-xs text-[#8b8b90]">
+                            {att.absenceType === 'JUSTIFIED' ? t('justified') : t('unjustified')}
+                          </p>
+                        )}
+                        {att?.note && <p className="mt-1 text-xs text-[#3b3b40]">{att.note}</p>}
+                      </div>
+                    );
+                  })}
                 </div>
-              )}
 
-              {!selectedAnalysis.canReportAbsence && (
-                <p className="border-t border-[rgba(14,14,16,0.07)] pt-3 text-xs text-[#8b8b90]">
-                  {t('pastDayReadOnly')}
-                </p>
+                {selectedAnalysis.canReportAbsence && (
+                  <div className="space-y-3 border-t border-[rgba(14,14,16,0.07)] pt-4">
+                    <p className="text-sm font-semibold text-[#1010a3]">{t('reportFutureAbsence')}</p>
+                    {selectedPlanned && (
+                      <p className="rounded-[0.875rem] border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
+                        {t('plannedAbsenceNote')}: {selectedPlanned.comment}
+                      </p>
+                    )}
+                    <label className="block text-xs font-medium text-[#8b8b90]" htmlFor="planned-absence-comment">
+                      {t('commentOrReason')}
+                    </label>
+                    <textarea
+                      id="planned-absence-comment"
+                      className={cn(studentInputClass, 'min-h-[6.5rem] resize-y py-3')}
+                      value={commentDraft}
+                      onChange={(e) => setCommentDraft(e.target.value)}
+                      placeholder={t('plannedAbsencePlaceholder')}
+                      disabled={createPlanned.isPending || deletePlanned.isPending}
+                    />
+                    {formError && <p className="text-sm text-red-600">{formError}</p>}
+                  </div>
+                )}
+
+                {!selectedAnalysis.canReportAbsence && (
+                  <p className="border-t border-[rgba(14,14,16,0.07)] pt-3 text-xs text-[#8b8b90]">
+                    {t('pastDayReadOnly')}
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
+
+          {selectedAnalysis?.canReportAbsence && (
+            <div className="shrink-0 space-y-2 border-t border-[rgba(14,14,16,0.07)] bg-white px-4 pt-3 pb-[calc(5.5rem+env(safe-area-inset-bottom))] tablet:px-6 tablet:pb-6">
+              <StudentPrimaryButton
+                type="button"
+                onClick={handleSubmitPlanned}
+                disabled={createPlanned.isPending || deletePlanned.isPending}
+                className="w-full min-h-12 text-base tablet:min-h-11 tablet:text-sm"
+              >
+                {selectedPlanned ? t('updatePlannedAbsence') : t('savePlannedAbsence')}
+              </StudentPrimaryButton>
+              {selectedPlanned && (
+                <StudentGhostButton
+                  type="button"
+                  onClick={handleDeletePlanned}
+                  disabled={createPlanned.isPending || deletePlanned.isPending}
+                  className="w-full min-h-11"
+                >
+                  {t('cancelPlannedAbsence')}
+                </StudentGhostButton>
               )}
             </div>
           )}
