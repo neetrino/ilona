@@ -11,6 +11,7 @@ import { useChatStore } from '../../store/chat.store';
 import {
   useSocket,
   useChatDetail,
+  useChats,
   chatKeys,
   clearChatUnreadInCache,
   useEscapeToLeaveChatConversation,
@@ -27,6 +28,13 @@ import {
   resolveAdminReturnToPath,
 } from './admin-chat-container.util';
 import { clearChatDeleteGroupParam } from '../../lib/chat-url-params';
+import {
+  chatMatchesConversationParam,
+  clearConversationSearchParams,
+  findChatByConversationSlug,
+  readConversationParam,
+  setConversationSearchParam,
+} from '../../lib/chat-conversation-url';
 
 export function useAdminChatContainer({
   emptyTitle,
@@ -39,6 +47,7 @@ export function useAdminChatContainer({
   const { user } = useAuthStore();
   const { activeChat, setActiveChat, isMobileListVisible, setMobileListVisible, setAccountKey } =
     useChatStore();
+  const { data: chats = [], isLoading: isLoadingChats } = useChats();
   const isInitialMount = useRef(true);
   const layout = getAdminChatContainerLayout(className);
 
@@ -59,21 +68,24 @@ export function useAdminChatContainer({
   const [showCreateGroupChatModal, setShowCreateGroupChatModal] = useState(false);
   const [mobileChatPanelOpen, setMobileChatPanelOpen] = useState(false);
 
-  const conversationIdFromUrl = useMemo(
+  const conversationFromUrl = useMemo(
     () =>
-      readUrlSearchParam('conversationId', searchParams, urlRevision) ||
-      readUrlSearchParam('chatId', searchParams, urlRevision),
+      readConversationParam((key) => readUrlSearchParam(key, searchParams, urlRevision)),
     [searchParams, urlRevision],
   );
+
+  const legacyConversationId =
+    conversationFromUrl?.kind === 'id' ? conversationFromUrl.value : null;
 
   const returnToParam = readUrlSearchParam('returnTo', searchParams, urlRevision);
   const returnTo = returnToParam ? decodeURIComponent(returnToParam) : null;
 
   useSocket();
 
-  const shouldFetchChat = !!conversationIdFromUrl && isInitialMount.current && !activeChat;
+  const shouldFetchChat =
+    Boolean(legacyConversationId) && isInitialMount.current && !activeChat;
   const { data: chatFromUrl, isLoading: isLoadingChatFromUrl, isError: isChatError } = useChatDetail(
-    conversationIdFromUrl || '',
+    legacyConversationId || '',
     shouldFetchChat,
   );
 
@@ -90,9 +102,9 @@ export function useAdminChatContainer({
 
   // URL → store only. Handlers update the URL; a reverse sync effect caused an infinite loop.
   useEffect(() => {
-    if (isInitialMount.current) return;
+    if (isInitialMount.current || isLoadingChats) return;
 
-    if (!conversationIdFromUrl) {
+    if (!conversationFromUrl) {
       if (activeChatId) {
         setActiveChat(null);
         setMobileListVisible(true);
@@ -100,20 +112,43 @@ export function useAdminChatContainer({
       return;
     }
 
-    if (activeChatId === conversationIdFromUrl) return;
+    if (
+      activeChat &&
+      chatMatchesConversationParam(activeChat, conversationFromUrl, user?.id, chats)
+    ) {
+      return;
+    }
+
+    if (conversationFromUrl.kind === 'slug') {
+      const matched = findChatByConversationSlug(chats, conversationFromUrl.value, user?.id);
+      if (matched) {
+        setActiveChat(matched);
+        setMobileListVisible(false);
+        return;
+      }
+      replaceSearchParams((params) => {
+        clearConversationSearchParams(params);
+        clearChatDeleteGroupParam(params);
+      });
+      return;
+    }
 
     let cancelled = false;
-    fetchChat(conversationIdFromUrl)
+    fetchChat(conversationFromUrl.value)
       .then((chat) => {
         if (cancelled) return;
         setActiveChat(chat);
         setMobileListVisible(false);
+        // Migrate legacy id URL → human-readable conversation slug
+        replaceSearchParams((params) => {
+          setConversationSearchParam(params, chat, user?.id, chats);
+          clearChatDeleteGroupParam(params);
+        });
       })
       .catch(() => {
         if (cancelled) return;
         replaceSearchParams((params) => {
-          params.delete('conversationId');
-          params.delete('chatId');
+          clearConversationSearchParams(params);
           clearChatDeleteGroupParam(params);
         });
       });
@@ -122,12 +157,16 @@ export function useAdminChatContainer({
       cancelled = true;
     };
   }, [
-    conversationIdFromUrl,
+    conversationFromUrl,
     urlRevision,
+    activeChat,
     activeChatId,
+    chats,
+    isLoadingChats,
     replaceSearchParams,
     setActiveChat,
     setMobileListVisible,
+    user?.id,
   ]);
 
   const handleTabChange = useCallback(
@@ -135,7 +174,7 @@ export function useAdminChatContainer({
       setActiveTab(tab);
       replaceSearchParams((params) => {
         params.set('tab', tab);
-        params.delete('conversationId');
+        clearConversationSearchParams(params);
         clearChatDeleteGroupParam(params);
       });
       setActiveChat(null);
@@ -146,8 +185,37 @@ export function useAdminChatContainer({
   useEffect(() => {
     if (!isInitialMount.current) return;
 
-    if (!conversationIdFromUrl) {
+    if (!conversationFromUrl) {
       if (activeChat) setActiveChat(null);
+      isInitialMount.current = false;
+      return;
+    }
+
+    if (conversationFromUrl.kind === 'slug') {
+      if (isLoadingChats) return;
+      const matched = findChatByConversationSlug(chats, conversationFromUrl.value, user?.id);
+      if (matched) {
+        setActiveChat(matched);
+        setMobileListVisible(false);
+        if (matched.type === 'GROUP' && matched.groupId && activeTab !== 'groups') {
+          setActiveTab('groups');
+          replaceSearchParams((params) => params.set('tab', 'groups'));
+        } else if (matched.type === 'DIRECT') {
+          const otherParticipant = matched.participants.find((p) => p.userId !== user?.id);
+          if (otherParticipant?.user.role === 'STUDENT' && activeTab !== 'students') {
+            setActiveTab('students');
+            replaceSearchParams((params) => params.set('tab', 'students'));
+          } else if (otherParticipant?.user.role === 'TEACHER' && activeTab !== 'teachers') {
+            setActiveTab('teachers');
+            replaceSearchParams((params) => params.set('tab', 'teachers'));
+          }
+        }
+      } else {
+        replaceSearchParams((params) => {
+          clearConversationSearchParams(params);
+          clearChatDeleteGroupParam(params);
+        });
+      }
       isInitialMount.current = false;
       return;
     }
@@ -170,19 +238,25 @@ export function useAdminChatContainer({
         }
       }
 
+      replaceSearchParams((params) => {
+        setConversationSearchParam(params, chatFromUrl, user?.id, chats);
+      });
+
       isInitialMount.current = false;
     } else if (!isLoadingChatFromUrl && isChatError) {
       replaceSearchParams((params) => {
-        params.delete('conversationId');
+        clearConversationSearchParams(params);
         clearChatDeleteGroupParam(params);
       });
       isInitialMount.current = false;
     }
   }, [
-    conversationIdFromUrl,
+    conversationFromUrl,
     chatFromUrl,
     isLoadingChatFromUrl,
     isChatError,
+    isLoadingChats,
+    chats,
     setActiveChat,
     setMobileListVisible,
     replaceSearchParams,
@@ -206,6 +280,7 @@ export function useAdminChatContainer({
 
   const handleSelectChat = useCallback(
     (chat: Chat) => {
+      useChatStore.getState().setMemberDmReturnChat(null);
       clearChatUnreadInCache(queryClient, chat.id);
       setActiveChat({ ...chat, unreadCount: 0 });
       setMobileListVisible(false);
@@ -222,22 +297,25 @@ export function useAdminChatContainer({
         return [chat, ...oldData];
       });
 
+      const peers =
+        (queryClient.getQueryData(chatKeys.list()) as Chat[] | undefined) ?? chats;
+
       replaceSearchParams((params) => {
-        params.set('conversationId', chat.id);
+        setConversationSearchParam(params, chat, user?.id, peers);
         if (activeTab) params.set('tab', activeTab);
         if (params.get('deleteGroup') !== chat.id) {
           clearChatDeleteGroupParam(params);
         }
       });
     },
-    [activeTab, queryClient, replaceSearchParams, setActiveChat, setMobileListVisible],
+    [activeTab, chats, queryClient, replaceSearchParams, setActiveChat, setMobileListVisible, user?.id],
   );
 
   const handleBack = useCallback(() => {
     setMobileListVisible(true);
     setActiveChat(null);
     replaceSearchParams((params) => {
-      params.delete('conversationId');
+      clearConversationSearchParams(params);
       clearChatDeleteGroupParam(params);
     });
   }, [replaceSearchParams, setActiveChat, setMobileListVisible]);
@@ -256,7 +334,7 @@ export function useAdminChatContainer({
     setMobileListVisible(true);
     setActiveChat(null);
     replaceSearchParams((params) => {
-      params.delete('conversationId');
+      clearConversationSearchParams(params);
       clearChatDeleteGroupParam(params);
     });
   }, [replaceSearchParams, setActiveChat, setMobileListVisible]);
@@ -272,13 +350,15 @@ export function useAdminChatContainer({
         if (oldData.find((c) => c.id === chat.id)) return oldData;
         return [chat, ...oldData];
       });
+      const peers =
+        (queryClient.getQueryData(chatKeys.list()) as Chat[] | undefined) ?? chats;
       replaceSearchParams((params) => {
-        params.set('conversationId', chat.id);
+        setConversationSearchParam(params, chat, user?.id, peers);
         if (activeTab) params.set('tab', activeTab);
         clearChatDeleteGroupParam(params);
       });
     },
-    [activeTab, queryClient, replaceSearchParams, setActiveChat, setMobileListVisible],
+    [activeTab, chats, queryClient, replaceSearchParams, setActiveChat, setMobileListVisible, user?.id],
   );
 
   return {

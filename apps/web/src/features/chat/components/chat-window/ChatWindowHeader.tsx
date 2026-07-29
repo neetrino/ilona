@@ -24,7 +24,10 @@ interface ChatWindowHeaderProps {
   isGroupChat: boolean;
   isTeacher: boolean;
   onBack?: () => void;
+  /** Shown on all breakpoints — return to the group chat opened from Members */
+  onReturnToSourceChat?: () => void;
   onAddMembers: () => void;
+  onViewMembers?: () => void;
   onOpenVocabulary: () => void;
   onDeleteGroup?: () => void;
 }
@@ -44,11 +47,78 @@ export function ChatWindowHeader({
   isGroupChat,
   isTeacher,
   onBack,
+  onReturnToSourceChat,
   onAddMembers,
+  onViewMembers,
   onOpenVocabulary,
   onDeleteGroup,
 }: ChatWindowHeaderProps) {
   const tChat = useTranslations('chat');
+
+  const subtitle = (() => {
+    if (typingNames.length > 0) {
+      return (
+        <p className={cn('text-xs', ui.typing)}>
+          {tChat('typing', {
+            names: typingNames.join(', '),
+            verb: typingNames.length === 1 ? tChat('typingOne') : tChat('typingMany'),
+          })}
+        </p>
+      );
+    }
+    if (presenceLabel) {
+      return (
+        <p className={cn('text-xs', onlineStatus ? 'text-green-600' : ui.muted)}>
+          {presenceLabel}
+        </p>
+      );
+    }
+    return (
+      <p className={cn('text-xs', ui.muted)}>
+        {tChat('participantsCount', { count: chat.participants.length })}
+      </p>
+    );
+  })();
+
+  const titleBlock = (
+    <>
+      <span
+        className={cn(
+          'block font-semibold leading-snug max-lg:line-clamp-2 max-lg:whitespace-normal max-lg:break-words min-[1367px]:truncate',
+          ui.title,
+        )}
+      >
+        {title}
+      </span>
+      {subtitle}
+    </>
+  );
+
+  const avatar = (
+    <div className="shrink-0">
+      {avatarUrl ? (
+        <Image
+          src={avatarUrl}
+          alt={title}
+          width={40}
+          height={40}
+          className="h-10 w-10 rounded-full object-cover"
+          unoptimized
+        />
+      ) : (
+        <div
+          className={cn(
+            'flex h-10 w-10 items-center justify-center rounded-full font-semibold text-white',
+            chat.type === 'GROUP'
+              ? 'bg-gradient-to-br from-purple-500 to-purple-600'
+              : ui.avatar,
+          )}
+        >
+          {avatarInitials}
+        </div>
+      )}
+    </div>
+  );
 
   return (
     <div
@@ -59,7 +129,13 @@ export function ChatWindowHeader({
         ui.headerBg,
       )}
     >
-      {onBack ? (
+      {onReturnToSourceChat ? (
+        <ChatBackButton
+          onClick={onReturnToSourceChat}
+          className="shrink-0"
+          aria-label={tChat('backToGroupChat')}
+        />
+      ) : onBack ? (
         <ChatBackButton
           onClick={onBack}
           className="shrink-0 lg:hidden"
@@ -67,56 +143,22 @@ export function ChatWindowHeader({
         />
       ) : null}
 
-      <div className="shrink-0">
-        {avatarUrl ? (
-          <Image
-            src={avatarUrl}
-            alt={title}
-            width={40}
-            height={40}
-            className="h-10 w-10 rounded-full object-cover"
-            unoptimized
-          />
-        ) : (
-          <div
-            className={cn(
-              'flex h-10 w-10 items-center justify-center rounded-full font-semibold text-white',
-              chat.type === 'GROUP'
-                ? 'bg-gradient-to-br from-purple-500 to-purple-600'
-                : ui.avatar,
-            )}
-          >
-            {avatarInitials}
-          </div>
-        )}
-      </div>
-
-      <div className="min-w-0 flex-1">
-        <h2
-          className={cn(
-            'font-semibold leading-snug max-lg:line-clamp-2 max-lg:whitespace-normal max-lg:break-words min-[1367px]:truncate',
-            ui.title,
-          )}
+      {isGroupChat && onViewMembers ? (
+        <button
+          type="button"
+          onClick={onViewMembers}
+          className="flex min-w-0 flex-1 items-center gap-2 rounded-[15px] text-left transition-colors hover:bg-black/[0.03] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 min-[1367px]:gap-3 -m-1 p-1"
+          aria-label={tChat('viewGroupMembers')}
         >
-          {title}
-        </h2>
-        {typingNames.length > 0 ? (
-          <p className={cn('text-xs', ui.typing)}>
-            {tChat('typing', {
-              names: typingNames.join(', '),
-              verb: typingNames.length === 1 ? tChat('typingOne') : tChat('typingMany'),
-            })}
-          </p>
-        ) : presenceLabel ? (
-          <p className={cn('text-xs', onlineStatus ? 'text-green-600' : ui.muted)}>
-            {presenceLabel}
-          </p>
-        ) : (
-          <p className={cn('text-xs', ui.muted)}>
-            {tChat('participantsCount', { count: chat.participants.length })}
-          </p>
-        )}
-      </div>
+          {avatar}
+          <div className="min-w-0 flex-1">{titleBlock}</div>
+        </button>
+      ) : (
+        <>
+          {avatar}
+          <div className="min-w-0 flex-1">{titleBlock}</div>
+        </>
+      )}
 
       <div className="flex shrink-0 items-center gap-1.5 min-[1367px]:gap-2">
         {isAdminOrManager && isGroupChat && (

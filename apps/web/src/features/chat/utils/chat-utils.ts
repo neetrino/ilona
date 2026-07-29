@@ -104,6 +104,10 @@ export function formatChatListTime(
     return date.toLocaleDateString(locale, { weekday: 'short' });
   }
 
+  if (date.getFullYear() !== now.getFullYear()) {
+    return date.toLocaleDateString(locale, { month: 'short', day: 'numeric', year: 'numeric' });
+  }
+
   return date.toLocaleDateString(locale, { month: 'short', day: 'numeric' });
 }
 

@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { UserRole } from '@ilona/database';
 import { PrismaService } from '../prisma/prisma.service';
 import { ChatManagerScopeService } from './chat-manager-scope.service';
+import { ChatAdminContactService } from './chat-admin-contact.service';
 import { getChatDb } from './chat-management.util';
 import { JwtPayload } from '../../common/types/auth.types';
 
@@ -12,6 +13,7 @@ export class ChatUserChatsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly managerScope: ChatManagerScopeService,
+    private readonly adminContactService: ChatAdminContactService,
   ) {}
 
   async getUserChats(userId: string, authUser?: JwtPayload): Promise<unknown> {
@@ -19,6 +21,15 @@ export class ChatUserChatsService {
 
     try {
       await this.prisma.ensureConnected();
+
+      // Students always get an Admin DM so they can message support from day one
+      // (also backfills older students who registered before this provisioning existed).
+      const role = authUser?.role ?? (
+        await db.user.findUnique({ where: { id: userId }, select: { role: true } })
+      )?.role;
+      if (role === UserRole.STUDENT) {
+        await this.adminContactService.ensureAdminDirectChat(userId);
+      }
 
       const chats = await db.chat.findMany({
         where: {

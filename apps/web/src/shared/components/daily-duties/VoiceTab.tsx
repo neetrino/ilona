@@ -113,7 +113,8 @@ export function VoiceTab({ lessonId, embeddedInSheet = false }: VoiceTabProps) {
       if (user?.role) {
         router.push(
           buildPortalChatHref(user.role, {
-            conversationId: chat.id,
+            chat,
+            currentUserId: user.id,
             returnTo: pathname,
             tab: user.role === 'ADMIN' || user.role === 'MANAGER' ? 'groups' : undefined,
           }),

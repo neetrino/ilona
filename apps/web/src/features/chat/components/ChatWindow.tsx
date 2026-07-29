@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { useLogo } from '@/features/settings/hooks/useSettings';
@@ -17,6 +17,7 @@ import { api } from '@/shared/lib/api';
 import { getFullApiUrl } from '@/shared/lib/api-url-utils';
 import { VocabularyModal } from './VocabularyModal';
 import { AddMembersModal } from './AddMembersModal';
+import { GroupMembersModal } from './GroupMembersModal';
 import { getChatThemeForRole, isPortalChatRole } from '../lib/chat-theme';
 import { formatChatLastSeen } from '../utils/chat-last-seen';
 import { useIsLgViewport } from '@/shared/hooks/useIsLgViewport';
@@ -42,9 +43,11 @@ interface ChatWindowProps {
   onSendMessage?: (content: string, type?: string) => void;
   onBack?: () => void;
   onChatUpdated?: (chat: Chat) => void;
+  /** Switch the active conversation (e.g. after opening a DM from group members) */
+  onOpenChat?: (chat: Chat) => void;
 }
 
-export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
+export function ChatWindow({ chat, onBack, onChatUpdated, onOpenChat }: ChatWindowProps) {
   const tChat = useTranslations('chat');
   const tCommon = useTranslations('common');
   const locale = useLocale();
@@ -63,6 +66,7 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
   const lastMarkedConversationIdRef = useRef<string | null>(null);
   const [showVocabularyModal, setShowVocabularyModal] = useState(false);
   const [showAddMembersModal, setShowAddMembersModal] = useState(false);
+  const [showGroupMembersModal, setShowGroupMembersModal] = useState(false);
   const [isSendingVocabulary, setIsSendingVocabulary] = useState(false);
 
   const isLgViewport = useIsLgViewport();
@@ -70,6 +74,8 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
   const addMessageToCache = useAddMessageToCache();
   const createDirectChat = useCreateDirectChat();
   const { getTypingUsers, addTypingUser, seedPresenceFromChat } = useChatStore();
+  const memberDmReturnChat = useChatStore((state) => state.memberDmReturnChat);
+  const setMemberDmReturnChat = useChatStore((state) => state.setMemberDmReturnChat);
   const presenceByUserId = useChatStore((state) => state.presenceByUserId);
   const [presenceTick, setPresenceTick] = useState(0);
 
@@ -259,6 +265,51 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
     }
   };
 
+  const handleGroupMemberDirectChat = useCallback(
+    async (memberUserId: string) => {
+      if (!isAdminOrManager || memberUserId === user?.id) return;
+      const sourceGroupChat = chat;
+      try {
+        const dmChat = await createDirectChat.mutateAsync(memberUserId);
+        setShowGroupMembersModal(false);
+        if (onOpenChat) {
+          onOpenChat(dmChat);
+        } else if (onChatUpdated) {
+          onChatUpdated(dmChat);
+        }
+        // Set after navigation so list handlers that clear return state do not wipe it
+        setMemberDmReturnChat(sourceGroupChat);
+      } catch (error) {
+        console.error('Failed to open direct chat with group member:', error);
+      }
+    },
+    [
+      chat,
+      createDirectChat,
+      isAdminOrManager,
+      onChatUpdated,
+      onOpenChat,
+      setMemberDmReturnChat,
+      user?.id,
+    ],
+  );
+
+  const handleReturnToSourceChat = useCallback(() => {
+    const source = memberDmReturnChat;
+    if (!source) return;
+    setMemberDmReturnChat(null);
+    if (onOpenChat) {
+      onOpenChat(source);
+    } else if (onChatUpdated) {
+      onChatUpdated(source);
+    }
+  }, [memberDmReturnChat, onChatUpdated, onOpenChat, setMemberDmReturnChat]);
+
+  const canReturnToSourceChat =
+    Boolean(memberDmReturnChat) &&
+    chat.type === 'DIRECT' &&
+    memberDmReturnChat?.id !== chat.id;
+
   const chatTitle = getChatTitle(chat, user?.id, tChat('chatTitle'));
   const chatAvatarUrl = getChatAvatarUrl(chat, user?.id, brandLogoUrl);
   const chatAvatarInitials = getChatAvatarInitials(chat, user?.id, tChat('groupChat'));
@@ -302,7 +353,9 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
         isGroupChat={isGroupChat}
         isTeacher={isTeacher}
         onBack={onBack}
+        onReturnToSourceChat={canReturnToSourceChat ? handleReturnToSourceChat : undefined}
         onAddMembers={() => setShowAddMembersModal(true)}
+        onViewMembers={isGroupChat ? () => setShowGroupMembersModal(true) : undefined}
         onOpenVocabulary={() => setShowVocabularyModal(true)}
         onDeleteGroup={canDeleteGroup ? handleOpenGroupDelete : undefined}
       />
@@ -379,6 +432,19 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
         onClose={() => setShowAddMembersModal(false)}
         chat={chat}
         onMemberAdded={onChatUpdated}
+      />
+
+      <GroupMembersModal
+        isOpen={showGroupMembersModal}
+        onClose={() => setShowGroupMembersModal(false)}
+        chat={chat}
+        title={chatTitle}
+        avatarInitials={chatAvatarInitials}
+        currentUserId={user?.id}
+        canAddMembers={isAdminOrManager && isGroupChat}
+        onAddMembers={() => setShowAddMembersModal(true)}
+        onMemberClick={isAdminOrManager ? handleGroupMemberDirectChat : undefined}
+        isOpeningDirectChat={createDirectChat.isPending}
       />
 
       <DeleteConfirmationDialog

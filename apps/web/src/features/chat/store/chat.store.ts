@@ -58,6 +58,13 @@ interface ChatState {
   editingMessage: Message | null;
   setEditingMessage: (message: Message | null) => void;
 
+  /**
+   * When Admin/Manager opens a 1:1 DM from a group Members list,
+   * remember the source group chat so the DM header can navigate back.
+   */
+  memberDmReturnChat: Chat | null;
+  setMemberDmReturnChat: (chat: Chat | null) => void;
+
   // Clear all state
   reset: () => void;
 }
@@ -251,6 +258,9 @@ export const useChatStore = create<ChatState>((set, get) => ({
   editingMessage: null,
   setEditingMessage: (message) => set({ editingMessage: message, replyTo: null }),
 
+  memberDmReturnChat: null,
+  setMemberDmReturnChat: (chat) => set({ memberDmReturnChat: chat }),
+
   // Reset
   reset: () =>
     set({
@@ -263,6 +273,7 @@ export const useChatStore = create<ChatState>((set, get) => ({
       drafts: new Map(),
       replyTo: null,
       editingMessage: null,
+      memberDmReturnChat: null,
     }),
 }));
 

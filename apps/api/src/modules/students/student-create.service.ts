@@ -24,13 +24,23 @@ import {
 } from '../groups/group.constants';
 import { computeAgeFromDob } from './student-crud.util';
 import { GroupChatSyncService } from '../groups/group-chat-sync.service';
+import { ChatService } from '../chat/chat.service';
 
 @Injectable()
 export class StudentCreateService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly chatSync: GroupChatSyncService,
+    private readonly chatService: ChatService,
   ) {}
+
+  private async ensureAdminDirectChat(studentUserId: string): Promise<void> {
+    try {
+      await this.chatService.ensureAdminDirectChat(studentUserId);
+    } catch {
+      // Ignore — chat list / student admin endpoint will retry lazily
+    }
+  }
   private async prepareStudentCreate(dto: CreateStudentDto, user?: JwtPayload) {
     const existingUser = await this.prisma.user.findUnique({
       where: { email: dto.email },
@@ -214,9 +224,11 @@ export class StudentCreateService {
 
   async create(dto: CreateStudentDto, user?: JwtPayload) {
     const prep = await this.prepareStudentCreate(dto, user);
-    return this.prisma.$transaction(async (tx) =>
+    const student = await this.prisma.$transaction(async (tx) =>
       this.insertUserStudentAndRelationsInTx(tx, dto, prep),
     );
+    await this.ensureAdminDirectChat(student.user.id);
+    return student;
   }
 
   /**
@@ -250,6 +262,8 @@ export class StudentCreateService {
     if (managerCenterId && group.centerId !== managerCenterId) {
       throw new ForbiddenException('You can only create students inside your assigned center');
     }
+
+    let createdStudentUserId: string | null = null;
 
     await this.prisma.$transaction(async (tx) => {
       const lead = await tx.crmLead.findUnique({
@@ -303,7 +317,12 @@ export class StudentCreateService {
         });
       }
 
-      await this.insertUserStudentAndRelationsInTx(tx, dto, prep, { leadId });
+      const student = await this.insertUserStudentAndRelationsInTx(tx, dto, prep, { leadId });
+      createdStudentUserId = student.user.id;
     });
+
+    if (createdStudentUserId) {
+      await this.ensureAdminDirectChat(createdStudentUserId);
+    }
   }
 }

@@ -43,4 +43,12 @@ export class ChatListsService {
   getAdminForStudent(studentUserId: string): Promise<unknown> {
     return this.adminContactService.getAdminForStudent(studentUserId);
   }
+
+  ensureAdminDirectChat(portalUserId: string): Promise<string | null> {
+    return this.adminContactService.ensureAdminDirectChat(portalUserId);
+  }
+
+  backfillStudentAdminDirectChats(): Promise<{ ensured: number; skipped: number }> {
+    return this.adminContactService.backfillStudentAdminDirectChats();
+  }
 }
