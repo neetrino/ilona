@@ -170,11 +170,7 @@ export function GroupMembersModal({
                     presence?.lastSeenAt ?? participant.user.lastSeenAt,
                     (key, values) => (values ? tChat(key, values) : tChat(key)),
                   );
-                  const pillLabel = participant.isAdmin
-                    ? tChat('groupAdmin')
-                    : roleKey
-                      ? tRoles(roleKey)
-                      : participant.user.role;
+                  const pillLabel = roleKey ? tRoles(roleKey) : participant.user.role;
 
                   return (
                     <li
@@ -219,7 +215,7 @@ export function GroupMembersModal({
                       <span
                         className={cn(
                           'shrink-0 rounded-full px-2.5 py-0.5 text-[11px] font-medium',
-                          rolePillClass(participant.user.role, participant.isAdmin),
+                          rolePillClass(participant.user.role),
                         )}
                       >
                         {pillLabel}

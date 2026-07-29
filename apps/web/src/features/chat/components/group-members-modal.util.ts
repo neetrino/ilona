@@ -21,12 +21,12 @@ export function roleTranslationKey(
   return null;
 }
 
-export function rolePillClass(role: string, isChatAdmin: boolean | undefined): string {
-  if (isChatAdmin) return 'bg-emerald-100 text-emerald-700';
+export function rolePillClass(role: string): string {
   const key = role.toLowerCase();
   if (key === 'admin') return 'bg-violet-100 text-violet-700';
   if (key === 'manager') return 'bg-amber-100 text-amber-800';
   if (key === 'teacher') return 'bg-sky-100 text-sky-700';
+  if (key === 'student') return 'bg-slate-100 text-slate-600';
   return 'bg-slate-100 text-slate-600';
 }
 
