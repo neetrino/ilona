@@ -418,8 +418,15 @@
     "teacherTips": {
       "feedbackTitle": "Student feedback",
       "feedbackBody": "Provide feedback after each lesson to track progress and keep parents informed.",
+      "feedbackCta": "Open feedback",
+      "feedbackPending": "{count, plural, one {# lesson needs feedback} other {# lessons need feedback}}",
+      "feedbackCaughtUp": "You're caught up on feedback.",
       "vocabularyTitle": "Send vocabulary",
-      "vocabularyBody": "Share today's vocabulary with your groups after each lesson so students can review new words."
+      "vocabularyBody": "Share today's vocabulary with your groups after each lesson so students can review new words.",
+      "vocabularyCta": "Send vocabulary",
+      "vocabularyPending": "{count, plural, one {# lesson needs vocabulary} other {# lessons need vocabulary}}",
+      "vocabularyCaughtUp": "Vocabulary is up to date.",
+      "openDailyDuties": "Open daily duties"
     },
     "teacherHero": {
       "titleAccent": "your classes, your way.",
