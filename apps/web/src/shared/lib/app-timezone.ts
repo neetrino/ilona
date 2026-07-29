@@ -1,7 +1,7 @@
-import { APP_TIMEZONE, getZonedParts, wallTimeToUtc } from '@ilona/types';
+import { APP_TIMEZONE, getZonedParts, toYmd, wallTimeToUtc } from '@ilona/types';
 import { formatLocaleDate, getAppDateLocaleTag } from '@/shared/lib/utils';
 
-export { APP_TIMEZONE, getZonedParts, wallTimeToUtc };
+export { APP_TIMEZONE, getZonedParts, toYmd, wallTimeToUtc };
 
 export function getAppTimeLocaleTag(locale: string): string {
   return getAppDateLocaleTag(locale);

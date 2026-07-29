@@ -28,7 +28,7 @@ import { StudentGhostButton, StudentIconButton, StudentPrimaryButton } from '@/f
 import {
   studentInputClass,
 } from '@/features/student-ui/tokens';
-import { formatAppTime } from '@/shared/lib/app-timezone';
+import { formatAppTime, toYmd } from '@/shared/lib/app-timezone';
 
 interface StudentAbsenceCalendarProps {
   calendarData: StudentCalendarMonth | undefined;
@@ -47,7 +47,7 @@ type DayKind =
   | 'pastUnmarked';
 
 function lessonDateKey(scheduledAt: string): string {
-  return formatDateString(new Date(scheduledAt));
+  return toYmd(scheduledAt);
 }
 
 function formatSelectedDayTitle(dateStr: string, locale: string): string {
@@ -361,7 +361,7 @@ export function StudentAbsenceCalendar({
       </div>
 
       <div className="grid grid-cols-7 gap-1.5 sm:gap-2">
-        {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, idx) => (
+        {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((day, idx) => (
           <div key={idx} className="py-2 text-center text-xs font-semibold text-[#8b8b90] sm:text-sm">
             {day}
           </div>

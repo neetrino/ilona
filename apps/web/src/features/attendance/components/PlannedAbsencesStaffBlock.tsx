@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import { CalendarDays } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useStaffPlannedAbsences } from '../hooks/useAttendance';
 import type { StaffPlannedAbsenceItem } from '../types';
@@ -8,9 +9,7 @@ import {
   Dialog,
   DialogContent,
   DialogTitle,
-  PublicAssetImage,
 } from '@/shared/components/ui';
-import { STUDENT_DASHBOARD_ASSETS } from '@/features/student-dashboard/assets';
 import { cn } from '@/shared/lib/utils';
 
 const PREVIEW_LIMIT = 5;
@@ -21,13 +20,15 @@ type PlannedAbsencesStaffBlockProps = {
 };
 
 function getAbsenceDateParts(date: string, locale: string): { dayLabel: string; dayNumber: string } {
-  const parsed = new Date(`${date}T12:00:00`);
-  if (Number.isNaN(parsed.getTime())) {
+  const [year, month, day] = date.split('-').map(Number);
+  if (![year, month, day].every((n) => Number.isFinite(n))) {
     return { dayLabel: '—', dayNumber: '—' };
   }
+  // Noon UTC keeps weekday/day stable for a YYYY-MM-DD calendar value.
+  const parsed = new Date(Date.UTC(year, month - 1, day, 12, 0, 0));
   return {
-    dayLabel: parsed.toLocaleDateString(locale, { weekday: 'short' }),
-    dayNumber: String(parsed.getDate()),
+    dayLabel: parsed.toLocaleDateString(locale, { weekday: 'short', timeZone: 'UTC' }),
+    dayNumber: String(day),
   };
 }
 
@@ -160,14 +161,11 @@ export function PlannedAbsencesStaffBlock({
         >
           <div className="-mx-4 -mt-4 mb-5 border-b border-[rgba(14,14,16,0.07)] bg-white px-4 pb-5 pt-1 tablet:-mx-6 tablet:-mt-6 tablet:px-6 tablet:pb-6 tablet:pt-2">
             <div className="flex items-start gap-3">
-              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#ddecff]">
-                <PublicAssetImage
-                  src={STUDENT_DASHBOARD_ASSETS.calendarIcon}
-                  alt=""
-                  width={22}
-                  height={22}
-                  className="h-[1.375rem] w-[1.375rem] object-contain"
-                />
+              <div className="flex h-11 w-11 shrink-0 flex-col overflow-hidden rounded-[0.875rem] border border-[rgba(14,14,16,0.08)] bg-white shadow-[0_6px_16px_-10px_rgba(16,16,163,0.45)]">
+                <div className="h-3.5 shrink-0 bg-gradient-to-r from-[#ff9330] via-[#ff5f5f] to-[#ff2e88]" />
+                <div className="flex flex-1 items-center justify-center">
+                  <CalendarDays className="h-4 w-4 text-[#1010a3]" strokeWidth={2.25} aria-hidden />
+                </div>
               </div>
               <div className="min-w-0 flex-1 pr-8">
                 <DialogTitle className="text-left text-lg font-semibold tracking-tight text-[#1010a3] sm:text-xl">
