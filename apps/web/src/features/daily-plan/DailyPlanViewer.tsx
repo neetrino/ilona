@@ -2,10 +2,10 @@
 
 
 import * as DialogPrimitive from '@radix-ui/react-dialog';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { X } from 'lucide-react';
 import { useCallback, useEffect } from 'react';
-import { cn } from '@/shared/lib/utils';
+import { cn, formatLocaleDate } from '@/shared/lib/utils';
 import { PORTAL_SHEET_DRAG_HANDLE_ATTR, usePortalSheetDrag } from '@/shared/hooks/usePortalSheetDrag';
 import {
   portalSheetLayerProps,
@@ -21,33 +21,36 @@ interface DailyPlanViewerProps {
   onClose: () => void;
 }
 
-function formatDate(value: string) {
+function formatPlanDate(value: string, locale: string) {
   const d = new Date(value);
   return Number.isNaN(d.getTime())
     ? value
-    : d.toLocaleDateString(undefined, {
+    : formatLocaleDate(d, locale, {
         year: 'numeric',
         month: 'short',
         day: '2-digit',
       });
 }
 
-function formatDateTime(value: string) {
+function formatPlanDateTime(value: string, locale: string) {
   const d = new Date(value);
   return Number.isNaN(d.getTime())
     ? value
-    : d.toLocaleString(undefined, {
+    : `${formatLocaleDate(d, locale, {
         year: 'numeric',
         month: 'short',
         day: '2-digit',
+      })}, ${d.toLocaleTimeString(locale === 'hy' ? 'hy-AM' : 'en-US', {
         hour: '2-digit',
         minute: '2-digit',
-      });
+        hour12: false,
+      })}`;
 }
 
 export function DailyPlanViewer({ plan, onClose }: DailyPlanViewerProps) {
   const t = useTranslations('dailyPlanPage');
   const tCommon = useTranslations('common');
+  const locale = useLocale();
   const tNav = useTranslations('nav');
   const kindLabel: Record<DailyPlanResourceKind, string> = {
     READING: t('resourceKinds.READING'),
@@ -109,7 +112,7 @@ export function DailyPlanViewer({ plan, onClose }: DailyPlanViewerProps) {
                 {plan.teacher.user.firstName} {plan.teacher.user.lastName}
               </p>
               <p className="text-sm text-slate-500">
-                {formatDate(plan.date)} · {plan.group?.name ?? plan.lesson?.group?.name ?? tCommon('noGroup')}
+                {formatPlanDate(plan.date, locale)} · {plan.group?.name ?? plan.lesson?.group?.name ?? tCommon('noGroup')}
                 {(plan.group?.center?.name ?? plan.lesson?.group?.center?.name) && (
                   <>
                     {' '}
@@ -119,7 +122,7 @@ export function DailyPlanViewer({ plan, onClose }: DailyPlanViewerProps) {
               </p>
               {plan.lesson?.scheduledAt && (
                 <p className="mt-1 text-xs text-slate-500">
-                  {t('lessonPrefix')}: {formatDateTime(plan.lesson.scheduledAt)}
+                  {t('lessonPrefix')}: {formatPlanDateTime(plan.lesson.scheduledAt, locale)}
                 </p>
               )}
             </div>

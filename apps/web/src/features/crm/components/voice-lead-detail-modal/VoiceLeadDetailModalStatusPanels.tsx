@@ -1,8 +1,9 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import type { CrmLead, CrmLeadStatus } from '@/features/crm/types';
 import { useCrmStatusLabels } from '@/features/crm/hooks/useCrmStatusLabels';
+import { formatAppDateTime } from '@/shared/lib/app-timezone';
 
 type VoiceLeadDetailModalStatusPanelsProps = {
   lead: CrmLead;
@@ -11,6 +12,7 @@ type VoiceLeadDetailModalStatusPanelsProps = {
 export function VoiceLeadDetailModalStatusPanels({ lead }: VoiceLeadDetailModalStatusPanelsProps) {
   const t = useTranslations('crm');
   const tr = useTranslations('roles');
+  const locale = useLocale();
   const statusLabels = useCrmStatusLabels();
 
   const hasApproval =
@@ -26,7 +28,7 @@ export function VoiceLeadDetailModalStatusPanels({ lead }: VoiceLeadDetailModalS
             {t('teacherApprovedLead')}
             {lead.teacherApprovedAt ? (
               <span className="text-slate-500 ml-1">
-                {new Date(lead.teacherApprovedAt).toLocaleString()}
+                {formatAppDateTime(lead.teacherApprovedAt, locale)}
               </span>
             ) : null}
             {lead.teacher?.user ? (
@@ -54,7 +56,7 @@ export function VoiceLeadDetailModalStatusPanels({ lead }: VoiceLeadDetailModalS
                   <li key={a.id} className="text-sm text-slate-700 border-l-2 border-amber-300 pl-3 py-1.5">
                     <span className="font-medium text-slate-800">{teacherName}</span>
                     <span className="text-slate-500 ml-1">
-                      {new Date(a.createdAt).toLocaleString()}
+                      {formatAppDateTime(a.createdAt, locale)}
                     </span>
                     {comment && comment !== '—' ? (
                       <p className="mt-1 text-slate-600">{comment}</p>
@@ -105,7 +107,7 @@ export function VoiceLeadDetailModalStatusPanels({ lead }: VoiceLeadDetailModalS
                 {a.type === 'TEACHER_APPROVED' ? <>{t('activityTeacherApproved')}</> : null}
                 {a.type === 'TEACHER_TRANSFER' ? <>{t('activityTransferRequested')}</> : null}
                 <span className="text-slate-400 ml-1">
-                  {new Date(a.createdAt).toLocaleString()}
+                  {formatAppDateTime(a.createdAt, locale)}
                 </span>
               </li>
             ))}

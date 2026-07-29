@@ -1,7 +1,8 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { Badge } from '@/shared/components/ui';
+import { formatDate } from '@/shared/lib/utils';
 import type { Student } from '@/features/students';
 
 interface StudentWithAttendances extends Student {
@@ -30,6 +31,7 @@ interface StudentAttendanceProps {
 
 export function StudentAttendance({ student }: StudentAttendanceProps) {
   const t = useTranslations('students');
+  const locale = useLocale();
   if (!student.attendances || student.attendances.length === 0) {
     return null;
   }
@@ -45,8 +47,8 @@ export function StudentAttendance({ student }: StudentAttendanceProps) {
                 {attendance.lesson?.topic || 'Lesson'}
               </p>
               <p className="text-sm text-[#8b8b90]">
-                {attendance.lesson?.scheduledAt 
-                  ? new Date(attendance.lesson.scheduledAt).toLocaleDateString()
+                {attendance.lesson?.scheduledAt
+                  ? formatDate(attendance.lesson.scheduledAt, locale)
                   : 'N/A'}
               </p>
             </div>

@@ -1,9 +1,9 @@
 'use client';
 
 import * as React from 'react';
-import { useLocale, useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
 import { format } from 'date-fns';
-import { enGB, hy } from 'date-fns/locale';
+import { enGB } from 'date-fns/locale';
 import { computePopoverPosition } from './date-picker-popover-position.util';
 import type { DatePickerInputProps, DatePickerInputViewModel } from './date-picker-input.types';
 import {
@@ -34,9 +34,9 @@ export function useDatePickerInput({
   allowClear = true,
   popoverExpanded = false,
 }: DatePickerInputProps): DatePickerInputViewModel {
-  const locale = useLocale();
   const tCommon = useTranslations('common');
-  const dateLocale = locale === 'hy' ? hy : enGB;
+  /** Calendar month labels stay English (same as date badge icons). */
+  const dateLocale = enGB;
   const isControlled = value !== undefined;
   const [uncontrolledValue, setUncontrolledValue] = React.useState<string>(() =>
     toDateString(defaultValue),

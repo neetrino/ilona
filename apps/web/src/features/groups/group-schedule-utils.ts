@@ -1,4 +1,5 @@
 import type { GroupScheduleEntry } from './types';
+import { getAppDateLocaleTag } from '@/shared/lib/utils';
 
 export interface NormalizedGroupCalendar {
   dateFrom: string;
@@ -129,8 +130,8 @@ export function scheduleSlotsValidationError(slots: GroupScheduleEntry[]): strin
   return null;
 }
 
-export function formatPreviewRow(d: Date): string {
-  return d.toLocaleString(undefined, {
+export function formatPreviewRow(d: Date, locale: string = 'en'): string {
+  return d.toLocaleString(getAppDateLocaleTag(locale), {
     weekday: 'short',
     month: 'short',
     day: 'numeric',

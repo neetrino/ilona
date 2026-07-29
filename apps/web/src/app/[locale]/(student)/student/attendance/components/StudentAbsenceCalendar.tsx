@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
-import { cn, getAppDateLocaleTag } from '@/shared/lib/utils';
+import { cn, formatLocaleDate } from '@/shared/lib/utils';
 import {
   getMonthDates,
   formatDateString,
@@ -50,9 +50,9 @@ function lessonDateKey(scheduledAt: string): string {
   return formatDateString(new Date(scheduledAt));
 }
 
-function formatSelectedDayTitle(dateStr: string, dateLocale: string): string {
+function formatSelectedDayTitle(dateStr: string, locale: string): string {
   const [year, month, day] = dateStr.split('-').map(Number);
-  return new Date(year, month - 1, day).toLocaleDateString(dateLocale, {
+  return formatLocaleDate(new Date(year, month - 1, day), locale, {
     weekday: 'long',
     year: 'numeric',
     month: 'long',
@@ -130,7 +130,6 @@ export function StudentAbsenceCalendar({
   const t = useTranslations('attendance');
   const tCommon = useTranslations('common');
   const locale = useLocale();
-  const dateLocale = getAppDateLocaleTag(locale);
   const monthDates = getMonthDates(currentMonth);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [commentDraft, setCommentDraft] = useState('');
@@ -447,7 +446,7 @@ export function StudentAbsenceCalendar({
           >
             <DialogHeader className="pr-8 text-left sm:text-left">
               <DialogTitle className="text-xl font-semibold leading-snug text-[#1010a3] tablet:text-lg">
-                {selectedDate ? formatSelectedDayTitle(selectedDate, dateLocale) : null}
+                {selectedDate ? formatSelectedDayTitle(selectedDate, locale) : null}
               </DialogTitle>
             </DialogHeader>
 

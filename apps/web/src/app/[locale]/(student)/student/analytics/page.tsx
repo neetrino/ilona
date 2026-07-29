@@ -1,11 +1,11 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { useMyPayments } from '@/features/finance';
 import { useAuthStore } from '@/features/auth/store/auth.store';
-import { formatCurrency } from '@/shared/lib/utils';
+import { formatCurrency, formatMonthYear } from '@/shared/lib/utils';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '@/shared/lib/api';
 import { AnalyticsTimeFilterBar } from '@/shared/components/analytics/AnalyticsTimeFilterBar';
@@ -75,6 +75,7 @@ function paymentStatusLabel(status: string, t: (key: string) => string): string 
 
 export default function StudentAnalyticsPage() {
   const t = useTranslations('analytics');
+  const locale = useLocale();
   const tCommon = useTranslations('common');
   const tFinance = useTranslations('finance');
   const defPay = useMemo(() => defaultCustomRangeLast30Days(), []);
@@ -224,12 +225,7 @@ export default function StudentAnalyticsPage() {
                         <StudentTableRow key={p.id}>
                           <StudentTd className="!text-left align-middle">
                             <span className="font-medium text-[#1010a3]">
-                              {p.month
-                                ? new Date(p.month).toLocaleDateString(undefined, {
-                                    month: 'long',
-                                    year: 'numeric',
-                                  })
-                                : '—'}
+                              {p.month ? formatMonthYear(p.month, locale) : '—'}
                             </span>
                           </StudentTd>
                           <StudentTd className="!text-center align-middle">

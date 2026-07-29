@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { MessageCircle, X } from 'lucide-react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { useStudentFeedback } from '@/features/feedback';
 import { useStudent, type Student } from '@/features/students';
 import type { Feedback } from '@/features/feedback';
@@ -18,23 +18,19 @@ import { PORTAL_SHEET_DRAG_HANDLE_ATTR, usePortalSheetDrag } from '@/shared/hook
 import { portalFormSheetContentClass } from '@/shared/lib/portal-form-sheet-classes';
 import { ADMIN_ICON_BUTTON_SM_CLASS } from '@/shared/lib/admin-control-theme';
 import { cn } from '@/shared/lib/utils';
+import { formatAppDate, formatAppDateTime } from '@/shared/lib/app-timezone';
 
-function formatDateTime(iso: string) {
+function formatFeedbackDateTime(iso: string, locale: string) {
   try {
-    const d = new Date(iso);
-    return d.toLocaleString(undefined, {
-      dateStyle: 'medium',
-      timeStyle: 'short',
-    });
+    return formatAppDateTime(iso, locale);
   } catch {
     return iso;
   }
 }
 
-function formatDate(iso: string) {
+function formatFeedbackDate(iso: string, locale: string) {
   try {
-    const d = new Date(iso);
-    return d.toLocaleDateString(undefined, { dateStyle: 'medium' });
+    return formatAppDate(iso, locale, { dateStyle: 'medium' });
   } catch {
     return iso;
   }
@@ -228,8 +224,11 @@ export function StudentFeedbackModal({
 
 function FeedbackCard({ feedback }: { feedback: Feedback }) {
   const t = useTranslations('students');
+  const locale = useLocale();
   const lesson = feedback.lesson;
-  const scheduledAt = lesson?.scheduledAt ? formatDate(lesson.scheduledAt) : '—';
+  const scheduledAt = lesson?.scheduledAt
+    ? formatFeedbackDate(lesson.scheduledAt, locale)
+    : '—';
   const groupName = lesson?.group?.name;
 
   return (
@@ -246,13 +245,17 @@ function FeedbackCard({ feedback }: { feedback: Feedback }) {
           <p className="mb-1 text-xs font-medium text-[#8b8b90]">{t('feedbackContent')}</p>
           <p className="whitespace-pre-wrap text-sm text-[#3b3b40]">{feedback.content}</p>
           <p className="mt-2 text-xs text-[#8b8b90]">
-            {t('feedbackGivenAt', { date: formatDateTime(feedback.createdAt) })}
+            {t('feedbackGivenAt', {
+              date: formatFeedbackDateTime(feedback.createdAt, locale),
+            })}
           </p>
         </div>
       ) : (
         <div className="border-t border-[rgba(14,14,16,0.07)] pt-2">
           <p className="text-sm italic text-[#8b8b90]">{t('noFeedbackForLesson')}</p>
-          <p className="mt-2 text-xs text-[#8b8b90]">{formatDateTime(feedback.createdAt)}</p>
+          <p className="mt-2 text-xs text-[#8b8b90]">
+            {formatFeedbackDateTime(feedback.createdAt, locale)}
+          </p>
         </div>
       )}
     </div>

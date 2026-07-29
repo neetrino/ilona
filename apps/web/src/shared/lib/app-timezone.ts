@@ -1,9 +1,10 @@
 import { APP_TIMEZONE, getZonedParts, wallTimeToUtc } from '@ilona/types';
+import { formatLocaleDate, getAppDateLocaleTag } from '@/shared/lib/utils';
 
 export { APP_TIMEZONE, getZonedParts, wallTimeToUtc };
 
 export function getAppTimeLocaleTag(locale: string): string {
-  return locale === 'hy' ? 'hy-AM' : 'en-GB';
+  return getAppDateLocaleTag(locale);
 }
 
 /** Format lesson/event time in the project timezone (same for every user). */
@@ -31,8 +32,18 @@ export function formatAppDate(
 ): string {
   const d = typeof date === 'string' ? new Date(date) : date;
   if (Number.isNaN(d.getTime())) return '—';
-  return d.toLocaleDateString(getAppTimeLocaleTag(locale), {
+  const hasExplicitParts =
+    options?.weekday != null ||
+    options?.year != null ||
+    options?.month != null ||
+    options?.day != null ||
+    options?.dateStyle != null;
+
+  return formatLocaleDate(d, locale, {
     timeZone: APP_TIMEZONE,
+    ...(hasExplicitParts
+      ? {}
+      : { year: 'numeric', month: 'short', day: 'numeric' }),
     ...options,
   });
 }
@@ -70,9 +81,11 @@ export function lessonWallTimeToIso(ymd: string, timeHHmm: string): string {
 export function formatAppDateTime(date: Date | string, locale: string = 'en'): string {
   const d = typeof date === 'string' ? new Date(date) : date;
   if (Number.isNaN(d.getTime())) return '—';
-  return d.toLocaleString(getAppTimeLocaleTag(locale), {
-    dateStyle: 'medium',
-    timeStyle: 'short',
+  const datePart = formatLocaleDate(d, locale, {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
     timeZone: APP_TIMEZONE,
   });
+  return `${datePart}, ${formatAppTime(d, locale)}`;
 }

@@ -1,8 +1,9 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import type { CrmLead } from '@/features/crm/types';
 import { RecordingPlayback, VoiceRecorder } from '../VoiceRecorder';
+import { formatAppDateTime } from '@/shared/lib/app-timezone';
 
 type VoiceLeadDetailModalVoiceSectionProps = {
   lead: CrmLead;
@@ -16,6 +17,7 @@ export function VoiceLeadDetailModalVoiceSection({
   onRecordingSaved,
 }: VoiceLeadDetailModalVoiceSectionProps) {
   const t = useTranslations('crm');
+  const locale = useLocale();
   const voiceAttachments = lead.attachments?.filter((a) => a.type === 'VOICE_RECORDING') ?? [];
 
   return (
@@ -39,11 +41,11 @@ export function VoiceLeadDetailModalVoiceSection({
 
       <div className="text-xs text-slate-500">
         {t('created')}{' '}
-        {lead.createdAt ? new Date(lead.createdAt).toLocaleString() : ''}
+        {lead.createdAt ? formatAppDateTime(lead.createdAt, locale) : ''}
         {lead.updatedAt ? (
           <>
             {' '}
-            · {t('updated')} {new Date(lead.updatedAt).toLocaleString()}
+            · {t('updated')} {formatAppDateTime(lead.updatedAt, locale)}
           </>
         ) : null}
       </div>

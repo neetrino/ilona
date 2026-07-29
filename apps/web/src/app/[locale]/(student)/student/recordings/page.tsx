@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useRef, useState } from 'react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { useQuery } from '@tanstack/react-query';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import {
@@ -13,6 +13,7 @@ import {
   type VoiceToTeacherRecording,
 } from '@/features/chat/api/chat.api';
 import { chatKeys } from '@/features/chat/hooks/useChat';
+import { formatAppDateTime } from '@/shared/lib/app-timezone';
 import {
   StudentBadge,
   StudentCard,
@@ -42,14 +43,8 @@ function formatDuration(
   return t('durationMinutes', { minutes });
 }
 
-function formatVoiceTimestamp(createdAt: string): string {
-  return new Date(createdAt).toLocaleString(undefined, {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
+function formatVoiceTimestamp(createdAt: string, locale: string): string {
+  return formatAppDateTime(createdAt, locale);
 }
 
 function VoiceToTeacherPlayback({
@@ -101,6 +96,7 @@ function VoiceToTeacherCard({
   onEnded: () => void;
 }) {
   const t = useTranslations('recordings');
+  const locale = useLocale();
   const teacherName = recording.teacher
     ? `${recording.teacher.firstName} ${recording.teacher.lastName}`
     : t('teacherFallback');
@@ -111,7 +107,7 @@ function VoiceToTeacherCard({
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <StudentBadge variant="warning">{t('voiceToTeacher')}</StudentBadge>
-            <span className="text-xs text-[#8b8b90]">{formatVoiceTimestamp(recording.createdAt)}</span>
+            <span className="text-xs text-[#8b8b90]">{formatVoiceTimestamp(recording.createdAt, locale)}</span>
           </div>
           <p className="mt-1.5 truncate text-sm font-semibold text-[#1010a3]">{teacherName}</p>
           <p className="mt-0.5 text-sm text-[#8b8b90]">{formatDuration(recording.duration, t)}</p>
@@ -141,6 +137,7 @@ function VoiceToTeacherRow({
   onEnded: () => void;
 }) {
   const t = useTranslations('recordings');
+  const locale = useLocale();
   const teacherName = recording.teacher
     ? `${recording.teacher.firstName} ${recording.teacher.lastName}`
     : t('teacherFallback');
@@ -151,7 +148,7 @@ function VoiceToTeacherRow({
         <StudentBadge variant="warning">{t('voiceToTeacher')}</StudentBadge>
       </StudentTd>
       <StudentTd className="align-middle whitespace-nowrap">
-        <span className="text-[#3b3b40]">{formatVoiceTimestamp(recording.createdAt)}</span>
+        <span className="text-[#3b3b40]">{formatVoiceTimestamp(recording.createdAt, locale)}</span>
       </StudentTd>
       <StudentTd className="align-middle">
         <span className="font-medium text-[#1010a3]">{teacherName}</span>

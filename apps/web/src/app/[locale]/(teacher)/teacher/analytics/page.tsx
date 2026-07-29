@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { useMyLessons } from '@/features/lessons';
 import { useMySalaries, useMyDeductions } from '@/features/finance';
@@ -12,7 +12,7 @@ import {
   toYmd,
   type TimeFilterMode,
 } from '@/shared/lib/analytics-time-range';
-import { formatCurrency, cn } from '@/shared/lib/utils';
+import { formatCurrency, formatDate, cn } from '@/shared/lib/utils';
 import {
   StudentCard,
   StudentPageStack,
@@ -69,6 +69,7 @@ function ProgressBar({ value, label }: { value: number; label: string }) {
 
 export default function TeacherAnalyticsPage() {
   const t = useTranslations('analytics');
+  const locale = useLocale();
   const [activeTab, setActiveTab] = useState<TabId>('attendance');
 
   const defPay = useMemo(() => defaultCustomRangeLast30Days(), []);
@@ -416,7 +417,7 @@ export default function TeacherAnalyticsPage() {
                         {deduction.reason.toLowerCase().replace(/_/g, ' ')}
                       </p>
                       <p className="text-sm text-[#8b8b90]">
-                        {new Date(deduction.createdAt).toLocaleDateString()}
+                        {formatDate(deduction.createdAt, locale)}
                       </p>
                     </div>
                     <span className="font-semibold text-[#b42318]">

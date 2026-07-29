@@ -1,9 +1,9 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { Badge, Input, Label } from '@/shared/components/ui';
 import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
-import { formatPhoneForDisplay } from '@/shared/lib/utils';
+import { formatDate, formatPhoneForDisplay } from '@/shared/lib/utils';
 import type { Student } from '@/features/students';
 import type { GroupAssignmentOption } from '@/features/students/lib/group-center-assignment';
 import type { UseFormRegister, UseFormSetValue } from 'react-hook-form';
@@ -40,6 +40,7 @@ export function StudentDetails({
 }: StudentDetailsProps) {
   const t = useTranslations('students');
   const tc = useTranslations('common');
+  const locale = useLocale();
   const firstName = student.user?.firstName || '';
   const lastName = student.user?.lastName || '';
   const na = t('notAvailable');
@@ -84,11 +85,7 @@ export function StudentDetails({
                 <label className="text-sm font-medium text-[#8b8b90]">{t('memberSince')}</label>
                 <p className="text-[#3b3b40] mt-1">
                   {student.user?.createdAt
-                    ? new Date(student.user.createdAt).toLocaleDateString(undefined, {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric',
-                      })
+                    ? formatDate(student.user.createdAt, locale)
                     : na}
                 </p>
               </div>

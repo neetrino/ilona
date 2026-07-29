@@ -3,11 +3,11 @@
 import { Avatar, Badge, Input, Label } from '@/shared/components/ui';
 import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
 import type { Teacher } from '@/features/teachers';
-import { formatPhoneForDisplay } from '@/shared/lib/utils';
+import { formatDate, formatPhoneForDisplay } from '@/shared/lib/utils';
 import type { UseFormRegister, UseFormSetValue } from 'react-hook-form';
 import type { UpdateTeacherFormData } from '../schemas';
 import type { UserStatus } from '@/types';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 
 interface TeacherProfileHeaderProps {
   teacher: Teacher;
@@ -39,6 +39,7 @@ export function TeacherProfileHeader({
   const tCommon = useTranslations('common');
   const tStatus = useTranslations('status');
   const tTeachers = useTranslations('teachers');
+  const locale = useLocale();
   const fullName = `${firstName} ${lastName}`.trim() || tTeachers('teacherProfile');
   const avatarUrl = teacher.user?.avatarUrl;
 
@@ -121,7 +122,7 @@ export function TeacherProfileHeader({
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
-                    Last login: {new Date(teacher.user.lastLoginAt).toLocaleDateString()}
+                    Last login: {formatDate(teacher.user.lastLoginAt, locale)}
                   </div>
                 )}
               </div>

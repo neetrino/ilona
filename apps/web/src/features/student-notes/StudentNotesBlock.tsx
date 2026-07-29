@@ -1,13 +1,14 @@
 'use client';
 
 import { useState } from 'react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import {
   useCreateStudentNote,
   useDeleteStudentNote,
   useMyStudentNotes,
 } from './hooks';
 import type { StudentNote } from './types';
+import { formatDate } from '@/shared/lib/utils';
 
 const ROTATIONS = ['-rotate-1', 'rotate-1', '-rotate-2', 'rotate-2', 'rotate-0'];
 
@@ -26,6 +27,7 @@ function NoteCard({
   onDelete: (id: string) => void;
   variant: 'default' | 'dashboard';
 }) {
+  const locale = useLocale();
   if (variant === 'dashboard') {
     return (
       <div className="border-t border-dashed border-[rgba(14,14,16,0.07)] py-4 first:border-t-0 first:pt-0">
@@ -57,7 +59,7 @@ function NoteCard({
     >
       <p className="whitespace-pre-wrap text-sm text-slate-800">{note.content}</p>
       <div className="mt-3 flex items-center justify-between text-xs text-slate-600">
-        <span>{new Date(note.createdAt).toLocaleDateString()}</span>
+        <span>{formatDate(note.createdAt, locale)}</span>
         <button
           type="button"
           onClick={() => onDelete(note.id)}

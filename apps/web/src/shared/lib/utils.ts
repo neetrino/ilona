@@ -15,15 +15,173 @@ export function getAppDateLocaleTag(locale: string): string {
   return locale === 'hy' ? 'hy-AM' : 'en-GB';
 }
 
+const HY_MONTHS_LONG = [
+  'հունվար',
+  'փետրվար',
+  'մարտ',
+  'ապրիլ',
+  'մայիս',
+  'հունիս',
+  'հուլիս',
+  'օգոստոս',
+  'սեպտեմբեր',
+  'հոկտեմբեր',
+  'նոյեմբեր',
+  'դեկտեմբեր',
+] as const;
+
+const HY_MONTHS_GENITIVE = [
+  'հունվարի',
+  'փետրվարի',
+  'մարտի',
+  'ապրիլի',
+  'մայիսի',
+  'հունիսի',
+  'հուլիսի',
+  'օգոստոսի',
+  'սեպտեմբերի',
+  'հոկտեմբերի',
+  'նոյեմբերի',
+  'դեկտեմբերի',
+] as const;
+
+const HY_WEEKDAYS_LONG = [
+  'կիրակի',
+  'երկուշաբթի',
+  'երեքշաբթի',
+  'չորեքշաբթի',
+  'հինգշաբթի',
+  'ուրբաթ',
+  'շաբաթ',
+] as const;
+
+function isAppHyLocale(locale: string): boolean {
+  return locale === 'hy' || locale.toLowerCase().startsWith('hy');
+}
+
+function hasCyrillic(value: string): boolean {
+  return /[а-яё]/i.test(value);
+}
+
+function getDatePartsInZone(
+  date: Date,
+  timeZone?: string,
+): { year: number; month: number; day: number; weekday: number } {
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone,
+    year: 'numeric',
+    month: 'numeric',
+    day: 'numeric',
+    weekday: 'short',
+  }).formatToParts(date);
+
+  const get = (type: Intl.DateTimeFormatPartTypes): string =>
+    parts.find((part) => part.type === type)?.value ?? '';
+
+  const weekdayMap: Record<string, number> = {
+    Sun: 0,
+    Mon: 1,
+    Tue: 2,
+    Wed: 3,
+    Thu: 4,
+    Fri: 5,
+    Sat: 6,
+  };
+
+  return {
+    year: Number(get('year')),
+    month: Number(get('month')),
+    day: Number(get('day')),
+    weekday: weekdayMap[get('weekday')] ?? date.getDay(),
+  };
+}
+
+function formatArmenianDateFallback(
+  date: Date,
+  options: Intl.DateTimeFormatOptions,
+): string {
+  const { year, month, day, weekday } = getDatePartsInZone(date, options.timeZone);
+  const monthIndex = Math.max(0, Math.min(11, month - 1));
+  const monthLong = HY_MONTHS_LONG[monthIndex];
+  const monthGenitive = HY_MONTHS_GENITIVE[monthIndex];
+  const weekdayLong = HY_WEEKDAYS_LONG[weekday];
+
+  const wantsWeekday = options.weekday === 'long' || options.weekday === 'short';
+  const wantsDay = options.day != null || options.dateStyle != null;
+  const wantsMonth = options.month != null || options.dateStyle != null;
+  const wantsYear = options.year != null || options.dateStyle != null;
+
+  if (wantsWeekday && wantsDay && wantsMonth && wantsYear) {
+    return `${weekdayLong}, ${day} ${monthGenitive} ${year} թ․`;
+  }
+  if (wantsDay && wantsMonth && wantsYear) {
+    return `${day} ${monthGenitive} ${year} թ․`;
+  }
+  if (wantsMonth && wantsYear && !wantsDay) {
+    return `${year} թ․ ${monthLong}`;
+  }
+  if (wantsMonth && wantsDay && !wantsYear) {
+    return `${day} ${monthGenitive}`;
+  }
+  if (wantsYear && !wantsMonth) {
+    return `${year} թ․`;
+  }
+  return `${day} ${monthGenitive} ${year} թ․`;
+}
+
+function isHyLocaleActuallySupported(tag: string, options?: Intl.DateTimeFormatOptions): boolean {
+  try {
+    const resolved = new Intl.DateTimeFormat(tag, options).resolvedOptions().locale;
+    return resolved.toLowerCase().startsWith('hy');
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Locale-aware date formatting. For Armenian, falls back to explicit HY month names
+ * when the runtime Intl data is missing and would otherwise use the OS language (e.g. Russian).
+ */
+export function formatLocaleDate(
+  date: Date | string,
+  locale: string,
+  options: Intl.DateTimeFormatOptions,
+): string {
+  const d = typeof date === 'string' ? new Date(date) : date;
+  if (Number.isNaN(d.getTime())) return '—';
+
+  const tag = getAppDateLocaleTag(locale);
+  if (isAppHyLocale(locale)) {
+    if (!isHyLocaleActuallySupported(tag, options)) {
+      return formatArmenianDateFallback(d, options);
+    }
+    const formatted = d.toLocaleDateString(tag, options);
+    if (hasCyrillic(formatted)) {
+      return formatArmenianDateFallback(d, options);
+    }
+    return formatted;
+  }
+
+  return d.toLocaleDateString(tag, options);
+}
+
 /**
  * Format a date to a locale string (project timezone — Asia/Yerevan).
  */
 export function formatDate(date: Date | string, locale: string = 'en'): string {
-  const d = typeof date === 'string' ? new Date(date) : date;
-  return d.toLocaleDateString(getAppDateLocaleTag(locale), {
+  return formatLocaleDate(date, locale, {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
+    timeZone: 'Asia/Yerevan',
+  });
+}
+
+/** Month + year label (e.g. payment periods): "July 2026" / "2026 թ․ հուլիս". */
+export function formatMonthYear(date: Date | string, locale: string = 'en'): string {
+  return formatLocaleDate(date, locale, {
+    month: 'long',
+    year: 'numeric',
     timeZone: 'Asia/Yerevan',
   });
 }
