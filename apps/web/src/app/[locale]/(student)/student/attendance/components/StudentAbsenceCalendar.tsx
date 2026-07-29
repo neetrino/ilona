@@ -1,8 +1,8 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { useTranslations } from 'next-intl';
-import { cn } from '@/shared/lib/utils';
+import { useLocale, useTranslations } from 'next-intl';
+import { cn, getAppDateLocaleTag } from '@/shared/lib/utils';
 import {
   getMonthDates,
   formatDateString,
@@ -28,6 +28,7 @@ import { StudentGhostButton, StudentIconButton, StudentPrimaryButton } from '@/f
 import {
   studentInputClass,
 } from '@/features/student-ui/tokens';
+import { formatAppTime } from '@/shared/lib/app-timezone';
 
 interface StudentAbsenceCalendarProps {
   calendarData: StudentCalendarMonth | undefined;
@@ -47,6 +48,16 @@ type DayKind =
 
 function lessonDateKey(scheduledAt: string): string {
   return formatDateString(new Date(scheduledAt));
+}
+
+function formatSelectedDayTitle(dateStr: string, dateLocale: string): string {
+  const [year, month, day] = dateStr.split('-').map(Number);
+  return new Date(year, month - 1, day).toLocaleDateString(dateLocale, {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
 }
 
 function analyzeDay(
@@ -118,6 +129,8 @@ export function StudentAbsenceCalendar({
 }: StudentAbsenceCalendarProps) {
   const t = useTranslations('attendance');
   const tCommon = useTranslations('common');
+  const locale = useLocale();
+  const dateLocale = getAppDateLocaleTag(locale);
   const monthDates = getMonthDates(currentMonth);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [commentDraft, setCommentDraft] = useState('');
@@ -414,9 +427,11 @@ export function StudentAbsenceCalendar({
 
       <Dialog open={!!selectedDate} onOpenChange={closeDialog}>
         <DialogContent
+          stackOpen={!!selectedDate}
           onOpenAutoFocus={(e) => e.preventDefault()}
+          onCloseAutoFocus={(e) => e.preventDefault()}
           className={cn(
-            '!flex !flex-col gap-0 overflow-hidden border border-[rgba(14,14,16,0.07)] !p-0',
+            '!flex !flex-col gap-0 !overflow-hidden border border-[rgba(14,14,16,0.07)] !p-0',
             'max-h-[calc(94dvh+7px)]',
             'tablet:!w-[min(100%,26rem)] tablet:portrait:!w-[min(100%,26rem)] tablet:landscape:!w-[min(100%,26rem)] min-[1366px]:!w-[26rem]',
           )}
@@ -425,20 +440,14 @@ export function StudentAbsenceCalendar({
             className={cn(
               'min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pt-1 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden',
               'tablet:px-6 tablet:pt-6',
-              !selectedAnalysis?.canReportAbsence &&
-                'pb-[calc(5.5rem+env(safe-area-inset-bottom))] tablet:pb-8',
-              selectedAnalysis?.canReportAbsence && 'pb-4 tablet:pb-4',
+              selectedAnalysis?.canReportAbsence
+                ? 'pb-4 tablet:pb-4'
+                : 'pb-[calc(5.5rem+env(safe-area-inset-bottom))] tablet:pb-8',
             )}
           >
             <DialogHeader className="pr-8 text-left sm:text-left">
               <DialogTitle className="text-xl font-semibold leading-snug text-[#1010a3] tablet:text-lg">
-                {selectedDate &&
-                  new Date(selectedDate).toLocaleDateString(undefined, {
-                    weekday: 'long',
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric',
-                  })}
+                {selectedDate ? formatSelectedDayTitle(selectedDate, dateLocale) : null}
               </DialogTitle>
             </DialogHeader>
 
@@ -482,10 +491,7 @@ export function StudentAbsenceCalendar({
                         </div>
                         {lesson.topic && <p className="text-sm text-[#3b3b40]">{lesson.topic}</p>}
                         <p className="mt-1 text-xs text-[#8b8b90]">
-                          {lessonTime.toLocaleTimeString(undefined, {
-                            hour: '2-digit',
-                            minute: '2-digit',
-                          })}
+                          {formatAppTime(lessonTime, locale)}
                         </p>
                         {att && !att.isPresent && att.absenceType && (
                           <p className="mt-1 text-xs text-[#8b8b90]">

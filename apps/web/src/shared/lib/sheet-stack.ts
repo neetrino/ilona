@@ -1,5 +1,5 @@
 import type { CSSProperties } from 'react';
-import { useEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import { PORTAL_MOBILE_BOTTOM_NAV_Z_INDEX } from '@/shared/lib/portal-mobile-layout';
 import { cn } from '@/shared/lib/utils';
 
@@ -102,7 +102,10 @@ export const stackedSheetDialogHandlers = {
 };
 
 function useMobileSheetViewport(): boolean {
-  const [isMobileSheet, setIsMobileSheet] = useState(false);
+  const [isMobileSheet, setIsMobileSheet] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return window.matchMedia(MOBILE_SHEET_MEDIA_QUERY).matches;
+  });
 
   useEffect(() => {
     const mediaQuery = window.matchMedia(MOBILE_SHEET_MEDIA_QUERY);
@@ -148,7 +151,7 @@ export function useSheetStackZIndex(active: boolean): {
 
   useEffect(() => subscribeStackChange(() => setStackRevision((revision) => revision + 1)), []);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!active) {
       setLayer(null);
       return;
@@ -171,13 +174,22 @@ export function useSheetStackZIndex(active: boolean): {
   // the remaining sheet must dim again even when it acquired a higher layer number.
   const isBaseLayer = layer === null || layer === 1 || openLayerCount === 1;
 
+  const overlayStyle = useMemo<CSSProperties>(
+    () => ({ zIndex: overlayZIndex }),
+    [overlayZIndex],
+  );
+  const contentStyle = useMemo<CSSProperties>(
+    () => ({ zIndex: contentZIndex }),
+    [contentZIndex],
+  );
+
   return {
     layer,
     isBaseLayer,
     overlayZIndex,
     contentZIndex,
-    overlayStyle: { zIndex: overlayZIndex },
-    contentStyle: { zIndex: contentZIndex },
+    overlayStyle,
+    contentStyle,
     overlayDimClassName: isBaseLayer ? undefined : STACKED_SHEET_OVERLAY_DIM_SUPPRESS_CLASS,
   };
 }
