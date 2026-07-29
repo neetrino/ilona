@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import { useLocale, useTranslations } from 'next-intl';
 import { getProxiedFileUrl } from '@/shared/lib/api';
-import { formatTime } from '../utils/chat-utils';
+import { formatChatListTime } from '../utils/chat-utils';
 import type { Message } from '../types';
 import { VoiceMessagePlayer } from './VoiceMessagePlayer';
 import type { GroupInfoLinkItem } from './group-members-modal.util';
@@ -56,7 +56,10 @@ function MediaPanel({ messages }: { messages: Message[] }) {
             target="_blank"
             rel="noopener noreferrer"
             className="relative aspect-square overflow-hidden rounded-lg bg-slate-100"
-            title={message.fileName || formatTime(message.createdAt, locale)}
+            title={
+              message.fileName ||
+              formatChatListTime(message.createdAt, locale, tChat('yesterday'))
+            }
           >
             {isImage ? (
               <Image src={src} alt="" fill className="object-cover" unoptimized sizes="120px" />
@@ -117,7 +120,7 @@ function VoicePanel({ messages }: { messages: Message[] }) {
             <div className="mb-2 flex items-center justify-between gap-2">
               <p className="truncate text-sm font-medium text-slate-800">{senderName}</p>
               <span className="shrink-0 text-[11px] text-slate-400">
-                {formatTime(message.createdAt, locale)}
+                {formatChatListTime(message.createdAt, locale, tChat('yesterday'))}
               </span>
             </div>
             {message.fileUrl ? (
@@ -154,7 +157,8 @@ function LinksPanel({ items }: { items: GroupInfoLinkItem[] }) {
           >
             <span className="truncate text-sm font-medium text-[#1010a3]">{item.url}</span>
             <span className="truncate text-xs text-slate-500">
-              {item.senderName || tChat('unknownUser')} · {formatTime(item.createdAt, locale)}
+              {item.senderName || tChat('unknownUser')} ·{' '}
+              {formatChatListTime(item.createdAt, locale, tChat('yesterday'))}
             </span>
           </a>
         </li>
