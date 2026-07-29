@@ -74,6 +74,8 @@ export function ChatWindow({ chat, onBack, onChatUpdated, onOpenChat }: ChatWind
   const addMessageToCache = useAddMessageToCache();
   const createDirectChat = useCreateDirectChat();
   const { getTypingUsers, addTypingUser, seedPresenceFromChat } = useChatStore();
+  const memberDmReturnChat = useChatStore((state) => state.memberDmReturnChat);
+  const setMemberDmReturnChat = useChatStore((state) => state.setMemberDmReturnChat);
   const presenceByUserId = useChatStore((state) => state.presenceByUserId);
   const [presenceTick, setPresenceTick] = useState(0);
 
@@ -266,6 +268,7 @@ export function ChatWindow({ chat, onBack, onChatUpdated, onOpenChat }: ChatWind
   const handleGroupMemberDirectChat = useCallback(
     async (memberUserId: string) => {
       if (!isAdminOrManager || memberUserId === user?.id) return;
+      const sourceGroupChat = chat;
       try {
         const dmChat = await createDirectChat.mutateAsync(memberUserId);
         setShowGroupMembersModal(false);
@@ -274,12 +277,38 @@ export function ChatWindow({ chat, onBack, onChatUpdated, onOpenChat }: ChatWind
         } else if (onChatUpdated) {
           onChatUpdated(dmChat);
         }
+        // Set after navigation so list handlers that clear return state do not wipe it
+        setMemberDmReturnChat(sourceGroupChat);
       } catch (error) {
         console.error('Failed to open direct chat with group member:', error);
       }
     },
-    [createDirectChat, isAdminOrManager, onChatUpdated, onOpenChat, user?.id],
+    [
+      chat,
+      createDirectChat,
+      isAdminOrManager,
+      onChatUpdated,
+      onOpenChat,
+      setMemberDmReturnChat,
+      user?.id,
+    ],
   );
+
+  const handleReturnToSourceChat = useCallback(() => {
+    const source = memberDmReturnChat;
+    if (!source) return;
+    setMemberDmReturnChat(null);
+    if (onOpenChat) {
+      onOpenChat(source);
+    } else if (onChatUpdated) {
+      onChatUpdated(source);
+    }
+  }, [memberDmReturnChat, onChatUpdated, onOpenChat, setMemberDmReturnChat]);
+
+  const canReturnToSourceChat =
+    Boolean(memberDmReturnChat) &&
+    chat.type === 'DIRECT' &&
+    memberDmReturnChat?.id !== chat.id;
 
   const chatTitle = getChatTitle(chat, user?.id, tChat('chatTitle'));
   const chatAvatarUrl = getChatAvatarUrl(chat, user?.id, brandLogoUrl);
@@ -324,6 +353,7 @@ export function ChatWindow({ chat, onBack, onChatUpdated, onOpenChat }: ChatWind
         isGroupChat={isGroupChat}
         isTeacher={isTeacher}
         onBack={onBack}
+        onReturnToSourceChat={canReturnToSourceChat ? handleReturnToSourceChat : undefined}
         onAddMembers={() => setShowAddMembersModal(true)}
         onViewMembers={isGroupChat ? () => setShowGroupMembersModal(true) : undefined}
         onOpenVocabulary={() => setShowVocabularyModal(true)}

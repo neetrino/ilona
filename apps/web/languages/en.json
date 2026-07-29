@@ -1572,6 +1572,7 @@
     "myTeacherTapToMessage": "My Teacher — tap to message",
     "backToPreviousPage": "Back to previous page",
     "backToChatList": "Back to chat list",
+    "backToGroupChat": "Back to group chat",
     "previousMessage": "Previous message",
     "nextMessage": "Next message",
     "unreadCount": "{count} new",

@@ -1570,6 +1570,7 @@
     "myTeacherTapToMessage": "Իմ ուսուցիչը — սեղմեք հաղորդագրություն ուղարկելու համար",
     "backToPreviousPage": "Վերադառնալ նախորդ էջ",
     "backToChatList": "Վերադառնալ զրույցների ցուցակ",
+    "backToGroupChat": "Վերադառնալ խմբի զրույց",
     "previousMessage": "Նախորդ հաղորդագրություն",
     "nextMessage": "Հաջորդ հաղորդագրություն",
     "unreadCount": "{count} նոր",

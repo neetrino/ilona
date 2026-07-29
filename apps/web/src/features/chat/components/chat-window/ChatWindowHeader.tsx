@@ -24,6 +24,8 @@ interface ChatWindowHeaderProps {
   isGroupChat: boolean;
   isTeacher: boolean;
   onBack?: () => void;
+  /** Shown on all breakpoints — return to the group chat opened from Members */
+  onReturnToSourceChat?: () => void;
   onAddMembers: () => void;
   onViewMembers?: () => void;
   onOpenVocabulary: () => void;
@@ -45,6 +47,7 @@ export function ChatWindowHeader({
   isGroupChat,
   isTeacher,
   onBack,
+  onReturnToSourceChat,
   onAddMembers,
   onViewMembers,
   onOpenVocabulary,
@@ -126,7 +129,13 @@ export function ChatWindowHeader({
         ui.headerBg,
       )}
     >
-      {onBack ? (
+      {onReturnToSourceChat ? (
+        <ChatBackButton
+          onClick={onReturnToSourceChat}
+          className="shrink-0"
+          aria-label={tChat('backToGroupChat')}
+        />
+      ) : onBack ? (
         <ChatBackButton
           onClick={onBack}
           className="shrink-0 lg:hidden"

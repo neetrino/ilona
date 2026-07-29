@@ -17,7 +17,6 @@ import { GroupInfoSharedPanels } from './GroupInfoSharedPanels';
 import {
   GROUP_INFO_PANEL_INNER_CLASS,
   extractLinkItems,
-  filterMediaMessages,
   filterVoiceMessages,
   flattenMessagePages,
   groupInfoPanelClassName,
@@ -102,7 +101,6 @@ export function GroupMembersModal({
     () => flattenMessagePages(messagesData?.pages),
     [messagesData?.pages],
   );
-  const mediaMessages = useMemo(() => filterMediaMessages(messages), [messages]);
   const voiceMessages = useMemo(() => filterVoiceMessages(messages), [messages]);
   const linkItems = useMemo(() => extractLinkItems(messages), [messages]);
 
@@ -182,7 +180,6 @@ export function GroupMembersModal({
             ) : (
               <GroupInfoSharedPanels
                 activeTab={activeTab}
-                mediaMessages={mediaMessages}
                 voiceMessages={voiceMessages}
                 linkItems={linkItems}
                 isLoading={sharedLoading}

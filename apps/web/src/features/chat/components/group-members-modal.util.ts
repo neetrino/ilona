@@ -1,9 +1,9 @@
 import { cn } from '@/shared/lib/utils';
 import type { ChatParticipant, Message } from '../types';
 
-export type GroupInfoTab = 'members' | 'media' | 'voice' | 'links';
+export type GroupInfoTab = 'members' | 'voice' | 'links';
 
-export const GROUP_INFO_TABS: GroupInfoTab[] = ['members', 'media', 'voice', 'links'];
+export const GROUP_INFO_TABS: GroupInfoTab[] = ['members', 'voice', 'links'];
 
 const LINK_URL_REGEX = /https?:\/\/[^\s<>"'`]+/gi;
 
@@ -49,14 +49,6 @@ export function flattenMessagePages(
 ): Message[] {
   if (!pages) return [];
   return pages.flatMap((page) => page.items);
-}
-
-export function filterMediaMessages(messages: Message[]): Message[] {
-  return messages.filter(
-    (message) =>
-      (message.type === 'IMAGE' || message.type === 'VIDEO' || message.type === 'FILE') &&
-      Boolean(message.fileUrl),
-  );
 }
 
 export function filterVoiceMessages(messages: Message[]): Message[] {

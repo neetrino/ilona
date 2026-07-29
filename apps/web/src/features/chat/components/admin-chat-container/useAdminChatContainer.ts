@@ -206,6 +206,7 @@ export function useAdminChatContainer({
 
   const handleSelectChat = useCallback(
     (chat: Chat) => {
+      useChatStore.getState().setMemberDmReturnChat(null);
       clearChatUnreadInCache(queryClient, chat.id);
       setActiveChat({ ...chat, unreadCount: 0 });
       setMobileListVisible(false);
