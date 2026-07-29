@@ -49,8 +49,8 @@ export function AdminDashboardHeader({
       className="shrink-0 bg-transparent px-[clamp(0.75rem,2vw,2rem)] py-[clamp(0.35rem,0.8vw,0.6rem)]"
     >
       <div className="w-full min-w-0 rounded-full border border-[rgba(14,14,16,0.07)] bg-white px-[clamp(0.75rem,1.5vw,1.25rem)] py-[clamp(0.55rem,1vw,0.9rem)] lg:rounded-[4rem]">
-        <div className="flex flex-col gap-3 md:flex-row md:min-h-14 md:items-center md:gap-4">
-          <div className="flex min-w-0 items-center gap-2 sm:gap-3 lg:self-stretch lg:items-stretch">
+        <div className="flex flex-col gap-3 md:flex-row md:min-h-14 md:items-center md:gap-6">
+          <div className="flex min-w-0 items-center gap-2 px-4 sm:gap-3 sm:px-5 lg:shrink-0">
             {onMenuClick ? (
               <button
                 type="button"
@@ -69,10 +69,10 @@ export function AdminDashboardHeader({
               </button>
             ) : null}
 
-            <div className="flex min-h-11 min-w-0 flex-1 flex-col justify-center text-center lg:min-h-full lg:text-left">
+            <div className="flex min-h-11 min-w-0 flex-1 flex-col justify-center text-center lg:text-left">
               {isSubpage ? (
                 <>
-                  <div className="relative flex min-h-11 w-full items-center gap-2 lg:justify-start">
+                  <div className="relative flex min-h-11 w-full items-center gap-2 lg:h-12 lg:justify-start">
                     {onBack ? (
                       <ChatBackButton
                         onClick={onBack}
@@ -80,7 +80,7 @@ export function AdminDashboardHeader({
                         className="absolute left-0 top-1/2 z-10 -translate-y-1/2 lg:static lg:shrink-0 lg:translate-y-0"
                       />
                     ) : null}
-                    <h1 className="flex min-h-11 w-full items-center justify-center px-0 text-[1.125rem] font-bold leading-tight tracking-tight text-[#1010a3] sm:px-5 sm:text-[1.375rem] lg:min-h-0 lg:w-auto lg:flex-1 lg:justify-start lg:px-0">
+                    <h1 className="flex min-h-11 w-full items-center justify-center text-[1.125rem] font-bold leading-tight tracking-tight text-[#1010a3] sm:text-[1.375rem] lg:min-h-0 lg:h-12 lg:w-auto lg:flex-1 lg:justify-start">
                       <button
                         type="button"
                         onClick={scrollToTop}
@@ -100,7 +100,7 @@ export function AdminDashboardHeader({
                   ) : null}
                 </>
               ) : (
-                <h1 className="flex min-h-11 items-center justify-center px-0 text-[1.125rem] font-bold leading-tight tracking-tight text-[#1010a3] sm:px-5 sm:text-[1.5rem] lg:min-h-0 lg:justify-start">
+                <h1 className="flex min-h-11 items-center justify-center text-[1.125rem] font-bold leading-tight tracking-tight text-[#1010a3] sm:text-[1.5rem] lg:h-12 lg:min-h-0 lg:justify-start">
                   <button
                     type="button"
                     onClick={scrollToTop}
