@@ -388,7 +388,11 @@ export function ChatWindow({ chat, onBack, onChatUpdated }: ChatWindowProps) {
         isOpen={showGroupMembersModal}
         onClose={() => setShowGroupMembersModal(false)}
         chat={chat}
+        title={chatTitle}
+        avatarInitials={chatAvatarInitials}
         currentUserId={user?.id}
+        canAddMembers={isAdminOrManager && isGroupChat}
+        onAddMembers={() => setShowAddMembersModal(true)}
       />
 
       <DeleteConfirmationDialog
