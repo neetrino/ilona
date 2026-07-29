@@ -1,5 +1,11 @@
 import { cn } from '@/shared/lib/utils';
-import type { ChatParticipant } from '../types';
+import type { ChatParticipant, Message } from '../types';
+
+export type GroupInfoTab = 'members' | 'media' | 'voice' | 'links';
+
+export const GROUP_INFO_TABS: GroupInfoTab[] = ['members', 'media', 'voice', 'links'];
+
+const LINK_URL_REGEX = /https?:\/\/[^\s<>"'`]+/gi;
 
 export function participantDisplayName(participant: ChatParticipant): string {
   const { firstName, lastName } = participant.user;
@@ -36,6 +42,55 @@ export function sortParticipants(participants: ChatParticipant[]): ChatParticipa
       sensitivity: 'base',
     }),
   );
+}
+
+export function flattenMessagePages(
+  pages: Array<{ items: Message[] }> | undefined,
+): Message[] {
+  if (!pages) return [];
+  return pages.flatMap((page) => page.items);
+}
+
+export function filterMediaMessages(messages: Message[]): Message[] {
+  return messages.filter(
+    (message) =>
+      (message.type === 'IMAGE' || message.type === 'VIDEO' || message.type === 'FILE') &&
+      Boolean(message.fileUrl),
+  );
+}
+
+export function filterVoiceMessages(messages: Message[]): Message[] {
+  return messages.filter((message) => message.type === 'VOICE' && Boolean(message.fileUrl));
+}
+
+export interface GroupInfoLinkItem {
+  id: string;
+  url: string;
+  messageId: string;
+  createdAt: string;
+  senderName: string;
+}
+
+export function extractLinkItems(messages: Message[]): GroupInfoLinkItem[] {
+  const items: GroupInfoLinkItem[] = [];
+  for (const message of messages) {
+    if (!message.content) continue;
+    const matches = message.content.match(LINK_URL_REGEX);
+    if (!matches) continue;
+    const senderName = message.sender
+      ? `${message.sender.firstName} ${message.sender.lastName}`.trim()
+      : '';
+    matches.forEach((url, index) => {
+      items.push({
+        id: `${message.id}-${index}`,
+        url: url.replace(/[),.;!?]+$/g, ''),
+        messageId: message.id,
+        createdAt: message.createdAt,
+        senderName,
+      });
+    });
+  }
+  return items;
 }
 
 export function groupInfoPanelClassName(isVisible: boolean, hasDragStyle: boolean): string {

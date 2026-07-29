@@ -1,27 +1,28 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import Image from 'next/image';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import {
   portalSheetLayerProps,
   useSheetStackZIndex,
   stackedSheetOverlayClassName,
 } from '@/shared/lib/sheet-stack';
-import { cn } from '@/shared/lib/utils';
 import { PortalFormSheetDragHandle } from '@/shared/components/ui/portal-form-sheet-drag-handle';
 import { usePortalSheetDrag } from '@/shared/hooks/usePortalSheetDrag';
-import { getInitials } from '@/shared/components/ui/avatar';
-import { useChatStore } from '../store/chat.store';
-import { formatChatLastSeen } from '../utils/chat-last-seen';
+import { useMessages } from '../hooks';
 import type { Chat } from '../types';
+import { GroupInfoTabBar } from './GroupInfoTabBar';
+import { GroupInfoMembersPanel } from './GroupInfoMembersPanel';
+import { GroupInfoSharedPanels } from './GroupInfoSharedPanels';
 import {
   GROUP_INFO_PANEL_INNER_CLASS,
+  extractLinkItems,
+  filterMediaMessages,
+  filterVoiceMessages,
+  flattenMessagePages,
   groupInfoPanelClassName,
-  participantDisplayName,
-  rolePillClass,
-  roleTranslationKey,
   sortParticipants,
+  type GroupInfoTab,
 } from './group-members-modal.util';
 
 interface GroupMembersModalProps {
@@ -46,16 +47,21 @@ export function GroupMembersModal({
   onAddMembers,
 }: GroupMembersModalProps) {
   const tChat = useTranslations('chat');
-  const tRoles = useTranslations('roles');
   const { overlayStyle, contentStyle, isBaseLayer } = useSheetStackZIndex(isOpen);
-  const presenceByUserId = useChatStore((state) => state.presenceByUserId);
   const [isMounted, setIsMounted] = useState(isOpen);
   const [isVisible, setIsVisible] = useState(isOpen);
+  const [activeTab, setActiveTab] = useState<GroupInfoTab>('members');
 
   const { dragStyle, dragHandleProps, scrollContentProps, resetDrag } = usePortalSheetDrag({
     onClose,
     enabled: isMounted && isVisible,
   });
+
+  const needsSharedData = isOpen && activeTab !== 'members';
+  const { data: messagesData, isLoading: isMessagesLoading } = useMessages(
+    chat.id,
+    isOpen,
+  );
 
   useEffect(() => {
     if (isOpen) {
@@ -65,7 +71,10 @@ export function GroupMembersModal({
     }
     setIsVisible(false);
     resetDrag();
-    const timeout = window.setTimeout(() => setIsMounted(false), 320);
+    const timeout = window.setTimeout(() => {
+      setIsMounted(false);
+      setActiveTab('members');
+    }, 320);
     return () => window.clearTimeout(timeout);
   }, [isOpen, resetDrag]);
 
@@ -83,9 +92,18 @@ export function GroupMembersModal({
     };
   }, [isMounted, onClose]);
 
+  const members = sortParticipants(chat.participants ?? []);
+  const messages = useMemo(
+    () => flattenMessagePages(messagesData?.pages),
+    [messagesData?.pages],
+  );
+  const mediaMessages = useMemo(() => filterMediaMessages(messages), [messages]);
+  const voiceMessages = useMemo(() => filterVoiceMessages(messages), [messages]);
+  const linkItems = useMemo(() => extractLinkItems(messages), [messages]);
+
   if (!isMounted) return null;
 
-  const members = sortParticipants(chat.participants ?? []);
+  const sharedLoading = needsSharedData && isMessagesLoading && messages.length === 0;
 
   return (
     <>
@@ -146,88 +164,23 @@ export function GroupMembersModal({
             </p>
           </div>
 
-          <div className="mx-4 mb-2 flex shrink-0 items-center rounded-xl bg-slate-50 px-1 py-1">
-            <span className="rounded-lg bg-violet-100 px-3 py-1.5 text-sm font-medium text-violet-700">
-              {tChat('members')}
-            </span>
-          </div>
+          <GroupInfoTabBar activeTab={activeTab} onChange={setActiveTab} />
 
           <div className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain px-2 pb-[calc(1rem+env(safe-area-inset-bottom))] tablet:pb-4">
-            {members.length === 0 ? (
-              <div className="px-4 py-10 text-center">
-                <p className="text-sm text-slate-500">{tChat('noGroupMembers')}</p>
-              </div>
+            {activeTab === 'members' ? (
+              <GroupInfoMembersPanel chat={chat} currentUserId={currentUserId} />
             ) : (
-              <ul>
-                {members.map((participant) => {
-                  const name = participantDisplayName(participant);
-                  const roleKey = roleTranslationKey(participant.user.role);
-                  const isYou = participant.userId === currentUserId;
-                  const presence = presenceByUserId[participant.userId];
-                  const isOnline = Boolean(presence?.isOnline);
-                  const statusLabel = formatChatLastSeen(
-                    isOnline,
-                    presence?.lastSeenAt ?? participant.user.lastSeenAt,
-                    (key, values) => (values ? tChat(key, values) : tChat(key)),
-                  );
-                  const pillLabel = roleKey ? tRoles(roleKey) : participant.user.role;
-
-                  return (
-                    <li
-                      key={participant.userId}
-                      className="flex items-center gap-3 rounded-xl px-3 py-2.5"
-                    >
-                      <div className="relative flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-primary/15 text-sm font-medium text-primary">
-                        {participant.user.avatarUrl ? (
-                          <Image
-                            src={participant.user.avatarUrl}
-                            alt={name}
-                            width={44}
-                            height={44}
-                            className="h-full w-full rounded-full object-cover"
-                            unoptimized
-                          />
-                        ) : (
-                          getInitials(name)
-                        )}
-                        {isOnline ? (
-                          <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white bg-emerald-500" />
-                        ) : null}
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate font-medium text-slate-900">
-                          {name}
-                          {isYou ? (
-                            <span className="ml-1 font-normal text-slate-400">
-                              ({tChat('you')})
-                            </span>
-                          ) : null}
-                        </p>
-                        <p
-                          className={cn(
-                            'truncate text-xs',
-                            isOnline ? 'text-emerald-600' : 'text-slate-500',
-                          )}
-                        >
-                          {statusLabel}
-                        </p>
-                      </div>
-                      <span
-                        className={cn(
-                          'shrink-0 rounded-full px-2.5 py-0.5 text-[11px] font-medium',
-                          rolePillClass(participant.user.role),
-                        )}
-                      >
-                        {pillLabel}
-                      </span>
-                    </li>
-                  );
-                })}
-              </ul>
+              <GroupInfoSharedPanels
+                activeTab={activeTab}
+                mediaMessages={mediaMessages}
+                voiceMessages={voiceMessages}
+                linkItems={linkItems}
+                isLoading={sharedLoading}
+              />
             )}
           </div>
 
-          {canAddMembers && onAddMembers ? (
+          {canAddMembers && onAddMembers && activeTab === 'members' ? (
             <button
               type="button"
               onClick={() => {
