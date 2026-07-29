@@ -104,12 +104,14 @@ const DialogContent = React.forwardRef<
   const stackActive = stackOpen ?? isContentOpen;
   const { overlayStyle, contentStyle, isBaseLayer } = useSheetStackZIndex(stackActive);
 
+  const scrollContentRef = scrollContentProps.ref;
+
   const setRefs = React.useCallback(
     (node: HTMLDivElement | null) => {
       contentRef.current = node;
-      setContentNode(node);
+      setContentNode((prev) => (prev === node ? prev : node));
       if (useSheet) {
-        scrollContentProps.ref(node);
+        scrollContentRef(node);
       }
       if (typeof ref === 'function') {
         ref(node);
@@ -117,7 +119,7 @@ const DialogContent = React.forwardRef<
         ref.current = node;
       }
     },
-    [ref, useSheet, scrollContentProps],
+    [ref, useSheet, scrollContentRef],
   );
 
   const closeButtonClasses = cn(
@@ -132,6 +134,11 @@ const DialogContent = React.forwardRef<
       : 'bg-black/40'
     : undefined;
   const overlayDimIsBase = !useSheet ? true : !suppressStackedOverlayDim;
+
+  const contentMergedStyle = React.useMemo(
+    () => (useSheet ? { ...dragStyle, ...contentStyle } : contentStyle),
+    [useSheet, dragStyle, contentStyle],
+  );
 
   return (
     <DialogPortal>
@@ -149,7 +156,7 @@ const DialogContent = React.forwardRef<
       />
       <DialogPrimitive.Content
         ref={setRefs}
-        style={useSheet ? { ...dragStyle, ...contentStyle } : contentStyle}
+        style={contentMergedStyle}
         className={cn(
           isPortalSheet
             ? PORTAL_SHEET_CONTENT_CLASS

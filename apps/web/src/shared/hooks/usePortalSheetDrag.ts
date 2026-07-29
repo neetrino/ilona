@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState, type TouchEvent } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type TouchEvent } from 'react';
 import { PORTAL_SIDE_SHEET_MIN_WIDTH } from '@/shared/lib/role-routes';
 
 type UsePortalSheetDragOptions = {
@@ -286,32 +286,45 @@ export function usePortalSheetDrag({
   }, [applyDragMove, beginPointerTracking, enabled, finishDrag, sheetRootNode]);
 
   const setSheetRootRef = useCallback((node: HTMLDivElement | null) => {
-    setSheetRootNode(node);
+    setSheetRootNode((prev) => (prev === node ? prev : node));
   }, []);
 
   const setHandleRef = useCallback((node: HTMLDivElement | null) => {
-    setHandleNode(node);
+    setHandleNode((prev) => (prev === node ? prev : node));
   }, []);
 
-  const dragStyle =
-    dragOffsetY > 0 || isSettling
-      ? {
-          transform: `translateY(${dragOffsetY}px)`,
-          transition: isDragging ? 'none' : 'transform 280ms cubic-bezier(0.22, 1, 0.36, 1)',
-        }
-      : undefined;
+  const dragStyle = useMemo(
+    () =>
+      dragOffsetY > 0 || isSettling
+        ? {
+            transform: `translateY(${dragOffsetY}px)`,
+            transition: isDragging ? 'none' : 'transform 280ms cubic-bezier(0.22, 1, 0.36, 1)',
+          }
+        : undefined,
+    [dragOffsetY, isDragging, isSettling],
+  );
 
-  return {
-    dragStyle,
-    dragHandleProps: {
+  const dragHandleProps = useMemo(
+    () => ({
       ref: setHandleRef,
       onTouchStart: handleDragStart,
       onTouchEnd: handleDragEnd,
       onTouchCancel: handleDragEnd,
-    },
-    scrollContentProps: {
+    }),
+    [handleDragEnd, handleDragStart, setHandleRef],
+  );
+
+  const scrollContentProps = useMemo(
+    () => ({
       ref: setSheetRootRef,
-    },
+    }),
+    [setSheetRootRef],
+  );
+
+  return {
+    dragStyle,
+    dragHandleProps,
+    scrollContentProps,
     resetDrag,
   };
 }

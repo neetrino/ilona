@@ -2,10 +2,12 @@
  * Date utility functions for attendance register views
  */
 
+import { formatLocaleDate } from '@/shared/lib/utils';
+
 export type ViewMode = 'day' | 'week' | 'month';
 const SUPPORTED_LOCALES = new Set(['en', 'hy']);
 
-function getPageLocale(): string | undefined {
+function getPageLocaleCode(): string {
   if (typeof window !== 'undefined') {
     const [, maybeLocale] = window.location.pathname.split('/');
     if (maybeLocale && SUPPORTED_LOCALES.has(maybeLocale)) {
@@ -13,16 +15,14 @@ function getPageLocale(): string | undefined {
     }
   }
 
-  if (typeof document === 'undefined') {
-    return undefined;
+  if (typeof document !== 'undefined') {
+    const lang = document.documentElement.lang?.trim();
+    if (lang && SUPPORTED_LOCALES.has(lang)) {
+      return lang;
+    }
   }
 
-  const locale = document.documentElement.lang?.trim();
-  if (locale && SUPPORTED_LOCALES.has(locale)) {
-    return locale;
-  }
-
-  return undefined;
+  return 'en';
 }
 
 /**
@@ -150,12 +150,16 @@ export function formatDateString(date: Date): string {
  * Format date for display
  */
 export function formatDateDisplay(date: Date, options?: Intl.DateTimeFormatOptions): string {
-  return date.toLocaleDateString(getPageLocale(), options || {
-    weekday: 'short',
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  });
+  return formatLocaleDate(
+    date,
+    getPageLocaleCode(),
+    options || {
+      weekday: 'short',
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    },
+  );
 }
 
 /**
@@ -164,9 +168,13 @@ export function formatDateDisplay(date: Date, options?: Intl.DateTimeFormatOptio
 export function formatWeekRange(date: Date): string {
   const weekStart = getWeekStart(date);
   const weekEnd = getWeekEnd(date);
-  const locale = getPageLocale();
-  const startStr = weekStart.toLocaleDateString(locale, { month: 'short', day: 'numeric' });
-  const endStr = weekEnd.toLocaleDateString(locale, { month: 'short', day: 'numeric', year: 'numeric' });
+  const locale = getPageLocaleCode();
+  const startStr = formatLocaleDate(weekStart, locale, { month: 'short', day: 'numeric' });
+  const endStr = formatLocaleDate(weekEnd, locale, {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  });
   return `${startStr}–${endStr}`;
 }
 
@@ -174,7 +182,7 @@ export function formatWeekRange(date: Date): string {
  * Format month for display
  */
 export function formatMonthDisplay(date: Date): string {
-  return date.toLocaleDateString(getPageLocale(), { month: 'long', year: 'numeric' });
+  return formatLocaleDate(date, getPageLocaleCode(), { month: 'long', year: 'numeric' });
 }
 
 /**

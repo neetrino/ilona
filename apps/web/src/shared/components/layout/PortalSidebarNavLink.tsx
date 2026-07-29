@@ -83,7 +83,7 @@ export function PortalSidebarNavLink({
       </PortalSidebarReveal>
       {badge != null && badge > 0 ? (
         <PortalSidebarReveal open={!collapsed}>
-          <span className="shrink-0 rounded-full bg-black/[0.04] px-2 text-base font-medium italic leading-none text-[#bcbcbc]">
+          <span className="mr-[10px] inline-flex h-6 min-w-6 shrink-0 items-center justify-center rounded-full bg-black/[0.04] px-1.5 text-sm font-medium leading-none text-[#bcbcbc]">
             {badge}
           </span>
         </PortalSidebarReveal>

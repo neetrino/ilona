@@ -1,7 +1,7 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import type { GlobalSearchResult, GlobalSearchResultType } from '../types/search.types';
 import {
   Briefcase,
@@ -15,6 +15,7 @@ import {
   UserCircle,
 } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
+import { formatAppDateTime } from '@/shared/lib/app-timezone';
 import { normalizeSearchQuery } from '../utils/normalize-search-query';
 import {
   DROPDOWN_MENU_SURFACE_CLASS,
@@ -46,11 +47,11 @@ function iconForType(type: GlobalSearchResultType): ReactNode {
   }
 }
 
-function formatMaybeDate(iso?: string): string | undefined {
+function formatMaybeDate(iso: string | undefined, locale: string): string | undefined {
   if (!iso) return undefined;
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return undefined;
-  return d.toLocaleString();
+  return formatAppDateTime(d, locale);
 }
 
 export type GlobalSearchDropdownProps = {
@@ -95,6 +96,7 @@ export function GlobalSearchDropdown({
   maxHeightPx,
 }: GlobalSearchDropdownProps) {
   const tCommon = useTranslations('common');
+  const locale = useLocale();
   const trimmed = normalizeSearchQuery(query);
 
   // Do not show an empty dropdown panel before user starts typing.
@@ -157,7 +159,7 @@ export function GlobalSearchDropdown({
       {debouncedOk && !isLoading && !isError && results && results.length > 0
         ? results.map((item) => {
             const title = getTitle(item);
-            const dateLine = formatMaybeDate(item.description);
+            const dateLine = formatMaybeDate(item.description, locale);
             return (
               <button
                 key={`${item.type}-${item.id}`}

@@ -44,7 +44,7 @@ export function DatePickerInputTrigger({
   }, [vm.inputValue]);
 
   return (
-    <div className="relative w-full" data-date-anchor>
+    <div className="relative w-full overflow-visible" data-date-anchor>
       <input
         {...rest}
         ref={setInputRef}
@@ -92,14 +92,14 @@ export function DatePickerInputTrigger({
         onMouseDown={(event) => event.preventDefault()}
         onClick={() => !vm.disabled && vm.handleOpenChange(!vm.open)}
         className={cn(
-          'absolute right-2 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-md text-slate-500',
+          'absolute right-2 top-1/2 z-[1] flex h-7 w-7 shrink-0 -translate-y-1/2 items-center justify-center rounded-md text-slate-500',
           'hover:bg-slate-100 hover:text-slate-700',
           vm.disabled && 'pointer-events-none opacity-60',
         )}
         aria-label={vm.placeholder || vm.tCommon('date')}
         disabled={vm.disabled}
       >
-        <CalendarDays className="h-4 w-4" />
+        <CalendarDays className="h-4 w-4 shrink-0" aria-hidden />
       </button>
     </div>
   );

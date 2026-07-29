@@ -3,11 +3,11 @@
 import { Badge, Input, Label, Avatar } from '@/shared/components/ui';
 import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
 import type { Student } from '@/features/students';
-import { formatPhoneForDisplay } from '@/shared/lib/utils';
+import { formatDate, formatPhoneForDisplay } from '@/shared/lib/utils';
 import type { UseFormRegister, UseFormSetValue } from 'react-hook-form';
 import type { UpdateStudentFormData } from '../schemas';
 import type { UserStatus } from '@/types';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 
 interface StudentProfileHeaderProps {
   student: Student;
@@ -38,6 +38,7 @@ export function StudentProfileHeader({
 }: StudentProfileHeaderProps) {
   const tCommon = useTranslations('common');
   const tStatus = useTranslations('status');
+  const locale = useLocale();
   const avatarUrl = student.user?.avatarUrl;
 
   return (
@@ -118,7 +119,7 @@ export function StudentProfileHeader({
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
-                    Last login: {new Date(student.user.lastLoginAt).toLocaleDateString()}
+                    Last login: {formatDate(student.user.lastLoginAt, locale)}
                   </div>
                 )}
               </div>

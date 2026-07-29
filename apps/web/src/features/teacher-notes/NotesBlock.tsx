@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import {
   useCreateTeacherNote,
   useDeleteTeacherNote,
@@ -9,7 +9,7 @@ import {
 } from './hooks';
 import type { TeacherNote } from './types';
 import { StudentCard, StudentInput, StudentPrimaryButton, StudentSectionHeader } from '@/features/student-ui';
-import { cn } from '@/shared/lib/utils';
+import { cn, formatDate } from '@/shared/lib/utils';
 
 const ROTATIONS = ['-rotate-1', 'rotate-1', '-rotate-2', 'rotate-2', 'rotate-0'];
 
@@ -27,6 +27,7 @@ interface NoteCardProps {
 
 function NoteCard({ note, index, onDelete, isDeleting, variant }: NoteCardProps) {
   const tTeacherNotes = useTranslations('teacherNotes');
+  const locale = useLocale();
   if (variant === 'dashboard') {
     return (
       <div className="border-t border-dashed border-[rgba(14,14,16,0.07)] py-4 first:border-t-0 first:pt-0">
@@ -59,7 +60,7 @@ function NoteCard({ note, index, onDelete, isDeleting, variant }: NoteCardProps)
     >
       <p className="whitespace-pre-wrap text-sm text-[#3a2f00]">{note.content}</p>
       <div className="mt-3 flex items-center justify-between text-xs text-[#8b4a00]">
-        <span>{new Date(note.createdAt).toLocaleDateString()}</span>
+        <span>{formatDate(note.createdAt, locale)}</span>
         <button
           type="button"
           onClick={() => onDelete(note.id)}

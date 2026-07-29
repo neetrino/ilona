@@ -2,7 +2,8 @@
 
 import { useState, useCallback } from 'react';
 import type { ReactNode } from 'react';
-import { cn } from '@/shared/lib/utils';
+import { useLocale } from 'next-intl';
+import { cn, formatLocaleDate } from '@/shared/lib/utils';
 import {
   Dialog,
   DialogContent,
@@ -78,6 +79,7 @@ export function CalendarMonthGrid<T>({
   overflowLabel = 'more',
 }: CalendarMonthGridProps<T>) {
   const isStudent = theme === 'student';
+  const locale = useLocale();
   const maxFromViewport = useMaxVisibleInCell(maxVisibleOverride);
   const [dayDialog, setDayDialog] = useState<DayDialogState<T> | null>(null);
 
@@ -348,7 +350,7 @@ export function CalendarMonthGrid<T>({
                   isStudent && 'text-[#1010a3]',
                 )}
               >
-                {dayDialog.date.toLocaleDateString(undefined, {
+                {formatLocaleDate(dayDialog.date, locale, {
                   weekday: 'long',
                   month: 'long',
                   day: 'numeric',

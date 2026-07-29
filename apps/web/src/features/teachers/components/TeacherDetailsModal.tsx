@@ -2,9 +2,9 @@
 
 import React, { useCallback, useEffect } from 'react';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { Pencil, X } from 'lucide-react';
-import { formatCurrency, formatPhoneForDisplay, cn } from '@/shared/lib/utils';
+import { formatCurrency, formatDate, formatPhoneForDisplay, cn } from '@/shared/lib/utils';
 import { Avatar, Badge } from '@/shared/components/ui';
 import { ADMIN_ICON_BUTTON_SM_CLASS } from '@/shared/lib/admin-control-theme';
 import { PortalFormSheetDragHandle } from '@/shared/components/ui/portal-form-sheet-drag-handle';
@@ -29,15 +29,11 @@ interface TeacherDetailsModalProps {
   scrollClassName?: string;
 }
 
-function formatDate(value?: string | null): string {
+function formatTeacherDate(value: string | null | undefined, locale: string): string {
   if (!value) return '—';
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return '—';
-  return date.toLocaleDateString(undefined, {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  });
+  return formatDate(date, locale);
 }
 
 function DetailField({ label, value }: { label: string; value: React.ReactNode }) {
@@ -70,6 +66,7 @@ export function TeacherDetailsModal({
   const t = useTranslations('teachers');
   const tCommon = useTranslations('common');
   const tStatus = useTranslations('status');
+  const locale = useLocale();
   const { data: teacher, isLoading, error } = useTeacher(teacherId ?? '', open && !!teacherId);
 
   const requestClose = useCallback(() => {
@@ -176,7 +173,7 @@ export function TeacherDetailsModal({
                     <DetailField label={t('phoneNumber')} value={phone} />
                     <DetailField label={tCommon('email')} value={email || '—'} />
                     {experienceLabel ? <DetailField label="Experience" value={experienceLabel} /> : null}
-                    <DetailField label="Joined" value={formatDate(teacher.createdAt)} />
+                    <DetailField label="Joined" value={formatTeacherDate(teacher.createdAt, locale)} />
                   </div>
                 </section>
 

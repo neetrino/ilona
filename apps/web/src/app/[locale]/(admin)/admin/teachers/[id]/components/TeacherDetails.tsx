@@ -1,8 +1,8 @@
 'use client';
 
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { Badge, Input, Label } from '@/shared/components/ui';
-import { formatPhoneForDisplay } from '@/shared/lib/utils';
+import { formatDate, formatPhoneForDisplay } from '@/shared/lib/utils';
 import type { WeeklySchedule as WeeklyScheduleType } from '@/features/teachers/components/WeeklySchedule';
 import type { Teacher } from '@/features/teachers';
 import { getExperienceLabelFromHireDate, experienceYearsFieldRegisterOptions } from '@/features/teachers/utils/experience';
@@ -46,6 +46,7 @@ export function TeacherDetails({
 }: TeacherDetailsProps) {
   const t = useTranslations('teachers');
   const tc = useTranslations('common');
+  const locale = useLocale();
   const na = t('notAvailable');
 
   return (
@@ -111,11 +112,7 @@ export function TeacherDetails({
             <label className="text-sm font-medium text-[#8b8b90]">{t('memberSince')}</label>
             <p className="text-[#3b3b40] mt-1">
               {teacher.user?.createdAt
-                ? new Date(teacher.user.createdAt).toLocaleDateString(undefined, {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric',
-                  })
+                ? formatDate(teacher.user.createdAt, locale)
                 : na}
             </p>
           </div>

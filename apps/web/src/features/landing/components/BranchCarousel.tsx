@@ -249,10 +249,7 @@ export function BranchCarousel({ tr, isHy }: BranchCarouselProps) {
       <button
         type="button"
         aria-label={tCommon('previousBranch')}
-        className={cn(
-          'absolute left-[40px] top-[calc(50%-80px)] z-30 hidden size-[56px] -translate-y-1/2 items-center justify-center tablet:inline-flex',
-          BUTTON_HOVER_CLASS,
-        )}
+        className="absolute left-[40px] top-[calc(50%-80px)] z-30 hidden size-[56px] -translate-y-1/2 items-center justify-center transition-transform duration-200 ease-out hover:-translate-y-[calc(50%+0.25rem)] tablet:inline-flex"
         onClick={goToPrevious}
       >
         <Image src={BRANCH_NAV_ARROW} alt="" width={56} height={56} unoptimized />
@@ -260,10 +257,7 @@ export function BranchCarousel({ tr, isHy }: BranchCarouselProps) {
       <button
         type="button"
         aria-label={tCommon('nextBranch')}
-        className={cn(
-          'absolute right-[40px] top-[calc(50%-80px)] z-30 hidden size-[56px] -translate-y-1/2 items-center justify-center tablet:inline-flex',
-          BUTTON_HOVER_CLASS,
-        )}
+        className="absolute right-[40px] top-[calc(50%-80px)] z-30 hidden size-[56px] -translate-y-1/2 items-center justify-center transition-transform duration-200 ease-out hover:-translate-y-[calc(50%+0.25rem)] tablet:inline-flex"
         onClick={goToNext}
       >
         <Image
