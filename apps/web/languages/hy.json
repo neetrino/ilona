@@ -1598,7 +1598,12 @@
     "recordingError": "Ձայնագրման սխալ է տեղի ունեցել",
     "teachersTab": "Ուսուցիչներ",
     "messageSent": "Ուղարկված",
-    "messageRead": "Տեսել է"
+    "messageRead": "Տեսել է",
+    "messageReadReceiptsTitle": "Հաղորդագրության տվյալներ",
+    "seenByCount": "Տեսել են ({count})",
+    "notSeenYetCount": "Դեռ չեն տեսել ({count})",
+    "notSeenYet": "Դեռ չի տեսել",
+    "noOneSeenYet": "Դեռ ոչ ոք չի տեսել այս հաղորդագրությունը"
   },
   "finance": {
     "title": "Ֆինանսներ",

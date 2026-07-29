@@ -14,7 +14,7 @@ import {
 } from '../../utils/chat-utils';
 import { resolveChatAvatarUrl } from '../../utils/chat-avatar';
 import { isPendingMessageId } from '../../hooks';
-import { getMessageDeliveryStatus } from '../../utils/message-delivery-status';
+import { getMessageDeliveryStatus, canViewMessageReadReceipts } from '../../utils/message-delivery-status';
 import { VoiceMessagePlayer } from '../VoiceMessagePlayer';
 import { getSubstituteVoiceLabel, isVocabularyMessage, isVoiceToTeacherMessage } from './chat-message-meta';
 import { MessageDeliveryTicks } from './MessageDeliveryTicks';
@@ -32,6 +32,7 @@ interface ChatMessageItemProps {
   chat: Chat;
   ui: ChatThemeTokens;
   currentUserId?: string;
+  currentUserRole?: string | null;
   currentUserAvatar?: ChatCurrentUserAvatar;
   canDeleteAnyMessage: boolean;
   isMobileViewport: boolean;
@@ -54,6 +55,7 @@ export function ChatMessageItem({
   chat,
   ui,
   currentUserId,
+  currentUserRole,
   currentUserAvatar,
   canDeleteAnyMessage,
   isMobileViewport,
@@ -74,6 +76,10 @@ export function ChatMessageItem({
   const deliveryStatus = isOwn
     ? getMessageDeliveryStatus(message, chat, currentUserId, isPending)
     : null;
+  const canViewReceipts =
+    Boolean(deliveryStatus) &&
+    deliveryStatus !== 'pending' &&
+    canViewMessageReadReceipts(currentUserRole);
   const canDelete = !isPending && (isOwn || canDeleteAnyMessage);
   const senderDisplay = getMessageSenderDisplay(message, senderLabels);
   const senderAvatarUrl = resolveChatAvatarUrl(
@@ -232,6 +238,9 @@ export function ChatMessageItem({
                 readLabel={tChat('messageRead')}
                 sendingLabel={tChat('sendingMessage')}
                 className={ui.subtle}
+                canViewReceipts={canViewReceipts}
+                message={message}
+                chat={chat}
               />
             ) : null}
           </div>
