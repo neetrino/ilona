@@ -1,14 +1,15 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { useLogo } from '@/features/settings/hooks/useSettings';
-import { useChats, useSocket, useCreateDirectChat } from '../hooks';
+import { useChats, useSocket, useCreateDirectChat, useStudentAdmin } from '../hooks';
 import { useChatStore } from '../store/chat.store';
 import { useMyTeachers } from '@/features/students/hooks/useStudents';
 import type { Chat } from '../types';
 import type { AssignedTeacher } from '@/features/students/api/students.api';
+import type { StudentAdmin } from '../api/chat-api/chat-api.types';
 import { cn } from '@/shared/lib/utils';
 import { getFullApiUrl } from '@/shared/lib/api-url-utils';
 import { getChatTheme } from '../lib/chat-theme';
@@ -22,7 +23,8 @@ import { ChatUnreadBadge } from './ChatUnreadBadge';
 
 type ListItem =
   | { type: 'chat'; chat: Chat }
-  | { type: 'teacher_placeholder'; teacher: AssignedTeacher };
+  | { type: 'teacher_placeholder'; teacher: AssignedTeacher }
+  | { type: 'admin_placeholder'; admin: StudentAdmin };
 
 interface StudentChatListProps {
   onSelectChat: (chat: Chat) => void;
@@ -42,6 +44,8 @@ export function StudentChatList({ onSelectChat }: StudentChatListProps) {
   const { data: chats = [], isLoading: isLoadingChats } = useChats();
   // Assigned teacher(s) so they always appear in the list (with or without existing chat)
   const { data: teachers = [], isLoading: isLoadingTeachers } = useMyTeachers(true);
+  // Admin contact — always visible so students can message support from day one
+  const { data: admin, isLoading: isLoadingAdmin } = useStudentAdmin();
   const createDirectChat = useCreateDirectChat();
 
   // Shared presence (all roles / hook instances)
@@ -77,27 +81,35 @@ export function StudentChatList({ onSelectChat }: StudentChatListProps) {
     return list;
   }, [chats, searchQuery]);
 
-  // Unified list: assigned teachers (show as chat or placeholder) + all other chats
+  // Unified list: admin + assigned teachers (placeholders) + all other chats
   const listItems = useMemo((): ListItem[] => {
     const items: ListItem[] = [];
-    const teacherIdsWithChat = new Set<string>();
+    const directPartnerIdsWithChat = new Set<string>();
     const q = searchQuery?.toLowerCase() ?? '';
 
     for (const chat of filteredChats) {
       if (chat.type === 'DIRECT') {
         const other = chat.participants.find((p) => p.userId !== user?.id);
-        if (other?.userId) teacherIdsWithChat.add(other.userId);
+        if (other?.userId) directPartnerIdsWithChat.add(other.userId);
+      }
+    }
+
+    // Admin always appears (placeholder until DM exists / is in the list)
+    if (admin && !directPartnerIdsWithChat.has(admin.id)) {
+      const adminName = admin.name.toLowerCase();
+      if (!q || adminName.includes(q) || 'admin'.includes(q) || 'ադմին'.includes(q)) {
+        items.push({ type: 'admin_placeholder', admin });
       }
     }
 
     // Add teacher placeholders for assigned teachers who don't have a chat in the list yet
     for (const teacher of teachers) {
-      if (teacherIdsWithChat.has(teacher.userId)) continue;
+      if (directPartnerIdsWithChat.has(teacher.userId)) continue;
       if (q && !teacher.name.toLowerCase().includes(q)) continue;
       items.push({ type: 'teacher_placeholder', teacher });
     }
 
-    // Add all chats (group + direct, including with teacher)
+    // Add all chats (group + direct, including with teacher/admin)
     for (const chat of filteredChats) {
       items.push({ type: 'chat', chat });
     }
@@ -106,9 +118,32 @@ export function StudentChatList({ onSelectChat }: StudentChatListProps) {
       if (item.type === 'chat') {
         return item.chat;
       }
+      if (item.type === 'admin_placeholder') {
+        return {
+          unreadCount: item.admin.unreadCount || 0,
+          lastMessage: item.admin.lastMessage ?? undefined,
+          updatedAt: item.admin.updatedAt ?? undefined,
+        };
+      }
       return { unreadCount: 0 };
     });
-  }, [filteredChats, teachers, user?.id, searchQuery]);
+  }, [filteredChats, teachers, admin, user?.id, searchQuery]);
+
+  const openOrCreateDirectChat = useCallback(
+    (partnerUserId: string, existingChatId: string | null) => {
+      if (existingChatId) {
+        const existing = chats.find((chat) => chat.id === existingChatId);
+        if (existing) {
+          onSelectChat(existing);
+          return;
+        }
+      }
+      createDirectChat.mutate(partnerUserId, {
+        onSuccess: (newChat) => onSelectChat(newChat),
+      });
+    },
+    [chats, createDirectChat, onSelectChat],
+  );
 
   // Get chat display info
   const getChatInfo = (chat: Chat) => {
@@ -145,6 +180,8 @@ export function StudentChatList({ onSelectChat }: StudentChatListProps) {
   const formatTime = (dateStr?: string) =>
     formatChatListTime(dateStr, locale, tChat('yesterday'));
 
+  const isLoading = isLoadingChats || isLoadingTeachers || isLoadingAdmin;
+
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-hidden bg-white">
       <div className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain [touch-action:pan-y] [-webkit-overflow-scrolling:touch]">
@@ -176,9 +213,9 @@ export function StudentChatList({ onSelectChat }: StudentChatListProps) {
           </div>
         </div>
 
-        {/* Unified chat list: teachers (or placeholder) + all chats */}
+        {/* Unified chat list: admin + teachers (or placeholder) + all chats */}
         <div>
-        {isLoadingChats || isLoadingTeachers ? (
+        {isLoading ? (
           <div className="p-4 space-y-3">
             {[1, 2, 3].map((i) => (
               <div key={i} className="flex items-center gap-3 animate-pulse">
@@ -213,6 +250,60 @@ export function StudentChatList({ onSelectChat }: StudentChatListProps) {
             </div>
           ) : (
             listItems.map((item) => {
+              if (item.type === 'admin_placeholder') {
+                const { admin: adminContact } = item;
+                const isCreating = createDirectChat.isPending;
+                const adminAvatarUrl = resolveChatAvatarUrl(
+                  adminContact.avatarUrl,
+                  'ADMIN',
+                  brandLogoUrl,
+                );
+                return (
+                  <button
+                    key={`admin-${adminContact.id}`}
+                    onClick={() =>
+                      openOrCreateDirectChat(adminContact.id, adminContact.chatId || null)
+                    }
+                    disabled={isCreating}
+                    className={cn(
+                      'flex w-full items-start gap-3 p-4 text-left transition-colors',
+                      ui.listHover,
+                      isCreating && 'cursor-wait opacity-60',
+                    )}
+                  >
+                    <div className="relative">
+                      {adminAvatarUrl ? (
+                        <Image
+                          src={adminAvatarUrl}
+                          alt={adminContact.name}
+                          width={48}
+                          height={48}
+                          className="h-12 w-12 rounded-full object-cover"
+                          unoptimized
+                        />
+                      ) : (
+                        <div
+                          className={cn(
+                            'flex h-12 w-12 items-center justify-center rounded-full font-semibold text-white',
+                            ui.avatar,
+                          )}
+                        >
+                          {getInitialsFromParts(adminContact.firstName, adminContact.lastName)}
+                        </div>
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="mb-1 flex items-center justify-between">
+                        <h3 className={cn('truncate font-medium', ui.body)}>{adminContact.name}</h3>
+                      </div>
+                      <p className={cn('truncate text-sm', ui.muted)}>
+                        {isCreating ? tChat('openingChat') : tChat('clickToStartConversation')}
+                      </p>
+                    </div>
+                  </button>
+                );
+              }
+
               if (item.type === 'teacher_placeholder') {
                 const { teacher } = item;
                 const isCreating = createDirectChat.isPending;
@@ -355,6 +446,3 @@ export function StudentChatList({ onSelectChat }: StudentChatListProps) {
     </div>
   );
 }
-
-
-

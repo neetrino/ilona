@@ -375,12 +375,22 @@ export class ChatController {
   }
 
   /**
-   * Get admin user info for Student Chat (Student only)
+   * Get admin user info for Student Chat (Student only).
+   * Also ensures the Admin DIRECT chat exists (backfill for older students).
    */
   @Get('student/admin')
   @Roles(UserRole.STUDENT)
   async getAdminForStudent(@CurrentUser() user: JwtPayload): Promise<unknown> {
     return this.chatService.getAdminForStudent(user.sub);
+  }
+
+  /**
+   * One-shot: ensure every ACTIVE student has a DIRECT chat with the canonical Admin.
+   */
+  @Post('admin/backfill-student-admin-chats')
+  @Roles(UserRole.ADMIN)
+  async backfillStudentAdminDirectChats() {
+    return this.chatService.backfillStudentAdminDirectChats();
   }
 
   /**

@@ -153,6 +153,14 @@ export class ChatService {
     return this.chatListsService.getAdminForStudent(studentUserId);
   }
 
+  ensureAdminDirectChat(portalUserId: string): Promise<string | null> {
+    return this.chatListsService.ensureAdminDirectChat(portalUserId);
+  }
+
+  backfillStudentAdminDirectChats(): Promise<{ ensured: number; skipped: number }> {
+    return this.chatListsService.backfillStudentAdminDirectChats();
+  }
+
   async getStudentVoiceToTeacherRecordings(
     studentUserId: string,
     filters?: { year?: number; month?: number; day?: number },
