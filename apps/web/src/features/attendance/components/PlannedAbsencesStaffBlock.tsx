@@ -20,15 +20,30 @@ type PlannedAbsencesStaffBlockProps = {
   className?: string;
 };
 
-function formatAbsenceDate(date: string, locale: string): string {
+function getAbsenceDateParts(date: string, locale: string): { dayLabel: string; dayNumber: string } {
   const parsed = new Date(`${date}T12:00:00`);
-  if (Number.isNaN(parsed.getTime())) return date;
-  return parsed.toLocaleDateString(locale, {
-    weekday: 'short',
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-  });
+  if (Number.isNaN(parsed.getTime())) {
+    return { dayLabel: '—', dayNumber: '—' };
+  }
+  return {
+    dayLabel: parsed.toLocaleDateString(locale, { weekday: 'short' }),
+    dayNumber: String(parsed.getDate()),
+  };
+}
+
+function AbsenceDateBadge({ date, locale }: { date: string; locale: string }) {
+  const { dayLabel, dayNumber } = getAbsenceDateParts(date, locale);
+
+  return (
+    <div className="h-[4.25rem] w-[4.25rem] shrink-0 overflow-hidden rounded-[1rem] border border-[rgba(14,14,16,0.08)] bg-white">
+      <div className="bg-gradient-to-r from-[#ff9330] via-[#ff5f5f] to-[#ff2e88] px-2 py-1 text-center text-[0.625rem] font-semibold uppercase tracking-[0.08em] text-white">
+        {dayLabel}
+      </div>
+      <p className="pt-1.5 text-center text-[1.625rem] font-bold leading-none tracking-[-0.02em] text-[#1010a3]">
+        {dayNumber}
+      </p>
+    </div>
+  );
 }
 
 function PlannedAbsenceCard({
@@ -40,8 +55,6 @@ function PlannedAbsenceCard({
   locale: string;
   detailed?: boolean;
 }) {
-  const formattedDate = formatAbsenceDate(row.date, locale);
-
   return (
     <div
       className={cn(
@@ -50,26 +63,11 @@ function PlannedAbsenceCard({
       )}
     >
       <div className="flex items-start gap-3">
-        <div className="flex h-[2.5rem] w-[2.5rem] shrink-0 items-center justify-center rounded-2xl bg-[#ddecff]">
-          <PublicAssetImage
-            src={STUDENT_DASHBOARD_ASSETS.calendarIcon}
-            alt=""
-            width={18}
-            height={18}
-            className="h-[1.125rem] w-[1.125rem] object-contain"
-          />
-        </div>
+        <AbsenceDateBadge date={row.date} locale={locale} />
         <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-start justify-between gap-2">
-            <div className="min-w-0">
-              <div className="font-semibold tracking-tight text-[#1010a3]">{row.student.name}</div>
-              <div className="mt-0.5 text-xs text-[#8b8b90]">
-                {row.student.group?.name ?? '—'}
-              </div>
-            </div>
-            <span className="inline-flex shrink-0 items-center rounded-full border border-[#1010a3]/12 bg-[#f0f1ff] px-2.5 py-1 text-[0.6875rem] font-medium text-[#1010a3]">
-              {formattedDate}
-            </span>
+          <div className="font-semibold tracking-tight text-[#1010a3]">{row.student.name}</div>
+          <div className="mt-0.5 text-xs text-[#8b8b90]">
+            {row.student.group?.name ?? '—'}
           </div>
           <p
             className={cn(
