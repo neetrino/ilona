@@ -8,12 +8,16 @@ import { CompleteLessonDto } from './dto';
 import { UserRole } from '@ilona/database';
 import { LessonEnrichmentService } from './lesson-enrichment.service';
 import { LessonCrudService } from './lesson-crud.service';
-import { teacherActsAsLessonInstructor } from '../../common/lesson-instructor';
+import { teacherCanActOnLesson } from '../../common/lesson-instructor';
 
 type LessonStatusFields = {
   status: string;
   teacherId: string;
   substituteTeacherId: string | null | undefined;
+  group?: {
+    teacherId: string | null;
+    secondTeacherId: string | null;
+  } | null;
 };
 
 /**
@@ -36,7 +40,7 @@ export class LessonStatusService {
         where: { userId },
       });
 
-      if (!teacher || !teacherActsAsLessonInstructor(lesson, teacher.id)) {
+      if (!teacher || !teacherCanActOnLesson(lesson, teacher.id)) {
         throw new ForbiddenException('You are not assigned to this lesson');
       }
     }
@@ -65,7 +69,7 @@ export class LessonStatusService {
         where: { userId },
       });
 
-      if (!teacher || !teacherActsAsLessonInstructor(lesson, teacher.id)) {
+      if (!teacher || !teacherCanActOnLesson(lesson, teacher.id)) {
         throw new ForbiddenException('You are not assigned to this lesson');
       }
     }

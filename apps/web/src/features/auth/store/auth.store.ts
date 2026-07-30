@@ -150,13 +150,16 @@ export const useAuthStore = create<AuthStore>()(
         isAuthenticated: state.isAuthenticated,
       }),
       onRehydrateStorage: () => (state) => {
-        if (state) {
-          const refresh = state.tokens?.refreshToken;
-          if (refresh && isTokenExpired(refresh)) {
-            state.logout();
-          }
-          state.setHydrated();
+        if (state?.tokens?.refreshToken && isTokenExpired(state.tokens.refreshToken)) {
+          // Prefer store API — rehydrate snapshot actions can be unreliable across zustand versions.
+          queueMicrotask(() => {
+            useAuthStore.getState().logout();
+          });
+          return;
         }
+        queueMicrotask(() => {
+          useAuthStore.getState().setHydrated();
+        });
       },
     }
   )

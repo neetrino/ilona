@@ -3,7 +3,7 @@ import { UserRole } from '@ilona/database';
 import { PrismaService } from '../prisma/prisma.service';
 import { LessonEnrichmentService } from './lesson-enrichment.service';
 import { LessonManagerAccessService } from './lesson-manager-access.service';
-import { teacherActsAsLessonInstructor } from '../../common/lesson-instructor';
+import { teacherCanActOnLesson } from '../../common/lesson-instructor';
 
 @Injectable()
 export class LessonReadService {
@@ -113,7 +113,7 @@ export class LessonReadService {
       });
 
       if (teacher) {
-        if (!teacherActsAsLessonInstructor(lesson, teacher.id)) {
+        if (!teacherCanActOnLesson(lesson, teacher.id)) {
           throw new ForbiddenException('You do not have access to this lesson');
         }
       } else {

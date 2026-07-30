@@ -8,7 +8,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { UserRole } from '@ilona/database';
 import { GroupScheduleLessonsService } from './group-schedule-lessons.service';
 import { LessonManagerAccessService } from './lesson-manager-access.service';
-import { teacherActsAsLessonInstructor } from '../../common/lesson-instructor';
+import { teacherCanActOnLesson } from '../../common/lesson-instructor';
 
 @Injectable()
 export class LessonDeleteService {
@@ -64,6 +64,12 @@ export class LessonDeleteService {
           teacherId: true,
           substituteTeacherId: true,
           status: true,
+          group: {
+            select: {
+              teacherId: true,
+              secondTeacherId: true,
+            },
+          },
         },
       });
 
@@ -74,7 +80,7 @@ export class LessonDeleteService {
       }
 
       const unauthorizedLessons = lessons.filter(
-        (l) => !teacherActsAsLessonInstructor(l, currentTeacherId!),
+        (l) => !teacherCanActOnLesson(l, currentTeacherId!),
       );
       if (unauthorizedLessons.length > 0) {
         throw new ForbiddenException(

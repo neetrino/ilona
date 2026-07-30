@@ -7,7 +7,7 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateFeedbackDto, UpdateFeedbackDto } from './dto';
 import { UserRole } from '@ilona/database';
-import { teacherActsAsLessonInstructor } from '../../common/lesson-instructor';
+import { teacherCanActOnLesson } from '../../common/lesson-instructor';
 import { buildStructuredFields } from './feedback.util';
 import { FeedbackCompletionService } from './feedback-completion.service';
 
@@ -50,7 +50,7 @@ export class FeedbackWriteService {
         where: { userId },
       });
 
-      if (!teacher || !teacherActsAsLessonInstructor(lesson, teacher.id)) {
+      if (!teacher || !teacherCanActOnLesson(lesson, teacher.id)) {
         throw new ForbiddenException('You are not assigned to this lesson');
       }
     }
@@ -124,6 +124,12 @@ export class FeedbackWriteService {
         lesson: {
           include: {
             teacher: true,
+            group: {
+              select: {
+                teacherId: true,
+                secondTeacherId: true,
+              },
+            },
           },
         },
       },
@@ -138,8 +144,8 @@ export class FeedbackWriteService {
         where: { userId },
       });
 
-      if (!teacher || teacher.id !== feedback.teacherId) {
-        throw new ForbiddenException('You can only edit your own feedback');
+      if (!teacher || !teacherCanActOnLesson(feedback.lesson, teacher.id)) {
+        throw new ForbiddenException('You can only edit feedback for your group lessons');
       }
     }
 
@@ -158,6 +164,20 @@ export class FeedbackWriteService {
   async delete(id: string, userId: string, userRole: UserRole) {
     const feedback = await this.prisma.feedback.findUnique({
       where: { id },
+      include: {
+        lesson: {
+          select: {
+            teacherId: true,
+            substituteTeacherId: true,
+            group: {
+              select: {
+                teacherId: true,
+                secondTeacherId: true,
+              },
+            },
+          },
+        },
+      },
     });
 
     if (!feedback) {
@@ -169,8 +189,8 @@ export class FeedbackWriteService {
         where: { userId },
       });
 
-      if (!teacher || teacher.id !== feedback.teacherId) {
-        throw new ForbiddenException('You can only delete your own feedback');
+      if (!teacher || !teacherCanActOnLesson(feedback.lesson, teacher.id)) {
+        throw new ForbiddenException('You can only delete feedback for your group lessons');
       }
     }
 
