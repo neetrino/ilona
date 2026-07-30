@@ -4,6 +4,12 @@ import { useState, useCallback, useEffect, useRef, startTransition, useMemo } fr
 import type { PaymentStatus, SalaryStatus } from '@/features/finance';
 import { readUrlSearchParam } from '@/shared/lib/url-search-params';
 import { useAppSearchUrl } from '@/shared/hooks/useAppSearchUrl';
+import type { FinanceTabId } from '../components/FinanceTabs';
+import {
+  getCurrentEarningsMonth,
+  parseEarningsMonth,
+  shiftEarningsMonth,
+} from '../utils/earnings-month';
 
 const SEARCH_DEBOUNCE_MS = 300;
 const SALARY_ID_PARAM = 'salaryId';
@@ -16,8 +22,10 @@ function parsePageParam(value: string | null, fallback = 0): number {
   return Number.isNaN(page) ? fallback : Math.max(0, page);
 }
 
-function parseTab(value: string | null): 'payments' | 'salaries' {
-  return value === 'salaries' ? 'salaries' : 'payments';
+function parseTab(value: string | null): FinanceTabId {
+  if (value === 'salaries') return 'salaries';
+  if (value === 'earnings') return 'earnings';
+  return 'payments';
 }
 
 function parsePaymentStatus(value: string | null): PaymentStatus | '' {
@@ -44,6 +52,19 @@ export function useFinancePage() {
 
   const salariesPage = useMemo(
     () => parsePageParam(readUrlSearchParam('salariesPage', searchParams, urlRevision)),
+    [searchParams, urlRevision],
+  );
+
+  const earningsPage = useMemo(
+    () => parsePageParam(readUrlSearchParam('earningsPage', searchParams, urlRevision)),
+    [searchParams, urlRevision],
+  );
+
+  const earningsMonth = useMemo(
+    () =>
+      parseEarningsMonth(
+        readUrlSearchParam('earningsMonth', searchParams, urlRevision) || getCurrentEarningsMonth(),
+      ),
     [searchParams, urlRevision],
   );
 
@@ -91,8 +112,10 @@ export function useFinancePage() {
         if (isNewSearch) {
           if (activeTab === 'payments') {
             replaceParams({ q: next || null, paymentsPage: null });
-          } else {
+          } else if (activeTab === 'salaries') {
             replaceParams({ q: next || null, salariesPage: null });
+          } else {
+            replaceParams({ q: next || null, earningsPage: null });
           }
         }
       });
@@ -101,12 +124,18 @@ export function useFinancePage() {
   }, [searchQuery, activeTab, replaceParams]);
 
   const handleTabChange = useCallback(
-    (tab: 'payments' | 'salaries') => {
-      if (tab === 'salaries') setSelectedPaymentIds(new Set());
-      if (tab === 'payments') setSelectedSalaryIds(new Set());
-      replaceParams({ tab: tab === 'payments' ? null : tab });
+    (tab: FinanceTabId) => {
+      if (tab !== 'payments') setSelectedPaymentIds(new Set());
+      if (tab !== 'salaries') setSelectedSalaryIds(new Set());
+      const params: Record<string, string | null> = {
+        tab: tab === 'payments' ? null : tab,
+      };
+      if (tab === 'earnings' && !readUrlSearchParam('earningsMonth', searchParams, urlRevision)) {
+        params.earningsMonth = getCurrentEarningsMonth();
+      }
+      replaceParams(params);
     },
-    [replaceParams],
+    [replaceParams, searchParams, urlRevision],
   );
 
   const handleSearchChange = useCallback((value: string) => {
@@ -145,6 +174,33 @@ export function useFinancePage() {
     [replaceParams],
   );
 
+  const handleEarningsPageChange = useCallback(
+    (page: number) => {
+      replaceParams({ earningsPage: page || null });
+    },
+    [replaceParams],
+  );
+
+  const handleEarningsMonthChange = useCallback(
+    (month: string) => {
+      replaceParams({
+        earningsMonth: parseEarningsMonth(month),
+        earningsPage: null,
+      });
+    },
+    [replaceParams],
+  );
+
+  const handleEarningsMonthShift = useCallback(
+    (delta: number) => {
+      replaceParams({
+        earningsMonth: shiftEarningsMonth(earningsMonth, delta),
+        earningsPage: null,
+      });
+    },
+    [earningsMonth, replaceParams],
+  );
+
   const openSalaryDetail = useCallback(
     (salaryId: string) => {
       isSalaryModalClosingRef.current = false;
@@ -165,6 +221,8 @@ export function useFinancePage() {
     activeTab,
     paymentsPage,
     salariesPage,
+    earningsPage,
+    earningsMonth,
     searchQuery,
     debouncedSearchQuery,
     paymentStatus,
@@ -189,6 +247,9 @@ export function useFinancePage() {
     handleSalaryStatusChange,
     handlePaymentsPageChange,
     handleSalariesPageChange,
+    handleEarningsPageChange,
+    handleEarningsMonthChange,
+    handleEarningsMonthShift,
     openSalaryDetail,
     closeSalaryDetail,
     router,

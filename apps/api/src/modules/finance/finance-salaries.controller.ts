@@ -18,6 +18,17 @@ import { SalariesService } from './salaries.service';
 import { CreateSalaryRecordDto, ProcessSalaryDto, UpdateSalaryDto } from './dto/create-salary-record.dto';
 import { FinanceControllerScopeService } from './finance-controller-scope.service';
 
+function parseLocalDateParam(value?: string): Date | undefined {
+  if (!value?.trim()) return undefined;
+  const dateOnly = value.trim().slice(0, 10);
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dateOnly)) {
+    const [y, m, d] = dateOnly.split('-').map(Number);
+    return new Date(y, m - 1, d);
+  }
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? undefined : parsed;
+}
+
 @Controller('finance')
 export class FinanceSalariesController {
   constructor(
@@ -34,6 +45,8 @@ export class FinanceSalariesController {
     @Query('teacherId') teacherId?: string,
     @Query('status') status?: string,
     @Query('q') q?: string,
+    @Query('dateFrom') dateFrom?: string,
+    @Query('dateTo') dateTo?: string,
   ): Promise<unknown> {
     return this.salariesService.findAll({
       skip: skip ? parseInt(skip, 10) : undefined,
@@ -41,6 +54,8 @@ export class FinanceSalariesController {
       teacherId,
       status: status as SalaryStatus | undefined,
       q: q?.trim() || undefined,
+      dateFrom: parseLocalDateParam(dateFrom),
+      dateTo: parseLocalDateParam(dateTo),
       centerId: getManagerCenterIdOrThrow(user),
     });
   }
