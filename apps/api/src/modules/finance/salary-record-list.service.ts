@@ -60,6 +60,15 @@ export class SalaryRecordListService {
           }
         : { status: 'ACTIVE' };
 
+    // Monthly earnings: only teachers created on/before the selected month
+    // (e.g. created in July must not appear when viewing June).
+    if (dateFrom || dateTo) {
+      const monthEnd =
+        dateTo ??
+        new Date(dateFrom!.getFullYear(), dateFrom!.getMonth() + 1, 0, 23, 59, 59, 999);
+      teacherWhere.createdAt = { lte: monthEnd };
+    }
+
     const [teachers, totalTeachers] = await Promise.all([
       this.db.teacher.findMany({
         where: teacherWhere as unknown as TeacherWhereArg,
