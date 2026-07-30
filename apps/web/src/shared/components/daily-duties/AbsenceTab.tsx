@@ -14,7 +14,8 @@ import type { AutoDismissToastVariant } from '@/shared/components/ui';
 import { LessonDetailTabSectionHeader } from '@/shared/components/daily-duties/LessonDetailTabSectionHeader';
 import { lessonDetailTabShellClass } from '@/shared/components/daily-duties/lesson-detail-tab-layout';
 import { cn } from '@/shared/lib/utils';
-import { ADMIN_FORM_INPUT_CLASS, ADMIN_PRIMARY_BUTTON_CLASS } from '@/shared/lib/admin-control-theme';
+import { ADMIN_FORM_INPUT_CLASS } from '@/shared/lib/admin-control-theme';
+import { ATTENDANCE_PRIMARY_BUTTON_CLASS } from '@/shared/components/attendance/attendance-button-theme';
 import { DAILY_DUTIES_RADIUS_CLASS } from '@/shared/lib/daily-duties/daily-duties-theme';
 
 interface AbsenceTabProps {
@@ -241,10 +242,7 @@ export function AbsenceTab({ lessonId, embeddedInSheet = false }: AbsenceTabProp
     <Button
       onClick={handleSave}
       disabled={markBulkAttendance.isPending || students.length === 0}
-      className={cn(
-        ADMIN_PRIMARY_BUTTON_CLASS,
-        'shrink-0 bg-blue-600 px-3 text-white hover:bg-blue-700 sm:px-4',
-      )}
+      className={cn(ATTENDANCE_PRIMARY_BUTTON_CLASS, 'shrink-0 px-3 sm:px-4')}
     >
       {markBulkAttendance.isPending
         ? t('savingAttendance')
