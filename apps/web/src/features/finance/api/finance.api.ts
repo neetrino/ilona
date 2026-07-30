@@ -199,6 +199,7 @@ export interface LessonObligation {
   feedbacksDone: boolean;
   voiceDone: boolean;
   textDone: boolean;
+  dailyPlanDone: boolean;
   completedActionsCount: number;
   totalActions: number;
   updatedAt: string;
