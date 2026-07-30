@@ -122,7 +122,7 @@ export function useEditGroupForm({
 
   useEffect(() => {
     if (!group) return;
-    const { weeklySlots, calendar } = normalizeGroupSchedulePayload(group.schedule);
+    const { weeklySlots } = normalizeGroupSchedulePayload(group.schedule);
     const range = defaultMonthDateRange();
     reset({
       name: group.name,
@@ -134,8 +134,9 @@ export function useEditGroupForm({
     });
     setIconKey(isGroupIconKey(group.iconKey) ? group.iconKey : null);
     setSchedule(weeklySlots);
-    setDateFrom(calendar?.dateFrom ?? range.from);
-    setDateTo(calendar?.dateTo ?? range.to);
+    // Always today (+ 90 days) when opening edit — not the stored calendar start.
+    setDateFrom(range.from);
+    setDateTo(range.to);
   }, [group, reset]);
 
   useEffect(() => {
