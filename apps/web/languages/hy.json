@@ -720,6 +720,7 @@
     "deactivateReasonPlaceholder": "Գրեք՝ ինչու եք անջատում այս աշակերտին…",
     "deactivateReasonRequired": "Անջատելուց առաջ մուտքագրեք պատճառը։",
     "deactivatedNoteLabel": "Անջատված",
+    "activatedNoteLabel": "Միացված",
     "studentCount": "{count, plural, one {# աշակերտ} other {# աշակերտ}}",
     "noStudentsInCenter": "Աշակերտներ չկան",
     "notAvailable": "Չկա",

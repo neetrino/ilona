@@ -16,7 +16,8 @@ import {
   UserCircle,
   Users,
 } from 'lucide-react';
-import { formatDateOfBirth, formatDisplayDate, formatLifecycle } from './student-details-modal.util';
+import { formatDateOfBirth, formatDisplayDate, formatLifecycle, parseStudentNotes } from './student-details-modal.util';
+import { StudentAccountStatusBadge } from './StudentAccountStatusBadge';
 import { StudentDetailsModalStatCard } from './StudentDetailsModalStatCard';
 import type { StudentDetailsModalProps } from './student-details-modal.types';
 import type { useStudentDetailsModal } from './useStudentDetailsModal';
@@ -132,16 +133,14 @@ export function StudentDetailsModalBody(props: StudentDetailsModalBodyProps) {
                 >
                   {fullName}
                 </h3>
-                {!isUserActive ? (
-                  <Badge variant="warning">{tStatus('inactive')}</Badge>
-                ) : (
-                  <Badge variant="success">{tStatus('active')}</Badge>
-                )}
+                <StudentAccountStatusBadge
+                  isActive={isUserActive}
+                  activeLabel={tStatus('active')}
+                  inactiveLabel={tStatus('inactive')}
+                />
                 {student.status &&
-                  !(
-                    (student.status === 'ACTIVE' && isUserActive) ||
-                    (student.status === 'INACTIVE' && !isUserActive)
-                  ) && (
+                  student.status !== 'ACTIVE' &&
+                  student.status !== 'INACTIVE' && (
                     <Badge variant="default">{formatLifecycle(student.status)}</Badge>
                   )}
               </div>
@@ -183,16 +182,14 @@ export function StudentDetailsModalBody(props: StudentDetailsModalBodyProps) {
                   >
                     {fullName}
                   </h3>
-                  {!isUserActive ? (
-                    <Badge variant="warning">{tStatus('inactive')}</Badge>
-                  ) : (
-                    <Badge variant="success">{tStatus('active')}</Badge>
-                  )}
+                  <StudentAccountStatusBadge
+                    isActive={isUserActive}
+                    activeLabel={tStatus('active')}
+                    inactiveLabel={tStatus('inactive')}
+                  />
                   {student.status &&
-                    !(
-                      (student.status === 'ACTIVE' && isUserActive) ||
-                      (student.status === 'INACTIVE' && !isUserActive)
-                    ) && (
+                    student.status !== 'ACTIVE' &&
+                    student.status !== 'INACTIVE' && (
                       <Badge variant="default">{formatLifecycle(student.status)}</Badge>
                     )}
                 </div>
@@ -337,9 +334,58 @@ export function StudentDetailsModalBody(props: StudentDetailsModalBodyProps) {
                 <FileText className="h-4 w-4 text-slate-500" aria-hidden="true" />
                 {t('notes')}
               </h4>
-              <p className="text-sm text-slate-700 whitespace-pre-wrap break-words rounded-lg border border-slate-200 bg-slate-50/60 p-4 max-h-40 overflow-y-auto">
-                {student.notes}
-              </p>
+              <ul className="space-y-2">
+                {parseStudentNotes(student.notes).map((note, index) => {
+                  const isStatusNote = note.kind === 'deactivation' || note.kind === 'activation';
+                  return (
+                  <li
+                    key={`${note.kind}-${note.date ?? 'x'}-${index}`}
+                    className={cn(
+                      'rounded-[15px] border px-3.5 py-3',
+                      note.kind === 'deactivation'
+                        ? 'border-amber-200/80 bg-amber-50/70'
+                        : note.kind === 'activation'
+                          ? 'border-emerald-200/80 bg-emerald-50/70'
+                          : 'border-[rgba(14,14,16,0.07)] bg-[#fafafa]',
+                    )}
+                  >
+                    {isStatusNote ? (
+                      <div className="space-y-1.5">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <Badge
+                            className={cn(
+                              'rounded-full border-0 px-2.5 py-0.5 text-xs font-semibold',
+                              note.kind === 'deactivation'
+                                ? 'bg-amber-100 text-amber-800'
+                                : 'bg-emerald-100 text-emerald-800',
+                            )}
+                          >
+                            {note.label ||
+                              (note.kind === 'deactivation'
+                                ? t('deactivatedNoteLabel')
+                                : t('activatedNoteLabel'))}
+                          </Badge>
+                          {note.date ? (
+                            <span className="text-xs text-[#8b8b90]">
+                              {formatDisplayDate(note.date, locale)}
+                            </span>
+                          ) : null}
+                        </div>
+                        {note.body ? (
+                          <p className="text-sm leading-relaxed text-[#3b3b40] whitespace-pre-wrap break-words">
+                            {note.body}
+                          </p>
+                        ) : null}
+                      </div>
+                    ) : (
+                      <p className="text-sm leading-relaxed text-[#3b3b40] whitespace-pre-wrap break-words">
+                        {note.body}
+                      </p>
+                    )}
+                  </li>
+                  );
+                })}
+              </ul>
             </div>
           )}
 

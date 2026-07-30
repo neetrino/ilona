@@ -10,7 +10,7 @@ import {
   useUpdateStudent,
   getItemId,
   isOnboardingItem,
-  buildStudentDeactivationNotes,
+  buildStudentStatusNote,
   type Student,
   type StudentLifecycleStatus,
 } from '@/features/students';
@@ -529,11 +529,13 @@ export function useStudentsPage() {
           setDeactivateError(t('deactivateReasonRequired'));
           return;
         }
-        data.notes = buildStudentDeactivationNotes(
+        data.notes = buildStudentStatusNote(
           student.notes,
-          trimmedReason,
           t('deactivatedNoteLabel'),
+          trimmedReason,
         );
+      } else {
+        data.notes = buildStudentStatusNote(student.notes, t('activatedNoteLabel'));
       }
 
       await updateStudent.mutateAsync({

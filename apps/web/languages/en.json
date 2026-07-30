@@ -720,6 +720,7 @@
     "deactivateReasonPlaceholder": "Write why this student is being deactivated…",
     "deactivateReasonRequired": "Please enter a reason before deactivating.",
     "deactivatedNoteLabel": "Deactivated",
+    "activatedNoteLabel": "Activated",
     "studentCount": "{count, plural, one {# student} other {# students}}",
     "noStudentsInCenter": "No students",
     "notAvailable": "N/A",

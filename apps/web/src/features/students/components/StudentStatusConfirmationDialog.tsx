@@ -151,16 +151,26 @@ export function StudentStatusConfirmationDialog({
 
 const NOTES_MAX_LENGTH = 500;
 
-/** Prepend a dated deactivation reason to existing student notes (max 500 chars). */
+/** Prepend a dated status note to existing student notes (max 500 chars). */
+export function buildStudentStatusNote(
+  existingNotes: string | null | undefined,
+  label: string,
+  detail?: string,
+): string {
+  const stamp = new Date().toISOString().slice(0, 10);
+  const trimmedDetail = detail?.trim();
+  const entry = trimmedDetail ? `[${label} ${stamp}] ${trimmedDetail}` : `[${label} ${stamp}]`;
+  const previous = existingNotes?.trim();
+  const combined = previous ? `${entry}\n\n${previous}` : entry;
+  if (combined.length <= NOTES_MAX_LENGTH) return combined;
+  return combined.slice(0, NOTES_MAX_LENGTH);
+}
+
+/** @deprecated Use buildStudentStatusNote */
 export function buildStudentDeactivationNotes(
   existingNotes: string | null | undefined,
   reason: string,
   deactivatedLabel: string,
 ): string {
-  const stamp = new Date().toISOString().slice(0, 10);
-  const entry = `[${deactivatedLabel} ${stamp}] ${reason.trim()}`;
-  const previous = existingNotes?.trim();
-  const combined = previous ? `${entry}\n\n${previous}` : entry;
-  if (combined.length <= NOTES_MAX_LENGTH) return combined;
-  return combined.slice(0, NOTES_MAX_LENGTH);
+  return buildStudentStatusNote(existingNotes, deactivatedLabel, reason);
 }
