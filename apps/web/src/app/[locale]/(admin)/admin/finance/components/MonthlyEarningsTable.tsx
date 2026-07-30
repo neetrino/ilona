@@ -17,26 +17,29 @@ interface MonthlyEarningsTableProps {
   isLoading: boolean;
   isIPad?: boolean;
   locale: string;
-  earningsMonth: string;
+  earningsFrom: string;
+  earningsTo: string;
   searchTerm?: string;
   noResultsKey?: string;
 }
 
-function getMonthString(salary: SalaryRecord, fallbackMonth: string): string {
+function getMonthString(salary: SalaryRecord, fallbackFrom: string): string {
   if (salary.year && salary.month) {
     return formatEarningsMonth(salary.year, salary.month);
   }
-  return fallbackMonth;
+  return fallbackFrom.slice(0, 7);
 }
 
 function EarningsActionCell({
   salary,
   locale,
-  earningsMonth,
+  earningsFrom,
+  earningsTo,
 }: {
   salary: SalaryRecord;
   locale: string;
-  earningsMonth: string;
+  earningsFrom: string;
+  earningsTo: string;
 }) {
   const t = useTranslations('finance');
   const { readParam } = useAppSearchUrl();
@@ -44,15 +47,15 @@ function EarningsActionCell({
   const firstName = salary.teacher?.user?.firstName || '';
   const lastName = salary.teacher?.user?.lastName || '';
   const teacherName = `${firstName} ${lastName}`.trim();
-  const monthStr = getMonthString(salary, earningsMonth);
+  const monthStr = getMonthString(salary, earningsFrom);
 
   const params = new URLSearchParams();
   params.set('tab', 'earnings');
   const earningsPage = readParam('earningsPage');
   const q = readParam('q');
-  const monthParam = readParam('earningsMonth');
   if (earningsPage) params.set('earningsPage', earningsPage);
-  if (monthParam) params.set('earningsMonth', monthParam);
+  params.set('earningsFrom', earningsFrom);
+  params.set('earningsTo', earningsTo);
   if (q) params.set('q', q);
   if (teacherName) params.set('teacherName', encodeURIComponent(teacherName));
 
@@ -77,14 +80,15 @@ export function MonthlyEarningsTable({
   isLoading,
   isIPad = false,
   locale,
-  earningsMonth,
+  earningsFrom,
+  earningsTo,
   searchTerm,
   noResultsKey,
 }: MonthlyEarningsTableProps) {
   const t = useTranslations('finance');
   const emptyMessage =
     searchTerm && noResultsKey ? t(noResultsKey) : t('noEarningsFound');
-  const periodLabel = formatEarningsPeriodLabel(earningsMonth, locale);
+  const periodLabel = formatEarningsPeriodLabel(earningsFrom, earningsTo, locale);
 
   const columns = [
     {
@@ -139,7 +143,12 @@ export function MonthlyEarningsTable({
       header: t('actions'),
       className: 'w-16',
       render: (row: SalaryRecord) => (
-        <EarningsActionCell salary={row} locale={locale} earningsMonth={earningsMonth} />
+        <EarningsActionCell
+          salary={row}
+          locale={locale}
+          earningsFrom={earningsFrom}
+          earningsTo={earningsTo}
+        />
       ),
     },
   ];
@@ -179,7 +188,8 @@ export function MonthlyEarningsTable({
                   <EarningsActionCell
                     salary={row}
                     locale={locale}
-                    earningsMonth={earningsMonth}
+                    earningsFrom={earningsFrom}
+                    earningsTo={earningsTo}
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-2 text-sm">
@@ -204,9 +214,9 @@ export function MonthlyEarningsTable({
         <DataTable
           columns={columns}
           data={earnings}
+          keyExtractor={(row) => row.id}
           isLoading={isLoading}
           emptyMessage={emptyMessage}
-          keyExtractor={(row) => row.id}
         />
       </div>
     </>

@@ -26,7 +26,7 @@ import { useIsIPad } from '@/shared/hooks/useIsIPad';
 import { AdminFinanceTableSection } from './AdminFinanceTableSection';
 import { AdminFinancePagination } from './AdminFinancePagination';
 import { AdminFinanceDeleteDialogs } from './AdminFinanceDeleteDialogs';
-import { earningsMonthDateBounds } from '@/app/[locale]/(admin)/admin/finance/utils/earnings-month';
+import { earningsRangeToApiBounds } from '@/app/[locale]/(admin)/admin/finance/utils/earnings-month';
 
 export function AdminFinancePage() {
   const t = useTranslations('finance');
@@ -51,7 +51,7 @@ export function AdminFinancePage() {
     paymentsPage,
     salariesPage,
     earningsPage,
-    earningsMonth,
+    earningsRange,
     searchQuery,
     debouncedSearchQuery,
     paymentStatus,
@@ -80,11 +80,12 @@ export function AdminFinancePage() {
     handleSalariesPageChange,
     handleEarningsPageChange,
     handleEarningsMonthShift,
+    handleEarningsRangeChange,
   } = useFinancePage();
 
   const earningsBounds = useMemo(
-    () => earningsMonthDateBounds(earningsMonth),
-    [earningsMonth],
+    () => earningsRangeToApiBounds(earningsRange.from, earningsRange.to),
+    [earningsRange.from, earningsRange.to],
   );
 
   const { data: dashboard, isLoading: isLoadingDashboard } = useFinanceDashboard();
@@ -356,7 +357,8 @@ export function AdminFinancePage() {
           searchQuery={searchQuery}
           paymentStatus={paymentStatus}
           salaryStatus={salaryStatus}
-          earningsMonth={earningsMonth}
+          earningsFrom={earningsRange.from}
+          earningsTo={earningsRange.to}
           selectedSalaryIds={selectedSalaryIds}
           allSalariesSelected={allSalariesSelected}
           allPaymentsSelected={allPaymentsSelected}
@@ -364,6 +366,7 @@ export function AdminFinancePage() {
           onPaymentStatusChange={handlePaymentStatusChange}
           onSalaryStatusChange={handleSalaryStatusChange}
           onEarningsMonthShift={handleEarningsMonthShift}
+          onEarningsRangeChange={handleEarningsRangeChange}
           onDeleteClick={handleDeleteClick}
           onDeletePaymentsClick={handleDeletePaymentsClick}
           isDeleting={deleteSalaries.isPending}
@@ -383,7 +386,8 @@ export function AdminFinancePage() {
           payments={payments}
           salaries={salaries}
           earnings={earnings}
-          earningsMonth={earningsMonth}
+          earningsFrom={earningsRange.from}
+          earningsTo={earningsRange.to}
           isLoading={isLoading || isLoadingDashboard}
           isIPad={isIPad}
           locale={locale}

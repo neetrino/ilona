@@ -18,7 +18,8 @@ type AdminFinanceTableSectionProps = {
   payments: Payment[];
   salaries: SalaryRecord[];
   earnings: SalaryRecord[];
-  earningsMonth: string;
+  earningsFrom: string;
+  earningsTo: string;
   isLoading: boolean;
   isIPad: boolean;
   locale: string;
@@ -45,7 +46,8 @@ export function AdminFinanceTableSection({
   payments,
   salaries,
   earnings,
-  earningsMonth,
+  earningsFrom,
+  earningsTo,
   isLoading,
   isIPad,
   locale,
@@ -105,7 +107,8 @@ export function AdminFinanceTableSection({
           isLoading={isLoading}
           isIPad={isIPad}
           locale={locale}
-          earningsMonth={earningsMonth}
+          earningsFrom={earningsFrom}
+          earningsTo={earningsTo}
           searchTerm={searchTerm}
           noResultsKey="noEarningsMatch"
         />
