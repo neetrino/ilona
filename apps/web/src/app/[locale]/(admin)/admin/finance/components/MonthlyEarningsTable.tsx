@@ -125,19 +125,6 @@ export function MonthlyEarningsTable({
       ),
     },
     {
-      key: 'deductions',
-      header: t('deductions'),
-      className: 'text-right',
-      render: (row: SalaryRecord) => {
-        const amount = Number(row.totalDeductions) || 0;
-        return (
-          <span className={amount > 0 ? 'font-medium text-red-600' : 'text-[#8b8b90]'}>
-            {amount > 0 ? `-${formatCurrency(amount)}` : formatCurrency(0)}
-          </span>
-        );
-      },
-    },
-    {
       key: 'net',
       header: t('earnedAmount'),
       className: 'text-right',
@@ -177,7 +164,6 @@ export function MonthlyEarningsTable({
           earnings.map((row) => {
             const firstName = row.teacher?.user?.firstName || '';
             const lastName = row.teacher?.user?.lastName || '';
-            const deductions = Number(row.totalDeductions) || 0;
             return (
               <div
                 key={row.id}
@@ -196,16 +182,10 @@ export function MonthlyEarningsTable({
                     earningsMonth={earningsMonth}
                   />
                 </div>
-                <div className="grid grid-cols-3 gap-2 text-sm">
+                <div className="grid grid-cols-2 gap-2 text-sm">
                   <div>
                     <p className="text-[#8b8b90]">{t('lessons')}</p>
                     <p className="font-medium text-[#3b3b40]">{row.lessonsCount ?? 0}</p>
-                  </div>
-                  <div>
-                    <p className="text-[#8b8b90]">{t('deductions')}</p>
-                    <p className={deductions > 0 ? 'font-medium text-red-600' : 'text-[#8b8b90]'}>
-                      {deductions > 0 ? `-${formatCurrency(deductions)}` : formatCurrency(0)}
-                    </p>
                   </div>
                   <div>
                     <p className="text-[#8b8b90]">{t('earnedAmount')}</p>
