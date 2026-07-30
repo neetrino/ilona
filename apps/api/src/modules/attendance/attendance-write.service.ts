@@ -10,7 +10,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { MarkAttendanceDto, BulkAttendanceDto } from './dto';
 import { AbsenceType, UserRole } from '@ilona/database';
 import { SalariesService } from '../finance/salaries.service';
-import { effectiveLessonInstructorTeacherId, teacherActsAsLessonInstructor } from '../../common/lesson-instructor';
+import { effectiveLessonInstructorTeacherId, teacherCanActOnLesson } from '../../common/lesson-instructor';
 import { AttendanceScopeService } from './attendance-scope.service';
 import { AttendanceSideEffectsService } from './attendance-side-effects.service';
 import { updateStudentStreakOnAttendanceChange } from './attendance.util';
@@ -39,6 +39,7 @@ export class AttendanceWriteService {
           select: {
             id: true,
             teacherId: true,
+            secondTeacherId: true,
             centerId: true,
           },
         },
@@ -49,13 +50,13 @@ export class AttendanceWriteService {
       throw new BadRequestException(`Lesson with ID ${lessonId} not found`);
     }
 
-    // Authorization: Teachers can only mark attendance for their assigned groups
+    // Authorization: either group teacher may mark attendance; pay stays on assigned instructor
     if (userRole === UserRole.TEACHER && userId) {
       const teacher = await this.prisma.teacher.findUnique({
         where: { userId },
       });
 
-      if (!teacher || !teacherActsAsLessonInstructor(lesson, teacher.id)) {
+      if (!teacher || !teacherCanActOnLesson(lesson, teacher.id)) {
         throw new ForbiddenException('You do not have access to this lesson');
       }
     }
@@ -186,6 +187,7 @@ export class AttendanceWriteService {
           select: {
             id: true,
             teacherId: true,
+            secondTeacherId: true,
             centerId: true,
           },
         },
@@ -196,13 +198,13 @@ export class AttendanceWriteService {
       throw new BadRequestException(`Lesson with ID ${lessonId} not found`);
     }
 
-    // Authorization: Teachers can only mark attendance for their assigned groups
+    // Authorization: either group teacher may mark attendance; pay stays on assigned instructor
     if (userRole === UserRole.TEACHER && userId) {
       const teacher = await this.prisma.teacher.findUnique({
         where: { userId },
       });
 
-      if (!teacher || !teacherActsAsLessonInstructor(lesson, teacher.id)) {
+      if (!teacher || !teacherCanActOnLesson(lesson, teacher.id)) {
         throw new ForbiddenException('You do not have access to this lesson');
       }
     }
@@ -323,6 +325,7 @@ export class AttendanceWriteService {
               select: {
                 id: true,
                 teacherId: true,
+                secondTeacherId: true,
                 centerId: true,
               },
             },
@@ -335,13 +338,13 @@ export class AttendanceWriteService {
       throw new NotFoundException(`Attendance record with ID ${attendanceId} not found`);
     }
 
-    // Authorization: Teachers can only update attendance for their assigned groups
+    // Authorization: either group teacher may update attendance; pay stays on assigned instructor
     if (userRole === UserRole.TEACHER && userId) {
       const teacher = await this.prisma.teacher.findUnique({
         where: { userId },
       });
 
-      if (!teacher || !teacherActsAsLessonInstructor(attendance.lesson, teacher.id)) {
+      if (!teacher || !teacherCanActOnLesson(attendance.lesson, teacher.id)) {
         throw new ForbiddenException('You do not have access to this attendance record');
       }
     }

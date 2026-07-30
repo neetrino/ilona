@@ -25,7 +25,21 @@ function LoginPageShell({ children }: { children: React.ReactNode }) {
 
 export default function LoginPage() {
   const router = useRouter();
-  const { isAuthenticated, isHydrated, user } = useAuthStore();
+  const { isAuthenticated, isHydrated, user, setHydrated } = useAuthStore();
+
+  useEffect(() => {
+    const finish = () => setHydrated();
+    const unsub = useAuthStore.persist.onFinishHydration(finish);
+    if (useAuthStore.persist.hasHydrated()) {
+      finish();
+    }
+    // Failsafe: never leave the login UI blocked on hydration.
+    const timer = window.setTimeout(finish, 1000);
+    return () => {
+      unsub();
+      window.clearTimeout(timer);
+    };
+  }, [setHydrated]);
 
   useEffect(() => {
     if (!isHydrated) return;

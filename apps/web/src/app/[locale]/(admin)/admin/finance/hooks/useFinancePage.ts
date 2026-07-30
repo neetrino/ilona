@@ -4,6 +4,12 @@ import { useState, useCallback, useEffect, useRef, startTransition, useMemo } fr
 import type { PaymentStatus, SalaryStatus } from '@/features/finance';
 import { readUrlSearchParam } from '@/shared/lib/url-search-params';
 import { useAppSearchUrl } from '@/shared/hooks/useAppSearchUrl';
+import type { FinanceTabId } from '../components/FinanceTabs';
+import {
+  getDefaultEarningsRange,
+  normalizeEarningsRange,
+  shiftEarningsRange,
+} from '../utils/earnings-month';
 
 const SEARCH_DEBOUNCE_MS = 300;
 const SALARY_ID_PARAM = 'salaryId';
@@ -16,8 +22,10 @@ function parsePageParam(value: string | null, fallback = 0): number {
   return Number.isNaN(page) ? fallback : Math.max(0, page);
 }
 
-function parseTab(value: string | null): 'payments' | 'salaries' {
-  return value === 'salaries' ? 'salaries' : 'payments';
+function parseTab(value: string | null): FinanceTabId {
+  if (value === 'salaries') return 'salaries';
+  if (value === 'earnings') return 'earnings';
+  return 'payments';
 }
 
 function parsePaymentStatus(value: string | null): PaymentStatus | '' {
@@ -26,6 +34,25 @@ function parsePaymentStatus(value: string | null): PaymentStatus | '' {
 
 function parseSalaryStatus(value: string | null): SalaryStatus | '' {
   return value && SALARY_STATUSES.has(value) ? (value as SalaryStatus) : '';
+}
+
+function rangeFromUrl(
+  fromParam: string | null,
+  toParam: string | null,
+  monthParam: string | null,
+): { from: string; to: string } {
+  if (fromParam || toParam) {
+    return normalizeEarningsRange(fromParam, toParam);
+  }
+  if (monthParam && /^\d{4}-\d{2}$/.test(monthParam)) {
+    const [y, m] = monthParam.split('-').map(Number);
+    const to = new Date(y, m, 1);
+    return normalizeEarningsRange(
+      `${y}-${String(m).padStart(2, '0')}-01`,
+      `${to.getFullYear()}-${String(to.getMonth() + 1).padStart(2, '0')}-01`,
+    );
+  }
+  return getDefaultEarningsRange();
 }
 
 export function useFinancePage() {
@@ -44,6 +71,21 @@ export function useFinancePage() {
 
   const salariesPage = useMemo(
     () => parsePageParam(readUrlSearchParam('salariesPage', searchParams, urlRevision)),
+    [searchParams, urlRevision],
+  );
+
+  const earningsPage = useMemo(
+    () => parsePageParam(readUrlSearchParam('earningsPage', searchParams, urlRevision)),
+    [searchParams, urlRevision],
+  );
+
+  const earningsRange = useMemo(
+    () =>
+      rangeFromUrl(
+        readUrlSearchParam('earningsFrom', searchParams, urlRevision),
+        readUrlSearchParam('earningsTo', searchParams, urlRevision),
+        readUrlSearchParam('earningsMonth', searchParams, urlRevision),
+      ),
     [searchParams, urlRevision],
   );
 
@@ -91,8 +133,10 @@ export function useFinancePage() {
         if (isNewSearch) {
           if (activeTab === 'payments') {
             replaceParams({ q: next || null, paymentsPage: null });
-          } else {
+          } else if (activeTab === 'salaries') {
             replaceParams({ q: next || null, salariesPage: null });
+          } else {
+            replaceParams({ q: next || null, earningsPage: null });
           }
         }
       });
@@ -101,12 +145,25 @@ export function useFinancePage() {
   }, [searchQuery, activeTab, replaceParams]);
 
   const handleTabChange = useCallback(
-    (tab: 'payments' | 'salaries') => {
-      if (tab === 'salaries') setSelectedPaymentIds(new Set());
-      if (tab === 'payments') setSelectedSalaryIds(new Set());
-      replaceParams({ tab: tab === 'payments' ? null : tab });
+    (tab: FinanceTabId) => {
+      if (tab !== 'payments') setSelectedPaymentIds(new Set());
+      if (tab !== 'salaries') setSelectedSalaryIds(new Set());
+      const params: Record<string, string | null> = {
+        tab: tab === 'payments' ? null : tab,
+      };
+      if (tab === 'earnings') {
+        const hasFrom = readUrlSearchParam('earningsFrom', searchParams, urlRevision);
+        const hasTo = readUrlSearchParam('earningsTo', searchParams, urlRevision);
+        if (!hasFrom || !hasTo) {
+          const defaults = getDefaultEarningsRange();
+          params.earningsFrom = defaults.from;
+          params.earningsTo = defaults.to;
+          params.earningsMonth = null;
+        }
+      }
+      replaceParams(params);
     },
-    [replaceParams],
+    [replaceParams, searchParams, urlRevision],
   );
 
   const handleSearchChange = useCallback((value: string) => {
@@ -145,6 +202,39 @@ export function useFinancePage() {
     [replaceParams],
   );
 
+  const handleEarningsPageChange = useCallback(
+    (page: number) => {
+      replaceParams({ earningsPage: page || null });
+    },
+    [replaceParams],
+  );
+
+  const handleEarningsRangeChange = useCallback(
+    (from: string, to: string) => {
+      const next = normalizeEarningsRange(from, to);
+      replaceParams({
+        earningsFrom: next.from,
+        earningsTo: next.to,
+        earningsMonth: null,
+        earningsPage: null,
+      });
+    },
+    [replaceParams],
+  );
+
+  const handleEarningsMonthShift = useCallback(
+    (delta: number) => {
+      const next = shiftEarningsRange(earningsRange.from, earningsRange.to, delta);
+      replaceParams({
+        earningsFrom: next.from,
+        earningsTo: next.to,
+        earningsMonth: null,
+        earningsPage: null,
+      });
+    },
+    [earningsRange.from, earningsRange.to, replaceParams],
+  );
+
   const openSalaryDetail = useCallback(
     (salaryId: string) => {
       isSalaryModalClosingRef.current = false;
@@ -165,6 +255,8 @@ export function useFinancePage() {
     activeTab,
     paymentsPage,
     salariesPage,
+    earningsPage,
+    earningsRange,
     searchQuery,
     debouncedSearchQuery,
     paymentStatus,
@@ -189,6 +281,9 @@ export function useFinancePage() {
     handleSalaryStatusChange,
     handlePaymentsPageChange,
     handleSalariesPageChange,
+    handleEarningsPageChange,
+    handleEarningsRangeChange,
+    handleEarningsMonthShift,
     openSalaryDetail,
     closeSalaryDetail,
     router,

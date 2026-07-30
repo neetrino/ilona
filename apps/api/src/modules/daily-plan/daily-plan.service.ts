@@ -15,7 +15,7 @@ import {
   DailyPlanTopicInputDto,
 } from './dto';
 import { DailyPlanResourceKind, Prisma, UserRole } from '@ilona/database';
-import { effectiveLessonInstructorTeacherId, teacherActsAsLessonInstructor } from '../../common/lesson-instructor';
+import { effectiveLessonInstructorTeacherId, teacherCanActOnLesson } from '../../common/lesson-instructor';
 import { JwtPayload } from '../../common/types/auth.types';
 import { buildDailyPlanSearchWhere } from './daily-plan-search.util';
 
@@ -39,6 +39,10 @@ const dailyPlanInclude = {
       name: true,
       level: true,
       centerId: true,
+      teacherId: true,
+      secondTeacherId: true,
+      teacher: { select: { userId: true } },
+      secondTeacher: { select: { userId: true } },
       center: { select: { id: true, name: true, colorHex: true, address: true } },
     },
   },
@@ -51,6 +55,10 @@ const dailyPlanInclude = {
           id: true,
           name: true,
           centerId: true,
+          teacherId: true,
+          secondTeacherId: true,
+          teacher: { select: { userId: true } },
+          secondTeacher: { select: { userId: true } },
           center: { select: { id: true, name: true, colorHex: true, address: true } },
         },
       },
@@ -176,7 +184,17 @@ export class DailyPlanService {
     if (user.role === UserRole.ADMIN || user.role === UserRole.MANAGER) {
       return true;
     }
-    return plan.teacher.user.id === user.sub;
+    if (plan.teacher.user.id === user.sub) {
+      return true;
+    }
+    // Co-teachers share action rights; salary still uses plan.teacherId (assigned instructor).
+    const group = plan.group ?? plan.lesson?.group;
+    if (!group) {
+      return false;
+    }
+    return (
+      group.teacher?.userId === user.sub || group.secondTeacher?.userId === user.sub
+    );
   }
 
   async findAll(query: QueryDailyPlanDto, user: JwtPayload) {
@@ -268,12 +286,18 @@ export class DailyPlanService {
           scheduledAt: true,
           teacherId: true,
           substituteTeacherId: true,
+          group: {
+            select: {
+              teacherId: true,
+              secondTeacherId: true,
+            },
+          },
         },
       });
       if (!lesson) {
         throw new BadRequestException(`Lesson ${dto.lessonId} not found`);
       }
-      if (teacherId && !teacherActsAsLessonInstructor(lesson, teacherId)) {
+      if (teacherId && !teacherCanActOnLesson(lesson, teacherId)) {
         throw new ForbiddenException(
           'You can only create plans for your own lessons',
         );

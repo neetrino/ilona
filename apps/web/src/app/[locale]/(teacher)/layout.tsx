@@ -10,7 +10,20 @@ export default function TeacherLayout({
   children: React.ReactNode;
 }) {
   const router = useRouter();
-  const { isAuthenticated, isHydrated, user } = useAuthStore();
+  const { isAuthenticated, isHydrated, user, setHydrated } = useAuthStore();
+
+  useEffect(() => {
+    const finish = () => setHydrated();
+    const unsub = useAuthStore.persist.onFinishHydration(finish);
+    if (useAuthStore.persist.hasHydrated()) {
+      finish();
+    }
+    const timer = window.setTimeout(finish, 1000);
+    return () => {
+      unsub();
+      window.clearTimeout(timer);
+    };
+  }, [setHydrated]);
 
   useEffect(() => {
     // Wait for hydration before making any decisions

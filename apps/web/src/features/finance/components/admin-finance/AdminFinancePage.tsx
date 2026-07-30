@@ -3,7 +3,7 @@
 import { portalPageStackClass } from '@/shared/lib/portal-theme';
 import { useTranslations } from 'next-intl';
 import { useParams } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { SalaryDetailsModal } from '@/features/finance/components/SalaryDetailsModal';
 import {
@@ -26,6 +26,7 @@ import { useIsIPad } from '@/shared/hooks/useIsIPad';
 import { AdminFinanceTableSection } from './AdminFinanceTableSection';
 import { AdminFinancePagination } from './AdminFinancePagination';
 import { AdminFinanceDeleteDialogs } from './AdminFinanceDeleteDialogs';
+import { earningsRangeToApiBounds } from '@/app/[locale]/(admin)/admin/finance/utils/earnings-month';
 
 export function AdminFinancePage() {
   const t = useTranslations('finance');
@@ -46,10 +47,11 @@ export function AdminFinancePage() {
   }, []);
 
   const {
-    // State
     activeTab,
     paymentsPage,
     salariesPage,
+    earningsPage,
+    earningsRange,
     searchQuery,
     debouncedSearchQuery,
     paymentStatus,
@@ -64,26 +66,30 @@ export function AdminFinancePage() {
     deletePaymentsError,
     closeSalaryDetail,
     openSalaryDetail,
-    // Setters
     setSelectedSalaryIds,
     setSelectedPaymentIds,
     setIsDeleteDialogOpen,
     setIsDeletePaymentsDialogOpen,
     setDeleteError,
     setDeletePaymentsError,
-    // Handlers
     handleTabChange,
     handleSearchChange,
     handlePaymentStatusChange,
     handleSalaryStatusChange,
     handlePaymentsPageChange,
     handleSalariesPageChange,
+    handleEarningsPageChange,
+    handleEarningsMonthShift,
+    handleEarningsRangeChange,
   } = useFinancePage();
 
-  // Fetch dashboard stats
+  const earningsBounds = useMemo(
+    () => earningsRangeToApiBounds(earningsRange.from, earningsRange.to),
+    [earningsRange.from, earningsRange.to],
+  );
+
   const { data: dashboard, isLoading: isLoadingDashboard } = useFinanceDashboard();
 
-  // Fetch payments (debounced search to avoid request on every keystroke)
   const {
     data: paymentsData,
     isLoading: isLoadingPayments,
@@ -95,7 +101,6 @@ export function AdminFinancePage() {
     q: debouncedSearchQuery.trim() || undefined,
   });
 
-  // Fetch salaries (debounced search)
   const {
     data: salariesData,
     isLoading: isLoadingSalaries,
@@ -107,14 +112,24 @@ export function AdminFinancePage() {
     q: debouncedSearchQuery.trim() || undefined,
   });
 
-  // Mutations
+  const {
+    data: earningsData,
+    isLoading: isLoadingEarnings,
+    isFetching: isFetchingEarnings,
+  } = useSalaries({
+    skip: earningsPage * pageSize,
+    take: pageSize,
+    dateFrom: earningsBounds.dateFrom,
+    dateTo: earningsBounds.dateTo,
+    q: debouncedSearchQuery.trim() || undefined,
+  });
+
   const updatePaymentStatusMutation = useUpdatePaymentStatus();
   const updatePaymentMethodMutation = useUpdatePaymentMethod();
   const updateSalaryStatusMutation = useUpdateSalaryStatus();
   const deleteSalaries = useDeleteSalaries();
   const deletePayments = useDeletePayments();
 
-  // Wrap updatePaymentStatus to match expected interface
   const updatePaymentStatus = {
     mutateAsync: async (params: { id: string; status: PaymentStatus }) => {
       await updatePaymentStatusMutation.mutateAsync({ id: params.id, status: params.status });
@@ -122,15 +137,16 @@ export function AdminFinancePage() {
     isPending: updatePaymentStatusMutation.isPending,
   };
 
-  // Wrap updatePaymentMethod to match expected interface (mutateAsync returns void)
   const updatePaymentMethod = {
     mutateAsync: async (params: { id: string; paymentMethod: string | null }) => {
-      await updatePaymentMethodMutation.mutateAsync({ id: params.id, paymentMethod: params.paymentMethod });
+      await updatePaymentMethodMutation.mutateAsync({
+        id: params.id,
+        paymentMethod: params.paymentMethod,
+      });
     },
     isPending: updatePaymentMethodMutation.isPending,
   };
 
-  // Wrap updateSalaryStatus to match expected interface
   const updateSalaryStatus = {
     mutateAsync: async (params: { id: string; status: SalaryStatus }) => {
       await updateSalaryStatusMutation.mutateAsync({ id: params.id, status: params.status });
@@ -146,9 +162,18 @@ export function AdminFinancePage() {
   const totalSalaries = salariesData?.total || 0;
   const salariesTotalPages = salariesData?.totalPages || 1;
 
+  const earnings = earningsData?.items || [];
+  const totalEarnings = earningsData?.total || 0;
+  const earningsTotalPages = earningsData?.totalPages || 1;
+
   useEffect(() => {
     if ((isSmUp !== false && !isIPad) || !shouldScrollToCardsRef.current) return;
-    const isActiveTabFetching = activeTab === 'payments' ? isFetchingPayments : isFetchingSalaries;
+    const isActiveTabFetching =
+      activeTab === 'payments'
+        ? isFetchingPayments
+        : activeTab === 'salaries'
+          ? isFetchingSalaries
+          : isFetchingEarnings;
     if (isActiveTabFetching) return;
 
     requestAnimationFrame(() => {
@@ -158,13 +183,36 @@ export function AdminFinancePage() {
       });
     });
     shouldScrollToCardsRef.current = false;
-  }, [isSmUp, isIPad, activeTab, isFetchingPayments, isFetchingSalaries, paymentsPage, salariesPage]);
+  }, [
+    isSmUp,
+    isIPad,
+    activeTab,
+    isFetchingPayments,
+    isFetchingSalaries,
+    isFetchingEarnings,
+    paymentsPage,
+    salariesPage,
+    earningsPage,
+  ]);
 
-  const isLoading = activeTab === 'payments' ? isLoadingPayments : activeTab === 'salaries' ? isLoadingSalaries : false;
+  const isLoading =
+    activeTab === 'payments'
+      ? isLoadingPayments
+      : activeTab === 'salaries'
+        ? isLoadingSalaries
+        : isLoadingEarnings;
 
-  // Checkbox state for payments (current page only)
-  const allPaymentsSelected = payments.length > 0 && payments.every((p) => selectedPaymentIds.has(p.id));
-  const somePaymentsSelected = payments.some((p) => selectedPaymentIds.has(p.id)) && !allPaymentsSelected;
+  const isSearching =
+    activeTab === 'payments'
+      ? isFetchingPayments
+      : activeTab === 'salaries'
+        ? isFetchingSalaries
+        : isFetchingEarnings;
+
+  const allPaymentsSelected =
+    payments.length > 0 && payments.every((p) => selectedPaymentIds.has(p.id));
+  const somePaymentsSelected =
+    payments.some((p) => selectedPaymentIds.has(p.id)) && !allPaymentsSelected;
 
   const handleSelectAllPayments = () => {
     if (allPaymentsSelected) {
@@ -183,7 +231,6 @@ export function AdminFinancePage() {
     });
   };
 
-  // Checkbox handlers for salaries
   const allSalariesSelected =
     salaries.length > 0 && salaries.every((s) => selectedSalaryIds.has(s.id));
   const someSalariesSelected =
@@ -207,14 +254,12 @@ export function AdminFinancePage() {
     setSelectedSalaryIds(newSet);
   };
 
-  // Handle delete button click
   const handleDeleteClick = () => {
     if (selectedSalaryIds.size === 0) return;
     setDeleteError(null);
     setIsDeleteDialogOpen(true);
   };
 
-  // Handle delete confirmation
   const handleDeleteConfirm = async () => {
     if (selectedSalaryIds.size === 0) return;
 
@@ -225,19 +270,18 @@ export function AdminFinancePage() {
       setSelectedSalaryIds(new Set());
       setIsDeleteDialogOpen(false);
     } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to delete salary records. Please try again.';
+      const errorMessage =
+        err instanceof Error ? err.message : 'Failed to delete salary records. Please try again.';
       setDeleteError(errorMessage);
     }
   };
 
-  // Handle delete payments button click
   const handleDeletePaymentsClick = () => {
     if (selectedPaymentIds.size === 0) return;
     setDeletePaymentsError(null);
     setIsDeletePaymentsDialogOpen(true);
   };
 
-  // Handle delete payments confirmation
   const handleDeletePaymentsConfirm = async () => {
     if (selectedPaymentIds.size === 0) return;
 
@@ -248,13 +292,19 @@ export function AdminFinancePage() {
       setSelectedPaymentIds(new Set());
       setIsDeletePaymentsDialogOpen(false);
     } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to delete payments. Please try again.';
+      const errorMessage =
+        err instanceof Error ? err.message : 'Failed to delete payments. Please try again.';
       setDeletePaymentsError(errorMessage);
     }
   };
 
   const handlePageChangeWithScroll = (nextPage: number) => {
-    const currentPage = activeTab === 'payments' ? paymentsPage : salariesPage;
+    const currentPage =
+      activeTab === 'payments'
+        ? paymentsPage
+        : activeTab === 'salaries'
+          ? salariesPage
+          : earningsPage;
     if (nextPage === currentPage) return;
 
     if (isSmUp === false || isIPad) {
@@ -263,49 +313,65 @@ export function AdminFinancePage() {
 
     if (activeTab === 'payments') {
       handlePaymentsPageChange(nextPage);
-    } else {
+    } else if (activeTab === 'salaries') {
       handleSalariesPageChange(nextPage);
+    } else {
+      handleEarningsPageChange(nextPage);
     }
   };
 
-  const activePage = activeTab === 'payments' ? paymentsPage : salariesPage;
-  const activeTotal = activeTab === 'payments' ? totalPayments : totalSalaries;
-  const activeTotalPages = activeTab === 'payments' ? paymentsTotalPages : salariesTotalPages;
+  const activePage =
+    activeTab === 'payments'
+      ? paymentsPage
+      : activeTab === 'salaries'
+        ? salariesPage
+        : earningsPage;
+  const activeTotal =
+    activeTab === 'payments'
+      ? totalPayments
+      : activeTab === 'salaries'
+        ? totalSalaries
+        : totalEarnings;
+  const activeTotalPages =
+    activeTab === 'payments'
+      ? paymentsTotalPages
+      : activeTab === 'salaries'
+        ? salariesTotalPages
+        : earningsTotalPages;
 
   return (
-    <DashboardLayout
-      title={t('title')}
-      subtitle={t('adminSubtitle')}
-    >
+    <DashboardLayout title={t('title')} subtitle={t('adminSubtitle')}>
       <div className={portalPageStackClass}>
-        {/* Stats Grid */}
         <FinanceStats dashboard={dashboard} isLoading={isLoadingDashboard} isIPad={isIPad} />
 
-        {/* Tabs */}
         <FinanceTabs
           activeTab={activeTab}
           totalPayments={totalPayments}
           totalSalaries={totalSalaries}
+          totalEarnings={totalEarnings}
           onTabChange={handleTabChange}
         />
 
-        {/* Actions */}
         <FinanceFilters
           activeTab={activeTab}
           searchQuery={searchQuery}
           paymentStatus={paymentStatus}
           salaryStatus={salaryStatus}
+          earningsFrom={earningsRange.from}
+          earningsTo={earningsRange.to}
           selectedSalaryIds={selectedSalaryIds}
           allSalariesSelected={allSalariesSelected}
           allPaymentsSelected={allPaymentsSelected}
           onSearchChange={handleSearchChange}
           onPaymentStatusChange={handlePaymentStatusChange}
           onSalaryStatusChange={handleSalaryStatusChange}
+          onEarningsMonthShift={handleEarningsMonthShift}
+          onEarningsRangeChange={handleEarningsRangeChange}
           onDeleteClick={handleDeleteClick}
           onDeletePaymentsClick={handleDeletePaymentsClick}
           isDeleting={deleteSalaries.isPending}
           isDeletingPayments={deletePayments.isPending}
-          isSearching={activeTab === 'payments' ? isFetchingPayments : isFetchingSalaries}
+          isSearching={isSearching}
           selectedPaymentIds={selectedPaymentIds}
           page={activePage}
           pageSize={pageSize}
@@ -314,12 +380,14 @@ export function AdminFinancePage() {
           onPageChange={handlePageChangeWithScroll}
         />
 
-        {/* Table */}
         <AdminFinanceTableSection
           activeTab={activeTab}
           cardsListStartRef={cardsListStartRef}
           payments={payments}
           salaries={salaries}
+          earnings={earnings}
+          earningsFrom={earningsRange.from}
+          earningsTo={earningsRange.to}
           isLoading={isLoading || isLoadingDashboard}
           isIPad={isIPad}
           locale={locale}
@@ -340,7 +408,6 @@ export function AdminFinancePage() {
           onOpenSalaryDetail={openSalaryDetail}
         />
 
-        {/* Pagination - bottom aligned */}
         <AdminFinancePagination
           page={activePage}
           pageSize={pageSize}
@@ -349,7 +416,6 @@ export function AdminFinancePage() {
           onPageChange={handlePageChangeWithScroll}
         />
 
-        {/* Salary Details Modal */}
         <SalaryDetailsModal
           salaryId={selectedSalaryId}
           open={isDetailModalOpen}

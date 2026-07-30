@@ -3,7 +3,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { Prisma, LessonStatus, UserRole } from '@ilona/database';
 import { LessonEnrichmentService } from './lesson-enrichment.service';
 import { LessonManagerAccessService } from './lesson-manager-access.service';
-import { lessonsPayableToTeacherWhere } from '../../common/lesson-instructor';
+import { lessonsAccessibleToTeacherWhere, lessonsPayableToTeacherWhere } from '../../common/lesson-instructor';
 
 @Injectable()
 export class LessonListService {
@@ -61,12 +61,7 @@ export class LessonListService {
 
       if (teacher) {
         currentTeacherId = teacher.id;
-        roleScopeCondition = {
-          OR: [
-            { teacherId: teacher.id, substituteTeacherId: null },
-            { substituteTeacherId: teacher.id },
-          ],
-        };
+        roleScopeCondition = lessonsAccessibleToTeacherWhere(teacher.id);
       } else {
         return {
           items: [],

@@ -4,6 +4,8 @@ import type { RefObject } from 'react';
 import type { Payment, SalaryRecord, PaymentStatus, SalaryStatus } from '@/features/finance';
 import { PaymentsTable } from '@/app/[locale]/(admin)/admin/finance/components/PaymentsTable';
 import { SalariesTable } from '@/app/[locale]/(admin)/admin/finance/components/SalariesTable';
+import { MonthlyEarningsTable } from '@/app/[locale]/(admin)/admin/finance/components/MonthlyEarningsTable';
+import type { FinanceTabId } from '@/app/[locale]/(admin)/admin/finance/components/FinanceTabs';
 
 type MutationAdapter<TParams> = {
   mutateAsync: (params: TParams) => Promise<void>;
@@ -11,10 +13,13 @@ type MutationAdapter<TParams> = {
 };
 
 type AdminFinanceTableSectionProps = {
-  activeTab: 'payments' | 'salaries';
+  activeTab: FinanceTabId;
   cardsListStartRef: RefObject<HTMLDivElement | null>;
   payments: Payment[];
   salaries: SalaryRecord[];
+  earnings: SalaryRecord[];
+  earningsFrom: string;
+  earningsTo: string;
   isLoading: boolean;
   isIPad: boolean;
   locale: string;
@@ -40,6 +45,9 @@ export function AdminFinanceTableSection({
   cardsListStartRef,
   payments,
   salaries,
+  earnings,
+  earningsFrom,
+  earningsTo,
   isLoading,
   isIPad,
   locale,
@@ -77,7 +85,7 @@ export function AdminFinanceTableSection({
           onSelectAllPayments={onSelectAllPayments}
           onToggleSelectPayment={onToggleSelectPayment}
         />
-      ) : (
+      ) : activeTab === 'salaries' ? (
         <SalariesTable
           salaries={salaries}
           isLoading={isLoading}
@@ -92,6 +100,17 @@ export function AdminFinanceTableSection({
           searchTerm={searchTerm}
           noResultsKey="noSalariesMatch"
           onOpenSalaryDetail={onOpenSalaryDetail}
+        />
+      ) : (
+        <MonthlyEarningsTable
+          earnings={earnings}
+          isLoading={isLoading}
+          isIPad={isIPad}
+          locale={locale}
+          earningsFrom={earningsFrom}
+          earningsTo={earningsTo}
+          searchTerm={searchTerm}
+          noResultsKey="noEarningsMatch"
         />
       )}
     </>

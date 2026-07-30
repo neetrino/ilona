@@ -54,7 +54,7 @@ export function addDaysToYmd(ymd: string, days: number): string {
   return formatLocalYmd(d);
 }
 
-/** Default calendar range when opening group create/edit: today through 30 days later. */
+/** Default calendar range when opening group create/edit: today through +90 days. */
 export function defaultMonthDateRange(): { from: string; to: string } {
   const from = formatLocalYmd(new Date());
   return {

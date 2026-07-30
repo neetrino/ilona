@@ -122,6 +122,8 @@ export async function fetchSalaries(filters?: SalaryFilters): Promise<SalariesRe
   if (filters?.status) params.append('status', filters.status);
   if (filters?.month !== undefined) params.append('month', String(filters.month));
   if (filters?.year !== undefined) params.append('year', String(filters.year));
+  if (filters?.dateFrom) params.append('dateFrom', filters.dateFrom);
+  if (filters?.dateTo) params.append('dateTo', filters.dateTo);
   if (filters?.q?.trim()) params.append('q', filters.q.trim());
 
   const query = params.toString();
@@ -199,6 +201,7 @@ export interface LessonObligation {
   feedbacksDone: boolean;
   voiceDone: boolean;
   textDone: boolean;
+  dailyPlanDone: boolean;
   completedActionsCount: number;
   totalActions: number;
   updatedAt: string;

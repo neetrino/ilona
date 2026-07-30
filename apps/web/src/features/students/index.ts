@@ -36,6 +36,8 @@ export { StudentDetailsModal } from './components/StudentDetailsModal';
 export { DeleteConfirmationDialog } from './components/DeleteConfirmationDialog';
 export {
   StudentStatusConfirmationDialog,
+  buildStudentStatusNote,
+  buildStudentDeactivationNotes,
   type StudentStatusDialogAction,
 } from './components/StudentStatusConfirmationDialog';
 export { InlineSelect } from './components/InlineSelect';

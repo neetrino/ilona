@@ -53,3 +53,36 @@ export function formatLifecycle(status: StudentLifecycleStatus | undefined): str
   };
   return labels[status] ?? status;
 }
+
+export type ParsedStudentNote = {
+  kind: 'deactivation' | 'activation' | 'general';
+  label?: string;
+  date?: string;
+  body: string;
+};
+
+const TAGGED_NOTE_RE = /^\[([^\]]+?)\s+(\d{4}-\d{2}-\d{2})\]\s*([\s\S]*)$/;
+
+/** Split stored student.notes into display entries (double-newline separated). */
+export function parseStudentNotes(notes: string): ParsedStudentNote[] {
+  return notes
+    .split(/\n\n+/)
+    .map((chunk) => chunk.trim())
+    .filter(Boolean)
+    .map((chunk) => {
+      const match = chunk.match(TAGGED_NOTE_RE);
+      if (!match) {
+        return { kind: 'general' as const, body: chunk };
+      }
+      const label = match[1].trim();
+      const date = match[2];
+      const body = match[3].trim();
+      if (/deactiv|անջատ/i.test(label)) {
+        return { kind: 'deactivation' as const, label, date, body };
+      }
+      if (/activ|միաց/i.test(label)) {
+        return { kind: 'activation' as const, label, date, body };
+      }
+      return { kind: 'general' as const, label, date, body: body || chunk };
+    });
+}

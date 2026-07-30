@@ -12,7 +12,7 @@ import { LessonEnrichmentService } from './lesson-enrichment.service';
 import { LessonReadService } from './lesson-read.service';
 import { LessonManagerAccessService } from './lesson-manager-access.service';
 import { SalariesService } from '../finance/salaries.service';
-import { teacherActsAsLessonInstructor } from '../../common/lesson-instructor';
+import { teacherCanActOnLesson } from '../../common/lesson-instructor';
 
 @Injectable()
 export class LessonUpdateService {
@@ -37,6 +37,10 @@ export class LessonUpdateService {
       status: string;
       teacherId: string;
       substituteTeacherId: string | null | undefined;
+      group?: {
+        teacherId: string | null;
+        secondTeacherId: string | null;
+      } | null;
     };
 
     if (userRole === UserRole.TEACHER && dto.substituteTeacherId !== undefined) {
@@ -53,7 +57,7 @@ export class LessonUpdateService {
         throw new ForbiddenException('Teacher profile not found');
       }
 
-      if (!teacherActsAsLessonInstructor(lesson, teacher.id)) {
+      if (!teacherCanActOnLesson(lesson, teacher.id)) {
         throw new ForbiddenException('You can only edit your own lessons');
       }
 

@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { UserRole } from '@ilona/database';
-import { teacherActsAsLessonInstructor } from '../../common/lesson-instructor';
+import { teacherCanActOnLesson } from '../../common/lesson-instructor';
 import { AttendanceScopeService } from './attendance-scope.service';
 
 @Injectable()
@@ -69,7 +69,7 @@ export class AttendanceLessonQueryService {
         where: { userId },
       });
 
-      if (!teacher || !teacherActsAsLessonInstructor(lesson, teacher.id)) {
+      if (!teacher || !teacherCanActOnLesson(lesson, teacher.id)) {
         throw new ForbiddenException('You do not have access to this lesson');
       }
     }
@@ -172,7 +172,7 @@ export class AttendanceLessonQueryService {
 
     const result: Record<string, Awaited<ReturnType<AttendanceLessonQueryService['getByLesson']>>> = {};
     for (const lesson of lessons) {
-      if (teacherId !== null && !teacherActsAsLessonInstructor(lesson, teacherId)) {
+      if (teacherId !== null && !teacherCanActOnLesson(lesson, teacherId)) {
         continue;
       }
       if (managerCenterId && lesson.group.centerId !== managerCenterId) {
