@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { ForbiddenException } from '@nestjs/common';
 import { describe, it, expect, beforeEach, vi, type Mock } from 'vitest';
 import { UserRole } from '@ilona/database';

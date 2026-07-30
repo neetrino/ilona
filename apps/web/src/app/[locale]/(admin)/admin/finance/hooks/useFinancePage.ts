@@ -46,7 +46,6 @@ function rangeFromUrl(
   }
   if (monthParam && /^\d{4}-\d{2}$/.test(monthParam)) {
     const [y, m] = monthParam.split('-').map(Number);
-    const from = new Date(y, m - 1, 1);
     const to = new Date(y, m, 1);
     return normalizeEarningsRange(
       `${y}-${String(m).padStart(2, '0')}-01`,
