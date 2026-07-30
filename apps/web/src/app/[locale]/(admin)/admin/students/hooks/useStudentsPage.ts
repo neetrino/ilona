@@ -10,6 +10,7 @@ import {
   useUpdateStudent,
   getItemId,
   isOnboardingItem,
+  buildStudentDeactivationNotes,
   type Student,
   type StudentLifecycleStatus,
 } from '@/features/students';
@@ -510,7 +511,7 @@ export function useStudentsPage() {
     setIsStatusDialogOpen(true);
   };
 
-  const handleStatusConfirm = async () => {
+  const handleStatusConfirm = async (reason?: string) => {
     const student = selectedStudentForStatusChange;
     if (!student) return;
 
@@ -521,9 +522,23 @@ export function useStudentsPage() {
     setDeactivateSuccess(false);
 
     try {
+      const data: { status: 'ACTIVE' | 'INACTIVE'; notes?: string } = { status: newStatus };
+      if (isCurrentlyActive) {
+        const trimmedReason = reason?.trim();
+        if (!trimmedReason) {
+          setDeactivateError(t('deactivateReasonRequired'));
+          return;
+        }
+        data.notes = buildStudentDeactivationNotes(
+          student.notes,
+          trimmedReason,
+          t('deactivatedNoteLabel'),
+        );
+      }
+
       await updateStudent.mutateAsync({
         id: student.id,
-        data: { status: newStatus },
+        data,
       });
       setDeactivateSuccess(true);
       setIsStatusDialogOpen(false);
