@@ -15,15 +15,24 @@ export interface DailyPlanTeacherOption {
   label: string;
 }
 
+export interface DailyPlanGroupOption {
+  id: string;
+  label: string;
+}
+
 interface DailyPlanListFiltersProps {
   teacherId: string;
   onTeacherIdChange: (value: string | null) => void;
+  groupId: string;
+  onGroupIdChange: (value: string | null) => void;
   dateFrom: string;
   onDateFromChange: (value: string) => void;
   dateTo: string;
   onDateToChange: (value: string) => void;
   teacherOptions: DailyPlanTeacherOption[];
+  groupOptions: DailyPlanGroupOption[];
   isLoadingTeachers?: boolean;
+  isLoadingGroups?: boolean;
   onClear: () => void;
   hasActiveFilters: boolean;
 }
@@ -31,12 +40,16 @@ interface DailyPlanListFiltersProps {
 export function DailyPlanListFilters({
   teacherId,
   onTeacherIdChange,
+  groupId,
+  onGroupIdChange,
   dateFrom,
   onDateFromChange,
   dateTo,
   onDateToChange,
   teacherOptions,
+  groupOptions,
   isLoadingTeachers = false,
+  isLoadingGroups = false,
   onClear,
   hasActiveFilters,
 }: DailyPlanListFiltersProps) {
@@ -45,8 +58,8 @@ export function DailyPlanListFilters({
 
   return (
     <div className="rounded-[15px] border border-[rgba(14,14,16,0.07)] bg-white p-3 sm:p-4">
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4 lg:items-end">
-        <div className="min-w-0 sm:col-span-2 lg:col-span-1">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-5 xl:items-end">
+        <div className="min-w-0">
           <label className="mb-1.5 block text-sm font-medium text-[#8b8b90]">
             {tCommon('teacher')}
           </label>
@@ -64,6 +77,27 @@ export function DailyPlanListFilters({
             noSearchResultsMessage={t('noTeachersFound')}
             isLoading={isLoadingTeachers}
             placeholder={t('allTeachers')}
+            triggerClassName={ADMIN_CONTROL_CLASS}
+          />
+        </div>
+        <div className="min-w-0">
+          <label className="mb-1.5 block text-sm font-medium text-[#8b8b90]">
+            {tCommon('group')}
+          </label>
+          <SingleSelectDropdown
+            id="daily-plan-filter-group"
+            options={[
+              { id: '', label: t('allGroups') },
+              ...groupOptions,
+            ]}
+            value={groupId}
+            onValueChange={(next) => onGroupIdChange(next || null)}
+            allowDeselect
+            searchable
+            searchPlaceholder={t('searchGroups')}
+            noSearchResultsMessage={t('noGroupsFound')}
+            isLoading={isLoadingGroups}
+            placeholder={t('allGroups')}
             triggerClassName={ADMIN_CONTROL_CLASS}
           />
         </div>

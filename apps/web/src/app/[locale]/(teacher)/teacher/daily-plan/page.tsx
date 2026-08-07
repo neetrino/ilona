@@ -15,6 +15,7 @@ import { DailyPlanEditor } from '@/features/daily-plan/DailyPlanEditor';
 import { DailyPlanListSection } from '@/features/daily-plan/DailyPlanListSection';
 import { DailyPlanViewer } from '@/features/daily-plan/DailyPlanViewer';
 import { useTeachers } from '@/features/teachers';
+import { useGroups } from '@/features/groups';
 
 export default function TeacherDailyPlanPage() {
   const t = useTranslations('nav');
@@ -25,6 +26,7 @@ export default function TeacherDailyPlanPage() {
   const { user } = useAuthStore();
   const [search, setSearch] = useState('');
   const [teacherId, setTeacherId] = useState('');
+  const [groupId, setGroupId] = useState('');
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
   const [editing, setEditing] = useState<DailyPlan | null>(null);
@@ -35,6 +37,10 @@ export default function TeacherDailyPlanPage() {
     status: 'ACTIVE',
     take: 200,
   });
+  const { data: groupsData, isLoading: isLoadingGroups } = useGroups({
+    take: 200,
+    isActive: true,
+  });
 
   const teacherOptions = useMemo(() => {
     if (!teachersData?.items) return [];
@@ -44,10 +50,21 @@ export default function TeacherDailyPlanPage() {
     }));
   }, [teachersData]);
 
+  const groupOptions = useMemo(() => {
+    if (!groupsData?.items) return [];
+    return groupsData.items
+      .map((group) => ({
+        id: group.id,
+        label: group.name,
+      }))
+      .sort((a, b) => a.label.localeCompare(b.label));
+  }, [groupsData]);
+
   const filters = useMemo(() => {
     const next: {
       search?: string;
       teacherId?: string;
+      groupId?: string;
       dateFrom?: string;
       dateTo?: string;
       take: number;
@@ -55,10 +72,11 @@ export default function TeacherDailyPlanPage() {
     const trimmed = search.trim();
     if (trimmed) next.search = trimmed;
     if (teacherId) next.teacherId = teacherId;
+    if (groupId) next.groupId = groupId;
     if (dateFrom) next.dateFrom = dateFrom;
     if (dateTo) next.dateTo = dateTo;
     return next;
-  }, [search, teacherId, dateFrom, dateTo]);
+  }, [search, teacherId, groupId, dateFrom, dateTo]);
 
   const { data, isLoading, refetch } = useDailyPlans(filters);
   const items = data?.items ?? [];
@@ -76,12 +94,16 @@ export default function TeacherDailyPlanPage() {
         enableStructuredFilters
         teacherId={teacherId}
         onTeacherIdChange={(value) => setTeacherId(value ?? '')}
+        groupId={groupId}
+        onGroupIdChange={(value) => setGroupId(value ?? '')}
         dateFrom={dateFrom}
         onDateFromChange={setDateFrom}
         dateTo={dateTo}
         onDateToChange={setDateTo}
         teacherOptions={teacherOptions}
+        groupOptions={groupOptions}
         isLoadingTeachers={isLoadingTeachers}
+        isLoadingGroups={isLoadingGroups}
         onCreate={() => router.push(`/${locale}/teacher/daily-plan/new`)}
         createLabel="+ New Daily Plan"
         items={items}
