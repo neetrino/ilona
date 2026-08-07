@@ -7,6 +7,7 @@ import {
   Briefcase,
   Calendar,
   CreditCard,
+  FileText,
   LayoutDashboard,
   Loader2,
   Mic,
@@ -40,6 +41,8 @@ function iconForType(type: GlobalSearchResultType): ReactNode {
       return <CreditCard className={className} aria-hidden />;
     case 'recording':
       return <Mic className={className} aria-hidden />;
+    case 'daily_plan':
+      return <FileText className={className} aria-hidden />;
     case 'page':
       return <LayoutDashboard className={className} aria-hidden />;
     default:

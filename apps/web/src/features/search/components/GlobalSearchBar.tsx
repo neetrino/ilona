@@ -34,6 +34,7 @@ const TYPE_KEYS: Record<GlobalSearchResultType, string> = {
   lesson: 'searchTypeLesson',
   payment: 'searchTypePayment',
   recording: 'searchTypeRecording',
+  daily_plan: 'searchTypeDailyPlan',
   page: 'searchTypePage',
 };
 

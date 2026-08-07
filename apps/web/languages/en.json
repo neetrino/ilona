@@ -21,6 +21,7 @@
     "searchTypeLesson": "Lesson",
     "searchTypePayment": "Payment",
     "searchTypeRecording": "Recording",
+    "searchTypeDailyPlan": "Daily Plan",
     "searchTypePage": "Page",
     "filter": "Filter",
     "loading": "Loading...",

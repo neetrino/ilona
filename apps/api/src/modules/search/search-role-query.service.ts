@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import type { Prisma } from '@ilona/database';
 import { PrismaService } from '../prisma/prisma.service';
+import { buildDailyPlanSearchWhere } from '../daily-plan/daily-plan-search.util';
 import type { GlobalSearchResult } from './types/search-result.type';
 import {
   groupNameOrDescriptionMatchTokens,
@@ -16,7 +17,12 @@ import {
 export class SearchRoleQueryService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async searchTeacherEntities(userId: string, tokens: string[], take: number): Promise<GlobalSearchResult[]> {
+  async searchTeacherEntities(
+    userId: string,
+    tokens: string[],
+    normalizedPhrase: string,
+    take: number,
+  ): Promise<GlobalSearchResult[]> {
     const teacher = await this.prisma.teacher.findUnique({
       where: { userId },
       select: { id: true },
@@ -38,7 +44,7 @@ export class SearchRoleQueryService {
         ? { OR: [{ groupId: { in: groupIds } }, { teacherId: teacher.id }] }
         : { teacherId: teacher.id };
 
-    const [students, groups, lessons, leads] = await Promise.all([
+    const [students, groups, lessons, leads, dailyPlans] = await Promise.all([
       this.prisma.student.findMany({
         where: {
           AND: [studentTextMatchTokens(tokens), studentScope],
@@ -79,6 +85,23 @@ export class SearchRoleQueryService {
         },
         take,
         select: { id: true, firstName: true, lastName: true, phone: true },
+      }),
+      this.prisma.dailyPlan.findMany({
+        where: {
+          AND: [{ teacherId: teacher.id }, buildDailyPlanSearchWhere(normalizedPhrase)],
+        },
+        take,
+        orderBy: { updatedAt: 'desc' },
+        select: {
+          id: true,
+          date: true,
+          group: { select: { name: true } },
+          topics: {
+            orderBy: { order: 'asc' },
+            take: 1,
+            select: { title: true },
+          },
+        },
       }),
     ]);
 
@@ -122,7 +145,20 @@ export class SearchRoleQueryService {
       };
     });
 
-    return [...studentResults, ...groupResults, ...lessonResults, ...leadResults];
+    const dailyPlanResults: GlobalSearchResult[] = dailyPlans.map((plan) => {
+      const topicTitle = plan.topics[0]?.title?.trim();
+      return {
+        id: plan.id,
+        type: 'daily_plan' as const,
+        title: topicTitle || plan.group?.name || 'Daily Plan',
+        subtitle: plan.group?.name ?? undefined,
+        description: plan.date.toISOString(),
+        href: `/teacher/daily-plan?planId=${encodeURIComponent(plan.id)}`,
+        badge: 'Daily Plan',
+      };
+    });
+
+    return [...studentResults, ...groupResults, ...lessonResults, ...leadResults, ...dailyPlanResults];
   }
 
   async searchStudentEntities(
