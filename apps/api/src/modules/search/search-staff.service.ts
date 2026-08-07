@@ -106,7 +106,7 @@ export class SearchStaffService {
       type: 'group' as const,
       title: g.name,
       subtitle: g.center?.name ?? undefined,
-      href: `/admin/groups?editGroup=${encodeURIComponent(g.id)}`,
+      href: `/admin/groups/view/${encodeURIComponent(g.id)}`,
       badge: 'Group',
     }));
   }
