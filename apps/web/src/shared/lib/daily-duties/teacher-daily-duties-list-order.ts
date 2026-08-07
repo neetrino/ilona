@@ -1,4 +1,4 @@
-import type { Lesson } from '@/features/lessons';
+import type { Lesson } from '@/features/lessons/types';
 import {
   formatScheduleDate,
   scheduleDateKeyFromIso,
@@ -58,10 +58,24 @@ export function getDailyDutiesListReferenceDate(weekDates: Date[], now: Date = n
   return now;
 }
 
+type LessonTimeRef = Pick<Lesson, 'id' | 'scheduledAt'>;
+
+function sortByStartAsc(a: LessonTimeRef, b: LessonTimeRef): number {
+  return new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime();
+}
+
+function sortByStartDesc(a: LessonTimeRef, b: LessonTimeRef): number {
+  return new Date(b.scheduledAt).getTime() - new Date(a.scheduledAt).getTime();
+}
+
 /**
- * Order lessons for the teacher calendar list: completed (earlier calendar days) first so they
- * appear on page 1, then next 2 global future, today's remaining rows, then later future dates.
- * Uses the same local calendar-day basis as `schedule-dates` / week and month views.
+ * Order lessons for the teacher/admin calendar list.
+ *
+ * Sections are calendar-day based so a past day can never appear under Upcoming,
+ * even if a stale "now" still thinks that day's start is in the future.
+ * - completed: local calendar day before today
+ * - upcoming: future calendar days, plus not-yet-started lessons today (first 2 = next)
+ * - today: remaining lessons on today's calendar day
  */
 export function buildTeacherDailyDutiesOrderedRows(
   lessons: Lesson[],
@@ -70,35 +84,36 @@ export function buildTeacherDailyDutiesOrderedRows(
   const todayKey = formatScheduleDate(now);
   const nowMs = now.getTime();
 
-  const future = lessons
-    .filter((l) => {
-      const t = new Date(l.scheduledAt).getTime();
-      return !Number.isNaN(t) && t > nowMs;
-    })
-    .sort((a, b) => new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime());
-
-  const upcomingTwo = future.slice(0, 2);
-  const upcomingIds = new Set(upcomingTwo.map((l) => l.id));
-
-  const todayLessons = lessons.filter((l) => scheduleDateKeyFromIso(l.scheduledAt) === todayKey);
-  const todayRest = todayLessons
-    .filter((l) => !upcomingIds.has(l.id))
-    .sort((a, b) => new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime());
-
-  const laterFuture = future
-    .filter((l) => !upcomingIds.has(l.id) && scheduleDateKeyFromIso(l.scheduledAt) !== todayKey)
-    .sort((a, b) => new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime());
-
   const completedEarlierDays = lessons
     .filter((l) => {
-      const start = new Date(l.scheduledAt).getTime();
-      if (Number.isNaN(start) || start >= nowMs) {
-        return false;
-      }
       const key = scheduleDateKeyFromIso(l.scheduledAt);
       return key !== null && key < todayKey;
     })
-    .sort((a, b) => new Date(b.scheduledAt).getTime() - new Date(a.scheduledAt).getTime());
+    .sort(sortByStartDesc);
+
+  const notYetStartedUpcoming = lessons
+    .filter((l) => {
+      const key = scheduleDateKeyFromIso(l.scheduledAt);
+      if (key === null || key < todayKey) {
+        return false;
+      }
+      if (key > todayKey) {
+        return true;
+      }
+      const start = new Date(l.scheduledAt).getTime();
+      return !Number.isNaN(start) && start > nowMs;
+    })
+    .sort(sortByStartAsc);
+
+  const upcomingTwo = notYetStartedUpcoming.slice(0, 2);
+  const upcomingIds = new Set(upcomingTwo.map((l) => l.id));
+
+  const todayLessons = lessons.filter((l) => scheduleDateKeyFromIso(l.scheduledAt) === todayKey);
+  const todayRest = todayLessons.filter((l) => !upcomingIds.has(l.id)).sort(sortByStartAsc);
+
+  const laterFuture = notYetStartedUpcoming
+    .filter((l) => !upcomingIds.has(l.id) && scheduleDateKeyFromIso(l.scheduledAt) !== todayKey)
+    .sort(sortByStartAsc);
 
   const rows: TeacherDailyDutiesOrderedRow[] = [];
   for (const lesson of completedEarlierDays) {
