@@ -14,7 +14,6 @@ export type UpdateStudentFormData = {
   parentEmail?: string;
   parentPassportInfo?: string;
   monthlyFee: number;
-  notes?: string;
   registerDate?: string;
 };
 

@@ -52,7 +52,6 @@ export function useEditStudentForm({ open, onOpenChange, studentId }: EditStuden
         parentEmail: z.string().email(tVal('invalidEmail')).optional().or(z.literal('')),
         parentPassportInfo: z.string().max(100, tVal('passportMax')).optional().or(z.literal('')),
         monthlyFee: z.number().min(0, tVal('monthlyFeeMin')),
-        notes: z.string().max(500, tVal('notesMax')).optional().or(z.literal('')),
         registerDate: z.string().optional().or(z.literal('')),
       }),
     [tVal],
@@ -90,7 +89,6 @@ export function useEditStudentForm({ open, onOpenChange, studentId }: EditStuden
       parentEmail: '',
       parentPassportInfo: '',
       monthlyFee: 0,
-      notes: '',
       registerDate: '',
     },
   });
@@ -175,7 +173,6 @@ export function useEditStudentForm({ open, onOpenChange, studentId }: EditStuden
       setValue('parentEmail', student.parentEmail || '');
       setValue('parentPassportInfo', student.parentPassportInfo || '');
       setValue('monthlyFee', typeof student.monthlyFee === 'string' ? parseFloat(student.monthlyFee) || 0 : Number(student.monthlyFee || 0));
-      setValue('notes', student.notes || '');
       setValue('registerDate', student.registerDate ? new Date(student.registerDate).toISOString().split('T')[0] : '');
       setErrorMessage(null);
       setSuccessMessage(null);
@@ -237,7 +234,6 @@ export function useEditStudentForm({ open, onOpenChange, studentId }: EditStuden
       if (dirtyFields.parentEmail) payload.parentEmail = data.parentEmail || undefined;
       if (dirtyFields.parentPassportInfo) payload.parentPassportInfo = data.parentPassportInfo || undefined;
       if (dirtyFields.monthlyFee) payload.monthlyFee = data.monthlyFee;
-      if (dirtyFields.notes) payload.notes = data.notes || undefined;
       if (dirtyFields.registerDate) payload.registerDate = data.registerDate?.trim() ? data.registerDate.trim() : null;
 
       // Nothing changed: just close without a redundant API call.

@@ -64,7 +64,6 @@ export default function StudentProfilePage() {
       parentPhone: '',
       parentEmail: '',
       monthlyFee: 0,
-      notes: '',
       receiveReports: false,
     },
   });
@@ -87,7 +86,6 @@ export default function StudentProfilePage() {
         parentPhone: student.parentPhone || '',
         parentEmail: student.parentEmail || '',
         monthlyFee,
-        notes: student.notes || '',
         receiveReports: student.receiveReports ?? false,
       });
       setHasUnsavedChanges(false);
@@ -180,7 +178,6 @@ export default function StudentProfilePage() {
         parentPhone: data.parentPhone || undefined,
         parentEmail: data.parentEmail || undefined,
         monthlyFee: data.monthlyFee,
-        notes: data.notes || undefined,
         receiveReports: data.receiveReports,
       };
 
@@ -364,13 +361,7 @@ export default function StudentProfilePage() {
           groupIdValue={watchedGroupId}
         />
 
-        {/* Notes */}
-        <StudentNotes
-          student={student}
-          isEditMode={isEditMode}
-          errors={errors}
-          register={register}
-        />
+        <StudentNotes student={student} />
 
         {/* Recent Activity */}
         <StudentAttendance student={student} />
