@@ -328,8 +328,37 @@ export function StudentDetailsModalBody(props: StudentDetailsModalBodyProps) {
             </div>
           )}
 
+          {statistics && (
+            <div className="space-y-4 mt-8">
+              <h4 className="flex items-center gap-2 text-base font-semibold text-[#1010a3] sm:text-lg">
+                <GraduationCap className="h-4 w-4 text-[#8b8b90]" aria-hidden="true" />
+                {tTeachers('statistics')}
+              </h4>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <StudentDetailsModalStatCard
+                  label={t('attendance')}
+                  value={`${statistics.attendance.rate.toFixed(1)}%`}
+                  caption={`${statistics.attendance.present} / ${statistics.attendance.total} ${t('lessonsShort')}`}
+                  iconSrc={STUDENT_DASHBOARD_ASSETS.iconAttendance}
+                  iconBg="bg-[#dffc76]"
+                />
+                <StudentDetailsModalStatCard
+                  label={t('payments')}
+                  value={String(statistics.payments.pending)}
+                  caption={
+                    statistics.payments.overdue > 0
+                      ? t('overduePaymentsHint', { count: statistics.payments.overdue })
+                      : t('noOverduePayments')
+                  }
+                  iconSrc={STUDENT_DASHBOARD_ASSETS.iconCard}
+                  iconBg="bg-[#ffe1e1]"
+                />
+              </div>
+            </div>
+          )}
+
           {student.notes && (
-            <div className="space-y-3">
+            <div className="mt-8 space-y-3">
               <h4 className="font-semibold text-slate-800 flex items-center gap-2">
                 <FileText className="h-4 w-4 text-slate-500" aria-hidden="true" />
                 {t('notes')}
@@ -386,35 +415,6 @@ export function StudentDetailsModalBody(props: StudentDetailsModalBodyProps) {
                   );
                 })}
               </ul>
-            </div>
-          )}
-
-          {statistics && (
-            <div className="space-y-4 mt-8">
-              <h4 className="flex items-center gap-2 text-base font-semibold text-[#1010a3] sm:text-lg">
-                <GraduationCap className="h-4 w-4 text-[#8b8b90]" aria-hidden="true" />
-                {tTeachers('statistics')}
-              </h4>
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <StudentDetailsModalStatCard
-                  label={t('attendance')}
-                  value={`${statistics.attendance.rate.toFixed(1)}%`}
-                  caption={`${statistics.attendance.present} / ${statistics.attendance.total} ${t('lessonsShort')}`}
-                  iconSrc={STUDENT_DASHBOARD_ASSETS.iconAttendance}
-                  iconBg="bg-[#dffc76]"
-                />
-                <StudentDetailsModalStatCard
-                  label={t('payments')}
-                  value={String(statistics.payments.pending)}
-                  caption={
-                    statistics.payments.overdue > 0
-                      ? t('overduePaymentsHint', { count: statistics.payments.overdue })
-                      : t('noOverduePayments')
-                  }
-                  iconSrc={STUDENT_DASHBOARD_ASSETS.iconCard}
-                  iconBg="bg-[#ffe1e1]"
-                />
-              </div>
             </div>
           )}
 
