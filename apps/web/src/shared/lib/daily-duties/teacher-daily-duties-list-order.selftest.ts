@@ -8,7 +8,7 @@ import {
   buildTeacherDailyDutiesOrderedRows,
   getDailyDutiesListReferenceDate,
   teacherDailyDutiesRowSection,
-} from './teacher-daily-duties-list-order.ts';
+} from './teacher-daily-duties-list-order';
 import type { Lesson } from '@/features/lessons/types';
 
 function localIso(y: number, m: number, d: number, h: number, min = 0): string {

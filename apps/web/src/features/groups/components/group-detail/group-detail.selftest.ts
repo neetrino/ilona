@@ -10,7 +10,7 @@ import { fileURLToPath } from 'node:url';
 import {
   GROUP_DETAIL_TABS,
   isGroupDetailTab,
-} from './group-detail.constants.ts';
+} from './group-detail.constants';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const webSrc = path.resolve(here, '../../../..');

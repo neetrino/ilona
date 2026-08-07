@@ -79,22 +79,19 @@ describe('SearchStaffService.searchDailyPlansStaff', () => {
 
     await service.searchDailyPlansStaff('The fear of being ordinary', 8, undefined);
 
-    const where = findMany.mock.calls[0]?.[0]?.where as {
-      AND: Array<{ OR?: unknown[] }>;
-    };
-    const searchClause = where.AND[0];
-    expect(searchClause.OR).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          topics: {
-            some: {
-              OR: expect.arrayContaining([
-                { title: { contains: 'The fear of being ordinary', mode: 'insensitive' } },
-              ]),
-            },
-          },
-        }),
-      ]),
-    );
+    const firstArg = findMany.mock.calls[0]?.[0] as
+      | { where: { AND: Array<{ OR?: Array<Record<string, unknown>> }> } }
+      | undefined;
+    expect(firstArg).toBeDefined();
+
+    const searchOr = firstArg!.where.AND[0]?.OR ?? [];
+    const topicsClause = searchOr.find((clause) => 'topics' in clause) as
+      | { topics: { some: { OR: unknown[] } } }
+      | undefined;
+    expect(topicsClause).toBeDefined();
+    expect(topicsClause!.topics.some.OR).toContainEqual({
+      title: { contains: 'The fear of being ordinary', mode: 'insensitive' },
+    });
   });
 });
+

@@ -33,12 +33,12 @@ describe('SearchStaffService.searchGroupsStaff', () => {
       badge: 'Group',
       href: '/admin/groups/view/grp-connecticut',
     });
-    expect(results[0]!.href).not.toContain('editGroup');
+    expect(results[0].href).not.toContain('editGroup');
 
-    expect(results[1]!.href).toBe(
+    expect(results[1].href).toBe(
       `/admin/groups/view/${encodeURIComponent('grp with spaces')}`,
     );
-    expect(results[1]!.href).not.toContain('editGroup');
+    expect(results[1].href).not.toContain('editGroup');
   });
 
   it('forwards center scope to the prisma query', async () => {
@@ -49,11 +49,12 @@ describe('SearchStaffService.searchGroupsStaff', () => {
 
     await service.searchGroupsStaff(['ohio'], 5, 'center-1');
 
-    expect(findMany).toHaveBeenCalledWith(
-      expect.objectContaining({
-        take: 5,
-        where: expect.objectContaining({ centerId: 'center-1' }),
-      }),
-    );
+    const firstArg = findMany.mock.calls[0]?.[0] as
+      | { take: number; where: { centerId?: string } }
+      | undefined;
+    expect(firstArg).toBeDefined();
+    expect(firstArg!.take).toBe(5);
+    expect(firstArg!.where.centerId).toBe('center-1');
   });
 });
+

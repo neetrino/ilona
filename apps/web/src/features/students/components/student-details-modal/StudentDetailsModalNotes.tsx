@@ -69,12 +69,13 @@ export function StudentDetailsModalNotes({
       </h4>
       <ul className="space-y-3">
         {entries.map((note, index) => {
-          const isStatusNote = note.kind === 'deactivation' || note.kind === 'activation';
+          const statusKind =
+            note.kind === 'deactivation' || note.kind === 'activation' ? note.kind : null;
           const statusLabel =
             note.label ||
-            (note.kind === 'deactivation'
+            (statusKind === 'deactivation'
               ? deactivatedLabel
-              : note.kind === 'activation'
+              : statusKind === 'activation'
                 ? activatedLabel
                 : undefined);
 
@@ -87,12 +88,12 @@ export function StudentDetailsModalNotes({
                 noteAccentClass(note.kind),
               )}
             >
-              {isStatusNote ? (
+              {statusKind ? (
                 <div className="space-y-2.5">
                   <div className="flex flex-wrap items-center gap-2.5">
                     <StatusPill
-                      kind={note.kind}
-                      label={statusLabel ?? (note.kind === 'deactivation' ? deactivatedLabel : activatedLabel)}
+                      kind={statusKind}
+                      label={statusLabel ?? (statusKind === 'deactivation' ? deactivatedLabel : activatedLabel)}
                     />
                     {note.date ? (
                       <span className="inline-flex items-center gap-1.5 text-xs text-[#8b8b90]">

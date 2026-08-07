@@ -7,8 +7,8 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import type { GlobalSearchResult, GlobalSearchResultType } from './types/search.types.ts';
-import { DAILY_PLAN_VIEW_PARAM } from '../daily-plan/useDailyPlanViewSheet.ts';
+import type { GlobalSearchResult, GlobalSearchResultType } from './types/search.types';
+import { DAILY_PLAN_VIEW_PARAM } from '../daily-plan/useDailyPlanViewSheet';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const webRoot = path.resolve(here, '../../..');
