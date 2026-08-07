@@ -8,6 +8,7 @@ import {
   getLessonTimeBounds,
   lessonCardTone,
 } from './schedule-lesson-views.util';
+import { ScheduleLessonTeachersLine } from './ScheduleLessonTeachersLine';
 import type { ScheduleLessonCardProps } from './schedule-lesson-views.types';
 
 export function ScheduleLessonCard({
@@ -18,9 +19,6 @@ export function ScheduleLessonCard({
   uiVariant = 'default',
 }: ScheduleLessonCardProps) {
   const compact = variant === 'cell';
-  const teacherName =
-    `${lesson.teacher?.user?.firstName ?? ''} ${lesson.teacher?.user?.lastName ?? ''}`.trim() ||
-    'No teacher';
   const timeBounds = getLessonTimeBounds(lesson);
   const timeLabel = timeBounds
     ? `${formatMinutesToLabel(timeBounds.start)}-${formatMinutesToLabel(timeBounds.end)}`
@@ -50,15 +48,7 @@ export function ScheduleLessonCard({
           </span>
         ) : null}
       </div>
-      <div
-        className={cn(
-          'truncate',
-          uiVariant === 'student' ? studentScheduleTable.lessonSub : 'text-slate-600',
-        )}
-        title={teacherName}
-      >
-        {teacherName}
-      </div>
+      <ScheduleLessonTeachersLine lesson={lesson} uiVariant={uiVariant} />
       <div
         className={cn(
           'truncate font-medium',

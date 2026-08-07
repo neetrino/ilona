@@ -5,6 +5,7 @@ import type { Lesson } from '@/features/lessons';
 import { formatScheduleDate, isLessonStartStrictlyInFuture } from '@/features/schedule/schedule-dates';
 import { cn } from '@/shared/lib/utils';
 import { formatScheduleTime, formatWeekdayShort } from './schedule-lesson-views.util';
+import { ScheduleLessonTeachersLine } from './ScheduleLessonTeachersLine';
 
 interface WeekLessonGridMobileDayViewProps {
   weekDates: Date[];
@@ -89,10 +90,6 @@ export function WeekLessonGridMobileDayView({
                   : isFuture
                     ? 'bg-blue-400'
                     : 'bg-emerald-400';
-              const teacherName =
-                `${lesson.teacher?.user?.firstName ?? ''} ${lesson.teacher?.user?.lastName ?? ''}`.trim() ||
-                'No teacher';
-
               return (
                 <div key={lesson.id} className="relative pl-[5.25rem]">
                   <div className="absolute left-0 top-1 text-[1.05rem] font-semibold text-[#6b7280]">
@@ -110,7 +107,10 @@ export function WeekLessonGridMobileDayView({
                           <span className="font-medium text-[#64748b]"> · {lesson.group.level}</span>
                         ) : null}
                       </p>
-                      <p className="mt-0.5 truncate text-[1rem] text-[#475569]">{teacherName}</p>
+                      <ScheduleLessonTeachersLine
+                        lesson={lesson}
+                        className="mt-0.5 text-[1rem]"
+                      />
                       <p className="mt-1 inline-flex items-center gap-1.5 text-[0.95rem] text-[#334155]">
                         <Clock3 className="h-4 w-4" />
                         {startLabel} - {endLabel}

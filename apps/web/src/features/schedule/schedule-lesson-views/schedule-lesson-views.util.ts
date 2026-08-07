@@ -12,6 +12,55 @@ export function formatScheduleTime(dateString: string): string {
   return formatAppTimeHHmm(dateString);
 }
 
+function teacherFullName(user?: { firstName?: string; lastName?: string } | null): string {
+  return `${user?.firstName ?? ''} ${user?.lastName ?? ''}`.trim();
+}
+
+export type ScheduleLessonTeacherChip = {
+  id: string;
+  name: string;
+  /** True when this teacher owns the lesson occurrence (whose day it is). */
+  isDayTeacher: boolean;
+};
+
+/**
+ * Co-teach: both group teachers, with the lesson assignee marked as day teacher.
+ * Single-teacher groups: only the lesson teacher.
+ */
+export function getScheduleLessonTeacherChips(lesson: Lesson): ScheduleLessonTeacherChip[] {
+  const dayTeacherId = lesson.teacherId;
+  const primary = lesson.group?.teacher;
+  const secondary = lesson.group?.secondTeacher;
+
+  if (primary && secondary && primary.id !== secondary.id) {
+    return [
+      {
+        id: primary.id,
+        name: teacherFullName(primary.user) || 'Teacher',
+        isDayTeacher: primary.id === dayTeacherId,
+      },
+      {
+        id: secondary.id,
+        name: teacherFullName(secondary.user) || 'Teacher',
+        isDayTeacher: secondary.id === dayTeacherId,
+      },
+    ];
+  }
+
+  const fallbackName = teacherFullName(lesson.teacher?.user) || 'No teacher';
+  return [
+    {
+      id: lesson.teacher?.id ?? dayTeacherId,
+      name: fallbackName,
+      isDayTeacher: true,
+    },
+  ];
+}
+
+export function formatScheduleLessonTeachersTitle(chips: ScheduleLessonTeacherChip[]): string {
+  return chips.map((chip) => chip.name).join(' · ');
+}
+
 export function formatMinutesToLabel(totalMinutes: number): string {
   const hh = String(Math.floor(totalMinutes / 60)).padStart(2, '0');
   const mm = String(totalMinutes % 60).padStart(2, '0');
