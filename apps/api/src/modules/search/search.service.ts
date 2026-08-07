@@ -36,18 +36,29 @@ export class SearchService {
 
     if (user.role === UserRole.ADMIN || user.role === UserRole.MANAGER) {
       const centerId = getManagerCenterIdOrThrow(user);
-      const [students, teachers, groups, leads, lessons, payments, recordings] = await Promise.all([
-        this.staffService.searchStudentsStaff(tokens, perType, centerId),
-        this.staffService.searchTeachersStaff(tokens, perType, centerId),
-        this.staffService.searchGroupsStaff(tokens, perType, centerId),
-        this.staffService.searchCrmLeadsStaff(tokens, perType, centerId),
-        this.staffService.searchLessonsStaff(tokens, perType, centerId),
-        this.staffService.searchPaymentsStaff(tokens, q, perType, centerId),
-        this.staffService.searchRecordingsStaff(tokens, q, perType, centerId),
-      ]);
-      entityResults = [...students, ...teachers, ...groups, ...leads, ...lessons, ...payments, ...recordings];
+      const [students, teachers, groups, leads, lessons, payments, recordings, dailyPlans] =
+        await Promise.all([
+          this.staffService.searchStudentsStaff(tokens, perType, centerId),
+          this.staffService.searchTeachersStaff(tokens, perType, centerId),
+          this.staffService.searchGroupsStaff(tokens, perType, centerId),
+          this.staffService.searchCrmLeadsStaff(tokens, perType, centerId),
+          this.staffService.searchLessonsStaff(tokens, perType, centerId),
+          this.staffService.searchPaymentsStaff(tokens, q, perType, centerId),
+          this.staffService.searchRecordingsStaff(tokens, q, perType, centerId),
+          this.staffService.searchDailyPlansStaff(q, perType, centerId),
+        ]);
+      entityResults = [
+        ...students,
+        ...teachers,
+        ...groups,
+        ...leads,
+        ...lessons,
+        ...payments,
+        ...recordings,
+        ...dailyPlans,
+      ];
     } else if (user.role === UserRole.TEACHER) {
-      entityResults = await this.roleQueryService.searchTeacherEntities(user.sub, tokens, perType);
+      entityResults = await this.roleQueryService.searchTeacherEntities(user.sub, tokens, q, perType);
     } else if (user.role === UserRole.STUDENT) {
       entityResults = await this.roleQueryService.searchStudentEntities(user.sub, tokens, q, perType);
     }

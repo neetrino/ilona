@@ -12,6 +12,7 @@ import { AdminPortalNavCard } from './AdminPortalNavCard';
 import { AdminPortalNavbar } from './AdminPortalNavbar';
 import { ADMIN_PORTAL_MOBILE_HORIZONTAL_PADDING, ADMIN_PORTAL_MOBILE_NAV_OFFSET } from './admin-portal-layout';
 import { cn } from '@/shared/lib/utils';
+import { LoadingSpinner } from '@/shared/components/ui/loading-spinner';
 
 export function AdminPortalHomePage() {
   const router = useRouter();
@@ -32,7 +33,7 @@ export function AdminPortalHomePage() {
   if (isLg === undefined || isLg) {
     return (
       <div className={cn('flex min-h-screen items-center justify-center', PORTAL_SHELL_BG)}>
-        <div className="h-12 w-12 animate-spin rounded-full border-2 border-[#f1f1f2] border-t-[#1010a3]" />
+        <LoadingSpinner size="lg" />
       </div>
     );
   }

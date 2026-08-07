@@ -16,6 +16,7 @@ import { SelectAllCheckbox } from '@/app/[locale]/(admin)/admin/finance/componen
 import { initialsFromLabel } from './salary-breakdown-page.utils';
 import { SalaryBreakdownHeader } from './SalaryBreakdownHeader';
 import { SalaryBreakdownTable } from './SalaryBreakdownTable';
+import { LoadingSpinner } from '@/shared/components/ui/loading-spinner';
 
 export function SalaryBreakdownPage() {
   const t = useTranslations('finance');
@@ -368,7 +369,7 @@ export function SalaryBreakdownPage() {
         {isLoading ? (
           cardState(
             <div className="p-12 flex items-center justify-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#1010a3]" />
+              <LoadingSpinner size="md" />
             </div>,
           )
         ) : error ? (

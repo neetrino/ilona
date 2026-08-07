@@ -11,7 +11,6 @@ import {
 import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
 import { DmyDateInput } from '@/shared/components/ui/dmy-date-input';
 import type { UserStatus } from '@/types';
-import { ADMIN_TEXTAREA_CLASS } from './edit-student-form.constants';
 import type { useEditStudentForm } from './useEditStudentForm';
 
 type EditStudentFormFieldsProps = ReturnType<typeof useEditStudentForm>;
@@ -327,20 +326,6 @@ export function EditStudentFormFields(props: EditStudentFormFieldsProps) {
               </div>
             </div>
             )}
-
-            <div className="space-y-2">
-              <Label htmlFor="notes">{t('notes')}</Label>
-              <textarea
-                id="notes"
-                {...register('notes')}
-                rows={4}
-                className={ADMIN_TEXTAREA_CLASS}
-                placeholder={t('notes')}
-              />
-              {errors.notes && (
-                <p className="text-sm text-red-600">{errors.notes.message}</p>
-              )}
-            </div>
 
             <div className="flex flex-col-reverse gap-2 pt-2 min-[1367px]:flex-row min-[1367px]:justify-end">
               <Button

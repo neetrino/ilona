@@ -6,6 +6,7 @@ export type GlobalSearchResultType =
   | 'lesson'
   | 'payment'
   | 'recording'
+  | 'daily_plan'
   | 'page';
 
 export type GlobalSearchResult = {

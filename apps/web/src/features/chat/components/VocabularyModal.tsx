@@ -9,6 +9,7 @@ import {
   stackedSheetOverlayClassName,
 } from '@/shared/lib/sheet-stack';
 import { CUSTOM_MODAL_OVERLAY_CLASS, CUSTOM_MODAL_PANEL_CLASS } from '@/shared/lib/portal-form-sheet-classes';
+import { LoadingSpinner } from '@/shared/components/ui/loading-spinner';
 
 interface VocabularyModalProps {
   isOpen: boolean;
@@ -119,7 +120,7 @@ export function VocabularyModal({
           >
             {isSubmitting ? (
               <>
-                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                <LoadingSpinner size="xs" />
                 {tChat('sending')}
               </>
             ) : (

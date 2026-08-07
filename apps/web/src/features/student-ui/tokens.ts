@@ -49,9 +49,6 @@ export const studentPillActiveClass =
 export const studentPillInactiveClass =
   'rounded-full px-3 py-1 text-[0.6875rem] font-medium text-[#3b3b40] transition-colors hover:text-[#1010a3]';
 
-export const studentSpinnerClass =
-  'h-10 w-10 animate-spin rounded-full border-2 border-[#f1f1f2] border-t-[#1010a3]';
-
 export const studentScheduleBoardClass =
   'flex min-h-[min(70vh,32rem)] flex-col overflow-hidden rounded-3xl border border-[rgba(14,14,16,0.07)] bg-white md:min-h-[min(75vh,36rem)] lg:h-[calc(100vh-260px)] lg:min-h-0';
 

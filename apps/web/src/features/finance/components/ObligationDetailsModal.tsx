@@ -20,6 +20,7 @@ import {
   Type,
   type LucideIcon,
 } from 'lucide-react';
+import { LoadingSpinner } from '@/shared/components/ui/loading-spinner';
 
 interface ObligationDetailsModalProps {
   lessonId: string | null;
@@ -82,7 +83,7 @@ export function ObligationDetailsModal({
 
         {isLoading ? (
           <div className="flex items-center justify-center py-12">
-            <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#1010a3] border-t-transparent" />
+            <LoadingSpinner size="md" />
           </div>
         ) : error ? (
           <div className="rounded-xl border border-red-200 bg-red-50 p-4">

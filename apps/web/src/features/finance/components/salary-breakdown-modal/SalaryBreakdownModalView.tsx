@@ -14,6 +14,7 @@ import {
 import { ObligationDetailsModal } from '../ObligationDetailsModal';
 import { SalaryBreakdownTotalsRow } from './SalaryBreakdownTotalsRow';
 import type { useSalaryBreakdownModal } from './useSalaryBreakdownModal';
+import { LoadingSpinner } from '@/shared/components/ui/loading-spinner';
 
 type SalaryBreakdownModalViewProps = ReturnType<typeof useSalaryBreakdownModal>;
 
@@ -79,7 +80,7 @@ export function SalaryBreakdownModalView({
           <div className="flex-1 overflow-y-auto">
             {isLoading ? (
               <div className="flex items-center justify-center py-12">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                <LoadingSpinner size="md" />
               </div>
             ) : error ? (
               <div className="text-center py-12 text-red-500">

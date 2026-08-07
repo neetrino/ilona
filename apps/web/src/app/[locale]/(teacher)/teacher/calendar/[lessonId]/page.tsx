@@ -4,6 +4,7 @@ import { use, useEffect } from 'react';
 import { useRouter } from '@/config/navigation';
 import { getTeacherDailyDutiesLessonPath } from '@/shared/lib/role-routes';
 import { useAppSearchUrl } from '@/shared/hooks/useAppSearchUrl';
+import { LoadingSpinner } from '@/shared/components/ui/loading-spinner';
 
 export default function TeacherCalendarLessonRedirectPage({
   params,
@@ -22,7 +23,7 @@ export default function TeacherCalendarLessonRedirectPage({
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-[#ececec]">
-      <div className="h-12 w-12 animate-spin rounded-full border-2 border-[#f1f1f2] border-t-[#1010a3]" />
+      <LoadingSpinner size="lg" />
     </div>
   );
 }

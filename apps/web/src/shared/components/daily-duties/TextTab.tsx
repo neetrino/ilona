@@ -13,6 +13,7 @@ import { ADMIN_PRIMARY_BUTTON_CLASS } from '@/shared/lib/admin-control-theme';
 import { LessonDetailTabSectionHeader } from '@/shared/components/daily-duties/LessonDetailTabSectionHeader';
 import { lessonDetailTabShellClass } from '@/shared/components/daily-duties/lesson-detail-tab-layout';
 import { cn } from '@/shared/lib/utils';
+import { LoadingSpinner } from '@/shared/components/ui/loading-spinner';
 
 interface TextTabProps {
   lessonId: string;
@@ -69,7 +70,7 @@ export function TextTab({ lessonId, embeddedInSheet = false }: TextTabProps) {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center p-12">
-        <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-[#1010a3]"></div>
+        <LoadingSpinner size="md" />
       </div>
     );
   }

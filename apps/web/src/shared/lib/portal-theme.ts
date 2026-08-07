@@ -31,7 +31,6 @@ export {
   studentPillTrackClass as portalPillTrackClass,
   studentPillActiveClass as portalPillActiveClass,
   studentPillInactiveClass as portalPillInactiveClass,
-  studentSpinnerClass as portalSpinnerClass,
   studentColors as portalColors,
 } from '@/features/student-ui/tokens';
 

@@ -1,9 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import type { Prisma } from '@ilona/database';
 import { PrismaService } from '../prisma/prisma.service';
+import { buildDailyPlanSearchWhere } from '../daily-plan/daily-plan-search.util';
 import type { GlobalSearchResult } from './types/search-result.type';
 import {
   crmLeadFieldsMatchTokens,
+  dailyPlanCenterScope,
   groupNameOrDescriptionMatchTokens,
   lessonSearchMatchTokens,
   paymentSearchClause,
@@ -106,7 +108,7 @@ export class SearchStaffService {
       type: 'group' as const,
       title: g.name,
       subtitle: g.center?.name ?? undefined,
-      href: `/admin/groups?editGroup=${encodeURIComponent(g.id)}`,
+      href: `/admin/groups/view/${encodeURIComponent(g.id)}`,
       badge: 'Group',
     }));
   }
@@ -253,5 +255,48 @@ export class SearchStaffService {
       href: '/admin/recording',
       badge: 'Recording',
     }));
+  }
+
+  async searchDailyPlansStaff(
+    normalizedPhrase: string,
+    take: number,
+    centerId: string | undefined,
+  ): Promise<GlobalSearchResult[]> {
+    const where: Prisma.DailyPlanWhereInput = {
+      AND: [
+        buildDailyPlanSearchWhere(normalizedPhrase),
+        ...(centerId ? [dailyPlanCenterScope(centerId)] : []),
+      ],
+    };
+    const rows = await this.prisma.dailyPlan.findMany({
+      where,
+      take,
+      orderBy: { updatedAt: 'desc' },
+      select: {
+        id: true,
+        date: true,
+        teacher: { select: { user: { select: { firstName: true, lastName: true } } } },
+        group: { select: { name: true } },
+        topics: {
+          orderBy: { order: 'asc' },
+          take: 1,
+          select: { title: true },
+        },
+      },
+    });
+    return rows.map((plan) => {
+      const teacherName = `${plan.teacher.user.firstName} ${plan.teacher.user.lastName}`.trim();
+      const topicTitle = plan.topics[0]?.title?.trim();
+      const subtitleParts = [teacherName, plan.group?.name].filter(Boolean);
+      return {
+        id: plan.id,
+        type: 'daily_plan' as const,
+        title: topicTitle || teacherName || 'Daily Plan',
+        subtitle: subtitleParts.length > 0 ? subtitleParts.join(' · ') : undefined,
+        description: plan.date.toISOString(),
+        href: `/admin/daily-plan?planId=${encodeURIComponent(plan.id)}`,
+        badge: 'Daily Plan',
+      };
+    });
   }
 }

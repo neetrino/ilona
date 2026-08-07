@@ -7,14 +7,15 @@ import {
   Briefcase,
   Calendar,
   CreditCard,
+  FileText,
   LayoutDashboard,
-  Loader2,
   Mic,
   Search,
   Users,
   UserCircle,
 } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
+import { LoadingSpinner } from '@/shared/components/ui/loading-spinner';
 import { formatAppDateTime } from '@/shared/lib/app-timezone';
 import { normalizeSearchQuery } from '../utils/normalize-search-query';
 import {
@@ -40,6 +41,8 @@ function iconForType(type: GlobalSearchResultType): ReactNode {
       return <CreditCard className={className} aria-hidden />;
     case 'recording':
       return <Mic className={className} aria-hidden />;
+    case 'daily_plan':
+      return <FileText className={className} aria-hidden />;
     case 'page':
       return <LayoutDashboard className={className} aria-hidden />;
     default:
@@ -125,14 +128,14 @@ export function GlobalSearchDropdown({
 
       {trimmed.length >= 2 && !debouncedOk ? (
         <div className="flex items-center gap-2 px-3 py-2 text-sm text-slate-500">
-          <Loader2 className="w-4 h-4 animate-spin" aria-hidden />
+          <LoadingSpinner size="sm" />
           {loadingLabel}
         </div>
       ) : null}
 
       {debouncedOk && isLoading ? (
         <div className="flex items-center gap-2 px-3 py-3 text-sm text-slate-500">
-          <Loader2 className="w-4 h-4 animate-spin" aria-hidden />
+          <LoadingSpinner size="sm" />
           {loadingLabel}
         </div>
       ) : null}

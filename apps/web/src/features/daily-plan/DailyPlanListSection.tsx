@@ -6,6 +6,7 @@ import type { DailyPlan, DailyPlanResourceKind } from './types';
 import { DailyPlanCardsGrid } from './DailyPlanCardsGrid';
 import {
   DailyPlanListFilters,
+  type DailyPlanGroupOption,
   type DailyPlanTeacherOption,
 } from './DailyPlanListFilters';
 import { useIsIPad } from '@/shared/hooks/useIsIPad';
@@ -22,16 +23,23 @@ import { cn } from '@/shared/lib/utils';
 interface DailyPlanListSectionProps {
   search: string;
   onSearchChange: (value: string) => void;
-  /** When true, focusing search opens teacher/date filters. */
+  /** When true, focusing search opens teacher/group/date filters. */
   enableStructuredFilters?: boolean;
-  teacherId?: string;
-  onTeacherIdChange?: (value: string | null) => void;
+  selectedTeacherIds?: Set<string>;
+  onTeacherIdsChange?: (value: Set<string>) => void;
+  selectedGroupIds?: Set<string>;
+  onGroupIdsChange?: (value: Set<string>) => void;
   dateFrom?: string;
   onDateFromChange?: (value: string) => void;
   dateTo?: string;
   onDateToChange?: (value: string) => void;
   teacherOptions?: DailyPlanTeacherOption[];
+  groupOptions?: DailyPlanGroupOption[];
   isLoadingTeachers?: boolean;
+  isLoadingGroups?: boolean;
+  /** True when teacher/group selection is a subset (not “all”). */
+  hasPartialTeacherFilter?: boolean;
+  hasPartialGroupFilter?: boolean;
   onCreate: () => void;
   createLabel: string;
   items: DailyPlan[];
@@ -67,14 +75,20 @@ export function DailyPlanListSection({
   search,
   onSearchChange,
   enableStructuredFilters = false,
-  teacherId = '',
-  onTeacherIdChange,
+  selectedTeacherIds = new Set(),
+  onTeacherIdsChange,
+  selectedGroupIds = new Set(),
+  onGroupIdsChange,
   dateFrom = '',
   onDateFromChange,
   dateTo = '',
   onDateToChange,
   teacherOptions = [],
+  groupOptions = [],
   isLoadingTeachers = false,
+  isLoadingGroups = false,
+  hasPartialTeacherFilter = false,
+  hasPartialGroupFilter = false,
   onCreate,
   createLabel,
   items,
@@ -104,7 +118,9 @@ export function DailyPlanListSection({
     [t],
   );
   const trimmedSearch = search.trim();
-  const hasStructuredFilters = Boolean(teacherId || dateFrom || dateTo);
+  const hasStructuredFilters = Boolean(
+    hasPartialTeacherFilter || hasPartialGroupFilter || dateFrom || dateTo,
+  );
   const hasAnyFilters = Boolean(trimmedSearch || hasStructuredFilters);
   const isDeletePending = deletingPlanId !== null;
   const isIPad = useIsIPad();
@@ -166,7 +182,17 @@ export function DailyPlanListSection({
 
   useEffect(() => {
     setMobilePage(0);
-  }, [trimmedSearch, teacherId, dateFrom, dateTo, items.length, showMineSection]);
+  }, [
+    trimmedSearch,
+    hasPartialTeacherFilter,
+    hasPartialGroupFilter,
+    selectedTeacherIds.size,
+    selectedGroupIds.size,
+    dateFrom,
+    dateTo,
+    items.length,
+    showMineSection,
+  ]);
 
   const goToMobilePage = (nextPage: number) => {
     setMobilePage(nextPage);
@@ -185,7 +211,8 @@ export function DailyPlanListSection({
     : emptyDefaultMessage;
 
   const clearStructuredFilters = () => {
-    onTeacherIdChange?.(null);
+    onTeacherIdsChange?.(new Set(teacherOptions.map((teacher) => teacher.id)));
+    onGroupIdsChange?.(new Set(groupOptions.map((group) => group.id)));
     onDateFromChange?.('');
     onDateToChange?.('');
   };
@@ -275,17 +302,25 @@ export function DailyPlanListSection({
               </button>
             ) : null}
           </div>
-          {showFilters && onTeacherIdChange && onDateFromChange && onDateToChange ? (
+          {showFilters &&
+          onTeacherIdsChange &&
+          onGroupIdsChange &&
+          onDateFromChange &&
+          onDateToChange ? (
             <div id="daily-plan-search-filters">
               <DailyPlanListFilters
-                teacherId={teacherId}
-                onTeacherIdChange={onTeacherIdChange}
+                selectedTeacherIds={selectedTeacherIds}
+                onTeacherIdsChange={onTeacherIdsChange}
+                selectedGroupIds={selectedGroupIds}
+                onGroupIdsChange={onGroupIdsChange}
                 dateFrom={dateFrom}
                 onDateFromChange={onDateFromChange}
                 dateTo={dateTo}
                 onDateToChange={onDateToChange}
                 teacherOptions={teacherOptions}
+                groupOptions={groupOptions}
                 isLoadingTeachers={isLoadingTeachers}
+                isLoadingGroups={isLoadingGroups}
                 onClear={clearStructuredFilters}
                 hasActiveFilters={hasStructuredFilters}
               />

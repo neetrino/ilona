@@ -14,6 +14,7 @@ import { Trash2, X } from 'lucide-react';
 import { useEditTeacherForm } from './edit-teacher-form/useEditTeacherForm';
 import { EditTeacherFormFields } from './edit-teacher-form/EditTeacherFormFields';
 import type { EditTeacherFormProps } from './edit-teacher-form/edit-teacher-form.types';
+import { LoadingSpinner } from '@/shared/components/ui/loading-spinner';
 
 export type { EditTeacherFormProps } from './edit-teacher-form/edit-teacher-form.types';
 
@@ -91,7 +92,7 @@ export function EditTeacherForm(props: EditTeacherFormProps) {
         >
           {form.isLoadingTeacher ? (
             <div className="flex items-center justify-center py-4">
-              <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+              <LoadingSpinner size="md" />
             </div>
           ) : (
             <EditTeacherFormFields {...form} />

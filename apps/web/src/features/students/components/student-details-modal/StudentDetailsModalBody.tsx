@@ -9,15 +9,15 @@ import {
   Building2,
   Calendar,
   CircleDollarSign,
-  FileText,
   GraduationCap,
   Mail,
   Phone,
   UserCircle,
   Users,
 } from 'lucide-react';
-import { formatDateOfBirth, formatDisplayDate, formatLifecycle, parseStudentNotes } from './student-details-modal.util';
+import { formatDateOfBirth, formatDisplayDate, formatLifecycle } from './student-details-modal.util';
 import { StudentAccountStatusBadge } from './StudentAccountStatusBadge';
+import { StudentDetailsModalNotes } from './StudentDetailsModalNotes';
 import { StudentDetailsModalStatCard } from './StudentDetailsModalStatCard';
 import type { StudentDetailsModalProps } from './student-details-modal.types';
 import type { useStudentDetailsModal } from './useStudentDetailsModal';
@@ -328,67 +328,6 @@ export function StudentDetailsModalBody(props: StudentDetailsModalBodyProps) {
             </div>
           )}
 
-          {student.notes && (
-            <div className="space-y-3">
-              <h4 className="font-semibold text-slate-800 flex items-center gap-2">
-                <FileText className="h-4 w-4 text-slate-500" aria-hidden="true" />
-                {t('notes')}
-              </h4>
-              <ul className="space-y-2">
-                {parseStudentNotes(student.notes).map((note, index) => {
-                  const isStatusNote = note.kind === 'deactivation' || note.kind === 'activation';
-                  return (
-                  <li
-                    key={`${note.kind}-${note.date ?? 'x'}-${index}`}
-                    className={cn(
-                      'rounded-[15px] border px-3.5 py-3',
-                      note.kind === 'deactivation'
-                        ? 'border-amber-200/80 bg-amber-50/70'
-                        : note.kind === 'activation'
-                          ? 'border-emerald-200/80 bg-emerald-50/70'
-                          : 'border-[rgba(14,14,16,0.07)] bg-[#fafafa]',
-                    )}
-                  >
-                    {isStatusNote ? (
-                      <div className="space-y-1.5">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <Badge
-                            className={cn(
-                              'rounded-full border-0 px-2.5 py-0.5 text-xs font-semibold',
-                              note.kind === 'deactivation'
-                                ? 'bg-amber-100 text-amber-800'
-                                : 'bg-emerald-100 text-emerald-800',
-                            )}
-                          >
-                            {note.label ||
-                              (note.kind === 'deactivation'
-                                ? t('deactivatedNoteLabel')
-                                : t('activatedNoteLabel'))}
-                          </Badge>
-                          {note.date ? (
-                            <span className="text-xs text-[#8b8b90]">
-                              {formatDisplayDate(note.date, locale)}
-                            </span>
-                          ) : null}
-                        </div>
-                        {note.body ? (
-                          <p className="text-sm leading-relaxed text-[#3b3b40] whitespace-pre-wrap break-words">
-                            {note.body}
-                          </p>
-                        ) : null}
-                      </div>
-                    ) : (
-                      <p className="text-sm leading-relaxed text-[#3b3b40] whitespace-pre-wrap break-words">
-                        {note.body}
-                      </p>
-                    )}
-                  </li>
-                  );
-                })}
-              </ul>
-            </div>
-          )}
-
           {statistics && (
             <div className="space-y-4 mt-8">
               <h4 className="flex items-center gap-2 text-base font-semibold text-[#1010a3] sm:text-lg">
@@ -417,6 +356,16 @@ export function StudentDetailsModalBody(props: StudentDetailsModalBodyProps) {
               </div>
             </div>
           )}
+
+          {student.notes ? (
+            <StudentDetailsModalNotes
+              notes={student.notes}
+              locale={locale}
+              title={t('notes')}
+              deactivatedLabel={t('deactivatedNoteLabel')}
+              activatedLabel={t('activatedNoteLabel')}
+            />
+          ) : null}
 
           <div className="flex flex-wrap items-center justify-end gap-3 pt-6">
             {student.receiveReports ? (

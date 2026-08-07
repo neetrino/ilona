@@ -43,6 +43,7 @@
     "build",
     "out",
     "coverage",
-    "*.tsbuildinfo"
+    "*.tsbuildinfo",
+    "**/*.selftest.ts"
   ]
 }

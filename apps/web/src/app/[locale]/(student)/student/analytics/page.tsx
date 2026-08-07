@@ -33,6 +33,7 @@ import {
   StudentTh,
   paymentStatusVariant,
 } from '@/features/student-ui';
+import { LoadingSpinner } from '@/shared/components/ui/loading-spinner';
 
 interface StudentAttendanceStats {
   attendances: {
@@ -181,7 +182,7 @@ export default function StudentAnalyticsPage() {
             />
             {isLoadingPayAnalytics ? (
               <div className="flex h-32 items-center justify-center">
-                <div className="h-10 w-10 animate-spin rounded-full border-2 border-[#f1f1f2] border-t-[#1010a3]" />
+                <LoadingSpinner size="lg" />
               </div>
             ) : (
               <div className="space-y-4">

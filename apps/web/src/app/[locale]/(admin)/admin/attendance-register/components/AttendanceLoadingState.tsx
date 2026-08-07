@@ -2,6 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 import { Skeleton } from '@/shared/components/ui/Skeleton';
+import { LoadingSpinner } from '@/shared/components/ui/loading-spinner';
 
 interface AttendanceLoadingStateProps {
   isLoadingAttendance: boolean;
@@ -40,7 +41,7 @@ export function AttendanceLoadingState({ isLoadingAttendance }: AttendanceLoadin
   return (
     <div className="flex items-center justify-center p-12">
       <div className="text-center">
-        <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-[#1010a3] border-r-transparent" />
+        <LoadingSpinner size="md" />
         <p className="mt-4 text-sm text-[#8b8b90]">{t('loadingLessons')}</p>
       </div>
     </div>

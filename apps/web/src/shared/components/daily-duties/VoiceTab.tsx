@@ -19,6 +19,7 @@ import { ADMIN_PRIMARY_BUTTON_CLASS } from '@/shared/lib/admin-control-theme';
 import { LessonDetailTabSectionHeader } from '@/shared/components/daily-duties/LessonDetailTabSectionHeader';
 import { lessonDetailTabShellClass } from '@/shared/components/daily-duties/lesson-detail-tab-layout';
 import { cn } from '@/shared/lib/utils';
+import { LoadingSpinner } from '@/shared/components/ui/loading-spinner';
 
 interface VoiceTabProps {
   lessonId: string;
@@ -163,7 +164,7 @@ export function VoiceTab({ lessonId, embeddedInSheet = false }: VoiceTabProps) {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center p-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <LoadingSpinner size="md" />
       </div>
     );
   }

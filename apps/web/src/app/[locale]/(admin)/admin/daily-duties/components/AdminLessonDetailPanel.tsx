@@ -14,6 +14,7 @@ import { AdminLessonActions } from './AdminLessonActions';
 import type { SubstituteTeacherOption } from './SubstituteLessonModal';
 import { cn } from '@/shared/lib/utils';
 import { DAILY_DUTIES_RADIUS_CLASS } from '@/shared/lib/daily-duties/daily-duties-theme';
+import { LoadingSpinner } from '@/shared/components/ui/loading-spinner';
 
 export type AdminLessonTab = 'absence' | 'feedback' | 'voice' | 'text' | 'dailyPlan';
 
@@ -62,7 +63,7 @@ export function AdminLessonDetailPanel({
   if (isLoading) {
     return (
       <div className="flex flex-1 items-center justify-center p-8">
-        <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-blue-600" />
+        <LoadingSpinner size="md" />
       </div>
     );
   }

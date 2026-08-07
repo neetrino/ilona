@@ -176,3 +176,9 @@ export function studentPortalRecordingMatch(normalizedPhrase: string, tokens: st
     ],
   };
 }
+
+export function dailyPlanCenterScope(centerId: string): Prisma.DailyPlanWhereInput {
+  return {
+    OR: [{ group: { centerId } }, { lesson: { group: { centerId } } }],
+  };
+}

@@ -9,6 +9,7 @@ import { useLessonListTable } from './lesson-list-table/useLessonListTable';
 import { LessonListTableBulkBar } from './lesson-list-table/LessonListTableBulkBar';
 import { LessonListTableMobileCards } from './lesson-list-table/LessonListTableMobileCards';
 import { LessonListTableDesktopTable } from './lesson-list-table/LessonListTableDesktopTable';
+import { LoadingSpinner } from '@/shared/components/ui/loading-spinner';
 
 export type { LessonListTableProps } from './lesson-list-table/lesson-list-table.types';
 
@@ -52,7 +53,7 @@ export function LessonListTable({
     return (
       <div className="rounded-[15px] border border-slate-200 bg-white p-12">
         <div className="flex items-center justify-center">
-          <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-blue-600" />
+          <LoadingSpinner size="md" />
         </div>
       </div>
     );

@@ -132,6 +132,12 @@ export function useDailyDutiesPage(mode: DailyDutiesMode) {
     }
     return new Date();
   });
+  /** Keeps completed/upcoming classification fresh while the page stays open on the same week. */
+  const [clockMs, setClockMs] = useState(() => Date.now());
+  useEffect(() => {
+    const id = window.setInterval(() => setClockMs(Date.now()), 60_000);
+    return () => window.clearInterval(id);
+  }, []);
   const didSeedPeriodInUrlRef = useRef(false);
   const [isAddLessonOpen, setIsAddLessonOpen] = useState(
     () => !isTeacherMode && isAddLessonModalOpen(searchParams),
@@ -469,7 +475,10 @@ export function useDailyDutiesPage(mode: DailyDutiesMode) {
     [lessonsByDate, selectedStatusIds],
   );
 
-  const listReferenceDate = useMemo(() => getDailyDutiesListReferenceDate(weekDates), [weekDates]);
+  const listReferenceDate = useMemo(
+    () => getDailyDutiesListReferenceDate(weekDates, new Date(clockMs)),
+    [weekDates, clockMs],
+  );
 
   const isListLoading = isLoading || isFetching;
 

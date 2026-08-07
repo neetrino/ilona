@@ -18,6 +18,7 @@ import {
   AdminLessonDetailPanel,
   type AdminLessonTab,
 } from '../../daily-duties/components/AdminLessonDetailPanel';
+import { LoadingSpinner } from '@/shared/components/ui/loading-spinner';
 
 function AdminLessonDetailShell({
   onBack,
@@ -113,7 +114,7 @@ export default function AdminDailyDutiesLessonPage({
       <DashboardLayout title={t('lessonLoadingTitle')} subtitle={t('lessonLoadingSubtitle')} mobileFullBleed>
         <AdminLessonDetailShell onBack={handleBack} backLabel={tCommon('goBack')}>
           <div className="flex flex-1 items-center justify-center p-12">
-            <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-blue-600" />
+            <LoadingSpinner size="md" />
           </div>
         </AdminLessonDetailShell>
       </DashboardLayout>

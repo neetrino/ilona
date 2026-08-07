@@ -5,29 +5,21 @@ export type GroupAssignmentOption = Pick<
   'id' | 'name' | 'level' | 'teacherId' | 'centerId' | 'center'
 >;
 
-/** Active groups for a center; optionally narrowed by CRM level filter. */
+/** Active groups for a center (level is independent of assignment). */
 export function filterGroupsByCenter(
   groups: GroupAssignmentOption[],
   centerId: string | undefined,
-  levelId?: string,
 ): GroupAssignmentOption[] {
   if (!centerId) return [];
-  let filtered = groups.filter((g) => g.centerId === centerId);
-  if (levelId) {
-    filtered = filtered.filter((g) => (g.level ?? '') === levelId);
-  }
-  return filtered;
+  return groups.filter((g) => g.centerId === centerId);
 }
 
 /** Groups eligible for student assignment (must have a primary teacher). */
 export function filterAssignableGroupsByCenter(
   groups: GroupAssignmentOption[],
   centerId: string | undefined,
-  levelId?: string,
 ): GroupAssignmentOption[] {
-  return filterGroupsByCenter(groups, centerId, levelId).filter((g) =>
-    Boolean(g.teacherId),
-  );
+  return filterGroupsByCenter(groups, centerId).filter((g) => Boolean(g.teacherId));
 }
 
 export function resolveTeacherIdFromGroup(

@@ -44,8 +44,8 @@ export type CalendarMonthGridProps<T> = {
   scrollAreaClassName?: string;
   /** When true, clicking a day cell opens the full-day lessons dialog. */
   openDayDialogOnCellClick?: boolean;
-  /** Label for overflow: `count` → "+1", `more` → "+1 more". Default `more`. */
-  overflowLabel?: 'count' | 'more';
+  /** Label for overflow: `count` → "+1", `more` → "+1 more", `threePlus` → "3+". Default `more`. */
+  overflowLabel?: 'count' | 'more' | 'threePlus';
 };
 
 type DayDialogState<T> = {
@@ -295,8 +295,9 @@ export function CalendarMonthGrid<T>({
                                   isStudent ? 'text-[#1010a3]' : 'text-slate-600',
                                 )}
                               >
-                                +{hidden}
-                                {overflowLabel === 'more' ? ' more' : ''}
+                                {overflowLabel === 'threePlus'
+                                  ? '3+'
+                                  : `+${hidden}${overflowLabel === 'more' ? ' more' : ''}`}
                               </p>
                             ) : (
                               <button
@@ -312,8 +313,9 @@ export function CalendarMonthGrid<T>({
                                 )}
                                 aria-label={`View ${hidden} more lesson${hidden === 1 ? '' : 's'} for ${date.toDateString()}`}
                               >
-                                +{hidden}
-                                {overflowLabel === 'more' ? ' more' : ''}
+                                {overflowLabel === 'threePlus'
+                                  ? '3+'
+                                  : `+${hidden}${overflowLabel === 'more' ? ' more' : ''}`}
                               </button>
                             )}
                           </div>
@@ -337,16 +339,19 @@ export function CalendarMonthGrid<T>({
         }}
       >
         {dayDialog && (
-          <DialogContent className="max-h-[min(80vh,540px)] gap-0 overflow-hidden p-0 sm:max-w-md">
+          <DialogContent
+            sheet
+            className="flex max-h-[min(92vh,720px)] w-full flex-col gap-0 overflow-hidden p-0 sm:max-w-md"
+          >
             <DialogHeader
               className={cn(
-                'border-b p-4 pb-3 sm:p-5',
+                'shrink-0 border-b p-4 pb-3 sm:p-5',
                 isStudent ? 'border-[rgba(14,14,16,0.07)]' : 'border-slate-100',
               )}
             >
               <DialogTitle
                 className={cn(
-                  'pr-6 text-left text-base font-semibold sm:text-lg',
+                  'pr-8 text-left text-base font-semibold sm:text-lg',
                   isStudent && 'text-[#1010a3]',
                 )}
               >
@@ -358,7 +363,7 @@ export function CalendarMonthGrid<T>({
                 })}
               </DialogTitle>
             </DialogHeader>
-            <ul className="max-h-[60vh] list-none space-y-1.5 overflow-y-auto p-3 sm:space-y-2 sm:p-4">
+            <ul className="min-h-0 flex-1 list-none space-y-1.5 overflow-y-auto p-3 sm:space-y-2 sm:p-4">
               {dayDialog.lessons.map((lesson) => (
                 <li key={getLessonKey(lesson)} className="min-w-0">
                   {renderLesson({ lesson, variant: 'dialog' })}

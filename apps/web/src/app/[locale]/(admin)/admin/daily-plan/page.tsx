@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
@@ -15,6 +15,7 @@ import { DailyPlanEditor } from '@/features/daily-plan/DailyPlanEditor';
 import { DailyPlanListSection } from '@/features/daily-plan/DailyPlanListSection';
 import { DailyPlanViewer } from '@/features/daily-plan/DailyPlanViewer';
 import { useTeachers } from '@/features/teachers';
+import { useGroups } from '@/features/groups';
 import { getAdminPortalBasePath } from '@/shared/lib/role-routes';
 
 export default function AdminDailyPlanPage() {
@@ -30,7 +31,8 @@ export default function AdminDailyPlanPage() {
   const portalBasePath = getAdminPortalBasePath(user?.role);
 
   const [search, setSearch] = useState('');
-  const [teacherId, setTeacherId] = useState('');
+  const [selectedTeacherIds, setSelectedTeacherIds] = useState<Set<string>>(new Set());
+  const [selectedGroupIds, setSelectedGroupIds] = useState<Set<string>>(new Set());
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
   const [editing, setEditing] = useState<DailyPlan | null>(null);
@@ -41,6 +43,10 @@ export default function AdminDailyPlanPage() {
     status: 'ACTIVE',
     take: 200,
   });
+  const { data: groupsData, isLoading: isLoadingGroups } = useGroups({
+    take: 200,
+    isActive: true,
+  });
 
   const teacherOptions = useMemo(() => {
     if (!teachersData?.items) return [];
@@ -50,24 +56,76 @@ export default function AdminDailyPlanPage() {
     }));
   }, [teachersData]);
 
+  const groupOptions = useMemo(() => {
+    if (!groupsData?.items) return [];
+    return groupsData.items
+      .map((group) => ({
+        id: group.id,
+        label: group.name,
+      }))
+      .sort((a, b) => a.label.localeCompare(b.label));
+  }, [groupsData]);
+
+  useEffect(() => {
+    if (teacherOptions.length === 0) return;
+    setSelectedTeacherIds((prev) => {
+      if (prev.size > 0) return prev;
+      return new Set(teacherOptions.map((teacher) => teacher.id));
+    });
+  }, [teacherOptions]);
+
+  useEffect(() => {
+    if (groupOptions.length === 0) return;
+    setSelectedGroupIds((prev) => {
+      if (prev.size > 0) return prev;
+      return new Set(groupOptions.map((group) => group.id));
+    });
+  }, [groupOptions]);
+
+  const hasPartialTeacherFilter =
+    teacherOptions.length > 0 && selectedTeacherIds.size < teacherOptions.length;
+  const hasPartialGroupFilter =
+    groupOptions.length > 0 && selectedGroupIds.size < groupOptions.length;
+  const hasEmptyTeacherFilter =
+    teacherOptions.length > 0 && selectedTeacherIds.size === 0;
+  const hasEmptyGroupFilter = groupOptions.length > 0 && selectedGroupIds.size === 0;
+
   const filters = useMemo(() => {
     const next: {
       search?: string;
-      teacherId?: string;
+      teacherIds?: string[];
+      groupIds?: string[];
       dateFrom?: string;
       dateTo?: string;
       take: number;
     } = { take: 100 };
     const trimmed = search.trim();
     if (trimmed) next.search = trimmed;
-    if (teacherId) next.teacherId = teacherId;
+    if (hasPartialTeacherFilter && selectedTeacherIds.size > 0) {
+      next.teacherIds = Array.from(selectedTeacherIds);
+    }
+    if (hasPartialGroupFilter && selectedGroupIds.size > 0) {
+      next.groupIds = Array.from(selectedGroupIds);
+    }
     if (dateFrom) next.dateFrom = dateFrom;
     if (dateTo) next.dateTo = dateTo;
     return next;
-  }, [search, teacherId, dateFrom, dateTo]);
+  }, [
+    search,
+    hasPartialTeacherFilter,
+    hasPartialGroupFilter,
+    selectedTeacherIds,
+    selectedGroupIds,
+    dateFrom,
+    dateTo,
+  ]);
 
-  const { data, isLoading, refetch } = useDailyPlans(filters);
-  const items = data?.items ?? [];
+  const { data, isLoading, refetch } = useDailyPlans(
+    filters,
+    !hasEmptyTeacherFilter && !hasEmptyGroupFilter,
+  );
+  const items =
+    hasEmptyTeacherFilter || hasEmptyGroupFilter ? [] : (data?.items ?? []);
   const remove = useDeleteDailyPlan();
   const { viewing, openView, closeView } = useDailyPlanViewSheet(items);
 
@@ -77,14 +135,20 @@ export default function AdminDailyPlanPage() {
         search={search}
         onSearchChange={setSearch}
         enableStructuredFilters
-        teacherId={teacherId}
-        onTeacherIdChange={(value) => setTeacherId(value ?? '')}
+        selectedTeacherIds={selectedTeacherIds}
+        onTeacherIdsChange={setSelectedTeacherIds}
+        selectedGroupIds={selectedGroupIds}
+        onGroupIdsChange={setSelectedGroupIds}
         dateFrom={dateFrom}
         onDateFromChange={setDateFrom}
         dateTo={dateTo}
         onDateToChange={setDateTo}
         teacherOptions={teacherOptions}
+        groupOptions={groupOptions}
         isLoadingTeachers={isLoadingTeachers}
+        isLoadingGroups={isLoadingGroups}
+        hasPartialTeacherFilter={hasPartialTeacherFilter}
+        hasPartialGroupFilter={hasPartialGroupFilter}
         onCreate={() => router.push(`/${locale}${portalBasePath}/daily-plan/new`)}
         createLabel="+ New Daily Plan"
         showCreate={canManagePlans}

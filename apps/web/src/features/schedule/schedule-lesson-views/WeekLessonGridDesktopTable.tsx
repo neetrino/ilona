@@ -1,10 +1,18 @@
 'use client';
 
+import { useState } from 'react';
+import { useLocale, useTranslations } from 'next-intl';
 import type { Lesson } from '@/features/lessons';
 import { formatScheduleDate } from '@/features/schedule/schedule-dates';
-import { cn } from '@/shared/lib/utils';
+import { cn, formatLocaleDate } from '@/shared/lib/utils';
 import { studentScheduleTable } from '@/features/student-ui/tokens';
 import { ScheduleLessonCard } from './ScheduleLessonCard';
+import {
+  SCHEDULE_CELL_MAX_VISIBLE_LESSONS,
+  ScheduleCellOverflowButton,
+  ScheduleDayLessonsSheet,
+  type ScheduleDayLessonsSheetState,
+} from './ScheduleDayLessonsSheet';
 import { formatMinutesToLabel, formatWeekdayLabel } from './schedule-lesson-views.util';
 import type { ScheduleUiVariant } from './schedule-lesson-views.types';
 
@@ -12,6 +20,7 @@ interface WeekLessonGridDesktopTableProps {
   weekDates: Date[];
   slots: number[];
   cells: Map<string, Lesson[]>;
+  lessonsByDay: Lesson[][];
   highlightPastLessonCards: boolean;
   referenceTime: Date;
   theme: ScheduleUiVariant;
@@ -22,12 +31,25 @@ export function WeekLessonGridDesktopTable({
   weekDates,
   slots,
   cells,
+  lessonsByDay,
   highlightPastLessonCards,
   referenceTime,
   theme,
   forceMobileLayout,
 }: WeekLessonGridDesktopTableProps) {
   const isStudent = theme === 'student';
+  const t = useTranslations('schedule');
+  const locale = useLocale();
+  const [daySheet, setDaySheet] = useState<ScheduleDayLessonsSheetState>(null);
+
+  const openDaySheet = (dayIdx: number) => {
+    const date = weekDates[dayIdx];
+    if (!date) return;
+    setDaySheet({
+      date,
+      lessons: lessonsByDay[dayIdx] ?? [],
+    });
+  };
 
   return (
     <div className={cn('hidden', forceMobileLayout ? 'min-[769px]:block' : 'sm:block')}>
@@ -81,11 +103,13 @@ export function WeekLessonGridDesktopTable({
                 >
                   {formatMinutesToLabel(slot)}
                 </td>
-                {weekDates.map((_, dayIdx) => {
+                {weekDates.map((date, dayIdx) => {
                   const key = `${dayIdx}|${slot}`;
                   const items = (cells.get(key) ?? []).sort(
                     (a, b) => new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime(),
                   );
+                  const visible = items.slice(0, SCHEDULE_CELL_MAX_VISIBLE_LESSONS);
+                  const hasOverflow = items.length > SCHEDULE_CELL_MAX_VISIBLE_LESSONS;
                   return (
                     <td
                       key={key}
@@ -96,7 +120,7 @@ export function WeekLessonGridDesktopTable({
                       )}
                     >
                       <div className="space-y-1">
-                        {items.map((lesson) => (
+                        {visible.map((lesson) => (
                           <ScheduleLessonCard
                             key={lesson.id}
                             lesson={lesson}
@@ -105,6 +129,19 @@ export function WeekLessonGridDesktopTable({
                             uiVariant={theme}
                           />
                         ))}
+                        {hasOverflow ? (
+                          <ScheduleCellOverflowButton
+                            isStudent={isStudent}
+                            onClick={() => openDaySheet(dayIdx)}
+                            ariaLabel={t('viewDayLessonsAria', {
+                              date: formatLocaleDate(date, locale, {
+                                weekday: 'long',
+                                month: 'long',
+                                day: 'numeric',
+                              }),
+                            })}
+                          />
+                        ) : null}
                       </div>
                     </td>
                   );
@@ -114,6 +151,16 @@ export function WeekLessonGridDesktopTable({
           })}
         </tbody>
       </table>
+
+      <ScheduleDayLessonsSheet
+        state={daySheet}
+        onOpenChange={(open) => {
+          if (!open) setDaySheet(null);
+        }}
+        highlightPastLessonCards={highlightPastLessonCards}
+        referenceTime={referenceTime}
+        uiVariant={theme}
+      />
     </div>
   );
 }

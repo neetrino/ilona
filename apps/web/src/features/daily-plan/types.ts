@@ -101,7 +101,9 @@ export interface UpdateDailyPlanInput {
 export interface DailyPlanFilters {
   search?: string;
   teacherId?: string;
+  teacherIds?: string[];
   groupId?: string;
+  groupIds?: string[];
   lessonId?: string;
   dateFrom?: string;
   dateTo?: string;
