@@ -7,6 +7,7 @@ import { notFound } from 'next/navigation';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { isAdminOnlyPathForManager, stripLocaleFromPath } from '@/shared/lib/role-routes';
 import { useAdminHiddenNavGuard } from '@/shared/hooks/useAdminHiddenNavGuard';
+import { LoadingSpinner } from '@/shared/components/ui/loading-spinner';
 
 export default function AdminLayout({
   children,
@@ -67,7 +68,7 @@ export default function AdminLayout({
   if (!isHydrated) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#ececec]">
-        <div className="h-12 w-12 animate-spin rounded-full border-2 border-[#f1f1f2] border-t-[#1010a3]" />
+        <LoadingSpinner size="lg" />
       </div>
     );
   }
@@ -76,7 +77,7 @@ export default function AdminLayout({
   if (!isAuthenticated || (user?.role !== 'ADMIN' && user?.role !== 'MANAGER')) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#ececec]">
-        <div className="h-12 w-12 animate-spin rounded-full border-2 border-[#f1f1f2] border-t-[#1010a3]" />
+        <LoadingSpinner size="lg" />
       </div>
     );
   }
@@ -90,7 +91,7 @@ export default function AdminLayout({
   ) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#ececec]">
-        <div className="h-12 w-12 animate-spin rounded-full border-2 border-[#f1f1f2] border-t-[#1010a3]" />
+        <LoadingSpinner size="lg" />
       </div>
     );
   }

@@ -17,6 +17,7 @@ import { TEACHER_DAILY_DUTIES_BASE_PATH } from '@/shared/lib/role-routes';
 import { formatAppDateTime } from '@/shared/lib/app-timezone';
 import { readUrlSearchParam } from '@/shared/lib/url-search-params';
 import { cn } from '@/shared/lib/utils';
+import { LoadingSpinner } from '@/shared/components/ui/loading-spinner';
 type LessonTab = 'absence' | 'feedback' | 'voice' | 'text' | 'dailyPlan';
 
 function parseLessonTab(value: string | null): LessonTab {
@@ -96,7 +97,7 @@ export default function TeacherDailyDutiesLessonPage({
       <DashboardLayout title={tCommon('loading')} subtitle={tCommon('loading')}>
         <TeacherLessonDetailBanner onBack={handleBack} backLabel={tCommon('goBack')}>
           <div className="flex flex-1 items-center justify-center p-12">
-            <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-blue-600" />
+            <LoadingSpinner size="md" />
           </div>
         </TeacherLessonDetailBanner>
       </DashboardLayout>

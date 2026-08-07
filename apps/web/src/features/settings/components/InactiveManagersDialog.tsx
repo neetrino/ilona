@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { Archive, X } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
-import { Button } from '@/shared/components/ui';
+import { Button, LoadingSpinner } from '@/shared/components/ui';
 import { useManagers, useUpdateManager, type ManagerAccount } from '@/features/settings';
 import { EditManagerForm } from '@/features/settings/components/EditManagerForm';
 import {
@@ -252,11 +252,7 @@ function InactiveList({
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div
-          className="h-10 w-10 animate-spin rounded-full border-2 border-[rgba(14,14,16,0.07)] border-t-[#1010a3]"
-          aria-hidden="true"
-        />
-        <span className="sr-only">{t('loadingManagers')}</span>
+        <LoadingSpinner size="md" label={t('loadingManagers')} />
       </div>
     );
   }

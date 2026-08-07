@@ -48,3 +48,5 @@ export { AdminAvatarPhotoLightbox } from './admin-avatar-photo-lightbox';
 export type { AdminAvatarPhotoLightboxProps } from './admin-avatar-photo-lightbox';
 export { AutoDismissToast } from './auto-dismiss-toast';
 export type { AutoDismissToastVariant, AutoDismissToastPosition } from './auto-dismiss-toast';
+export { LoadingSpinner, PageLoading } from './loading-spinner';
+export type { LoadingSpinnerProps, LoadingSpinnerSize, PageLoadingProps } from './loading-spinner';

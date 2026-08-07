@@ -1,6 +1,7 @@
 'use client';
 
 import { cn } from '@/shared/lib/utils';
+import { LoadingSpinner } from '@/shared/components/ui/loading-spinner';
 import { getChatThemeForRole } from '../../lib/chat-theme';
 import type { ChatContainerProps } from './chat-container.types';
 
@@ -27,7 +28,7 @@ export function ChatContainerLoadingShell({
       )}
     >
       <div className="flex h-full min-h-0 flex-1 items-center justify-center">
-        <div className={cn('h-8 w-8 animate-spin rounded-full', loadingUi.spinner)} />
+        <LoadingSpinner size="md" />
       </div>
     </div>
   );

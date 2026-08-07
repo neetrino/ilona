@@ -12,6 +12,7 @@ import {
 import { Avatar, Badge } from '@/shared/components/ui';
 import { useTeacher } from '../hooks/useTeachers';
 import { getExperienceLabelFromHireDate } from '../utils/experience';
+import { LoadingSpinner } from '@/shared/components/ui/loading-spinner';
 
 interface TeacherDetailsDrawerProps {
   teacherId: string | null;
@@ -146,7 +147,7 @@ export function TeacherDetailsDrawer({
         <div className="flex-1 overflow-y-auto p-6 min-h-0">
           {isLoading ? (
             <div className="flex items-center justify-center py-12">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+              <LoadingSpinner size="md" />
             </div>
           ) : error ? (
             <div className="py-12 text-center">

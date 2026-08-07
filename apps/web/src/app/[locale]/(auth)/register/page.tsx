@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useTranslations, useLocale } from 'next-intl';
 import { useAuthStore, getPortalEntryPath } from '@/features/auth/store/auth.store';
 import { Button } from '@/shared/components/ui/button';
+import { LoadingSpinner } from '@/shared/components/ui/loading-spinner';
 
 /**
  * Register (sign up) page.
@@ -29,7 +30,7 @@ export default function RegisterPage() {
   if (!isHydrated || (isAuthenticated && user)) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-background to-slate-100">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary" />
+        <LoadingSpinner size="lg" />
       </div>
     );
   }

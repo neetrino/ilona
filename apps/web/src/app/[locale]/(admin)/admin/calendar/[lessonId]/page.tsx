@@ -5,6 +5,7 @@ import { useRouter } from '@/config/navigation';
 import { useAppSearchUrl } from '@/shared/hooks/useAppSearchUrl';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { getAdminDailyDutiesLessonPath } from '@/shared/lib/role-routes';
+import { LoadingSpinner } from '@/shared/components/ui/loading-spinner';
 
 export default function AdminCalendarLessonRedirectPage({
   params,
@@ -24,7 +25,7 @@ export default function AdminCalendarLessonRedirectPage({
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-[#ececec]">
-      <div className="h-12 w-12 animate-spin rounded-full border-2 border-[#f1f1f2] border-t-[#1010a3]" />
+      <LoadingSpinner size="lg" />
     </div>
   );
 }

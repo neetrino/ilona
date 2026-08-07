@@ -17,6 +17,7 @@ import type { UserStatus } from '@/types';
 import { getExperienceYearsFromHireDate } from '@/features/teachers/utils/experience';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { getAdminPortalBasePath } from '@/shared/lib/role-routes';
+import { LoadingSpinner } from '@/shared/components/ui/loading-spinner';
 
 export default function TeacherProfilePage() {
   const t = useTranslations('teachers');
@@ -146,7 +147,7 @@ export default function TeacherProfilePage() {
     return (
       <DashboardLayout title={t('teacherProfile')} subtitle={t('loadingTeacherInfo')}>
         <div className="flex min-h-[400px] items-center justify-center">
-          <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-[#1010a3]" />
+          <LoadingSpinner size="lg" />
         </div>
       </DashboardLayout>
     );
@@ -231,7 +232,7 @@ export default function TeacherProfilePage() {
         subtitle={t('loadingTeacherInfo')}
       >
         <div className="flex items-center justify-center min-h-[400px]">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#1010a3]"></div>
+          <LoadingSpinner size="lg" />
         </div>
       </DashboardLayout>
     );

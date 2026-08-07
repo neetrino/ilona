@@ -6,7 +6,7 @@ import { useTranslations } from 'next-intl';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
-import { Button } from '@/shared/components/ui';
+import { Button, LoadingSpinner } from '@/shared/components/ui';
 import { ChatBackButton } from '@/shared/components/ui/chat-back-button';
 import { useStudent, useStudentStatistics, useUpdateStudent, type UpdateStudentDto } from '@/features/students';
 import { useGroups } from '@/features/groups';
@@ -243,7 +243,7 @@ export default function StudentProfilePage() {
         subtitle={t('teacherView.loadingSubtitle')}
       >
         <div className="flex items-center justify-center min-h-[400px]">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#1010a3]"></div>
+          <LoadingSpinner size="lg" />
         </div>
       </DashboardLayout>
     );

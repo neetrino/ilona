@@ -18,6 +18,7 @@ import { PORTAL_SHEET_DRAG_HANDLE_ATTR, usePortalSheetDrag } from '@/shared/hook
 import { portalFormSheetContentClass } from '@/shared/lib/portal-form-sheet-classes';
 import { ADMIN_ICON_BUTTON_SM_CLASS } from '@/shared/lib/admin-control-theme';
 import { cn } from '@/shared/lib/utils';
+import { LoadingSpinner } from '@/shared/components/ui/loading-spinner';
 import { formatAppDate, formatAppDateTime } from '@/shared/lib/app-timezone';
 
 function formatFeedbackDateTime(iso: string, locale: string) {
@@ -158,11 +159,7 @@ export function StudentFeedbackModal({
             {!student ? (
               open && studentIdFromUrl ? (
                 <div className="flex items-center justify-center py-12">
-                  <div
-                    className="h-10 w-10 animate-spin rounded-full border-2 border-[rgba(14,14,16,0.07)] border-t-[#1010a3]"
-                    aria-hidden="true"
-                  />
-                  <span className="sr-only">{t('loadingStudent')}</span>
+                  <LoadingSpinner size="md" label={t('loadingStudent')} />
                 </div>
               ) : (
                 <p className="py-4 text-sm text-[#8b8b90]">{t('noStudentSelected')}</p>
@@ -185,11 +182,7 @@ export function StudentFeedbackModal({
 
                 {isLoading && (
                   <div className="flex items-center justify-center py-12">
-                    <div
-                      className="h-10 w-10 animate-spin rounded-full border-2 border-[rgba(14,14,16,0.07)] border-t-[#1010a3]"
-                      aria-hidden="true"
-                    />
-                    <span className="sr-only">{t('loadingFeedback')}</span>
+                    <LoadingSpinner size="md" label={t('loadingFeedback')} />
                   </div>
                 )}
 

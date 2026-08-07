@@ -1,19 +1,14 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
+import { LoadingSpinner } from '@/shared/components/ui/loading-spinner';
 
 export function FeedbacksTabLoadingState() {
   const tCommon = useTranslations('common');
 
   return (
     <div className="flex flex-col items-center justify-center p-16">
-      <div className="relative">
-        <div className="h-12 w-12 animate-spin rounded-full border-4 border-blue-100 border-t-blue-600" />
-        <div
-          className="absolute inset-0 animate-spin rounded-full border-4 border-transparent border-t-blue-400"
-          style={{ animationDuration: '0.75s' }}
-        />
-      </div>
+      <LoadingSpinner size="lg" />
       <p className="mt-6 text-sm font-medium text-slate-600">{tCommon('loading')}</p>
     </div>
   );

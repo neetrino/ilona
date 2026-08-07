@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/features/auth/store/auth.store';
+import { LoadingSpinner } from '@/shared/components/ui/loading-spinner';
 
 export default function TeacherLayout({
   children,
@@ -40,7 +41,7 @@ export default function TeacherLayout({
   if (!isHydrated) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#ececec]">
-        <div className="h-12 w-12 animate-spin rounded-full border-2 border-[#f1f1f2] border-t-[#1010a3]" />
+        <LoadingSpinner size="lg" />
       </div>
     );
   }
@@ -49,7 +50,7 @@ export default function TeacherLayout({
   if (!isAuthenticated || user?.role !== 'TEACHER') {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#ececec]">
-        <div className="h-12 w-12 animate-spin rounded-full border-2 border-[#f1f1f2] border-t-[#1010a3]" />
+        <LoadingSpinner size="lg" />
       </div>
     );
   }

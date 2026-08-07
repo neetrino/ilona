@@ -17,6 +17,7 @@ import { cn } from '@/shared/lib/utils';
 import { ADMIN_FORM_INPUT_CLASS } from '@/shared/lib/admin-control-theme';
 import { ATTENDANCE_PRIMARY_BUTTON_CLASS } from '@/shared/components/attendance/attendance-button-theme';
 import { DAILY_DUTIES_RADIUS_CLASS } from '@/shared/lib/daily-duties/daily-duties-theme';
+import { LoadingSpinner } from '@/shared/components/ui/loading-spinner';
 
 interface AbsenceTabProps {
   lessonId: string;
@@ -255,7 +256,7 @@ export function AbsenceTab({ lessonId, embeddedInSheet = false }: AbsenceTabProp
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center p-12">
-        <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-blue-600" />
+        <LoadingSpinner size="md" />
         <p className="mt-4 text-sm text-slate-500">{t('loadingAttendanceData')}</p>
       </div>
     );

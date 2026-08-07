@@ -6,6 +6,7 @@ import { formatAppDate, formatAppTime } from '@/shared/lib/app-timezone';
 import { cn } from '@/shared/lib/utils';
 import { ActionButtons } from '@/shared/components/ui/action-buttons';
 import { Eye, Check } from 'lucide-react';
+import { LoadingSpinner } from '@/shared/components/ui/loading-spinner';
 
 export interface DailyDutiesLessonRow {
   id: string;
@@ -78,7 +79,7 @@ export function DailyDutiesLessonsTable({
     return (
       <div className="bg-white rounded-[15px] border border-slate-200 p-12">
         <div className="flex items-center justify-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          <LoadingSpinner size="md" />
         </div>
       </div>
     );

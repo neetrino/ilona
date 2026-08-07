@@ -26,6 +26,7 @@ import {
   toIsoStartOfDay,
   type PeriodPreset,
 } from './teacher-salary.utils';
+import { LoadingSpinner } from '@/shared/components/ui/loading-spinner';
 
 const PERIOD_PRESET_KEYS = {
   day: 'periodDay',
@@ -364,7 +365,7 @@ export function TeacherSalaryPage() {
           <div className="overflow-auto flex-1 min-h-0">
             {isLoadingBreakdown ? (
               <div className="py-8 flex justify-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+                <LoadingSpinner size="md" />
               </div>
             ) : breakdown?.lessons && breakdown.lessons.length > 0 ? (
               <>

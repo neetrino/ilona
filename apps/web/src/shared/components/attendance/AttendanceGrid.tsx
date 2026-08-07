@@ -9,6 +9,7 @@ import { WeekAttendanceLegend } from './week-attendance/WeekAttendanceLegend';
 import { useAttendanceGrid } from './lesson-attendance/useAttendanceGrid';
 import { AttendanceGridTable } from './lesson-attendance/AttendanceGridTable';
 import { AttendanceGridDialogs } from './lesson-attendance/AttendanceGridDialogs';
+import { LoadingSpinner } from '@/shared/components/ui/loading-spinner';
 
 interface AttendanceGridProps {
   students: WeekAttendanceStudent[];
@@ -68,7 +69,7 @@ export function AttendanceGrid({
     return (
       <div className="flex items-center justify-center p-12">
         <div className="text-center">
-          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-primary border-r-transparent" />
+          <LoadingSpinner size="md" />
           <p className="mt-4 text-sm text-slate-500">{t('loadingAttendanceData')}</p>
         </div>
       </div>

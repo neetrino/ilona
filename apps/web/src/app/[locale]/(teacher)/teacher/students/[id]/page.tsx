@@ -9,6 +9,7 @@ import { Badge, ChatBackButton } from '@/shared/components/ui';
 import { useStudent } from '@/features/students';
 import { ApiError } from '@/shared/lib/api';
 import Image from 'next/image';
+import { LoadingSpinner } from '@/shared/components/ui/loading-spinner';
 
 function formatUserStatus(
   status: string | undefined,
@@ -71,7 +72,7 @@ export default function TeacherStudentProfilePage() {
         subtitle={t('loadingSubtitle')}
       >
         <div className="flex items-center justify-center min-h-[400px]">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+          <LoadingSpinner size="lg" />
         </div>
       </DashboardLayout>
     );

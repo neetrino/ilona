@@ -12,6 +12,7 @@ import {
 } from '@/shared/components/ui';
 import { fetchTeacherObligation, type TeacherObligationDetails } from '../api/teachers.api';
 import { cn } from '@/shared/lib/utils';
+import { LoadingSpinner } from '@/shared/components/ui/loading-spinner';
 
 interface ObligationDetailsModalProps {
   open: boolean;
@@ -76,7 +77,7 @@ export function ObligationDetailsModal({
         {isLoading && (
           <div className="flex items-center justify-center py-12">
             <div className="flex flex-col items-center gap-3">
-              <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+              <LoadingSpinner size="md" />
               <p className="text-sm text-slate-500">{t('loadingObligationDetails')}</p>
             </div>
           </div>

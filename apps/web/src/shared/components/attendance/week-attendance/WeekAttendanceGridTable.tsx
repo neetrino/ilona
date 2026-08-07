@@ -12,6 +12,7 @@ import type { Lesson } from '@/features/lessons';
 import { formatDateString, formatDateDisplay, isToday } from '@/features/attendance/utils/dateUtils';
 import type { AttendanceCell, AttendanceStatus, WeekAttendanceStudent } from './types';
 import { formatDayHeader, getStatusIcon, getStatusStyles } from './attendance-status';
+import { LoadingSpinner } from '@/shared/components/ui/loading-spinner';
 
 interface WeekAttendanceGridTableProps {
   gridRef: React.RefObject<HTMLDivElement | null>;
@@ -214,7 +215,7 @@ export function WeekAttendanceGridTable({
                                     ATTENDANCE_CELL_RADIUS_CLASS,
                                   )}
                                 >
-                                  <div className="h-4 w-4 animate-spin rounded-full border-[3px] border-current border-t-transparent" />
+                                  <LoadingSpinner size="xs" />
                                 </div>
                               )}
                             </div>

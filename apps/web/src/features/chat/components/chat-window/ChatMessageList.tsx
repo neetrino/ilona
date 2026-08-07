@@ -2,6 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 import { cn } from '@/shared/lib/utils';
+import { LoadingSpinner } from '@/shared/components/ui/loading-spinner';
 import type { ChatThemeTokens } from '../../lib/chat-theme';
 import type { Chat, Message } from '../../types';
 import { ChatMessageItem } from './ChatMessageItem';
@@ -73,13 +74,13 @@ export function ChatMessageList({
     >
       {isFetchingNextPage && (
         <div className="flex items-center justify-center py-2">
-          <div className={cn('h-5 w-5 animate-spin rounded-full', ui.spinner)} />
+          <LoadingSpinner size="sm" />
         </div>
       )}
 
       {isLoading ? (
         <div className="flex items-center justify-center py-8">
-          <div className={cn('h-8 w-8 animate-spin rounded-full', ui.spinner)} />
+          <LoadingSpinner size="md" />
         </div>
       ) : messages.length === 0 ? (
         <div className="py-8 text-center">

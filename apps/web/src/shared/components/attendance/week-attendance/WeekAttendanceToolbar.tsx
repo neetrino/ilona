@@ -9,6 +9,7 @@ import {
   ATTENDANCE_PRIMARY_BUTTON_CLASS,
   ATTENDANCE_RADIUS_CLASS,
 } from '@/shared/components/attendance/attendance-button-theme';
+import { LoadingSpinner } from '@/shared/components/ui/loading-spinner';
 
 interface WeekAttendanceToolbarProps {
   totalPendingChanges: number;
@@ -57,7 +58,7 @@ export function WeekAttendanceToolbar({
         <div className="flex flex-1 items-center gap-4">
           {hasAnySaving ? (
             <>
-              <div className="h-5 w-5 animate-spin rounded-full border-[3px] border-primary border-t-transparent" />
+              <LoadingSpinner size="sm" />
               <span className="text-base font-semibold text-primary">{t('savingChanges')}</span>
             </>
           ) : totalPendingChanges > 0 ? (

@@ -3,6 +3,7 @@
 import { useMemo } from 'react';
 import { useTranslations } from 'next-intl';
 import { cn } from '@/shared/lib/utils';
+import { LoadingSpinner } from '@/shared/components/ui/loading-spinner';
 import {
   VOICE_BUBBLE_CLASS,
   VOICE_BUBBLE_TO_TEACHER_CLASS,
@@ -45,9 +46,6 @@ export function VoiceMessagePlayerControls({
     ? 'rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-xs font-semibold tabular-nums leading-none text-amber-800 transition-colors hover:bg-amber-200'
     : 'rounded-full bg-white/25 px-2 py-0.5 text-xs font-semibold tabular-nums leading-none text-white backdrop-blur-[1px] transition-colors hover:bg-white/35';
   const loadingOverlayClass = isToTeacher ? 'bg-amber-100/70' : 'bg-[#1010a3]/55';
-  const spinnerClass = isToTeacher
-    ? 'border-2 border-amber-800 border-t-transparent'
-    : 'border-2 border-white border-t-transparent';
 
   return (
     <div className="relative w-full min-w-[260px] max-w-[360px]">
@@ -158,7 +156,7 @@ export function VoiceMessagePlayerControls({
               loadingOverlayClass,
             )}
           >
-            <div className={cn('h-5 w-5 animate-spin rounded-full', spinnerClass)} />
+            <LoadingSpinner size="sm" />
           </div>
         ) : null}
       </div>

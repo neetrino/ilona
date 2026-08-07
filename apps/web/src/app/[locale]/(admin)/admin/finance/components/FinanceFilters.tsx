@@ -2,9 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
-import { Button, DatePickerInput } from '@/shared/components/ui';
+import { Button, DatePickerInput, LoadingSpinner } from '@/shared/components/ui';
 import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
-import { ChevronLeft, ChevronRight, Loader2, Trash2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Trash2 } from 'lucide-react';
 import type { PaymentStatus, SalaryStatus } from '@/features/finance';
 import type { FinanceTabId } from './FinanceTabs';
 import {
@@ -127,7 +127,7 @@ export function FinanceFilters({
           />
           {isSearching && (
             <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8b8b90]" aria-hidden>
-              <Loader2 className="h-5 w-5 animate-spin" />
+              <LoadingSpinner size="sm" />
             </span>
           )}
         </div>

@@ -7,6 +7,7 @@ import { useAuthStore, getPortalEntryPath } from '@/features/auth/store/auth.sto
 import { useLogo } from '@/features/settings/hooks/useSettings';
 import { getFullApiUrl } from '@/shared/lib/api';
 import { LandingNavbar } from '@/shared/components/layout/LandingNavbar';
+import { LoadingSpinner } from '@/shared/components/ui/loading-spinner';
 
 function LoginPageShell({ children }: { children: React.ReactNode }) {
   const { data: logoData } = useLogo();
@@ -53,7 +54,7 @@ export default function LoginPage() {
     return (
       <LoginPageShell>
         <div className="relative z-10 flex min-h-[calc(100vh-7rem)] items-center justify-center">
-          <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-primary" />
+          <LoadingSpinner size="lg" />
         </div>
       </LoginPageShell>
     );
@@ -63,7 +64,7 @@ export default function LoginPage() {
     return (
       <LoginPageShell>
         <div className="relative z-10 flex min-h-[calc(100vh-7rem)] items-center justify-center">
-          <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-primary" />
+          <LoadingSpinner size="lg" />
         </div>
       </LoginPageShell>
     );

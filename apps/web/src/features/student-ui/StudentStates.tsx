@@ -2,7 +2,8 @@
 
 import type { ReactNode } from 'react';
 import { cn } from '@/shared/lib/utils';
-import { studentCardClass, studentSpinnerClass } from './tokens';
+import { LoadingSpinner } from '@/shared/components/ui/loading-spinner';
+import { studentCardClass } from './tokens';
 import { StudentPrimaryButton } from './StudentButtons';
 
 type StateProps = {
@@ -21,7 +22,7 @@ export function StudentLoadingState({ message, className }: { message?: string; 
         className,
       )}
     >
-      <div className={studentSpinnerClass} aria-hidden />
+      <LoadingSpinner size="md" />
       {message ? <p className="mt-4 text-sm text-[#8b8b90]">{message}</p> : null}
     </div>
   );

@@ -9,6 +9,7 @@ import {
 import type { Lesson } from '@/features/lessons';
 import type { AttendanceCell, AttendanceStatus, WeekAttendanceStudent } from '../week-attendance/types';
 import { getStatusIcon, getStatusStyles } from '../week-attendance/attendance-status';
+import { LoadingSpinner } from '@/shared/components/ui/loading-spinner';
 
 interface AttendanceGridTableProps {
   gridRef: React.RefObject<HTMLDivElement | null>;
@@ -167,7 +168,7 @@ export function AttendanceGridTable({
                                 ATTENDANCE_CELL_RADIUS_CLASS,
                               )}
                             >
-                              <div className="h-4 w-4 animate-spin rounded-full border-[3px] border-current border-t-transparent" />
+                              <LoadingSpinner size="xs" />
                             </div>
                           )}
                         </div>

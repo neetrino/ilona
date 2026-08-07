@@ -5,13 +5,13 @@ import { cn } from '@/shared/lib/utils';
 import { ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import { usePortalShell } from '@/shared/context/portal-shell-context';
 import {
-  portalSpinnerClass,
   portalTableBodyClass,
   portalTableChromeClass,
   portalTableHeadCellClass,
   portalTableHeadRowClass,
   portalTableRowClass,
 } from '@/shared/lib/portal-theme';
+import { LoadingSpinner } from '@/shared/components/ui/loading-spinner';
 
 interface Column<T> {
   key: string;
@@ -82,13 +82,7 @@ export function DataTable<T>({
     return (
       <div className={cn('p-12', embedInParentCard ? '' : outerChrome)}>
         <div className="flex items-center justify-center">
-          <div
-            className={
-              isPortal
-                ? portalSpinnerClass
-                : 'h-8 w-8 animate-spin rounded-full border-b-2 border-primary'
-            }
-          />
+          <LoadingSpinner size="md" />
         </div>
       </div>
     );

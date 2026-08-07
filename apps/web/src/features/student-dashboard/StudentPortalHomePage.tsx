@@ -15,6 +15,7 @@ import {
 } from '@/shared/lib/portal-mobile-layout';
 import { getStudentNavEntries } from '@/shared/lib/student-nav-entries';
 import { cn } from '@/shared/lib/utils';
+import { LoadingSpinner } from '@/shared/components/ui/loading-spinner';
 
 export function StudentPortalHomePage() {
   const router = useRouter();
@@ -33,7 +34,7 @@ export function StudentPortalHomePage() {
   if (isLg === undefined || isLg) {
     return (
       <div className={cn('flex min-h-screen items-center justify-center', PORTAL_SHELL_BG)}>
-        <div className="h-12 w-12 animate-spin rounded-full border-2 border-[#f1f1f2] border-t-[#1010a3]" />
+        <LoadingSpinner size="lg" />
       </div>
     );
   }

@@ -15,6 +15,7 @@ import {
   portalFormSheetContentClass,
 } from '@/shared/lib/portal-form-sheet-classes';
 import { useSalary } from '../hooks/useFinance';
+import { LoadingSpinner } from '@/shared/components/ui/loading-spinner';
 
 interface SalaryDetailsModalProps {
   salaryId: string | null;
@@ -150,7 +151,7 @@ export function SalaryDetailsModal({ salaryId, open, onClose }: SalaryDetailsMod
             <div className="py-12 text-center text-slate-500">{t('salaryNotFound')}</div>
           ) : isLoading ? (
             <div className="flex items-center justify-center py-12">
-              <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-primary" />
+              <LoadingSpinner size="md" />
             </div>
           ) : salary ? (
             <div className="space-y-6">

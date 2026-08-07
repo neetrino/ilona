@@ -15,6 +15,7 @@ import { X } from 'lucide-react';
 import { useEditStudentForm } from './edit-student-form/useEditStudentForm';
 import { EditStudentFormFields } from './edit-student-form/EditStudentFormFields';
 import type { EditStudentFormProps } from './edit-student-form/edit-student-form.types';
+import { LoadingSpinner } from '@/shared/components/ui/loading-spinner';
 
 export type { EditStudentFormProps } from './edit-student-form/edit-student-form.types';
 
@@ -69,7 +70,7 @@ export function EditStudentForm(props: EditStudentFormProps) {
           >
             {form.isLoadingStudent ? (
               <div className="flex items-center justify-center py-8">
-                <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+                <LoadingSpinner size="md" />
               </div>
             ) : (
               <EditStudentFormFields {...form} />
