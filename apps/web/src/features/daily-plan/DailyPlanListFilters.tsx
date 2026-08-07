@@ -2,7 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 import { DatePickerInput } from '@/shared/components/ui/date-picker-input';
-import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
+import { MultiSelectChipsDropdown } from '@/shared/components/ui/multi-select-chips-dropdown';
 import {
   ADMIN_CONTROL_CLASS,
   ADMIN_DATE_INPUT_CLASS,
@@ -21,10 +21,10 @@ export interface DailyPlanGroupOption {
 }
 
 interface DailyPlanListFiltersProps {
-  teacherId: string;
-  onTeacherIdChange: (value: string | null) => void;
-  groupId: string;
-  onGroupIdChange: (value: string | null) => void;
+  selectedTeacherIds: Set<string>;
+  onTeacherIdsChange: (value: Set<string>) => void;
+  selectedGroupIds: Set<string>;
+  onGroupIdsChange: (value: Set<string>) => void;
   dateFrom: string;
   onDateFromChange: (value: string) => void;
   dateTo: string;
@@ -38,10 +38,10 @@ interface DailyPlanListFiltersProps {
 }
 
 export function DailyPlanListFilters({
-  teacherId,
-  onTeacherIdChange,
-  groupId,
-  onGroupIdChange,
+  selectedTeacherIds,
+  onTeacherIdsChange,
+  selectedGroupIds,
+  onGroupIdsChange,
   dateFrom,
   onDateFromChange,
   dateTo,
@@ -60,45 +60,41 @@ export function DailyPlanListFilters({
     <div className="rounded-[15px] border border-[rgba(14,14,16,0.07)] bg-white p-3 sm:p-4">
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-5 xl:items-end">
         <div className="min-w-0">
-          <label className="mb-1.5 block text-sm font-medium text-[#8b8b90]">
-            {tCommon('teacher')}
-          </label>
-          <SingleSelectDropdown
-            id="daily-plan-filter-teacher"
-            options={[
-              { id: '', label: t('allTeachers') },
-              ...teacherOptions,
-            ]}
-            value={teacherId}
-            onValueChange={(next) => onTeacherIdChange(next || null)}
-            allowDeselect
-            searchable
-            searchPlaceholder={t('searchTeachers')}
-            noSearchResultsMessage={t('noTeachersFound')}
-            isLoading={isLoadingTeachers}
+          <MultiSelectChipsDropdown
+            label={tCommon('teacher')}
+            options={teacherOptions}
+            selectedIds={selectedTeacherIds}
+            onSelectionChange={onTeacherIdsChange}
             placeholder={t('allTeachers')}
+            allSelectedLabel={t('allTeachers')}
+            summaryPartialUsesCount
+            searchPlaceholder={t('searchTeachers')}
+            emptyOptionsHint={t('noTeachersFound')}
+            noResultsHint={t('noTeachersFound')}
+            isLoading={isLoadingTeachers}
+            closedTriggerMode="summary"
+            menuFitContentWidth
             triggerClassName={ADMIN_CONTROL_CLASS}
+            selectedCountLabel={(count) => t('teachersSelected', { count })}
           />
         </div>
         <div className="min-w-0">
-          <label className="mb-1.5 block text-sm font-medium text-[#8b8b90]">
-            {tCommon('group')}
-          </label>
-          <SingleSelectDropdown
-            id="daily-plan-filter-group"
-            options={[
-              { id: '', label: t('allGroups') },
-              ...groupOptions,
-            ]}
-            value={groupId}
-            onValueChange={(next) => onGroupIdChange(next || null)}
-            allowDeselect
-            searchable
-            searchPlaceholder={t('searchGroups')}
-            noSearchResultsMessage={t('noGroupsFound')}
-            isLoading={isLoadingGroups}
+          <MultiSelectChipsDropdown
+            label={tCommon('group')}
+            options={groupOptions}
+            selectedIds={selectedGroupIds}
+            onSelectionChange={onGroupIdsChange}
             placeholder={t('allGroups')}
+            allSelectedLabel={t('allGroups')}
+            summaryPartialUsesCount
+            searchPlaceholder={t('searchGroups')}
+            emptyOptionsHint={t('noGroupsFound')}
+            noResultsHint={t('noGroupsFound')}
+            isLoading={isLoadingGroups}
+            closedTriggerMode="summary"
+            menuFitContentWidth
             triggerClassName={ADMIN_CONTROL_CLASS}
+            selectedCountLabel={(count) => t('groupsSelected', { count })}
           />
         </div>
         <div className="min-w-0">

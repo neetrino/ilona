@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
@@ -25,8 +25,8 @@ export default function TeacherDailyPlanPage() {
   const locale = params.locale as string;
   const { user } = useAuthStore();
   const [search, setSearch] = useState('');
-  const [teacherId, setTeacherId] = useState('');
-  const [groupId, setGroupId] = useState('');
+  const [selectedTeacherIds, setSelectedTeacherIds] = useState<Set<string>>(new Set());
+  const [selectedGroupIds, setSelectedGroupIds] = useState<Set<string>>(new Set());
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
   const [editing, setEditing] = useState<DailyPlan | null>(null);
@@ -60,26 +60,66 @@ export default function TeacherDailyPlanPage() {
       .sort((a, b) => a.label.localeCompare(b.label));
   }, [groupsData]);
 
+  useEffect(() => {
+    if (teacherOptions.length === 0) return;
+    setSelectedTeacherIds((prev) => {
+      if (prev.size > 0) return prev;
+      return new Set(teacherOptions.map((teacher) => teacher.id));
+    });
+  }, [teacherOptions]);
+
+  useEffect(() => {
+    if (groupOptions.length === 0) return;
+    setSelectedGroupIds((prev) => {
+      if (prev.size > 0) return prev;
+      return new Set(groupOptions.map((group) => group.id));
+    });
+  }, [groupOptions]);
+
+  const hasPartialTeacherFilter =
+    teacherOptions.length > 0 && selectedTeacherIds.size < teacherOptions.length;
+  const hasPartialGroupFilter =
+    groupOptions.length > 0 && selectedGroupIds.size < groupOptions.length;
+  const hasEmptyTeacherFilter =
+    teacherOptions.length > 0 && selectedTeacherIds.size === 0;
+  const hasEmptyGroupFilter = groupOptions.length > 0 && selectedGroupIds.size === 0;
+
   const filters = useMemo(() => {
     const next: {
       search?: string;
-      teacherId?: string;
-      groupId?: string;
+      teacherIds?: string[];
+      groupIds?: string[];
       dateFrom?: string;
       dateTo?: string;
       take: number;
     } = { take: 100 };
     const trimmed = search.trim();
     if (trimmed) next.search = trimmed;
-    if (teacherId) next.teacherId = teacherId;
-    if (groupId) next.groupId = groupId;
+    if (hasPartialTeacherFilter && selectedTeacherIds.size > 0) {
+      next.teacherIds = Array.from(selectedTeacherIds);
+    }
+    if (hasPartialGroupFilter && selectedGroupIds.size > 0) {
+      next.groupIds = Array.from(selectedGroupIds);
+    }
     if (dateFrom) next.dateFrom = dateFrom;
     if (dateTo) next.dateTo = dateTo;
     return next;
-  }, [search, teacherId, groupId, dateFrom, dateTo]);
+  }, [
+    search,
+    hasPartialTeacherFilter,
+    hasPartialGroupFilter,
+    selectedTeacherIds,
+    selectedGroupIds,
+    dateFrom,
+    dateTo,
+  ]);
 
-  const { data, isLoading, refetch } = useDailyPlans(filters);
-  const items = data?.items ?? [];
+  const { data, isLoading, refetch } = useDailyPlans(
+    filters,
+    !hasEmptyTeacherFilter && !hasEmptyGroupFilter,
+  );
+  const items =
+    hasEmptyTeacherFilter || hasEmptyGroupFilter ? [] : (data?.items ?? []);
   const remove = useDeleteDailyPlan();
   const { viewing, openView, closeView } = useDailyPlanViewSheet(items);
 
@@ -92,10 +132,10 @@ export default function TeacherDailyPlanPage() {
         search={search}
         onSearchChange={setSearch}
         enableStructuredFilters
-        teacherId={teacherId}
-        onTeacherIdChange={(value) => setTeacherId(value ?? '')}
-        groupId={groupId}
-        onGroupIdChange={(value) => setGroupId(value ?? '')}
+        selectedTeacherIds={selectedTeacherIds}
+        onTeacherIdsChange={setSelectedTeacherIds}
+        selectedGroupIds={selectedGroupIds}
+        onGroupIdsChange={setSelectedGroupIds}
         dateFrom={dateFrom}
         onDateFromChange={setDateFrom}
         dateTo={dateTo}
@@ -104,6 +144,8 @@ export default function TeacherDailyPlanPage() {
         groupOptions={groupOptions}
         isLoadingTeachers={isLoadingTeachers}
         isLoadingGroups={isLoadingGroups}
+        hasPartialTeacherFilter={hasPartialTeacherFilter}
+        hasPartialGroupFilter={hasPartialGroupFilter}
         onCreate={() => router.push(`/${locale}/teacher/daily-plan/new`)}
         createLabel="+ New Daily Plan"
         items={items}

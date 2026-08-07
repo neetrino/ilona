@@ -1791,6 +1791,8 @@
     "allGroups": "All groups",
     "searchGroups": "Search groups…",
     "noGroupsFound": "No groups found",
+    "teachersSelected": "{count} teachers selected",
+    "groupsSelected": "{count} groups selected",
     "dateFrom": "From",
     "dateTo": "To",
     "clearFilters": "Clear filters",

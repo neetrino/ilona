@@ -1791,6 +1791,8 @@
     "allGroups": "Բոլոր խմբերը",
     "searchGroups": "Որոնել խմբեր…",
     "noGroupsFound": "Խմբեր չեն գտնվել",
+    "teachersSelected": "{count} ուսուցիչ ընտրված է",
+    "groupsSelected": "{count} խումբ ընտրված է",
     "dateFrom": "Սկսած",
     "dateTo": "Մինչև",
     "clearFilters": "Մաքրել ֆիլտրերը",

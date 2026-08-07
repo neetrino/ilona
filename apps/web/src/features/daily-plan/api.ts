@@ -13,7 +13,13 @@ export async function fetchDailyPlans(filters?: DailyPlanFilters): Promise<Daily
   const params = new URLSearchParams();
   if (filters?.search) params.append('search', filters.search);
   if (filters?.teacherId) params.append('teacherId', filters.teacherId);
+  if (filters?.teacherIds && filters.teacherIds.length > 0) {
+    filters.teacherIds.forEach((id) => params.append('teacherIds', id));
+  }
   if (filters?.groupId) params.append('groupId', filters.groupId);
+  if (filters?.groupIds && filters.groupIds.length > 0) {
+    filters.groupIds.forEach((id) => params.append('groupIds', id));
+  }
   if (filters?.lessonId) params.append('lessonId', filters.lessonId);
   if (filters?.dateFrom) params.append('dateFrom', filters.dateFrom);
   if (filters?.dateTo) params.append('dateTo', filters.dateTo);

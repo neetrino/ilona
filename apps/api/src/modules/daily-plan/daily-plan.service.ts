@@ -203,11 +203,17 @@ export class DailyPlanService {
 
     const whereParts: Prisma.DailyPlanWhereInput[] = [];
 
-    if (query.teacherId) {
+    if (query.teacherIds && query.teacherIds.length > 0) {
+      whereParts.push({ teacherId: { in: query.teacherIds } });
+    } else if (query.teacherId) {
       whereParts.push({ teacherId: query.teacherId });
     }
 
-    if (query.groupId) whereParts.push({ groupId: query.groupId });
+    if (query.groupIds && query.groupIds.length > 0) {
+      whereParts.push({ groupId: { in: query.groupIds } });
+    } else if (query.groupId) {
+      whereParts.push({ groupId: query.groupId });
+    }
     if (query.lessonId) whereParts.push({ lessonId: query.lessonId });
 
     if (query.dateFrom || query.dateTo) {

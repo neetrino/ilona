@@ -1,5 +1,15 @@
-import { IsOptional, IsString, IsISO8601, IsInt, Min, Max } from 'class-validator';
+import { IsOptional, IsString, IsISO8601, IsInt, Min, Max, IsArray } from 'class-validator';
 import { Transform } from 'class-transformer';
+
+function toStringArray(value: unknown): string[] | undefined {
+  if (value === undefined || value === null || value === '') {
+    return undefined;
+  }
+  if (Array.isArray(value)) {
+    return value.map(String);
+  }
+  return [String(value)];
+}
 
 export class QueryDailyPlanDto {
   /** Free-text search: teacher name, group, center, topic, and resource fields. */
@@ -11,9 +21,21 @@ export class QueryDailyPlanDto {
   @IsOptional()
   teacherId?: string;
 
+  @IsOptional()
+  @Transform(({ value }: { value: unknown }) => toStringArray(value))
+  @IsArray()
+  @IsString({ each: true })
+  teacherIds?: string[];
+
   @IsString()
   @IsOptional()
   groupId?: string;
+
+  @IsOptional()
+  @Transform(({ value }: { value: unknown }) => toStringArray(value))
+  @IsArray()
+  @IsString({ each: true })
+  groupIds?: string[];
 
   @IsString()
   @IsOptional()
