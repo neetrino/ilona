@@ -2286,7 +2286,9 @@
     "noClassesScheduled": "No classes scheduled",
     "subtitleWeeklyMonthly": "Weekly and monthly schedule for upcoming lessons",
     "teachingTodayBadge": "today",
-    "coTeachTeachersTitle": "Teaching today: {dayTeacher}. Also: {otherTeacher}"
+    "coTeachTeachersTitle": "Teaching today: {dayTeacher}. Also: {otherTeacher}",
+    "dayLessonsCount": "{count, plural, one {# lesson} other {# lessons}}",
+    "viewDayLessonsAria": "View all lessons for {date}"
   },
   "teacherToday": {
     "subtitle": "Manage your lessons, mark attendance, and send vocabulary.",

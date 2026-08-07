@@ -60,6 +60,7 @@ export function WeekLessonGrid({
         weekDates={weekDates}
         slots={grid.slots}
         cells={grid.cells}
+        lessonsByDay={grid.lessonsByDay}
         highlightPastLessonCards={highlightPastLessonCards}
         referenceTime={referenceTime}
         theme={theme}

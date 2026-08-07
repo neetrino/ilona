@@ -6,6 +6,7 @@ import type { Lesson } from '@/features/lessons';
 import { cn } from '@/shared/lib/utils';
 import { studentScheduleTable } from '@/features/student-ui/tokens';
 import { ScheduleLessonCard } from './ScheduleLessonCard';
+import { SCHEDULE_CELL_MAX_VISIBLE_LESSONS } from './ScheduleDayLessonsSheet';
 import type { MonthLessonGridProps } from './schedule-lesson-views.types';
 
 export function MonthLessonGrid({
@@ -43,6 +44,8 @@ export function MonthLessonGrid({
       getLessonsForDay={(k) => lessonsByDate[k] ?? []}
       getLessonKey={(l) => l.id}
       getSortTime={(l) => new Date(l.scheduledAt).getTime()}
+      maxVisibleOverride={SCHEDULE_CELL_MAX_VISIBLE_LESSONS}
+      overflowLabel="threePlus"
       renderLesson={({ lesson, variant: cardVariant }) => (
         <ScheduleLessonCard
           lesson={lesson}

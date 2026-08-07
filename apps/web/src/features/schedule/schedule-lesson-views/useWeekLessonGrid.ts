@@ -73,6 +73,7 @@ export function useWeekLessonGrid({ weekDates, lessons }: Pick<WeekLessonGridPro
     slots,
     cells,
     totalLessons,
+    lessonsByDay,
     selectedDate,
     selectedDayLessons,
   };
