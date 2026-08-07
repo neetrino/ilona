@@ -51,7 +51,10 @@ export function useStudentAccountCrmLayoutFields(
   const groupOptions = useMemo(
     () => [
       { id: '', label: groupPlaceholder },
-      ...groupsForCenter.map((group) => ({ id: group.id, label: group.name })),
+      ...groupsForCenter.map((group) => ({
+        id: group.id,
+        label: `${group.name}${group.level ? ` (${group.level})` : ''}`.trim(),
+      })),
     ],
     [groupPlaceholder, groupsForCenter],
   );

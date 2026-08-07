@@ -61,7 +61,6 @@ export function useAddStudentForm({ open, onOpenChange }: AddStudentFormProps) {
     [isManager, user?.managerCenterId, watchedCenterId],
   );
   const watchedGroupId = watch('groupId') || '';
-  const watchedLevelId = watch('levelId') || '';
   const watchedDob = watch('dateOfBirth');
   const watchedManualAge = watch('manualAge');
   const computedAge = useMemo(
@@ -70,13 +69,8 @@ export function useAddStudentForm({ open, onOpenChange }: AddStudentFormProps) {
   );
 
   const groupsForCenter = useMemo(
-    () =>
-      filterAssignableGroupsByCenter(
-        allGroups,
-        effectiveCenterId || undefined,
-        watchedLevelId || undefined,
-      ),
-    [allGroups, effectiveCenterId, watchedLevelId],
+    () => filterAssignableGroupsByCenter(allGroups, effectiveCenterId || undefined),
+    [allGroups, effectiveCenterId],
   );
 
   useEffect(() => {

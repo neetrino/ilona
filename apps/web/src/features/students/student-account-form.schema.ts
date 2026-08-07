@@ -53,7 +53,7 @@ const createStudentBaseSchema = z.object({
   dateOfBirth: optionalDob.optional(),
   manualAge: z.preprocess(preprocessManualAge, z.number().int().min(1).max(120).optional()),
   firstLessonDate: optionalFormDate.optional(),
-  /** Matches CRM lead level ids (filters group list only; not sent to API). */
+  /** UI-only CRM level selection (not sent to API; independent of group). */
   levelId: z.string().max(10).optional(),
   groupId: z.string().optional(),
   teacherId: z.string().optional(),
