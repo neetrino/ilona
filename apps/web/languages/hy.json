@@ -2284,7 +2284,9 @@
   },
   "schedule": {
     "noClassesScheduled": "Նախատեսված դասեր չկան",
-    "subtitleWeeklyMonthly": "Շաբաթական և ամսական ժամանակացույց առաջիկա դասերի համար"
+    "subtitleWeeklyMonthly": "Շաբաթական և ամսական ժամանակացույց առաջիկա դասերի համար",
+    "teachingTodayBadge": "այսօր",
+    "coTeachTeachersTitle": "Այսօր դասը վարում է՝ {dayTeacher}։ Նաև՝ {otherTeacher}"
   },
   "teacherToday": {
     "subtitle": "Կառավարեք դասերը, նշեք հաճախելիությունը և ուղարկեք բառապաշարը։",

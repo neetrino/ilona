@@ -30,10 +30,9 @@ export function ScheduleLessonCard({
     >
       <div
         className={cn(
-          'truncate font-semibold',
+          'break-words font-semibold',
           uiVariant === 'student' ? studentScheduleTable.lessonTitle : 'text-slate-800',
         )}
-        title={lesson.group?.name}
       >
         {lesson.group?.name ?? 'Unknown group'}
         {lesson.group?.level ? (
@@ -51,7 +50,7 @@ export function ScheduleLessonCard({
       <ScheduleLessonTeachersLine lesson={lesson} uiVariant={uiVariant} />
       <div
         className={cn(
-          'truncate font-medium',
+          'font-medium',
           uiVariant === 'student' ? studentScheduleTable.lessonMeta : 'text-slate-500',
         )}
       >

@@ -101,7 +101,7 @@ export function WeekLessonGridMobileDayView({
                   />
                   <article className={cn('ml-3 rounded-2xl border px-4 py-3', cardToneClass)}>
                     <div className="min-w-0">
-                      <p className="truncate text-lg font-semibold tracking-[-0.01em] text-[#1f2937]">
+                      <p className="break-words text-lg font-semibold tracking-[-0.01em] text-[#1f2937]">
                         {lesson.group?.name ?? 'Unknown group'}
                         {lesson.group?.level ? (
                           <span className="font-medium text-[#64748b]"> · {lesson.group.level}</span>

@@ -33,7 +33,7 @@ export function getScheduleLessonTeacherChips(lesson: Lesson): ScheduleLessonTea
   const secondary = lesson.group?.secondTeacher;
 
   if (primary && secondary && primary.id !== secondary.id) {
-    return [
+    const chips: ScheduleLessonTeacherChip[] = [
       {
         id: primary.id,
         name: teacherFullName(primary.user) || 'Teacher',
@@ -45,6 +45,8 @@ export function getScheduleLessonTeacherChips(lesson: Lesson): ScheduleLessonTea
         isDayTeacher: secondary.id === dayTeacherId,
       },
     ];
+    // Day teacher first so the active assignment is immediately scannable.
+    return chips.sort((a, b) => Number(b.isDayTeacher) - Number(a.isDayTeacher));
   }
 
   const fallbackName = teacherFullName(lesson.teacher?.user) || 'No teacher';
@@ -55,10 +57,6 @@ export function getScheduleLessonTeacherChips(lesson: Lesson): ScheduleLessonTea
       isDayTeacher: true,
     },
   ];
-}
-
-export function formatScheduleLessonTeachersTitle(chips: ScheduleLessonTeacherChip[]): string {
-  return chips.map((chip) => chip.name).join(' · ');
 }
 
 export function formatMinutesToLabel(totalMinutes: number): string {

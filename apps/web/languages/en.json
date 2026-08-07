@@ -2284,7 +2284,9 @@
   },
   "schedule": {
     "noClassesScheduled": "No classes scheduled",
-    "subtitleWeeklyMonthly": "Weekly and monthly schedule for upcoming lessons"
+    "subtitleWeeklyMonthly": "Weekly and monthly schedule for upcoming lessons",
+    "teachingTodayBadge": "today",
+    "coTeachTeachersTitle": "Teaching today: {dayTeacher}. Also: {otherTeacher}"
   },
   "teacherToday": {
     "subtitle": "Manage your lessons, mark attendance, and send vocabulary.",
