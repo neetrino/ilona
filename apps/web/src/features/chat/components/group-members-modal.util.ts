@@ -92,7 +92,7 @@ export function groupInfoPanelClassName(isVisible: boolean, hasDragStyle: boolea
     'tablet:inset-x-auto tablet:inset-y-0 tablet:right-0 tablet:left-auto tablet:bottom-auto tablet:mx-0 tablet:h-full tablet:max-w-none tablet:w-[22.5rem] min-[1366px]:w-[24rem]',
     hasDragStyle
       ? 'transition-none'
-      : 'transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]',
+      : 'transition-transform duration-300 [transition-timing-function:cubic-bezier(0.22,1,0.36,1)]',
     isVisible
       ? 'translate-y-0 tablet:translate-x-0'
       : 'pointer-events-none translate-y-full tablet:translate-y-0 tablet:translate-x-full',

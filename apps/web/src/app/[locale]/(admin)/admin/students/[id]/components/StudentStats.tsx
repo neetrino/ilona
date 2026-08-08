@@ -1,7 +1,8 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { Input } from '@/shared/components/ui';
+import { Input, PublicAssetImage } from '@/shared/components/ui';
+import { STUDENT_DASHBOARD_ASSETS } from '@/features/student-dashboard/assets';
 import { formatCurrency } from '@/shared/lib/utils';
 import type { StudentStatistics } from '@/features/students';
 import type { UseFormRegister } from 'react-hook-form';
@@ -82,9 +83,13 @@ export function StudentStats({
           <div className="bg-white rounded-xl border border-[rgba(14,14,16,0.07)] p-6">
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm text-[#8b8b90]">{t('currentStreakLabel')}</span>
-              <svg className="w-5 h-5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3c0 3.5-2 5.5-2 8a4 4 0 008 0c0-2.5-2-4.5-2-8M8 14a4 4 0 108 0" />
-              </svg>
+              <PublicAssetImage
+                src={STUDENT_DASHBOARD_ASSETS.fireIcon}
+                alt=""
+                width={20}
+                height={20}
+                className="h-5 w-5"
+              />
             </div>
             <p className="text-3xl font-bold text-[#3b3b40]">{statistics.attendance.currentStreak}</p>
             <p className="text-xs text-[#8b8b90] mt-1">

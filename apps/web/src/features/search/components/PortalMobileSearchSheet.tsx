@@ -75,7 +75,9 @@ export function PortalMobileSearchSheet({
         ref={scrollContentProps.ref}
         className={cn(
           'fixed inset-x-0 bottom-0 z-[80] lg:hidden',
-          dragStyle ? 'transition-none' : 'transition-transform duration-350 ease-[cubic-bezier(0.22,1,0.36,1)]',
+          dragStyle
+            ? 'transition-none'
+            : 'transition-transform duration-350 [transition-timing-function:cubic-bezier(0.22,1,0.36,1)]',
           isVisible ? 'translate-y-0' : 'pointer-events-none translate-y-full',
           containerClassName,
         )}

@@ -11,7 +11,7 @@ type LandingNavbarLanguageToggleProps = {
 };
 
 const INDICATOR_TRANSITION =
-  'transition-[transform,width,height] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none';
+  'transition-[transform,width,height] duration-300 [transition-timing-function:cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none';
 
 const BUTTON_FOCUS =
   'focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1010a3]/20 focus-visible:ring-offset-2';

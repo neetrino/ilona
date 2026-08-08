@@ -17,7 +17,7 @@ import {
 } from '@/shared/lib/admin-control-theme';
 
 const CHAT_DELETE_DIALOG_CLASS =
-  'w-[calc(100%-1.5rem)] max-w-[420px] gap-0 overflow-hidden rounded-[20px] border border-[rgba(14,14,16,0.07)] bg-[#f8f9fb] p-0 shadow-xl duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] sm:w-full';
+  'w-[calc(100%-1.5rem)] max-w-[420px] gap-0 overflow-hidden rounded-[20px] border border-[rgba(14,14,16,0.07)] bg-[#f8f9fb] p-0 shadow-xl duration-500 [animation-timing-function:cubic-bezier(0.16,1,0.3,1)] sm:w-full';
 
 interface ChatGroupDeleteDialogProps {
   open: boolean;
