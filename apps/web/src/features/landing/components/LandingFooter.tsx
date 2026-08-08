@@ -120,8 +120,8 @@ export function LandingFooter({ tr, isHy, logoUrl }: LandingFooterProps) {
       
         <div className="relative hidden overflow-hidden px-3 pb-[31px] pt-[67px] sm:px-6 tablet:block">
         <div className="pointer-events-none absolute inset-0 z-0 mx-auto h-full w-[1470px]">
-          <div className="absolute left-1/2 top-[48px] h-[400px] w-[502px] -translate-x-1/2">
-            <div className="absolute left-0 top-0 h-[400px] w-[400px] overflow-hidden">
+          <div className="footer-flags-stage absolute left-1/2 top-[48px] h-[400px] w-[502px]">
+            <div className="footer-flag footer-flag--usa absolute left-0 top-0 h-[400px] w-[400px] overflow-hidden">
               <Image
                 src={FOOTER_FLAG_USA}
                 alt=""
@@ -132,7 +132,7 @@ export function LandingFooter({ tr, isHy, logoUrl }: LandingFooterProps) {
               />
             </div>
       
-            <div className="absolute left-[102px] top-0 h-[400px] w-[400px] overflow-hidden">
+            <div className="footer-flag footer-flag--uk absolute left-[102px] top-0 h-[400px] w-[400px] overflow-hidden">
               <Image
                 src={FOOTER_FLAG_UK}
                 alt=""

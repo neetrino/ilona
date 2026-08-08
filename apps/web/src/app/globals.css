@@ -140,6 +140,55 @@
   backface-visibility: hidden;
 }
 
+@keyframes footer-flags-forward {
+  0%,
+  100% {
+    transform: translateX(calc(-50% - 6px)) scale(1);
+  }
+  50% {
+    transform: translateX(calc(-50% + 6px)) scale(1.025);
+  }
+}
+
+@keyframes footer-flag-sway {
+  0%,
+  100% {
+    transform: rotate(-0.7deg) translateX(0);
+  }
+  50% {
+    transform: rotate(0.9deg) translateX(3px);
+  }
+}
+
+.footer-flags-stage {
+  animation: footer-flags-forward 5.5s cubic-bezier(0.45, 0, 0.25, 1) infinite;
+  transform-origin: 50% 80%;
+  will-change: transform;
+}
+
+.footer-flag {
+  animation: footer-flag-sway 4.2s ease-in-out infinite;
+  backface-visibility: hidden;
+  transform-origin: 50% 8%;
+  will-change: transform;
+}
+
+.footer-flag--uk {
+  animation-delay: -2.1s;
+  animation-direction: reverse;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .footer-flags-stage,
+  .footer-flag {
+    animation: none;
+  }
+
+  .footer-flags-stage {
+    transform: translateX(-50%);
+  }
+}
+
 /*
  * iOS Safari auto-zooms focused fields when font-size < 16px.
  * Apply 16px on mobile/tablet; desktop (lg+) keeps compact UI text.
