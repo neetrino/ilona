@@ -42,15 +42,17 @@ export function LandingFollowUsSection({ tr, isHy }: LandingSectionProps) {
                   {tr('Daily tips & stories', 'Օրական խորհուրդներ և պատմություններ')}
                 </p>
               </div>
-              <button
-                type="button"
+              <a
+                href="https://www.instagram.com/ilona.english.center/"
+                target="_blank"
+                rel="noopener noreferrer"
                 className={cn(
                   'shrink-0 whitespace-nowrap rounded-full bg-white px-3 py-2 text-[11px] font-bold leading-[16px] tracking-[-0.31px] text-[#e60076]',
                   BUTTON_HOVER_CLASS,
                 )}
               >
                 @ilonaenglish
-              </button>
+              </a>
             </motion.article>
       
             <motion.article
@@ -141,15 +143,17 @@ export function LandingFollowUsSection({ tr, isHy }: LandingSectionProps) {
                 <p className="mt-3 text-[16px] leading-[24px] tracking-[-0.3125px] text-white/90">
                   {tr('Daily tips & stories', 'Օրական խորհուրդներ և պատմություններ')}
                 </p>
-                <button
-                  type="button"
+                <a
+                  href="https://www.instagram.com/ilona.english.center/"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className={cn(
                     'mt-6 inline-flex h-[56px] w-[156px] items-center justify-center rounded-full bg-white text-[16px] font-bold leading-[24px] tracking-[-0.3125px] text-[#e60076]',
                     BUTTON_HOVER_CLASS,
                   )}
                 >
                   @ilonaenglish
-                </button>
+                </a>
               </div>
             </motion.article>
       
