@@ -67,13 +67,13 @@ function reverseFlightPath(size: Point) {
 }
 
 function addSmoke(particles: SmokeParticle[], position: Point, direction: Point) {
-  const spread = (Math.random() - 0.5) * 22;
+  const spread = (Math.random() - 0.5) * 32;
   particles.push({
     x: position.x - direction.x * 66 + spread,
     y: position.y - direction.y * 66 + spread,
     vx: -direction.x * (8 + Math.random() * 12) + (Math.random() - 0.5) * 9,
     vy: -direction.y * (8 + Math.random() * 12) - 5 - Math.random() * 7,
-    radius: 10 + Math.random() * 8,
+    radius: 16 + Math.random() * 10,
     age: 0,
     lifetime: 7.5 + Math.random() * 1.8,
     tone: Math.floor(Math.random() * 3),
@@ -89,7 +89,7 @@ function drawSmoke(context: CanvasRenderingContext2D, particles: SmokeParticle[]
     particle.y += particle.vy * delta;
     particle.vx *= 0.995;
     particle.vy -= 1.6 * delta;
-    particle.radius += 7 * delta;
+    particle.radius += 9 * delta;
     const life = particle.age / particle.lifetime;
     const remainingLife = Math.max(0, 1 - life);
     const alpha = Math.min(particle.age / 0.35, 1) * remainingLife ** 1.4 * 0.18;
