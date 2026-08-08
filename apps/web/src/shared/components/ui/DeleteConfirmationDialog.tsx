@@ -12,7 +12,7 @@ import {
 
 /** Centered delete modal on all breakpoints. */
 export const DELETE_CONFIRMATION_DIALOG_CONTENT_CLASS =
-  'w-[calc(100%-1.5rem)] max-w-md rounded-[15px] p-5 duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] sm:w-full';
+  'w-[calc(100%-1.5rem)] max-w-md rounded-[15px] p-5 duration-500 [animation-timing-function:cubic-bezier(0.16,1,0.3,1)] sm:w-full';
 
 /** @deprecated Same as DELETE_CONFIRMATION_DIALOG_CONTENT_CLASS */
 export const DELETE_CONFIRMATION_DIALOG_DESKTOP_CONTENT_CLASS =
@@ -23,7 +23,7 @@ export const DELETE_CONFIRMATION_DIALOG_MOBILE_CONTENT_CLASS =
   DELETE_CONFIRMATION_DIALOG_CONTENT_CLASS;
 
 export const DELETE_CONFIRMATION_DIALOG_OVERLAY_CLASS =
-  'duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]';
+  'duration-500 [animation-timing-function:cubic-bezier(0.16,1,0.3,1)]';
 
 export function useDeleteConfirmationDialogLayout(open: boolean) {
   return {

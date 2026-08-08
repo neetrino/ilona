@@ -40,6 +40,11 @@
     "turbo": "^2.0.0",
     "typescript": "^5.5.4"
   },
+  "pnpm": {
+    "overrides": {
+      "caniuse-lite": "1.0.30001809"
+    }
+  },
   "packageManager": "pnpm@8.15.0",
   "engines": {
     "node": ">=20.9.0",

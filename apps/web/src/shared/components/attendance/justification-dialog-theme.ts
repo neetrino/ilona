@@ -1,7 +1,7 @@
 import { cn } from '@/shared/lib/utils';
 
 export const JUSTIFICATION_DIALOG_CONTENT_CLASS = cn(
-  'w-[calc(100%-1.5rem)] max-w-md rounded-[20px] p-6 duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] sm:w-full',
+  'w-[calc(100%-1.5rem)] max-w-md rounded-[20px] p-6 duration-500 [animation-timing-function:cubic-bezier(0.16,1,0.3,1)] sm:w-full',
   'gap-6',
 );
 

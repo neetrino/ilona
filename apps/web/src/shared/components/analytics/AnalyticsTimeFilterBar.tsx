@@ -185,7 +185,7 @@ export function AnalyticsTimeFilterBar({
         <span
           aria-hidden
           className={cn(
-            'pointer-events-none absolute left-0 top-1 z-0 h-8 transition-[transform,width,opacity] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]',
+            'pointer-events-none absolute left-0 top-1 z-0 h-8 transition-[transform,width,opacity] duration-300 [transition-timing-function:cubic-bezier(0.22,1,0.36,1)]',
             isPillModeToggle
               ? 'rounded-full bg-[#1010a3]'
               : usesGroupAccent
