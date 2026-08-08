@@ -48,8 +48,8 @@ function addSmoke(particles: SmokeParticle[], position: Point, direction: Point)
   for (let index = 0; index < 2; index += 1) {
     const spread = (Math.random() - 0.5) * 22;
     particles.push({
-      x: position.x - direction.x * 48 + spread,
-      y: position.y - direction.y * 48 + spread,
+      x: position.x - direction.x * 66 + spread,
+      y: position.y - direction.y * 66 + spread,
       vx: -direction.x * (8 + Math.random() * 12) + (Math.random() - 0.5) * 9,
       vy: -direction.y * (8 + Math.random() * 12) - 5 - Math.random() * 7,
       radius: 8 + Math.random() * 11,
@@ -90,8 +90,8 @@ function drawSmoke(context: CanvasRenderingContext2D, particles: SmokeParticle[]
 function addSpark(sparks: SparkParticle[], position: Point, direction: Point) {
   if (Math.random() < 0.42) return;
   sparks.push({
-    x: position.x - direction.x * 56,
-    y: position.y - direction.y * 56,
+    x: position.x - direction.x * 72,
+    y: position.y - direction.y * 72,
     vx: -direction.x * (35 + Math.random() * 55) + (Math.random() - 0.5) * 38,
     vy: -direction.y * (35 + Math.random() * 55) + (Math.random() - 0.5) * 38,
     age: 0,
@@ -175,7 +175,7 @@ function RocketScene({ onComplete }: { onComplete: () => void }) {
   return (
     <div aria-hidden="true" className="pointer-events-none fixed inset-0 z-[60] overflow-hidden">
       <canvas ref={canvasRef} className="absolute inset-0 h-full w-full" />
-      <div ref={rocketRef} className="absolute left-0 top-0 h-[82px] w-[178px] will-change-transform max-tablet:h-[58px] max-tablet:w-[126px]">
+      <div ref={rocketRef} className="absolute left-0 top-0 h-[92px] w-[200px] will-change-transform max-tablet:h-[70px] max-tablet:w-[152px]">
         <LandingPremiumRocket />
       </div>
     </div>
