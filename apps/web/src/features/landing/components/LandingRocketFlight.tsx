@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useReducedMotion } from 'framer-motion';
+import { LandingPremiumRocket } from './LandingPremiumRocket';
 
 const FLIGHT_INTERVAL_MS = 15_000;
 const INITIAL_FLIGHT_DELAY_MS = 1_500;
@@ -22,53 +23,12 @@ interface SmokeParticle extends Point {
   tone: number;
 }
 
-function PremiumRocket() {
-  return (
-    <svg viewBox="0 0 180 90" className="h-full w-full overflow-visible">
-      <defs>
-        <linearGradient id="rocket-body" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#ffffff" />
-          <stop offset="0.45" stopColor="#dbe5f2" />
-          <stop offset="0.7" stopColor="#ffffff" />
-          <stop offset="1" stopColor="#8da2bd" />
-        </linearGradient>
-        <linearGradient id="rocket-gold" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stopColor="#fff3ad" />
-          <stop offset="0.35" stopColor="#d4af37" />
-          <stop offset="0.7" stopColor="#fff0a0" />
-          <stop offset="1" stopColor="#9a6f12" />
-        </linearGradient>
-        <radialGradient id="rocket-window" cx="35%" cy="28%">
-          <stop offset="0" stopColor="#dff7ff" />
-          <stop offset="0.38" stopColor="#62c7ee" />
-          <stop offset="1" stopColor="#073b75" />
-        </radialGradient>
-        <filter id="rocket-shadow" x="-30%" y="-50%" width="170%" height="200%">
-          <feDropShadow dx="0" dy="5" stdDeviation="5" floodColor="#061b45" floodOpacity="0.35" />
-        </filter>
-        <filter id="flame-glow" x="-80%" y="-100%" width="260%" height="300%">
-          <feGaussianBlur stdDeviation="4" />
-        </filter>
-      </defs>
-      <g filter="url(#rocket-shadow)">
-        <path d="M40 45C60 12 112 5 161 45C112 85 60 78 40 45Z" fill="url(#rocket-body)" stroke="#17366f" strokeWidth="2" />
-        <path d="M111 14C132 18 149 29 161 45C149 61 132 72 111 76C125 59 125 31 111 14Z" fill="url(#rocket-gold)" />
-        <path d="M61 25L32 7L36 39Z" fill="url(#rocket-gold)" stroke="#17366f" strokeWidth="2" />
-        <path d="M61 65L32 83L36 51Z" fill="url(#rocket-gold)" stroke="#17366f" strokeWidth="2" />
-        <path d="M39 35H24V55H39Z" fill="#263c66" stroke="#0b1f46" strokeWidth="2" />
-        <circle cx="89" cy="45" r="15" fill="url(#rocket-gold)" />
-        <circle cx="89" cy="45" r="10.5" fill="url(#rocket-window)" stroke="#102b5c" strokeWidth="2" />
-        <path d="M52 36C77 20 105 18 129 28" fill="none" stroke="white" strokeOpacity="0.7" strokeWidth="3" strokeLinecap="round" />
-      </g>
-      <g>
-        <path d="M24 37C8 39-5 45-18 45C-5 45 8 51 24 53Z" fill="#ff8a00" filter="url(#flame-glow)" opacity="0.55" />
-        <path d="M24 37C7 39-5 45-19 45C-4 47 8 52 24 53Z" fill="#ff5b16">
-          <animate attributeName="d" dur="0.18s" repeatCount="indefinite" values="M24 37C7 39-5 45-19 45C-4 47 8 52 24 53Z;M24 37C10 40 0 45-12 45C0 47 10 50 24 53Z;M24 37C7 39-5 45-19 45C-4 47 8 52 24 53Z" />
-        </path>
-        <path d="M24 40C12 41 4 45-6 45C4 46 12 49 24 50Z" fill="#fff4b0" />
-      </g>
-    </svg>
-  );
+interface SparkParticle extends Point {
+  vx: number;
+  vy: number;
+  age: number;
+  lifetime: number;
+  radius: number;
 }
 
 function cubicPoint(progress: number, size: Point): Point {
@@ -111,8 +71,8 @@ function drawSmoke(context: CanvasRenderingContext2D, particles: SmokeParticle[]
     particle.vy -= 1.6 * delta;
     particle.radius += 10 * delta;
     const life = particle.age / particle.lifetime;
-    const alpha = Math.sin(Math.min(life * 1.7, 1) * Math.PI) * (1 - life) * 0.3;
-    const colors = ['203,213,225', '226,232,240', '174,187,204'];
+    const alpha = Math.sin(Math.min(life * 1.7, 1) * Math.PI) * (1 - life) * 0.26;
+    const colors = ['190,194,201', '226,226,228', '156,163,175'];
     const gradient = context.createRadialGradient(particle.x, particle.y, 0, particle.x, particle.y, particle.radius);
     gradient.addColorStop(0, `rgba(${colors[particle.tone]},${alpha})`);
     gradient.addColorStop(0.5, `rgba(${colors[particle.tone]},${alpha * 0.62})`);
@@ -125,6 +85,37 @@ function drawSmoke(context: CanvasRenderingContext2D, particles: SmokeParticle[]
 
   const livingParticles = particles.filter((particle) => particle.age < particle.lifetime);
   particles.splice(0, particles.length, ...livingParticles.slice(-240));
+}
+
+function addSpark(sparks: SparkParticle[], position: Point, direction: Point) {
+  if (Math.random() < 0.42) return;
+  sparks.push({
+    x: position.x - direction.x * 56,
+    y: position.y - direction.y * 56,
+    vx: -direction.x * (35 + Math.random() * 55) + (Math.random() - 0.5) * 38,
+    vy: -direction.y * (35 + Math.random() * 55) + (Math.random() - 0.5) * 38,
+    age: 0,
+    lifetime: 0.28 + Math.random() * 0.55,
+    radius: 0.8 + Math.random() * 1.7,
+  });
+}
+
+function drawSparks(context: CanvasRenderingContext2D, sparks: SparkParticle[], delta: number) {
+  sparks.forEach((spark) => {
+    spark.age += delta;
+    spark.x += spark.vx * delta;
+    spark.y += spark.vy * delta;
+    const alpha = Math.max(0, 1 - spark.age / spark.lifetime);
+    context.strokeStyle = `rgba(247,190,55,${alpha * 0.9})`;
+    context.lineWidth = spark.radius;
+    context.lineCap = 'round';
+    context.beginPath();
+    context.moveTo(spark.x, spark.y);
+    context.lineTo(spark.x - spark.vx * 0.035, spark.y - spark.vy * 0.035);
+    context.stroke();
+  });
+  const livingSparks = sparks.filter((spark) => spark.age < spark.lifetime);
+  sparks.splice(0, sparks.length, ...livingSparks.slice(-80));
 }
 
 function RocketScene({ onComplete }: { onComplete: () => void }) {
@@ -144,6 +135,7 @@ function RocketScene({ onComplete }: { onComplete: () => void }) {
     context.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
 
     const particles: SmokeParticle[] = [];
+    const sparks: SparkParticle[] = [];
     const startedAt = performance.now();
     let previousTime = startedAt;
     let animationFrame = 0;
@@ -151,7 +143,7 @@ function RocketScene({ onComplete }: { onComplete: () => void }) {
     const render = (time: number) => {
       const elapsed = time - startedAt;
       const progress = Math.min(elapsed / FLIGHT_DURATION_MS, 1);
-      const easedProgress = 1 - (1 - progress) ** 3;
+      const easedProgress = progress ** 2 * (3 - 2 * progress);
       const position = cubicPoint(easedProgress, size);
       const nextPosition = cubicPoint(Math.min(easedProgress + 0.002, 1), size);
       const angle = Math.atan2(nextPosition.y - position.y, nextPosition.x - position.x);
@@ -161,8 +153,12 @@ function RocketScene({ onComplete }: { onComplete: () => void }) {
 
       rocket.style.transform = `translate3d(${position.x}px, ${position.y}px, 0) translate(-50%, -50%) rotate(${angle}rad)`;
       rocket.style.opacity = String(opacity);
-      if (progress < 1) addSmoke(particles, position, direction);
+      if (progress < 1) {
+        addSmoke(particles, position, direction);
+        addSpark(sparks, position, direction);
+      }
       drawSmoke(context, particles, delta);
+      drawSparks(context, sparks, delta);
       previousTime = time;
 
       if (elapsed < FLIGHT_DURATION_MS + SMOKE_SETTLE_MS) {
@@ -179,8 +175,8 @@ function RocketScene({ onComplete }: { onComplete: () => void }) {
   return (
     <div aria-hidden="true" className="pointer-events-none fixed inset-0 z-[60] overflow-hidden">
       <canvas ref={canvasRef} className="absolute inset-0 h-full w-full" />
-      <div ref={rocketRef} className="absolute left-0 top-0 h-[88px] w-[176px] will-change-transform max-tablet:h-[60px] max-tablet:w-[120px]">
-        <PremiumRocket />
+      <div ref={rocketRef} className="absolute left-0 top-0 h-[82px] w-[178px] will-change-transform max-tablet:h-[58px] max-tablet:w-[126px]">
+        <LandingPremiumRocket />
       </div>
     </div>
   );
