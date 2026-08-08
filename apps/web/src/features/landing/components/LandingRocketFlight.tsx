@@ -4,8 +4,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useReducedMotion } from 'framer-motion';
 import { LandingPremiumRocket } from './LandingPremiumRocket';
 
-const FLIGHT_INTERVAL_MS = 15_000;
-const INITIAL_FLIGHT_DELAY_MS = 1_500;
+const INITIAL_FLIGHT_DELAY_MS = 5_000;
+const FLIGHT_DELAY_RANGE_MS = { min: 90_000, max: 120_000 };
 const FLIGHT_DURATION_MS = 6_200;
 const SMOKE_SETTLE_MS = 1_800;
 
@@ -29,6 +29,10 @@ interface SparkParticle extends Point {
   age: number;
   lifetime: number;
   radius: number;
+}
+
+function randomDelay({ min, max }: { min: number; max: number }) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
 function cubicPoint(progress: number, size: Point): Point {
@@ -190,17 +194,16 @@ export function LandingRocketFlight() {
 
   useEffect(() => {
     if (prefersReducedMotion) return;
+    let flightTimer: number;
+
     const launch = () => {
       setFlightKey((current) => current + 1);
       setIsFlying(true);
+      flightTimer = window.setTimeout(launch, randomDelay(FLIGHT_DELAY_RANGE_MS));
     };
-    const initialTimer = window.setTimeout(launch, INITIAL_FLIGHT_DELAY_MS);
-    const flightTimer = window.setInterval(launch, FLIGHT_INTERVAL_MS);
+    flightTimer = window.setTimeout(launch, INITIAL_FLIGHT_DELAY_MS);
 
-    return () => {
-      window.clearTimeout(initialTimer);
-      window.clearInterval(flightTimer);
-    };
+    return () => window.clearTimeout(flightTimer);
   }, [prefersReducedMotion]);
 
   if (prefersReducedMotion || !isFlying) return null;
