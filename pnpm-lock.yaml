@@ -4,9 +4,6 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
-overrides:
-  caniuse-lite: 1.0.30001809
-
 importers:
 
   .:
