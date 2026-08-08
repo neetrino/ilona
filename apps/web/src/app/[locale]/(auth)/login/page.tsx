@@ -8,6 +8,7 @@ import { useLogo } from '@/features/settings/hooks/useSettings';
 import { getFullApiUrl } from '@/shared/lib/api';
 import { LandingNavbar } from '@/shared/components/layout/LandingNavbar';
 import { LoadingSpinner } from '@/shared/components/ui/loading-spinner';
+import { LandingRocketFlight } from '@/features/landing/components/LandingRocketFlight';
 
 function LoginPageShell({ children }: { children: React.ReactNode }) {
   const { data: logoData } = useLogo();
@@ -16,6 +17,7 @@ function LoginPageShell({ children }: { children: React.ReactNode }) {
   return (
     <>
       <LandingNavbar logoUrl={logoUrl} profileHref="/login" logoHref="/" />
+      <LandingRocketFlight />
       <div className="relative min-h-screen bg-gradient-to-br from-slate-50 via-background to-slate-100 px-4 pb-6 pt-24 sm:px-6 sm:pt-28">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,hsl(var(--border))_1px,transparent_0)] [background-size:24px_24px] opacity-30" />
         {children}
