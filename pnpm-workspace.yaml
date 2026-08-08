@@ -4,6 +4,7 @@ packages:
 
 overrides:
   next: 16.2.6
+  caniuse-lite: 1.0.30001809
   fast-xml-builder: ">=1.1.7"
   fast-uri: ">=3.1.1"
   fast-xml-parser: ">=5.5.6"
