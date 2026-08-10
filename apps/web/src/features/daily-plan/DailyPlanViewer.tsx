@@ -12,7 +12,7 @@ import {
   useSheetStackZIndex,
   stackedSheetOverlayClassName,
 } from '@/shared/lib/sheet-stack';
-import { PORTAL_DESKTOP_SIDE_SHEET_CLASS } from '@/shared/lib/portal-form-sheet-classes';
+import { PORTAL_DESKTOP_SIDE_SHEET_CLASS, PORTAL_FORM_SHEET_SCROLL_CLASS } from '@/shared/lib/portal-form-sheet-classes';
 import { DailyPlanViewerTopicSection } from './DailyPlanViewerTopicSection';
 import type { DailyPlan, DailyPlanResourceKind } from './types';
 
@@ -100,7 +100,7 @@ export function DailyPlanViewer({ plan, onClose }: DailyPlanViewerProps) {
             'fixed inset-x-0 bottom-[7px] top-auto z-50 grid w-full translate-y-0',
             'duration-700 ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out',
             'data-[state=open]:slide-in-from-bottom-full data-[state=closed]:slide-out-to-bottom-full',
-            'h-[calc(94dvh+7px)] grid-rows-[auto_auto_minmax(0,1fr)] gap-0 overflow-hidden rounded-t-[22px] border border-slate-200 bg-[#f6f6f9] shadow-xl',
+            'h-[calc(94dvh+7px)] max-h-[calc(94dvh+7px)] grid-rows-[auto_auto_minmax(0,1fr)] gap-0 overflow-hidden rounded-t-[22px] border border-slate-200 bg-[#f6f6f9] shadow-xl',
             PORTAL_DESKTOP_SIDE_SHEET_CLASS,
           )}
         >
@@ -117,7 +117,7 @@ export function DailyPlanViewer({ plan, onClose }: DailyPlanViewerProps) {
           </div>
           <DialogPrimitive.Title className="sr-only">{t('detailsTitle')}</DialogPrimitive.Title>
 
-          <header className="sticky top-0 flex items-start justify-between gap-3 border-b border-slate-200 bg-white p-4">
+          <header className="sticky top-0 flex shrink-0 items-start justify-between gap-3 border-b border-slate-200 bg-white p-4">
             <div className="min-w-0">
               <div className="flex items-center gap-2">
                 <span
@@ -157,7 +157,7 @@ export function DailyPlanViewer({ plan, onClose }: DailyPlanViewerProps) {
             </button>
           </header>
 
-          <div className="min-h-0 flex-1 space-y-4 overflow-y-auto p-4 tablet:pb-[calc(5rem+env(safe-area-inset-bottom))] lg:p-5 lg:pb-8">
+          <div className={cn(PORTAL_FORM_SHEET_SCROLL_CLASS, 'space-y-4 pt-4')}>
             {plan.topics.length === 0 ? (
               <p className="rounded-[15px] border border-dashed border-slate-200 bg-white px-4 py-8 text-center text-sm text-slate-500">
                 {t('noTopics')}
