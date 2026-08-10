@@ -11,6 +11,7 @@ import {
   DialogContent,
   DialogTitle,
 } from '@/shared/components/ui';
+import { LessonListDateCell } from '@/shared/components/daily-duties/LessonListDateCell';
 import { cn } from '@/shared/lib/utils';
 
 const PREVIEW_LIMIT = 5;
@@ -20,31 +21,8 @@ type PlannedAbsencesStaffBlockProps = {
   className?: string;
 };
 
-function getAbsenceDateParts(date: string, locale: string): { dayLabel: string; dayNumber: string } {
-  const [year, month, day] = date.split('-').map(Number);
-  if (![year, month, day].every((n) => Number.isFinite(n))) {
-    return { dayLabel: '—', dayNumber: '—' };
-  }
-  const parsed = new Date(Date.UTC(year, month - 1, day, 12, 0, 0));
-  return {
-    dayLabel: parsed.toLocaleDateString(locale, { weekday: 'short', timeZone: 'UTC' }),
-    dayNumber: String(day),
-  };
-}
-
-function AbsenceDateBadge({ date, locale }: { date: string; locale: string }) {
-  const { dayLabel, dayNumber } = getAbsenceDateParts(date, locale);
-
-  return (
-    <div className="h-[4.25rem] w-[4.25rem] shrink-0 overflow-hidden rounded-[1rem] border border-[rgba(14,14,16,0.08)] bg-white">
-      <div className="bg-gradient-to-r from-[#ff9330] via-[#ff5f5f] to-[#ff2e88] px-2 py-1 text-center text-[0.625rem] font-semibold uppercase tracking-[0.08em] text-white">
-        {dayLabel}
-      </div>
-      <p className="pt-1.5 text-center text-[1.625rem] font-bold leading-none tracking-[-0.02em] text-[#1010a3]">
-        {dayNumber}
-      </p>
-    </div>
-  );
+function toAbsenceDateStr(date: string): string {
+  return date.includes('T') ? date : `${date}T12:00:00.000Z`;
 }
 
 function PlannedAbsenceCard({
@@ -59,12 +37,18 @@ function PlannedAbsenceCard({
   return (
     <div
       className={cn(
-        'rounded-3xl border border-[rgba(14,14,16,0.07)] bg-white text-sm shadow-[0_14px_30px_-28px_rgba(16,16,163,0.9)] transition-shadow hover:shadow-[0_22px_40px_-32px_rgba(16,16,163,0.9)]',
+        'rounded-3xl border border-[rgba(14,14,16,0.07)] bg-white text-sm',
         detailed ? 'p-4 sm:p-5' : 'p-4',
       )}
     >
       <div className="flex items-start gap-3">
-        <AbsenceDateBadge date={row.date} locale={locale} />
+        <div className="w-fit shrink-0">
+          <LessonListDateCell
+            dateStr={toAbsenceDateStr(row.date)}
+            locale={locale}
+            showTime={false}
+          />
+        </div>
         <div className="min-w-0 flex-1">
           <div className="font-semibold tracking-tight text-[#1010a3]">{row.student.name}</div>
           <div className="mt-0.5 text-xs text-[#8b8b90]">
@@ -109,7 +93,7 @@ export function PlannedAbsencesStaffBlock({
     <>
       <section
         className={cn(
-          'rounded-3xl border border-[rgba(14,14,16,0.07)] bg-[#f6f7ff] p-5 shadow-[0_10px_30px_-24px_rgba(16,16,163,0.45)] sm:p-6',
+          'rounded-3xl border border-[rgba(14,14,16,0.07)] bg-[#f6f7ff] p-5 shadow-[0_8px_24px_rgba(14,14,16,0.06)] sm:p-6',
           fillHeight && 'flex min-h-0 flex-col',
           className,
         )}
