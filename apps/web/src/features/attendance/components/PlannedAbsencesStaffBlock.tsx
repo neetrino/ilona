@@ -1,7 +1,6 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { CalendarDays } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { addCalendarDays, endOfZonedDay, startOfZonedDay, toYmd } from '@ilona/types';
 import { useStaffPlannedAbsences } from '../hooks/useAttendance';
@@ -143,22 +142,14 @@ export function PlannedAbsencesStaffBlock({
           className="bg-[#f8f9fb]"
           aria-describedby={undefined}
         >
-          <div className="-mx-4 -mt-4 mb-5 border-b border-[rgba(14,14,16,0.07)] bg-white px-4 pb-5 pt-1 tablet:-mx-6 tablet:-mt-6 tablet:px-6 tablet:pb-6 tablet:pt-2">
-            <div className="flex items-start gap-3">
-              <div className="flex h-11 w-11 shrink-0 flex-col overflow-hidden rounded-[0.875rem] border border-[rgba(14,14,16,0.08)] bg-white shadow-[0_6px_16px_-10px_rgba(16,16,163,0.45)]">
-                <div className="h-3.5 shrink-0 bg-gradient-to-r from-[#ff9330] via-[#ff5f5f] to-[#ff2e88]" />
-                <div className="flex flex-1 items-center justify-center">
-                  <CalendarDays className="h-4 w-4 text-[#1010a3]" strokeWidth={2.25} aria-hidden />
-                </div>
-              </div>
-              <div className="min-w-0 flex-1 pr-8">
-                <DialogTitle className="text-left text-lg font-semibold tracking-tight text-[#1010a3] sm:text-xl">
-                  {t('plannedAbsencesStaffTitle')}
-                </DialogTitle>
-                <p className="mt-1.5 text-sm text-[#8b8b90]">
-                  {t('plannedAbsencesStaffCount', { count: data.length })}
-                </p>
-              </div>
+          <div className="-mx-4 -mt-4 mb-5 border-b border-[rgba(14,14,16,0.07)] bg-white px-4 py-5 tablet:-mx-6 tablet:-mt-6 tablet:px-6 tablet:py-6">
+            <div className="min-w-0 pr-8">
+              <DialogTitle className="text-left text-lg font-semibold tracking-tight text-[#1010a3] sm:text-xl">
+                {t('plannedAbsencesStaffTitle')}
+              </DialogTitle>
+              <p className="mt-1.5 text-sm text-[#8b8b90]">
+                {t('plannedAbsencesStaffCount', { count: data.length })}
+              </p>
             </div>
           </div>
 
