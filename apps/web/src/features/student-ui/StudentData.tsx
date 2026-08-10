@@ -150,7 +150,13 @@ export function StudentTd({
   colSpan?: number;
 }) {
   return (
-    <td colSpan={colSpan} className={cn('px-4 py-3 align-top', className)}>
+    <td
+      colSpan={colSpan}
+      className={cn(
+        'px-4 py-3 align-top transition-colors group-hover/row:bg-[#fafafa]',
+        className,
+      )}
+    >
       {children}
     </td>
   );
