@@ -208,7 +208,7 @@ export default function StudentAnalyticsPage() {
                   </div>
                 </div>
                 {payPeriodList.length > 0 && (
-                  <StudentTableShell className="[&_table]:table-fixed [&_table]:min-w-full">
+                  <StudentTableShell className="overflow-hidden rounded-2xl border border-[rgba(14,14,16,0.07)] [&_table]:min-w-0 [&_table]:table-fixed [&_table]:min-w-full">
                     <colgroup>
                       <col className="w-1/3" />
                       <col className="w-1/3" />
