@@ -42,7 +42,10 @@ export function CenterCard({ center, onEdit, onOpenDetails }: CenterCardProps) {
       tabIndex={onOpenDetails ? 0 : undefined}
       onClick={onOpenDetails ? handleCardActivate : undefined}
       onKeyDown={onOpenDetails ? handleKeyDown : undefined}
-      className={`relative flex h-full min-h-[260px] w-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm ${onOpenDetails ? 'cursor-pointer' : ''}`}
+      className={cn(
+        'relative flex h-full min-h-[260px] w-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-[transform,box-shadow] duration-300 ease-out hover:-translate-y-1 hover:shadow-[0_10px_28px_rgba(14,14,16,0.08)]',
+        onOpenDetails && 'cursor-pointer',
+      )}
     >
       <div
         className="h-2 w-full"

@@ -13,7 +13,7 @@ export function GroupCard(props: GroupCardProps) {
   const layoutProps = { ...props, ...vm };
 
   return (
-    <div className="flex h-full min-w-0 flex-col bg-transparent p-0 shadow-none sm:rounded-lg sm:border sm:border-slate-200 sm:bg-white sm:p-4 sm:shadow-sm">
+    <div className="flex h-full min-w-0 flex-col bg-transparent p-0 shadow-none sm:rounded-lg sm:border sm:border-slate-200 sm:bg-white sm:p-4 sm:shadow-sm sm:transition-[transform,box-shadow] sm:duration-300 sm:ease-out sm:hover:-translate-y-1 sm:hover:shadow-[0_10px_28px_rgba(14,14,16,0.08)]">
       <GroupCardMobile {...layoutProps} />
       <GroupCardDesktop {...layoutProps} />
     </div>

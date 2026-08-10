@@ -32,7 +32,7 @@ export function GroupCardMobile({
       onClick={handleCardActivate}
       onKeyDown={handleCardKeyDown}
       className={cn(
-        'flex flex-col rounded-2xl border border-slate-100 bg-white shadow-sm sm:hidden',
+        'flex flex-col rounded-2xl border border-slate-100 bg-white shadow-sm transition-[transform,box-shadow] duration-300 ease-out hover:-translate-y-1 hover:shadow-[0_10px_28px_rgba(14,14,16,0.08)] sm:hidden',
         GROUP_CARD_INTERACTIVE_CLASS,
       )}
     >

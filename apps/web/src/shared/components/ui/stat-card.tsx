@@ -29,7 +29,7 @@ export function StatCard({
 
   if (isPortal) {
     return (
-      <div className={cn(portalCardClass, 'flex flex-col overflow-hidden sm:flex-row sm:items-start sm:justify-between', className)}>
+      <div className={cn(portalCardClass, 'flex flex-col overflow-hidden transition-[transform,box-shadow] duration-300 ease-out hover:-translate-y-1 hover:shadow-[0_10px_28px_rgba(14,14,16,0.08)] sm:flex-row sm:items-start sm:justify-between', className)}>
         <div className="min-w-0 flex-1 space-y-2 sm:pr-2">
           <p
             className={cn(
@@ -80,7 +80,7 @@ export function StatCard({
   return (
     <div
       className={cn(
-        'flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white p-4 sm:flex-row sm:items-start sm:justify-between sm:p-5 lg:p-6',
+        'flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white p-4 transition-[transform,box-shadow] duration-300 ease-out hover:-translate-y-1 hover:shadow-[0_10px_28px_rgba(14,14,16,0.08)] sm:flex-row sm:items-start sm:justify-between sm:p-5 lg:p-6',
         className,
       )}
     >

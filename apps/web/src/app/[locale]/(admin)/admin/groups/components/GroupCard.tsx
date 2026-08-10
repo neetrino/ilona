@@ -25,7 +25,7 @@ export function GroupCard({ group, onEdit, onDelete, onToggleActive }: GroupCard
         : 'bg-red-500';
 
   return (
-    <div className="bg-white rounded-lg border border-[rgba(14,14,16,0.07)] p-4 shadow-sm hover:shadow-md transition-shadow">
+    <div className="rounded-lg border border-[rgba(14,14,16,0.07)] bg-white p-4 shadow-sm transition-[transform,box-shadow] duration-300 ease-out hover:-translate-y-1 hover:shadow-[0_10px_28px_rgba(14,14,16,0.08)]">
       {/* Group Header */}
       <div className="mb-3">
         <div className="flex items-start justify-between gap-2 mb-1">

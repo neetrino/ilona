@@ -36,7 +36,7 @@ function PlannedAbsenceCard({
   return (
     <div
       className={cn(
-        'rounded-3xl border border-[rgba(14,14,16,0.07)] bg-white text-sm',
+        'rounded-3xl border border-[rgba(14,14,16,0.07)] bg-white text-sm transition-[transform,box-shadow] duration-300 ease-out hover:-translate-y-1 hover:shadow-[0_10px_28px_rgba(14,14,16,0.08)]',
         detailed ? 'p-4 sm:p-5' : 'p-4',
       )}
     >
