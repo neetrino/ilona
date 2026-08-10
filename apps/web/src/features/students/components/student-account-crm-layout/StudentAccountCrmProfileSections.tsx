@@ -1,15 +1,22 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { Input, Label } from '@/shared/components/ui';
+import { DatePickerInput, Input, Label } from '@/shared/components/ui';
+import { cn } from '@/shared/lib/utils';
 import { ADMIN_FORM_INPUT_CLASS } from '@/shared/lib/admin-control-theme';
-import { applyDmyInputChange } from '../../student-dob-date';
-import { computeAgeFromDob } from '../../student-account-form.schema';
+import { resolveDmyOrIsoToIso } from '../../student-dob-date';
+import {
+  computeAgeFromDob,
+  getStudentDobMaxDate,
+  getStudentDobMinDate,
+} from '../../student-account-form.schema';
 import {
   CRM_LAYOUT_SECTION_HEADING,
   crmLayoutFieldId,
 } from './student-account-crm-layout.constants';
 import type { StudentAccountCrmFieldShellProps } from './student-account-crm-layout.types';
+
+const DATE_FIELD_CLASS = cn(ADMIN_FORM_INPUT_CLASS, 'pr-10');
 
 type StudentAccountCrmProfileSectionsProps = StudentAccountCrmFieldShellProps & {
   showParentSection: boolean;
@@ -45,29 +52,21 @@ export function StudentAccountCrmProfileSections({
         <div className="grid grid-cols-2 gap-4 min-[1367px]:grid-cols-3">
           <div className="min-w-0 space-y-2">
             <Label htmlFor={p('dateOfBirth')}>{t('dateOfBirth')}</Label>
-            <Input
+            <DatePickerInput
               id={p('dateOfBirth')}
-              type="text"
-              inputMode="numeric"
               autoComplete="bday"
               placeholder={tForm('dateOfBirthPlaceholder')}
-              value={watchedDateOfBirth}
-              onChange={(e) => {
-                const { value: next, caret } = applyDmyInputChange(
-                  e.target.value,
-                  watchedDateOfBirth,
-                  e.target.selectionStart,
-                );
-                setValue('dateOfBirth', next, { shouldValidate: true, shouldDirty: true });
-                const fromDob = computeAgeFromDob(next.trim() || undefined);
+              value={resolveDmyOrIsoToIso(watchedDateOfBirth) ?? ''}
+              onValueChange={(nextValue) => {
+                setValue('dateOfBirth', nextValue, { shouldValidate: true, shouldDirty: true });
+                const fromDob = computeAgeFromDob(nextValue || undefined);
                 if (fromDob !== undefined) {
                   setValue('manualAge', undefined, { shouldDirty: true, shouldValidate: true });
                 }
-                requestAnimationFrame(() => {
-                  e.target.setSelectionRange(caret, caret);
-                });
               }}
-              className={ADMIN_FORM_INPUT_CLASS}
+              min={getStudentDobMinDate()}
+              max={getStudentDobMaxDate()}
+              className={DATE_FIELD_CLASS}
               disabled={isSubmitting}
             />
             {errors.dateOfBirth ? (
@@ -107,27 +106,17 @@ export function StudentAccountCrmProfileSections({
           </div>
           <div className="col-span-2 min-w-0 space-y-2 min-[1367px]:col-span-1">
             <Label htmlFor={p('firstLessonDate')}>{tForm('firstLessonDate')}</Label>
-            <Input
+            <DatePickerInput
               id={p('firstLessonDate')}
-              type="text"
-              inputMode="numeric"
               placeholder={tForm('firstLessonDatePlaceholder')}
-              value={watchedFirstLessonDate}
-              onChange={(e) => {
-                const { value: next, caret } = applyDmyInputChange(
-                  e.target.value,
-                  watchedFirstLessonDate,
-                  e.target.selectionStart,
-                );
-                setValue('firstLessonDate', next, {
+              value={resolveDmyOrIsoToIso(watchedFirstLessonDate) ?? ''}
+              onValueChange={(nextValue) =>
+                setValue('firstLessonDate', nextValue, {
                   shouldValidate: true,
                   shouldDirty: true,
-                });
-                requestAnimationFrame(() => {
-                  e.target.setSelectionRange(caret, caret);
-                });
-              }}
-              className={ADMIN_FORM_INPUT_CLASS}
+                })
+              }
+              className={DATE_FIELD_CLASS}
               disabled={isSubmitting}
             />
             {errors.firstLessonDate ? (
