@@ -1839,6 +1839,7 @@
     "saveFailed": "Failed to save",
     "selectedGroup": "Selected group",
     "topicTitlePlaceholder": "Topic {number} title",
+    "topicSectionLabel": "Topic {number}",
     "linkOptionalPlaceholder": "https://… (optional)",
     "descriptionOptional": "Description (optional)",
     "descriptionPlaceholder": "Description",

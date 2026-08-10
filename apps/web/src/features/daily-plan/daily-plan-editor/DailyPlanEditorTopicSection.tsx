@@ -8,6 +8,8 @@ import type { DailyPlanResourceKind } from '../types';
 import { DailyPlanEditorResourceFields } from './DailyPlanEditorResourceFields';
 import {
   DAILY_PLAN_KIND_ADD_BUTTON_CLASS,
+  DAILY_PLAN_KIND_ICON,
+  DAILY_PLAN_KIND_ICON_SURFACE_CLASS,
   DAILY_PLAN_KIND_SURFACE_CLASS,
   DAILY_PLAN_KIND_TITLE_CLASS,
   DAILY_PLAN_RESOURCE_KINDS,
@@ -63,6 +65,7 @@ export function DailyPlanEditorTopicSection({
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         {DAILY_PLAN_RESOURCE_KINDS.map((kind) => {
           const resources = topic.resources.filter((resource) => resource.kind === kind);
+          const KindIcon = DAILY_PLAN_KIND_ICON[kind];
           return (
             <div
               key={kind}
@@ -73,10 +76,19 @@ export function DailyPlanEditorTopicSection({
             >
               <div
                 className={cn(
-                  'text-xs font-semibold uppercase tracking-wide',
+                  'flex items-center gap-2 text-xs font-semibold uppercase tracking-wide',
                   DAILY_PLAN_KIND_TITLE_CLASS[kind],
                 )}
               >
+                <span
+                  className={cn(
+                    'flex h-7 w-7 shrink-0 items-center justify-center rounded-[0.875rem]',
+                    DAILY_PLAN_KIND_ICON_SURFACE_CLASS[kind],
+                  )}
+                  aria-hidden
+                >
+                  <KindIcon className="h-3.5 w-3.5" strokeWidth={2.25} />
+                </span>
                 {kindLabel[kind]}
               </div>
               {resources.map((resource) => (

@@ -112,20 +112,27 @@ export function DailyPlanEditorFormBody({
 
       <div className="space-y-6">
         {vm.topics.map((topic, idx) => (
-          <DailyPlanEditorTopicSection
+          <section
             key={idx}
-            topic={topic}
-            topicIndex={idx}
-            mode={vm.mode}
-            planId={vm.plan?.id}
-            readOnly={vm.readOnly}
-            kindLabel={vm.kindLabel}
-            hideTitle={idx === 0}
-            onTopicChange={vm.updateTopic}
-            onResourceChange={vm.updateResource}
-            onAddResource={vm.addResource}
-            onRemoveResource={vm.removeResource}
-          />
+            className={cn(
+              idx > 0 &&
+                'rounded-[18px] border border-[rgba(14,14,16,0.08)] bg-[#f8f8fc]/80 p-4 shadow-[0_1px_4px_rgba(14,14,16,0.03)]',
+            )}
+          >
+            <DailyPlanEditorTopicSection
+              topic={topic}
+              topicIndex={idx}
+              mode={vm.mode}
+              planId={vm.plan?.id}
+              readOnly={vm.readOnly}
+              kindLabel={vm.kindLabel}
+              hideTitle={idx === 0}
+              onTopicChange={vm.updateTopic}
+              onResourceChange={vm.updateResource}
+              onAddResource={vm.addResource}
+              onRemoveResource={vm.removeResource}
+            />
+          </section>
         ))}
       </div>
     </div>
