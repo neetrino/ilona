@@ -1,9 +1,17 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import Image from 'next/image';
 import { useLocale, useTranslations } from 'next-intl';
+import { X } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
+import {
+  portalSheetLayerProps,
+  stackedSheetOverlayClassName,
+  useSheetStackZIndex,
+} from '@/shared/lib/sheet-stack';
+import { ADMIN_ICON_BUTTON_SM_CLASS } from '@/shared/lib/admin-control-theme';
 import { formatDisplayName, getInitialsFromParts, formatTime } from '../../utils/chat-utils';
 import type {
   MessageReadReceipt,
@@ -16,9 +24,8 @@ interface MessageReadReceiptsPopoverProps {
   onClose: () => void;
 }
 
-/** Thin brand scrollbar used across chat info panels */
 const RECEIPTS_SCROLL_CLASS = cn(
-  'max-h-[17.5rem] overflow-y-auto overscroll-contain [-webkit-overflow-scrolling:touch]',
+  'min-h-0 flex-1 overflow-y-auto overscroll-contain [-webkit-overflow-scrolling:touch]',
   '[scrollbar-width:thin]',
   '[scrollbar-color:#1010a3_transparent]',
   '[&::-webkit-scrollbar]:w-1.5',
@@ -132,108 +139,131 @@ export function MessageReadReceiptsPopover({
   onClose,
 }: MessageReadReceiptsPopoverProps) {
   const tChat = useTranslations('chat');
+  const tCommon = useTranslations('common');
   const locale = useLocale();
   const panelRef = useRef<HTMLDivElement>(null);
+  const { overlayStyle, contentStyle, isBaseLayer } = useSheetStackZIndex(true);
 
   useEffect(() => {
-    const onPointerDown = (event: MouseEvent | TouchEvent) => {
-      const target = event.target as Node | null;
-      if (panelRef.current && target && !panelRef.current.contains(target)) {
-        onClose();
-      }
-    };
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') onClose();
     };
-    document.addEventListener('mousedown', onPointerDown);
-    document.addEventListener('touchstart', onPointerDown);
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
     document.addEventListener('keydown', onKeyDown);
     return () => {
-      document.removeEventListener('mousedown', onPointerDown);
-      document.removeEventListener('touchstart', onPointerDown);
+      document.body.style.overflow = previousOverflow;
       document.removeEventListener('keydown', onKeyDown);
     };
   }, [onClose]);
 
-  return (
-    <div
-      ref={panelRef}
-      role="dialog"
-      aria-label={tChat('messageReadReceiptsTitle')}
-      className="absolute bottom-full right-0 z-30 mb-1.5 w-[17.5rem] overflow-hidden rounded-2xl border border-[rgba(14,14,16,0.08)] bg-white shadow-[0_12px_40px_rgba(16,16,163,0.12),0_4px_16px_rgba(0,0,0,0.06)]"
-      onClick={(event) => event.stopPropagation()}
-    >
-      <div className="relative border-b border-[rgba(14,14,16,0.06)] bg-gradient-to-br from-[#f5f5ff] via-white to-white px-3.5 pb-3 pt-3">
-        <div className="flex items-center gap-2.5">
-          <span className="inline-flex h-8 w-8 items-center justify-center rounded-xl bg-[#1010a3] text-white shadow-sm shadow-[#1010a3]/25">
-            <svg className="h-4 w-4" viewBox="0 0 16 11" fill="none" aria-hidden>
-              <path
-                d="M1.1 5.8L3.8 8.5L9.2 1.5"
-                stroke="currentColor"
-                strokeWidth="1.6"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M5.4 6.2L7.4 8.5L13.5 1.5"
-                stroke="currentColor"
-                strokeWidth="1.6"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </span>
-          <div className="min-w-0">
-            <p className="text-sm font-semibold tracking-tight text-[#1010a3]">
-              {tChat('messageReadReceiptsTitle')}
-            </p>
-            <p className="text-[11px] text-slate-500">
-              {tChat('seenByCount', { count: seen.length })}
-            </p>
+  if (typeof document === 'undefined') return null;
+
+  return createPortal(
+    <>
+      <div
+        style={overlayStyle}
+        {...portalSheetLayerProps}
+        className={stackedSheetOverlayClassName(
+          'fixed inset-0 z-50 bg-black/40 tablet:bg-black/50',
+          isBaseLayer,
+        )}
+        onClick={onClose}
+        aria-hidden="true"
+      />
+      <div
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label={tChat('messageReadReceiptsTitle')}
+        style={contentStyle}
+        {...portalSheetLayerProps}
+        className={cn(
+          'fixed left-1/2 top-1/2 z-50 flex w-[min(22rem,calc(100vw-2rem))] max-h-[min(32rem,80dvh)] -translate-x-1/2 -translate-y-1/2 flex-col overflow-hidden rounded-2xl border border-[rgba(14,14,16,0.08)] bg-white shadow-[0_12px_40px_rgba(16,16,163,0.12),0_4px_16px_rgba(0,0,0,0.06)]',
+        )}
+        onClick={(event) => event.stopPropagation()}
+      >
+        <div className="relative shrink-0 border-b border-[rgba(14,14,16,0.06)] bg-gradient-to-br from-[#f5f5ff] via-white to-white px-3.5 pb-3 pt-3">
+          <div className="flex items-start gap-2.5">
+            <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-[#1010a3] text-white shadow-sm shadow-[#1010a3]/25">
+              <svg className="h-4 w-4" viewBox="0 0 16 11" fill="none" aria-hidden>
+                <path
+                  d="M1.1 5.8L3.8 8.5L9.2 1.5"
+                  stroke="currentColor"
+                  strokeWidth="1.6"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                <path
+                  d="M5.4 6.2L7.4 8.5L13.5 1.5"
+                  stroke="currentColor"
+                  strokeWidth="1.6"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-semibold tracking-tight text-[#1010a3]">
+                {tChat('messageReadReceiptsTitle')}
+              </p>
+              <p className="text-[11px] text-slate-500">
+                {tChat('seenByCount', { count: seen.length })}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={onClose}
+              className={cn(ADMIN_ICON_BUTTON_SM_CLASS, 'text-slate-500 hover:bg-slate-100 hover:text-slate-700')}
+              aria-label={tCommon('close')}
+            >
+              <X className="h-4 w-4" />
+            </button>
           </div>
         </div>
-      </div>
 
-      <div className={RECEIPTS_SCROLL_CLASS}>
-        <SectionLabel>{tChat('seenByCount', { count: seen.length })}</SectionLabel>
-        {seen.length === 0 ? (
-          <p className="px-3.5 pb-3 text-sm leading-relaxed text-slate-500">
-            {tChat('noOneSeenYet')}
-          </p>
-        ) : (
-          <ul className="space-y-0.5 pb-1">
-            {seen.map((person) => (
-              <RecipientRow
-                key={person.userId}
-                firstName={person.firstName}
-                lastName={person.lastName}
-                avatarUrl={person.avatarUrl}
-                subtitle={formatSeenAt(person.readAt, locale)}
-                tone="seen"
-              />
-            ))}
-          </ul>
-        )}
-
-        {unseen.length > 0 ? (
-          <>
-            <div className="mx-3.5 border-t border-[rgba(14,14,16,0.06)]" />
-            <SectionLabel>{tChat('notSeenYetCount', { count: unseen.length })}</SectionLabel>
-            <ul className="space-y-0.5 pb-2">
-              {unseen.map((person) => (
+        <div className={RECEIPTS_SCROLL_CLASS}>
+          <SectionLabel>{tChat('seenByCount', { count: seen.length })}</SectionLabel>
+          {seen.length === 0 ? (
+            <p className="px-3.5 pb-3 text-sm leading-relaxed text-slate-500">
+              {tChat('noOneSeenYet')}
+            </p>
+          ) : (
+            <ul className="space-y-0.5 pb-1">
+              {seen.map((person) => (
                 <RecipientRow
                   key={person.userId}
                   firstName={person.firstName}
                   lastName={person.lastName}
                   avatarUrl={person.avatarUrl}
-                  subtitle={tChat('notSeenYet')}
-                  tone="unseen"
+                  subtitle={formatSeenAt(person.readAt, locale)}
+                  tone="seen"
                 />
               ))}
             </ul>
-          </>
-        ) : null}
+          )}
+
+          {unseen.length > 0 ? (
+            <>
+              <div className="mx-3.5 border-t border-[rgba(14,14,16,0.06)]" />
+              <SectionLabel>{tChat('notSeenYetCount', { count: unseen.length })}</SectionLabel>
+              <ul className="space-y-0.5 pb-2">
+                {unseen.map((person) => (
+                  <RecipientRow
+                    key={person.userId}
+                    firstName={person.firstName}
+                    lastName={person.lastName}
+                    avatarUrl={person.avatarUrl}
+                    subtitle={tChat('notSeenYet')}
+                    tone="unseen"
+                  />
+                ))}
+              </ul>
+            </>
+          ) : null}
+        </div>
       </div>
-    </div>
+    </>,
+    document.body,
   );
 }
