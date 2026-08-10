@@ -5,6 +5,7 @@ import { PublicAssetImage } from '@/shared/components/ui';
 import { useLocale, useTranslations } from 'next-intl';
 import { StudentAnimatedPillSwitcher } from '@/features/student-ui';
 import type { StudentUpcomingLesson } from '@/features/students';
+import { LessonListDateCell } from '@/shared/components/daily-duties/LessonListDateCell';
 import { STUDENT_DASHBOARD_ASSETS } from './assets';
 
 type FilterKey = 'today' | 'week' | 'month';
@@ -45,29 +46,6 @@ function filterLessons(lessons: StudentUpcomingLesson[], filter: FilterKey): Stu
     .slice(0, 3);
 }
 
-function formatLessonMeta(
-  scheduledAt: string,
-  locale: string,
-  tCommon: (key: string) => string,
-): string {
-  const date = new Date(scheduledAt);
-  const today = new Date();
-  const tomorrow = new Date(today);
-  tomorrow.setDate(tomorrow.getDate() + 1);
-
-  const dayLabel = isSameLocalCalendarDay(date, today)
-    ? tCommon('today')
-    : isSameLocalCalendarDay(date, tomorrow)
-      ? tCommon('tomorrow')
-      : date.toLocaleDateString(locale, { weekday: 'short' });
-
-  const start = date.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' });
-  const endDate = new Date(date.getTime() + 60 * 60 * 1000);
-  const end = endDate.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' });
-
-  return `${dayLabel} · ${start} – ${end}`;
-}
-
 function LessonRow({
   lesson,
   locale,
@@ -80,38 +58,48 @@ function LessonRow({
   detailsLabel: string;
 }) {
   const teacherName = `${lesson.teacher?.user?.firstName ?? ''} ${lesson.teacher?.user?.lastName ?? ''}`.trim();
-  const date = new Date(lesson.scheduledAt);
-  const dayNum = date.getDate();
-  const weekday = date.toLocaleDateString(locale, { weekday: 'short' });
 
   return (
     <div className="flex flex-col gap-3 rounded-[1.125rem] border border-[rgba(14,14,16,0.07)] bg-[#fafafa] p-4 sm:flex-row sm:items-center sm:gap-4">
-      <div className="relative h-[4.625rem] w-[3.375rem] shrink-0">
-        <PublicAssetImage
-          src={STUDENT_DASHBOARD_ASSETS.calendarIcon}
-          alt=""
-          fill
-          className="object-contain object-left"
-        />
-        <div className="absolute inset-0 flex flex-col items-center justify-center pt-2 text-center">
-          <span className="text-[0.625rem] font-medium uppercase text-[#8b8b90]">{weekday}</span>
-          <span className="text-lg font-bold leading-none text-[#1010a3]">{dayNum}</span>
+      <div className="flex min-w-0 flex-1 flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
+        <div className="shrink-0 self-start origin-left scale-[0.92] sm:scale-[0.82]">
+          <LessonListDateCell
+            dateStr={lesson.scheduledAt}
+            locale={locale}
+            durationMinutes={lesson.duration}
+          />
         </div>
-      </div>
-      <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-semibold tracking-tight text-[#1010a3]">
-          {lesson.topic?.trim() || tCommon('searchTypeLesson')}
-        </p>
-        <p className="mt-1 text-xs text-[#8b8b90]">
-          {teacherName || '—'} · {formatLessonMeta(lesson.scheduledAt, locale, tCommon)}
-        </p>
+        <div className="flex min-w-0 flex-1 items-center gap-2">
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-base font-semibold tracking-tight text-[#1010a3] sm:text-sm">
+              {lesson.topic?.trim() || tCommon('searchTypeLesson')}
+            </p>
+            <p className="mt-1 truncate text-[15px] font-medium leading-snug text-[#3b3b40]">
+              {teacherName || '—'}
+            </p>
+          </div>
+          <button
+            type="button"
+            className="inline-flex h-9 shrink-0 items-center gap-1 self-center rounded-full bg-[#d9d9f4] pl-3 pr-1 text-xs font-semibold text-[#1010a3] transition-colors hover:bg-[#c9c9ef] sm:hidden"
+          >
+            {detailsLabel}
+            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#1010a3]">
+              <PublicAssetImage
+                src={STUDENT_DASHBOARD_ASSETS.arrowDetails}
+                alt=""
+                width={12}
+                height={12}
+              />
+            </span>
+          </button>
+        </div>
       </div>
       <button
         type="button"
-        className="inline-flex h-10 shrink-0 items-center gap-1 rounded-full bg-[#d9d9f4] pl-4 pr-1 text-xs font-semibold text-[#1010a3]"
+        className="hidden h-10 shrink-0 items-center justify-start gap-1 rounded-full bg-[#d9d9f4] pl-4 pr-1 text-xs font-semibold text-[#1010a3] transition-colors hover:bg-[#c9c9ef] sm:inline-flex"
       >
         {detailsLabel}
-        <span className="flex h-[1.8125rem] w-[1.8125rem] items-center justify-center rounded-[1.25rem] bg-[#1010a3]">
+        <span className="flex h-[1.8125rem] w-[1.8125rem] shrink-0 items-center justify-center rounded-[1.25rem] bg-[#1010a3]">
           <PublicAssetImage src={STUDENT_DASHBOARD_ASSETS.arrowDetails} alt="" width={14} height={14} />
         </span>
       </button>
