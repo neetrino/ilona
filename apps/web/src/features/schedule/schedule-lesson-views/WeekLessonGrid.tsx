@@ -14,10 +14,11 @@ export function WeekLessonGrid({
   highlightPastLessonCards = false,
   theme = 'default',
   forceMobileLayout = false,
+  focusDateKey = null,
 }: WeekLessonGridProps) {
   const isStudent = theme === 'student';
   const referenceTime = new Date();
-  const grid = useWeekLessonGrid({ weekDates, lessons });
+  const grid = useWeekLessonGrid({ weekDates, lessons, focusDateKey });
 
   if (isLoading) {
     return (

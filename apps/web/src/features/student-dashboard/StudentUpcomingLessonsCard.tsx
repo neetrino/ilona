@@ -1,11 +1,13 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import Link from 'next/link';
 import { PublicAssetImage } from '@/shared/components/ui';
 import { useLocale, useTranslations } from 'next-intl';
 import { StudentAnimatedPillSwitcher } from '@/features/student-ui';
 import type { StudentUpcomingLesson } from '@/features/students';
 import { LessonListDateCell } from '@/shared/components/daily-duties/LessonListDateCell';
+import { formatScheduleDate } from '@/features/schedule/schedule-dates';
 import { STUDENT_DASHBOARD_ASSETS } from './assets';
 
 type FilterKey = 'today' | 'week' | 'month';
@@ -58,11 +60,16 @@ function LessonRow({
   detailsLabel: string;
 }) {
   const teacherName = `${lesson.teacher?.user?.firstName ?? ''} ${lesson.teacher?.user?.lastName ?? ''}`.trim();
+  const scheduleHref = `/${locale}/student/schedule?view=week&date=${formatScheduleDate(new Date(lesson.scheduledAt))}`;
+  const detailsClassName =
+    'inline-flex h-9 shrink-0 items-center gap-1 self-center rounded-full bg-[#d9d9f4] pl-3 pr-1 text-xs font-semibold text-[#1010a3] transition-colors hover:bg-[#c9c9ef]';
+  const detailsDesktopClassName =
+    'hidden h-10 shrink-0 items-center justify-start gap-1 rounded-full bg-[#d9d9f4] pl-4 pr-1 text-xs font-semibold text-[#1010a3] transition-colors hover:bg-[#c9c9ef] sm:inline-flex';
 
   return (
-    <div className="flex flex-col gap-3 rounded-[1.125rem] border border-[rgba(14,14,16,0.07)] bg-[#fafafa] p-4 transition-[transform,box-shadow] duration-300 ease-out hover:-translate-y-1 hover:shadow-[0_8px_22px_rgba(14,14,16,0.07)] sm:flex-row sm:items-center sm:gap-4">
+    <div className="flex flex-col gap-3 overflow-hidden rounded-[1.125rem] border border-[rgba(14,14,16,0.07)] bg-[#fafafa] p-4 transition-[transform,box-shadow] duration-300 ease-out hover:-translate-y-1 hover:shadow-[0_8px_22px_rgba(14,14,16,0.07)] sm:flex-row sm:items-center sm:gap-4">
       <div className="flex min-w-0 flex-1 flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
-        <div className="shrink-0 self-start origin-left scale-[0.92] sm:scale-[0.82]">
+        <div className="w-fit max-w-full shrink-0">
           <LessonListDateCell
             dateStr={lesson.scheduledAt}
             locale={locale}
@@ -78,10 +85,7 @@ function LessonRow({
               {teacherName || '—'}
             </p>
           </div>
-          <button
-            type="button"
-            className="inline-flex h-9 shrink-0 items-center gap-1 self-center rounded-full bg-[#d9d9f4] pl-3 pr-1 text-xs font-semibold text-[#1010a3] transition-colors hover:bg-[#c9c9ef] sm:hidden"
-          >
+          <Link href={scheduleHref} className={`${detailsClassName} sm:hidden`}>
             {detailsLabel}
             <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#1010a3]">
               <PublicAssetImage
@@ -91,18 +95,15 @@ function LessonRow({
                 height={12}
               />
             </span>
-          </button>
+          </Link>
         </div>
       </div>
-      <button
-        type="button"
-        className="hidden h-10 shrink-0 items-center justify-start gap-1 rounded-full bg-[#d9d9f4] pl-4 pr-1 text-xs font-semibold text-[#1010a3] transition-colors hover:bg-[#c9c9ef] sm:inline-flex"
-      >
+      <Link href={scheduleHref} className={detailsDesktopClassName}>
         {detailsLabel}
         <span className="flex h-[1.8125rem] w-[1.8125rem] shrink-0 items-center justify-center rounded-[1.25rem] bg-[#1010a3]">
           <PublicAssetImage src={STUDENT_DASHBOARD_ASSETS.arrowDetails} alt="" width={14} height={14} />
         </span>
-      </button>
+      </Link>
     </div>
   );
 }

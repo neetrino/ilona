@@ -7,18 +7,26 @@ import { SCHEDULE_END_HOUR, SCHEDULE_START_HOUR } from './schedule-lesson-views.
 import { getLessonTimeBounds } from './schedule-lesson-views.util';
 import type { WeekLessonGridProps } from './schedule-lesson-views.types';
 
-export function useWeekLessonGrid({ weekDates, lessons }: Pick<WeekLessonGridProps, 'weekDates' | 'lessons'>) {
-  const todayWeekIndex = useMemo(() => {
+export function useWeekLessonGrid({
+  weekDates,
+  lessons,
+  focusDateKey,
+}: Pick<WeekLessonGridProps, 'weekDates' | 'lessons' | 'focusDateKey'>) {
+  const defaultDayIndex = useMemo(() => {
+    if (focusDateKey) {
+      const focusIdx = weekDates.findIndex((date) => formatScheduleDate(date) === focusDateKey);
+      if (focusIdx >= 0) return focusIdx;
+    }
     const todayKey = formatScheduleDate(new Date());
-    const idx = weekDates.findIndex((date) => formatScheduleDate(date) === todayKey);
-    return idx >= 0 ? idx : 0;
-  }, [weekDates]);
+    const todayIdx = weekDates.findIndex((date) => formatScheduleDate(date) === todayKey);
+    return todayIdx >= 0 ? todayIdx : 0;
+  }, [focusDateKey, weekDates]);
 
-  const [selectedDayIndex, setSelectedDayIndex] = useState(todayWeekIndex);
+  const [selectedDayIndex, setSelectedDayIndex] = useState(defaultDayIndex);
 
   useEffect(() => {
-    setSelectedDayIndex(todayWeekIndex);
-  }, [todayWeekIndex]);
+    setSelectedDayIndex(defaultDayIndex);
+  }, [defaultDayIndex]);
 
   const { slots, cells, totalLessons } = useMemo(() => {
     const groupedByDay = weekDates.map((date) => {

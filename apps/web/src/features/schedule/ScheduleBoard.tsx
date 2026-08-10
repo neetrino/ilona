@@ -50,6 +50,8 @@ export type ScheduleBoardProps = {
   variant?: 'default' | 'student';
   /** Hide month toggle on mobile screens only. */
   hideMonthOnMobile?: boolean;
+  /** YYYY-MM-DD — focus this day in week mobile day strip. */
+  focusDateKey?: string | null;
 };
 
 export function ScheduleBoard({
@@ -68,6 +70,7 @@ export function ScheduleBoard({
   highlightPastLessonCards = false,
   variant = 'default',
   hideMonthOnMobile = false,
+  focusDateKey = null,
 }: ScheduleBoardProps) {
   const tCommon = useTranslations('common');
   const locale = useLocale();
@@ -232,6 +235,7 @@ export function ScheduleBoard({
               highlightPastLessonCards={highlightPastLessonCards}
               theme={isStudent ? 'student' : 'default'}
               forceMobileLayout={isIPadMini}
+              focusDateKey={focusDateKey}
             />
           ) : (
             <MonthLessonGrid
