@@ -36,7 +36,7 @@ export function PortalDashboardStatCard({
   iconBg,
 }: PortalDashboardStatCardProps) {
   return (
-    <article className="rounded-3xl border border-[rgba(14,14,16,0.07)] bg-white p-5 sm:p-6">
+    <article className="rounded-3xl border border-[rgba(14,14,16,0.07)] bg-white p-5 transition-[transform,box-shadow] duration-300 ease-out hover:-translate-y-1 hover:shadow-[0_10px_28px_rgba(14,14,16,0.08)] sm:p-6">
       <div className="flex items-start justify-between gap-3">
         <p className="text-xs tracking-wide text-[#8b8b90]">{label}</p>
         <div

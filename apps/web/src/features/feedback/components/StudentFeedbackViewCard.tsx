@@ -56,7 +56,7 @@ export function StudentFeedbackViewCard({
       Boolean(structured.encouragement.trim()));
 
   return (
-    <StudentCard>
+    <StudentCard className="transition-[transform,box-shadow] duration-300 ease-out hover:-translate-y-1 hover:shadow-[0_10px_28px_rgba(14,14,16,0.08)]">
       <div className="mb-4 flex flex-col gap-1.5 sm:flex-row sm:flex-wrap sm:items-center sm:gap-2">
         <StudentBadge
           variant="brand"

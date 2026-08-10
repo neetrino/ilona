@@ -78,7 +78,7 @@ export function StudentProgressCard({
   }
 
   return (
-    <section className="rounded-3xl border border-[rgba(14,14,16,0.07)] bg-white p-5 sm:p-6">
+    <section className="rounded-3xl border border-[rgba(14,14,16,0.07)] bg-white p-5 transition-[transform,box-shadow] duration-300 ease-out hover:-translate-y-1 hover:shadow-[0_10px_28px_rgba(14,14,16,0.08)] sm:p-6">
       <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h3 className="text-base font-semibold text-[#1010a3]">{t('yourProgress')}</h3>

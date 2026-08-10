@@ -95,7 +95,7 @@ export function StudentDashboardMyPeopleCards() {
     <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-5">
       <Link
         href={`/${locale}/student/our-teachers`}
-        className="rounded-3xl border border-[rgba(14,14,16,0.07)] bg-white p-5 transition-shadow hover:shadow-md sm:p-6"
+        className="rounded-3xl border border-[rgba(14,14,16,0.07)] bg-white p-5 transition-[transform,box-shadow] duration-300 ease-out hover:-translate-y-1 hover:shadow-[0_10px_28px_rgba(14,14,16,0.08)] sm:p-6"
       >
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
@@ -117,7 +117,7 @@ export function StudentDashboardMyPeopleCards() {
         <TeachersCardBody teachers={teachers} emptyLabel={t('noTeacher')} />
       </Link>
 
-      <article className="rounded-3xl border border-[rgba(14,14,16,0.07)] bg-white p-5 sm:p-6">
+      <article className="rounded-3xl border border-[rgba(14,14,16,0.07)] bg-white p-5 transition-[transform,box-shadow] duration-300 ease-out hover:-translate-y-1 hover:shadow-[0_10px_28px_rgba(14,14,16,0.08)] sm:p-6">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <p className="text-xs tracking-wide text-[#8b8b90]">{t('myGroups')}</p>

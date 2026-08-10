@@ -60,7 +60,7 @@ function LessonRow({
   const teacherName = `${lesson.teacher?.user?.firstName ?? ''} ${lesson.teacher?.user?.lastName ?? ''}`.trim();
 
   return (
-    <div className="flex flex-col gap-3 rounded-[1.125rem] border border-[rgba(14,14,16,0.07)] bg-[#fafafa] p-4 sm:flex-row sm:items-center sm:gap-4">
+    <div className="flex flex-col gap-3 rounded-[1.125rem] border border-[rgba(14,14,16,0.07)] bg-[#fafafa] p-4 transition-[transform,box-shadow] duration-300 ease-out hover:-translate-y-1 hover:shadow-[0_8px_22px_rgba(14,14,16,0.07)] sm:flex-row sm:items-center sm:gap-4">
       <div className="flex min-w-0 flex-1 flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
         <div className="shrink-0 self-start origin-left scale-[0.92] sm:scale-[0.82]">
           <LessonListDateCell

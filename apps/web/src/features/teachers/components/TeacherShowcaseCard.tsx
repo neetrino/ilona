@@ -99,8 +99,8 @@ export function TeacherShowcaseCard({
           : 'rounded-2xl border border-slate-100 shadow-sm sm:rounded-[1.75rem] sm:border-slate-200 md:rounded-3xl',
         interactive &&
           (isStudent
-            ? 'cursor-pointer hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus-visible:outline-none focus-visible:ring-0'
-            : 'cursor-pointer hover:-translate-y-0.5 hover:shadow-xl focus:outline-none focus-visible:outline-none focus-visible:ring-0'),
+            ? 'cursor-pointer hover:-translate-y-1 hover:shadow-[0_10px_28px_rgba(14,14,16,0.08)] focus:outline-none focus-visible:outline-none focus-visible:ring-0'
+            : 'cursor-pointer hover:-translate-y-1 hover:shadow-[0_10px_28px_rgba(14,14,16,0.08)] focus:outline-none focus-visible:outline-none focus-visible:ring-0'),
         isMuted && 'opacity-90',
       )}
     >
