@@ -1,17 +1,14 @@
 'use client';
 
 import { useMemo } from 'react';
-import { useTranslations } from 'next-intl';
-import { useLocale } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { useMyProfile } from '@/features/students';
 import { useStudentFeedback } from '@/features/feedback';
+import { StudentFeedbackViewCard } from '@/features/feedback/components/StudentFeedbackViewCard';
 import {
-  StudentBadge,
-  StudentCard,
   StudentEmptyState,
   StudentErrorState,
-  StudentInnerCard,
   StudentLoadingState,
   StudentPageStack,
 } from '@/features/student-ui';
@@ -74,19 +71,12 @@ export default function StudentMyFeedbacksPage() {
                 : '—';
 
               return (
-                <StudentCard key={feedback.id}>
-                  <div className="mb-3 flex flex-wrap items-center gap-2">
-                    <StudentBadge variant="brand">
-                      {tCommon('date')}: {formatLessonDate(feedback.lesson?.scheduledAt)}
-                    </StudentBadge>
-                    <span className="text-sm font-medium text-[#1010a3]">{teacherName}</span>
-                  </div>
-                  <StudentInnerCard>
-                    <p className="whitespace-pre-wrap text-sm leading-relaxed text-[#3b3b40]">
-                      {feedback.content}
-                    </p>
-                  </StudentInnerCard>
-                </StudentCard>
+                <StudentFeedbackViewCard
+                  key={feedback.id}
+                  feedback={feedback}
+                  dateLabel={`${tCommon('date')}: ${formatLessonDate(feedback.lesson?.scheduledAt)}`}
+                  teacherName={teacherName}
+                />
               );
             })}
           </div>
