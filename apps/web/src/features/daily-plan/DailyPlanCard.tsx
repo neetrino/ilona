@@ -241,7 +241,13 @@ export function DailyPlanCard({
         onClick={(e) => e.stopPropagation()}
         onKeyDown={(e) => e.stopPropagation()}
       >
-        <span className="text-sm font-medium text-[#1010a3]">{t('viewDetails')}</span>
+        <button
+          type="button"
+          onClick={onView}
+          className="text-sm font-medium text-[#1010a3] hover:underline"
+        >
+          {t('viewDetails')}
+        </button>
         <div className="flex min-h-8 shrink-0 items-center gap-1">
           {plan.canEdit ? (
             <>
