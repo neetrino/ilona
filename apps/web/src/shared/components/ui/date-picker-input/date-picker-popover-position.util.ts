@@ -2,6 +2,7 @@ import {
   DESKTOP_MIN_WIDTH,
   ESTIMATED_POPOVER_HEIGHT,
   EXPANDED_POPOVER_WIDTH,
+  MIN_POPOVER_WIDTH,
   MOBILE_POPOVER_WIDTH,
   POPOVER_GAP,
   VIEWPORT_PADDING,
@@ -13,6 +14,13 @@ interface ComputePopoverPositionParams {
   root: HTMLDivElement;
   popoverElement: HTMLDivElement | null;
   popoverExpanded: boolean;
+}
+
+function clampPopoverWidth(width: number): number {
+  return Math.min(
+    Math.max(width, MIN_POPOVER_WIDTH),
+    window.innerWidth - VIEWPORT_PADDING * 2,
+  );
 }
 
 export function computePopoverPosition({
@@ -34,12 +42,16 @@ export function computePopoverPosition({
   const anchorRect = anchor.getBoundingClientRect();
   const rootRect = root.getBoundingClientRect();
   const popoverHeight = popoverElement?.offsetHeight ?? ESTIMATED_POPOVER_HEIGHT;
-  const popoverWidth = popoverExpanded
-    ? Math.min(EXPANDED_POPOVER_WIDTH, window.innerWidth - VIEWPORT_PADDING * 2)
-    : isDesktop
-      ? root.offsetWidth
-      : Math.min(MOBILE_POPOVER_WIDTH, window.innerWidth - VIEWPORT_PADDING * 2);
-  const matchFormWidth = !popoverExpanded && isDesktop;
+  const popoverWidth = clampPopoverWidth(
+    popoverExpanded
+      ? EXPANDED_POPOVER_WIDTH
+      : isDesktop
+        ? root.offsetWidth
+        : MOBILE_POPOVER_WIDTH,
+  );
+  // Only stretch day cells to full cell width when the field itself is at least as wide
+  // as the calendar; otherwise keep fixed day buttons so the wider popover still looks right.
+  const matchFormWidth = !popoverExpanded && isDesktop && root.offsetWidth >= MIN_POPOVER_WIDTH;
 
   const spaceBelow = window.innerHeight - anchorRect.bottom - VIEWPORT_PADDING;
   const spaceAbove = anchorRect.top - VIEWPORT_PADDING;

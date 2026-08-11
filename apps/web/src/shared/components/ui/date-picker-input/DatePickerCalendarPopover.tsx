@@ -36,8 +36,8 @@ export function DatePickerCalendarPopover({ vm }: DatePickerCalendarPopoverProps
       }}
       className={cn(
         MOBILE_CALENDAR_Z_CLASS,
-        'pointer-events-auto relative overflow-visible max-w-[calc(100vw-1rem)] rounded-[1.25rem]',
-        'border border-slate-200 bg-white p-2.5 shadow-[0_20px_48px_rgba(15,23,42,0.16)]',
+        'pointer-events-auto relative overflow-visible min-w-[300px] max-w-[calc(100vw-1rem)] rounded-[1.25rem]',
+        'border border-slate-200 bg-white p-3 shadow-[0_20px_48px_rgba(15,23,42,0.16)]',
         vm.popoverPosition.placement === 'below' ? 'origin-top' : 'origin-bottom',
       )}
     >
@@ -118,11 +118,17 @@ export function DatePickerCalendarPopover({ vm }: DatePickerCalendarPopoverProps
       ) : null}
 
       <div
-        className="grid grid-cols-7 gap-y-0.5 pb-1 text-center text-[11px] font-semibold tracking-wide text-slate-500"
+        className="grid grid-cols-7 gap-x-0.5 gap-y-0.5 pb-1 text-center text-[10px] font-semibold tracking-wide text-slate-500"
         onPointerDown={() => vm.setYearDropdownOpen(false)}
       >
         {WEEKDAYS.map((weekday, index) => (
-          <div key={weekday} className={cn((index === 5 || index === 6) && 'text-[#b06d6d]')}>
+          <div
+            key={weekday}
+            className={cn(
+              'min-w-0 truncate',
+              (index === 5 || index === 6) && 'text-[#b06d6d]',
+            )}
+          >
             {weekday}
           </div>
         ))}

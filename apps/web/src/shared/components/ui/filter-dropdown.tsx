@@ -4,6 +4,8 @@ import { useState, useRef } from 'react';
 import { cn } from '@/shared/lib/utils';
 import { usePortalShell } from '@/shared/context/portal-shell-context';
 import { portalLabelClass, portalInputClass } from '@/shared/lib/portal-theme';
+import { useAnchoredDropdownDirection } from '@/shared/hooks/useAnchoredDropdownDirection';
+import { useOutsidePress } from '@/shared/hooks/useOutsidePress';
 import { Checkbox } from './checkbox';
 import {
   DROPDOWN_CHEVRON_CLASS,
@@ -15,7 +17,8 @@ import {
   DROPDOWN_TRIGGER_INTERACTIVE_CLASS,
   DROPDOWN_VALUE_TEXT_CLASS,
 } from './dropdown-theme';
-import { useOutsidePress } from '@/shared/hooks/useOutsidePress';
+
+const MENU_ESTIMATED_HEIGHT_PX = 240;
 
 export interface FilterOption {
   id: string;
@@ -48,6 +51,12 @@ export function FilterDropdown({
   const isPortal = usePortalShell();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const { openUpward, maxHeight } = useAnchoredDropdownDirection(
+    isOpen,
+    triggerRef,
+    MENU_ESTIMATED_HEIGHT_PX,
+  );
 
   useOutsidePress(dropdownRef, () => setIsOpen(false));
 
@@ -79,6 +88,7 @@ export function FilterDropdown({
       </label>
       <div className="relative">
         <button
+          ref={triggerRef}
           type="button"
           onClick={() => setIsOpen(!isOpen)}
           disabled={isLoading}
@@ -132,11 +142,13 @@ export function FilterDropdown({
         {isOpen && (
           <div
             className={cn(
-              'mt-1 max-h-60 w-full',
+              'w-full overflow-auto',
+              openUpward ? 'bottom-full mb-1' : 'top-full mt-1',
               isPortal
-                ? 'absolute z-50 overflow-auto rounded-[0.875rem] border border-[rgba(14,14,16,0.07)] bg-white shadow-lg'
+                ? 'absolute z-50 rounded-[0.875rem] border border-[rgba(14,14,16,0.07)] bg-white shadow-lg'
                 : cn(DROPDOWN_MENU_SURFACE_CLASS, 'absolute'),
             )}
+            style={{ maxHeight }}
           >
             {error ? (
               <div className="p-3 text-sm text-[#ff2e23]">{error}</div>

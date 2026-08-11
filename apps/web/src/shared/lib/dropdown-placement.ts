@@ -1,10 +1,28 @@
-export interface FixedDropdownPlacement {
+export interface DropdownDirection {
   openUpward: boolean;
+  maxHeight: number;
+}
+
+export interface FixedDropdownPlacement extends DropdownDirection {
   left: number;
   width: number;
-  maxHeight: number;
   top?: number;
   bottom?: number;
+}
+
+export function getDropdownDirection(
+  triggerRect: DOMRect,
+  estimatedMenuHeight: number,
+  viewportPadding = 12,
+): DropdownDirection {
+  const spaceBelow = window.innerHeight - triggerRect.bottom - viewportPadding;
+  const spaceAbove = triggerRect.top - viewportPadding;
+  const openUpward = spaceBelow < estimatedMenuHeight && spaceAbove > spaceBelow;
+  const maxHeight = Math.min(
+    estimatedMenuHeight,
+    Math.max(120, openUpward ? spaceAbove : spaceBelow),
+  );
+  return { openUpward, maxHeight };
 }
 
 export function getFixedDropdownPlacement(
@@ -13,12 +31,10 @@ export function getFixedDropdownPlacement(
   estimatedMenuHeight: number,
   viewportPadding = 12,
 ): FixedDropdownPlacement {
-  const spaceBelow = window.innerHeight - triggerRect.bottom - viewportPadding;
-  const spaceAbove = triggerRect.top - viewportPadding;
-  const openUpward = spaceBelow < estimatedMenuHeight && spaceAbove > spaceBelow;
-  const maxHeight = Math.min(
+  const { openUpward, maxHeight } = getDropdownDirection(
+    triggerRect,
     estimatedMenuHeight,
-    Math.max(120, openUpward ? spaceAbove : spaceBelow),
+    viewportPadding,
   );
 
   let left = triggerRect.right - menuWidth;

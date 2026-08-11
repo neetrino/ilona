@@ -6,6 +6,10 @@ import { createPortal } from 'react-dom';
 import { ChevronDown } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
 import {
+  getFixedDropdownPlacement,
+  type FixedDropdownPlacement,
+} from '@/shared/lib/dropdown-placement';
+import {
   DROPDOWN_CHEVRON_CLASS,
   DROPDOWN_MENU_PORTAL_SURFACE_CLASS,
   DROPDOWN_OPTION_BASE_CLASS,
@@ -16,7 +20,9 @@ import {
   DROPDOWN_TRIGGER_INTERACTIVE_CLASS,
 } from '@/shared/components/ui/dropdown-theme';
 
-type DropdownPosition = { top: number; left: number; width: number };
+const MENU_MIN_WIDTH_PX = 160;
+const OPTION_HEIGHT_PX = 44;
+const MENU_CHROME_PX = 16;
 
 export interface CrmBranchOption {
   id: string;
@@ -42,7 +48,7 @@ export function CrmBranchSelector({
 }: CrmBranchSelectorProps) {
   const t = useTranslations('crm');
   const [open, setOpen] = useState(false);
-  const [position, setPosition] = useState<DropdownPosition | null>(null);
+  const [position, setPosition] = useState<FixedDropdownPlacement | null>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -55,11 +61,10 @@ export function CrmBranchSelector({
     function updatePosition() {
       if (!triggerRef.current) return;
       const rect = triggerRef.current.getBoundingClientRect();
-      setPosition({
-        top: rect.bottom + 4,
-        left: rect.left,
-        width: Math.max(rect.width, 160),
-      });
+      const width = Math.max(rect.width, MENU_MIN_WIDTH_PX);
+      // +1 for the "No branch" option
+      const estimatedHeight = MENU_CHROME_PX + (options.length + 1) * OPTION_HEIGHT_PX;
+      setPosition(getFixedDropdownPlacement(rect, width, estimatedHeight));
     }
 
     updatePosition();
@@ -96,7 +101,7 @@ export function CrmBranchSelector({
         document.removeEventListener('touchstart', handleClickOutside);
       }
     };
-  }, [open]);
+  }, [open, options.length]);
 
   const selected = options.find((option) => option.id === value);
   const displayValue = selected?.name ?? 'No branch';
@@ -138,9 +143,11 @@ export function CrmBranchSelector({
             ref={menuRef}
             className={cn(DROPDOWN_MENU_PORTAL_SURFACE_CLASS, 'min-w-[160px]')}
             style={{
-              top: `${position.top}px`,
               left: `${position.left}px`,
               width: `${position.width}px`,
+              maxHeight: `${position.maxHeight}px`,
+              ...(position.top !== undefined ? { top: `${position.top}px` } : {}),
+              ...(position.bottom !== undefined ? { bottom: `${position.bottom}px` } : {}),
             }}
           >
             <div className="space-y-1 px-1 py-1">

@@ -3,6 +3,8 @@
 import { useState, useRef } from 'react';
 import { useTranslations } from 'next-intl';
 import { cn } from '@/shared/lib/utils';
+import { useAnchoredDropdownDirection } from '@/shared/hooks/useAnchoredDropdownDirection';
+import { useOutsidePress } from '@/shared/hooks/useOutsidePress';
 import { Checkbox } from './checkbox';
 import {
   DROPDOWN_CHEVRON_CLASS,
@@ -14,7 +16,8 @@ import {
   DROPDOWN_TRIGGER_INTERACTIVE_CLASS,
   DROPDOWN_VALUE_TEXT_CLASS,
 } from './dropdown-theme';
-import { useOutsidePress } from '@/shared/hooks/useOutsidePress';
+
+const MENU_ESTIMATED_HEIGHT_PX = 240;
 
 export interface MultiSelectOption {
   id: string;
@@ -50,6 +53,12 @@ export function MultiSelectGroupDropdown({
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const { openUpward, maxHeight } = useAnchoredDropdownDirection(
+    isOpen,
+    triggerRef,
+    MENU_ESTIMATED_HEIGHT_PX,
+  );
 
   useOutsidePress(
     dropdownRef,
@@ -104,6 +113,7 @@ export function MultiSelectGroupDropdown({
       )}
       <div className="relative">
         <button
+          ref={triggerRef}
           type="button"
           onClick={() => !disabled && setIsOpen(!isOpen)}
           disabled={isLoading || disabled}
@@ -144,7 +154,14 @@ export function MultiSelectGroupDropdown({
         </button>
 
         {isOpen && (
-          <div className={cn(DROPDOWN_MENU_SURFACE_CLASS, 'absolute mt-1 flex max-h-60 w-full flex-col overflow-hidden')}>
+          <div
+            className={cn(
+              DROPDOWN_MENU_SURFACE_CLASS,
+              'absolute flex w-full flex-col overflow-hidden',
+              openUpward ? 'bottom-full mb-1' : 'top-full mt-1',
+            )}
+            style={{ maxHeight }}
+          >
             {error ? (
               <div className="p-3 text-sm text-red-600">{error}</div>
             ) : options.length === 0 ? (
@@ -153,7 +170,7 @@ export function MultiSelectGroupDropdown({
               <>
                 {/* Search input */}
                 {searchable && (
-                  <div className="p-2 border-b border-slate-200">
+                  <div className="shrink-0 p-2 border-b border-slate-200">
                     <input
                       type="text"
                       placeholder={t('searchGroups')}
@@ -166,7 +183,7 @@ export function MultiSelectGroupDropdown({
                 )}
 
                 {/* Select All / Clear All buttons */}
-                <div className="flex items-center justify-between px-3 py-2 border-b border-slate-200 bg-slate-50">
+                <div className="flex shrink-0 items-center justify-between px-3 py-2 border-b border-slate-200 bg-slate-50">
                   <button
                     type="button"
                     onClick={(e) => {
@@ -192,7 +209,7 @@ export function MultiSelectGroupDropdown({
                 </div>
 
                 {/* Options list */}
-                <div className="overflow-y-auto max-h-48">
+                <div className="min-h-0 flex-1 overflow-y-auto">
                   {filteredOptions.length === 0 ? (
                     <div className="p-3 text-sm text-slate-500">{t('noGroupsFound')}</div>
                   ) : (
