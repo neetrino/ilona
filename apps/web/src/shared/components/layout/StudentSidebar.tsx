@@ -3,6 +3,7 @@
 import { useMemo } from 'react';
 import { StudentLogoutControl } from './StudentLogoutControl';
 import { PortalSidebarNavLink } from './PortalSidebarNavLink';
+import { PortalSidebarNavList } from './PortalSidebarNavList';
 import { PortalSidebarHeader } from './PortalSidebarHeader';
 import { usePathname } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
@@ -121,6 +122,8 @@ export function StudentSidebar({
 
   const withLocale = (href: string) => `/${locale}${href}`;
 
+  const routeActiveId = navItems.find((item) => isActive(item.href))?.labelKey ?? null;
+
   return (
     <div
       className={cn(
@@ -153,7 +156,11 @@ export function StudentSidebar({
           closeLabel={tCommon('close')}
         />
 
-        <nav
+        <PortalSidebarNavList
+          activeId={routeActiveId}
+          showIndicator={showLabels}
+          layoutKey={showLabels ? 'expanded' : 'collapsed'}
+          instanceId={isDrawer ? 'drawer' : 'dock'}
           className={cn(
             'flex min-h-0 flex-1 flex-col overflow-x-visible overflow-y-auto py-4',
             showLabels
@@ -166,6 +173,7 @@ export function StudentSidebar({
           {navItems.map((item) => (
             <PortalSidebarNavLink
               key={item.href}
+              navId={item.labelKey}
               href={withLocale(item.href)}
               icon={item.icon}
               active={isActive(item.href)}
@@ -175,9 +183,10 @@ export function StudentSidebar({
               isArmenianLocale={isArmenianLocale}
               badge={item.badge}
               compact
+              slidingActive={showLabels}
             />
           ))}
-        </nav>
+        </PortalSidebarNavList>
 
         <div className="shrink-0 px-4 pb-5 pt-2 lg:hidden">
           <StudentLogoutControl
