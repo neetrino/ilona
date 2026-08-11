@@ -4,8 +4,9 @@ import { useState, useRef, useMemo, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
 import { X } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
-import { Checkbox } from './checkbox';
+import { useAnchoredDropdownDirection } from '@/shared/hooks/useAnchoredDropdownDirection';
 import { useOutsidePress } from '@/shared/hooks/useOutsidePress';
+import { Checkbox } from './checkbox';
 import {
   DROPDOWN_CHEVRON_CLASS,
   DROPDOWN_LABEL_CLASS,
@@ -16,6 +17,8 @@ import {
   DROPDOWN_TRIGGER_INTERACTIVE_CLASS,
   DROPDOWN_VALUE_TEXT_CLASS,
 } from './dropdown-theme';
+
+const MENU_ESTIMATED_HEIGHT_PX = 288;
 
 export interface MultiSelectChipsOption {
   id: string;
@@ -89,6 +92,12 @@ export function MultiSelectChipsDropdown({
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLDivElement>(null);
+  const { openUpward, maxHeight } = useAnchoredDropdownDirection(
+    isOpen,
+    triggerRef,
+    MENU_ESTIMATED_HEIGHT_PX,
+  );
 
   const optionById = useMemo(() => {
     const m = new Map<string, MultiSelectChipsOption>();
@@ -203,11 +212,13 @@ export function MultiSelectChipsDropdown({
     menuMinWidthClassName ?? (hideSearch && menuFitContentWidth ? 'min-w-[17rem]' : undefined);
 
   return (
-    <div className={cn('relative', fitContentWidth && 'w-full sm:w-auto', className)} ref={dropdownRef}>
+    <div className={cn(fitContentWidth && 'w-full sm:w-auto', className)} ref={dropdownRef}>
       {label && (
         <label className={DROPDOWN_LABEL_CLASS}>{label}</label>
       )}
+      <div className="relative">
       <div
+        ref={triggerRef}
         role="button"
         tabIndex={isLoading || disabled ? -1 : 0}
         aria-disabled={isLoading || disabled}
@@ -319,7 +330,8 @@ export function MultiSelectChipsDropdown({
         <div
           className={cn(
             DROPDOWN_MENU_SURFACE_CLASS,
-            'absolute mt-1 flex max-h-72 flex-col overflow-hidden p-0',
+            'absolute flex flex-col overflow-hidden p-0',
+            openUpward ? 'bottom-full mb-1' : 'top-full mt-1',
             expandMenuLabels
               ? cn(
                   'left-1/2 right-auto w-max min-w-full max-w-[calc(100vw-2rem)] -translate-x-1/2',
@@ -327,6 +339,7 @@ export function MultiSelectChipsDropdown({
                 )
               : 'w-full',
           )}
+          style={{ maxHeight }}
         >
           {options.length === 0 ? (
             <div className="p-3 text-sm text-slate-500">{emptyOptionsHint}</div>
@@ -373,7 +386,7 @@ export function MultiSelectChipsDropdown({
                   Clear selection
                 </button>
               </div>
-              <div className="max-h-52 overflow-y-auto overscroll-contain [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                 {filteredOptions.length === 0 ? (
                   <div className="p-3 text-sm text-slate-500">{noResultsHint}</div>
                 ) : (
@@ -410,6 +423,7 @@ export function MultiSelectChipsDropdown({
           )}
         </div>
       )}
+      </div>
     </div>
   );
 }

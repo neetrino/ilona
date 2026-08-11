@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, useCallback, type RefObject } from 'react'
 import { createPortal } from 'react-dom';
 import { ChevronDown } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
+import { getFixedDropdownPlacement } from '@/shared/lib/dropdown-placement';
 import type { CrmLeadStatus } from '@/features/crm/types';
 import { useTranslations } from 'next-intl';
 import { useCrmStatusLabels } from '@/features/crm/hooks/useCrmStatusLabels';
@@ -18,7 +19,10 @@ import {
   DROPDOWN_TRIGGER_INTERACTIVE_CLASS,
 } from '@/shared/components/ui/dropdown-theme';
 
-type DropdownPosition = { left: number; width: number; top?: number; bottom?: number };
+const MENU_MIN_WIDTH_PX = 140;
+const MENU_ESTIMATED_HEIGHT_PX = 280;
+
+type DropdownPosition = { left: number; width: number; top?: number; bottom?: number; maxHeight?: number };
 
 export interface CrmStatusSelectorProps {
   value: CrmLeadStatus | undefined;
@@ -30,8 +34,11 @@ export interface CrmStatusSelectorProps {
   className?: string;
   /** Optional id for the trigger (e.g. for form labels). */
   id?: string;
-  /** Where the menu opens relative to the trigger. Defaults to opening downward. */
-  menuPlacement?: 'bottom' | 'top';
+  /**
+   * Where the menu opens relative to the trigger.
+   * Defaults to auto-flipping upward when there is not enough space below.
+   */
+  menuPlacement?: 'bottom' | 'top' | 'auto';
   /**
    * Receives the portaled menu root element while the menu is open (null when closed).
    * Lets parent modals treat this surface as inside the dialog for outside-click handling.
@@ -52,7 +59,7 @@ export function CrmStatusSelector({
   disabledHint,
   className,
   id,
-  menuPlacement = 'bottom',
+  menuPlacement = 'auto',
   portaledMenuRef,
 }: CrmStatusSelectorProps) {
   const t = useTranslations('crm');
@@ -82,7 +89,11 @@ export function CrmStatusSelector({
     function updatePosition() {
       if (!triggerRef.current) return;
       const rect = triggerRef.current.getBoundingClientRect();
-      const width = Math.max(rect.width, 140);
+      const width = Math.max(rect.width, MENU_MIN_WIDTH_PX);
+      const estimatedHeight = Math.min(
+        MENU_ESTIMATED_HEIGHT_PX,
+        16 + options.length * 44,
+      );
 
       if (menuPlacement === 'top') {
         setPosition({
@@ -93,10 +104,22 @@ export function CrmStatusSelector({
         return;
       }
 
+      if (menuPlacement === 'bottom') {
+        setPosition({
+          top: rect.bottom + 4,
+          left: rect.left,
+          width,
+        });
+        return;
+      }
+
+      const placement = getFixedDropdownPlacement(rect, width, estimatedHeight);
       setPosition({
-        top: rect.bottom + 4,
-        left: rect.left,
-        width,
+        left: placement.left,
+        width: placement.width,
+        maxHeight: placement.maxHeight,
+        ...(placement.top !== undefined ? { top: placement.top } : {}),
+        ...(placement.bottom !== undefined ? { bottom: placement.bottom } : {}),
       });
     }
 
@@ -125,7 +148,7 @@ export function CrmStatusSelector({
       clearTimeout(timeoutId);
       document.removeEventListener('pointerdown', handleClickOutside, true);
     };
-  }, [open, menuPlacement]);
+  }, [open, menuPlacement, options.length]);
 
   useEffect(() => {
     if (disabled) setOpen(false);
@@ -186,6 +209,9 @@ export function CrmStatusSelector({
               ...(position.bottom !== undefined ? { bottom: `${position.bottom}px` } : {}),
               left: `${position.left}px`,
               width: `${position.width}px`,
+              ...(position.maxHeight !== undefined
+                ? { maxHeight: `${position.maxHeight}px` }
+                : {}),
             }}
           >
             <div className="space-y-1 px-1 py-1">
