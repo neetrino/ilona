@@ -15,6 +15,7 @@ import { FloatingChatWidget } from '@/features/chat';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { PortalShellProvider } from '@/shared/context/portal-shell-context';
 import { PortalMobileBottomNav } from '@/shared/components/layout/PortalMobileBottomNav';
+import { PortalPageTransition } from '@/shared/components/layout/PortalPageTransition';
 import { cn } from '@/shared/lib/utils';
 import {
   isAdminPortalPath,
@@ -243,7 +244,7 @@ export function DashboardLayout({
                   'max-lg:flex max-lg:min-h-0 max-lg:flex-1 max-lg:flex-col max-lg:bg-white lg:flex lg:min-h-0 lg:flex-1 lg:flex-col',
               )}
             >
-              {children}
+              <PortalPageTransition>{children}</PortalPageTransition>
             </div>
           </div>
         </main>

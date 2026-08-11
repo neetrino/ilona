@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { useLessons } from '@/features/lessons';
@@ -15,6 +15,8 @@ import {
   getWeekDateRangeForApi,
   getWeekDates,
 } from '@/features/schedule/schedule-dates';
+import { useAppSearchUrl } from '@/shared/hooks/useAppSearchUrl';
+import { readUrlSearchParam } from '@/shared/lib/url-search-params';
 import {
   StudentCard,
   StudentFieldLabel,
@@ -33,16 +35,43 @@ function centersFromStudentProfile(profile: Student): { id: string; name: string
   return [...map.entries()].map(([id, name]) => ({ id, name }));
 }
 
+function parseScheduleDateParam(value: string | null | undefined): Date | null {
+  if (!value || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return null;
+  const [year, month, day] = value.split('-').map(Number);
+  const parsed = new Date(year, month - 1, day);
+  if (
+    Number.isNaN(parsed.getTime()) ||
+    parsed.getFullYear() !== year ||
+    parsed.getMonth() !== month - 1 ||
+    parsed.getDate() !== day
+  ) {
+    return null;
+  }
+  return parsed;
+}
+
 export default function StudentSchedulePage() {
   const t = useTranslations('nav');
   const tAttendance = useTranslations('attendance');
   const { isHydrated, isAuthenticated, tokens } = useAuthStore();
   const isAuthReady = isHydrated && isAuthenticated && !!tokens?.accessToken;
   const { data: profile, isLoading: isProfileLoading } = useMyProfile(isAuthReady);
+  const { searchParams, urlRevision } = useAppSearchUrl();
+
+  const dateParam = readUrlSearchParam('date', searchParams, urlRevision) ?? '';
+  const dateFromUrl = useMemo(() => parseScheduleDateParam(dateParam), [dateParam]);
+  const focusDateKey = dateFromUrl ? formatScheduleDate(dateFromUrl) : null;
 
   const [centerId, setCenterId] = useState<string>('');
   const { viewMode, setViewMode } = useScheduleViewMode();
-  const [currentDate, setCurrentDate] = useState(new Date());
+  const [currentDate, setCurrentDate] = useState(() => dateFromUrl ?? new Date());
+
+  useEffect(() => {
+    if (dateFromUrl) {
+      setCurrentDate(dateFromUrl);
+      setViewMode('week');
+    }
+  }, [dateFromUrl, setViewMode]);
 
   const weekDates = useMemo(
     () => getWeekDates(new Date(currentDate)),
@@ -176,6 +205,7 @@ export default function StudentSchedulePage() {
           periodLabel={periodLabel}
           onPeriodNavigate={onPeriodNavigate}
           onGoToToday={() => setCurrentDate(new Date())}
+          focusDateKey={focusDateKey}
         />
       </StudentPageStack>
     </DashboardLayout>

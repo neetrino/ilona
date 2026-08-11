@@ -1,3 +1,12 @@
+import type { LucideIcon } from 'lucide-react';
+import {
+  BookOpenText,
+  Headphones,
+  Mic,
+  PenLine,
+  SpellCheck2,
+  Trophy,
+} from 'lucide-react';
 import type { DailyPlanResourceKind } from '../types';
 
 export const DAILY_PLAN_RESOURCE_KINDS: DailyPlanResourceKind[] = [
@@ -12,6 +21,24 @@ export const DAILY_PLAN_RESOURCE_KINDS: DailyPlanResourceKind[] = [
 export const DAILY_PLAN_DESCRIPTION_ONLY_KINDS = new Set<DailyPlanResourceKind>([
   'CHALLENGE',
 ]);
+
+export const DAILY_PLAN_KIND_ICON: Record<DailyPlanResourceKind, LucideIcon> = {
+  READING: BookOpenText,
+  LISTENING: Headphones,
+  WRITING: PenLine,
+  SPEAKING: Mic,
+  GRAMMAR: SpellCheck2,
+  CHALLENGE: Trophy,
+};
+
+export const DAILY_PLAN_KIND_ICON_SURFACE_CLASS: Record<DailyPlanResourceKind, string> = {
+  READING: 'bg-sky-100 text-sky-700',
+  LISTENING: 'bg-teal-100 text-teal-700',
+  WRITING: 'bg-amber-100 text-amber-800',
+  SPEAKING: 'bg-rose-100 text-rose-700',
+  GRAMMAR: 'bg-emerald-100 text-emerald-700',
+  CHALLENGE: 'bg-orange-100 text-orange-800',
+};
 
 export const DAILY_PLAN_KIND_SURFACE_CLASS: Record<DailyPlanResourceKind, string> = {
   READING: 'border-sky-200 bg-sky-50/70',

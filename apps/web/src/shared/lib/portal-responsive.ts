@@ -17,7 +17,7 @@ export const portalDashboardAsideCardClass =
 
 /** Inner nested card */
 export const portalInnerCardClass =
-  'rounded-[1.125rem] border border-[rgba(14,14,16,0.07)] bg-[#fafafa] p-[clamp(0.75rem,1.5vw,1rem)]';
+  'rounded-[1.125rem] border border-[rgba(14,14,16,0.07)] bg-[#fafafa] p-[clamp(0.75rem,1.5vw,1rem)] transition-[transform,box-shadow] duration-300 ease-out hover:-translate-y-1 hover:shadow-[0_8px_22px_rgba(14,14,16,0.07)]';
 
 export const portalSectionTitleClass =
   'text-[clamp(0.875rem,1.25vw,1rem)] font-semibold tracking-tight text-[#1010a3]';

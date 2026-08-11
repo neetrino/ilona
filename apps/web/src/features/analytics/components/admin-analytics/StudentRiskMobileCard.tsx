@@ -12,7 +12,7 @@ export function StudentRiskMobileCard({ student }: { student: StudentRisk }) {
   const attendanceRate = Math.max(0, Math.min(100, student.attendanceRate));
 
   return (
-    <article className="overflow-hidden rounded-[1.1rem] border border-[rgba(14,14,16,0.09)] bg-white shadow-[0_1px_2px_rgba(14,14,16,0.03)]">
+    <article className="overflow-hidden rounded-[1.1rem] border border-[rgba(14,14,16,0.09)] bg-white shadow-[0_1px_2px_rgba(14,14,16,0.03)] transition-[transform,box-shadow] duration-300 ease-out hover:-translate-y-1 hover:shadow-[0_10px_28px_rgba(14,14,16,0.08)]">
       <div className="flex items-start gap-3 p-4">
         <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#eceeff] text-xl font-semibold text-[#3232b3]">
           {initialFromName(student.name)}

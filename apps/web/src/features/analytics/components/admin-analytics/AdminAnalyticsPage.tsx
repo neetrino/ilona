@@ -184,25 +184,25 @@ export function AdminAnalyticsPage() {
       {activeTab === 'attendance' && (
         <div className={portalPageStackClass}>
           <div className="grid w-full min-w-0 grid-cols-2 gap-3 sm:grid-cols-4 lg:gap-4">
-            <div className="bg-white p-4 rounded-xl border border-[rgba(14,14,16,0.07)]">
+            <div className="rounded-xl border border-[rgba(14,14,16,0.07)] bg-white p-4 transition-[transform,box-shadow] duration-300 ease-out hover:-translate-y-1 hover:shadow-[0_10px_28px_rgba(14,14,16,0.08)]">
               <p className="text-sm text-[#8b8b90]">{t('records30d')}</p>
               <p className="text-2xl font-bold text-[#1010a3]">
                 {attendance?.summary.total ?? 0}
               </p>
             </div>
-            <div className="bg-white p-4 rounded-xl border border-[rgba(14,14,16,0.07)]">
+            <div className="rounded-xl border border-[rgba(14,14,16,0.07)] bg-white p-4 transition-[transform,box-shadow] duration-300 ease-out hover:-translate-y-1 hover:shadow-[0_10px_28px_rgba(14,14,16,0.08)]">
               <p className="text-sm text-[#8b8b90]">{t('present')}</p>
               <p className="text-2xl font-bold text-green-600">
                 {attendance?.summary.present ?? 0}
               </p>
             </div>
-            <div className="bg-white p-4 rounded-xl border border-[rgba(14,14,16,0.07)]">
+            <div className="rounded-xl border border-[rgba(14,14,16,0.07)] bg-white p-4 transition-[transform,box-shadow] duration-300 ease-out hover:-translate-y-1 hover:shadow-[0_10px_28px_rgba(14,14,16,0.08)]">
               <p className="text-sm text-[#8b8b90]">{t('unjustifiedShort')}</p>
               <p className="text-2xl font-bold text-red-600">
                 {attendance?.summary.absentUnjustified ?? 0}
               </p>
             </div>
-            <div className="bg-white p-4 rounded-xl border border-[rgba(14,14,16,0.07)]">
+            <div className="rounded-xl border border-[rgba(14,14,16,0.07)] bg-white p-4 transition-[transform,box-shadow] duration-300 ease-out hover:-translate-y-1 hover:shadow-[0_10px_28px_rgba(14,14,16,0.08)]">
               <p className="text-sm text-[#8b8b90]">{tCommon('rate')}</p>
               <p className="text-2xl font-bold text-[#1010a3]">
                 {attendance?.summary.attendanceRate ?? 0}%
@@ -238,13 +238,13 @@ export function AdminAnalyticsPage() {
             />
           </div>
           <div className="grid w-full min-w-0 grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 lg:gap-4">
-            <div className="bg-green-50 border border-green-200 rounded-xl p-4">
+            <div className="rounded-xl border border-green-200 bg-green-50 p-4 transition-[transform,box-shadow] duration-300 ease-out hover:-translate-y-1 hover:shadow-[0_10px_28px_rgba(14,14,16,0.08)]">
               <p className="text-sm text-green-600">{tCommon('totalIncome')}</p>
               <p className="text-2xl font-bold text-green-700">
                 {formatCurrency(totalIncome)}
               </p>
             </div>
-            <div className="bg-red-50 border border-red-200 rounded-xl p-4">
+            <div className="rounded-xl border border-red-200 bg-red-50 p-4 transition-[transform,box-shadow] duration-300 ease-out hover:-translate-y-1 hover:shadow-[0_10px_28px_rgba(14,14,16,0.08)]">
               <p className="text-sm text-red-600">{tCommon('totalExpensesLabel')}</p>
               <p className="text-2xl font-bold text-red-700">
                 {formatCurrency(totalExpenses)}
@@ -252,10 +252,10 @@ export function AdminAnalyticsPage() {
             </div>
             <div
               className={cn(
-                'rounded-xl p-4 border',
+                'rounded-xl border p-4 transition-[transform,box-shadow] duration-300 ease-out hover:-translate-y-1 hover:shadow-[0_10px_28px_rgba(14,14,16,0.08)]',
                 totalProfit >= 0
-                  ? 'bg-blue-50 border-blue-200'
-                  : 'bg-orange-50 border-orange-200',
+                  ? 'border-blue-200 bg-blue-50'
+                  : 'border-orange-200 bg-orange-50',
               )}
             >
               <p

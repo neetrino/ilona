@@ -32,7 +32,9 @@ import {
   StudentTd,
   StudentTh,
   paymentStatusVariant,
+  studentCardHoverClass,
 } from '@/features/student-ui';
+import { cn } from '@/shared/lib/utils';
 import { LoadingSpinner } from '@/shared/components/ui/loading-spinner';
 
 interface StudentAttendanceStats {
@@ -140,7 +142,7 @@ export default function StudentAnalyticsPage() {
         <StudentLoadingState message={t('studentSubtitle')} />
       ) : (
         <StudentPageStack>
-          <StudentCard>
+          <StudentCard className={studentCardHoverClass}>
             <StudentSectionHeader title={t('yourProgressOverview')} />
             <div className="flex flex-wrap justify-center gap-8 sm:gap-10">
               <StudentProgressRing
@@ -187,7 +189,12 @@ export default function StudentAnalyticsPage() {
             ) : (
               <div className="space-y-4">
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  <div className="rounded-[1.125rem] border border-[rgba(14,14,16,0.07)] bg-[#fafafa] p-4">
+                  <div
+                    className={cn(
+                      'rounded-[1.125rem] border border-[rgba(14,14,16,0.07)] bg-[#fafafa] p-4',
+                      studentCardHoverClass,
+                    )}
+                  >
                     <p className="text-xs tracking-wide text-[#8b8b90]">{t('paidInPeriod')}</p>
                     <p className="mt-1 text-2xl font-bold text-[#0a7a3e]">
                       {formatCurrency(paidTotalAmount)}
@@ -199,7 +206,12 @@ export default function StudentAnalyticsPage() {
                       })}
                     </p>
                   </div>
-                  <div className="rounded-[1.125rem] border border-[rgba(14,14,16,0.07)] bg-[#fafafa] p-4">
+                  <div
+                    className={cn(
+                      'rounded-[1.125rem] border border-[rgba(14,14,16,0.07)] bg-[#fafafa] p-4',
+                      studentCardHoverClass,
+                    )}
+                  >
                     <p className="text-xs tracking-wide text-[#8b8b90]">{t('outstandingInPeriod')}</p>
                     <p className="mt-1 text-2xl font-bold text-[#8b4a00]">
                       {outstandingInRange.length}
@@ -208,7 +220,7 @@ export default function StudentAnalyticsPage() {
                   </div>
                 </div>
                 {payPeriodList.length > 0 && (
-                  <StudentTableShell className="[&_table]:table-fixed [&_table]:min-w-full">
+                  <StudentTableShell className="overflow-hidden rounded-2xl border border-[rgba(14,14,16,0.07)] [&_table]:min-w-0 [&_table]:table-fixed [&_table]:min-w-full">
                     <colgroup>
                       <col className="w-1/3" />
                       <col className="w-1/3" />
@@ -291,7 +303,7 @@ export default function StudentAnalyticsPage() {
           </div>
 
           <div className="grid grid-cols-1 gap-5 lg:grid-cols-2 lg:gap-6">
-            <StudentCard>
+            <StudentCard className={studentCardHoverClass}>
               <StudentSectionHeader title={t('attendanceBreakdown')} />
               <div className="space-y-4">
                 <div>
@@ -333,7 +345,7 @@ export default function StudentAnalyticsPage() {
               </div>
             </StudentCard>
 
-            <StudentCard>
+            <StudentCard className={studentCardHoverClass}>
               <StudentSectionHeader title={t('tipsForSuccess')} />
               <div className="space-y-3">
                 {attendanceRate >= 90 ? (

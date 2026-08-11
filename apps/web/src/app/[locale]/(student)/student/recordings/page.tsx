@@ -13,7 +13,7 @@ import {
   type VoiceToTeacherRecording,
 } from '@/features/chat/api/chat.api';
 import { chatKeys } from '@/features/chat/hooks/useChat';
-import { formatAppDateTime } from '@/shared/lib/app-timezone';
+import { LessonListDateCell } from '@/shared/components/daily-duties/LessonListDateCell';
 import {
   StudentBadge,
   StudentCard,
@@ -41,10 +41,6 @@ function formatDuration(
   const minutes = Math.floor((seconds % 3600) / 60);
   if (hours > 0) return t('durationHours', { hours, minutes });
   return t('durationMinutes', { minutes });
-}
-
-function formatVoiceTimestamp(createdAt: string, locale: string): string {
-  return formatAppDateTime(createdAt, locale);
 }
 
 function VoiceToTeacherPlayback({
@@ -107,7 +103,9 @@ function VoiceToTeacherCard({
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <StudentBadge variant="warning">{t('voiceToTeacher')}</StudentBadge>
-            <span className="text-xs text-[#8b8b90]">{formatVoiceTimestamp(recording.createdAt, locale)}</span>
+            <div className="origin-left scale-[0.75] sm:scale-[0.82]">
+              <LessonListDateCell dateStr={recording.createdAt} locale={locale} />
+            </div>
           </div>
           <p className="mt-1.5 truncate text-sm font-semibold text-[#1010a3]">{teacherName}</p>
           <p className="mt-0.5 text-sm text-[#8b8b90]">{formatDuration(recording.duration, t)}</p>
@@ -147,22 +145,26 @@ function VoiceToTeacherRow({
       <StudentTd className="align-middle">
         <StudentBadge variant="warning">{t('voiceToTeacher')}</StudentBadge>
       </StudentTd>
-      <StudentTd className="align-middle whitespace-nowrap">
-        <span className="text-[#3b3b40]">{formatVoiceTimestamp(recording.createdAt, locale)}</span>
+      <StudentTd className="align-middle text-center">
+        <div className="flex origin-center scale-[0.75] justify-center sm:scale-[0.82]">
+          <LessonListDateCell dateStr={recording.createdAt} locale={locale} />
+        </div>
       </StudentTd>
       <StudentTd className="align-middle">
         <span className="font-medium text-[#1010a3]">{teacherName}</span>
       </StudentTd>
-      <StudentTd className="align-middle">
+      <StudentTd className="align-middle text-center">
         <span className="text-[#8b8b90]">{formatDuration(recording.duration, t)}</span>
       </StudentTd>
-      <StudentTd className="align-middle">
-        <VoiceToTeacherPlayback
-          recording={recording}
-          isActive={isActive}
-          onPlay={onPlay}
-          onEnded={onEnded}
-        />
+      <StudentTd className="align-middle text-center">
+        <div className="flex justify-center">
+          <VoiceToTeacherPlayback
+            recording={recording}
+            isActive={isActive}
+            onPlay={onPlay}
+            onEnded={onEnded}
+          />
+        </div>
       </StudentTd>
     </StudentTableRow>
   );
@@ -251,7 +253,7 @@ export default function StudentRecordingsPage() {
           {t('recordingsAvailable', { count: filteredRecordings.length })}
         </p>
 
-        <StudentCard noPadding>
+        <StudentCard noPadding className="overflow-hidden">
           <div className="border-b border-[rgba(14,14,16,0.07)] p-5 sm:p-6">
             <StudentSectionHeader
               title={t('voiceMessagesTitle')}
@@ -284,10 +286,10 @@ export default function StudentRecordingsPage() {
               <StudentTableHead>
                 <tr>
                   <StudentTh>{t('type')}</StudentTh>
-                  <StudentTh>{t('dateTime')}</StudentTh>
+                  <StudentTh className="text-center">{t('dateTime')}</StudentTh>
                   <StudentTh>{tCommon('teacher')}</StudentTh>
-                  <StudentTh>{t('duration')}</StudentTh>
-                  <StudentTh>{t('recording')}</StudentTh>
+                  <StudentTh className="text-center">{t('duration')}</StudentTh>
+                  <StudentTh className="text-center">{t('recording')}</StudentTh>
                 </tr>
               </StudentTableHead>
               <StudentTableBody>
@@ -295,7 +297,7 @@ export default function StudentRecordingsPage() {
                   Array.from({ length: 4 }).map((_, idx) => (
                     <StudentTableRow key={`skeleton-${idx}`}>
                       <StudentTd colSpan={5}>
-                        <div className="h-8 animate-pulse rounded-lg bg-[#f6f6f7]" />
+                        <div className="h-8 animate-pulse bg-[#f6f6f7]" />
                       </StudentTd>
                     </StudentTableRow>
                   ))

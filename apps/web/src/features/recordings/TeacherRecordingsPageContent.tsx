@@ -269,7 +269,7 @@ export function TeacherRecordingsPageContent({
         )}
       </div>
 
-      <StudentCard noPadding className={cn('hidden', !isIPad && 'sm:block')}>
+      <StudentCard noPadding className={cn('hidden overflow-hidden', !isIPad && 'sm:block')}>
         <div className="min-w-0 overflow-x-auto">
           <table className="w-full min-w-[48rem] text-sm">
             <thead className={cn(studentTableHeadClass, 'border-b border-[rgba(14,14,16,0.07)]')}>

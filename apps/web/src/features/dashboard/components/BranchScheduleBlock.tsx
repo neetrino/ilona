@@ -64,7 +64,7 @@ function LessonRow({
   const centerName = lesson.group.center?.name ?? '—';
 
   return (
-    <li className="flex flex-wrap items-center gap-3 rounded-[1.5rem] border border-[rgba(14,14,16,0.09)] bg-white p-3.5 sm:flex-nowrap sm:gap-4 sm:p-4">
+    <li className="flex flex-wrap items-center gap-3 rounded-[1.5rem] border border-[rgba(14,14,16,0.09)] bg-white p-3.5 transition-[transform,box-shadow] duration-300 ease-out hover:-translate-y-1 hover:shadow-[0_10px_28px_rgba(14,14,16,0.08)] sm:flex-nowrap sm:gap-4 sm:p-4">
       <div className="h-[4.25rem] w-[4.25rem] shrink-0 overflow-hidden rounded-[1rem] border border-[rgba(14,14,16,0.08)] bg-white">
         <div className="bg-gradient-to-r from-[#ff9330] via-[#ff5f5f] to-[#ff2e88] px-2 py-1 text-center text-[0.625rem] font-semibold uppercase tracking-[0.08em] text-white">
           {dayLabel}

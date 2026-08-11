@@ -4,8 +4,10 @@ import Image from 'next/image';
 import { PublicAssetImage } from '@/shared/components/ui';
 import { StudentLogoutControl } from './StudentLogoutControl';
 import { PortalSidebarCollapseToggle } from './PortalSidebarCollapseToggle';
+import { PortalSidebarNavList, usePortalSidebarNav, PORTAL_SIDEBAR_PILL_TRANSITION } from './PortalSidebarNavList';
 import { StudentSidebarNavIcon } from './StudentSidebarNavIcon';
 import Link from 'next/link';
+import { motion, useReducedMotion } from 'framer-motion';
 import { usePathname } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { cn } from '@/shared/lib/utils';
@@ -70,7 +72,8 @@ function AdminNavIconDisplay({
       <span
         className={cn(
           NAV_ICON_COLUMN_CLASS,
-          active && 'rounded-full bg-white/20',
+          'rounded-full transition-colors duration-[380ms] ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none',
+          active ? 'bg-white/20' : 'bg-transparent',
         )}
       >
         <Image
@@ -78,7 +81,10 @@ function AdminNavIconDisplay({
           alt=""
           width={icon.width ?? 20}
           height={icon.height ?? 20}
-          className={cn('h-5 w-5 object-contain', active && 'brightness-0 invert')}
+          className={cn(
+            'h-5 w-5 object-contain transition-[filter] duration-[380ms] ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none',
+            active && 'brightness-0 invert',
+          )}
         />
       </span>
     );
@@ -88,7 +94,7 @@ function AdminNavIconDisplay({
     <span className={NAV_ICON_COLUMN_CLASS}>
       <svg
         className={cn(
-          'h-5 w-5',
+          'h-5 w-5 transition-colors duration-[380ms] ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none',
           active ? (collapsed ? 'text-[#1010a3]' : 'text-white') : 'text-[#787878]',
         )}
         fill="none"
@@ -106,12 +112,13 @@ function AdminNavIconDisplay({
 
 function NavLink({
   item,
-  active,
+  active: routeActive,
   collapsed,
   label,
   onNavigate,
   isArmenianLocale,
   isMobileSidebar,
+  slidingActive,
   t,
 }: {
   item: AdminNavEntry & { href: string };
@@ -121,10 +128,16 @@ function NavLink({
   onNavigate?: () => void;
   isArmenianLocale: boolean;
   isMobileSidebar: boolean;
+  slidingActive: boolean;
   t: (key: string) => string;
 }) {
+  const nav = usePortalSidebarNav();
+  const reduceMotion = useReducedMotion();
+  const active = nav ? nav.isVisuallyActive(item.labelKey, routeActive) : routeActive;
+  const showSlidingPill = slidingActive && !collapsed && active;
+
   const labelClassName = cn(
-    'min-w-0 flex-1 overflow-visible pr-0.5 text-sm italic leading-snug',
+    'min-w-0 flex-1 overflow-visible pr-0.5 text-sm italic leading-snug transition-colors duration-[380ms] ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none',
     isArmenianLocale && PORTAL_SIDEBAR_NAV_LABEL_HY_CLASS,
     !isMobileSidebar && 'whitespace-nowrap',
     active ? 'font-semibold text-white' : 'font-medium text-[#787878]',
@@ -142,24 +155,46 @@ function NavLink({
     return <span className={labelClassName}>{label}</span>;
   };
 
+  const expandedBox = 'rounded-[3.375rem] py-1 pl-1.5 pr-3';
+
   return (
     <Link
       href={item.href}
       title={collapsed ? label : undefined}
-      onClick={onNavigate}
+      onClick={() => {
+        nav?.activate(item.labelKey);
+        onNavigate?.();
+      }}
+      data-sidebar-nav={item.labelKey}
       className={cn(
-        'flex min-h-12 w-full items-center transition-colors',
+        'relative flex h-12 w-full shrink-0 items-center',
         ADMIN_SIDEBAR_NAV_ITEM_GAP_CLASS,
-        active
-          ? collapsed
-            ? 'rounded-[0.875rem] bg-transparent px-1.5 py-0'
-            : 'rounded-[3.375rem] bg-[#1010a3] py-1 pl-1.5 pr-3'
-          : 'rounded-[0.875rem] px-3 py-1 hover:bg-[#f6f6f7]',
-        collapsed && 'h-12 justify-center px-1.5 py-0',
+        collapsed
+          ? 'justify-center rounded-[0.875rem] px-1.5 py-0'
+          : slidingActive
+            ? cn(expandedBox, 'bg-transparent', !active && 'hover:bg-[#f6f6f7]')
+            : active
+              ? cn(expandedBox, 'bg-[#1010a3]')
+              : cn(expandedBox, 'hover:bg-[#f6f6f7]'),
       )}
     >
-      <AdminNavIconDisplay icon={item.icon} active={active} collapsed={collapsed} />
-      {!collapsed ? renderLabel() : null}
+      {showSlidingPill && nav?.pillLayoutId ? (
+        <motion.span
+          layoutId={nav.pillLayoutId}
+          className="pointer-events-none absolute inset-0 z-0 rounded-[3.375rem] bg-[#1010a3]"
+          transition={reduceMotion ? { duration: 0 } : PORTAL_SIDEBAR_PILL_TRANSITION}
+        />
+      ) : null}
+      <span
+        className={cn(
+          'relative z-[1] flex min-w-0 flex-1 items-center',
+          ADMIN_SIDEBAR_NAV_ITEM_GAP_CLASS,
+          collapsed && 'flex-none justify-center',
+        )}
+      >
+        <AdminNavIconDisplay icon={item.icon} active={active} collapsed={collapsed} />
+        {!collapsed ? renderLabel() : null}
+      </span>
     </Link>
   );
 }
@@ -199,6 +234,8 @@ export function AdminSidebar({
   };
 
   const withLocale = (href: string) => `/${locale}${href}`;
+
+  const routeActiveId = navItems.find((item) => isActive(item.href))?.labelKey ?? null;
 
   return (
     <div
@@ -273,7 +310,11 @@ export function AdminSidebar({
           ) : null}
         </div>
 
-        <nav
+        <PortalSidebarNavList
+          activeId={routeActiveId}
+          showIndicator={showLabels}
+          layoutKey={showLabels ? 'expanded' : 'collapsed'}
+          instanceId={isDrawer ? 'drawer' : 'dock'}
           className={cn(
             'flex min-h-0 flex-1 flex-col overflow-x-visible overflow-y-auto pr-3.5',
             showLabels ? 'py-4' : 'pb-4 pt-2',
@@ -294,10 +335,11 @@ export function AdminSidebar({
               onNavigate={onNavigate}
               isArmenianLocale={isArmenianLocale}
               isMobileSidebar={isDrawer}
+              slidingActive={showLabels}
               t={t}
             />
           ))}
-        </nav>
+        </PortalSidebarNavList>
 
         <div className="shrink-0 px-4 pb-5 pt-2 lg:hidden">
           <StudentLogoutControl variant="sidebar" onAfterLogout={onNavigate} />

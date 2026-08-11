@@ -1,5 +1,5 @@
 import { RefObject } from 'react';
-import { useLocale, useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/shared/components/ui/button';
 import { Checkbox } from '@/shared/components/ui/checkbox';
 import {
@@ -10,12 +10,11 @@ import { Avatar } from '@/shared/components/ui/avatar';
 import { AdminListPagination } from '@/shared/components/ui';
 import { User } from 'lucide-react';
 import Image from 'next/image';
-import { formatAppDate, formatAppTimeRange } from '@/shared/lib/app-timezone';
 import { cn } from '@/shared/lib/utils';
 import { DailyDutiesListActionPill } from '@/shared/components/daily-duties/DailyDutiesListActionPill';
+import { LessonListDateCell } from '@/shared/components/daily-duties/LessonListDateCell';
 import { getLessonActionsDerived, type LessonActionId } from '@/shared/lib/daily-duties/lesson-action-states';
 import { teacherDailyDutiesRowSection } from '@/shared/lib/daily-duties/teacher-daily-duties-list-order';
-import { formatLessonGroupTeachersLabel } from '@/shared/lib/daily-duties/format-lesson-group-teachers';
 import type { LessonListCardRow } from './lesson-list-table.types';
 import { OBLIGATION_IDS } from './lesson-list-table.constants';
 
@@ -63,7 +62,6 @@ export function LessonListTableMobileCards({
   onView,
   onGoToPage,
 }: LessonListTableMobileCardsProps) {
-  const locale = useLocale();
   const tCal = useTranslations('dailyDuties');
   const tCommon = useTranslations('common');
 
@@ -84,6 +82,8 @@ export function LessonListTableMobileCards({
         const section = row.category ? teacherDailyDutiesRowSection(row.category) : null;
         const lessonStatus = resolveDailyDutiesLessonStatus(lesson);
         const groupName = lesson.group?.name || tCal('unknownGroupName');
+        const teacherFirstName = lesson.teacher?.user?.firstName?.trim() ?? '';
+        const teacherLastName = lesson.teacher?.user?.lastName?.trim() ?? '';
         const globalRowIndex = (safeMobileCardsPage - 1) * mobileCardPageSize + idx;
         const prevGlobalRow = globalRowIndex > 0 ? cardRows[globalRowIndex - 1] : null;
         const prevSection = prevGlobalRow?.category
@@ -128,60 +128,41 @@ export function LessonListTableMobileCards({
               )}
             >
               <div className="p-4">
-                <div className="flex items-start gap-2.5">
-                  <div onPointerDown={(event) => event.stopPropagation()}>
+                <div className="flex items-center gap-2.5">
+                  <div className="shrink-0" onPointerDown={(event) => event.stopPropagation()}>
                     <Checkbox
                       checked={selectedLessons.has(lesson.id)}
                       onCheckedChange={(checked) => onSelectLesson(lesson.id, checked === true)}
-                      className="relative -top-[1px] h-5 w-5 rounded-[15px]"
+                      className="h-5 w-5 rounded-[15px]"
                     />
                   </div>
                   <div className="relative shrink-0">
                     <Avatar name={groupName} size="md" />
                     {lessonStatus ? <DailyDutiesLessonStatusTiltedBadge status={lessonStatus} /> : null}
                   </div>
-                  <p className="min-w-0 flex-1 text-[1.2rem] leading-tight font-semibold break-words text-[#111827]">
+                  <p className="min-w-0 flex-1 truncate text-[1.2rem] leading-none font-semibold text-[#111827]">
                     {groupName}
                   </p>
                 </div>
-                <div className="mt-5 grid grid-cols-2 items-stretch gap-3">
-                      <div className="flex items-start gap-2 justify-self-start">
-                        <svg
-                          className="mt-0.5 h-5 w-5 shrink-0 text-green-500"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                          aria-hidden
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M8 7V3m8 4V3M5 11h14M5 5h14a2 2 0 012 2v12a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2z"
-                          />
-                        </svg>
-                        <div className="min-w-0">
-                          <p className="text-left text-[11px] font-medium text-[#1f2937]">
-                            {formatAppDate(lesson.scheduledAt, locale, {
-                              weekday: 'short',
-                              month: 'short',
-                              day: 'numeric',
-                            })}
-                          </p>
-                          <p className="mt-0.5 text-left text-[1.65rem] leading-none font-medium tabular-nums text-[#111827]">
-                            {formatAppTimeRange(lesson.scheduledAt, lesson.duration)}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="pl-3">
-                        <div className="flex items-start gap-2">
-                          <User className="mt-0.5 h-5 w-5 shrink-0 text-green-500" aria-hidden />
-                          <p className="line-clamp-2 text-[1.2rem] leading-tight font-medium text-[#111827]">
-                            {formatLessonGroupTeachersLabel(lesson, tCal('unknownTeacher'))}
-                          </p>
-                        </div>
-                      </div>
+                <div className="mt-5 flex items-center justify-between gap-3">
+                  <LessonListDateCell
+                    dateStr={lesson.scheduledAt}
+                    durationMinutes={lesson.duration}
+                  />
+                  <div className="flex min-w-0 items-center gap-2">
+                    <User className="h-5 w-5 shrink-0 text-green-500" aria-hidden />
+                    <div className="min-w-0 text-left text-[1.2rem] leading-tight font-medium text-[#111827]">
+                      {!teacherFirstName && !teacherLastName ? (
+                        <p className="truncate">{tCal('unknownTeacher')}</p>
+                      ) : (
+                        <>
+                          {teacherFirstName ? <p className="truncate">{teacherFirstName}</p> : null}
+                          {teacherLastName ? <p className="truncate">{teacherLastName}</p> : null}
+                        </>
+                      )}
                     </div>
+                  </div>
+                </div>
                 <div className="my-3 border-t border-dashed border-[rgba(14,14,16,0.14)]" />
                 <div
                   className="grid grid-cols-3 gap-2"

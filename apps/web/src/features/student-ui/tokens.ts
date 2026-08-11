@@ -38,7 +38,11 @@ export const studentIconButtonClass =
 export const studentTableHeadClass =
   'bg-[#f6f6f7] text-left text-[0.6875rem] font-semibold uppercase tracking-wider text-[#8b8b90]';
 
-export const studentTableRowHoverClass = 'transition-colors hover:bg-[#fafafa]';
+export const studentTableRowHoverClass = 'group/row';
+
+/** Lift animation for individual cards (not section shells / tables). */
+export const studentCardHoverClass =
+  'transition-[transform,box-shadow] duration-300 ease-out hover:-translate-y-1 hover:shadow-[0_10px_28px_rgba(14,14,16,0.08)]';
 
 export const studentPillTrackClass =
   'inline-flex flex-wrap items-center gap-1 rounded-full border border-[rgba(14,14,16,0.07)] bg-[#f6f6f7] p-1';

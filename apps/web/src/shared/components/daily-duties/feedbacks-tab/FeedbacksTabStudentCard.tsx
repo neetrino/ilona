@@ -1,5 +1,14 @@
 'use client';
 
+import {
+  BookOpenText,
+  Layers,
+  MessageSquareText,
+  Sparkles,
+  TrendingUp,
+  Users,
+  WandSparkles,
+} from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/shared/components/ui/button';
 import { SegmentedControl } from '@/shared/components/ui';
@@ -10,6 +19,7 @@ import {
   PARTICIPATION_OPTIONS,
   type StructuredFeedbackFields,
 } from '../lesson-feedback-form-utils';
+import { FeedbackCategoryLabel } from './FeedbackCategoryLabel';
 import { FeedbacksTabParticipationTickBox } from './FeedbacksTabParticipationTickBox';
 import { FeedbacksTabStudentAvatar } from './FeedbacksTabStudentAvatar';
 import { FEEDBACK_FIELD_SHELL_CLASS, type FeedbackSaveStatus, type FeedbackStudentItem } from './feedbacks-tab.types';
@@ -80,8 +90,10 @@ export function FeedbacksTabStudentCard({
       )}
 
       <div className="grid grid-cols-1 gap-5 md:grid-cols-3 md:gap-6 lg:gap-8">
-        <div className="min-w-0 space-y-2">
-          <label className="block text-sm font-bold text-slate-900">{t('levelLabel')}</label>
+        <div className="min-w-0 space-y-2.5 rounded-[1.125rem] border border-[rgba(14,14,16,0.07)] bg-[#fafafa]/80 p-3.5 sm:p-4">
+          <FeedbackCategoryLabel icon={Layers} tone="violet">
+            {t('levelLabel')}
+          </FeedbackCategoryLabel>
           <SegmentedControl
             options={GROUP_LEVEL_SEGMENT_OPTIONS}
             value={structured.level}
@@ -92,8 +104,10 @@ export function FeedbacksTabStudentCard({
           />
         </div>
 
-        <div className="min-w-0 space-y-2">
-          <label className="block text-sm font-bold text-slate-900">{t('grammarLabel')}</label>
+        <div className="min-w-0 space-y-2.5 rounded-[1.125rem] border border-[rgba(14,14,16,0.07)] bg-[#fafafa]/80 p-3.5 sm:p-4">
+          <FeedbackCategoryLabel icon={BookOpenText} tone="sky">
+            {t('grammarLabel')}
+          </FeedbackCategoryLabel>
           <MultiSelectChipsDropdown
             options={grammarOptions}
             selectedIds={grammarSelected}
@@ -115,12 +129,14 @@ export function FeedbacksTabStudentCard({
           />
         </div>
 
-        <div className="min-w-0 space-y-3">
-          <label className="block text-sm font-bold text-slate-900">{t('skillsLabel')}</label>
-          <div className="flex flex-wrap gap-5 text-sm text-slate-800">
+        <div className="min-w-0 space-y-3 rounded-[1.125rem] border border-[rgba(14,14,16,0.07)] bg-[#fafafa]/80 p-3.5 sm:p-4">
+          <FeedbackCategoryLabel icon={WandSparkles} tone="amber">
+            {t('skillsLabel')}
+          </FeedbackCategoryLabel>
+          <div className="flex flex-wrap gap-5 text-sm text-[#3b3b40]">
             <button
               type="button"
-              className="inline-flex items-center gap-2.5 rounded-[15px] px-0.5 py-0.5 transition-colors hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1010a3]/40 focus-visible:ring-offset-1"
+              className="inline-flex items-center gap-2.5 rounded-[15px] px-0.5 py-0.5 transition-colors hover:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1010a3]/40 focus-visible:ring-offset-1"
               aria-pressed={structured.speaking}
               onClick={() => {
                 onUpdateStructured((current) => {
@@ -139,7 +155,7 @@ export function FeedbacksTabStudentCard({
             </button>
             <button
               type="button"
-              className="inline-flex items-center gap-2.5 rounded-[15px] px-0.5 py-0.5 transition-colors hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1010a3]/40 focus-visible:ring-offset-1"
+              className="inline-flex items-center gap-2.5 rounded-[15px] px-0.5 py-0.5 transition-colors hover:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1010a3]/40 focus-visible:ring-offset-1"
               aria-pressed={structured.writing}
               onClick={() => {
                 onUpdateStructured((current) => {
@@ -172,8 +188,10 @@ export function FeedbacksTabStudentCard({
       </div>
 
       <div className="grid grid-cols-1 gap-5 md:grid-cols-2 md:gap-6 lg:gap-8">
-        <div className="min-w-0 space-y-2">
-          <label className="block text-sm font-bold text-slate-900">{t('commentLabel')}</label>
+        <div className="min-w-0 space-y-2.5 rounded-[1.125rem] border border-[rgba(14,14,16,0.07)] bg-[#fafafa]/80 p-3.5 sm:p-4">
+          <FeedbackCategoryLabel icon={MessageSquareText} tone="sky">
+            {t('commentLabel')}
+          </FeedbackCategoryLabel>
           <textarea
             rows={4}
             value={structured.comment}
@@ -185,31 +203,33 @@ export function FeedbacksTabStudentCard({
           />
         </div>
 
-        <div className="min-w-0 space-y-3">
+        <div className="min-w-0 space-y-3 rounded-[1.125rem] border border-[rgba(14,14,16,0.07)] bg-[#fafafa]/80 p-3.5 sm:p-4">
           <button
             type="button"
-            className="flex w-full items-center justify-between gap-3 rounded-[15px] border border-transparent px-1 py-1.5 text-left transition-colors hover:border-slate-200 hover:bg-slate-50/80 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1010a3]/40 focus-visible:ring-offset-2"
+            className="flex w-full items-center justify-between gap-3 rounded-[15px] border border-transparent px-0.5 py-0.5 text-left transition-colors hover:bg-white/80 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1010a3]/40 focus-visible:ring-offset-2"
             aria-expanded={participationOpen}
             aria-controls={`participation-options-${student.id}`}
             id={`participation-trigger-${student.id}`}
             onClick={onToggleParticipation}
           >
-            <span className="flex items-center gap-2">
+            <FeedbackCategoryLabel icon={Users} tone="lime" as="span" className="pointer-events-none">
+              {t('participation')}
+            </FeedbackCategoryLabel>
+            <span className="flex shrink-0 items-center gap-2">
               <FeedbacksTabParticipationTickBox checked={participationOpen} />
-              <span className="text-sm font-bold text-slate-900">{t('participation')}</span>
+              <svg
+                className={cn(
+                  'h-5 w-5 text-[#8b8b90] transition-transform',
+                  participationOpen && 'rotate-180',
+                )}
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                aria-hidden
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
             </span>
-            <svg
-              className={cn(
-                'h-5 w-5 shrink-0 text-slate-500 transition-transform',
-                participationOpen && 'rotate-180',
-              )}
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              aria-hidden
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-            </svg>
           </button>
           {participationOpen ? (
             <div
@@ -233,8 +253,8 @@ export function FeedbacksTabStudentCard({
                     className={cn(
                       'rounded-[15px] border px-3.5 py-2 text-sm font-medium transition-colors',
                       selected
-                        ? 'border-emerald-500 bg-emerald-50 text-emerald-900'
-                        : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50',
+                        ? 'border-[#1010a3] bg-[#e8e8fc] text-[#1010a3]'
+                        : 'border-[rgba(14,14,16,0.07)] bg-white text-[#3b3b40] hover:border-[rgba(14,14,16,0.12)] hover:bg-white',
                     )}
                   >
                     {option}
@@ -247,8 +267,10 @@ export function FeedbacksTabStudentCard({
       </div>
 
       <div className="grid grid-cols-1 gap-5 md:grid-cols-2 md:gap-6 lg:gap-8">
-        <div className="space-y-2">
-          <label className="block text-sm font-bold text-slate-900">{t('progress')}</label>
+        <div className="space-y-2.5 rounded-[1.125rem] border border-[rgba(14,14,16,0.07)] bg-[#fafafa]/80 p-3.5 sm:p-4">
+          <FeedbackCategoryLabel icon={TrendingUp} tone="violet">
+            {t('progress')}
+          </FeedbackCategoryLabel>
           <textarea
             rows={4}
             value={structured.progress}
@@ -258,8 +280,10 @@ export function FeedbacksTabStudentCard({
             className={cn(FEEDBACK_FIELD_SHELL_CLASS, 'min-h-[100px] resize-y')}
           />
         </div>
-        <div className="space-y-2">
-          <label className="block text-sm font-bold text-slate-900">{t('encouragement')}</label>
+        <div className="space-y-2.5 rounded-[1.125rem] border border-[rgba(14,14,16,0.07)] bg-[#fafafa]/80 p-3.5 sm:p-4">
+          <FeedbackCategoryLabel icon={Sparkles} tone="amber">
+            {t('encouragement')}
+          </FeedbackCategoryLabel>
           <textarea
             rows={4}
             value={structured.encouragement}

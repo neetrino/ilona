@@ -1,17 +1,18 @@
 'use client';
 
-import { useMemo } from 'react';
-import { useTranslations } from 'next-intl';
-import { useLocale } from 'next-intl';
+import { useMemo, useState } from 'react';
+import { useLocale, useTranslations } from 'next-intl';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { useMyProfile } from '@/features/students';
 import { useStudentFeedback } from '@/features/feedback';
+import { StudentFeedbackViewCard } from '@/features/feedback/components/StudentFeedbackViewCard';
 import {
-  StudentBadge,
   StudentCard,
+  StudentDatePicker,
   StudentEmptyState,
   StudentErrorState,
-  StudentInnerCard,
+  StudentFieldLabel,
+  StudentGhostButton,
   StudentLoadingState,
   StudentPageStack,
 } from '@/features/student-ui';
@@ -21,13 +22,26 @@ export default function StudentMyFeedbacksPage() {
   const tCommon = useTranslations('common');
   const tStudents = useTranslations('students');
   const locale = useLocale();
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
+
   const { data: myProfile, isLoading: isLoadingProfile, error: profileError } = useMyProfile();
   const studentId = myProfile?.id ?? '';
+
+  const dateFromParam = useMemo(
+    () => (dateFrom ? new Date(`${dateFrom}T00:00:00`).toISOString() : undefined),
+    [dateFrom],
+  );
+  const dateToParam = useMemo(
+    () => (dateTo ? new Date(`${dateTo}T23:59:59.999`).toISOString() : undefined),
+    [dateTo],
+  );
+
   const {
     data: feedbacks,
     isLoading: isLoadingFeedbacks,
     error: feedbackError,
-  } = useStudentFeedback(studentId, undefined, undefined, undefined, !!studentId);
+  } = useStudentFeedback(studentId, dateFromParam, dateToParam, undefined, !!studentId);
 
   const sortedFeedbacks = useMemo(() => {
     if (!feedbacks) return [];
@@ -38,8 +52,14 @@ export default function StudentMyFeedbacksPage() {
     });
   }, [feedbacks]);
 
+  const hasDateFilter = Boolean(dateFrom || dateTo);
   const isLoading = isLoadingProfile || isLoadingFeedbacks;
   const hasError = profileError || feedbackError;
+
+  const handleResetFilters = () => {
+    setDateFrom('');
+    setDateTo('');
+  };
 
   const formatLessonDate = (iso?: string) => {
     if (!iso) return '—';
@@ -53,6 +73,40 @@ export default function StudentMyFeedbacksPage() {
   return (
     <DashboardLayout title={tNav('myFeedbacks')}>
       <StudentPageStack>
+        <StudentCard>
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
+            <div className="grid min-w-0 flex-1 grid-cols-2 gap-3">
+              <div className="min-w-0">
+                <StudentFieldLabel htmlFor="student-feedbacks-from">
+                  {tCommon('from')}
+                </StudentFieldLabel>
+                <StudentDatePicker
+                  id="student-feedbacks-from"
+                  value={dateFrom}
+                  max={dateTo || undefined}
+                  onValueChange={setDateFrom}
+                />
+              </div>
+              <div className="min-w-0">
+                <StudentFieldLabel htmlFor="student-feedbacks-to">
+                  {tCommon('to')}
+                </StudentFieldLabel>
+                <StudentDatePicker
+                  id="student-feedbacks-to"
+                  value={dateTo}
+                  min={dateFrom || undefined}
+                  onValueChange={setDateTo}
+                />
+              </div>
+            </div>
+            {hasDateFilter ? (
+              <StudentGhostButton type="button" onClick={handleResetFilters} className="shrink-0">
+                {tCommon('clear')}
+              </StudentGhostButton>
+            ) : null}
+          </div>
+        </StudentCard>
+
         {isLoading && <StudentLoadingState message={tCommon('loading')} />}
 
         {!isLoading && hasError && (
@@ -63,7 +117,13 @@ export default function StudentMyFeedbacksPage() {
         )}
 
         {!isLoading && !hasError && sortedFeedbacks.length === 0 && (
-          <StudentEmptyState title={tCommon('noData')} message={tCommon('noData')} />
+          <StudentEmptyState title={tCommon('noData')} message={tCommon('noData')}>
+            {hasDateFilter ? (
+              <StudentGhostButton type="button" onClick={handleResetFilters}>
+                {tCommon('clear')}
+              </StudentGhostButton>
+            ) : null}
+          </StudentEmptyState>
         )}
 
         {!isLoading && !hasError && sortedFeedbacks.length > 0 && (
@@ -74,19 +134,12 @@ export default function StudentMyFeedbacksPage() {
                 : '—';
 
               return (
-                <StudentCard key={feedback.id}>
-                  <div className="mb-3 flex flex-wrap items-center gap-2">
-                    <StudentBadge variant="brand">
-                      {tCommon('date')}: {formatLessonDate(feedback.lesson?.scheduledAt)}
-                    </StudentBadge>
-                    <span className="text-sm font-medium text-[#1010a3]">{teacherName}</span>
-                  </div>
-                  <StudentInnerCard>
-                    <p className="whitespace-pre-wrap text-sm leading-relaxed text-[#3b3b40]">
-                      {feedback.content}
-                    </p>
-                  </StudentInnerCard>
-                </StudentCard>
+                <StudentFeedbackViewCard
+                  key={feedback.id}
+                  feedback={feedback}
+                  dateLabel={`${tCommon('date')}: ${formatLessonDate(feedback.lesson?.scheduledAt)}`}
+                  teacherName={teacherName}
+                />
               );
             })}
           </div>

@@ -35,7 +35,7 @@ export function StudentPaymentPendingCard({ payments }: StudentPaymentPendingCar
   const isOverdue = primary.status === 'OVERDUE' || daysLeft === 0;
 
   return (
-    <section className="rounded-[1.375rem] border border-[rgba(14,14,16,0.07)] bg-white p-5 sm:p-6">
+    <section className="rounded-[1.375rem] border border-[rgba(14,14,16,0.07)] bg-white p-5 transition-[transform,box-shadow] duration-300 ease-out hover:-translate-y-1 hover:shadow-[0_10px_28px_rgba(14,14,16,0.08)] sm:p-6">
       <p className="text-[0.6875rem] font-normal uppercase tracking-[0.16em] text-[#8b8b90]">
         {t('payment.pendingLabel')}
       </p>

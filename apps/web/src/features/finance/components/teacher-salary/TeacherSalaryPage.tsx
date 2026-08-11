@@ -5,16 +5,14 @@ import { useLocale, useTranslations } from 'next-intl';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { useMySalaries, useMySalarySummary, useMyDeductions, useMySalaryBreakdown } from '@/features/finance';
 import { useMyLessons } from '@/features/lessons';
-import { formatCurrency } from '@/shared/lib/utils';
-import { Eye, X } from 'lucide-react';
+import { cn, formatCurrency } from '@/shared/lib/utils';
+import { Eye } from 'lucide-react';
 import {
   DatePickerInput,
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
   SegmentedControl,
 } from '@/shared/components/ui';
+import { studentCardHoverClass } from '@/features/student-ui';
+import { TeacherSalaryBreakdownSheet } from './TeacherSalaryBreakdownSheet';
 import { TeacherSalaryStatusBadge } from './TeacherSalaryStatusBadge';
 import {
   capitalizeLabel,
@@ -121,56 +119,55 @@ export function TeacherSalaryPage() {
       subtitle={t('salarySubtitle')}
     >
       {/* Period Filter */}
-      <div className="mb-6 flex flex-col gap-3 rounded-xl border border-[rgba(14,14,16,0.07)] bg-white p-4">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <SegmentedControl
-            options={PERIOD_PRESETS.map((p) => ({
-              id: p,
-              label: capitalizeLabel(t(PERIOD_PRESET_KEYS[p]), locale),
-            }))}
-            value={preset}
-            onChange={handlePresetChange}
-            className="w-full shrink-0 sm:w-[min(100%,24rem)]"
-            aria-label={t('period')}
-          />
-          <span className="shrink-0 text-xs text-[#8b8b90] sm:text-right">
-            {from.toLocaleDateString(locale)} – {to.toLocaleDateString(locale)}
-          </span>
-        </div>
-        {preset === 'custom' && (
-          <div className="flex flex-col gap-3 border-t border-[rgba(14,14,16,0.07)] pt-3 sm:flex-row sm:items-center sm:gap-4">
-            <div className="flex min-w-0 flex-col gap-1.5 sm:flex-row sm:items-center sm:gap-2">
+      <div className="mb-6 flex flex-col gap-3 rounded-xl border border-[rgba(14,14,16,0.07)] bg-white p-4 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+        <SegmentedControl
+          options={PERIOD_PRESETS.map((p) => ({
+            id: p,
+            label: capitalizeLabel(t(PERIOD_PRESET_KEYS[p]), locale),
+          }))}
+          value={preset}
+          onChange={handlePresetChange}
+          className="w-full shrink-0 sm:w-[min(100%,24rem)]"
+          aria-label={t('period')}
+        />
+        {preset === 'custom' ? (
+          <div className="flex min-w-0 flex-wrap items-center gap-3 sm:gap-4">
+            <div className="flex min-w-0 items-center gap-2">
               <label className="shrink-0 text-sm font-medium text-[#8b8b90]">{tCommon('from')}</label>
               <DatePickerInput
                 value={customFrom}
                 max={customTo || undefined}
                 onValueChange={setCustomFrom}
                 popoverExpanded
-                className="h-10 w-full rounded-lg border border-[rgba(14,14,16,0.07)] text-sm sm:w-[9.5rem]"
+                className="h-10 w-full rounded-[15px] border border-[rgba(14,14,16,0.07)] text-sm sm:w-[9.5rem]"
               />
             </div>
-            <div className="flex min-w-0 flex-col gap-1.5 sm:flex-row sm:items-center sm:gap-2">
+            <div className="flex min-w-0 items-center gap-2">
               <label className="shrink-0 text-sm font-medium text-[#8b8b90]">{tCommon('to')}</label>
               <DatePickerInput
                 value={customTo}
                 min={customFrom || undefined}
                 onValueChange={setCustomTo}
                 popoverExpanded
-                className="h-10 w-full rounded-lg border border-[rgba(14,14,16,0.07)] text-sm sm:w-[9.5rem]"
+                className="h-10 w-full rounded-[15px] border border-[rgba(14,14,16,0.07)] text-sm sm:w-[9.5rem]"
               />
             </div>
           </div>
+        ) : (
+          <span className="shrink-0 text-xs text-[#8b8b90] sm:text-right">
+            {from.toLocaleDateString(locale)} – {to.toLocaleDateString(locale)}
+          </span>
         )}
       </div>
 
       {/* Period Summary (reflects only selected range) */}
       <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <div className="rounded-xl border border-[rgba(14,14,16,0.07)] bg-white p-4">
+        <div className={cn('rounded-xl border border-[rgba(14,14,16,0.07)] bg-white p-4', studentCardHoverClass)}>
           <p className="text-sm text-[#8b8b90]">{t('lessons')}</p>
           <p className="text-2xl font-bold text-[#1010a3]">{periodLessonsCount}</p>
           <p className="mt-1 text-xs text-[#8b8b90]">{t('inSelectedPeriod')}</p>
         </div>
-        <div className="rounded-xl border border-[rgba(14,14,16,0.07)] bg-white p-4">
+        <div className={cn('rounded-xl border border-[rgba(14,14,16,0.07)] bg-white p-4', studentCardHoverClass)}>
           <p className="text-sm text-[#8b8b90]">{t('deductions')}</p>
           <p className="text-2xl font-bold text-red-600">
             −{formatCurrency(periodDeductionsTotal)}
@@ -179,7 +176,7 @@ export function TeacherSalaryPage() {
             {t('itemsCount', { count: periodDeductions.length })}
           </p>
         </div>
-        <div className="rounded-xl border border-[rgba(14,14,16,0.07)] bg-white p-4">
+        <div className={cn('rounded-xl border border-[rgba(14,14,16,0.07)] bg-white p-4', studentCardHoverClass)}>
           <p className="text-sm text-[#8b8b90]">{t('payments')}</p>
           <p className="text-2xl font-bold text-green-600">
             {formatCurrency(periodPayments)}
@@ -190,7 +187,7 @@ export function TeacherSalaryPage() {
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <div className="bg-white p-4 rounded-xl border border-[rgba(14,14,16,0.07)]">
+        <div className={cn('rounded-xl border border-[rgba(14,14,16,0.07)] bg-white p-4', studentCardHoverClass)}>
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center">
               <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -208,7 +205,7 @@ export function TeacherSalaryPage() {
           </div>
         </div>
 
-        <div className="bg-white p-4 rounded-xl border border-[rgba(14,14,16,0.07)]">
+        <div className={cn('rounded-xl border border-[rgba(14,14,16,0.07)] bg-white p-4', studentCardHoverClass)}>
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg bg-yellow-100 flex items-center justify-center">
               <svg className="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -226,7 +223,7 @@ export function TeacherSalaryPage() {
           </div>
         </div>
 
-        <div className="bg-white p-4 rounded-xl border border-[rgba(14,14,16,0.07)]">
+        <div className={cn('rounded-xl border border-[rgba(14,14,16,0.07)] bg-white p-4', studentCardHoverClass)}>
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg bg-red-100 flex items-center justify-center">
               <svg className="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -244,7 +241,7 @@ export function TeacherSalaryPage() {
           </div>
         </div>
 
-        <div className="bg-white p-4 rounded-xl border border-[rgba(14,14,16,0.07)]">
+        <div className={cn('rounded-xl border border-[rgba(14,14,16,0.07)] bg-white p-4', studentCardHoverClass)}>
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
               <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -341,108 +338,12 @@ export function TeacherSalaryPage() {
         </div>
       </div>
 
-      {/* Salary breakdown modal (per-lesson details, same as Admin view for this teacher) */}
-      <Dialog open={!!breakdownMonth} onOpenChange={(open) => !open && setBreakdownMonth(null)}>
-        <DialogContent
-          className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col"
-          aria-describedby={undefined}
-        >
-          <DialogHeader>
-            <DialogTitle>
-              {t('breakdownTitle')}
-              {breakdownMonth
-                ? ` – ${formatMonthFromSalary(
-                    {
-                      year: parseInt(breakdownMonth.slice(0, 4), 10),
-                      month: parseInt(breakdownMonth.slice(5, 7), 10),
-                    },
-                    locale,
-                    t('unknownMonth'),
-                  )}`
-                : ''}
-            </DialogTitle>
-          </DialogHeader>
-          <div className="overflow-auto flex-1 min-h-0">
-            {isLoadingBreakdown ? (
-              <div className="py-8 flex justify-center">
-                <LoadingSpinner size="md" />
-              </div>
-            ) : breakdown?.lessons && breakdown.lessons.length > 0 ? (
-              <>
-                <div className="border border-[rgba(14,14,16,0.07)] rounded-lg overflow-hidden">
-                  <table className="w-full text-sm">
-                    <thead className="bg-[#fafafa] border-b border-[rgba(14,14,16,0.07)]">
-                      <tr>
-                        <th className="text-left py-2 px-3 font-medium text-[#3b3b40]">{t('lessonColumn')}</th>
-                        <th className="text-left py-2 px-3 font-medium text-[#3b3b40]">{tCommon('date')}</th>
-                        <th className="text-center py-2 px-3 font-medium text-[#3b3b40]">{t('obligation')}</th>
-                        <th className="text-right py-2 px-3 font-medium text-[#3b3b40]">{t('lessonSalary')}</th>
-                        <th className="text-right py-2 px-3 font-medium text-[#3b3b40]">{t('lessonDeduction')}</th>
-                        <th className="text-right py-2 px-3 font-medium text-[#3b3b40]">{t('rowTotal')}</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-[rgba(14,14,16,0.07)]">
-                      {breakdown.lessons.map((lesson) => (
-                        <tr key={lesson.lessonId} className="hover:bg-[#fafafa]">
-                          <td className="py-2 px-3 text-[#1010a3]">{lesson.lessonName}</td>
-                          <td className="py-2 px-3 text-[#8b8b90]">
-                            {lesson.lessonDate
-                              ? new Date(lesson.lessonDate).toLocaleDateString(locale, {
-                                  month: 'short',
-                                  day: 'numeric',
-                                  year: 'numeric',
-                                })
-                              : '—'}
-                          </td>
-                          <td className="py-2 px-3 text-center text-[#3b3b40]">
-                            {lesson.obligationCompleted}/{lesson.obligationTotal}
-                          </td>
-                          <td className="py-2 px-3 text-right text-[#3b3b40]">{formatCurrency(lesson.salary)}</td>
-                          <td className="py-2 px-3 text-right text-red-600">
-                            −{formatCurrency(lesson.deduction)}
-                          </td>
-                          <td className="py-2 px-3 text-right font-medium text-[#1010a3]">
-                            {formatCurrency(lesson.total)}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-                <div className="mt-4 pt-4 border-t border-[rgba(14,14,16,0.07)] flex justify-end gap-6 text-sm font-semibold">
-                  <span className="text-[#8b8b90]">
-                    {t('grossSummary', {
-                      amount: formatCurrency(breakdown.lessons.reduce((s, l) => s + l.salary, 0)),
-                    })}
-                  </span>
-                  <span className="text-red-600">
-                    {t('deductionsSummary', {
-                      amount: formatCurrency(breakdown.lessons.reduce((s, l) => s + l.deduction, 0)),
-                    })}
-                  </span>
-                  <span className="text-[#1010a3]">
-                    {t('netSummary', {
-                      amount: formatCurrency(breakdown.lessons.reduce((s, l) => s + l.total, 0)),
-                    })}
-                  </span>
-                </div>
-              </>
-            ) : breakdownMonth && !isLoadingBreakdown ? (
-              <p className="py-8 text-center text-[#8b8b90]">{t('breakdownNoLessons')}</p>
-            ) : null}
-          </div>
-          <div className="flex justify-end pt-4 border-t border-[rgba(14,14,16,0.07)]">
-            <button
-              type="button"
-              onClick={() => setBreakdownMonth(null)}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-[rgba(14,14,16,0.07)] text-[#3b3b40] hover:bg-[#fafafa]"
-            >
-              <X className="w-4 h-4" />
-              {tCommon('close')}
-            </button>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <TeacherSalaryBreakdownSheet
+        month={breakdownMonth}
+        breakdown={breakdown}
+        isLoading={isLoadingBreakdown}
+        onClose={() => setBreakdownMonth(null)}
+      />
     </DashboardLayout>
   );
 }

@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { cn } from '@/shared/lib/utils';
 import {
   studentCardClass,
+  studentCardHoverClass,
   studentTableHeadClass,
   studentTableRowHoverClass,
 } from './tokens';
@@ -34,7 +35,7 @@ export function StudentStatTile({
   isLoading?: boolean;
 }) {
   return (
-    <article className={studentCardClass}>
+    <article className={cn(studentCardClass, studentCardHoverClass)}>
       <div className="flex items-start gap-3">
         <div
           className={cn(
@@ -150,7 +151,13 @@ export function StudentTd({
   colSpan?: number;
 }) {
   return (
-    <td colSpan={colSpan} className={cn('px-4 py-3 align-top', className)}>
+    <td
+      colSpan={colSpan}
+      className={cn(
+        'px-4 py-3 align-top transition-colors group-hover/row:bg-[#fafafa]',
+        className,
+      )}
+    >
       {children}
     </td>
   );

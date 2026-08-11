@@ -1839,6 +1839,7 @@
     "saveFailed": "Պահպանել չհաջողվեց",
     "selectedGroup": "Ընտրված խումբ",
     "topicTitlePlaceholder": "Թեմա {number} վերնագիր",
+    "topicSectionLabel": "Թեմա {number}",
     "linkOptionalPlaceholder": "https://… (ըստ ցանկության)",
     "descriptionOptional": "Նկարագրություն (ըստ ցանկության)",
     "descriptionPlaceholder": "Նկարագրություն",
