@@ -100,11 +100,11 @@ export function LandingProgramsSection({ tr, isHy }: LandingSectionProps) {
             titleClassName="text-center text-[48px] font-extrabold leading-[48px] tracking-[0.3516px] text-[#0a0a0a]"
           />
       
-          <div className="flex items-stretch justify-center gap-5">
+          <div className="grid auto-rows-fr grid-cols-3 gap-5">
             {programs.map((program, index) => (
               <motion.article
                 key={program.id}
-                className="flex w-[300px] flex-col justify-center rounded-[26px] bg-[#093394] px-[30px] pt-7 pb-10"
+                className="flex h-full w-[300px] flex-col rounded-[26px] bg-[#093394] px-[30px] pt-7 pb-10"
                 initial={{ opacity: 0, y: 28 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.55, ease: 'easeOut', delay: index * 0.08 }}
@@ -119,7 +119,7 @@ export function LandingProgramsSection({ tr, isHy }: LandingSectionProps) {
                 <p className="mt-3 text-[14px] leading-[22px] text-white">
                   {program.details}
                 </p>
-                <p className="mt-6 text-[23px] font-bold leading-[26px] text-white">
+                <p className="mt-auto pt-6 text-[23px] font-bold leading-[26px] text-white">
                   {program.price} AMD
                   {isHy ? (
                     <span className="text-white/60">
