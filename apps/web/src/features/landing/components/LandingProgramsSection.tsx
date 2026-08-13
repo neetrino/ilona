@@ -16,7 +16,7 @@ export function LandingProgramsSection({ tr, isHy }: LandingSectionProps) {
         <div className="flex flex-col gap-6 tablet:hidden">
           <LandingSectionHeader
             className="px-5"
-            title={tr('Student Success', 'Ուսանողների հաջողություններ')}
+            title={tr('Our Courses', 'Մեր դասընթացները')}
             titleClassName="text-center text-[28px] font-extrabold leading-[42px] tracking-[0.35px] text-[#0a0a0a]"
           />
       
@@ -93,7 +93,7 @@ export function LandingProgramsSection({ tr, isHy }: LandingSectionProps) {
       
         <div className="mx-auto hidden w-full max-w-[1280px] flex-col items-center gap-[69px] px-6 py-2 tablet:flex">
           <LandingSectionHeader
-            title={tr('Student Success', 'Ուսանողների հաջողություններ')}
+            title={tr('Our Courses', 'Մեր դասընթացները')}
             titleClassName="text-center text-[48px] font-extrabold leading-[48px] tracking-[0.3516px] text-[#0a0a0a]"
           />
       
