@@ -24,7 +24,6 @@ import {
   toIsoStartOfDay,
   type PeriodPreset,
 } from './teacher-salary.utils';
-import { LoadingSpinner } from '@/shared/components/ui/loading-spinner';
 
 const PERIOD_PRESET_KEYS = {
   day: 'periodDay',
