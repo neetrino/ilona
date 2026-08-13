@@ -4,11 +4,14 @@ import { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { cn } from '@/shared/lib/utils';
 import { BUTTON_HOVER_CLASS } from '../landingConstants';
+import { createLandingPrograms } from '../landingProgramsContent';
 import { LandingSectionHeader } from './LandingSectionHeader';
 import type { LandingSectionProps } from '../types';
 
 export function LandingProgramsSection({ tr, isHy }: LandingSectionProps) {
   const [activeProgramIndex, setActiveProgramIndex] = useState(0);
+  const programs = createLandingPrograms(tr);
+  const activeProgram = programs[activeProgramIndex] ?? programs[0];
 
   return (
     <>
@@ -35,13 +38,13 @@ export function LandingProgramsSection({ tr, isHy }: LandingSectionProps) {
                   {(activeProgramIndex + 1).toString().padStart(2, '0')}
                 </p>
                 <p className="mt-4 text-[20px] font-bold leading-[26px] text-white">
-                  {tr('Program Name', 'Ծրագրի անվանում')}
+                  {activeProgram.title}
                 </p>
                 <p className="mt-2 text-[13px] leading-[19.5px] text-white">
-                  {tr('Program details', 'Ծրագրի մանրամասներ')}
+                  {activeProgram.details}
                 </p>
                 <p className="mt-4 text-[20px] font-bold leading-[30px] text-white">
-                  18000 AMD
+                  {activeProgram.price} AMD
                   {isHy ? (
                     <span className="text-white/60">
                       <span>/</span>
@@ -61,9 +64,9 @@ export function LandingProgramsSection({ tr, isHy }: LandingSectionProps) {
               role="tablist"
               aria-label={tr('Programs', 'Ծրագրեր')}
             >
-              {[0, 1, 2, 3].map((index) => (
+              {programs.map((program, index) => (
                 <button
-                  key={index}
+                  key={program.id}
                   type="button"
                   role="tab"
                   aria-selected={activeProgramIndex === index}
@@ -98,9 +101,9 @@ export function LandingProgramsSection({ tr, isHy }: LandingSectionProps) {
           />
       
           <div className="flex items-stretch justify-center gap-5">
-            {[1, 2, 3, 4].map((item, index) => (
+            {programs.map((program, index) => (
               <motion.article
-                key={item}
+                key={program.id}
                 className="flex w-[300px] flex-col justify-center rounded-[26px] bg-[#093394] px-[30px] pt-7 pb-10"
                 initial={{ opacity: 0, y: 28 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -108,16 +111,16 @@ export function LandingProgramsSection({ tr, isHy }: LandingSectionProps) {
                 viewport={{ once: true, amount: 0.35 }}
               >
                 <p className="text-[70px] font-bold leading-[78px] text-white">
-                  {item.toString().padStart(2, '0')}
+                  {(index + 1).toString().padStart(2, '0')}
                 </p>
                 <p className="mt-5 text-[23px] font-bold leading-[26px] text-white">
-                  {tr('Program Name', 'Ծրագրի անվանում')}
+                  {program.title}
                 </p>
                 <p className="mt-3 text-[14px] leading-[22px] text-white">
-                  {tr('Program details', 'Ծրագրի մանրամասներ')}
+                  {program.details}
                 </p>
                 <p className="mt-6 text-[23px] font-bold leading-[26px] text-white">
-                  18000 AMD
+                  {program.price} AMD
                   {isHy ? (
                     <span className="text-white/60">
                       <span className="text-[23px]">/</span>
