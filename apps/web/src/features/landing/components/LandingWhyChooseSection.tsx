@@ -9,21 +9,20 @@ import type { LandingSectionProps } from '../types';
 
 export function LandingWhyChooseSection({ tr, isHy }: LandingSectionProps) {
   const sectionTitle = tr('Why Choose Us', 'Ինչու ընտրել մեզ');
-  const sectionSubtitle = tr('Experience the difference', 'Զգացեք տարբերությունը');
   const environmentTitle = tr('Modern Environment', 'Ժամանակակից միջավայր');
   const environmentBody = tr(
-    'A welcoming learning environment equipped with advanced technology designed for classes',
-    'Հաճելի կրթական միջավայր՝ դասերի համար նախատեսված բարձրագույն տեխնոլոգիաներով',
+    'A welcoming learning environment equipped with advanced technology designed for classes.',
+    'Հաճելի կրթական միջավայր՝ դասերի համար նախատեսված բարձրագույն տեխնոլոգիաներով։',
   );
   const certificateTitle = tr('Level Certificate', 'Մակարդակի վկայական');
   const certificateBody = tr(
-    'Upon completion of each level, IEC issues the corresponding certificate',
-    'Յուրաքանչյուր մակարդակի ավարտին IEC-ն տրամադրում է համապատասխան վկայական',
+    'Upon completion of each level, IEC issues the corresponding certificate.',
+    'Յուրաքանչյուր մակարդակի ավարտին IEC-ն տրամադրում է համապատասխան վկայական։',
   );
   const teachersTitle = tr('Experienced Teachers', 'Փորձառու ուսուցիչներ');
   const teachersBody = tr(
-    'Certified specialists with international experience and boundless energy',
-    'Հավաստագրված մասնագետներ՝ միջազգային փորձով և անսպառ եռանդով',
+    'Certified specialists with international experience and boundless energy.',
+    'Հավաստագրված մասնագետներ՝ միջազգային փորձով և անսպառ եռանդով։',
   );
   const platformTitle = tr(
     'IEC Internal Digital Learning Platform',
@@ -42,17 +41,40 @@ export function LandingWhyChooseSection({ tr, isHy }: LandingSectionProps) {
             <h2 className="text-[28px] font-extrabold leading-[42px] tracking-[0.35px] text-[#0a0a0a]">
               {sectionTitle}
             </h2>
-            <p className="mt-2 text-[16px] leading-[24px] tracking-[-0.45px] text-[#4a5565]">
-              {sectionSubtitle}
-            </p>
           </LandingScrollReveal>
       
           <div className="grid grid-cols-2 gap-4">
             <motion.article
-              className="relative min-h-[220px] overflow-hidden rounded-[24px] bg-gradient-to-br from-[#eff6ff] to-[#dbeafe] px-4 pb-4"
+              className="relative min-h-[220px] overflow-hidden rounded-[24px] bg-gradient-to-br from-[#eff6ff] to-[#dff2fe] px-4 pb-4"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.55, ease: 'easeOut' }}
+              viewport={{ once: true, amount: 0.35 }}
+            >
+              <Image
+                src={WHY_TEACHERS_IMAGE}
+                alt=""
+                width={110}
+                height={110}
+                unoptimized
+                loading="lazy"
+                className={isHy ? whyChooseMobileIconHy : whyChooseMobileIconBase}
+              />
+              <div className={isHy ? whyChooseMobileContentHy : whyChooseMobileContentBase}>
+                <h3 className={isHy ? whyChooseMobileTitleHy : whyChooseMobileTitleBase}>
+                  {teachersTitle}
+                </h3>
+                <p className={isHy ? whyChooseMobileBodyHy : whyChooseMobileBodyBase}>
+                  {teachersBody}
+                </p>
+              </div>
+            </motion.article>
+      
+            <motion.article
+              className="relative min-h-[220px] overflow-hidden rounded-[24px] bg-gradient-to-br from-[#eff6ff] to-[#dbeafe] px-4 pb-4"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.55, ease: 'easeOut', delay: 0.08 }}
               viewport={{ once: true, amount: 0.35 }}
             >
               <Image
@@ -78,7 +100,7 @@ export function LandingWhyChooseSection({ tr, isHy }: LandingSectionProps) {
               className="relative min-h-[220px] overflow-hidden rounded-[24px] bg-[#ffd2d2] px-4 pb-4"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.55, ease: 'easeOut', delay: 0.08 }}
+              transition={{ duration: 0.55, ease: 'easeOut', delay: 0.16 }}
               viewport={{ once: true, amount: 0.35 }}
             >
               <Image
@@ -96,32 +118,6 @@ export function LandingWhyChooseSection({ tr, isHy }: LandingSectionProps) {
                 </h3>
                 <p className={isHy ? whyChooseMobileBodyHy : whyChooseMobileBodyBase}>
                   {certificateBody}
-                </p>
-              </div>
-            </motion.article>
-      
-            <motion.article
-              className="relative min-h-[220px] overflow-hidden rounded-[24px] bg-gradient-to-br from-[#eff6ff] to-[#dff2fe] px-4 pb-4"
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.55, ease: 'easeOut', delay: 0.16 }}
-              viewport={{ once: true, amount: 0.35 }}
-            >
-              <Image
-                src={WHY_TEACHERS_IMAGE}
-                alt=""
-                width={110}
-                height={110}
-                unoptimized
-                loading="lazy"
-                className={isHy ? whyChooseMobileIconHy : whyChooseMobileIconBase}
-              />
-              <div className={isHy ? whyChooseMobileContentHy : whyChooseMobileContentBase}>
-                <h3 className={isHy ? whyChooseMobileTitleHy : whyChooseMobileTitleBase}>
-                  {teachersTitle}
-                </h3>
-                <p className={isHy ? whyChooseMobileBodyHy : whyChooseMobileBodyBase}>
-                  {teachersBody}
                 </p>
               </div>
             </motion.article>
@@ -163,70 +159,14 @@ export function LandingWhyChooseSection({ tr, isHy }: LandingSectionProps) {
             <h2 className="text-[48px] font-extrabold leading-[48px] tracking-[0.3516px] text-[#0a0a0a]">
               {sectionTitle}
             </h2>
-            <p className="mt-4 text-[20px] leading-[28px] tracking-[-0.4492px] text-[#4a5565]">
-              {sectionSubtitle}
-            </p>
           </div>
       
-          <div className="mx-auto mt-[95px] grid w-full max-w-[1216px] grid-cols-4 gap-8 px-6">
-            <motion.article
-              className="relative min-h-[366px] overflow-hidden rounded-[24px] bg-gradient-to-br from-[#eff6ff] to-[#dbeafe] px-[34px] pb-8"
-              initial={{ opacity: 0, y: 28 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.55, ease: 'easeOut' }}
-              viewport={{ once: true, amount: 0.35 }}
-            >
-              <Image
-                src={WHY_METHODS_IMAGE}
-                alt=""
-                width={251}
-                height={251}
-                unoptimized
-                className={isHy ? whyChooseDesktopMethodsIconHy : whyChooseDesktopMethodsIconBase}
-              />
-              <h3 className={isHy ? whyChooseDesktopTitleHy : whyChooseDesktopTitleBase}>
-                {environmentTitle}
-              </h3>
-              <p className={isHy ? whyChooseDesktopBodyHy : whyChooseDesktopBodyBase}>
-                {environmentBody}
-              </p>
-            </motion.article>
-      
-            <motion.article
-              className="relative min-h-[366px] overflow-hidden rounded-[24px] bg-[#ffd2d2] px-[34px] pb-8"
-              initial={{ opacity: 0, y: 28 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.55, ease: 'easeOut', delay: 0.08 }}
-              viewport={{ once: true, amount: 0.35 }}
-            >
-              <div
-                className={
-                  isHy ? whyChooseDesktopResultsIconWrapHy : whyChooseDesktopResultsIconWrapBase
-                }
-              >
-                <Image
-                  src={WHY_RESULTS_IMAGE}
-                  alt=""
-                  fill
-                  unoptimized
-                  loading="lazy"
-                  sizes="294px"
-                  className="object-contain"
-                />
-              </div>
-              <h3 className={isHy ? whyChooseDesktopTitleHy : whyChooseDesktopTitleBase}>
-                {certificateTitle}
-              </h3>
-              <p className={isHy ? whyChooseDesktopBodyHy : whyChooseDesktopBodyBase}>
-                {certificateBody}
-              </p>
-            </motion.article>
-      
+          <div className="mx-auto mt-[80px] grid w-full max-w-[1216px] grid-cols-4 gap-8 px-6">
             <motion.article
               className="relative min-h-[366px] overflow-hidden rounded-[24px] bg-gradient-to-br from-[#eff6ff] to-[#dff2fe] px-[34px] pb-8"
               initial={{ opacity: 0, y: 28 }}
               whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.55, ease: 'easeOut', delay: 0.16 }}
+              transition={{ duration: 0.55, ease: 'easeOut' }}
               viewport={{ once: true, amount: 0.35 }}
             >
               <div
@@ -249,6 +189,59 @@ export function LandingWhyChooseSection({ tr, isHy }: LandingSectionProps) {
               </h3>
               <p className={isHy ? whyChooseDesktopBodyHy : whyChooseDesktopBodyBase}>
                 {teachersBody}
+              </p>
+            </motion.article>
+      
+            <motion.article
+              className="relative min-h-[366px] overflow-hidden rounded-[24px] bg-gradient-to-br from-[#eff6ff] to-[#dbeafe] px-[34px] pb-8"
+              initial={{ opacity: 0, y: 28 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.55, ease: 'easeOut', delay: 0.08 }}
+              viewport={{ once: true, amount: 0.35 }}
+            >
+              <Image
+                src={WHY_METHODS_IMAGE}
+                alt=""
+                width={251}
+                height={251}
+                unoptimized
+                className={isHy ? whyChooseDesktopMethodsIconHy : whyChooseDesktopMethodsIconBase}
+              />
+              <h3 className={isHy ? whyChooseDesktopTitleHy : whyChooseDesktopTitleBase}>
+                {environmentTitle}
+              </h3>
+              <p className={isHy ? whyChooseDesktopBodyHy : whyChooseDesktopBodyBase}>
+                {environmentBody}
+              </p>
+            </motion.article>
+      
+            <motion.article
+              className="relative min-h-[366px] overflow-hidden rounded-[24px] bg-[#ffd2d2] px-[34px] pb-8"
+              initial={{ opacity: 0, y: 28 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.55, ease: 'easeOut', delay: 0.16 }}
+              viewport={{ once: true, amount: 0.35 }}
+            >
+              <div
+                className={
+                  isHy ? whyChooseDesktopResultsIconWrapHy : whyChooseDesktopResultsIconWrapBase
+                }
+              >
+                <Image
+                  src={WHY_RESULTS_IMAGE}
+                  alt=""
+                  fill
+                  unoptimized
+                  loading="lazy"
+                  sizes="294px"
+                  className="object-contain"
+                />
+              </div>
+              <h3 className={isHy ? whyChooseDesktopTitleHy : whyChooseDesktopTitleBase}>
+                {certificateTitle}
+              </h3>
+              <p className={isHy ? whyChooseDesktopBodyHy : whyChooseDesktopBodyBase}>
+                {certificateBody}
               </p>
             </motion.article>
       
