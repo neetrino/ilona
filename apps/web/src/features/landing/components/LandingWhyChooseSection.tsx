@@ -2,30 +2,54 @@
 
 import Image from 'next/image';
 import { motion } from 'framer-motion';
-import { cn } from '@/shared/lib/utils';
 import { WHY_METHODS_IMAGE, WHY_RESULTS_IMAGE, WHY_TEACHERS_IMAGE, WHY_SCHEDULE_IMAGE } from '../landingConstants';
 import { whyChooseDesktopBodyBase, whyChooseDesktopBodyHy, whyChooseDesktopMethodsIconBase, whyChooseDesktopMethodsIconHy, whyChooseDesktopResultsIconWrapBase, whyChooseDesktopResultsIconWrapHy, whyChooseDesktopScheduleIconWrapBase, whyChooseDesktopTeachersIconWrapBase, whyChooseDesktopTeachersIconWrapHy, whyChooseDesktopTitleBase, whyChooseDesktopTitleHy, whyChooseMobileBodyBase, whyChooseMobileBodyHy, whyChooseMobileContentBase, whyChooseMobileContentHy, whyChooseMobileFourthContentHy, whyChooseMobileIconBase, whyChooseMobileIconHy, whyChooseMobileTitleBase, whyChooseMobileTitleHy } from '../landingStyles';
 import { LandingScrollReveal } from './LandingScrollReveal';
 import type { LandingSectionProps } from '../types';
 
 export function LandingWhyChooseSection({ tr, isHy }: LandingSectionProps) {
+  const sectionTitle = tr('Why Choose Us', 'Ինչու ընտրել մեզ');
+  const sectionSubtitle = tr('Experience the difference', 'Զգացեք տարբերությունը');
+  const environmentTitle = tr('Modern Environment', 'Ժամանակակից միջավայր');
+  const environmentBody = tr(
+    'A welcoming learning environment equipped with advanced technology designed for classes',
+    'Հաճելի կրթական միջավայր՝ դասերի համար նախատեսված բարձրագույն տեխնոլոգիաներով',
+  );
+  const certificateTitle = tr('Level Certificate', 'Մակարդակի վկայական');
+  const certificateBody = tr(
+    'Upon completion of each level, IEC issues the corresponding certificate',
+    'Յուրաքանչյուր մակարդակի ավարտին IEC-ն տրամադրում է համապատասխան վկայական',
+  );
+  const teachersTitle = tr('Experienced Teachers', 'Փորձառու ուսուցիչներ');
+  const teachersBody = tr(
+    'Certified specialists with international experience and boundless energy',
+    'Հավաստագրված մասնագետներ՝ միջազգային փորձով և անսպառ եռանդով',
+  );
+  const platformTitle = tr(
+    'IEC Internal Digital Learning Platform',
+    'IEC ներքին թվային ուսումնական հարթակը',
+  );
+  const platformBody = tr(
+    "Exclusively for the centre's teachers and students, where students have their personal accounts and regularly receive information and feedback from their teacher on their progress, achievements, and future goals.",
+    'Բացառապես կենտրոնի ուսուցիչների և սովորողների համար, որտեղ սովորողներն ունեն իրենց անձնական հաշիվները և պարբերաբար ստանում են իրենց առաջընթացի, ձեռքբերումների և հետագա նպատակների վերաբերյալ տեղեկություններն ու հետադարձ կապը ուսուցչի կողմից։',
+  );
 
   return (
     <>
-      <section className="relative overflow-hidden bg-white max-tablet:-mt-px tablet:h-[764px] scroll-mt-28" id="teachers">
+      <section className="relative overflow-hidden bg-white max-tablet:-mt-px tablet:min-h-[764px] tablet:pb-20 scroll-mt-28" id="teachers">
         <div className="flex flex-col gap-8 px-5 pb-10 pt-10 tablet:hidden">
           <LandingScrollReveal className="text-center">
             <h2 className="text-[28px] font-extrabold leading-[42px] tracking-[0.35px] text-[#0a0a0a]">
-              {tr('Why Choose IEC?', 'Ինչու ընտրել IEC-ը')}
+              {sectionTitle}
             </h2>
             <p className="mt-2 text-[16px] leading-[24px] tracking-[-0.45px] text-[#4a5565]">
-              {tr('Experience the difference', 'Զգացեք տարբերությունը')}
+              {sectionSubtitle}
             </p>
           </LandingScrollReveal>
       
           <div className="grid grid-cols-2 gap-4">
             <motion.article
-              className="relative h-[220px] overflow-hidden rounded-[24px] bg-gradient-to-br from-[#eff6ff] to-[#dbeafe] px-4"
+              className="relative min-h-[220px] overflow-hidden rounded-[24px] bg-gradient-to-br from-[#eff6ff] to-[#dbeafe] px-4 pb-4"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.55, ease: 'easeOut' }}
@@ -42,19 +66,16 @@ export function LandingWhyChooseSection({ tr, isHy }: LandingSectionProps) {
               />
               <div className={isHy ? whyChooseMobileContentHy : whyChooseMobileContentBase}>
                 <h3 className={isHy ? whyChooseMobileTitleHy : whyChooseMobileTitleBase}>
-                  {tr('Modern Methods', 'Ժամանակակից մեթոդներ')}
+                  {environmentTitle}
                 </h3>
                 <p className={isHy ? whyChooseMobileBodyHy : whyChooseMobileBodyBase}>
-                  {tr(
-                    'Interactive lessons, multimedia resources, and real-world practice scenarios',
-                    'Ինտերակտիվ դասեր, մուլտիմեդիա ռեսուրսներ և իրական կիրառական վարժություններ',
-                  )}
+                  {environmentBody}
                 </p>
               </div>
             </motion.article>
       
             <motion.article
-              className="relative h-[220px] overflow-hidden rounded-[24px] bg-[#ffd2d2] px-4"
+              className="relative min-h-[220px] overflow-hidden rounded-[24px] bg-[#ffd2d2] px-4 pb-4"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.55, ease: 'easeOut', delay: 0.08 }}
@@ -71,19 +92,16 @@ export function LandingWhyChooseSection({ tr, isHy }: LandingSectionProps) {
               />
               <div className={isHy ? whyChooseMobileContentHy : whyChooseMobileContentBase}>
                 <h3 className={isHy ? whyChooseMobileTitleHy : whyChooseMobileTitleBase}>
-                  {tr('Proven Results', 'Ապացուցված արդյունքներ')}
+                  {certificateTitle}
                 </h3>
                 <p className={isHy ? whyChooseMobileBodyHy : whyChooseMobileBodyBase}>
-                  {tr(
-                    '98% of our students achieve their language goals and pass international exams',
-                    'Մեր ուսանողների 98%-ը հասնում է իր լեզվական նպատակներին և հանձնում միջազգային քննություններ',
-                  )}
+                  {certificateBody}
                 </p>
               </div>
             </motion.article>
       
             <motion.article
-              className="relative h-[220px] overflow-hidden rounded-[24px] bg-gradient-to-br from-[#eff6ff] to-[#dff2fe] px-4"
+              className="relative min-h-[220px] overflow-hidden rounded-[24px] bg-gradient-to-br from-[#eff6ff] to-[#dff2fe] px-4 pb-4"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.55, ease: 'easeOut', delay: 0.16 }}
@@ -100,19 +118,16 @@ export function LandingWhyChooseSection({ tr, isHy }: LandingSectionProps) {
               />
               <div className={isHy ? whyChooseMobileContentHy : whyChooseMobileContentBase}>
                 <h3 className={isHy ? whyChooseMobileTitleHy : whyChooseMobileTitleBase}>
-                  {tr('Expert Teachers', 'Փորձառու ուսուցիչներ')}
+                  {teachersTitle}
                 </h3>
                 <p className={isHy ? whyChooseMobileBodyHy : whyChooseMobileBodyBase}>
-                  {tr(
-                    'Certified instructors with 10+ years of experience and native-level proficiency',
-                    'Հավաստագրված դասավանդողներ՝ 10+ տարվա փորձով և բարձր լեզվական հմտություններով',
-                  )}
+                  {teachersBody}
                 </p>
               </div>
             </motion.article>
       
             <motion.article
-              className="relative h-[220px] overflow-hidden rounded-[24px] bg-[rgba(132,169,255,0.52)] px-4"
+              className="relative min-h-[220px] overflow-hidden rounded-[24px] bg-[rgba(132,169,255,0.52)] px-4 pb-4"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.55, ease: 'easeOut', delay: 0.24 }}
@@ -133,13 +148,10 @@ export function LandingWhyChooseSection({ tr, isHy }: LandingSectionProps) {
                 }
               >
                 <h3 className={isHy ? whyChooseMobileTitleHy : whyChooseMobileTitleBase}>
-                  {tr('Flexible Schedule', 'Ճկուն գրաֆիկ')}
+                  {platformTitle}
                 </h3>
                 <p className={isHy ? whyChooseMobileBodyHy : whyChooseMobileBodyBase}>
-                  {tr(
-                    'Morning, afternoon, and evening classes to fit your busy lifestyle',
-                    'Առավոտյան, ցերեկային և երեկոյան դասեր՝ ձեր զբաղված առօրյային հարմար',
-                  )}
+                  {platformBody}
                 </p>
               </div>
             </motion.article>
@@ -149,16 +161,16 @@ export function LandingWhyChooseSection({ tr, isHy }: LandingSectionProps) {
         <div className="max-tablet:hidden">
           <div className="pt-20 text-center">
             <h2 className="text-[48px] font-extrabold leading-[48px] tracking-[0.3516px] text-[#0a0a0a]">
-              {tr('Why Choose IEC?', 'Ինչու ընտրել IEC-ը')}
+              {sectionTitle}
             </h2>
             <p className="mt-4 text-[20px] leading-[28px] tracking-[-0.4492px] text-[#4a5565]">
-              {tr('Experience the difference', 'Զգացեք տարբերությունը')}
+              {sectionSubtitle}
             </p>
           </div>
       
           <div className="mx-auto mt-[95px] grid w-full max-w-[1216px] grid-cols-4 gap-8 px-6">
             <motion.article
-              className="relative h-[366px] overflow-hidden rounded-[24px] bg-gradient-to-br from-[#eff6ff] to-[#dbeafe] px-[34px]"
+              className="relative min-h-[366px] overflow-hidden rounded-[24px] bg-gradient-to-br from-[#eff6ff] to-[#dbeafe] px-[34px] pb-8"
               initial={{ opacity: 0, y: 28 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.55, ease: 'easeOut' }}
@@ -173,23 +185,15 @@ export function LandingWhyChooseSection({ tr, isHy }: LandingSectionProps) {
                 className={isHy ? whyChooseDesktopMethodsIconHy : whyChooseDesktopMethodsIconBase}
               />
               <h3 className={isHy ? whyChooseDesktopTitleHy : whyChooseDesktopTitleBase}>
-                {tr('Modern Methods', 'Ժամանակակից մեթոդներ')}
+                {environmentTitle}
               </h3>
               <p className={isHy ? whyChooseDesktopBodyHy : whyChooseDesktopBodyBase}>
-                <span className={cn('block', !isHy && 'whitespace-nowrap')}>
-                  {tr('Interactive lessons,', 'Ինտերակտիվ դասեր,')}
-                </span>
-                <span className={cn('block', !isHy && 'whitespace-nowrap')}>
-                  {tr('multimedia resources, and', 'մուլտիմեդիա ռեսուրսներ և')}
-                </span>
-                <span className={cn('block', !isHy && 'whitespace-nowrap')}>
-                  {tr('real-world practice scenarios', 'իրական կիրառական վարժություններ')}
-                </span>
+                {environmentBody}
               </p>
             </motion.article>
       
             <motion.article
-              className="relative h-[366px] overflow-hidden rounded-[24px] bg-[#ffd2d2] px-[34px]"
+              className="relative min-h-[366px] overflow-hidden rounded-[24px] bg-[#ffd2d2] px-[34px] pb-8"
               initial={{ opacity: 0, y: 28 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.55, ease: 'easeOut', delay: 0.08 }}
@@ -211,18 +215,15 @@ export function LandingWhyChooseSection({ tr, isHy }: LandingSectionProps) {
                 />
               </div>
               <h3 className={isHy ? whyChooseDesktopTitleHy : whyChooseDesktopTitleBase}>
-                {tr('Proven Results', 'Ապացուցված արդյունքներ')}
+                {certificateTitle}
               </h3>
               <p className={isHy ? whyChooseDesktopBodyHy : whyChooseDesktopBodyBase}>
-                {tr(
-                  '98% of our students achieve their language goals and pass international exams',
-                  'Մեր ուսանողների 98%-ը հասնում է իր լեզվական նպատակներին և հանձնում միջազգային քննություններ',
-                )}
+                {certificateBody}
               </p>
             </motion.article>
       
             <motion.article
-              className="relative h-[366px] overflow-hidden rounded-[24px] bg-gradient-to-br from-[#eff6ff] to-[#dff2fe] px-[34px]"
+              className="relative min-h-[366px] overflow-hidden rounded-[24px] bg-gradient-to-br from-[#eff6ff] to-[#dff2fe] px-[34px] pb-8"
               initial={{ opacity: 0, y: 28 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.55, ease: 'easeOut', delay: 0.16 }}
@@ -244,18 +245,15 @@ export function LandingWhyChooseSection({ tr, isHy }: LandingSectionProps) {
                 />
               </div>
               <h3 className={isHy ? whyChooseDesktopTitleHy : whyChooseDesktopTitleBase}>
-                {tr('Expert Teachers', 'Փորձառու ուսուցիչներ')}
+                {teachersTitle}
               </h3>
               <p className={isHy ? whyChooseDesktopBodyHy : whyChooseDesktopBodyBase}>
-                {tr(
-                  'Certified instructors with 10+ years of experience and native-level proficiency',
-                  'Հավաստագրված դասավանդողներ՝ 10+ տարվա փորձով և բարձր լեզվական հմտություններով',
-                )}
+                {teachersBody}
               </p>
             </motion.article>
       
             <motion.article
-              className="relative h-[366px] overflow-hidden rounded-[24px] bg-[rgba(132,169,255,0.52)] px-[34px]"
+              className="relative min-h-[366px] overflow-hidden rounded-[24px] bg-[rgba(132,169,255,0.52)] px-[34px] pb-8"
               initial={{ opacity: 0, y: 28 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.55, ease: 'easeOut', delay: 0.24 }}
@@ -273,13 +271,10 @@ export function LandingWhyChooseSection({ tr, isHy }: LandingSectionProps) {
                 />
               </div>
               <h3 className={isHy ? whyChooseDesktopTitleHy : whyChooseDesktopTitleBase}>
-                {tr('Flexible Schedule', 'Ճկուն գրաֆիկ')}
+                {platformTitle}
               </h3>
               <p className={isHy ? whyChooseDesktopBodyHy : whyChooseDesktopBodyBase}>
-                {tr(
-                  'Morning, afternoon, and evening classes to fit your busy lifestyle',
-                  'Առավոտյան, ցերեկային և երեկոյան դասեր՝ ձեր զբաղված առօրյային հարմար',
-                )}
+                {platformBody}
               </p>
             </motion.article>
           </div>

@@ -146,7 +146,7 @@ export function LandingAboutSection({ tr, isHy }: LandingSectionProps) {
           >
             <div className="rotate-[6deg] rounded-full bg-[#093394] px-4 py-1.5">
               <span className="text-[12px] font-bold leading-[18px] text-white">
-                {tr('15+ Years', '15+ տարի')}
+                {tr('4+ Years', '4+ տարի')}
               </span>
             </div>
           </motion.div>
@@ -168,7 +168,7 @@ export function LandingAboutSection({ tr, isHy }: LandingSectionProps) {
           >
             <div className="-rotate-6 rounded-full bg-[#fb2c36] px-4 py-1.5">
               <span className="text-[12px] font-bold leading-[18px] text-white">
-                {tr('Since 2011', '2011-ից')}
+                {tr('Since 2022', '2022-ից')}
               </span>
             </div>
           </motion.div>
@@ -258,7 +258,7 @@ export function LandingAboutSection({ tr, isHy }: LandingSectionProps) {
             >
               <div className="rotate-[-12deg] rounded-full bg-[#fb2c36] px-6 py-3">
                 <span className="text-[16px] font-bold leading-[24px] tracking-[-0.3125px] text-white">
-                  {tr('Since 2011', '2011-ից')}
+                  {tr('Since 2022', '2022-ից')}
                 </span>
               </div>
             </motion.div>
@@ -311,7 +311,7 @@ export function LandingAboutSection({ tr, isHy }: LandingSectionProps) {
           >
             <div className="rotate-[12deg] rounded-full bg-[#093394] px-6 py-3">
               <span className="text-[16px] font-bold leading-[24px] tracking-[-0.3125px] text-white">
-                {tr('15+ Years', '15+ տարի')}
+                {tr('4+ Years', '4+ տարի')}
               </span>
             </div>
           </motion.div>

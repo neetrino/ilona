@@ -1,19 +1,19 @@
 export const whyChooseMobileIconBase = 'absolute -left-[10px] -top-[10px] object-contain';
 export const whyChooseMobileContentBase =
-  'absolute left-4 top-4 flex w-[calc(100%-32px)] flex-col gap-1 pt-[90px]';
+  'relative z-10 flex w-full flex-col gap-1 pt-[90px]';
 export const whyChooseMobileTitleBase =
   'text-[15px] font-medium leading-[22.5px] tracking-[-0.44px] text-[#101828]';
 export const whyChooseMobileBodyBase =
   'text-[12px] leading-[18px] tracking-[-0.31px] text-[#4a5565]';
 export const whyChooseMobileIconHy = 'absolute -left-[10px] -top-[18px] object-contain';
 export const whyChooseMobileContentHy =
-  'absolute left-4 top-4 flex w-[calc(100%-32px)] flex-col gap-1 pt-[78px]';
+  'relative z-10 flex w-full flex-col gap-1 pt-[78px]';
 export const whyChooseMobileTitleHy =
   'text-[13px] font-medium leading-[18px] tracking-[-0.44px] text-[#101828]';
 export const whyChooseMobileBodyHy =
   'text-[11px] leading-[15px] tracking-[-0.31px] text-[#4a5565]';
 export const whyChooseMobileFourthContentHy =
-  'absolute left-4 top-4 flex w-[calc(100%-32px)] flex-col gap-1 pt-[93px]';
+  'relative z-10 flex w-full flex-col gap-1 pt-[93px]';
 export const whyChooseDesktopTitleBase =
   'pt-[214px] text-[20px] font-medium leading-[28px] tracking-[-0.4492px] text-[#101828]';
 export const whyChooseDesktopTitleHy =
