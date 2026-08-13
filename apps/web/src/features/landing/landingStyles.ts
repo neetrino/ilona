@@ -24,6 +24,10 @@ export const whyChooseDesktopBodyHy =
   'mt-2 text-[14px] font-medium leading-[21px] tracking-[-0.3125px] text-[#4a5565]';
 export const whyChooseDesktopMethodsIconBase = 'absolute -left-[21px] -top-[28px]';
 export const whyChooseDesktopMethodsIconHy = 'absolute -left-[21px] -top-[36px]';
+export const whyChooseDesktopPlatformIconBase = 'absolute -left-[21px] -top-[56px]';
+export const whyChooseDesktopPlatformIconHy = 'absolute -left-[21px] -top-[64px]';
+export const whyChooseMobilePlatformIconBase = 'absolute -left-[10px] -top-[28px] object-contain';
+export const whyChooseMobilePlatformIconHy = 'absolute -left-[10px] -top-[36px] object-contain';
 export const whyChooseDesktopResultsIconWrapBase =
   'absolute -left-[58px] -top-[74px] h-[304px] w-[294px] rotate-[55.41deg]';
 export const whyChooseDesktopResultsIconWrapHy =

@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { WHY_METHODS_IMAGE, WHY_RESULTS_IMAGE, WHY_TEACHERS_IMAGE, WHY_PLATFORM_IMAGE } from '../landingConstants';
-import { whyChooseDesktopBodyBase, whyChooseDesktopBodyHy, whyChooseDesktopMethodsIconBase, whyChooseDesktopMethodsIconHy, whyChooseDesktopPlatformBodyBase, whyChooseDesktopPlatformTitleBase, whyChooseDesktopResultsIconWrapBase, whyChooseDesktopResultsIconWrapHy, whyChooseDesktopTeachersIconWrapBase, whyChooseDesktopTeachersIconWrapHy, whyChooseDesktopTitleBase, whyChooseDesktopTitleHy, whyChooseMobileBodyBase, whyChooseMobileBodyHy, whyChooseMobileContentBase, whyChooseMobileContentHy, whyChooseMobileFourthContentHy, whyChooseMobileIconBase, whyChooseMobileIconHy, whyChooseMobileTitleBase, whyChooseMobileTitleHy } from '../landingStyles';
+import { whyChooseDesktopBodyBase, whyChooseDesktopBodyHy, whyChooseDesktopMethodsIconBase, whyChooseDesktopMethodsIconHy, whyChooseDesktopPlatformBodyBase, whyChooseDesktopPlatformIconBase, whyChooseDesktopPlatformIconHy, whyChooseDesktopPlatformTitleBase, whyChooseDesktopResultsIconWrapBase, whyChooseDesktopResultsIconWrapHy, whyChooseDesktopTeachersIconWrapBase, whyChooseDesktopTeachersIconWrapHy, whyChooseDesktopTitleBase, whyChooseDesktopTitleHy, whyChooseMobileBodyBase, whyChooseMobileBodyHy, whyChooseMobileContentBase, whyChooseMobileContentHy, whyChooseMobileFourthContentHy, whyChooseMobileIconBase, whyChooseMobileIconHy, whyChooseMobilePlatformIconBase, whyChooseMobilePlatformIconHy, whyChooseMobileTitleBase, whyChooseMobileTitleHy } from '../landingStyles';
 import { LandingScrollReveal } from './LandingScrollReveal';
 import type { LandingSectionProps } from '../types';
 
@@ -136,7 +136,7 @@ export function LandingWhyChooseSection({ tr, isHy }: LandingSectionProps) {
                 height={110}
                 unoptimized
                 loading="lazy"
-                className={isHy ? whyChooseMobileIconHy : whyChooseMobileIconBase}
+                className={isHy ? whyChooseMobilePlatformIconHy : whyChooseMobilePlatformIconBase}
               />
               <div
                 className={
@@ -259,7 +259,7 @@ export function LandingWhyChooseSection({ tr, isHy }: LandingSectionProps) {
                 height={251}
                 unoptimized
                 loading="lazy"
-                className={isHy ? whyChooseDesktopMethodsIconHy : whyChooseDesktopMethodsIconBase}
+                className={isHy ? whyChooseDesktopPlatformIconHy : whyChooseDesktopPlatformIconBase}
               />
               <h3 className={whyChooseDesktopPlatformTitleBase}>
                 {platformTitle}
