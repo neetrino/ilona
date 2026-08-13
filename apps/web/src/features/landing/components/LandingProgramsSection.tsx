@@ -4,11 +4,14 @@ import { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { cn } from '@/shared/lib/utils';
 import { BUTTON_HOVER_CLASS } from '../landingConstants';
+import { createLandingPrograms } from '../landingProgramsContent';
 import { LandingSectionHeader } from './LandingSectionHeader';
 import type { LandingSectionProps } from '../types';
 
 export function LandingProgramsSection({ tr, isHy }: LandingSectionProps) {
   const [activeProgramIndex, setActiveProgramIndex] = useState(0);
+  const programs = createLandingPrograms(tr);
+  const activeProgram = programs[activeProgramIndex] ?? programs[0];
 
   return (
     <>
@@ -16,7 +19,7 @@ export function LandingProgramsSection({ tr, isHy }: LandingSectionProps) {
         <div className="flex flex-col gap-6 tablet:hidden">
           <LandingSectionHeader
             className="px-5"
-            title={tr('Student Success', 'Ուսանողների հաջողություններ')}
+            title={tr('Our Courses', 'Մեր դասընթացները')}
             titleClassName="text-center text-[28px] font-extrabold leading-[42px] tracking-[0.35px] text-[#0a0a0a]"
           />
       
@@ -35,13 +38,13 @@ export function LandingProgramsSection({ tr, isHy }: LandingSectionProps) {
                   {(activeProgramIndex + 1).toString().padStart(2, '0')}
                 </p>
                 <p className="mt-4 text-[20px] font-bold leading-[26px] text-white">
-                  {tr('Program Name', 'Ծրագրի անվանում')}
+                  {activeProgram.title}
                 </p>
                 <p className="mt-2 text-[13px] leading-[19.5px] text-white">
-                  {tr('Program details', 'Ծրագրի մանրամասներ')}
+                  {activeProgram.details}
                 </p>
                 <p className="mt-4 text-[20px] font-bold leading-[30px] text-white">
-                  18000 AMD
+                  {activeProgram.price} AMD
                   {isHy ? (
                     <span className="text-white/60">
                       <span>/</span>
@@ -61,9 +64,9 @@ export function LandingProgramsSection({ tr, isHy }: LandingSectionProps) {
               role="tablist"
               aria-label={tr('Programs', 'Ծրագրեր')}
             >
-              {[0, 1, 2, 3].map((index) => (
+              {programs.map((program, index) => (
                 <button
-                  key={index}
+                  key={program.id}
                   type="button"
                   role="tab"
                   aria-selected={activeProgramIndex === index}
@@ -93,31 +96,31 @@ export function LandingProgramsSection({ tr, isHy }: LandingSectionProps) {
       
         <div className="mx-auto hidden w-full max-w-[1280px] flex-col items-center gap-[69px] px-6 py-2 tablet:flex">
           <LandingSectionHeader
-            title={tr('Student Success', 'Ուսանողների հաջողություններ')}
+            title={tr('Our Courses', 'Մեր դասընթացները')}
             titleClassName="text-center text-[48px] font-extrabold leading-[48px] tracking-[0.3516px] text-[#0a0a0a]"
           />
       
-          <div className="flex items-stretch justify-center gap-5">
-            {[1, 2, 3, 4].map((item, index) => (
+          <div className="grid auto-rows-fr grid-cols-3 gap-5">
+            {programs.map((program, index) => (
               <motion.article
-                key={item}
-                className="flex w-[300px] flex-col justify-center rounded-[26px] bg-[#093394] px-[30px] pt-7 pb-10"
+                key={program.id}
+                className="flex h-full w-[300px] flex-col rounded-[26px] bg-[#093394] px-[30px] pt-7 pb-10"
                 initial={{ opacity: 0, y: 28 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.55, ease: 'easeOut', delay: index * 0.08 }}
                 viewport={{ once: true, amount: 0.35 }}
               >
                 <p className="text-[70px] font-bold leading-[78px] text-white">
-                  {item.toString().padStart(2, '0')}
+                  {(index + 1).toString().padStart(2, '0')}
                 </p>
                 <p className="mt-5 text-[23px] font-bold leading-[26px] text-white">
-                  {tr('Program Name', 'Ծրագրի անվանում')}
+                  {program.title}
                 </p>
                 <p className="mt-3 text-[14px] leading-[22px] text-white">
-                  {tr('Program details', 'Ծրագրի մանրամասներ')}
+                  {program.details}
                 </p>
-                <p className="mt-6 text-[23px] font-bold leading-[26px] text-white">
-                  18000 AMD
+                <p className="mt-auto pt-6 text-[23px] font-bold leading-[26px] text-white">
+                  {program.price} AMD
                   {isHy ? (
                     <span className="text-white/60">
                       <span className="text-[23px]">/</span>

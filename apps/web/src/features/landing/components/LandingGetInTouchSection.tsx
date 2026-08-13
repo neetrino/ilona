@@ -1,9 +1,14 @@
 'use client';
 
 import Link from 'next/link';
-import Image from 'next/image';
+import { Mail, Phone } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
-import { BUTTON_HOVER_CLASS, GET_TOUCH_PHONE_ICON, GET_TOUCH_EMAIL_ICON } from '../landingConstants';
+import {
+  BUTTON_HOVER_CLASS,
+  CONTACT_EMAIL,
+  CONTACT_PHONE,
+  CONTACT_PHONE_DISPLAY,
+} from '../landingConstants';
 import { LandingSectionHeader } from './LandingSectionHeader';
 import { LandingStaggerGroup, LandingStaggerItem } from './LandingStaggerGroup';
 import type { LandingSectionProps } from '../types';
@@ -22,26 +27,26 @@ export function LandingGetInTouchSection({ tr }: LandingSectionProps) {
         <LandingStaggerGroup className="flex w-full flex-col gap-3">
           <LandingStaggerItem>
             <Link
-              href="tel:+1234567890"
+              href={`tel:${CONTACT_PHONE}`}
               className={cn(
                 'inline-flex h-[56px] w-full items-center justify-center gap-3 rounded-full bg-[#1b3ba4] text-[16px] font-bold leading-[24px] tracking-[-0.44px] text-white shadow-sm',
                 BUTTON_HOVER_CLASS,
               )}
             >
-              <Image src={GET_TOUCH_PHONE_ICON} alt="" width={20} height={20} unoptimized />
-              <span>+1 (234) 567-890</span>
+              <Phone className="size-5" strokeWidth={2.25} />
+              <span>{CONTACT_PHONE_DISPLAY}</span>
             </Link>
           </LandingStaggerItem>
           <LandingStaggerItem>
             <Link
-              href="mailto:info@iec.com"
+              href={`mailto:${CONTACT_EMAIL}`}
               className={cn(
                 'inline-flex h-[58px] w-full items-center justify-center gap-3 rounded-full border border-[rgba(27,59,164,0.6)] bg-[rgba(255,255,255,0.1)] text-[16px] font-bold leading-[24px] tracking-[-0.44px] text-[#1b3ba4]',
                 BUTTON_HOVER_CLASS,
               )}
             >
-              <Image src={GET_TOUCH_EMAIL_ICON} alt="" width={20} height={20} unoptimized />
-              <span>info@iec.com</span>
+              <Mail className="size-5" strokeWidth={2.25} />
+              <span>{CONTACT_EMAIL}</span>
             </Link>
           </LandingStaggerItem>
         </LandingStaggerGroup>
@@ -65,26 +70,26 @@ export function LandingGetInTouchSection({ tr }: LandingSectionProps) {
           <LandingStaggerGroup className="mt-12 flex items-center justify-center gap-6">
             <LandingStaggerItem>
               <Link
-                href="tel:+1234567890"
+                href={`tel:${CONTACT_PHONE}`}
                 className={cn(
-                  'inline-flex h-[56px] w-[271px] items-center justify-center gap-3 rounded-full bg-[#1b3ba4] text-[18px] font-bold leading-[28px] tracking-[-0.4395px] text-white shadow-md',
+                  'inline-flex h-[56px] min-w-[271px] items-center justify-center gap-3 rounded-full bg-[#1b3ba4] px-6 text-[18px] font-bold leading-[28px] tracking-[-0.4395px] text-white shadow-md',
                   BUTTON_HOVER_CLASS,
                 )}
               >
-                <Image src={GET_TOUCH_PHONE_ICON} alt="" width={24} height={24} unoptimized />
-                <span>+1 (234) 567-890</span>
+                <Phone className="size-6" strokeWidth={2.25} />
+                <span>{CONTACT_PHONE_DISPLAY}</span>
               </Link>
             </LandingStaggerItem>
             <LandingStaggerItem>
               <Link
-                href="mailto:info@iec.com"
+                href={`mailto:${CONTACT_EMAIL}`}
                 className={cn(
-                  'inline-flex h-[56px] w-[237px] items-center justify-center gap-3 rounded-full border-2 border-[rgba(27,59,164,0.6)] bg-[rgba(255,255,255,0.1)] text-[18px] font-bold leading-[28px] tracking-[-0.4395px] text-[#1b3ba4]',
+                  'inline-flex h-[56px] min-w-[237px] items-center justify-center gap-3 rounded-full border-2 border-[rgba(27,59,164,0.6)] bg-[rgba(255,255,255,0.1)] px-6 text-[18px] font-bold leading-[28px] tracking-[-0.4395px] text-[#1b3ba4]',
                   BUTTON_HOVER_CLASS,
                 )}
               >
-                <Image src={GET_TOUCH_EMAIL_ICON} alt="" width={24} height={24} unoptimized />
-                <span>info@iec.com</span>
+                <Mail className="size-6" strokeWidth={2.25} />
+                <span>{CONTACT_EMAIL}</span>
               </Link>
             </LandingStaggerItem>
           </LandingStaggerGroup>

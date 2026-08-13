@@ -1,9 +1,9 @@
 'use client';
 
-import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { cn } from '@/shared/lib/utils';
-import { BUTTON_HOVER_CLASS, FOLLOW_INSTAGRAM_ICON, FOLLOW_FACEBOOK_ICON, FOLLOW_TELEGRAM_ICON } from '../landingConstants';
+import { BUTTON_HOVER_CLASS } from '../landingConstants';
+import { FollowBrandMark } from './landingIcons';
 import { followMobileCardBase, followMobileCardHy, followMobileCardSubtitleBase, followMobileCardSubtitleHy } from '../landingStyles';
 import type { LandingSectionProps } from '../types';
 
@@ -33,7 +33,7 @@ export function LandingFollowUsSection({ tr, isHy }: LandingSectionProps) {
               transition={{ duration: 0.55, ease: 'easeOut' }}
               viewport={{ once: true, amount: 0.35 }}
             >
-              <Image src={FOLLOW_INSTAGRAM_ICON} alt="" width={40} height={40} unoptimized className="shrink-0" />
+              <FollowBrandMark network="instagram" size="sm" />
               <div className="min-w-0 flex-1">
                 <h3 className="truncate whitespace-nowrap text-[18px] font-bold leading-[27px] tracking-[0.07px] text-white">
                   {tr('Instagram', 'Instagram')}
@@ -65,7 +65,7 @@ export function LandingFollowUsSection({ tr, isHy }: LandingSectionProps) {
               transition={{ duration: 0.55, ease: 'easeOut', delay: 0.08 }}
               viewport={{ once: true, amount: 0.35 }}
             >
-              <Image src={FOLLOW_FACEBOOK_ICON} alt="" width={40} height={40} unoptimized className="shrink-0" />
+              <FollowBrandMark network="facebook" size="sm" />
               <div className="min-w-0 flex-1">
                 <h3 className="truncate whitespace-nowrap text-[18px] font-bold leading-[27px] tracking-[0.07px] text-white">
                   {tr('Facebook', 'Facebook')}
@@ -95,7 +95,7 @@ export function LandingFollowUsSection({ tr, isHy }: LandingSectionProps) {
               transition={{ duration: 0.55, ease: 'easeOut', delay: 0.16 }}
               viewport={{ once: true, amount: 0.35 }}
             >
-              <Image src={FOLLOW_TELEGRAM_ICON} alt="" width={40} height={40} unoptimized className="shrink-0" />
+              <FollowBrandMark network="telegram" size="sm" />
               <div className="min-w-0 flex-1">
                 <h3 className="truncate whitespace-nowrap text-[18px] font-bold leading-[27px] tracking-[0.07px] text-white">
                   {tr('Telegram', 'Telegram')}
@@ -136,7 +136,7 @@ export function LandingFollowUsSection({ tr, isHy }: LandingSectionProps) {
               viewport={{ once: true, amount: 0.35 }}
             >
               <div className="flex h-full flex-col items-center pt-10">
-                <Image src={FOLLOW_INSTAGRAM_ICON} alt="" width={64} height={64} unoptimized />
+                <FollowBrandMark network="instagram" size="lg" />
                 <h3 className="mt-6 text-[24px] font-bold leading-[32px] text-white">
                   {tr('Instagram', 'Instagram')}
                 </h3>
@@ -165,7 +165,7 @@ export function LandingFollowUsSection({ tr, isHy }: LandingSectionProps) {
               viewport={{ once: true, amount: 0.35 }}
             >
               <div className="flex h-full flex-col items-center pt-10">
-                <Image src={FOLLOW_FACEBOOK_ICON} alt="" width={64} height={64} unoptimized />
+                <FollowBrandMark network="facebook" size="lg" />
                 <h3 className="mt-6 text-[24px] font-bold leading-[32px] text-white">
                   {tr('Facebook', 'Facebook')}
                 </h3>
@@ -192,7 +192,7 @@ export function LandingFollowUsSection({ tr, isHy }: LandingSectionProps) {
               viewport={{ once: true, amount: 0.35 }}
             >
               <div className="flex h-full flex-col items-center pt-10">
-                <Image src={FOLLOW_TELEGRAM_ICON} alt="" width={64} height={64} unoptimized />
+                <FollowBrandMark network="telegram" size="lg" />
                 <h3 className="mt-6 text-[24px] font-bold leading-[32px] text-white">
                   {tr('Telegram', 'Telegram')}
                 </h3>

@@ -2,8 +2,9 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
+import { FileText } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
-import { BUTTON_HOVER_CLASS, TEAM_CHECK_ICON, TEAM_SEND_CV_ICON } from '../landingConstants';
+import { BUTTON_HOVER_CLASS, TEAM_CHECK_ICON } from '../landingConstants';
 import { LANDING_PREMIUM_CARD_CLASS } from '../landingAnimations';
 import { paytoneOne } from '../landingFont';
 import { LandingScrollReveal } from './LandingScrollReveal';
@@ -78,7 +79,7 @@ export function LandingJoinTeamSection({ tr }: LandingSectionProps) {
               BUTTON_HOVER_CLASS,
             )}
           >
-            <Image src={TEAM_SEND_CV_ICON} alt="" width={20} height={20} unoptimized />
+            <FileText className="size-5" strokeWidth={2.25} />
             <span>{tr('Send Your CV', 'Ուղարկել CV')}</span>
           </Link>
         </LandingScrollReveal>
@@ -136,7 +137,7 @@ export function LandingJoinTeamSection({ tr }: LandingSectionProps) {
               BUTTON_HOVER_CLASS,
             )}
           >
-            <Image src={TEAM_SEND_CV_ICON} alt="" width={26} height={26} unoptimized />
+            <FileText className="size-[26px]" strokeWidth={2.25} />
             <span>{tr('Send Your CV', 'Ուղարկել CV')}</span>
           </Link>
         </LandingScrollReveal>

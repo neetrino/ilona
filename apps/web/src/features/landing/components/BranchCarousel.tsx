@@ -4,12 +4,13 @@ import { useRef, type KeyboardEvent } from 'react';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 import { motion, useReducedMotion, type Transition } from 'framer-motion';
+import { MapPin } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
 import {
   BRANCH_CAROUSEL_CARD,
   BRANCH_CAROUSEL_TRANSITION,
 } from '../branchCarouselConfig';
-import { BRANCH_MAP_ICON, BRANCH_NAV_ARROW, BUTTON_HOVER_CLASS } from '../landingConstants';
+import { BRANCH_NAV_ARROW, BUTTON_HOVER_CLASS } from '../landingConstants';
 import { useBranchCarousel, useBranchCarouselLayout } from '../hooks/useBranchCarousel';
 import type { LandingSectionProps } from '../types';
 
@@ -99,7 +100,7 @@ function BranchCarouselCard({ branch, isActive, tr, isHy }: BranchCarouselCardPr
               isActive ? 'opacity-100' : 'opacity-0',
             )}
           >
-            <Image src={BRANCH_MAP_ICON} alt="" width={16} height={16} unoptimized />
+            <MapPin className="size-4" strokeWidth={2.25} />
             <span>{tr('View on map', 'Դիտել քարտեզում')}</span>
           </a>
         </div>
