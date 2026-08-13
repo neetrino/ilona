@@ -11,6 +11,7 @@ export const LANDING_ASSETS = {
   whyResults: '/landing/why-results.webp',
   whyTeachers: '/landing/why-teachers.webp',
   whySchedule: '/landing/why-schedule.webp',
+  whyPlatform: '/landing/why-platform-premium.webp',
   studentSuccess: '/landing/student-success.webp',
   registerArrow: '/register-arrow.webp',
   registerSubmitIcon: '/landing/register-submit-icon.webp',

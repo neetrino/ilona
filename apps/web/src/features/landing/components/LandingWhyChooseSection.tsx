@@ -2,8 +2,8 @@
 
 import Image from 'next/image';
 import { motion } from 'framer-motion';
-import { WHY_METHODS_IMAGE, WHY_RESULTS_IMAGE, WHY_TEACHERS_IMAGE, WHY_SCHEDULE_IMAGE } from '../landingConstants';
-import { whyChooseDesktopBodyBase, whyChooseDesktopBodyHy, whyChooseDesktopMethodsIconBase, whyChooseDesktopMethodsIconHy, whyChooseDesktopResultsIconWrapBase, whyChooseDesktopResultsIconWrapHy, whyChooseDesktopScheduleIconWrapBase, whyChooseDesktopTeachersIconWrapBase, whyChooseDesktopTeachersIconWrapHy, whyChooseDesktopTitleBase, whyChooseDesktopTitleHy, whyChooseMobileBodyBase, whyChooseMobileBodyHy, whyChooseMobileContentBase, whyChooseMobileContentHy, whyChooseMobileFourthContentHy, whyChooseMobileIconBase, whyChooseMobileIconHy, whyChooseMobileTitleBase, whyChooseMobileTitleHy } from '../landingStyles';
+import { WHY_METHODS_IMAGE, WHY_RESULTS_IMAGE, WHY_TEACHERS_IMAGE, WHY_PLATFORM_IMAGE } from '../landingConstants';
+import { whyChooseDesktopBodyBase, whyChooseDesktopBodyHy, whyChooseDesktopMethodsIconBase, whyChooseDesktopMethodsIconHy, whyChooseDesktopPlatformBodyBase, whyChooseDesktopPlatformTitleBase, whyChooseDesktopResultsIconWrapBase, whyChooseDesktopResultsIconWrapHy, whyChooseDesktopTeachersIconWrapBase, whyChooseDesktopTeachersIconWrapHy, whyChooseDesktopTitleBase, whyChooseDesktopTitleHy, whyChooseMobileBodyBase, whyChooseMobileBodyHy, whyChooseMobileContentBase, whyChooseMobileContentHy, whyChooseMobileFourthContentHy, whyChooseMobileIconBase, whyChooseMobileIconHy, whyChooseMobileTitleBase, whyChooseMobileTitleHy } from '../landingStyles';
 import { LandingScrollReveal } from './LandingScrollReveal';
 import type { LandingSectionProps } from '../types';
 
@@ -130,7 +130,7 @@ export function LandingWhyChooseSection({ tr, isHy }: LandingSectionProps) {
               viewport={{ once: true, amount: 0.35 }}
             >
               <Image
-                src={WHY_SCHEDULE_IMAGE}
+                src={WHY_PLATFORM_IMAGE}
                 alt=""
                 width={110}
                 height={110}
@@ -252,21 +252,19 @@ export function LandingWhyChooseSection({ tr, isHy }: LandingSectionProps) {
               transition={{ duration: 0.55, ease: 'easeOut', delay: 0.24 }}
               viewport={{ once: true, amount: 0.35 }}
             >
-              <div className={whyChooseDesktopScheduleIconWrapBase}>
-                <Image
-                  src={WHY_SCHEDULE_IMAGE}
-                  alt=""
-                  fill
-                  unoptimized
-                  loading="lazy"
-                  sizes="244px"
-                  className="object-contain"
-                />
-              </div>
-              <h3 className={isHy ? whyChooseDesktopTitleHy : whyChooseDesktopTitleBase}>
+              <Image
+                src={WHY_PLATFORM_IMAGE}
+                alt=""
+                width={251}
+                height={251}
+                unoptimized
+                loading="lazy"
+                className={isHy ? whyChooseDesktopMethodsIconHy : whyChooseDesktopMethodsIconBase}
+              />
+              <h3 className={whyChooseDesktopPlatformTitleBase}>
                 {platformTitle}
               </h3>
-              <p className={isHy ? whyChooseDesktopBodyHy : whyChooseDesktopBodyBase}>
+              <p className={whyChooseDesktopPlatformBodyBase}>
                 {platformBody}
               </p>
             </motion.article>

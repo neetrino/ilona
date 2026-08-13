@@ -32,8 +32,10 @@ export const whyChooseDesktopTeachersIconWrapBase =
   'absolute -left-[36px] -top-[68px] h-[268px] w-[266px] rotate-[39.8deg]';
 export const whyChooseDesktopTeachersIconWrapHy =
   'absolute -left-[36px] -top-[86px] h-[268px] w-[266px] rotate-[39.8deg]';
-export const whyChooseDesktopScheduleIconWrapBase =
-  'absolute -left-[35px] -top-[58px] h-[304px] w-[244px] rotate-180 scale-y-[-1]';
+export const whyChooseDesktopPlatformBodyBase =
+  'mt-3 text-[14px] leading-[20px] tracking-[-0.2px] text-[#4a5565]';
+export const whyChooseDesktopPlatformTitleBase =
+  'pt-[214px] text-[18px] font-medium leading-[24px] tracking-[-0.3px] text-[#101828]';
 
 export const followMobileCardBase = 'flex h-[94px] items-center gap-4 px-5 py-4';
 export const followMobileCardHy = 'flex min-h-[94px] items-center gap-4 px-5 py-4';

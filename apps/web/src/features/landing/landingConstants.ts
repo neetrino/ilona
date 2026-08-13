@@ -14,6 +14,7 @@ export const WHY_METHODS_IMAGE = LANDING_ASSETS.whyMethods;
 export const WHY_RESULTS_IMAGE = LANDING_ASSETS.whyResults;
 export const WHY_TEACHERS_IMAGE = LANDING_ASSETS.whyTeachers;
 export const WHY_SCHEDULE_IMAGE = LANDING_ASSETS.whySchedule;
+export const WHY_PLATFORM_IMAGE = LANDING_ASSETS.whyPlatform;
 export const STUDENT_SUCCESS_IMAGE = LANDING_ASSETS.studentSuccess;
 export const REGISTER_ARROW_IMAGE = LANDING_ASSETS.registerArrow;
 export const BRANCH_CLASSROOM_IMAGE = '/branch-classroom-main.webp';
