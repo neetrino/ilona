@@ -6,7 +6,7 @@ import { useInView } from '@/shared/hooks/useInView';
 import type { FooterIconKey } from '@ilona/types';
 
 const iconShellClassName =
-  'flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#f2f5fb] text-[#111827]';
+  'flex size-10 shrink-0 items-center justify-center rounded-full bg-[#f2f5fb] text-[#111827]';
 
 const clickableIconClassName = `${iconShellClassName} cursor-pointer transition-transform duration-200 ease-out hover:scale-110 hover:brightness-95 active:scale-95`;
 
@@ -37,7 +37,7 @@ export function FooterSocialIcons({ containerClassName, getAriaLabel }: FooterSo
     <div ref={ref} className={containerClassName} aria-busy={isLoading || undefined}>
       {FOOTER_ICON_KEYS.map((key) => {
         const href = links?.[key]?.trim() ?? '';
-        const iconContent = <FooterSocialGlyph name={key} className="size-5" />;
+        const iconContent = <FooterSocialGlyph name={key} className="size-[22px]" />;
 
         if (!href) {
           return (
