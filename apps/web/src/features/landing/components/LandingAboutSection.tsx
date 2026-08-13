@@ -61,12 +61,22 @@ const mobileStatsVariants: Variants = {
 };
 
 export function LandingAboutSection({ tr, isHy }: LandingSectionProps) {
+  const aboutTag = tr('About', 'About');
+  const aboutHeading = tr('About Us', 'Մեր մասին');
+  const aboutLead = tr(
+    'Ilona English Centre was founded in 2022 to create a modern, effective, and inspiring environment for learning English. Our original methodology is based on active learning: students speak from the very first lesson and systematically develop the core language skills — speaking, listening, reading, writing. After successfully completing each level, the student receives a corresponding Ilona English Center certificate confirming successful completion of that level.',
+    'Ilona English Centre-ը հիմնադրվել է 2022 թվականին՝ ժամանակակից, արդյունավետ և ոգեշնչող անգլերենի ուսուցման միջավայր ստեղծելու նպատակով։ Մեր հեղինակային մեթոդաբանությունը հիմնված է ակտիվ ուսուցման վրա․ սովորողները խոսում են հենց առաջին դասից և համակարգված զարգացնում են լեզվական հիմնական հմտությունները՝ speaking, listening, reading, writing։ Յուրաքանչյուր մակարդակի դասընթացի հաջող ավարտից հետո սովորողը ստանում է Ilona English Center-ի համապատասխան վկայական, որը հավաստում է տվյալ մակարդակի հաջողված ավարտը։',
+  );
+  const aboutGroups = tr(
+    'Groups are divided by levels…',
+    'Խմբերը բաժանված են ըստ մակարդակների …',
+  );
 
   return (
     <>
       <section
         id="about"
-        className="relative scroll-mt-28 overflow-hidden bg-[#dde7ff] max-tablet:z-20 max-tablet:-mt-[200px] max-tablet:pb-0 max-tablet:pt-0 tablet:-mt-[16px] tablet:max-navDesktop:z-10 tablet:max-navDesktop:-mt-[32px] navDesktop:z-auto navDesktop:-mt-[16px] tablet:h-[666px]"
+        className="relative scroll-mt-28 overflow-hidden bg-[#dde7ff] max-tablet:z-20 max-tablet:-mt-[200px] max-tablet:pb-0 max-tablet:pt-0 tablet:-mt-[16px] tablet:max-navDesktop:z-10 tablet:max-navDesktop:-mt-[32px] navDesktop:z-auto navDesktop:-mt-[16px] tablet:h-[840px]"
       >
         <motion.div
           className="tablet:hidden"
@@ -85,28 +95,8 @@ export function LandingAboutSection({ tr, isHy }: LandingSectionProps) {
           variants={mobileFadeFromLeft}
         >
           <h2 className="text-[30px] font-extrabold leading-[31px] tracking-[0.35px] text-[#0a0a0a]">
-            {tr('Ilona English Centre', 'Ilona English Centre')}
+            {aboutHeading}
           </h2>
-      
-          <div
-            className={cn(
-              'mt-8 space-y-3 tracking-[-0.44px] text-[#4a5565]',
-              isHy ? 'text-[14px] leading-[20px]' : 'text-[17px] leading-[22px]',
-            )}
-          >
-            <p>
-              {tr(
-                'We empower students through exceptional English education. Our mission: provide world-class instruction that opens doors to global opportunities.',
-                'Մենք զարգացնում ենք ուսանողներին բարձրակարգ անգլերենի ուսուցմամբ։ Մեր առաքելությունն է ապահովել համաշխարհային մակարդակի կրթություն, որը բացում է նոր հնարավորություններ։',
-              )}
-            </p>
-            <p>
-              {tr(
-                'A supportive, engaging environment where every student thrives with modern methods and real results.',
-                'Աջակցող և ներգրավող միջավայր, որտեղ յուրաքանչյուր ուսանող առաջադիմում է ժամանակակից մեթոդներով և տեսանելի արդյունքներով։',
-              )}
-            </p>
-          </div>
         </motion.div>
       
         <motion.div
@@ -149,7 +139,7 @@ export function LandingAboutSection({ tr, isHy }: LandingSectionProps) {
           >
             <div className="-rotate-[19deg] rounded-full bg-white px-4 py-1.5">
               <span className="text-[13px] font-bold leading-[19.5px] text-[#0025db]">
-                {tr('About IEC', 'IEC-ի մասին')}
+                {aboutTag}
               </span>
             </div>
           </motion.div>
@@ -166,6 +156,17 @@ export function LandingAboutSection({ tr, isHy }: LandingSectionProps) {
           </motion.div>
       
           <div className="min-h-1 flex-1" aria-hidden />
+
+          <motion.div
+            className={cn(
+              'relative z-10 mb-4 space-y-3 tracking-[-0.44px] text-[#4a5565]',
+              isHy ? 'text-[14px] leading-[20px]' : 'text-[17px] leading-[22px]',
+            )}
+            variants={mobileFadeFromLeft}
+          >
+            <p>{aboutLead}</p>
+            <p>{aboutGroups}</p>
+          </motion.div>
       
           <motion.div
             className="relative z-10 mb-6 grid shrink-0 grid-cols-2 gap-3"
@@ -194,27 +195,21 @@ export function LandingAboutSection({ tr, isHy }: LandingSectionProps) {
         </motion.div>
       
         <div className="relative z-10 mx-auto max-tablet:hidden h-full w-full max-w-[1280px] px-6">
-          <div className="absolute left-1/2 top-[80px] h-[506px] w-full max-w-[1152px] -translate-x-1/2">
-            <div className="absolute left-[608px] top-0 h-[506px] w-[544px]">
+          <div className="absolute left-1/2 top-[80px] h-[700px] w-full max-w-[1152px] -translate-x-1/2">
+            <div className="absolute left-[608px] top-0 w-[544px]">
               <div className="inline-flex h-[36px] items-center rounded-full bg-white px-4">
                 <span className="text-[14px] font-bold leading-[20px] tracking-[-0.1504px] text-[#0025db]">
-                  {tr('About IEC', 'IEC-ի մասին')}
+                  {aboutTag}
                 </span>
               </div>
               <h2 className="mt-[24px] text-[48px] font-extrabold leading-[60px] tracking-[0.3516px] text-[#0a0a0a]">
-                {tr('Ilona English Centre', 'Ilona English Centre')}
+                {aboutHeading}
               </h2>
               <p className="mt-[24px] w-[544px] text-[18px] leading-[29.25px] tracking-[-0.4395px] text-[#4a5565]">
-                {tr(
-                  'We empower students through exceptional English education. Our mission: provide world-class instruction that opens doors to global opportunities.',
-                  'Մենք զարգացնում ենք ուսանողներին բարձրակարգ անգլերենի ուսուցմամբ։ Մեր առաքելությունն է ապահովել համաշխարհային մակարդակի կրթություն, որը բացում է նոր հնարավորություններ։',
-                )}
+                {aboutLead}
               </p>
-              <p className="mt-[24px] w-[544px] text-[18px] leading-[29.25px] tracking-[-0.4395px] text-[#4a5565]">
-                {tr(
-                  'A supportive, engaging environment where every student thrives with modern methods and real results.',
-                  'Աջակցող և ներգրավող միջավայր, որտեղ յուրաքանչյուր ուսանող առաջադիմում է ժամանակակից մեթոդներով և տեսանելի արդյունքներով։',
-                )}
+              <p className="mt-[16px] w-[544px] text-[18px] leading-[29.25px] tracking-[-0.4395px] text-[#4a5565]">
+                {aboutGroups}
               </p>
       
               <div className="mt-[24px] flex gap-6">
