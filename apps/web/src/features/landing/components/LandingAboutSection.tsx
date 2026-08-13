@@ -64,11 +64,11 @@ export function LandingAboutSection({ tr, isHy }: LandingSectionProps) {
   const aboutTag = tr('About', 'About');
   const aboutHeading = tr('About Us', 'Մեր մասին');
   const aboutLead = tr(
-    'Ilona English Centre was founded in 2022 to create a modern, effective, and inspiring environment for learning English. Our original methodology is based on active learning: students speak from the very first lesson and systematically develop the core language skills — speaking, listening, reading, writing. After successfully completing each level, the student receives a corresponding Ilona English Center certificate confirming successful completion of that level.',
+    'Ilona English Centre was founded in 2022 to create a modern, effective, and inspiring environment for learning English. Our signature methodology is grounded in active learning: students speak from the very first lesson and systematically develop the core language skills — speaking, listening, reading, and writing. Upon successful completion of each level course, the student receives the corresponding Ilona English Centre certificate, which confirms the successful completion of that level.',
     'Ilona English Centre-ը հիմնադրվել է 2022 թվականին՝ ժամանակակից, արդյունավետ և ոգեշնչող անգլերենի ուսուցման միջավայր ստեղծելու նպատակով։ Մեր հեղինակային մեթոդաբանությունը հիմնված է ակտիվ ուսուցման վրա․ սովորողները խոսում են հենց առաջին դասից և համակարգված զարգացնում են լեզվական հիմնական հմտությունները՝ speaking, listening, reading, writing։ Յուրաքանչյուր մակարդակի դասընթացի հաջող ավարտից հետո սովորողը ստանում է Ilona English Center-ի համապատասխան վկայական, որը հավաստում է տվյալ մակարդակի հաջողված ավարտը։',
   );
   const aboutGroups = tr(
-    'Groups are divided by levels…',
+    'Groups are organised by proficiency level…',
     'Խմբերը բաժանված են ըստ մակարդակների …',
   );
 
