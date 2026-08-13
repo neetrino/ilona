@@ -1,4 +1,3 @@
-import { FAQ_ITEMS_EN, FAQ_ITEMS_HY } from './landingConstants';
 import type { LandingTr } from './types';
 
 export interface LandingFaqDisplayItem {
@@ -10,80 +9,64 @@ export interface LandingFaqDisplayItem {
 const LANDING_FAQ_ENTRIES = [
   {
     id: 'age-groups',
+    questionEn: 'What age groups do you teach?',
+    questionHy: 'Ո՞ր տարիքային խմբերի հետ եք աշխատում։',
     answerEn:
-      'We welcome learners from age 6 through adults. Programs are grouped by age and level so every student studies with peers at a similar stage — from engaging starter classes for children to professional and exam-focused courses for adults.',
+      'Instruction at our centre starts from age 8, with no upper age limit. Groups are formed according to students’ level, age, and abilities.',
     answerHy:
-      'Մենք աշխատում ենք տարբեր տարիքային խմբերի ուսանողների հետ՝ հաշվի առնելով նրանց գիտելիքների մակարդակը, նպատակները և ուսուցման տեմպը։ Մեր թիմը կօգնի ընտրել ամենահարմար խումբը կամ դասընթացը։',
+      'Մեզ մոտ ուսուցումն իրականացվում է 8 տարեկանից սկսած՝ առանց տարիքային սահմանափակման: Մեր խմբերը դասակարգվում են ըստ ուսանողների մակարդակի, տարիքի և կարողությունների:',
   },
   {
     id: 'level-duration',
+    questionEn: 'How long does it take to complete a level?',
+    questionHy: 'Որքա՞ն ժամանակ է պահանջվում մեկ մակարդակ ավարտելու համար։',
     answerEn:
-      'Most students complete one CEFR level in 6–9 months with regular attendance (2–3 sessions per week). Your pace depends on your starting point, homework consistency, and active participation in class.',
+      'The centre’s approach to each learner’s progress is individual, and the duration of a level depends on the student. On average, however, completing one level takes 6 months.',
     answerHy:
-      'Մեկ մակարդակի ավարտման տևողությունը կախված է դասընթացի ձևաչափից, դասերի հաճախականությունից և ուսանողի առաջընթացից։ Գրանցման ընթացքում մենք կներկայացնենք ծրագրի կառուցվածքը և մոտավոր տևողությունը։',
+      'Կենտրոնի մոտեցումը սովորողի առաջընթացին ինդիվիդուալ է, և մակարդակի տևողությունը կախված է ուսանողից։ Այնուամենայնիվ, միջինում մեկ մակարդակն ավարտելու համար պահանջվում է 6 ամիս:',
   },
   {
     id: 'trial-lesson',
+    questionEn: 'Do you offer a free trial lesson?',
+    questionHy: 'Առաջարկու՞մ եք անվճար փորձնական դաս։',
     answerEn:
-      'Yes. Book a complimentary trial lesson to experience our teaching style, meet your potential teacher, and receive a short level assessment — with no obligation to enroll.',
+      'The first trial lesson is free if you do not wish to continue afterwards. If you do wish to continue, the student is enrolled at the centre according to the relevant procedure.',
     answerHy:
-      'Այո, հնարավոր է մասնակցել փորձնական դասի՝ ծրագրի ձևաչափին, ուսուցչի մոտեցմանը և դասի ընթացքին ծանոթանալու համար։ Մանրամասները կարող եք ճշտել մեր թիմի հետ գրանցման փուլում։',
+      'Առաջին փորձնական դասը համարվում է անվճար, եթե դրանից հետո չեք ցանկանում շարունակել ուսուցումը: Իսկ ուսումնառությունը շարունակելու ցանկության դեպքում սովորողը ընդունվում է կենտրոն ըստ համապատասխան կարգի։',
   },
   {
     id: 'class-sizes',
+    questionEn: 'What are your class sizes?',
+    questionHy: 'Քանի՞ ուսանող է լինում մեկ խմբում։',
     answerEn:
-      'Groups typically include 6–10 students. Smaller classes mean more speaking time, personalised feedback, and a supportive atmosphere where everyone participates.',
+      'To ensure maximum effectiveness, each group includes 5–8 students. Groups are formed by level, age, and abilities.',
     answerHy:
-      'Խմբերի չափը կազմվում է այնպես, որ յուրաքանչյուր ուսանող ստանա բավարար ուշադրություն և կարողանա ակտիվ մասնակցել դասին։ Խմբի վերջնական կազմը կարող է տարբեր լինել՝ կախված դասընթացից և մակարդակից։',
-  },
-  {
-    id: 'switch-branch',
-    answerEn:
-      'Absolutely. You can transfer to any IEC branch in Yerevan if your schedule or location changes. Our team will help match you with a suitable group at your current level.',
-    answerHy:
-      'Այո, անհրաժեշտության դեպքում կարող ենք քննարկել մասնաճյուղը փոխելու հնարավորությունը։ Փոփոխությունը կախված է տվյալ մասնաճյուղում համապատասխան խմբի, մակարդակի և ազատ տեղերի առկայությունից։',
-  },
-  {
-    id: 'materials',
-    answerEn:
-      'We provide core course books and digital resources. You will need a notebook and pen; headphones are recommended for online practice. Any additional materials will be communicated at enrollment.',
-    answerHy:
-      'Ուսումնական նյութերի ցանկը կախված է ընտրված դասընթացից և մակարդակից։ Դասընթացի մեկնարկից առաջ մեր թիմը կտրամադրի անհրաժեշտ տեղեկությունը և կօգնի ճիշտ պատրաստվել դասերին։',
+      'Առավելագույն արդյունավետությունն ապահովելու համար մեկ խմբում ընդգրկվում է 5-8 սովորող: Խմբերը ձևավորվում են ըստ մակարդակի, տարիքի և կարողությունների:',
   },
   {
     id: 'international-exams',
+    questionEn: 'Do you prepare students for international exams?',
+    questionHy: 'Պատրաստու՞մ եք ուսանողներին միջազգային քննությունների։',
     answerEn:
-      'Yes — we offer dedicated **IELTS**, **TOEFL**, and **Cambridge** exam preparation.\n\nYour program includes mock tests, writing workshops, and score-focused strategies tailored to your target grade and exam date.',
+      'Yes, we run preparatory courses that develop the skills needed for international exams (for example TOEFL, IELTS, Cambridge, and others).',
     answerHy:
-      'Այո — մենք պատրաստում ենք **IELTS**, **TOEFL** և **Cambridge** միջազգային քննություններին։\n\nԾրագիրը ներառում է փորձնական թեստեր, գրավոր աշխատանքների արհեստաշարեր և ռազմավարություններ՝ հարմարեցված ձեր նպատակային միավորին և քննության ամսաթվին։',
+      'Այո, մենք իրականացնում ենք նախապատրաստական դասընթացներ միջազգային քննությունների հմտությունները զարգացնելով (օրինակ՝ TOEFL, IELTS, Cambridge և այլն):',
   },
   {
     id: 'miss-class',
+    questionEn: 'What if I miss a class?',
+    questionHy: 'Ի՞նչ անել, եթե բաց եմ թողել դասը։',
     answerEn:
-      'Please notify us in advance when possible. Depending on your program, you may attend a makeup session or receive lesson materials to stay on track. Repeated absences may affect your progress.',
+      'Missed lessons are not made up, except in cases of being out of the country for a set number of days, a medical appointment, 1–2 weeks’ absence during the summer holidays, and other urgent or unexpected situations.',
     answerHy:
-      'Եթե բաց եք թողել դասը, անհրաժեշտ է տեղեկացնել մեր թիմին կամ ուսուցչին։ Մենք կօգնենք հասկանալ բաց թողած նյութը լրացնելու հնարավոր տարբերակները՝ ըստ դասընթացի կանոնների և խմբի ընթացքի։',
-  },
-  {
-    id: 'discounts',
-    answerEn:
-      'We offer seasonal promotions, sibling discounts, and early enrollment benefits. Contact any branch or follow us on social media for current offers.',
-    answerHy:
-      'Զեղչերի և հատուկ առաջարկների առկայությունը կարող է տարբեր լինել՝ կախված ընթացիկ ծրագրերից, գրանցման պայմաններից կամ ընտրված դասընթացից։ Թարմ տեղեկությունը կարող եք ստանալ մեր թիմից։',
-  },
-  {
-    id: 'track-progress',
-    answerEn:
-      'Through regular assessments, teacher feedback, and our student portal where you can view attendance, grades, and personalised recommendations after each unit.',
-    answerHy:
-      'Ուսանողի առաջընթացը գնահատվում է դասերի ընթացքում՝ ըստ մասնակցության, առաջադրանքների կատարման և ձեռք բերված գիտելիքների։ Անհրաժեշտության դեպքում մեր թիմը կամ ուսուցիչը կտրամադրի հետադարձ կապ և կօգնի հասկանալ հաջորդ քայլերը։',
+      'Բաց թողնված դասերը չեն լրացվում, բացառությամբ՝ երկրից որոշակի օրերով բացակայելու, բժշկական նշանակման, ամառային արձակուրդներին 1-2 շաբաթով բացակայելու, և այլ անհետաձգելի/հանկարծակի դեպքերի:',
   },
 ] as const;
 
 export function createLandingFaqItems(tr: LandingTr): LandingFaqDisplayItem[] {
-  return LANDING_FAQ_ENTRIES.map((entry, index) => ({
+  return LANDING_FAQ_ENTRIES.map((entry) => ({
     id: entry.id,
-    question: tr(FAQ_ITEMS_EN[index], FAQ_ITEMS_HY[index]),
+    question: tr(entry.questionEn, entry.questionHy),
     answer: tr(entry.answerEn, entry.answerHy),
   }));
 }

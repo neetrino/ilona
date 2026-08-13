@@ -39,32 +39,6 @@ export const FOOTER_LOGO_IMAGE = LANDING_ASSETS.footerLogo;
 export const FOOTER_FLAG_USA = LANDING_ASSETS.footerFlagUsa;
 export const FOOTER_FLAG_UK = LANDING_ASSETS.footerFlagUk;
 
-export const FAQ_ITEMS_EN = [
-  'What age groups do you teach?',
-  'How long does it take to complete a level?',
-  'Do you offer a free trial lesson?',
-  'What are your class sizes?',
-  'Can I switch branches if needed?',
-  'What materials do I need?',
-  'Do you prepare students for international exams?',
-  'What if I miss a class?',
-  'Are there any discounts available?',
-  'How can I track my progress?',
-] as const;
-
-export const FAQ_ITEMS_HY = [
-  'Ո՞ր տարիքային խմբերի հետ եք աշխատում։',
-  'Որքա՞ն ժամանակ է պահանջվում մեկ մակարդակ ավարտելու համար։',
-  'Առաջարկու՞մ եք անվճար փորձնական դաս։',
-  'Քանի՞ ուսանող է լինում մեկ խմբում։',
-  'Անհրաժեշտության դեպքում կարո՞ղ եմ փոխել մասնաճյուղը։',
-  'Ի՞նչ ուսումնական նյութեր են անհրաժեշտ։',
-  'Պատրաստու՞մ եք ուսանողներին միջազգային քննությունների։',
-  'Ի՞նչ անել, եթե բաց եմ թողել դասը։',
-  'Կա՞ն արդյոք զեղչեր։',
-  'Ինչպե՞ս կարող եմ հետևել իմ առաջընթացին։',
-] as const;
-
 export const BRANCH_CAROUSEL_ITEMS = [
   {
     shortLabel: 'Andranik 40',
