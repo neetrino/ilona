@@ -2,9 +2,9 @@
 
 import Image from 'next/image';
 import { motion, type Variants } from 'framer-motion';
-import { cn } from '@/shared/lib/utils';
 import { ABOUT_BIG_BEN_IMAGE, ABOUT_FLAG_IMAGE, ABOUT_SUCCESS_ICON, ABOUT_BRANCHES_ICON } from '../landingConstants';
 import type { LandingSectionProps } from '../types';
+import { LandingAboutCopy } from './LandingAboutCopy';
 
 const mobileAboutViewport = { once: true, amount: 0.2 } as const;
 
@@ -63,20 +63,37 @@ const mobileStatsVariants: Variants = {
 export function LandingAboutSection({ tr, isHy }: LandingSectionProps) {
   const aboutTag = tr('About', 'About');
   const aboutHeading = tr('About Us', 'Մեր մասին');
-  const aboutLead = tr(
-    'Ilona English Centre was founded in 2022 to create a modern, effective, and inspiring environment for learning English. Our signature methodology is grounded in active learning: students speak from the very first lesson and systematically develop the core language skills — speaking, listening, reading, and writing. Upon successful completion of each level course, the student receives the corresponding Ilona English Centre certificate, which confirms the successful completion of that level.',
-    'Ilona English Centre-ը հիմնադրվել է 2022 թվականին՝ ժամանակակից, արդյունավետ և ոգեշնչող անգլերենի ուսուցման միջավայր ստեղծելու նպատակով։ Մեր հեղինակային մեթոդաբանությունը հիմնված է ակտիվ ուսուցման վրա․ սովորողները խոսում են հենց առաջին դասից և համակարգված զարգացնում են լեզվական հիմնական հմտությունները՝ speaking, listening, reading, writing։ Յուրաքանչյուր մակարդակի դասընթացի հաջող ավարտից հետո սովորողը ստանում է Ilona English Center-ի համապատասխան վկայական, որը հավաստում է տվյալ մակարդակի հաջողված ավարտը։',
+  const aboutIntro = tr(
+    'Ilona English Centre was founded in 2022 to create a modern, effective, and inspiring environment for learning English.',
+    'Ilona English Centre-ը հիմնադրվել է 2022 թվականին՝ ժամանակակից, արդյունավետ և ոգեշնչող անգլերենի ուսուցման միջավայր ստեղծելու նպատակով։',
+  );
+  const aboutMethod = tr(
+    'Our signature methodology is grounded in active learning: students speak from the very first lesson and systematically develop the core language skills.',
+    'Մեր հեղինակային մեթոդաբանությունը հիմնված է ակտիվ ուսուցման վրա․ սովորողները խոսում են հենց առաջին դասից և համակարգված զարգացնում են լեզվական հիմնական հմտությունները։',
+  );
+  const aboutCert = tr(
+    'Upon successful completion of each level course, the student receives the corresponding Ilona English Centre certificate, which confirms the successful completion of that level.',
+    'Յուրաքանչյուր մակարդակի դասընթացի հաջող ավարտից հետո սովորողը ստանում է Ilona English Center-ի համապատասխան վկայական, որը հավաստում է տվյալ մակարդակի հաջողված ավարտը։',
   );
   const aboutGroups = tr(
     'Groups are organised by proficiency level…',
     'Խմբերը բաժանված են ըստ մակարդակների …',
+  );
+  const aboutCopy = (
+    <LandingAboutCopy
+      intro={aboutIntro}
+      method={aboutMethod}
+      cert={aboutCert}
+      groups={aboutGroups}
+      isHy={isHy}
+    />
   );
 
   return (
     <>
       <section
         id="about"
-        className="relative scroll-mt-28 overflow-hidden bg-[#dde7ff] max-tablet:z-20 max-tablet:-mt-[200px] max-tablet:pb-0 max-tablet:pt-0 tablet:-mt-[16px] tablet:max-navDesktop:z-10 tablet:max-navDesktop:-mt-[32px] navDesktop:z-auto navDesktop:-mt-[16px] tablet:h-[840px]"
+        className="relative scroll-mt-28 overflow-hidden bg-[#dde7ff] max-tablet:z-20 max-tablet:-mt-[200px] max-tablet:pb-0 max-tablet:pt-0 tablet:-mt-[16px] tablet:max-navDesktop:z-10 tablet:max-navDesktop:-mt-[32px] navDesktop:z-auto navDesktop:-mt-[16px] tablet:h-[900px]"
       >
         <motion.div
           className="tablet:hidden"
@@ -97,6 +114,7 @@ export function LandingAboutSection({ tr, isHy }: LandingSectionProps) {
           <h2 className="text-[30px] font-extrabold leading-[31px] tracking-[0.35px] text-[#0a0a0a]">
             {aboutHeading}
           </h2>
+          <div className="mt-2.5 h-[3px] w-11 rounded-full bg-[#0025db]" aria-hidden />
         </motion.div>
       
         <motion.div
@@ -157,15 +175,15 @@ export function LandingAboutSection({ tr, isHy }: LandingSectionProps) {
       
           <div className="min-h-1 flex-1" aria-hidden />
 
-          <motion.div
-            className={cn(
-              'relative z-10 mb-4 space-y-3 tracking-[-0.44px] text-[#4a5565]',
-              isHy ? 'text-[14px] leading-[20px]' : 'text-[17px] leading-[22px]',
-            )}
-            variants={mobileFadeFromLeft}
-          >
-            <p>{aboutLead}</p>
-            <p>{aboutGroups}</p>
+          <motion.div className="relative z-10 mb-4" variants={mobileFadeFromLeft}>
+            <LandingAboutCopy
+              intro={aboutIntro}
+              method={aboutMethod}
+              cert={aboutCert}
+              groups={aboutGroups}
+              isHy={isHy}
+              compact
+            />
           </motion.div>
       
           <motion.div
@@ -195,22 +213,19 @@ export function LandingAboutSection({ tr, isHy }: LandingSectionProps) {
         </motion.div>
       
         <div className="relative z-10 mx-auto max-tablet:hidden h-full w-full max-w-[1280px] px-6">
-          <div className="absolute left-1/2 top-[80px] h-[700px] w-full max-w-[1152px] -translate-x-1/2">
+          <div className="absolute left-1/2 top-[64px] h-[780px] w-full max-w-[1152px] -translate-x-1/2">
             <div className="absolute left-[608px] top-0 w-[544px]">
-              <div className="inline-flex h-[36px] items-center rounded-full bg-white px-4">
+              <div className="inline-flex h-[36px] items-center gap-2 rounded-full bg-white px-4">
+                <span className="h-1.5 w-1.5 rounded-full bg-[#0025db]" aria-hidden />
                 <span className="text-[14px] font-bold leading-[20px] tracking-[-0.1504px] text-[#0025db]">
                   {aboutTag}
                 </span>
               </div>
-              <h2 className="mt-[24px] text-[48px] font-extrabold leading-[60px] tracking-[0.3516px] text-[#0a0a0a]">
+              <h2 className="mt-[20px] text-[48px] font-extrabold leading-[56px] tracking-[0.3516px] text-[#0a0a0a]">
                 {aboutHeading}
               </h2>
-              <p className="mt-[24px] w-[544px] text-[18px] leading-[29.25px] tracking-[-0.4395px] text-[#4a5565]">
-                {aboutLead}
-              </p>
-              <p className="mt-[16px] w-[544px] text-[18px] leading-[29.25px] tracking-[-0.4395px] text-[#4a5565]">
-                {aboutGroups}
-              </p>
+              <div className="mt-3 h-[3px] w-14 rounded-full bg-[#0025db]" aria-hidden />
+              <div className="mt-[22px] w-[544px]">{aboutCopy}</div>
       
               <div className="mt-[24px] flex gap-6">
                 <div className="h-[152px] w-[260px] rounded-[24px] bg-white px-6 pt-6">
