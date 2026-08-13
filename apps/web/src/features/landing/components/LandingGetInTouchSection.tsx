@@ -1,15 +1,13 @@
 'use client';
 
 import Link from 'next/link';
-import Image from 'next/image';
+import { Mail, Phone } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
 import {
   BUTTON_HOVER_CLASS,
   CONTACT_EMAIL,
   CONTACT_PHONE,
   CONTACT_PHONE_DISPLAY,
-  GET_TOUCH_PHONE_ICON,
-  GET_TOUCH_EMAIL_ICON,
 } from '../landingConstants';
 import { LandingSectionHeader } from './LandingSectionHeader';
 import { LandingStaggerGroup, LandingStaggerItem } from './LandingStaggerGroup';
@@ -35,7 +33,7 @@ export function LandingGetInTouchSection({ tr }: LandingSectionProps) {
                 BUTTON_HOVER_CLASS,
               )}
             >
-              <Image src={GET_TOUCH_PHONE_ICON} alt="" width={20} height={20} unoptimized />
+              <Phone className="size-5" strokeWidth={2.25} />
               <span>{CONTACT_PHONE_DISPLAY}</span>
             </Link>
           </LandingStaggerItem>
@@ -47,7 +45,7 @@ export function LandingGetInTouchSection({ tr }: LandingSectionProps) {
                 BUTTON_HOVER_CLASS,
               )}
             >
-              <Image src={GET_TOUCH_EMAIL_ICON} alt="" width={20} height={20} unoptimized />
+              <Mail className="size-5" strokeWidth={2.25} />
               <span>{CONTACT_EMAIL}</span>
             </Link>
           </LandingStaggerItem>
@@ -78,7 +76,7 @@ export function LandingGetInTouchSection({ tr }: LandingSectionProps) {
                   BUTTON_HOVER_CLASS,
                 )}
               >
-                <Image src={GET_TOUCH_PHONE_ICON} alt="" width={24} height={24} unoptimized />
+                <Phone className="size-6" strokeWidth={2.25} />
                 <span>{CONTACT_PHONE_DISPLAY}</span>
               </Link>
             </LandingStaggerItem>
@@ -90,7 +88,7 @@ export function LandingGetInTouchSection({ tr }: LandingSectionProps) {
                   BUTTON_HOVER_CLASS,
                 )}
               >
-                <Image src={GET_TOUCH_EMAIL_ICON} alt="" width={24} height={24} unoptimized />
+                <Mail className="size-6" strokeWidth={2.25} />
                 <span>{CONTACT_EMAIL}</span>
               </Link>
             </LandingStaggerItem>
