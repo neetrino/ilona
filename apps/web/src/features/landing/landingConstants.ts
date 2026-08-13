@@ -3,6 +3,10 @@ import { LANDING_ASSETS } from './landingAssets';
 export const BUTTON_HOVER_CLASS =
   'transition-transform duration-200 ease-out hover:-translate-y-1';
 
+export const CONTACT_PHONE = '+37493462061';
+export const CONTACT_PHONE_DISPLAY = '+374 (93) 462-061';
+export const CONTACT_EMAIL = 'ilona.ed.centre@gmail.com';
+
 export const HERO_PERSON_IMAGE = LANDING_ASSETS.heroPerson;
 export const HERO_UK_BADGE_IMAGE = LANDING_ASSETS.heroUkBadge;
 export const HERO_US_BADGE_IMAGE = LANDING_ASSETS.heroUsBadge;
