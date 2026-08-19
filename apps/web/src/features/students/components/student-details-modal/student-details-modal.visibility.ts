@@ -6,6 +6,7 @@ export type StudentDetailsVisibility = {
   monthlyFee: boolean;
   payments: boolean;
   parentEmail: boolean;
+  parentPassport: boolean;
   openFullProfile: boolean;
   receiveReports: boolean;
   alwaysShowTeacher2: boolean;
@@ -23,6 +24,7 @@ export function getStudentDetailsVisibility(
     monthlyFee: isStaff,
     payments: isStaff,
     parentEmail: isStaff,
+    parentPassport: isStaff,
     openFullProfile: isStaff,
     receiveReports: isStaff,
     alwaysShowTeacher2: !isStaff,

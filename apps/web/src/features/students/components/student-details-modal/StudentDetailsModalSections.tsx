@@ -5,6 +5,7 @@ import {
   CircleDollarSign,
   GraduationCap,
   Mail,
+  IdCard,
   Phone,
   UserRound,
   UserCircle,
@@ -132,7 +133,12 @@ export function StudentDetailsModalParentContact({
 }: Pick<SectionProps, 'student' | 'visibility' | 't'>) {
   const showParent =
     visibility.alwaysShowParentContact ||
-    Boolean(student.parentName || student.parentPhone || (visibility.parentEmail && student.parentEmail));
+    Boolean(
+      student.parentName ||
+        student.parentPhone ||
+        (visibility.parentEmail && student.parentEmail) ||
+        (visibility.parentPassport && student.parentPassportInfo),
+    );
   if (!showParent) return null;
 
   return (
@@ -150,9 +156,14 @@ export function StudentDetailsModalParentContact({
         ) : null}
         {visibility.parentEmail && student.parentEmail ? (
           <StudentDetailsModalField
-            className="sm:col-span-2 min-[1367px]:col-span-1"
             label={<IconLabel icon={<Mail className="h-4 w-4 shrink-0 text-slate-400" aria-hidden="true" />} text={t('parentEmail')} />}
             value={student.parentEmail}
+          />
+        ) : null}
+        {visibility.parentPassport ? (
+          <StudentDetailsModalField
+            label={<IconLabel icon={<IdCard className="h-4 w-4 shrink-0 text-slate-400" aria-hidden="true" />} text={t('parentPassportInfo')} />}
+            value={student.parentPassportInfo?.trim() || '—'}
           />
         ) : null}
       </div>
