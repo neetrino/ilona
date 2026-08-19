@@ -1969,6 +1969,7 @@
     "lastName": "Ազգանուն",
     "emailAddress": "Էլ. փոստի հասցե",
     "phoneNumber": "Հեռախոսահամար",
+    "phonePlaceholder": "+374 XX XXX XXX",
     "age": "Տարիք",
     "role": "Դեր",
     "assignedBySystem": "Նշանակված է համակարգի կողմից",

@@ -1969,6 +1969,7 @@
     "lastName": "Last Name",
     "emailAddress": "Email Address",
     "phoneNumber": "Phone Number",
+    "phonePlaceholder": "+374 XX XXX XXX",
     "age": "Age",
     "role": "Role",
     "assignedBySystem": "Assigned by system",
