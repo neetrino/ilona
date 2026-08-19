@@ -109,7 +109,7 @@ export function LandingPageContent() {
       />
       <LandingRocketFlight />
       <CanvasScaler className="min-h-screen">
-        <LandingHeroSection tr={tr} isHy={isHy} />
+        <LandingHeroSection tr={tr} isHy={isHy} onSectionNavigate={scrollToSection} />
         <LandingAboutSection tr={tr} isHy={isHy} />
         <LandingWhyChooseSection tr={tr} isHy={isHy} />
         <LandingStudentSuccessSection tr={tr} isHy={isHy} />

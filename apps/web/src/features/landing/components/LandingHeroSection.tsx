@@ -1,5 +1,6 @@
 'use client';
 
+import type { MouseEvent } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion, useReducedMotion } from 'framer-motion';
@@ -7,11 +8,20 @@ import { cn } from '@/shared/lib/utils';
 import { BUTTON_HOVER_CLASS, HERO_PERSON_IMAGE, HERO_UK_BADGE_IMAGE, HERO_US_BADGE_IMAGE } from '../landingConstants';
 import { landingHeroEntranceVariants, landingHeroTransition, landingRevealTransition } from '../landingAnimations';
 import { paytoneOne } from '../landingFont';
-import type { LandingSectionProps } from '../types';
+import type { LandingHeroSectionProps } from '../types';
 
-export function LandingHeroSection({ tr, isHy }: LandingSectionProps) {
+export function LandingHeroSection({ tr, isHy, onSectionNavigate }: LandingHeroSectionProps) {
   const prefersReducedMotion = useReducedMotion();
   const heroIntroVisibilityClass = prefersReducedMotion ? 'opacity-100' : undefined;
+
+  const handleChooseBranch = (event: MouseEvent<HTMLAnchorElement>) => {
+    if (!onSectionNavigate) {
+      return;
+    }
+
+    event.preventDefault();
+    onSectionNavigate('branches');
+  };
 
   const heroTextMotion = prefersReducedMotion
     ? {}
@@ -151,6 +161,7 @@ export function LandingHeroSection({ tr, isHy }: LandingSectionProps) {
           <motion.div {...heroCtaMotion} className="absolute left-3 right-3 top-[740px] z-20">
             <Link
               href="#branches"
+              onClick={handleChooseBranch}
               className={cn(
                 'inline-flex h-[52px] w-full items-center justify-center rounded-[999px] border border-[#1447e6] bg-white/10 text-[14px] font-normal text-[#1548e6] backdrop-blur-md',
                 BUTTON_HOVER_CLASS,
@@ -200,6 +211,7 @@ export function LandingHeroSection({ tr, isHy }: LandingSectionProps) {
           <motion.div {...heroCtaMotion} className="absolute left-[36px] top-[586px]">
             <Link
               href="#branches"
+              onClick={handleChooseBranch}
               className={cn(
                 'inline-flex h-[60px] w-[199.055px] items-center justify-center rounded-[16777200px] border-2 border-[#1447e6] bg-[rgba(255,255,255,0.1)] text-[16px] font-normal tracking-[-0.3125px] text-[#1548e6]',
                 heroIntroVisibilityClass,
