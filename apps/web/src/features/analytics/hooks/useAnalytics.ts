@@ -53,14 +53,14 @@ export function useTeacherPerformance(
 
 export function useStudentRisk(options?: Omit<UseQueryOptions<StudentRisk[]>, 'queryKey' | 'queryFn'>) {
   const userRole = useAuthStore((state) => state.user?.role);
-  const isAdmin = userRole === 'ADMIN';
+  const canViewStudentRisk = userRole === 'ADMIN' || userRole === 'MANAGER';
   const isEnabledByOptions = options?.enabled ?? true;
 
   return useQuery({
     queryKey: analyticsKeys.studentsRisk(),
     queryFn: fetchStudentRisk,
     ...options,
-    enabled: isAdmin && isEnabledByOptions,
+    enabled: canViewStudentRisk && isEnabledByOptions,
   });
 }
 
