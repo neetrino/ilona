@@ -11,14 +11,14 @@ export class AnalyticsController {
 
   @Get('summary')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.ADMIN, UserRole.MANAGER)
   async getDashboardSummary() {
     return this.analyticsService.getDashboardSummary();
   }
 
   @Get('teachers')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.ADMIN, UserRole.MANAGER)
   async getTeacherPerformance(
     @Query('dateFrom') dateFrom?: string,
     @Query('dateTo') dateTo?: string,
@@ -31,14 +31,14 @@ export class AnalyticsController {
 
   @Get('students/risk')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.ADMIN, UserRole.MANAGER)
   async getStudentRiskAnalytics() {
     return this.analyticsService.getStudentRiskAnalytics();
   }
 
   @Get('revenue')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.ADMIN, UserRole.MANAGER)
   async getRevenueAnalytics(
     @Query('months') months?: string,
     @Query('dateFrom') dateFrom?: string,
@@ -66,7 +66,7 @@ export class AnalyticsController {
 
   @Get('attendance')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.ADMIN, UserRole.MANAGER)
   async getAttendanceOverview(
     @Query('dateFrom') dateFrom?: string,
     @Query('dateTo') dateTo?: string,
@@ -79,7 +79,7 @@ export class AnalyticsController {
 
   @Get('lessons')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRole.ADMIN)
+  @Roles(UserRole.ADMIN, UserRole.MANAGER)
   async getLessonsOverview(
     @Query('dateFrom') dateFrom?: string,
     @Query('dateTo') dateTo?: string,

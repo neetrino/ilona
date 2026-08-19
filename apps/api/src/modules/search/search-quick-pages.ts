@@ -121,7 +121,7 @@ const ROWS: QuickPageRow[] = [
     href: '/admin/analytics',
     navKey: 'analytics',
     titleEn: 'Analytics',
-    roles: [UserRole.ADMIN],
+    roles: [UserRole.ADMIN, UserRole.MANAGER],
     synonyms: ['reports', 'stats', 'insights'],
   },
   {

@@ -36,7 +36,7 @@ export function AtRiskStudentsBlock() {
           {t('atRiskStudents')}
         </h2>
         <Link
-          href={`/${locale}${basePath}/analytics`}
+          href={`/${locale}${basePath}/analytics?tab=risk`}
           className="inline-flex h-9 items-center rounded-full border border-[#1010a3]/20 bg-white px-4 text-sm font-medium text-[#1010a3] transition-colors hover:bg-[#ececff]"
         >
           {t('viewAll')}

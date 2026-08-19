@@ -37,8 +37,14 @@ export function getAdminNavEntries(role: string): AdminNavEntry[] {
     { labelKey: 'settings', href: '/admin/settings', icon: { type: 'sidebar', icon: 'iconSettings' } },
   ];
 
+  const analytics: AdminNavEntry = {
+    labelKey: 'analytics',
+    href: '/admin/analytics',
+    icon: { type: 'sidebar', icon: 'iconAnalytics' },
+  };
+
   if (role === 'MANAGER') {
-    return [...core, ...tail].map((item) => ({
+    return [...core, ...tail.slice(0, 2), analytics, tail[2]].map((item) => ({
       ...item,
       href: toRolePortalPath(item.href, 'MANAGER'),
     }));
@@ -49,7 +55,7 @@ export function getAdminNavEntries(role: string): AdminNavEntry[] {
     { labelKey: 'recordings', href: '/admin/recording', icon: { type: 'sidebar', icon: 'iconRecordings' } },
     { labelKey: 'finance', href: '/admin/finance', icon: { type: 'sidebar', icon: 'iconPayments' } },
     ...tail.slice(0, 2),
-    { labelKey: 'analytics', href: '/admin/analytics', icon: { type: 'sidebar', icon: 'iconAnalytics' } },
+    analytics,
     tail[2],
   ];
 }
