@@ -660,6 +660,7 @@
     "parentName": "Ծնողի անուն",
     "parentPhone": "Ծնողի հեռախոս",
     "parentEmail": "Ծնողի էլ. փոստ",
+    "parentPassportInfo": "Ծնողի անձնագիր",
     "notes": "Նշումներ",
     "lessonsShort": "դաս",
     "overduePaymentsHint": "{count} ժամկետանց",

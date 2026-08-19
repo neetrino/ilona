@@ -660,6 +660,7 @@
     "parentName": "Parent name",
     "parentPhone": "Parent phone",
     "parentEmail": "Parent email",
+    "parentPassportInfo": "Parent passport",
     "notes": "Notes",
     "lessonsShort": "lessons",
     "overduePaymentsHint": "{count} overdue",
