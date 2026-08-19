@@ -660,6 +660,7 @@
     "parentName": "Ծնողի անուն",
     "parentPhone": "Ծնողի հեռախոս",
     "parentEmail": "Ծնողի էլ. փոստ",
+    "parentPassportInfo": "Ծնողի անձնագիր",
     "notes": "Նշումներ",
     "lessonsShort": "դաս",
     "overduePaymentsHint": "{count} ժամկետանց",
@@ -811,6 +812,7 @@
       "lastLogin": "Վերջին մուտք՝ {date}",
       "basicInfo": "Հիմնական տվյալներ",
       "learning": "Ուսուցում",
+      "centerAdmissionDate": "Կենտրոն ընդունման ամսաթիվ",
       "attendanceSummary": "Հաճախելիություն",
       "paymentsSummary": "Վճարումներ"
     }
@@ -1969,6 +1971,7 @@
     "lastName": "Ազգանուն",
     "emailAddress": "Էլ. փոստի հասցե",
     "phoneNumber": "Հեռախոսահամար",
+    "phonePlaceholder": "+374 XX XXX XXX",
     "age": "Տարիք",
     "role": "Դեր",
     "assignedBySystem": "Նշանակված է համակարգի կողմից",

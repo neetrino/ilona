@@ -12,7 +12,11 @@ import {
   type ViewMode,
 } from '@/features/attendance/utils/dateUtils';
 import type { Lesson } from '@/features/lessons';
-import { getItemId } from '@/features/students';
+import {
+  buildStudentsByGroup,
+  mergeGroupRosterStudents,
+} from '@/app/[locale]/(admin)/admin/attendance-register/utils/group-students.util';
+import { getItemKey } from '@/app/[locale]/(admin)/admin/attendance-register/hooks/useAttendanceData';
 
 type AttendanceStatus = 'present' | 'absent_justified' | 'absent_unjustified' | 'not_marked';
 
@@ -134,12 +138,23 @@ export function useTeacherAttendanceData({
     }
   }, [lessons, viewMode, currentDate, effectiveGroupIds.length, selectedDayForMonthView]);
 
-  // Fetch students for selected groups (teacher-scoped: backend GET /students enforces teacher's groups)
+  // Fetch active students strictly assigned to selected groups only.
   const { data: studentsData, isLoading: isLoadingStudents } = useStudents({
     groupIds: effectiveGroupIds.length > 0 ? effectiveGroupIds : undefined,
+    statusIds: ['ACTIVE'],
     take: 100,
   });
   const students = useMemo(() => studentsData?.items ?? [], [studentsData?.items]);
+
+  const studentsByGroup = useMemo(
+    () => buildStudentsByGroup(students, effectiveGroupIds),
+    [students, effectiveGroupIds],
+  );
+
+  const rosterStudents = useMemo(
+    () => mergeGroupRosterStudents(studentsByGroup, effectiveGroupIds),
+    [studentsByGroup, effectiveGroupIds],
+  );
 
   // Fetch attendance for all filtered lessons in one batch request
   const lessonIds = useMemo(() => filteredLessons.map((l) => l.id), [filteredLessons]);
@@ -197,16 +212,16 @@ export function useTeacherAttendanceData({
 
   // Filter students by selected absence type (client-side)
   const filteredStudents = useMemo(() => {
-    if (absenceFilter === 'all' || effectiveGroupIds.length === 0) return students;
+    if (absenceFilter === 'all' || effectiveGroupIds.length === 0) return rosterStudents;
     if (absenceFilter === 'no_session') return [];
-    return students.filter((student) =>
+    return rosterStudents.filter((student) =>
       filteredLessons.some((lesson) => {
-        const cell = attendanceData[lesson.id]?.[getItemId(student)];
+        const cell = attendanceData[lesson.id]?.[getItemKey(student)];
         const status: AttendanceStatus = cell?.status ?? 'not_marked';
         return status === absenceFilter;
       })
     );
-  }, [students, filteredLessons, attendanceData, absenceFilter, effectiveGroupIds.length]);
+  }, [rosterStudents, filteredLessons, attendanceData, absenceFilter, effectiveGroupIds.length]);
 
   // Get lessons grouped by date for month view
   const lessonsByDate = useMemo(() => {
@@ -229,10 +244,10 @@ export function useTeacherAttendanceData({
     let absent = 0;
     let notMarked = 0;
 
-    students.forEach((student) => {
+    rosterStudents.forEach((student) => {
       filteredLessons.forEach((lesson) => {
         total++;
-        const cell = attendanceData[lesson.id]?.[getItemId(student)];
+        const cell = attendanceData[lesson.id]?.[getItemKey(student)];
         if (!cell) {
           notMarked++;
         } else if (cell.isPresent) {
@@ -244,7 +259,7 @@ export function useTeacherAttendanceData({
     });
 
     return { total, present, absent, notMarked };
-  }, [students, filteredLessons, attendanceData]);
+  }, [rosterStudents, filteredLessons, attendanceData]);
 
   const markBulkAttendance = useMarkBulkAttendance();
 
@@ -318,6 +333,8 @@ export function useTeacherAttendanceData({
     filteredLessons,
     isLoadingLessons,
     students,
+    rosterStudents,
+    studentsByGroup,
     filteredStudents,
     isLoadingStudents,
     attendanceData,

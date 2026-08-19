@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useRef, useState, startTransition } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
+import { useAuthStore } from '@/features/auth/store/auth.store';
+import { toRolePortalPath } from '@/shared/lib/role-routes';
 import { Input } from '@/shared/components/ui/input';
 import { useGlobalSearch } from '../hooks/useGlobalSearch';
 import { GlobalSearchDropdown } from './GlobalSearchDropdown';
@@ -53,6 +55,7 @@ export function GlobalSearchBar({
   const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
   const locale = useLocale();
+  const userRole = useAuthStore((state) => state.user?.role);
   const t = useTranslations('common');
   const tNav = useTranslations('nav');
 
@@ -114,13 +117,14 @@ export function GlobalSearchBar({
   const navigateTo = useCallback(
     (href: string) => {
       const path = href.startsWith('/') ? href : `/${href}`;
-      router.push(`/${locale}${path}`);
+      const rolePath = toRolePortalPath(path, userRole);
+      router.push(`/${locale}${rolePath}`);
       setOpen(false);
       setQuery('');
       setDebouncedQuery('');
       onNavigate?.();
     },
-    [locale, onNavigate, router],
+    [locale, onNavigate, router, userRole],
   );
 
   const onPick = useCallback(

@@ -214,6 +214,7 @@ export function StudentDetailsModal(props: StudentDetailsModalProps) {
         studentId={studentId}
         locale={locale}
         onClose={onClose}
+        audience={props.audience}
         t={t}
         tTeachers={tTeachers}
         tCommon={tCommon}

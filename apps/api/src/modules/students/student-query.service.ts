@@ -4,7 +4,8 @@ import {
   Logger,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { Prisma, UserStatus } from '@ilona/database';
+import { Prisma, UserRole, UserStatus } from '@ilona/database';
+import { omitStudentPassportForTeacher } from './student-visibility.util';
 
 @Injectable()
 export class StudentQueryService {
@@ -224,7 +225,7 @@ export class StudentQueryService {
         return rest;
       }
       const { _sortKey: __, ...rest } = item;
-      return rest;
+      return omitStudentPassportForTeacher(rest, UserRole.TEACHER);
     });
 
     const totalMonthlyFees = students.reduce(

@@ -7,7 +7,7 @@ import { readUrlSearchParam } from '@/shared/lib/url-search-params';
 import { useAppSearchUrl } from '@/shared/hooks/useAppSearchUrl';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
-import { useMyAssignedStudents, studentKeys, type Student } from '@/features/students';
+import { useMyAssignedStudents, studentKeys, StudentDetailsModal, type Student } from '@/features/students';
 import { isOnboardingItem } from '@/features/students/types';
 import { teacherApproveLead, teacherTransferLead } from '@/features/crm/api/crm.api';
 import { useMyGroups } from '@/features/groups/hooks/useGroups';
@@ -16,7 +16,6 @@ import { StudentFeedbackModal } from '@/app/[locale]/(admin)/admin/students/comp
 import { cn } from '@/shared/lib/utils';
 import { CUSTOM_MODAL_OVERLAY_CLASS, CUSTOM_MODAL_PANEL_CLASS } from '@/shared/lib/portal-form-sheet-classes';
 import { ADMIN_ICON_BUTTON_CLASS } from '@/shared/lib/admin-control-theme';
-import Link from 'next/link';
 import Image from 'next/image';
 
 function getLevelDisplay(level?: string): string {
@@ -55,6 +54,7 @@ export default function TeacherStudentsPage() {
   const [pendingGroupId, setPendingGroupId] = useState<string | null>(null);
 
   const urlGroupId = readUrlSearchParam('groupId', searchParams, urlRevision);
+  const detailsStudentId = readUrlSearchParam('studentId', searchParams, urlRevision);
 
   const validSelectedGroupId = useMemo(() => {
     const effectiveGroupId = pendingGroupId ?? urlGroupId;
@@ -114,7 +114,7 @@ export default function TeacherStudentsPage() {
 
   const handleGroupSelect = (groupId: string) => {
     setPendingGroupId(groupId);
-    replaceParams({ groupId });
+    replaceParams({ groupId, studentId: null });
   };
 
   const isLoading = !isAuthReady || isLoadingGroups || isLoadingStudents;
@@ -366,12 +366,13 @@ export default function TeacherStudentsPage() {
                             />
                           </svg>
                         </button>
-                        <Link
-                          href={`/${locale}/teacher/students/${student.id}?${searchParams.toString()}`}
+                        <button
+                          type="button"
+                          onClick={() => replaceParams({ studentId: student.id }, { mode: 'push' })}
                           className="rounded-lg px-3 py-1.5 text-sm text-primary transition-colors hover:bg-primary/10"
                         >
                           {tTeacherStudents('viewProfile')}
-                        </Link>
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -381,6 +382,15 @@ export default function TeacherStudentsPage() {
           </div>
         </div>
       </div>
+
+      <StudentDetailsModal
+        studentId={detailsStudentId}
+        open={!!detailsStudentId}
+        onClose={() => replaceParams({ studentId: null })}
+        locale={locale}
+        audience="teacher"
+        onFeedback={(student) => setFeedbackStudent(student)}
+      />
 
       {/* Feedback history modal */}
       <StudentFeedbackModal

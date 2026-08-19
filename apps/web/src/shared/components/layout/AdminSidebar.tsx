@@ -16,6 +16,8 @@ import { useLogo } from '@/features/settings/hooks/useSettings';
 import { getFullApiUrl } from '@/shared/lib/api';
 import { type AdminNavEntry, type AdminNavIcon } from '@/shared/lib/admin-nav-entries';
 import { useAdminNavEntries } from '@/shared/hooks/useAdminNavEntries';
+import { useAuthStore } from '@/features/auth/store/auth.store';
+import { useCenter } from '@/features/centers/hooks/useCenters';
 import { STUDENT_SIDEBAR_ASSETS } from '@/features/student-dashboard/studentSidebarAssets';
 import {
   PORTAL_SIDEBAR_NAV_LABEL_HY_CLASS,
@@ -199,6 +201,73 @@ function NavLink({
   );
 }
 
+function ManagerBranchSidebarBadge({
+  branchName,
+  centerLabel,
+  collapsed,
+}: {
+  branchName: string;
+  centerLabel: string;
+  collapsed: boolean;
+}) {
+  if (collapsed) {
+    return (
+      <div className="mb-2 flex justify-center px-1" title={branchName}>
+        <span className="flex h-9 w-9 items-center justify-center rounded-full border border-[#1010a3]/12 bg-[#f6f7ff] text-[#1010a3]">
+          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={1.75}
+              d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+            />
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={1.75}
+              d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+            />
+          </svg>
+        </span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="mb-3 px-1">
+      <p className="mb-1.5 px-2 text-[10px] font-semibold uppercase tracking-[0.08em] text-[#8b8b90]">
+        {centerLabel}
+      </p>
+      <div className="rounded-[1.25rem] border border-[#1010a3]/10 bg-[#f6f7ff] px-3 py-2 shadow-[0_10px_24px_-22px_rgba(16,16,163,0.55)]">
+        <div className="flex min-w-0 items-center gap-2.5">
+          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white text-[#1010a3]">
+            <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={1.75}
+                d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+              />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={1.75}
+                d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+              />
+            </svg>
+          </span>
+          <p
+            className="min-w-0 flex-1 truncate whitespace-nowrap text-sm font-semibold leading-none text-[#1010a3]"
+            title={branchName}
+          >
+            {branchName}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 interface AdminSidebarProps {
   collapsed?: boolean;
   onToggle?: () => void;
@@ -225,6 +294,11 @@ export function AdminSidebar({
   const { data: logoData } = useLogo();
   const apiLogo = getFullApiUrl(logoData?.logoUrl);
   const brandLogo = apiLogo || STUDENT_SIDEBAR_ASSETS.brandLogo;
+
+  const { user } = useAuthStore();
+  const isManager = user?.role === 'MANAGER';
+  const managerCenterId = isManager ? user.managerCenterId ?? undefined : undefined;
+  const { data: managerCenter } = useCenter(managerCenterId ?? '', isManager && !!managerCenterId);
 
   const navItems = useAdminNavEntries();
 
@@ -325,6 +399,13 @@ export function AdminSidebar({
             !showLabels && '[scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden',
           )}
         >
+          {isManager && managerCenter?.name ? (
+            <ManagerBranchSidebarBadge
+              branchName={managerCenter.name}
+              centerLabel={t('center')}
+              collapsed={!showLabels}
+            />
+          ) : null}
           {navItems.map((item) => (
             <NavLink
               key={item.href}

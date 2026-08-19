@@ -156,11 +156,12 @@ export default function TeacherAttendanceRegisterPage() {
         )}
 
         {/* Day View */}
-        {nav.selectedGroupIds.length > 0 && data.students.length > 0 && nav.viewMode === 'day' && (
+        {nav.selectedGroupIds.length > 0 && data.rosterStudents.length > 0 && nav.viewMode === 'day' && (
           <DayView
             group={selectedGroup}
             groups={data.groups}
             selectedGroupIds={nav.selectedGroupIds}
+            studentsByGroup={data.studentsByGroup}
             currentDate={nav.currentDate}
             students={data.filteredStudents}
             filteredLessons={data.filteredLessons}
@@ -181,11 +182,12 @@ export default function TeacherAttendanceRegisterPage() {
         )}
 
         {/* Week View */}
-        {nav.selectedGroupIds.length > 0 && data.students.length > 0 && nav.viewMode === 'week' && (
+        {nav.selectedGroupIds.length > 0 && data.rosterStudents.length > 0 && nav.viewMode === 'week' && (
           <WeekView
             group={selectedGroup}
             groups={data.groups}
             selectedGroupIds={nav.selectedGroupIds}
+            studentsByGroup={data.studentsByGroup}
             currentDate={nav.currentDate}
             students={data.filteredStudents}
             filteredLessons={data.filteredLessons}
@@ -205,11 +207,12 @@ export default function TeacherAttendanceRegisterPage() {
         )}
 
         {/* Month View */}
-        {nav.selectedGroupIds.length > 0 && data.students.length > 0 && nav.viewMode === 'month' && (
+        {nav.selectedGroupIds.length > 0 && data.rosterStudents.length > 0 && nav.viewMode === 'month' && (
           <MonthView
             group={selectedGroup}
             groups={data.groups}
             selectedGroupIds={nav.selectedGroupIds}
+            studentsByGroup={data.studentsByGroup}
             currentDate={nav.currentDate}
             selectedDayForMonthView={nav.selectedDayForMonthView}
             students={data.filteredStudents}

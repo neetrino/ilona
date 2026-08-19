@@ -13,6 +13,9 @@ import type { Lesson } from '@/features/lessons';
 import type { TeacherAssignedItem } from '@/features/students';
 import type { AttendanceCell } from '../hooks/useAttendanceData';
 import { toAttendanceRow } from '../hooks/useAttendanceData';
+import {
+  filterGridStudentsForGroup,
+} from '../utils/group-students.util';
 import type { AbsenceType } from '@/features/attendance';
 import { AdminListPagination } from '@/shared/components/ui';
 import { ATTENDANCE_GROUP_CARD_30_CLASS } from '@/shared/components/attendance/attendance-button-theme';
@@ -21,8 +24,9 @@ const WEEK_GROUP_CARDS_PAGE_SIZE = 5;
 
 interface WeekViewProps {
   group: Group | undefined;
-  groups?: Group[]; // All groups for multi-group support (optional for backward compatibility)
-  selectedGroupIds?: string[]; // Selected group IDs (optional for backward compatibility)
+  groups?: Group[];
+  selectedGroupIds?: string[];
+  studentsByGroup: Record<string, TeacherAssignedItem[]>;
   currentDate: Date;
   students: TeacherAssignedItem[];
   filteredLessons: Lesson[];
@@ -47,6 +51,7 @@ export function WeekView({
   group,
   groups,
   selectedGroupIds,
+  studentsByGroup: rosterByGroup,
   currentDate,
   students,
   filteredLessons,
@@ -64,34 +69,50 @@ export function WeekView({
   onUnsavedChangesChange,
 }: WeekViewProps) {
   const tCommon = useTranslations('common');
-  // Group lessons and students by groupId
-  const lessonsByGroup = filteredLessons.reduce((acc, lesson) => {
-    const groupId = lesson.groupId;
-    if (!acc[groupId]) {
-      acc[groupId] = [];
-    }
-    acc[groupId].push(lesson);
-    return acc;
-  }, {} as Record<string, Lesson[]>);
-
-  const studentsByGroup = students.reduce((acc, student) => {
-    const groupId = student.groupId || student.group?.id;
-    if (!groupId) return acc;
-    if (!acc[groupId]) {
-      acc[groupId] = [];
-    }
-    acc[groupId].push(student);
-    return acc;
-  }, {} as Record<string, TeacherAssignedItem[]>);
-
-  // Get selected groups in order
-  // Fallback to single group if selectedGroupIds is not provided (backward compatibility)
-  const safeSelectedGroupIds = selectedGroupIds ?? (group ? [group.id] : []);
+  const fallbackGroupId = group?.id;
+  const safeSelectedGroupIds = useMemo(
+    () => selectedGroupIds ?? (fallbackGroupId ? [fallbackGroupId] : []),
+    [selectedGroupIds, fallbackGroupId],
+  );
   const safeGroups = groups ?? (group ? [group] : []);
   const selectedGroups = safeSelectedGroupIds
-    .map(id => safeGroups.find(g => g.id === id))
+    .map((id) => safeGroups.find((g) => g.id === id))
     .filter((g): g is Group => g !== undefined);
   const mobileCardsPageSize = WEEK_GROUP_CARDS_PAGE_SIZE;
+
+  const lessonsByGroup = useMemo(
+    () =>
+      filteredLessons.reduce((acc, lesson) => {
+        if (!acc[lesson.groupId]) {
+          acc[lesson.groupId] = [];
+        }
+        acc[lesson.groupId].push(lesson);
+        return acc;
+      }, {} as Record<string, Lesson[]>),
+    [filteredLessons],
+  );
+
+  const studentsByGroup = useMemo(
+    () =>
+      safeSelectedGroupIds.reduce(
+        (acc, groupId) => {
+          acc[groupId] = rosterByGroup[groupId] ?? [];
+          return acc;
+        },
+        {} as Record<string, TeacherAssignedItem[]>,
+      ),
+    [rosterByGroup, safeSelectedGroupIds],
+  );
+
+  const primaryGroup = group ?? selectedGroups[0] ?? null;
+  const primaryGroupRoster = primaryGroup ? studentsByGroup[primaryGroup.id] ?? [] : [];
+  const primaryGroupStudents = primaryGroup
+    ? filterGridStudentsForGroup(students, primaryGroupRoster)
+    : [];
+  const primaryGroupLessons = primaryGroup
+    ? filteredLessons.filter((lesson) => lesson.groupId === primaryGroup.id)
+    : filteredLessons;
+
   const [mobileCardPage, setMobileCardPage] = useState(0);
   const [desktopCardPage, setDesktopCardPage] = useState(0);
   const mobileCardsStartRef = useRef<HTMLDivElement | null>(null);
@@ -158,11 +179,11 @@ export function WeekView({
     return (
       <div className={ATTENDANCE_GROUP_CARD_30_CLASS}>
         <AttendanceContextHeader
-          group={group || null}
+          group={primaryGroup}
           weekRange={formatWeekRange(currentDate)}
           viewMode="week"
-          lessonsCount={filteredLessons.length}
-          studentsCount={students.length}
+          lessonsCount={primaryGroupLessons.length}
+          studentsCount={primaryGroupRoster.length}
           hasUnsavedChanges={hasUnsavedChanges}
         />
 
@@ -173,12 +194,12 @@ export function WeekView({
         ) : (
           <>
                 <div className="mt-3 md:hidden">
-              <WeekLessonTable weekDates={weekDates} lessons={filteredLessons} weekRangeLabel={formatWeekRange(currentDate)} />
+              <WeekLessonTable weekDates={weekDates} lessons={primaryGroupLessons} weekRangeLabel={formatWeekRange(currentDate)} />
             </div>
             <div className="hidden md:block">
               <WeekAttendanceGrid
-                students={students.map(toAttendanceRow)}
-                lessons={filteredLessons}
+                students={primaryGroupStudents.map(toAttendanceRow)}
+                lessons={primaryGroupLessons}
                 initialAttendance={attendanceData}
                 onDaySave={onDaySave}
                 isLoading={isLoadingAttendance}
@@ -202,7 +223,8 @@ export function WeekView({
         <div ref={mobileCardsStartRef} />
         {mobilePaginatedGroups.map((selectedGroup) => {
           const groupLessons = lessonsByGroup[selectedGroup.id] || [];
-          const groupStudents = studentsByGroup[selectedGroup.id] || [];
+          const groupRoster = studentsByGroup[selectedGroup.id] || [];
+          const groupGridStudents = filterGridStudentsForGroup(students, groupRoster);
           
           // Filter attendance data for this group's lessons
           const groupAttendanceData: Record<string, Record<string, AttendanceCell>> = {};
@@ -219,7 +241,7 @@ export function WeekView({
                 weekRange={formatWeekRange(currentDate)}
                 viewMode="week"
                 lessonsCount={groupLessons.length}
-                studentsCount={groupStudents.length}
+                studentsCount={groupRoster.length}
                 hasUnsavedChanges={hasUnsavedChanges}
               />
 
@@ -234,7 +256,7 @@ export function WeekView({
                   </div>
                   <div className="hidden md:block">
                     <WeekAttendanceGrid
-                      students={groupStudents.map(toAttendanceRow)}
+                      students={groupGridStudents.map(toAttendanceRow)}
                       lessons={groupLessons}
                       initialAttendance={groupAttendanceData}
                       onDaySave={onDaySave}
@@ -267,7 +289,8 @@ export function WeekView({
       <div ref={desktopCardsStartRef} />
       {desktopPaginatedGroups.map((selectedGroup) => {
         const groupLessons = lessonsByGroup[selectedGroup.id] || [];
-        const groupStudents = studentsByGroup[selectedGroup.id] || [];
+        const groupRoster = studentsByGroup[selectedGroup.id] || [];
+        const groupGridStudents = filterGridStudentsForGroup(students, groupRoster);
         
         // Filter attendance data for this group's lessons
         const groupAttendanceData: Record<string, Record<string, AttendanceCell>> = {};
@@ -284,7 +307,7 @@ export function WeekView({
               weekRange={formatWeekRange(currentDate)}
               viewMode="week"
               lessonsCount={groupLessons.length}
-              studentsCount={groupStudents.length}
+              studentsCount={groupRoster.length}
               hasUnsavedChanges={hasUnsavedChanges}
             />
 
@@ -299,7 +322,7 @@ export function WeekView({
                 </div>
                 <div className="hidden md:block">
                   <WeekAttendanceGrid
-                    students={groupStudents.map(toAttendanceRow)}
+                    students={groupGridStudents.map(toAttendanceRow)}
                     lessons={groupLessons}
                     initialAttendance={groupAttendanceData}
                     onDaySave={onDaySave}

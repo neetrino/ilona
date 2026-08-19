@@ -660,6 +660,7 @@
     "parentName": "Parent name",
     "parentPhone": "Parent phone",
     "parentEmail": "Parent email",
+    "parentPassportInfo": "Parent passport",
     "notes": "Notes",
     "lessonsShort": "lessons",
     "overduePaymentsHint": "{count} overdue",
@@ -811,6 +812,7 @@
       "lastLogin": "Last login: {date}",
       "basicInfo": "Basic Info",
       "learning": "Learning",
+      "centerAdmissionDate": "Center admission date",
       "attendanceSummary": "Attendance",
       "paymentsSummary": "Payments"
     }
@@ -1969,6 +1971,7 @@
     "lastName": "Last Name",
     "emailAddress": "Email Address",
     "phoneNumber": "Phone Number",
+    "phonePlaceholder": "+374 XX XXX XXX",
     "age": "Age",
     "role": "Role",
     "assignedBySystem": "Assigned by system",

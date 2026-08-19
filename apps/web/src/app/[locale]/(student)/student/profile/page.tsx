@@ -235,7 +235,7 @@ export default function StudentProfilePage() {
               type="tel"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
-              placeholder="+1 234 567 8900"
+              placeholder={t('phonePlaceholder')}
             />
           </div>
 

@@ -3,7 +3,7 @@ import type { UserRole } from '@/types';
 const LOCALE_PATH_PREFIX = /^\/[a-z]{2}(?=\/)/;
 const ADMIN_BASE_PATH = '/admin';
 const MANAGER_BASE_PATH = '/manager';
-const ADMIN_ONLY_PREFIXES = ['/finance', '/analytics', '/recording'] as const;
+const ADMIN_ONLY_PREFIXES = ['/finance', '/recording'] as const;
 
 /** Strips `/en`, `/hy`, etc. only when followed by `/` — safe for `/admin/...` paths without locale. */
 export function stripLocaleFromPath(path: string): string {

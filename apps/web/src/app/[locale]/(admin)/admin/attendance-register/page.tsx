@@ -146,7 +146,7 @@ export default function AdminAttendanceRegisterPage() {
         {/* Month View Calendar */}
         {nav.viewMode === 'month' &&
           nav.selectedGroupIds.length > 0 &&
-          data.students.length > 0 && (
+          data.rosterStudents.length > 0 && (
             <MonthViewCalendar
               currentDate={nav.currentDate}
               selectedGroup={selectedGroup}
@@ -159,12 +159,13 @@ export default function AdminAttendanceRegisterPage() {
 
         {/* Day View */}
         {nav.selectedGroupIds.length > 0 &&
-          data.students.length > 0 &&
+          data.rosterStudents.length > 0 &&
           nav.viewMode === 'day' && (
             <DayView
               group={selectedGroup}
               groups={data.groups}
               selectedGroupIds={nav.selectedGroupIds}
+              studentsByGroup={data.studentsByGroup}
               currentDate={nav.currentDate}
               students={data.filteredStudents}
               filteredLessons={data.filteredLessons}
@@ -186,13 +187,14 @@ export default function AdminAttendanceRegisterPage() {
 
         {/* Week View */}
         {nav.selectedGroupIds.length > 0 &&
-          data.students.length > 0 &&
+          data.rosterStudents.length > 0 &&
           nav.viewMode === 'week' && (
             <div className="space-y-4">
               <WeekView
                 group={selectedGroup}
                 groups={data.groups}
                 selectedGroupIds={nav.selectedGroupIds}
+                studentsByGroup={data.studentsByGroup}
                 currentDate={nav.currentDate}
                 students={data.filteredStudents}
                 filteredLessons={data.filteredLessons}
@@ -222,12 +224,13 @@ export default function AdminAttendanceRegisterPage() {
         {/* Month View - Selected Day Grid */}
         {nav.viewMode === 'month' &&
           nav.selectedGroupIds.length > 0 &&
-          data.students.length > 0 &&
+          data.rosterStudents.length > 0 &&
           nav.selectedDayForMonthView && (
             <MonthView
               group={selectedGroup}
               groups={data.groups}
               selectedGroupIds={nav.selectedGroupIds}
+              studentsByGroup={data.studentsByGroup}
               currentDate={nav.currentDate}
               selectedDayForMonthView={nav.selectedDayForMonthView}
               students={data.filteredStudents}
