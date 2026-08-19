@@ -12,6 +12,7 @@ import type { Lesson } from '@/features/lessons';
 import type { TeacherAssignedItem } from '@/features/students';
 import type { AttendanceCell } from '../hooks/useAttendanceData';
 import { toAttendanceRow } from '../hooks/useAttendanceData';
+import { filterGridStudentsForGroup } from '../utils/group-students.util';
 import type { AbsenceType } from '@/features/attendance';
 import { ATTENDANCE_GROUP_CARD_CLASS } from '@/shared/components/attendance/attendance-button-theme';
 import { useIsIPad } from '@/shared/hooks/useIsIPad';
@@ -22,8 +23,9 @@ const IPAD_GROUP_CARDS_PAGE_SIZE = 10;
 
 interface MonthViewProps {
   group: Group | undefined;
-  groups?: Group[]; // All groups for multi-group support (optional for backward compatibility)
-  selectedGroupIds?: string[]; // Selected group IDs (optional for backward compatibility)
+  groups?: Group[];
+  selectedGroupIds?: string[];
+  studentsByGroup: Record<string, TeacherAssignedItem[]>;
   currentDate: Date;
   selectedDayForMonthView: string | null;
   students: TeacherAssignedItem[];
@@ -50,6 +52,7 @@ export function MonthView({
   group,
   groups,
   selectedGroupIds,
+  studentsByGroup: rosterByGroup,
   currentDate,
   selectedDayForMonthView,
   students,
@@ -69,37 +72,49 @@ export function MonthView({
   onUnsavedChangesChange,
 }: MonthViewProps) {
   const tCommon = useTranslations('common');
-  // Group lessons and students by groupId
-  const lessonsByGroup = filteredLessons.reduce((acc, lesson) => {
-    const groupId = lesson.groupId;
-    if (!acc[groupId]) {
-      acc[groupId] = [];
-    }
-    acc[groupId].push(lesson);
-    return acc;
-  }, {} as Record<string, Lesson[]>);
-
-  const studentsByGroup = students.reduce((acc, student) => {
-    const groupId = student.groupId || student.group?.id;
-    if (!groupId) return acc;
-    if (!acc[groupId]) {
-      acc[groupId] = [];
-    }
-    acc[groupId].push(student);
-    return acc;
-  }, {} as Record<string, TeacherAssignedItem[]>);
-
-  // Get selected groups in order
-  // Fallback to single group if selectedGroupIds is not provided (backward compatibility)
   const safeSelectedGroupIds = selectedGroupIds ?? (group ? [group.id] : []);
   const safeGroups = groups ?? (group ? [group] : []);
   const selectedGroups = safeSelectedGroupIds
-    .map(id => safeGroups.find(g => g.id === id))
+    .map((id) => safeGroups.find((g) => g.id === id))
     .filter((g): g is Group => g !== undefined);
   const isIPad = useIsIPad();
   const mobileCardsPageSize = isIPad ? IPAD_GROUP_CARDS_PAGE_SIZE : MOBILE_GROUP_CARDS_PAGE_SIZE;
   const [mobileCardPage, setMobileCardPage] = useState(0);
   const mobileCardsStartRef = useRef<HTMLDivElement | null>(null);
+
+  const lessonsByGroup = useMemo(
+    () =>
+      filteredLessons.reduce((acc, lesson) => {
+        if (!acc[lesson.groupId]) {
+          acc[lesson.groupId] = [];
+        }
+        acc[lesson.groupId].push(lesson);
+        return acc;
+      }, {} as Record<string, Lesson[]>),
+    [filteredLessons],
+  );
+
+  const studentsByGroup = useMemo(
+    () =>
+      safeSelectedGroupIds.reduce(
+        (acc, groupId) => {
+          acc[groupId] = rosterByGroup[groupId] ?? [];
+          return acc;
+        },
+        {} as Record<string, TeacherAssignedItem[]>,
+      ),
+    [rosterByGroup, safeSelectedGroupIds],
+  );
+
+  const primaryGroup = group ?? selectedGroups[0] ?? null;
+  const primaryGroupRoster = primaryGroup ? studentsByGroup[primaryGroup.id] ?? [] : [];
+  const primaryGroupStudents = primaryGroup
+    ? filterGridStudentsForGroup(students, primaryGroupRoster)
+    : [];
+  const primaryGroupLessons = primaryGroup
+    ? filteredLessons.filter((lesson) => lesson.groupId === primaryGroup.id)
+    : filteredLessons;
+
   const totalMobileCardPages = Math.max(
     1,
     Math.ceil(selectedGroups.length / mobileCardsPageSize),
@@ -149,22 +164,22 @@ export function MonthView({
           {showSingleView ? (
             <div className={ATTENDANCE_GROUP_CARD_CLASS}>
               <AttendanceContextHeader
-                group={group || null}
+                group={primaryGroup}
                 date={new Date(selectedDayForMonthView)}
                 viewMode="month"
-                lessonsCount={filteredLessons.length}
-                studentsCount={students.length}
+                lessonsCount={primaryGroupLessons.length}
+                studentsCount={primaryGroupRoster.length}
                 hasUnsavedChanges={hasUnsavedChanges}
               />
 
               {isLoadingLessons || isLoadingStudents || isLoadingAttendance ? (
                 <AttendanceLoadingState isLoadingAttendance={isLoadingAttendance} />
-              ) : filteredLessons.length === 0 ? (
+              ) : primaryGroupLessons.length === 0 ? (
                 <AttendanceEmptyState dateString={selectedDayForMonthView} />
               ) : (
                 <AttendanceGrid
-                  students={students.map(toAttendanceRow)}
-                  lessons={filteredLessons}
+                  students={primaryGroupStudents.map(toAttendanceRow)}
+                  lessons={primaryGroupLessons}
                   initialAttendance={attendanceData}
                   onLessonSave={onLessonSave}
                   isLoading={isLoadingAttendance}
@@ -182,7 +197,8 @@ export function MonthView({
                 <div ref={mobileCardsStartRef} />
               {mobilePaginatedGroups.map((selectedGroup) => {
                 const groupLessons = lessonsByGroup[selectedGroup.id] || [];
-                const groupStudents = studentsByGroup[selectedGroup.id] || [];
+                const groupRoster = studentsByGroup[selectedGroup.id] || [];
+                const groupGridStudents = filterGridStudentsForGroup(students, groupRoster);
                 
                 // Filter attendance data for this group's lessons
                 const groupAttendanceData: Record<string, Record<string, AttendanceCell>> = {};
@@ -199,7 +215,7 @@ export function MonthView({
                       date={new Date(selectedDayForMonthView)}
                       viewMode="month"
                       lessonsCount={groupLessons.length}
-                      studentsCount={groupStudents.length}
+                      studentsCount={groupRoster.length}
                       hasUnsavedChanges={hasUnsavedChanges}
                     />
 
@@ -209,7 +225,7 @@ export function MonthView({
                       <AttendanceEmptyState dateString={selectedDayForMonthView} />
                     ) : (
                       <AttendanceGrid
-                        students={groupStudents.map(toAttendanceRow)}
+                        students={groupGridStudents.map(toAttendanceRow)}
                         lessons={groupLessons}
                         initialAttendance={groupAttendanceData}
                         onLessonSave={onLessonSave}
@@ -237,7 +253,8 @@ export function MonthView({
               <div className="hidden space-y-6 md:block">
               {selectedGroups.map((selectedGroup) => {
                 const groupLessons = lessonsByGroup[selectedGroup.id] || [];
-                const groupStudents = studentsByGroup[selectedGroup.id] || [];
+                const groupRoster = studentsByGroup[selectedGroup.id] || [];
+                const groupGridStudents = filterGridStudentsForGroup(students, groupRoster);
                 
                 // Filter attendance data for this group's lessons
                 const groupAttendanceData: Record<string, Record<string, AttendanceCell>> = {};
@@ -254,7 +271,7 @@ export function MonthView({
                       date={new Date(selectedDayForMonthView)}
                       viewMode="month"
                       lessonsCount={groupLessons.length}
-                      studentsCount={groupStudents.length}
+                      studentsCount={groupRoster.length}
                       hasUnsavedChanges={hasUnsavedChanges}
                     />
 
@@ -264,7 +281,7 @@ export function MonthView({
                       <AttendanceEmptyState dateString={selectedDayForMonthView} />
                     ) : (
                       <AttendanceGrid
-                        students={groupStudents.map(toAttendanceRow)}
+                        students={groupGridStudents.map(toAttendanceRow)}
                         lessons={groupLessons}
                         initialAttendance={groupAttendanceData}
                         onLessonSave={onLessonSave}

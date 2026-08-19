@@ -15,6 +15,10 @@ import {
 import type { Lesson } from '@/features/lessons';
 import type { TeacherAssignedItem } from '@/features/students';
 import { isOnboardingItem } from '@/features/students';
+import {
+  buildStudentsByGroup,
+  mergeGroupRosterStudents,
+} from '../utils/group-students.util';
 
 type AttendanceStatus = 'present' | 'absent_justified' | 'absent_unjustified' | 'not_marked';
 
@@ -168,12 +172,23 @@ export function useAttendanceData({
     }
   }, [lessons, viewMode, currentDate, effectiveGroupIds, selectedDayForMonthView]);
 
-  // Fetch students for selected groups
+  // Fetch active students strictly assigned to selected groups only.
   const { data: studentsData, isLoading: isLoadingStudents } = useStudents({
     groupIds: effectiveGroupIds.length > 0 ? effectiveGroupIds : undefined,
+    statusIds: ['ACTIVE'],
     take: 100,
   });
   const students = useMemo(() => studentsData?.items || [], [studentsData?.items]);
+
+  const studentsByGroup = useMemo(
+    () => buildStudentsByGroup(students, effectiveGroupIds),
+    [students, effectiveGroupIds],
+  );
+
+  const rosterStudents = useMemo(
+    () => mergeGroupRosterStudents(studentsByGroup, effectiveGroupIds),
+    [studentsByGroup, effectiveGroupIds],
+  );
 
   // Fetch attendance for all filtered lessons in one batch request
   const lessonIds = useMemo(() => filteredLessons.map((l) => l.id), [filteredLessons]);
@@ -231,19 +246,19 @@ export function useAttendanceData({
 
   // Filter students by selected absence type (client-side)
   const filteredStudents = useMemo(() => {
-    if (absenceFilter === 'all' || effectiveGroupIds.length === 0) return students;
+    if (absenceFilter === 'all' || effectiveGroupIds.length === 0) return rosterStudents;
     if (absenceFilter === 'no_session') {
       // No Session: we don't have a stored "no_session" status per cell; show empty list
       return [];
     }
-    return students.filter((student) =>
+    return rosterStudents.filter((student) =>
       filteredLessons.some((lesson) => {
         const cell = attendanceData[lesson.id]?.[getItemKey(student)];
         const status: AttendanceStatus = cell?.status ?? 'not_marked';
         return status === absenceFilter;
       })
     );
-  }, [students, filteredLessons, attendanceData, absenceFilter, effectiveGroupIds]);
+  }, [rosterStudents, filteredLessons, attendanceData, absenceFilter, effectiveGroupIds]);
 
   // Get lessons grouped by date for month view
   const lessonsByDate = useMemo(() => {
@@ -266,7 +281,7 @@ export function useAttendanceData({
     let absent = 0;
     let notMarked = 0;
 
-    students.forEach((student) => {
+    rosterStudents.forEach((student) => {
       filteredLessons.forEach((lesson) => {
         total++;
         const cell = attendanceData[lesson.id]?.[getItemKey(student)];
@@ -281,7 +296,7 @@ export function useAttendanceData({
     });
 
     return { total, present, absent, notMarked };
-  }, [students, filteredLessons, attendanceData]);
+  }, [rosterStudents, filteredLessons, attendanceData]);
 
   const markBulkAttendance = useMarkBulkAttendance();
 
@@ -355,6 +370,8 @@ export function useAttendanceData({
     filteredLessons,
     isLoadingLessons,
     students,
+    rosterStudents,
+    studentsByGroup,
     filteredStudents,
     isLoadingStudents,
     attendanceData,
