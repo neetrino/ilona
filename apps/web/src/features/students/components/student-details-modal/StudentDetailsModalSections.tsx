@@ -6,6 +6,7 @@ import {
   GraduationCap,
   Mail,
   Phone,
+  UserRound,
   UserCircle,
   Users,
 } from 'lucide-react';
@@ -95,9 +96,15 @@ export function StudentDetailsModalEnrollment({
           label={<IconLabel icon={<Users className="h-4 w-4 shrink-0 text-slate-400" aria-hidden="true" />} text={t('group')} />}
           value={student.group ? `${student.group.name}${student.group.level ? ` (${student.group.level})` : ''}` : '—'}
         />
-        <StudentDetailsModalField label={t('teacher')} value={assignedTeacherName} />
+        <StudentDetailsModalField
+          label={<IconLabel icon={<UserRound className="h-4 w-4 shrink-0 text-slate-400" aria-hidden="true" />} text={t('teacher')} />}
+          value={assignedTeacherName}
+        />
         {visibility.alwaysShowTeacher2 || secondTeacherName ? (
-          <StudentDetailsModalField label={t('teacher2')} value={secondTeacherName ?? '—'} />
+          <StudentDetailsModalField
+            label={<IconLabel icon={<UserRound className="h-4 w-4 shrink-0 text-slate-400" aria-hidden="true" />} text={t('teacher2')} />}
+            value={secondTeacherName ?? '—'}
+          />
         ) : null}
         {student.center?.name || student.group?.center?.name ? (
           <StudentDetailsModalField
