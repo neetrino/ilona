@@ -4,6 +4,7 @@ import {
   Calendar,
   CircleDollarSign,
   GraduationCap,
+  Heart,
   Mail,
   IdCard,
   Phone,
@@ -143,10 +144,16 @@ export function StudentDetailsModalParentContact({
 
   return (
     <div className="mt-8 space-y-5">
-      <h4 className="text-base font-semibold text-slate-800 sm:text-lg">{t('parentContact')}</h4>
+      <h4 className="flex items-center gap-2 text-base font-semibold text-slate-800 sm:text-lg">
+        <Heart className="h-4 w-4 text-slate-500" aria-hidden="true" />
+        {t('parentContact')}
+      </h4>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 min-[1367px]:flex min-[1367px]:gap-3">
         {student.parentName ? (
-          <StudentDetailsModalField label={t('parentName')} value={student.parentName} />
+          <StudentDetailsModalField
+            label={<IconLabel icon={<Heart className="h-4 w-4 shrink-0 text-slate-400" aria-hidden="true" />} text={t('parentName')} />}
+            value={student.parentName}
+          />
         ) : null}
         {visibility.alwaysShowParentContact || student.parentPhone ? (
           <StudentDetailsModalField
