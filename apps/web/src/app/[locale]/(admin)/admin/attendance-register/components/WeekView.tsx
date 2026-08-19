@@ -69,7 +69,11 @@ export function WeekView({
   onUnsavedChangesChange,
 }: WeekViewProps) {
   const tCommon = useTranslations('common');
-  const safeSelectedGroupIds = selectedGroupIds ?? (group ? [group.id] : []);
+  const fallbackGroupId = group?.id;
+  const safeSelectedGroupIds = useMemo(
+    () => selectedGroupIds ?? (fallbackGroupId ? [fallbackGroupId] : []),
+    [selectedGroupIds, fallbackGroupId],
+  );
   const safeGroups = groups ?? (group ? [group] : []);
   const selectedGroups = safeSelectedGroupIds
     .map((id) => safeGroups.find((g) => g.id === id))
