@@ -15,7 +15,6 @@ import { LandingHeroSection } from './LandingHeroSection';
 import { LandingAboutSection } from './LandingAboutSection';
 import { LandingWhyChooseSection } from './LandingWhyChooseSection';
 import { LandingSectionPlaceholder } from './LandingSectionPlaceholder';
-import { LandingRocketFlight } from './LandingRocketFlight';
 
 const LandingStudentSuccessSection = dynamic(
   () =>
@@ -107,7 +106,6 @@ export function LandingPageContent() {
         activeSection={activeSection}
         onSectionNavigate={scrollToSection}
       />
-      <LandingRocketFlight />
       <CanvasScaler className="min-h-screen">
         <LandingHeroSection tr={tr} isHy={isHy} onSectionNavigate={scrollToSection} />
         <LandingAboutSection tr={tr} isHy={isHy} />
