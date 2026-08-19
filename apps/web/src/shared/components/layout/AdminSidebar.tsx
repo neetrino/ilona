@@ -238,9 +238,9 @@ function ManagerBranchSidebarBadge({
       <p className="mb-1.5 px-2 text-[10px] font-semibold uppercase tracking-[0.08em] text-[#8b8b90]">
         {centerLabel}
       </p>
-      <div className="rounded-[1.25rem] border border-[#1010a3]/10 bg-[#f6f7ff] px-3 py-2.5 shadow-[0_10px_24px_-22px_rgba(16,16,163,0.55)]">
-        <div className="flex min-w-0 items-start gap-2.5">
-          <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white text-[#1010a3]">
+      <div className="rounded-[1.25rem] border border-[#1010a3]/10 bg-[#f6f7ff] px-3 py-2 shadow-[0_10px_24px_-22px_rgba(16,16,163,0.55)]">
+        <div className="flex min-w-0 items-center gap-2.5">
+          <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white text-[#1010a3]">
             <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
               <path
                 strokeLinecap="round"
@@ -256,7 +256,10 @@ function ManagerBranchSidebarBadge({
               />
             </svg>
           </span>
-          <p className="min-w-0 flex-1 truncate text-sm font-semibold leading-snug text-[#1010a3]" title={branchName}>
+          <p
+            className="min-w-0 flex-1 truncate whitespace-nowrap text-sm font-semibold leading-none text-[#1010a3]"
+            title={branchName}
+          >
             {branchName}
           </p>
         </div>
