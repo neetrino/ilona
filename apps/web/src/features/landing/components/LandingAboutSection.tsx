@@ -2,8 +2,9 @@
 
 import Image from 'next/image';
 import { motion, type Variants } from 'framer-motion';
-import { ABOUT_BIG_BEN_IMAGE, ABOUT_FLAG_IMAGE, ABOUT_SUCCESS_ICON, ABOUT_BRANCHES_ICON } from '../landingConstants';
+import { ABOUT_BIG_BEN_IMAGE, ABOUT_FLAG_IMAGE } from '../landingConstants';
 import type { LandingSectionProps } from '../types';
+import { AboutBranchesIcon, AboutSuccessIcon } from './aboutStatIcons';
 import { LandingAboutCopy } from './LandingAboutCopy';
 
 const mobileAboutViewport = { once: true, amount: 0.2 } as const;
@@ -191,7 +192,7 @@ export function LandingAboutSection({ tr, isHy }: LandingSectionProps) {
             variants={mobileStatsVariants}
           >
             <div className="rounded-[20px] bg-white px-5 py-5">
-              <Image src={ABOUT_SUCCESS_ICON} alt="" width={32} height={32} unoptimized />
+              <AboutSuccessIcon />
               <p className="mt-3 text-[26px] font-bold leading-[39px] tracking-[0.4px] text-[#0a0a0a]">
                 95%
               </p>
@@ -200,7 +201,7 @@ export function LandingAboutSection({ tr, isHy }: LandingSectionProps) {
               </p>
             </div>
             <div className="rounded-[20px] bg-white px-5 py-5">
-              <Image src={ABOUT_BRANCHES_ICON} alt="" width={32} height={32} unoptimized />
+              <AboutBranchesIcon />
               <p className="mt-3 text-[26px] font-bold leading-[39px] tracking-[0.4px] text-[#0a0a0a]">
                 4
               </p>
@@ -229,7 +230,7 @@ export function LandingAboutSection({ tr, isHy }: LandingSectionProps) {
       
               <div className="mt-[24px] flex gap-6">
                 <div className="h-[152px] w-[260px] rounded-[24px] bg-white px-6 pt-6">
-                  <Image src={ABOUT_SUCCESS_ICON} alt="" width={32} height={32} unoptimized />
+                  <AboutSuccessIcon />
                   <p className="mt-3 text-[40px] font-bold leading-[36px] tracking-[0.3955px] text-[#0a0a0a]">
                     95%
                   </p>
@@ -238,7 +239,7 @@ export function LandingAboutSection({ tr, isHy }: LandingSectionProps) {
                   </p>
                 </div>
                 <div className="h-[152px] w-[260px] rounded-[24px] bg-white px-6 pt-6">
-                  <Image src={ABOUT_BRANCHES_ICON} alt="" width={32} height={32} unoptimized />
+                  <AboutBranchesIcon />
                   <p className="mt-3 text-[40px] font-bold leading-[36px] tracking-[0.3955px] text-[#0a0a0a]">
                     4
                   </p>
