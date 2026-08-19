@@ -25,6 +25,7 @@ import {
   type AdminAnalyticsTab,
 } from '@/app/[locale]/(admin)/admin/analytics/use-admin-analytics-url';
 import { useAdminPaymentsTimeFilter } from '@/app/[locale]/(admin)/admin/analytics/use-payments-time-filter';
+import { useAuthStore } from '@/features/auth/store/auth.store';
 import { RiskSummaryMobile } from './RiskSummaryMobile';
 import { StudentRiskMobileCard } from './StudentRiskMobileCard';
 import { StudentRiskRow } from './StudentRiskRow';
@@ -36,6 +37,8 @@ export function AdminAnalyticsPage() {
   const tNav = useTranslations('nav');
   const t = useTranslations('analytics');
   const tFinance = useTranslations('finance');
+  const { user } = useAuthStore();
+  const isManager = user?.role === 'MANAGER';
   const analyticsUrl = useAdminAnalyticsUrl();
   const { activeTab, setActiveTab } = analyticsUrl;
   const {
@@ -67,7 +70,7 @@ export function AdminAnalyticsPage() {
     timeRange.dateFrom,
     timeRange.dateTo,
     revenueSeries,
-    { enabled: activeTab === 'payments' },
+    { enabled: !isManager && activeTab === 'payments' },
   );
   const { data: attendance, isLoading: isLoadingAttendance } =
     useAttendanceOverview(undefined, undefined);
@@ -79,13 +82,16 @@ export function AdminAnalyticsPage() {
   const mediumRisk = students.filter((s) => s.riskLevel === 'MEDIUM').length;
   const lowRisk = students.filter((s) => s.riskLevel === 'LOW').length;
 
-  const tabs: { id: AdminAnalyticsTab; label: string }[] = [
-    { id: 'attendance', label: tNav('attendance') },
-    { id: 'payments', label: t('tabPayments') },
-    { id: 'recordings', label: t('tabRecordings') },
-    { id: 'feedback', label: t('tabFeedback') },
-    { id: 'risk', label: t('tabRiskDistribution') },
-  ];
+  const tabs: { id: AdminAnalyticsTab; label: string }[] = useMemo(() => {
+    const allTabs = [
+      { id: 'attendance' as const, label: tNav('attendance') },
+      { id: 'payments' as const, label: t('tabPayments') },
+      { id: 'recordings' as const, label: t('tabRecordings') },
+      { id: 'feedback' as const, label: t('tabFeedback') },
+      { id: 'risk' as const, label: t('tabRiskDistribution') },
+    ];
+    return isManager ? allTabs.filter((tab) => tab.id !== 'payments') : allTabs;
+  }, [isManager, t, tNav]);
   const tabsTrackRef = useRef<HTMLDivElement | null>(null);
   const riskPageStartRef = useRef<HTMLDivElement | null>(null);
   const tabRefs = useRef<Record<AdminAnalyticsTab, HTMLButtonElement | null>>({
@@ -107,6 +113,12 @@ export function AdminAnalyticsPage() {
       ),
     [students, safeRiskPage],
   );
+
+  useEffect(() => {
+    if (isManager && activeTab === 'payments') {
+      setActiveTab('attendance');
+    }
+  }, [activeTab, isManager, setActiveTab]);
 
   useEffect(() => {
     const syncIndicator = () => {
@@ -221,7 +233,7 @@ export function AdminAnalyticsPage() {
         </div>
       )}
 
-      {activeTab === 'payments' && (
+      {activeTab === 'payments' && !isManager && (
         <div className={portalPageStackClass}>
           <div>
             <p className="mb-2 text-sm font-medium text-[#3b3b40]">
