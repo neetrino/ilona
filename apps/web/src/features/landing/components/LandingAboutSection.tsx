@@ -94,7 +94,7 @@ export function LandingAboutSection({ tr, isHy }: LandingSectionProps) {
     <>
       <section
         id="about"
-        className="relative scroll-mt-28 overflow-hidden bg-[#dde7ff] max-tablet:z-20 max-tablet:-mt-[200px] max-tablet:pb-0 max-tablet:pt-0 tablet:-mt-[16px] tablet:max-navDesktop:z-10 tablet:max-navDesktop:-mt-[32px] navDesktop:z-auto navDesktop:-mt-[16px] tablet:h-[900px]"
+        className="relative scroll-mt-28 overflow-hidden bg-[#dde7ff] max-tablet:z-20 max-tablet:-mt-[200px] max-tablet:pb-0 max-tablet:pt-0 tablet:-mt-[16px] tablet:max-navDesktop:z-10 tablet:max-navDesktop:-mt-[32px] navDesktop:z-auto navDesktop:-mt-[16px]"
       >
         <motion.div
           className="tablet:hidden"
@@ -188,7 +188,7 @@ export function LandingAboutSection({ tr, isHy }: LandingSectionProps) {
           </motion.div>
       
           <motion.div
-            className="relative z-10 mb-6 grid shrink-0 grid-cols-2 gap-3"
+            className="relative z-10 mb-7 grid shrink-0 grid-cols-2 gap-3"
             variants={mobileStatsVariants}
           >
             <div className="rounded-[20px] bg-white px-5 py-5">
@@ -213,9 +213,9 @@ export function LandingAboutSection({ tr, isHy }: LandingSectionProps) {
         </motion.div>
         </motion.div>
       
-        <div className="relative z-10 mx-auto max-tablet:hidden h-full w-full max-w-[1280px] px-6">
-          <div className="absolute left-1/2 top-[64px] h-[780px] w-full max-w-[1152px] -translate-x-1/2">
-            <div className="absolute left-[608px] top-0 w-[544px]">
+        <div className="relative z-10 mx-auto max-tablet:hidden w-full max-w-[1280px] px-6 pt-[64px] pb-8">
+          <div className="relative mx-auto w-full max-w-[1152px]">
+            <div className="ml-auto w-[544px]">
               <div className="inline-flex h-[36px] items-center gap-2 rounded-full bg-white px-4">
                 <span className="h-1.5 w-1.5 rounded-full bg-[#0025db]" aria-hidden />
                 <span className="text-[14px] font-bold leading-[20px] tracking-[-0.1504px] text-[#0025db]">
@@ -285,7 +285,7 @@ export function LandingAboutSection({ tr, isHy }: LandingSectionProps) {
             </div>
           </motion.div>
           <motion.div
-            className="absolute left-[201px] top-[244px] h-[660px] w-[530px]"
+            className="absolute left-[201px] top-[308px] h-[660px] w-[530px]"
             initial={{ x: 36, opacity: 0 }}
             whileInView={{ x: [36, -12, 8, 0], opacity: 1 }}
             transition={{ duration: 1.1, ease: 'easeOut' }}
