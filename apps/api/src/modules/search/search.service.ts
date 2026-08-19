@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { UserRole } from '@ilona/database';
 import { JwtPayload } from '../../common/types/auth.types';
 import { getManagerCenterIdOrThrow } from '../../common/utils/manager-scope.util';
-import { matchQuickPages } from './search-quick-pages';
+import { matchQuickPages, rewriteSearchHrefForRole } from './search-quick-pages';
 import { normalizeSearchQuery, searchTokensFromNormalized } from './search-query.util';
 import type { GlobalSearchResult } from './types/search-result.type';
 import { DEFAULT_MAX, PER_TYPE } from './search-filter.util';
@@ -63,7 +63,7 @@ export class SearchService {
       entityResults = await this.roleQueryService.searchStudentEntities(user.sub, tokens, q, perType);
     }
 
-    const merged = [...quick, ...entityResults];
+    const merged = rewriteSearchHrefForRole([...quick, ...entityResults], user.role);
     const seen = new Set<string>();
     const deduped: GlobalSearchResult[] = [];
     for (const item of merged) {

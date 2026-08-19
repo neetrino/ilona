@@ -89,7 +89,7 @@ const ROWS: QuickPageRow[] = [
     href: '/admin/recording',
     navKey: 'recording',
     titleEn: 'Recordings',
-    roles: [UserRole.ADMIN, UserRole.MANAGER],
+    roles: [UserRole.ADMIN],
     synonyms: ['recordings', 'audio', 'voice'],
   },
   {
@@ -113,7 +113,7 @@ const ROWS: QuickPageRow[] = [
     href: '/admin/finance',
     navKey: 'finance',
     titleEn: 'Finance',
-    roles: [UserRole.ADMIN, UserRole.MANAGER],
+    roles: [UserRole.ADMIN],
     synonyms: ['payments', 'money', 'billing'],
   },
   {
@@ -261,6 +261,13 @@ function rowMatches(row: QuickPageRow, needleLower: string): boolean {
   return parts.some((p) => p.includes(needleLower));
 }
 
+function rewriteAdminHrefForRole(href: string, role: UserRole): string {
+  if (role !== UserRole.MANAGER || !href.startsWith('/admin')) {
+    return href;
+  }
+  return `/manager${href.slice('/admin'.length)}`;
+}
+
 export function matchQuickPages(role: UserRole, query: string, take: number): GlobalSearchResult[] {
   const needle = normalizeSearchQuery(query).toLowerCase();
   if (needle.length < 2) {
@@ -273,8 +280,21 @@ export function matchQuickPages(role: UserRole, query: string, take: number): Gl
       type: 'page' as const,
       title: row.titleEn,
       subtitle: 'Quick navigation',
-      href: row.href,
+      href: rewriteAdminHrefForRole(row.href, role),
       badge: 'Page',
       metadata: { navKey: row.navKey },
     }));
+}
+
+export function rewriteSearchHrefForRole(
+  items: GlobalSearchResult[],
+  role: UserRole,
+): GlobalSearchResult[] {
+  if (role !== UserRole.MANAGER) {
+    return items;
+  }
+  return items.map((item) => ({
+    ...item,
+    href: rewriteAdminHrefForRole(item.href, role),
+  }));
 }
