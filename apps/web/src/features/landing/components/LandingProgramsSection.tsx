@@ -3,15 +3,22 @@
 import { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { cn } from '@/shared/lib/utils';
-import { BUTTON_HOVER_CLASS } from '../landingConstants';
 import { createLandingPrograms } from '../landingProgramsContent';
 import { LandingSectionHeader } from './LandingSectionHeader';
 import type { LandingSectionProps } from '../types';
+
+function formatProgramPrice(price: number): string {
+  return new Intl.NumberFormat('de-DE', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(price);
+}
 
 export function LandingProgramsSection({ tr, isHy }: LandingSectionProps) {
   const [activeProgramIndex, setActiveProgramIndex] = useState(0);
   const programs = createLandingPrograms(tr);
   const activeProgram = programs[activeProgramIndex] ?? programs[0];
+  const monthlyLabel = isHy ? 'ամսական' : 'monthly';
 
   return (
     <>
@@ -44,21 +51,19 @@ export function LandingProgramsSection({ tr, isHy }: LandingSectionProps) {
                   {activeProgram.details}
                 </p>
                 <p className="mt-4 text-[20px] font-bold leading-[30px] text-white">
-                  {activeProgram.price} AMD
-                  {isHy ? (
-                    <span className="text-white/60">
-                      <span>/</span>
-                      <span className="text-[16px]">ամսական</span>
-                    </span>
-                  ) : (
-                    <span className="text-white/60">/MO</span>
-                  )}
+                  {formatProgramPrice(activeProgram.price)}
+                  <span className="mx-1 text-[18px] font-semibold" aria-hidden>
+                    ֏
+                  </span>
+                  <span className="text-[16px] font-semibold text-white/60">
+                    /{monthlyLabel}
+                  </span>
                 </p>
               </motion.article>
             </AnimatePresence>
           </div>
       
-          <div className="flex flex-col gap-4 px-5">
+          <div className="flex justify-center px-5">
             <div
               className="flex justify-center gap-1.5"
               role="tablist"
@@ -82,15 +87,6 @@ export function LandingProgramsSection({ tr, isHy }: LandingSectionProps) {
                 </button>
               ))}
             </div>
-            <button
-              type="button"
-              className={cn(
-                'mx-auto inline-flex h-[50px] w-[180.633px] items-center justify-center rounded-full bg-[#e7000b] text-[15px] font-semibold leading-[22.5px] text-white',
-                BUTTON_HOVER_CLASS,
-              )}
-            >
-              {tr('More', 'Ավելին')}
-            </button>
           </div>
         </div>
       
@@ -120,29 +116,17 @@ export function LandingProgramsSection({ tr, isHy }: LandingSectionProps) {
                   {program.details}
                 </p>
                 <p className="mt-auto pt-6 text-[23px] font-bold leading-[26px] text-white">
-                  {program.price} AMD
-                  {isHy ? (
-                    <span className="text-white/60">
-                      <span className="text-[23px]">/</span>
-                      <span className="text-[16px]">ամսական</span>
-                    </span>
-                  ) : (
-                    <span className="text-[23px] text-white/60">/MO</span>
-                  )}
+                  {formatProgramPrice(program.price)}
+                  <span className="mx-1 text-[20px] font-semibold" aria-hidden>
+                    ֏
+                  </span>
+                  <span className="text-[16px] font-semibold text-white/60">
+                    /{monthlyLabel}
+                  </span>
                 </p>
               </motion.article>
             ))}
           </div>
-      
-          <button
-            type="button"
-            className={cn(
-              'inline-flex h-[56px] w-[180.633px] items-center justify-center rounded-full bg-[#e7000b] text-[16px] font-semibold leading-[24px] tracking-[-0.3125px] text-white',
-              BUTTON_HOVER_CLASS,
-            )}
-          >
-            {tr('More', 'Ավելին')}
-          </button>
         </div>
       </section>
     </>

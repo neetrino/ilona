@@ -2,8 +2,9 @@
 
 import Image from 'next/image';
 import { motion, type Variants } from 'framer-motion';
-import { ABOUT_BIG_BEN_IMAGE, ABOUT_FLAG_IMAGE, ABOUT_SUCCESS_ICON, ABOUT_BRANCHES_ICON } from '../landingConstants';
+import { ABOUT_BIG_BEN_IMAGE, ABOUT_FLAG_IMAGE } from '../landingConstants';
 import type { LandingSectionProps } from '../types';
+import { AboutBranchesIcon, AboutSuccessIcon } from './aboutStatIcons';
 import { LandingAboutCopy } from './LandingAboutCopy';
 
 const mobileAboutViewport = { once: true, amount: 0.2 } as const;
@@ -93,7 +94,7 @@ export function LandingAboutSection({ tr, isHy }: LandingSectionProps) {
     <>
       <section
         id="about"
-        className="relative scroll-mt-28 overflow-hidden bg-[#dde7ff] max-tablet:z-20 max-tablet:-mt-[200px] max-tablet:pb-0 max-tablet:pt-0 tablet:-mt-[16px] tablet:max-navDesktop:z-10 tablet:max-navDesktop:-mt-[32px] navDesktop:z-auto navDesktop:-mt-[16px] tablet:h-[900px]"
+        className="relative scroll-mt-28 overflow-hidden bg-[#dde7ff] max-tablet:z-20 max-tablet:-mt-[200px] max-tablet:pb-0 max-tablet:pt-0 tablet:-mt-[16px] tablet:max-navDesktop:z-10 tablet:max-navDesktop:-mt-[32px] navDesktop:z-auto navDesktop:-mt-[16px]"
       >
         <motion.div
           className="tablet:hidden"
@@ -187,11 +188,11 @@ export function LandingAboutSection({ tr, isHy }: LandingSectionProps) {
           </motion.div>
       
           <motion.div
-            className="relative z-10 mb-6 grid shrink-0 grid-cols-2 gap-3"
+            className="relative z-10 mb-7 grid shrink-0 grid-cols-2 gap-3"
             variants={mobileStatsVariants}
           >
             <div className="rounded-[20px] bg-white px-5 py-5">
-              <Image src={ABOUT_SUCCESS_ICON} alt="" width={32} height={32} unoptimized />
+              <AboutSuccessIcon />
               <p className="mt-3 text-[26px] font-bold leading-[39px] tracking-[0.4px] text-[#0a0a0a]">
                 95%
               </p>
@@ -200,7 +201,7 @@ export function LandingAboutSection({ tr, isHy }: LandingSectionProps) {
               </p>
             </div>
             <div className="rounded-[20px] bg-white px-5 py-5">
-              <Image src={ABOUT_BRANCHES_ICON} alt="" width={32} height={32} unoptimized />
+              <AboutBranchesIcon />
               <p className="mt-3 text-[26px] font-bold leading-[39px] tracking-[0.4px] text-[#0a0a0a]">
                 4
               </p>
@@ -212,9 +213,9 @@ export function LandingAboutSection({ tr, isHy }: LandingSectionProps) {
         </motion.div>
         </motion.div>
       
-        <div className="relative z-10 mx-auto max-tablet:hidden h-full w-full max-w-[1280px] px-6">
-          <div className="absolute left-1/2 top-[64px] h-[780px] w-full max-w-[1152px] -translate-x-1/2">
-            <div className="absolute left-[608px] top-0 w-[544px]">
+        <div className="relative z-10 mx-auto max-tablet:hidden w-full max-w-[1280px] px-6 pt-[64px] pb-8">
+          <div className="relative mx-auto w-full max-w-[1152px]">
+            <div className="ml-auto w-[544px]">
               <div className="inline-flex h-[36px] items-center gap-2 rounded-full bg-white px-4">
                 <span className="h-1.5 w-1.5 rounded-full bg-[#0025db]" aria-hidden />
                 <span className="text-[14px] font-bold leading-[20px] tracking-[-0.1504px] text-[#0025db]">
@@ -229,7 +230,7 @@ export function LandingAboutSection({ tr, isHy }: LandingSectionProps) {
       
               <div className="mt-[24px] flex gap-6">
                 <div className="h-[152px] w-[260px] rounded-[24px] bg-white px-6 pt-6">
-                  <Image src={ABOUT_SUCCESS_ICON} alt="" width={32} height={32} unoptimized />
+                  <AboutSuccessIcon />
                   <p className="mt-3 text-[40px] font-bold leading-[36px] tracking-[0.3955px] text-[#0a0a0a]">
                     95%
                   </p>
@@ -238,7 +239,7 @@ export function LandingAboutSection({ tr, isHy }: LandingSectionProps) {
                   </p>
                 </div>
                 <div className="h-[152px] w-[260px] rounded-[24px] bg-white px-6 pt-6">
-                  <Image src={ABOUT_BRANCHES_ICON} alt="" width={32} height={32} unoptimized />
+                  <AboutBranchesIcon />
                   <p className="mt-3 text-[40px] font-bold leading-[36px] tracking-[0.3955px] text-[#0a0a0a]">
                     4
                   </p>
@@ -284,7 +285,7 @@ export function LandingAboutSection({ tr, isHy }: LandingSectionProps) {
             </div>
           </motion.div>
           <motion.div
-            className="absolute left-[201px] top-[244px] h-[660px] w-[530px]"
+            className="absolute left-[201px] top-[308px] h-[660px] w-[530px]"
             initial={{ x: 36, opacity: 0 }}
             whileInView={{ x: [36, -12, 8, 0], opacity: 1 }}
             transition={{ duration: 1.1, ease: 'easeOut' }}

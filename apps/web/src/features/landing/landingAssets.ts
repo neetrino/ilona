@@ -5,8 +5,6 @@ export const LANDING_ASSETS = {
   heroUsBadge: '/landing/hero-us-badge.webp',
   aboutBigBen: '/landing/about-big-ben.webp',
   aboutFlag: '/landing/about-flag.webp',
-  aboutSuccessIcon: '/landing/about-success-icon.webp',
-  aboutBranchesIcon: '/landing/about-branches-icon.webp',
   whyMethods: '/landing/why-methods.webp',
   whyResults: '/landing/why-results.webp',
   whyTeachers: '/landing/why-teachers.webp',

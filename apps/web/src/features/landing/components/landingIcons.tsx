@@ -48,10 +48,8 @@ export function FollowBrandMark({
   size: 'sm' | 'lg';
 }) {
   const markSize = size === 'sm' ? 'size-10' : 'size-16';
-  const colorClassName =
-    network === 'instagram' ? 'bg-[#e60076]' : network === 'facebook' ? 'bg-[#1877F2]' : 'bg-[#27A7E7]';
 
   return (
-    <OfficialBrandMark name={network} className={cn('shrink-0', markSize)} colorClassName={colorClassName} />
+    <OfficialBrandMark name={network} className={cn('shrink-0', markSize)} colorClassName="bg-white" />
   );
 }

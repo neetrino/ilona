@@ -13,8 +13,6 @@ const ASSETS = {
   'hero-us-badge.webp': 'https://www.figma.com/api/mcp/asset/2de46464-5eca-49c1-962e-69dea85f53eb',
   'about-big-ben.webp': 'https://www.figma.com/api/mcp/asset/dc799d9a-d071-4449-b037-75b2491b104f',
   'about-flag.webp': 'https://www.figma.com/api/mcp/asset/526b31a1-a45c-4bed-93c8-57ab0ea72ec4',
-  'about-success-icon.webp': 'https://www.figma.com/api/mcp/asset/296ec7e9-df1b-4597-8a80-ce1c126500af',
-  'about-branches-icon.webp': 'https://www.figma.com/api/mcp/asset/7ee1d39d-49aa-4524-8907-3b6314b2ce56',
   'why-methods.webp': 'https://www.figma.com/api/mcp/asset/1a993714-13cc-4bd6-bc29-43278b44f709',
   'why-results.webp': 'https://www.figma.com/api/mcp/asset/9e5b2528-871d-4cb3-8975-f8d4cf70dc80',
   'why-teachers.webp': 'https://www.figma.com/api/mcp/asset/ddfe8d6e-32ae-4e02-9d5c-d59d0ecb72c2',
