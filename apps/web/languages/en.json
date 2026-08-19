@@ -811,6 +811,7 @@
       "lastLogin": "Last login: {date}",
       "basicInfo": "Basic Info",
       "learning": "Learning",
+      "centerAdmissionDate": "Center admission date",
       "attendanceSummary": "Attendance",
       "paymentsSummary": "Payments"
     }

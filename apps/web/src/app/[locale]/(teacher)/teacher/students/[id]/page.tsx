@@ -10,6 +10,7 @@ import { useStudent } from '@/features/students';
 import { ApiError } from '@/shared/lib/api';
 import Image from 'next/image';
 import { LoadingSpinner } from '@/shared/components/ui/loading-spinner';
+import { TeacherStudentProfileInfo } from './TeacherStudentProfileInfo';
 
 function formatUserStatus(
   status: string | undefined,
@@ -28,7 +29,6 @@ export default function TeacherStudentProfilePage() {
   const locale = useLocale();
   const t = useTranslations('students.teacherView');
   const tCommon = useTranslations('common');
-  const tStudents = useTranslations('students');
   const tStatus = useTranslations('status');
   const studentId = params.id as string;
   const routeLocale = params.locale as string;
@@ -188,69 +188,8 @@ export default function TeacherStudentProfilePage() {
           </div>
         </div>
 
-        {/* Learning info (sensitive personal data hidden for teachers) */}
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-          <div className="rounded-xl border border-[rgba(14,14,16,0.07)] bg-white p-6">
-            <h3 className="mb-4 text-lg font-semibold text-[#1010a3]">{t('basicInfo')}</h3>
-            <div className="space-y-4">
-              <div>
-                <label className="text-sm font-medium text-[#8b8b90]">{tCommon('firstName')}</label>
-                <p className="mt-1 text-[#1010a3]">{firstName}</p>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-[#8b8b90]">{tCommon('lastName')}</label>
-                <p className="mt-1 text-[#1010a3]">{lastName}</p>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-[#8b8b90]">{tStudents('memberSince')}</label>
-                <p className="mt-1 text-[#1010a3]">
-                  {student.user?.createdAt
-                    ? new Date(student.user.createdAt).toLocaleDateString(locale, {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric',
-                      })
-                    : tStudents('notAvailable')}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="rounded-xl border border-[rgba(14,14,16,0.07)] bg-white p-6">
-            <h3 className="mb-4 text-lg font-semibold text-[#1010a3]">{t('learning')}</h3>
-            <div className="space-y-4">
-              <div>
-                <label className="text-sm font-medium text-[#8b8b90]">{tCommon('group')}</label>
-                <div className="mt-1 text-[#1010a3]">
-                  {student.group ? (
-                    <div className="flex items-center gap-2">
-                      <Badge variant="info">{student.group.name}</Badge>
-                      {student.group.level && (
-                        <span className="text-sm text-[#8b8b90]">{student.group.level}</span>
-                      )}
-                    </div>
-                  ) : (
-                    <span className="text-[#8b8b90]">{tCommon('notAssigned')}</span>
-                  )}
-                </div>
-              </div>
-              {student.group?.center && (
-                <div>
-                  <label className="text-sm font-medium text-[#8b8b90]">{tCommon('center')}</label>
-                  <p className="mt-1 text-[#1010a3]">{student.group.center.name}</p>
-                </div>
-              )}
-              {student.teacher && (
-                <div>
-                  <label className="text-sm font-medium text-[#8b8b90]">{tCommon('teacher')}</label>
-                  <p className="mt-1 text-[#1010a3]">
-                    {student.teacher.user.firstName} {student.teacher.user.lastName}
-                  </p>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
+        {/* Contact + learning info (passport is manager-only, omitted from teacher API) */}
+        <TeacherStudentProfileInfo student={student} />
 
         {/* Notes */}
         {student.notes && (

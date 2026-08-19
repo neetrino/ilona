@@ -811,6 +811,7 @@
       "lastLogin": "Վերջին մուտք՝ {date}",
       "basicInfo": "Հիմնական տվյալներ",
       "learning": "Ուսուցում",
+      "centerAdmissionDate": "Կենտրոն ընդունման ամսաթիվ",
       "attendanceSummary": "Հաճախելիություն",
       "paymentsSummary": "Վճարումներ"
     }

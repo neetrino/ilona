@@ -2,6 +2,7 @@ import { Injectable, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { Prisma, UserRole, UserStatus, RiskLabel, StudentStatus } from '@ilona/database';
 import { NEW_PAID_STUDENT_LABEL_DAYS } from './student-crud.util';
+import { omitStudentPassportForTeacher } from './student-visibility.util';
 
 @Injectable()
 export class StudentListService {
@@ -393,7 +394,9 @@ export class StudentListService {
     }
 
     return {
-      items: itemsWithAttendance,
+      items: itemsWithAttendance.map((item) =>
+        omitStudentPassportForTeacher(item, userRole),
+      ),
       total,
       page: Math.floor(skip / take) + 1,
       pageSize: take,
