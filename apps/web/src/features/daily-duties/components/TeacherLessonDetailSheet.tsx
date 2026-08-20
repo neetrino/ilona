@@ -11,14 +11,16 @@ import { FeedbacksTab } from '@/shared/components/daily-duties/FeedbacksTab';
 import { VoiceTab } from '@/shared/components/daily-duties/VoiceTab';
 import { TextTab } from '@/shared/components/daily-duties/TextTab';
 import { DailyPlanTab } from '@/shared/components/daily-duties/DailyPlanTab';
+import { PortalFormSheetDragHandle } from '@/shared/components/ui/portal-form-sheet-drag-handle';
 import { PortalSheetPortal } from '@/shared/components/ui/portal-sheet-portal';
 import { LoadingSpinner } from '@/shared/components/ui/loading-spinner';
+import { usePortalSheetDrag } from '@/shared/hooks/usePortalSheetDrag';
 import { formatAppDateTime } from '@/shared/lib/app-timezone';
 import { cn } from '@/shared/lib/utils';
 import {
-  PORTAL_ALWAYS_SIDE_SHEET_CLASS,
-  PORTAL_ALWAYS_SIDE_SHEET_CLOSE_BUTTON_CLASS,
+  PORTAL_FORM_SHEET_CLOSE_BUTTON_CLASS,
   PORTAL_FORM_SHEET_HEADER_CLASS,
+  portalFormSheetContentClass,
 } from '@/shared/lib/portal-form-sheet-classes';
 import type { DailyDutiesLessonDetailTab } from './daily-duties.types';
 
@@ -63,6 +65,17 @@ export function TeacherLessonDetailSheet({
     onTabChange?.(tab);
   };
 
+  const { dragStyle, dragHandleProps, scrollContentProps, resetDrag } = usePortalSheetDrag({
+    onClose: requestClose,
+    enabled: isDialogOpen,
+  });
+
+  useEffect(() => {
+    if (!open) {
+      resetDrag();
+    }
+  }, [open, resetDrag]);
+
   const title = lesson
     ? t('lessonTitle', { name: lesson.group?.name || t('lessonUnknown') })
     : t('lessonLoadingTitle');
@@ -74,22 +87,23 @@ export function TeacherLessonDetailSheet({
     <DialogPrimitive.Root open={isDialogOpen} onOpenChange={(nextOpen) => !nextOpen && requestClose()}>
       <PortalSheetPortal
         open={isDialogOpen}
-        contentClassName={cn(
-          PORTAL_ALWAYS_SIDE_SHEET_CLASS,
-          'bg-white !w-full tablet:portrait:!w-[85%] tablet:landscape:!w-[72%] min-[1366px]:!w-[70%]',
-        )}
+        dragStyle={dragStyle}
+        sheetContentRef={scrollContentProps.ref}
+        contentClassName={cn(portalFormSheetContentClass('2xl'), 'bg-white')}
         contentProps={{ 'aria-describedby': undefined }}
       >
-        <div className={cn(PORTAL_FORM_SHEET_HEADER_CLASS, 'bg-white pt-5')}>
+        <PortalFormSheetDragHandle dragHandleProps={dragHandleProps} className="bg-white" />
+
+        <div className={cn(PORTAL_FORM_SHEET_HEADER_CLASS, 'border-b-0 bg-white pb-3 pt-2 tablet:pb-5 tablet:pt-6')}>
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0 flex-1">
               <DialogPrimitive.Title className="break-words text-xl font-semibold leading-snug text-[#1010a3] tablet:text-lg tablet:text-[#3b3b40]">
                 {title}
               </DialogPrimitive.Title>
-              <p className="mt-1 text-sm text-[#8b8b90]">{subtitle}</p>
+              <p className="mt-1 hidden text-sm text-[#8b8b90] tablet:block">{subtitle}</p>
             </div>
             <DialogPrimitive.Close
-              className={PORTAL_ALWAYS_SIDE_SHEET_CLOSE_BUTTON_CLASS}
+              className={PORTAL_FORM_SHEET_CLOSE_BUTTON_CLASS}
               aria-label={tCommon('close')}
             >
               <X className="h-4 w-4" />

@@ -22,6 +22,7 @@ import {
 } from '@/shared/lib/daily-duties/lesson-action-states';
 import { DailyDutiesListActionPill } from '@/shared/components/daily-duties/DailyDutiesListActionPill';
 import { RequiredActionsBanner } from '@/shared/components/daily-duties/RequiredActionsBanner';
+import { PORTAL_MOBILE_BOTTOM_NAV_OFFSET_CLASS } from '@/shared/lib/portal-mobile-layout';
 
 type Tab = LessonActionId;
 
@@ -230,7 +231,7 @@ export function LessonDetailTabs({
   return (
     <div className={cn('flex flex-col', layout === 'fill' && 'h-full min-h-0')}>
       {showEmergency && checklistInCard ? (
-        <div className="max-h-[38vh] shrink-0 overflow-y-auto pb-2 pt-2">
+        <div className="max-h-[38vh] shrink-0 overflow-y-auto pb-2 pt-2 tablet:max-h-none">
           <RequiredActionsBanner
             incomplete={incomplete}
             compact
@@ -253,8 +254,9 @@ export function LessonDetailTabs({
         className={cn(
           layout === 'fill' && 'min-h-0 flex-1',
           layout === 'fill' && activeTab === 'feedback'
-            ? 'flex flex-col overflow-hidden'
+            ? 'flex flex-col overflow-y-auto lg:overflow-hidden'
             : layout === 'fill' && 'overflow-y-auto',
+          layout === 'fill' && PORTAL_MOBILE_BOTTOM_NAV_OFFSET_CLASS,
         )}
       >
         {showEmergency && !checklistInCard ? (
