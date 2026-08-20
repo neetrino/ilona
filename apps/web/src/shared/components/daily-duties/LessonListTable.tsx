@@ -133,7 +133,7 @@ export function LessonListTable({
           onEdit={onEdit}
           onDelete={onDelete}
           onAssignSubstitute={onAssignSubstitute}
-          onView={table.handleView}
+          onView={onMobileCardClick ?? table.handleView}
           listPageSize={table.listPageSize}
         />
       </div>

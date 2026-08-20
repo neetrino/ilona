@@ -339,6 +339,12 @@ export function useDailyDutiesPage(mode: DailyDutiesMode) {
 
   const handleOpenLessonDetail = useCallback(
     (lessonId: string, tab?: string) => {
+      if (isTeacherMode) {
+        setLessonDetailSheetId(lessonId);
+        setLessonDetailSheetTab((tab ?? 'absence') as DailyDutiesLessonDetailTab);
+        setLessonDetailSheetOpen(true);
+        return;
+      }
       router.push(
         buildDailyDutiesLessonDetailHref({
           locale,
@@ -348,7 +354,7 @@ export function useDailyDutiesPage(mode: DailyDutiesMode) {
         }),
       );
     },
-    [locale, portalBasePath, router],
+    [isTeacherMode, locale, portalBasePath, router],
   );
 
   const handleMobileLessonCardClick = useCallback(

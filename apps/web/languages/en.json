@@ -2412,6 +2412,8 @@
       "emergencyAria": "Required actions for this lesson",
       "emergencyTitle": "Required actions before this lesson is fully closed",
       "emergencyIntro": "The items below still need attention while they remain editable.",
+      "hideRequiredActions": "Hide required actions",
+      "showRequiredActions": "Show required actions",
       "openAction": "Open {label}",
       "missedNoticeTitle": "Some checklist items are no longer editable",
       "missedNoticeBody": "These were not completed before the cutoff for this lesson day. Contact an administrator if a correction is needed.",

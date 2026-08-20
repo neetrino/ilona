@@ -123,7 +123,7 @@ export function AdminLessonDetailPanel({
             lesson={lesson}
             activeTab={activeTab}
             onTabChange={handleTabChange}
-            showRequiredActions={false}
+            showRequiredActions={!showAdminActions}
             layout={variant === 'sheet' ? 'flow' : 'fill'}
             checklistInCard={variant === 'sheet'}
             checklistMenu={
