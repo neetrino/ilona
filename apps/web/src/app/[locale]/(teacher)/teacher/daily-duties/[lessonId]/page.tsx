@@ -18,9 +18,9 @@ import { formatAppDateTime } from '@/shared/lib/app-timezone';
 import { readUrlSearchParam } from '@/shared/lib/url-search-params';
 import { cn } from '@/shared/lib/utils';
 import { LoadingSpinner } from '@/shared/components/ui/loading-spinner';
-type LessonTab = 'absence' | 'feedback' | 'voice' | 'text' | 'dailyPlan';
+import type { DailyDutiesLessonDetailTab } from '@/features/daily-duties/components/daily-duties.types';
 
-function parseLessonTab(value: string | null): LessonTab {
+function parseLessonTab(value: string | null): DailyDutiesLessonDetailTab {
   if (
     value === 'absence' ||
     value === 'feedback' ||
@@ -66,9 +66,9 @@ export default function TeacherDailyDutiesLessonPage({
   const tCalendar = useTranslations('dailyDuties');
   const resolvedParams = use(params);
   const { searchParams, urlRevision, replaceParams } = useAppSearchUrl();
-  const [pendingTab, setPendingTab] = useState<LessonTab | null>(null);
+  const [pendingTab, setPendingTab] = useState<DailyDutiesLessonDetailTab | null>(null);
 
-  const readTabFromUrl = useCallback((): LessonTab => {
+  const readTabFromUrl = useCallback((): DailyDutiesLessonDetailTab => {
     void urlRevision;
     return parseLessonTab(readUrlSearchParam('tab', searchParams));
   }, [searchParams, urlRevision]);
@@ -87,7 +87,7 @@ export default function TeacherDailyDutiesLessonPage({
   const { data: lesson, isLoading } = useLesson(resolvedParams.lessonId);
   const handleBack = useHistoryBack(TEACHER_DAILY_DUTIES_BASE_PATH);
 
-  const handleTabChange = (tab: LessonTab) => {
+  const handleTabChange = (tab: DailyDutiesLessonDetailTab) => {
     setPendingTab(tab);
     replaceParams({ tab: tab === 'absence' ? null : tab });
   };

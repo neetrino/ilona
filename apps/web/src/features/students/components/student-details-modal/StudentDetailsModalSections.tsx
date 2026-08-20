@@ -11,7 +11,7 @@ import {
   UserCircle,
   Users,
 } from 'lucide-react';
-import { cn, formatCurrency, formatPhoneForDisplay } from '@/shared/lib/utils';
+import { formatCurrency, formatPhoneForDisplay } from '@/shared/lib/utils';
 import { formatDateOfBirth, formatDisplayDate } from './student-details-modal.util';
 import { StudentDetailsModalField } from './StudentDetailsModalField';
 import { ParentIcon } from './ParentIcon';
@@ -51,24 +51,21 @@ export function StudentDetailsModalBasicInfo({
   return (
     <div className="space-y-5 pt-[10px] min-[1367px]:pt-0">
       <h4 className="text-base font-semibold text-slate-800 sm:text-lg">{tTeachers('basicInformation')}</h4>
-      <div className="grid grid-cols-2 gap-4 min-[1367px]:flex min-[1367px]:gap-3">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 min-[1367px]:flex min-[1367px]:gap-3">
         <StudentDetailsModalField
           label={<IconLabel icon={<Phone className="h-4 w-4 shrink-0 text-slate-400" aria-hidden="true" />} text={tTeachers('phoneNumber')} />}
           value={formatPhoneForDisplay(student.user?.phone, tTeachers('noPhoneNumber'))}
         />
         <StudentDetailsModalField
+          label={<IconLabel icon={<UserCircle className="h-4 w-4 shrink-0 text-slate-400" aria-hidden="true" />} text={t('dateOfBirth')} />}
+          value={formatDateOfBirth(student.dateOfBirth, locale)}
+        />
+        <StudentDetailsModalField
           label={<IconLabel icon={<Calendar className="h-4 w-4 shrink-0 text-slate-400" aria-hidden="true" />} text={visibility.useAdmissionDate ? t('registerDateLabel') : t('memberSince')} />}
           value={formatDisplayDate(visibility.useAdmissionDate ? admissionDate : student.user?.createdAt, locale)}
         />
-        {visibility.dateOfBirth && student.dateOfBirth ? (
-          <StudentDetailsModalField
-            label={<IconLabel icon={<UserCircle className="h-4 w-4 shrink-0 text-slate-400" aria-hidden="true" />} text={t('dateOfBirth')} />}
-            value={formatDateOfBirth(student.dateOfBirth, locale)}
-          />
-        ) : null}
         {visibility.monthlyFee ? (
           <StudentDetailsModalField
-            className={cn(!student.dateOfBirth && 'col-span-2 min-[1367px]:col-span-1')}
             label={<IconLabel icon={<CircleDollarSign className="h-4 w-4 shrink-0 text-slate-400" aria-hidden="true" />} text={t('monthlyFeeLabel')} />}
             value={formatCurrency(monthlyFee)}
           />

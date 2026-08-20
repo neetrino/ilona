@@ -221,22 +221,23 @@ export default function StudentProfilePage() {
             </div>
           </div>
 
-          <div>
-            <StudentFieldLabel>{t('emailAddress') ?? 'Email Address'}</StudentFieldLabel>
-            <StudentInput type="email" value={user?.email || ''} disabled className="bg-[#f6f6f7] text-[#8b8b90]" />
-            <p className="mt-1 text-xs text-[#8b8b90]">
-              {t('contactAdminToChangeEmail') ?? 'Contact admin to change email'}
-            </p>
-          </div>
-
-          <div>
-            <StudentFieldLabel>{t('phoneNumber') ?? 'Phone Number'}</StudentFieldLabel>
-            <StudentInput
-              type="tel"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              placeholder={t('phonePlaceholder')}
-            />
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+            <div>
+              <StudentFieldLabel>{t('phoneNumber') ?? 'Phone Number'}</StudentFieldLabel>
+              <StudentInput
+                type="tel"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder={t('phonePlaceholder')}
+              />
+            </div>
+            <div>
+              <StudentFieldLabel>{t('emailAddress') ?? 'Email Address'}</StudentFieldLabel>
+              <StudentInput type="email" value={user?.email || ''} disabled className="bg-[#f6f6f7] text-[#8b8b90]" />
+              <p className="mt-1 text-xs text-[#8b8b90]">
+                {t('contactAdminToChangeEmail') ?? 'Contact admin to change email'}
+              </p>
+            </div>
           </div>
 
           <div className="flex justify-stretch pt-4 sm:justify-end">

@@ -20,7 +20,7 @@ export function getStudentDetailsVisibility(
   const isStaff = audience !== 'teacher';
   return {
     email: isStaff,
-    dateOfBirth: isStaff,
+    dateOfBirth: true,
     monthlyFee: isStaff,
     payments: isStaff,
     parentEmail: isStaff,

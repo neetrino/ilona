@@ -255,26 +255,28 @@ export default function AdminProfilePage() {
               </div>
             </div>
 
-            <div className={portalInnerCardClass}>
-              <label className={portalLabelClass}>{t('emailAddress')}</label>
-              <input
-                type="email"
-                autoComplete="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className={portalInputClass}
-              />
-            </div>
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div className={portalInnerCardClass}>
+                <label className={portalLabelClass}>{t('phoneNumber')}</label>
+                <input
+                  type="tel"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="+1 234 567 8900"
+                  className={portalInputClass}
+                />
+              </div>
 
-            <div className={portalInnerCardClass}>
-              <label className={portalLabelClass}>{t('phoneNumber')}</label>
-              <input
-                type="tel"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                placeholder="+1 234 567 8900"
-                className={portalInputClass}
-              />
+              <div className={portalInnerCardClass}>
+                <label className={portalLabelClass}>{t('emailAddress')}</label>
+                <input
+                  type="email"
+                  autoComplete="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className={portalInputClass}
+                />
+              </div>
             </div>
 
             <div className="flex justify-end pt-2">

@@ -1,6 +1,8 @@
 'use client';
 
+import { useRef } from 'react';
 import { AdminPaginationControls, DataTable } from '@/shared/components/ui';
+import { scrollListStartSoon } from '@/shared/lib/scroll-element-to-list-start';
 import { type Group } from '@/features/groups';
 import { GroupsBranchTabsStrip } from '../GroupsBranchTabsStrip';
 import type { GroupsTabState } from './useGroupsTab';
@@ -55,13 +57,17 @@ export function GroupsListView({
   onClearSelection,
   t,
 }: GroupsListViewProps) {
+  const listStartRef = useRef<HTMLDivElement | null>(null);
   const visibleColumns =
     activeCenterId && !allGroupsMode
       ? columns.filter((col) => col.key !== 'center')
       : columns;
 
   return (
-    <div className="animate-in fade-in-0 duration-150 overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm">
+    <div
+      ref={listStartRef}
+      className="animate-in fade-in-0 duration-150 overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm"
+    >
       {!selectedCenterId ? (
         <div className="border-b border-[rgba(14,14,16,0.07)] bg-gradient-to-b from-[#fafafa] to-white px-3 pt-3">
           <GroupsBranchTabsStrip
@@ -100,6 +106,7 @@ export function GroupsListView({
             onPageChange={(nextPage) => {
               onPageChange(nextPage);
               onClearSelection();
+              scrollListStartSoon(listStartRef.current);
             }}
             previousLabel={t('previousPage')}
             nextLabel={t('nextPage')}

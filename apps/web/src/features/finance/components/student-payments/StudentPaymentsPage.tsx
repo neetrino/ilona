@@ -6,6 +6,7 @@ import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { usePortalSheetDrag } from '@/shared/hooks/usePortalSheetDrag';
 import { useMyPayments, useMyPaymentsSummary, useProcessMyPayment } from '@/features/finance';
 import { AdminPaginationControls } from '@/shared/components/ui';
+import { scrollListStartSoon } from '@/shared/lib/scroll-element-to-list-start';
 import { cn, formatCurrency } from '@/shared/lib/utils';
 import type { Payment } from '@/features/finance/api/student-finance.api';
 import {
@@ -79,12 +80,7 @@ export function StudentPaymentsPage() {
 
   const goToMobilePage = (nextPage: number) => {
     setMobilePage(nextPage);
-    requestAnimationFrame(() => {
-      mobilePaymentsStartRef.current?.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start',
-      });
-    });
+    scrollListStartSoon(mobilePaymentsStartRef.current);
   };
 
   const handleSort = (key: SortKey) => {

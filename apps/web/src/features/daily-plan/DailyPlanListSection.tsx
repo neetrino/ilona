@@ -18,6 +18,7 @@ import {
   ADMIN_SEARCH_INPUT_CLASS,
 } from '@/shared/lib/admin-control-theme';
 import { AdminPaginationControls } from '@/shared/components/ui';
+import { scrollListStartSoon } from '@/shared/lib/scroll-element-to-list-start';
 import { cn } from '@/shared/lib/utils';
 
 interface DailyPlanListSectionProps {
@@ -196,12 +197,7 @@ export function DailyPlanListSection({
 
   const goToMobilePage = (nextPage: number) => {
     setMobilePage(nextPage);
-    requestAnimationFrame(() => {
-      cardsStartRef.current?.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start',
-      });
-    });
+    scrollListStartSoon(cardsStartRef.current);
   };
 
   const emptyMessage = hasAnyFilters

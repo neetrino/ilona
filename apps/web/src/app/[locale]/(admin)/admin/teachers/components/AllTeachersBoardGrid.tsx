@@ -8,6 +8,7 @@ import type { Teacher } from '@/features/teachers';
 import { AdminPaginationControls } from '@/shared/components/ui';
 import { useIsIPad } from '@/shared/hooks/useIsIPad';
 import { cn } from '@/shared/lib/utils';
+import { scrollListStartSoon } from '@/shared/lib/scroll-element-to-list-start';
 
 interface AllTeachersBoardGridProps {
   teachers: Teacher[];
@@ -61,12 +62,7 @@ export function AllTeachersBoardGrid({
 
   const goToMobileTeachersPage = (nextPage: number) => {
     setMobileTeachersPage(nextPage);
-    requestAnimationFrame(() => {
-      mobileTeachersStartRef.current?.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start',
-      });
-    });
+    scrollListStartSoon(mobileTeachersStartRef.current);
   };
 
   if (isLoading) {

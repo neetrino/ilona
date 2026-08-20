@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
+import { scrollListStartSoon } from '@/shared/lib/scroll-element-to-list-start';
 import { useLocale, useTranslations } from 'next-intl';
 import { useGroupStudents } from '../../hooks';
 import { AdminPaginationControls } from '@/shared/components/ui';
@@ -27,6 +28,7 @@ export function GroupDetailStudentsTab({ groupId, onStudentSelect }: GroupDetail
   const t = useTranslations('groups');
   const tCommon = useTranslations('common');
   const [page, setPage] = useState(0);
+  const listStartRef = useRef<HTMLDivElement | null>(null);
   const skip = page * GROUP_DETAIL_STUDENTS_PAGE_SIZE;
   const { data, isLoading, isError, error } = useGroupStudents(groupId, {
     skip,
@@ -62,7 +64,7 @@ export function GroupDetailStudentsTab({ groupId, onStudentSelect }: GroupDetail
   }
 
   return (
-    <div className="space-y-4">
+    <div ref={listStartRef} className="space-y-4">
       <div className="overflow-hidden rounded-2xl border border-[rgba(14,14,16,0.07)] bg-white">
         <table className="w-full text-sm">
           <thead className="border-b border-[rgba(14,14,16,0.07)] bg-[#fafafa]">
@@ -111,7 +113,10 @@ export function GroupDetailStudentsTab({ groupId, onStudentSelect }: GroupDetail
           <AdminPaginationControls
             page={page}
             totalPages={totalPages}
-            onPageChange={setPage}
+            onPageChange={(nextPage) => {
+              setPage(nextPage);
+              scrollListStartSoon(listStartRef.current);
+            }}
             previousLabel={tCommon('previousPage')}
             nextLabel={tCommon('nextPage')}
           />

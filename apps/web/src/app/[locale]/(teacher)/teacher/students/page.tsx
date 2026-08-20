@@ -312,10 +312,22 @@ export default function TeacherStudentsPage() {
                 const student = item;
                 const initials = `${student.user.firstName[0]}${student.user.lastName[0]}`;
                 const avatarUrl = student.user.avatarUrl;
+                const openStudentProfile = () =>
+                  replaceParams({ studentId: student.id }, { mode: 'push' });
                 return (
                   <div
                     key={student.id}
-                    className="p-4 transition-colors hover:bg-[#fafafa]"
+                    role="button"
+                    tabIndex={0}
+                    onClick={openStudentProfile}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault();
+                        openStudentProfile();
+                      }
+                    }}
+                    className="cursor-pointer p-4 transition-colors hover:bg-[#fafafa]"
+                    aria-label={`${tTeacherStudents('viewProfile')}: ${student.user.firstName} ${student.user.lastName}`}
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
@@ -347,7 +359,11 @@ export default function TeacherStudentsPage() {
                       <div className="flex items-center gap-1.5">
                         <button
                           type="button"
-                          onClick={() => setFeedbackStudent(student)}
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            setFeedbackStudent(student);
+                          }}
+                          onKeyDown={(event) => event.stopPropagation()}
                           title={tTeacherStudents('viewFeedbackHistory')}
                           aria-label={tTeacherStudents('viewFeedbackHistory')}
                           className={`${ADMIN_ICON_BUTTON_CLASS} text-[#8b8b90] hover:bg-primary/10 hover:text-primary`}
@@ -368,7 +384,11 @@ export default function TeacherStudentsPage() {
                         </button>
                         <button
                           type="button"
-                          onClick={() => replaceParams({ studentId: student.id }, { mode: 'push' })}
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            openStudentProfile();
+                          }}
+                          onKeyDown={(event) => event.stopPropagation()}
                           className="rounded-lg px-3 py-1.5 text-sm text-primary transition-colors hover:bg-primary/10"
                         >
                           {tTeacherStudents('viewProfile')}

@@ -78,6 +78,7 @@ export default function AllTeachersPage() {
         teacherId={selectedTeacherIdForDetails}
         open={isDetailsDrawerOpen}
         onClose={handleDetailsDrawerClose}
+        onEdit={handleEditClick}
       />
 
       <EditTeacherForm

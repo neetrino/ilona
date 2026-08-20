@@ -17,6 +17,7 @@ import type { AbsenceType } from '@/features/attendance';
 import { ATTENDANCE_GROUP_CARD_CLASS } from '@/shared/components/attendance/attendance-button-theme';
 import { useIsIPad } from '@/shared/hooks/useIsIPad';
 import { AdminListPagination } from '@/shared/components/ui';
+import { scrollListStartSoon } from '@/shared/lib/scroll-element-to-list-start';
 
 const MOBILE_GROUP_CARDS_PAGE_SIZE = 5;
 const IPAD_GROUP_CARDS_PAGE_SIZE = 10;
@@ -141,12 +142,7 @@ export function MonthView({
 
   const goToMobileCardsPage = (nextPage: number) => {
     setMobileCardPage(nextPage);
-    requestAnimationFrame(() => {
-      mobileCardsStartRef.current?.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start',
-      });
-    });
+    scrollListStartSoon(mobileCardsStartRef.current);
   };
 
   // If only one group or no multi-select, show single view (backward compatibility)

@@ -18,6 +18,7 @@ import {
 } from '../utils/group-students.util';
 import type { AbsenceType } from '@/features/attendance';
 import { AdminListPagination } from '@/shared/components/ui';
+import { scrollListStartSoon } from '@/shared/lib/scroll-element-to-list-start';
 import { ATTENDANCE_GROUP_CARD_30_CLASS } from '@/shared/components/attendance/attendance-button-theme';
 
 const WEEK_GROUP_CARDS_PAGE_SIZE = 5;
@@ -156,22 +157,12 @@ export function WeekView({
 
   const goToMobileCardsPage = (nextPage: number) => {
     setMobileCardPage(nextPage);
-    requestAnimationFrame(() => {
-      mobileCardsStartRef.current?.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start',
-      });
-    });
+    scrollListStartSoon(mobileCardsStartRef.current);
   };
 
   const goToDesktopCardsPage = (nextPage: number) => {
     setDesktopCardPage(nextPage);
-    requestAnimationFrame(() => {
-      desktopCardsStartRef.current?.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start',
-      });
-    });
+    scrollListStartSoon(desktopCardsStartRef.current);
   };
 
   // If only one group or no multi-select, show single view (backward compatibility)

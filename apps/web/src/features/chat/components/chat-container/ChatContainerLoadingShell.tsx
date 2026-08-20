@@ -22,7 +22,7 @@ export function ChatContainerLoadingShell({
     <div
       className={cn(
         isPortalChatLoading
-          ? 'flex min-h-0 flex-1 flex-col overflow-hidden bg-white max-lg:max-h-[100dvh] max-lg:min-h-0 max-lg:flex-1 lg:min-h-0 lg:h-auto'
+          ? 'flex min-h-0 flex-1 flex-col overflow-hidden bg-white max-lg:max-h-[100dvh] max-lg:min-h-0 max-lg:flex-1 lg:h-full'
           : cn('h-[calc(100vh-200px)] overflow-hidden', loadingUi.shell),
         className,
       )}

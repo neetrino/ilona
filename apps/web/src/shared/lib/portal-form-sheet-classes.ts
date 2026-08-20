@@ -40,6 +40,18 @@ export function portalFormSheetContentClass(_maxWidth: 'xl' | '2xl' | '3xl' = '2
   return cn(PORTAL_FORM_SHEET_MOBILE_BASE_CLASS, PORTAL_DESKTOP_SIDE_SHEET_CLASS);
 }
 
+/** Right-side sheet on every viewport — no bottom-sheet animation. */
+export const PORTAL_ALWAYS_SIDE_SHEET_CLASS =
+  'fixed inset-y-0 right-0 left-auto z-50 flex h-full max-h-[100dvh] min-h-0 w-[min(100%,28rem)] translate-x-0 translate-y-0 flex-col overflow-hidden rounded-l-2xl border border-y-0 border-r-0 border-l border-slate-200 bg-[#f8f9fb] shadow-2xl duration-350 [animation-timing-function:cubic-bezier(0.22,1,0.36,1)] data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=open]:slide-in-from-right data-[state=closed]:slide-out-to-right data-[state=open]:fade-in-0 data-[state=closed]:fade-out-0 tablet:portrait:!w-[70%] tablet:landscape:!w-1/2 min-[1366px]:!w-1/2';
+
+export const PORTAL_FORM_SHEET_CLOSE_BUTTON_CLASS =
+  'hidden h-8 w-8 shrink-0 items-center justify-center rounded-[15px] border-0 border-transparent bg-transparent text-slate-500 outline-none transition hover:bg-slate-100 hover:text-slate-700 focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 tablet:inline-flex';
+
+export const PORTAL_ALWAYS_SIDE_SHEET_CLOSE_BUTTON_CLASS = cn(
+  PORTAL_FORM_SHEET_CLOSE_BUTTON_CLASS,
+  'inline-flex',
+);
+
 export const PORTAL_FORM_SHEET_HEADER_CLASS =
   'shrink-0 border-b border-slate-200/80 bg-[#f8f9fb] px-4 pb-4 pt-3 tablet:px-6 tablet:pb-5 tablet:pt-6';
 
@@ -51,6 +63,3 @@ export const PORTAL_FORM_SHEET_SCROLL_CLASS =
 
 export const PORTAL_FORM_SHEET_DRAG_HANDLE_CLASS =
   'relative flex h-9 w-full items-center justify-center bg-[#f8f9fb] tablet:hidden';
-
-export const PORTAL_FORM_SHEET_CLOSE_BUTTON_CLASS =
-  'hidden h-8 w-8 shrink-0 items-center justify-center rounded-[15px] border-0 border-transparent bg-transparent text-slate-500 outline-none transition hover:bg-slate-100 hover:text-slate-700 focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 tablet:inline-flex';

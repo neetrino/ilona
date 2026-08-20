@@ -9,13 +9,11 @@ import {
   Mic,
   Type,
   NotebookPen,
-  AlertTriangle,
   Lock,
   LockOpen,
 } from 'lucide-react';
 import type { Lesson } from '@/features/lessons';
 import { cn } from '@/shared/lib/utils';
-import { Button } from '@/shared/components/ui/button';
 import {
   getLessonActionsDerived,
   isLessonPastEnd,
@@ -23,6 +21,8 @@ import {
   type LessonActionId,
 } from '@/shared/lib/daily-duties/lesson-action-states';
 import { DailyDutiesListActionPill } from '@/shared/components/daily-duties/DailyDutiesListActionPill';
+import { RequiredActionsBanner } from '@/shared/components/daily-duties/RequiredActionsBanner';
+import { PORTAL_MOBILE_BOTTOM_NAV_OFFSET_CLASS } from '@/shared/lib/portal-mobile-layout';
 
 type Tab = LessonActionId;
 
@@ -66,17 +66,6 @@ function actionLabelKey(id: Tab): `lessonActions.${string}` {
   return keys[id];
 }
 
-function reminderKey(id: Tab): `lessonActions.${string}` {
-  const keys: Record<Tab, `lessonActions.${string}`> = {
-    absence: 'lessonActions.reminderAbsence',
-    feedback: 'lessonActions.reminderFeedback',
-    voice: 'lessonActions.reminderVoice',
-    text: 'lessonActions.reminderText',
-    dailyPlan: 'lessonActions.reminderDailyPlan',
-  };
-  return keys[id];
-}
-
 function LockStatusIcon({
   action,
   t,
@@ -106,70 +95,6 @@ function LockStatusIcon({
   }
 
   return <LockOpen className={cn('h-4 w-4', colorClass)} aria-label={label} />;
-}
-
-function RequiredActionsBanner({
-  incomplete,
-  compact,
-  onOpenAction,
-  t,
-}: {
-  incomplete: LessonActionDerived[];
-  compact?: boolean;
-  onOpenAction: (id: Tab) => void;
-  t: ReturnType<typeof useTranslations<'dailyDuties'>>;
-}) {
-  return (
-    <div
-      className={cn(
-        'rounded-[15px] border border-amber-200/90 bg-gradient-to-br from-amber-50 via-orange-50/90 to-rose-50/40 px-3 py-3 shadow-sm',
-        !compact && 'sm:px-4 sm:py-3.5',
-      )}
-      role="region"
-      aria-label={t('lessonActions.emergencyAria')}
-    >
-      <div className={cn('flex flex-col gap-2', !compact && 'sm:flex-row sm:items-start sm:justify-between sm:gap-4')}>
-        <div className="flex gap-2.5">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[15px] bg-amber-100/90 text-amber-800">
-            <AlertTriangle className="h-5 w-5" aria-hidden />
-          </div>
-          <div>
-            <p className="text-sm font-semibold text-amber-950">{t('lessonActions.emergencyTitle')}</p>
-            <p
-              className={cn(
-                'mt-0.5 text-xs leading-relaxed text-amber-900/85',
-                !compact && 'sm:text-sm',
-              )}
-            >
-              {t('lessonActions.emergencyIntro')}
-            </p>
-          </div>
-        </div>
-      </div>
-      <ul className={cn('mt-3 flex list-none flex-col gap-2 p-0', !compact && 'sm:mt-3.5')}>
-        {incomplete.map((a) => (
-          <li
-            key={a.id}
-            className={cn(
-              'flex flex-col gap-2 rounded-[15px] border border-white/60 bg-white/70 px-3 py-2.5 backdrop-blur-sm',
-              !compact && 'sm:flex-row sm:items-center sm:justify-between',
-            )}
-          >
-            <p className="text-sm text-slate-800">{t(reminderKey(a.id))}</p>
-            <Button
-              type="button"
-              size="sm"
-              variant="outline"
-              className="shrink-0 border-amber-300/80 bg-white text-amber-950 hover:bg-amber-50"
-              onClick={() => onOpenAction(a.id)}
-            >
-              {t('lessonActions.openAction', { label: t(actionLabelKey(a.id)) })}
-            </Button>
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
 }
 
 export function LessonDetailTabs({
@@ -245,7 +170,26 @@ export function LessonDetailTabs({
           })}
         </div>
       ) : (
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5 lg:gap-2.5">
+        <>
+          <div
+            className="-mx-1 flex gap-2 overflow-x-auto overscroll-x-contain pb-0.5 tablet:hidden [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+            role="tablist"
+            aria-label={t('lessonActions.checklistHeading')}
+          >
+            {tabs.map((tab) => {
+              const action = actions.find((x) => x.id === tab)!;
+              return (
+                <div key={tab} className="w-[4.85rem] shrink-0" role="presentation">
+                  <DailyDutiesListActionPill
+                    action={action}
+                    isActive={activeTab === tab}
+                    onActivate={() => handleTabChange(tab)}
+                  />
+                </div>
+              );
+            })}
+          </div>
+          <div className="hidden grid-cols-3 gap-2 tablet:grid min-[1367px]:grid-cols-5 min-[1367px]:gap-2.5">
           {tabs.map((tab) => {
             const action = actions.find((x) => x.id === tab)!;
             const Icon = TAB_ICONS[tab];
@@ -279,7 +223,7 @@ export function LessonDetailTabs({
                 >
                   <Icon className="h-4 w-4 sm:h-[18px] sm:w-[18px]" aria-hidden />
                 </span>
-                <span className="min-w-0 flex-1 self-center line-clamp-2 text-xs font-semibold leading-tight text-slate-900 sm:text-[13px]">
+                <span className="min-w-0 flex-1 self-center text-xs font-semibold leading-tight text-slate-900 sm:text-[13px]">
                   {t(actionLabelKey(tab))}
                   {action.state === 'doneLate' && (
                     <span className="mt-0.5 block text-[10px] font-medium text-amber-800">
@@ -299,6 +243,7 @@ export function LessonDetailTabs({
             );
           })}
         </div>
+        </>
       )}
     </>
   );
@@ -306,12 +251,11 @@ export function LessonDetailTabs({
   return (
     <div className={cn('flex flex-col', layout === 'fill' && 'h-full min-h-0')}>
       {showEmergency && checklistInCard ? (
-        <div className="max-h-[38vh] shrink-0 overflow-y-auto pb-2 pt-2">
+        <div className="max-h-[38vh] shrink-0 overflow-y-auto pb-2 pt-2 tablet:max-h-none">
           <RequiredActionsBanner
             incomplete={incomplete}
             compact
             onOpenAction={(id) => handleTabChange(id, { scrollToPanel: true })}
-            t={t}
           />
         </div>
       ) : null}
@@ -330,8 +274,9 @@ export function LessonDetailTabs({
         className={cn(
           layout === 'fill' && 'min-h-0 flex-1',
           layout === 'fill' && activeTab === 'feedback'
-            ? 'flex flex-col overflow-hidden'
+            ? 'flex flex-col overflow-y-auto lg:overflow-hidden'
             : layout === 'fill' && 'overflow-y-auto',
+          layout === 'fill' && PORTAL_MOBILE_BOTTOM_NAV_OFFSET_CLASS,
         )}
       >
         {showEmergency && !checklistInCard ? (
@@ -339,7 +284,6 @@ export function LessonDetailTabs({
             <RequiredActionsBanner
               incomplete={incomplete}
               onOpenAction={(id) => handleTabChange(id, { scrollToPanel: true })}
-              t={t}
             />
           </div>
         ) : null}

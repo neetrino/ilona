@@ -1,6 +1,7 @@
 'use client';
 
 import { portalPageStackClass } from '@/shared/lib/portal-theme';
+import { scrollListStartSoon } from '@/shared/lib/scroll-element-to-list-start';
 import { useTranslations } from 'next-intl';
 import { useParams } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -176,12 +177,7 @@ export function AdminFinancePage() {
           : isFetchingEarnings;
     if (isActiveTabFetching) return;
 
-    requestAnimationFrame(() => {
-      cardsListStartRef.current?.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start',
-      });
-    });
+    scrollListStartSoon(cardsListStartRef.current);
     shouldScrollToCardsRef.current = false;
   }, [
     isSmUp,

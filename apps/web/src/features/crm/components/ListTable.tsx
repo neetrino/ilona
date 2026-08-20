@@ -1,6 +1,8 @@
 'use client';
 
+import { useRef } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
+import { scrollListStartSoon } from '@/shared/lib/scroll-element-to-list-start';
 import type { CrmLead } from '@/features/crm/types';
 import { useCrmStatusLabels } from '@/features/crm/hooks/useCrmStatusLabels';
 import { formatPhoneForDisplay, cn } from '@/shared/lib/utils';
@@ -68,6 +70,7 @@ export function ListTable({
   const safeTotalPages = Math.max(1, totalPages);
   const safePage = Math.min(Math.max(0, page), safeTotalPages - 1);
   const hasLeads = totalLeads > 0;
+  const listStartRef = useRef<HTMLDivElement | null>(null);
 
   const headers = [
     tc('name'),
@@ -117,7 +120,10 @@ export function ListTable({
   }
 
   return (
-    <div className="w-full min-w-0 overflow-hidden rounded-xl border border-slate-200 bg-white">
+    <div
+      ref={listStartRef}
+      className="w-full min-w-0 overflow-hidden rounded-xl border border-slate-200 bg-white"
+    >
       <div className="w-full min-w-0 overflow-x-auto">
       <table className="min-w-full divide-y divide-slate-200">
         <thead className="bg-slate-50">
@@ -180,7 +186,10 @@ export function ListTable({
           <AdminPaginationControls
             page={safePage}
             totalPages={safeTotalPages}
-            onPageChange={onPageChange}
+            onPageChange={(nextPage) => {
+              onPageChange(nextPage);
+              scrollListStartSoon(listStartRef.current);
+            }}
             previousLabel={tc('previousPage')}
             nextLabel={tc('nextPage')}
             disabled={deleteInProgress || !hasLeads}

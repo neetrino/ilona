@@ -104,11 +104,17 @@ export function useAllTeachersPage() {
     replaceParams({ status: status || null });
   };
 
+  const isOpeningEditRef = useRef(false);
+
   const handleEditClick = (teacher: Teacher) => {
     isEditTeacherClosingRef.current = false;
+    isOpeningEditRef.current = true;
     setSelectedTeacher(teacher);
     setSelectedTeacherIdForEdit(teacher.id);
     setParams({ [EDIT_TEACHER_URL_PARAM]: teacher.id }, { mode: 'push' });
+    setTimeout(() => {
+      isOpeningEditRef.current = false;
+    }, 300);
   };
 
   const handleRowClick = (teacher: Teacher) => {
@@ -122,6 +128,9 @@ export function useAllTeachersPage() {
   };
 
   const handleDetailsDrawerClose = () => {
+    if (isOpeningEditRef.current) {
+      return;
+    }
     isEditTeacherClosingRef.current = true;
     setSelectedTeacherIdForEdit(null);
     removeParams(['teacherId', EDIT_TEACHER_URL_PARAM], { mode: 'replace' });

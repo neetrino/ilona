@@ -6,10 +6,7 @@ import { LessonListTableBodyRow } from '@/shared/components/daily-duties/LessonL
 import type { Lesson } from '@/features/lessons';
 import { getScheduleCardDayStatus } from '@/features/schedule/schedule-dates';
 import { cn } from '@/shared/lib/utils';
-import {
-  TEACHER_DAILY_DUTIES_LIST_PAGE_SIZE,
-  teacherDailyDutiesRowSection,
-} from '@/shared/lib/daily-duties/teacher-daily-duties-list-order';
+import { teacherDailyDutiesRowSection } from '@/shared/lib/daily-duties/teacher-daily-duties-list-order';
 import type { TeacherDailyDutiesOrderedRow } from '@/shared/lib/daily-duties/teacher-daily-duties-list-order';
 
 interface LessonListTableDesktopTableProps {
@@ -49,6 +46,7 @@ interface LessonListTableDesktopTableProps {
   onDelete?: (lessonId: string) => void;
   onAssignSubstitute?: (lessonId: string) => void;
   onView: (lessonId: string) => void;
+  listPageSize: number;
 }
 
 export function LessonListTableDesktopTable({
@@ -79,6 +77,7 @@ export function LessonListTableDesktopTable({
   onDelete,
   onAssignSubstitute,
   onView,
+  listPageSize,
 }: LessonListTableDesktopTableProps) {
   const tCal = useTranslations('dailyDuties');
   const tCommon = useTranslations('common');
@@ -177,7 +176,7 @@ export function LessonListTableDesktopTable({
             {sectionedCalendarList
               ? sectionedPageRows.flatMap((row, idx) => {
                   const globalIdx =
-                    (sectionedListPage - 1) * TEACHER_DAILY_DUTIES_LIST_PAGE_SIZE + idx;
+                    (sectionedListPage - 1) * listPageSize + idx;
                   const prevGlobal =
                     globalIdx > 0 ? sectionedOrderedRows[globalIdx - 1] : undefined;
                   const section = teacherDailyDutiesRowSection(row.category);

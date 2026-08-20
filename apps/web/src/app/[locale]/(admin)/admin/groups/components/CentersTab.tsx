@@ -19,8 +19,9 @@ import { readUrlSearchParam } from '@/shared/lib/url-search-params';
 import { useIsLgViewport } from '@/shared/hooks/useIsLgViewport';
 import { useIsIPad } from '@/shared/hooks/useIsIPad';
 import { useIsIPadPro } from '@/shared/hooks/useIsIPadPro';
+import { scrollListStartSoon } from '@/shared/lib/scroll-element-to-list-start';
 
-const DESKTOP_BOARD_PAGE_SIZE = 9;
+const DESKTOP_BOARD_PAGE_SIZE = 12;
 
 interface CentersTabProps {
   centerSearchQuery: string;
@@ -83,12 +84,7 @@ export function CentersTab({
 
   const goToDesktopCentersPage = (nextPage: number) => {
     setDesktopBoardPage(nextPage);
-    requestAnimationFrame(() => {
-      desktopCentersStartRef.current?.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start',
-      });
-    });
+    scrollListStartSoon(desktopCentersStartRef.current);
   };
 
   // Ref to track if we're intentionally closing to prevent effect from reopening

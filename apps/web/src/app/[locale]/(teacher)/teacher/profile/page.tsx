@@ -244,24 +244,25 @@ export default function TeacherProfilePage() {
               </div>
             </div>
 
-            <div>
-              <StudentFieldLabel>{t('emailAddress')}</StudentFieldLabel>
-              <StudentInput
-                type="email"
-                value={user?.email || ''}
-                disabled
-                className="bg-[#f6f6f7] text-[#8b8b90]"
-              />
-            </div>
-
-            <div>
-              <StudentFieldLabel>{t('phoneNumber')}</StudentFieldLabel>
-              <StudentInput
-                type="tel"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                placeholder="+380 XX XXX XXXX"
-              />
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+              <div>
+                <StudentFieldLabel>{t('phoneNumber')}</StudentFieldLabel>
+                <StudentInput
+                  type="tel"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="+380 XX XXX XXXX"
+                />
+              </div>
+              <div>
+                <StudentFieldLabel>{t('emailAddress')}</StudentFieldLabel>
+                <StudentInput
+                  type="email"
+                  value={user?.email || ''}
+                  disabled
+                  className="bg-[#f6f6f7] text-[#8b8b90]"
+                />
+              </div>
             </div>
 
             <div>

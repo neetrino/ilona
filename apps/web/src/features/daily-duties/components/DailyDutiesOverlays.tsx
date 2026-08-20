@@ -2,6 +2,7 @@ import { AddLessonForm } from '@/features/lessons';
 import { BulkDeleteConfirmationDialog } from '@/features/lessons/components/BulkDeleteConfirmationDialog';
 import { SubstituteLessonModal } from '@/app/[locale]/(admin)/admin/daily-duties/components/SubstituteLessonModal';
 import { AdminLessonDetailSheet } from '@/app/[locale]/(admin)/admin/daily-duties/components/AdminLessonDetailSheet';
+import { TeacherLessonDetailSheet } from '@/features/daily-duties/components/TeacherLessonDetailSheet';
 import { formatAppDateTime } from '@/shared/lib/app-timezone';
 import { cn } from '@/shared/lib/utils';
 import { useTranslations } from 'next-intl';
@@ -68,14 +69,23 @@ export function DailyDutiesOverlays({
         />
       ) : null}
 
-      <AdminLessonDetailSheet
-        open={lessonDetailSheetOpen}
-        onOpenChange={onLessonDetailSheetOpenChange}
-        lessonId={lessonDetailSheetId}
-        initialTab={lessonDetailSheetTab}
-        teacherOptions={teacherOptions}
-        showAdminActions={!isTeacherMode}
-      />
+      {isTeacherMode ? (
+        <TeacherLessonDetailSheet
+          open={lessonDetailSheetOpen}
+          onOpenChange={onLessonDetailSheetOpenChange}
+          lessonId={lessonDetailSheetId}
+          initialTab={lessonDetailSheetTab}
+        />
+      ) : (
+        <AdminLessonDetailSheet
+          open={lessonDetailSheetOpen}
+          onOpenChange={onLessonDetailSheetOpenChange}
+          lessonId={lessonDetailSheetId}
+          initialTab={lessonDetailSheetTab}
+          teacherOptions={teacherOptions}
+          showAdminActions
+        />
+      )}
 
       <BulkDeleteConfirmationDialog
         open={bulkDelete.open}

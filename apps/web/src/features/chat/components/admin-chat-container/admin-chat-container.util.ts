@@ -3,7 +3,7 @@ import type { AdminChatContainerLayout } from './admin-chat-container.types';
 export function getAdminChatContainerLayout(className: string | undefined): AdminChatContainerLayout {
   const isFullScreen = className?.includes('rounded-none') ?? false;
   const containerHeight = isFullScreen
-    ? 'min-h-0 flex-1 lg:min-h-0 lg:h-auto'
+    ? 'min-h-0 flex-1 h-full'
     : 'h-[calc(100vh-200px)]';
   const contentHeight = isFullScreen ? 'flex-1 min-h-0' : 'h-[calc(100%-73px)]';
 

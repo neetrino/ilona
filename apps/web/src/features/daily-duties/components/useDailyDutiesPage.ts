@@ -6,6 +6,7 @@ import { useAuthStore } from '@/features/auth/store/auth.store';
 import { getAdminDailyDutiesBasePath, TEACHER_DAILY_DUTIES_BASE_PATH } from '@/shared/lib/role-routes';
 import { readUrlSearchParam } from '@/shared/lib/url-search-params';
 import { useAppSearchUrl } from '@/shared/hooks/useAppSearchUrl';
+import { DESKTOP_SIDE_SHEET_MEDIA_QUERY } from '@/shared/hooks/useIsDesktopSideSheet';
 import {
   formatScheduleDate,
   getMonthDates,
@@ -339,6 +340,16 @@ export function useDailyDutiesPage(mode: DailyDutiesMode) {
 
   const handleOpenLessonDetail = useCallback(
     (lessonId: string, tab?: string) => {
+      const openAsSideSheet =
+        isTeacherMode &&
+        typeof window !== 'undefined' &&
+        window.matchMedia(DESKTOP_SIDE_SHEET_MEDIA_QUERY).matches;
+      if (openAsSideSheet) {
+        setLessonDetailSheetId(lessonId);
+        setLessonDetailSheetTab((tab ?? 'absence') as DailyDutiesLessonDetailTab);
+        setLessonDetailSheetOpen(true);
+        return;
+      }
       router.push(
         buildDailyDutiesLessonDetailHref({
           locale,
@@ -348,7 +359,7 @@ export function useDailyDutiesPage(mode: DailyDutiesMode) {
         }),
       );
     },
-    [locale, portalBasePath, router],
+    [isTeacherMode, locale, portalBasePath, router],
   );
 
   const handleMobileLessonCardClick = useCallback(

@@ -9,6 +9,7 @@ import {
 import type { LessonListTableProps, LessonListCardRow } from './lesson-list-table.types';
 import { sortLessonListRows } from './lesson-list-table-sort.util';
 import { navigateToLessonDetail } from './lesson-list-table-navigation.util';
+import { scrollElementToListStart } from '@/shared/lib/scroll-element-to-list-start';
 import { IPAD_CARD_PAGE_SIZE, MOBILE_CARD_PAGE_SIZE } from './lesson-list-table.constants';
 
 export function useLessonListTable({
@@ -23,6 +24,7 @@ export function useLessonListTable({
   hideActionsColumn = false,
   hideTeacherColumn = false,
   showScheduleColumn = true,
+  listPageSize = TEACHER_DAILY_DUTIES_LIST_PAGE_SIZE,
 }: Pick<
   LessonListTableProps,
   | 'lessons'
@@ -36,6 +38,7 @@ export function useLessonListTable({
   | 'hideActionsColumn'
   | 'hideTeacherColumn'
   | 'showScheduleColumn'
+  | 'listPageSize'
 >) {
   const tCal = useTranslations('dailyDuties');
   const locale = useLocale();
@@ -48,6 +51,8 @@ export function useLessonListTable({
   const [mobileCardsPage, setMobileCardsPage] = useState(1);
   const [isIPad, setIsIPad] = useState(false);
   const mobileCardsStartRef = useRef<HTMLDivElement | null>(null);
+  const listStartRef = useRef<HTMLDivElement | null>(null);
+  const pendingScrollRef = useRef<'list' | 'cards' | null>(null);
 
   const sectionedOrderedRows = useMemo(
     () =>
@@ -76,7 +81,7 @@ export function useLessonListTable({
 
   const sectionedTotalPages = Math.max(
     1,
-    Math.ceil(sectionedOrderedRows.length / TEACHER_DAILY_DUTIES_LIST_PAGE_SIZE),
+    Math.ceil(sectionedOrderedRows.length / listPageSize),
   );
 
   useEffect(() => {
@@ -88,10 +93,10 @@ export function useLessonListTable({
   const sectionedPageRows = useMemo(() => {
     if (!sectionedCalendarList) return [];
     return sectionedOrderedRows.slice(
-      (sectionedListPage - 1) * TEACHER_DAILY_DUTIES_LIST_PAGE_SIZE,
-      sectionedListPage * TEACHER_DAILY_DUTIES_LIST_PAGE_SIZE,
+      (sectionedListPage - 1) * listPageSize,
+      sectionedListPage * listPageSize,
     );
-  }, [sectionedCalendarList, sectionedOrderedRows, sectionedListPage]);
+  }, [sectionedCalendarList, sectionedOrderedRows, sectionedListPage, listPageSize]);
 
   const sectionedPageLessonIds = useMemo(
     () => sectionedPageRows.map((r) => r.lesson.id),
@@ -203,18 +208,36 @@ export function useLessonListTable({
   };
 
   const goToMobileCardsPage = (nextPage: number) => {
+    pendingScrollRef.current = 'cards';
     setMobileCardsPage(nextPage);
-    requestAnimationFrame(() => {
-      mobileCardsStartRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    });
   };
+
+  const goToSectionedListPage = (nextPage: number) => {
+    pendingScrollRef.current = 'list';
+    setSectionedListPage(nextPage);
+  };
+
+  useEffect(() => {
+    if (pendingScrollRef.current !== 'list') return;
+    pendingScrollRef.current = null;
+    requestAnimationFrame(() => {
+      scrollElementToListStart(listStartRef.current);
+    });
+  }, [sectionedListPage]);
+
+  useEffect(() => {
+    if (pendingScrollRef.current !== 'cards') return;
+    pendingScrollRef.current = null;
+    requestAnimationFrame(() => {
+      scrollElementToListStart(mobileCardsStartRef.current);
+    });
+  }, [mobileCardsPage]);
 
   return {
     isTeacher,
     isIPad,
     selectedLessons,
     sectionedListPage,
-    setSectionedListPage,
     sectionedOrderedRows,
     sectionedPageRows,
     scheduleCategoryLabels,
@@ -224,6 +247,7 @@ export function useLessonListTable({
     mobileCardPageSize,
     safeMobileCardsPage,
     mobileCardsStartRef,
+    listStartRef,
     allSelected,
     someSelected,
     showBulkBar,
@@ -233,6 +257,8 @@ export function useLessonListTable({
     handleBulkDelete,
     handleView,
     goToMobileCardsPage,
+    goToSectionedListPage,
     tableColSpan,
+    listPageSize,
   };
 }

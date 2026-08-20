@@ -1,6 +1,8 @@
 'use client';
 
+import { useRef } from 'react';
 import { AdminPaginationControls, DataTable } from '@/shared/components/ui';
+import { scrollListStartSoon } from '@/shared/lib/scroll-element-to-list-start';
 import { createStudentsTableColumns } from './StudentsTableColumns';
 import { getItemId, isOnboardingItem, type TeacherAssignedItem, type Student } from '@/features/students';
 import type { Group } from '@/features/groups';
@@ -98,10 +100,12 @@ export function StudentsList({
     isLoading,
   });
 
+  const listStartRef = useRef<HTMLDivElement | null>(null);
+
   return (
     <>
       {/* Students Table — natural column widths + horizontal scroll (no table-fixed overlap) */}
-      <div className="w-full min-w-0">
+      <div ref={listStartRef} className="w-full min-w-0">
       <DataTable
         columns={studentColumns}
         data={students}
@@ -124,7 +128,10 @@ export function StudentsList({
         <AdminPaginationControls
           page={page}
           totalPages={totalPages}
-          onPageChange={onPageChange}
+          onPageChange={(nextPage) => {
+            onPageChange(nextPage);
+            scrollListStartSoon(listStartRef.current);
+          }}
           previousLabel={tCommon('previousPage')}
           nextLabel={tCommon('nextPage')}
           disabled={isDeleting || isUpdating}

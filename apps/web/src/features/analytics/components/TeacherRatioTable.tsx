@@ -6,6 +6,7 @@ import { cn } from '@/shared/lib/utils';
 import type { TeacherPerformance } from '../api/analytics.api';
 import { analyticsTableScrollClass } from '../analytics-table-scroll';
 import { AnalyticsMobilePagination } from './AnalyticsMobilePagination';
+import { scrollListStartSoon } from '@/shared/lib/scroll-element-to-list-start';
 
 export type TeacherRatioMetric =
   | 'feedbacksRate'
@@ -154,12 +155,7 @@ export function TeacherRatioTable({
 
   const goToPage = (nextPage: number) => {
     setPage(nextPage);
-    requestAnimationFrame(() => {
-      pageStartRef.current?.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start',
-      });
-    });
+    scrollListStartSoon(pageStartRef.current);
   };
 
   const tableHeader = (

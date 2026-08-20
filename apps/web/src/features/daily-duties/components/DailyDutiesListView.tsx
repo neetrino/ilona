@@ -2,6 +2,10 @@ import { LessonListTable } from '@/shared/components/daily-duties/LessonListTabl
 import type { Lesson } from '@/features/lessons';
 import { useTranslations } from 'next-intl';
 import type { LessonActionId } from '@/shared/lib/daily-duties/lesson-action-states';
+import {
+  ADMIN_DAILY_DUTIES_LIST_PAGE_SIZE,
+  TEACHER_DAILY_DUTIES_LIST_PAGE_SIZE,
+} from '@/shared/lib/daily-duties/teacher-daily-duties-list-order';
 
 interface DailyDutiesListViewProps {
   lessons: Lesson[];
@@ -76,6 +80,9 @@ export function DailyDutiesListView({
       useMobileCards
       hideActionsColumn
       hideTeacherColumn={isTeacherMode}
+      listPageSize={
+        isTeacherMode ? TEACHER_DAILY_DUTIES_LIST_PAGE_SIZE : ADMIN_DAILY_DUTIES_LIST_PAGE_SIZE
+      }
       listReferenceDate={listReferenceDate}
       onBulkDelete={onBulkDelete}
       onMobileCardClick={onMobileCardClick}
