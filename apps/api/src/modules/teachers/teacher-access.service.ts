@@ -16,6 +16,7 @@ export class TeacherAccessService {
         id: teacherId,
         OR: [
           { groups: { some: { centerId: managerCenterId } } },
+          { secondTeacherForGroups: { some: { centerId: managerCenterId } } },
           { centerLinks: { some: { centerId: managerCenterId } } },
         ],
       },

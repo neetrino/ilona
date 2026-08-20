@@ -44,6 +44,7 @@ export class TeacherListService {
       const managerScope: Prisma.TeacherWhereInput = {
         OR: [
           { groups: { some: { centerId: managerCenterId } } },
+          { secondTeacherForGroups: { some: { centerId: managerCenterId } } },
           { centerLinks: { some: { centerId: managerCenterId } } },
         ],
       };

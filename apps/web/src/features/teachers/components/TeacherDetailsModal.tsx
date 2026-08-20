@@ -17,13 +17,14 @@ import {
   portalFormSheetContentClass,
 } from '@/shared/lib/portal-form-sheet-classes';
 import { useTeacher } from '../hooks/useTeachers';
+import type { Teacher } from '../types';
 import { getExperienceLabelFromHireDate } from '../utils/experience';
 
 interface TeacherDetailsModalProps {
   teacherId: string | null;
   open: boolean;
   onClose: () => void;
-  onEdit?: () => void;
+  onEdit?: (teacher: Teacher) => void;
   showInternalStats?: boolean;
   showInternalMeta?: boolean;
   scrollClassName?: string;
@@ -122,12 +123,16 @@ export function TeacherDetailsModal({
                 <p className="mt-1 text-sm text-[#8b8b90]">{t('teacherDetails')}</p>
               </div>
               <div className="flex shrink-0 items-center gap-2">
-                {onEdit ? (
+                {onEdit && teacher ? (
                   <button
                     type="button"
                     aria-label={tCommon('edit')}
                     title={tCommon('edit')}
-                    onClick={onEdit}
+                    onClick={(event) => {
+                      event.preventDefault();
+                      event.stopPropagation();
+                      onEdit(teacher);
+                    }}
                     className={cn(
                       ADMIN_ICON_BUTTON_SM_CLASS,
                       'text-slate-500 hover:bg-slate-100 hover:text-slate-700',

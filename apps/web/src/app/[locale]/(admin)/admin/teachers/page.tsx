@@ -226,16 +226,7 @@ export default function TeachersPage() {
         teacherId={selectedTeacherIdForDetails}
         open={isDetailsDrawerOpen}
         onClose={handleDetailsDrawerClose}
-        onEdit={
-          viewMode === 'list'
-            ? () => {
-                const teacher = teachers.find((item) => item.id === selectedTeacherIdForDetails);
-                if (teacher) {
-                  handleEditClick(teacher);
-                }
-              }
-            : undefined
-        }
+        onEdit={viewMode === 'list' ? handleEditClick : undefined}
       />
 
       {/* Edit Teacher Modal — `editTeacherId` in URL keeps dialog open after refresh */}
