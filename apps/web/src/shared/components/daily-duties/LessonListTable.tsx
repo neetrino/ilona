@@ -2,7 +2,6 @@
 
 import { useTranslations } from 'next-intl';
 import { AdminListPagination } from '@/shared/components/ui';
-import { TEACHER_DAILY_DUTIES_LIST_PAGE_SIZE } from '@/shared/lib/daily-duties/teacher-daily-duties-list-order';
 import { cn } from '@/shared/lib/utils';
 import type { LessonListTableProps } from './lesson-list-table/lesson-list-table.types';
 import { useLessonListTable } from './lesson-list-table/useLessonListTable';
@@ -32,6 +31,7 @@ export function LessonListTable({
   useMobileCards = false,
   listReferenceDate,
   hideActionsColumn = false,
+  listPageSize,
   onMobileCardClick,
 }: LessonListTableProps) {
   const tCal = useTranslations('dailyDuties');
@@ -47,6 +47,7 @@ export function LessonListTable({
     hideActionsColumn,
     hideTeacherColumn,
     showScheduleColumn,
+    listPageSize,
   });
 
   if (isLoading) {
@@ -71,7 +72,10 @@ export function LessonListTable({
 
   return (
     <div className="space-y-3">
-      <div className="overflow-hidden rounded-[15px] border border-slate-200 bg-white">
+      <div
+        ref={table.listStartRef}
+        className="overflow-hidden rounded-[15px] border border-slate-200 bg-white"
+      >
         {table.showBulkBar && (
           <LessonListTableBulkBar
             selectedCount={table.selectedLessons.size}
@@ -130,6 +134,7 @@ export function LessonListTable({
           onDelete={onDelete}
           onAssignSubstitute={onAssignSubstitute}
           onView={table.handleView}
+          listPageSize={table.listPageSize}
         />
       </div>
 
@@ -140,9 +145,9 @@ export function LessonListTable({
             useMobileCards && table.isIPad && 'hidden',
           )}
           page={table.sectionedListPage - 1}
-          pageSize={TEACHER_DAILY_DUTIES_LIST_PAGE_SIZE}
+          pageSize={table.listPageSize}
           totalItems={table.sectionedOrderedRows.length}
-          onPageChange={(page) => table.setSectionedListPage(page + 1)}
+          onPageChange={(page) => table.goToSectionedListPage(page + 1)}
           previousLabel={tCal('paginationPrevious')}
           nextLabel={tCal('paginationNext')}
         />

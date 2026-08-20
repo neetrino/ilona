@@ -24,6 +24,7 @@ export interface LessonListTableProps {
   useMobileCards?: boolean;
   listReferenceDate?: Date;
   hideActionsColumn?: boolean;
+  listPageSize?: number;
   onMobileCardClick?: (lessonId: string, tab?: LessonActionId) => void;
 }
 
