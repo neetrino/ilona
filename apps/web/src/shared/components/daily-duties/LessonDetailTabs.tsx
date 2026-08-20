@@ -189,7 +189,7 @@ export function LessonDetailTabs({
               );
             })}
           </div>
-          <div className="hidden grid-cols-2 gap-2 sm:grid-cols-3 tablet:grid lg:grid-cols-5 lg:gap-2.5">
+          <div className="hidden grid-cols-3 gap-2 tablet:grid min-[1367px]:grid-cols-5 min-[1367px]:gap-2.5">
           {tabs.map((tab) => {
             const action = actions.find((x) => x.id === tab)!;
             const Icon = TAB_ICONS[tab];
@@ -223,7 +223,7 @@ export function LessonDetailTabs({
                 >
                   <Icon className="h-4 w-4 sm:h-[18px] sm:w-[18px]" aria-hidden />
                 </span>
-                <span className="min-w-0 flex-1 self-center line-clamp-2 text-xs font-semibold leading-tight text-slate-900 sm:text-[13px]">
+                <span className="min-w-0 flex-1 self-center text-xs font-semibold leading-tight text-slate-900 sm:text-[13px]">
                   {t(actionLabelKey(tab))}
                   {action.state === 'doneLate' && (
                     <span className="mt-0.5 block text-[10px] font-medium text-amber-800">

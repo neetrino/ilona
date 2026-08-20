@@ -91,7 +91,7 @@ export function TeacherLessonDetailSheet({
         sheetContentRef={scrollContentProps.ref}
         contentClassName={cn(
           portalFormSheetContentClass('2xl'),
-          'bg-white tablet:landscape:!w-[60%] min-[1366px]:!w-[60%]',
+          'bg-white tablet:landscape:!w-[70%] min-[1367px]:!w-[60%]',
         )}
         contentProps={{ 'aria-describedby': undefined }}
       >
