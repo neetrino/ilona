@@ -9,7 +9,7 @@ import {
 import type { LessonListTableProps, LessonListCardRow } from './lesson-list-table.types';
 import { sortLessonListRows } from './lesson-list-table-sort.util';
 import { navigateToLessonDetail } from './lesson-list-table-navigation.util';
-import { scrollElementToListStart } from './lesson-list-table-scroll.util';
+import { scrollElementToListStart } from '@/shared/lib/scroll-element-to-list-start';
 import { IPAD_CARD_PAGE_SIZE, MOBILE_CARD_PAGE_SIZE } from './lesson-list-table.constants';
 
 export function useLessonListTable({

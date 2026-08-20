@@ -18,6 +18,7 @@ import {
 import type { AbsenceType } from '@/features/attendance';
 import { useIsIPad } from '@/shared/hooks/useIsIPad';
 import { AdminListPagination } from '@/shared/components/ui';
+import { scrollListStartSoon } from '@/shared/lib/scroll-element-to-list-start';
 import { ATTENDANCE_GROUP_CARD_30_CLASS } from '@/shared/components/attendance/attendance-button-theme';
 
 const MOBILE_GROUP_CARDS_PAGE_SIZE = 5;
@@ -161,22 +162,12 @@ export function DayView({
 
   const goToMobileCardsPage = (nextPage: number) => {
     setMobileCardPage(nextPage);
-    requestAnimationFrame(() => {
-      mobileCardsStartRef.current?.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start',
-      });
-    });
+    scrollListStartSoon(mobileCardsStartRef.current);
   };
 
   const goToDesktopCardsPage = (nextPage: number) => {
     setDesktopCardPage(nextPage);
-    requestAnimationFrame(() => {
-      desktopCardsStartRef.current?.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start',
-      });
-    });
+    scrollListStartSoon(desktopCardsStartRef.current);
   };
 
   if (selectedGroups.length <= 1) {

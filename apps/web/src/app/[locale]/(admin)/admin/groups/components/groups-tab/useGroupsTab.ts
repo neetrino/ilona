@@ -13,6 +13,7 @@ import { useIsIPadPro } from '@/shared/hooks/useIsIPadPro';
 import { useGroupsManagement } from '../../hooks/useGroupsManagement';
 import { readUrlSearchParam, getLiveSearchParams } from '../../utils/url';
 import { ALL_GROUPS_BRANCH, isAllGroupsBranch } from '../../utils/branch-tabs';
+import { scrollListStartSoon } from '@/shared/lib/scroll-element-to-list-start';
 import {
   DESKTOP_BOARD_PAGE_SIZE,
   IPAD_BOARD_PAGE_SIZE,
@@ -217,16 +218,12 @@ export function useGroupsTab({
 
   const goToMobileBoardPage = (nextPage: number) => {
     setMobileBoardPage(nextPage);
-    requestAnimationFrame(() => {
-      mobileBoardStartRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    });
+    scrollListStartSoon(mobileBoardStartRef.current);
   };
 
   const goToDesktopBoardPage = (nextPage: number) => {
     setDesktopBoardPage(nextPage);
-    requestAnimationFrame(() => {
-      desktopBoardStartRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    });
+    scrollListStartSoon(desktopBoardStartRef.current);
   };
 
   const handleBranchTabClick = (centerId: string) => {
@@ -255,10 +252,8 @@ export function useGroupsTab({
     }
     setBoardTabCenterId(null);
     updateUrl({ branch: ALL_GROUPS_BRANCH });
-    requestAnimationFrame(() => {
-      mobileBoardStartRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      desktopBoardStartRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    });
+    scrollListStartSoon(mobileBoardStartRef.current);
+    scrollListStartSoon(desktopBoardStartRef.current);
   };
 
   useEffect(() => {

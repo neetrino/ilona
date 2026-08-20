@@ -1,6 +1,7 @@
 'use client';
 
 import { portalPageStackClass } from '@/shared/lib/portal-theme';
+import { scrollListStartSoon } from '@/shared/lib/scroll-element-to-list-start';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
@@ -152,12 +153,7 @@ export function AdminAnalyticsPage() {
 
   const goToRiskPage = (nextPage: number) => {
     setRiskPage(nextPage);
-    requestAnimationFrame(() => {
-      riskPageStartRef.current?.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start',
-      });
-    });
+    scrollListStartSoon(riskPageStartRef.current);
   };
 
   return (

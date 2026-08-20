@@ -1,7 +1,8 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useRef } from 'react';
 import { DataTable, AdminListPagination } from '@/shared/components/ui';
+import { scrollListStartSoon } from '@/shared/lib/scroll-element-to-list-start';
 import { createTeachersTableColumns } from './TeachersTableColumns';
 import { TeachersCentersStrip } from './TeachersCentersStrip';
 import type { Teacher } from '@/features/teachers';
@@ -79,6 +80,7 @@ export function TeachersList({
   const safeTotalPages = Math.max(1, totalPages);
   const safePage = Math.min(Math.max(0, page), safeTotalPages - 1);
   const hasTeachers = totalTeachers > 0;
+  const listStartRef = useRef<HTMLDivElement | null>(null);
   const teacherColumns = createTeachersTableColumns({
     t,
     tStatus,
@@ -131,7 +133,7 @@ export function TeachersList({
   );
 
   return (
-    <div className="mb-6 overflow-hidden rounded-2xl border bg-white shadow-sm">
+    <div ref={listStartRef} className="mb-6 overflow-hidden rounded-2xl border bg-white shadow-sm">
       <TeachersCentersStrip
         centers={centers}
         teachersByCenter={teachersByCenter}
@@ -148,7 +150,10 @@ export function TeachersList({
         page={safePage}
         pageSize={PAGE_SIZE}
         totalItems={totalTeachers}
-        onPageChange={onPageChange}
+        onPageChange={(nextPage) => {
+          onPageChange(nextPage);
+          scrollListStartSoon(listStartRef.current);
+        }}
         previousLabel={tc('previousCardsPage')}
         nextLabel={tc('nextCardsPage')}
         disabled={isDeleting || isUpdating || !hasTeachers}

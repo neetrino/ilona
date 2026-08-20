@@ -6,6 +6,7 @@ import { cn, formatCurrency } from '@/shared/lib/utils';
 import type { RevenueData } from '../api/analytics.api';
 import { analyticsTableScrollClass } from '../analytics-table-scroll';
 import { AnalyticsMobilePagination } from './AnalyticsMobilePagination';
+import { scrollListStartSoon } from '@/shared/lib/scroll-element-to-list-start';
 
 interface RevenueBreakdownTableProps {
   revenue: RevenueData[];
@@ -169,12 +170,7 @@ export function RevenueBreakdownTable({
 
   const goToPage = (nextPage: number) => {
     setPage(nextPage);
-    requestAnimationFrame(() => {
-      pageStartRef.current?.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start',
-      });
-    });
+    scrollListStartSoon(pageStartRef.current);
   };
 
   const displayedRevenue = mobilePageSize ? paginatedRevenue : revenue;

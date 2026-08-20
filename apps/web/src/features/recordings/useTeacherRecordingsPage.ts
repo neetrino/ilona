@@ -7,6 +7,7 @@ import { fetchTeacherStudentRecordings } from '@/features/chat/api/chat.api';
 import { chatKeys } from '@/features/chat/hooks/useChat';
 import { useMyGroups } from '@/features/groups/hooks/useGroups';
 import { useIsIPad } from '@/shared/hooks/useIsIPad';
+import { scrollListStartSoon } from '@/shared/lib/scroll-element-to-list-start';
 import {
   FILTERS_STORAGE_KEY,
   IPAD_RECORDINGS_PAGE_SIZE,
@@ -243,12 +244,7 @@ export function useTeacherRecordingsPage() {
 
   const goToPage = (nextPage: number) => {
     setPage(nextPage);
-    requestAnimationFrame(() => {
-      cardsListStartRef.current?.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start',
-      });
-    });
+    scrollListStartSoon(cardsListStartRef.current);
   };
 
   return {

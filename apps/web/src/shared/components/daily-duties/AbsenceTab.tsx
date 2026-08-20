@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useTranslations } from 'next-intl';
 import { useLessonAttendance, useMarkBulkAttendance } from '@/features/attendance';
 import { useLesson } from '@/features/lessons';
@@ -18,6 +18,7 @@ import { ADMIN_FORM_INPUT_CLASS } from '@/shared/lib/admin-control-theme';
 import { ATTENDANCE_PRIMARY_BUTTON_CLASS } from '@/shared/components/attendance/attendance-button-theme';
 import { DAILY_DUTIES_RADIUS_CLASS } from '@/shared/lib/daily-duties/daily-duties-theme';
 import { LoadingSpinner } from '@/shared/components/ui/loading-spinner';
+import { scrollListStartSoon } from '@/shared/lib/scroll-element-to-list-start';
 
 interface AbsenceTabProps {
   lessonId: string;
@@ -53,6 +54,7 @@ export function AbsenceTab({ lessonId, embeddedInSheet = false }: AbsenceTabProp
   const [hasChanges, setHasChanges] = useState(false);
   const [toast, setToast] = useState<ToastState | null>(null);
   const [mobilePage, setMobilePage] = useState(0);
+  const listStartRef = useRef<HTMLDivElement | null>(null);
 
   const showToast = (message: string, variant: AutoDismissToastVariant) => {
     setToast({ key: Date.now(), message, variant });
@@ -287,7 +289,7 @@ export function AbsenceTab({ lessonId, embeddedInSheet = false }: AbsenceTabProp
         actions={saveButton}
       />
 
-      <div className="space-y-3">
+      <div ref={listStartRef} className="space-y-3">
         {students.map((student, index) => {
           const status = getStatus(student.id);
           const displayName = `${student.user.firstName} ${student.user.lastName}`.trim();
@@ -363,7 +365,10 @@ export function AbsenceTab({ lessonId, embeddedInSheet = false }: AbsenceTabProp
         page={safeMobilePage}
         pageSize={MOBILE_ABSENCE_PAGE_SIZE}
         totalItems={students.length}
-        onPageChange={setMobilePage}
+        onPageChange={(nextPage) => {
+          setMobilePage(nextPage);
+          scrollListStartSoon(listStartRef.current);
+        }}
         previousLabel={tCalendar('paginationPrevious')}
         nextLabel={tCalendar('paginationNext')}
       />

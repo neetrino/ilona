@@ -10,6 +10,7 @@ import { TeacherDetailsModal, TeacherShowcaseCard, type Teacher } from '@/featur
 import { useMyTeachers } from '@/features/students/hooks/useStudents';
 import { useIsIPad } from '@/shared/hooks/useIsIPad';
 import { cn } from '@/shared/lib/utils';
+import { scrollListStartSoon } from '@/shared/lib/scroll-element-to-list-start';
 import { Sparkles } from 'lucide-react';
 import {
   StudentCountChip,
@@ -156,12 +157,7 @@ export default function StudentOurTeachersPage() {
   }, [teachers.length]);
 
   const scrollToTeachersStart = (ref: React.RefObject<HTMLDivElement | null>) => {
-    requestAnimationFrame(() => {
-      ref.current?.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start',
-      });
-    });
+    scrollListStartSoon(ref.current);
   };
 
   const goToMobilePage = (nextPage: number) => {

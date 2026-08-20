@@ -25,3 +25,9 @@ export function scrollElementToListStart(element: HTMLElement | null): void {
     LIST_SCROLL_GAP_PX;
   scroller.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
 }
+
+export function scrollListStartSoon(element: HTMLElement | null): void {
+  requestAnimationFrame(() => {
+    scrollElementToListStart(element);
+  });
+}

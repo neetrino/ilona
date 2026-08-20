@@ -11,6 +11,7 @@ import { chatKeys } from '@/features/chat/hooks/useChat';
 import { useIsIPad } from '@/shared/hooks/useIsIPad';
 import { useAppSearchUrl } from '@/shared/hooks/useAppSearchUrl';
 import { readUrlSearchParam } from '@/shared/lib/url-search-params';
+import { scrollListStartSoon } from '@/shared/lib/scroll-element-to-list-start';
 import {
   FILTERS_STORAGE_KEY,
   IPAD_RECORDINGS_PAGE_SIZE,
@@ -405,12 +406,7 @@ export function useAdminRecordingsPage() {
 
   const goToPage = (nextPage: number) => {
     setPage(nextPage);
-    requestAnimationFrame(() => {
-      cardsListStartRef.current?.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start',
-      });
-    });
+    scrollListStartSoon(cardsListStartRef.current);
   };
 
   const openStudentHistory = (row: StudentRecordingRow) => {
