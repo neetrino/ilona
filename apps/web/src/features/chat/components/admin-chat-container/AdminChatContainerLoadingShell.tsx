@@ -11,7 +11,7 @@ export function AdminChatContainerLoadingShell({ className }: AdminChatContainer
   return (
     <div
       className={cn(
-        isFullScreen ? 'min-h-0 flex-1 lg:h-[calc(100vh-200px)]' : 'h-[calc(100vh-200px)]',
+        isFullScreen ? 'min-h-0 flex-1 h-full' : 'h-[calc(100vh-200px)]',
         'overflow-hidden bg-white',
         !isFullScreen && 'rounded-2xl border border-slate-200',
         className,

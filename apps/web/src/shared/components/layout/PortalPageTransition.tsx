@@ -135,12 +135,17 @@ export function PortalPageTransition({ children }: PortalPageTransitionProps) {
   }, [transitionKey]);
 
   if (reduceMotion) {
-    return <div key={transitionKey}>{children}</div>;
+    return (
+      <div key={transitionKey} className="flex h-full min-h-0 flex-1 flex-col">
+        {children}
+      </div>
+    );
   }
 
   return (
     <motion.div
       key={transitionKey}
+      className="flex h-full min-h-0 flex-1 flex-col"
       initial={{ opacity: 0, y: yOffset }}
       animate={{ opacity: 1, y: 0 }}
       transition={{

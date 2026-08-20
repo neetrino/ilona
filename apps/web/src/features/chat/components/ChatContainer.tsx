@@ -25,7 +25,7 @@ function ChatContent(props: ChatContainerProps) {
     <div
       className={cn(
         useAdminPortalLayout
-          ? 'flex min-h-0 flex-1 flex-col overflow-hidden bg-white max-lg:max-h-[100dvh] max-lg:min-h-0 max-lg:flex-1 max-lg:overflow-hidden lg:min-h-0 lg:h-auto'
+          ? 'flex min-h-0 flex-1 flex-col overflow-hidden bg-white max-lg:max-h-[100dvh] max-lg:min-h-0 max-lg:flex-1 max-lg:overflow-hidden lg:h-full'
           : cn(containerHeight, vm.ui.shell, 'flex flex-col overflow-hidden'),
         useAdminPortalLayout && activeChat && 'max-lg:h-[100dvh]',
         className,

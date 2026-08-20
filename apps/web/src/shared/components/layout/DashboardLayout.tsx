@@ -231,7 +231,7 @@ export function DashboardLayout({
               mainPadding,
               hasMobileBottomNav && !mobileFullBleed && PORTAL_MOBILE_BOTTOM_NAV_OFFSET_CLASS,
               mobileFullBleed &&
-                'max-lg:flex max-lg:min-h-0 max-lg:flex-1 max-lg:flex-col max-lg:bg-white max-lg:overflow-hidden lg:flex lg:min-h-0 lg:flex-col lg:overflow-hidden',
+                'max-lg:flex max-lg:min-h-0 max-lg:flex-1 max-lg:flex-col max-lg:bg-white max-lg:overflow-hidden lg:flex lg:h-full lg:min-h-0 lg:flex-1 lg:flex-col lg:overflow-hidden',
               contentScrollClassName,
             )}
           >
@@ -241,7 +241,7 @@ export function DashboardLayout({
                 'mx-auto w-full min-w-0 max-w-[90rem]',
                 mobileFullBleed ? 'pb-0' : 'pb-[30px]',
                 mobileFullBleed &&
-                  'max-lg:flex max-lg:min-h-0 max-lg:flex-1 max-lg:flex-col max-lg:bg-white lg:flex lg:min-h-0 lg:flex-1 lg:flex-col',
+                  'max-lg:flex max-lg:min-h-0 max-lg:flex-1 max-lg:flex-col max-lg:bg-white lg:flex lg:h-full lg:min-h-0 lg:flex-1 lg:flex-col',
               )}
             >
               <PortalPageTransition>{children}</PortalPageTransition>

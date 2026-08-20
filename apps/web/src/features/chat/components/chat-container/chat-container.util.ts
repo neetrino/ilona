@@ -28,7 +28,7 @@ export function getChatContainerLayout(
   const isStudent = role === 'STUDENT';
   const useAdminPortalLayout = (isTeacher || isStudent) && isFullScreen;
   const containerHeight = useAdminPortalLayout
-    ? 'min-h-0 flex-1 lg:min-h-0 lg:h-auto'
+    ? 'min-h-0 flex-1 h-full'
     : isFullScreen
       ? 'h-screen'
       : 'h-[calc(100vh-200px)]';
