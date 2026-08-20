@@ -89,7 +89,7 @@ export function FeedbacksTabStudentCard({
       </div>
       )}
 
-      <div className="grid grid-cols-1 gap-5 md:grid-cols-3 md:gap-6 lg:gap-8">
+      <div className="grid grid-cols-1 gap-5 md:grid-cols-2 md:gap-6 lg:gap-8">
         <div className="min-w-0 space-y-2.5 rounded-[1.125rem] border border-[rgba(14,14,16,0.07)] bg-[#fafafa]/80 p-3.5 sm:p-4">
           <FeedbackCategoryLabel icon={Layers} tone="violet">
             {t('levelLabel')}
@@ -101,31 +101,6 @@ export function FeedbacksTabStudentCard({
               onUpdateStructured((current) => ({ ...current, level: nextValue }));
             }}
             aria-label={t('levelLabel')}
-          />
-        </div>
-
-        <div className="min-w-0 space-y-2.5 rounded-[1.125rem] border border-[rgba(14,14,16,0.07)] bg-[#fafafa]/80 p-3.5 sm:p-4">
-          <FeedbackCategoryLabel icon={BookOpenText} tone="sky">
-            {t('grammarLabel')}
-          </FeedbackCategoryLabel>
-          <MultiSelectChipsDropdown
-            options={grammarOptions}
-            selectedIds={grammarSelected}
-            onSelectionChange={(next) => {
-              onUpdateStructured((current) => ({
-                ...current,
-                grammar: Array.from(next),
-              }));
-            }}
-            placeholder={t('select')}
-            hideSelectedLabelsInTrigger
-            searchPlaceholder={t('filterPlaceholder')}
-            className={cn(
-              '[&_div[role=button]]:min-h-11 [&_div[role=button]]:rounded-[15px] [&_div[role=button]]:border-2 [&_div[role=button]]:focus-within:border-[#1010a3]/45',
-              grammarSelected.size > 0
-                ? '[&_div[role=button]]:border-[#1010a3]/45'
-                : '[&_div[role=button]]:border-slate-200',
-            )}
           />
         </div>
 
@@ -185,6 +160,31 @@ export function FeedbacksTabStudentCard({
             />
           ) : null}
         </div>
+      </div>
+
+      <div className="min-w-0 space-y-2.5 rounded-[1.125rem] border border-[rgba(14,14,16,0.07)] bg-[#fafafa]/80 p-3.5 sm:p-4">
+        <FeedbackCategoryLabel icon={BookOpenText} tone="sky">
+          {t('grammarLabel')}
+        </FeedbackCategoryLabel>
+        <MultiSelectChipsDropdown
+          options={grammarOptions}
+          selectedIds={grammarSelected}
+          onSelectionChange={(next) => {
+            onUpdateStructured((current) => ({
+              ...current,
+              grammar: Array.from(next),
+            }));
+          }}
+          placeholder={t('select')}
+          hideSelectedLabelsInTrigger
+          searchPlaceholder={t('filterPlaceholder')}
+          className={cn(
+            '[&_div[role=button]]:min-h-11 [&_div[role=button]]:rounded-[15px] [&_div[role=button]]:border-2 [&_div[role=button]]:focus-within:border-[#1010a3]/45',
+            grammarSelected.size > 0
+              ? '[&_div[role=button]]:border-[#1010a3]/45'
+              : '[&_div[role=button]]:border-slate-200',
+          )}
+        />
       </div>
 
       <div className="grid grid-cols-1 gap-5 md:grid-cols-2 md:gap-6 lg:gap-8">

@@ -78,7 +78,7 @@ export function FeedbacksTab({ lessonId, embeddedInSheet = false }: FeedbacksTab
     <div className="flex h-full min-h-0 flex-col overflow-hidden">
       {/* Desktop: chat-style master–detail with independent scroll regions */}
       <div className="hidden min-h-0 flex-1 overflow-hidden lg:flex">
-        <aside className="relative z-[1] flex min-h-0 w-80 shrink-0 flex-col overflow-hidden rounded-r-[30px] border-r border-slate-200/80 bg-white shadow-[4px_0_24px_rgba(14,14,16,0.08)]">
+        <aside className="relative z-[1] flex min-h-0 w-80 shrink-0 flex-col overflow-hidden rounded-r-[30px] border-r border-slate-200/80 bg-white">
           <FeedbacksTabStudentList
             students={students}
             selectedStudentId={selectedStudentId}
