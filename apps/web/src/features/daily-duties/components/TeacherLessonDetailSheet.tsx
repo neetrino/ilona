@@ -89,7 +89,10 @@ export function TeacherLessonDetailSheet({
         open={isDialogOpen}
         dragStyle={dragStyle}
         sheetContentRef={scrollContentProps.ref}
-        contentClassName={cn(portalFormSheetContentClass('2xl'), 'bg-white')}
+        contentClassName={cn(
+          portalFormSheetContentClass('2xl'),
+          'bg-white tablet:landscape:!w-[60%] min-[1366px]:!w-[60%]',
+        )}
         contentProps={{ 'aria-describedby': undefined }}
       >
         <PortalFormSheetDragHandle dragHandleProps={dragHandleProps} className="bg-white" />
