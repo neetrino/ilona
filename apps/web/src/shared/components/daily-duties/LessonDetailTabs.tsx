@@ -170,7 +170,26 @@ export function LessonDetailTabs({
           })}
         </div>
       ) : (
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5 lg:gap-2.5">
+        <>
+          <div
+            className="-mx-1 flex gap-2 overflow-x-auto overscroll-x-contain pb-0.5 tablet:hidden [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+            role="tablist"
+            aria-label={t('lessonActions.checklistHeading')}
+          >
+            {tabs.map((tab) => {
+              const action = actions.find((x) => x.id === tab)!;
+              return (
+                <div key={tab} className="w-[4.85rem] shrink-0" role="presentation">
+                  <DailyDutiesListActionPill
+                    action={action}
+                    isActive={activeTab === tab}
+                    onActivate={() => handleTabChange(tab)}
+                  />
+                </div>
+              );
+            })}
+          </div>
+          <div className="hidden grid-cols-2 gap-2 sm:grid-cols-3 tablet:grid lg:grid-cols-5 lg:gap-2.5">
           {tabs.map((tab) => {
             const action = actions.find((x) => x.id === tab)!;
             const Icon = TAB_ICONS[tab];
@@ -224,6 +243,7 @@ export function LessonDetailTabs({
             );
           })}
         </div>
+        </>
       )}
     </>
   );
