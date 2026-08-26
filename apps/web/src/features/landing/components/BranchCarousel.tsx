@@ -15,10 +15,14 @@ import type { LandingSectionProps } from '../types';
 
 type BranchCarouselProps = Pick<LandingSectionProps, 'tr' | 'isHy'>;
 
-const BRANCH_NAV_BUTTON_CLASS =
-  'inline-flex size-14 items-center justify-center rounded-full border border-white/20 bg-white text-[#093394] shadow-[0_10px_28px_rgba(0,0,0,0.22)] transition-[box-shadow,background-color] duration-200 ease-out hover:bg-white hover:shadow-[0_14px_32px_rgba(0,0,0,0.28)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:ring-offset-2 focus-visible:ring-offset-[#093394]';
+const BRANCH_NAV_BUTTON_BASE =
+  'inline-flex items-center justify-center rounded-full border border-white/20 bg-white text-[#093394] shadow-[0_10px_28px_rgba(0,0,0,0.22)] transition-[box-shadow,background-color] duration-200 ease-out hover:bg-white hover:shadow-[0_14px_32px_rgba(0,0,0,0.28)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:ring-offset-2 focus-visible:ring-offset-[#093394]';
 
-const BRANCH_NAV_ICON_CLASS = 'size-7 stroke-[2.5]';
+const BRANCH_NAV_BUTTON_MOBILE_CLASS = cn(BRANCH_NAV_BUTTON_BASE, 'size-12');
+const BRANCH_NAV_BUTTON_DESKTOP_CLASS = cn(BRANCH_NAV_BUTTON_BASE, 'size-14');
+
+const BRANCH_NAV_ICON_MOBILE_CLASS = 'size-6 stroke-[2.5]';
+const BRANCH_NAV_ICON_DESKTOP_CLASS = 'size-7 stroke-[2.5]';
 
 type BranchItem = (typeof import('../landingConstants').BRANCH_CAROUSEL_ITEMS)[number];
 
@@ -225,44 +229,44 @@ export function BranchCarousel({ tr, isHy }: BranchCarouselProps) {
         {renderTrack()}
       </div>
 
-      <div className="mt-5 flex items-center justify-center gap-5 tablet:hidden">
+      <div className="mt-3 flex items-center justify-center gap-8 tablet:hidden">
         <button
           type="button"
           aria-label={tCommon('previousBranch')}
-          className={BRANCH_NAV_BUTTON_CLASS}
+          className={BRANCH_NAV_BUTTON_MOBILE_CLASS}
           onClick={goToPrevious}
         >
-          <ChevronLeft className={BRANCH_NAV_ICON_CLASS} aria-hidden />
+          <ChevronLeft className={BRANCH_NAV_ICON_MOBILE_CLASS} aria-hidden />
         </button>
         <button
           type="button"
           aria-label={tCommon('nextBranch')}
-          className={BRANCH_NAV_BUTTON_CLASS}
+          className={BRANCH_NAV_BUTTON_MOBILE_CLASS}
           onClick={goToNext}
         >
-          <ChevronRight className={BRANCH_NAV_ICON_CLASS} aria-hidden />
+          <ChevronRight className={BRANCH_NAV_ICON_MOBILE_CLASS} aria-hidden />
         </button>
       </div>
 
       <button
         type="button"
         aria-label={tCommon('previousBranch')}
-        className={cn(BRANCH_NAV_BUTTON_CLASS, 'absolute left-6 top-[calc(50%-80px)] z-30 hidden -translate-y-1/2 tablet:inline-flex')}
+        className={cn(BRANCH_NAV_BUTTON_DESKTOP_CLASS, 'absolute left-6 top-[calc(50%-80px)] z-30 hidden -translate-y-1/2 tablet:inline-flex')}
         onClick={goToPrevious}
       >
-        <ChevronLeft className={BRANCH_NAV_ICON_CLASS} aria-hidden />
+        <ChevronLeft className={BRANCH_NAV_ICON_DESKTOP_CLASS} aria-hidden />
       </button>
       <button
         type="button"
         aria-label={tCommon('nextBranch')}
-        className={cn(BRANCH_NAV_BUTTON_CLASS, 'absolute right-6 top-[calc(50%-80px)] z-30 hidden -translate-y-1/2 tablet:inline-flex')}
+        className={cn(BRANCH_NAV_BUTTON_DESKTOP_CLASS, 'absolute right-6 top-[calc(50%-80px)] z-30 hidden -translate-y-1/2 tablet:inline-flex')}
         onClick={goToNext}
       >
-        <ChevronRight className={BRANCH_NAV_ICON_CLASS} aria-hidden />
+        <ChevronRight className={BRANCH_NAV_ICON_DESKTOP_CLASS} aria-hidden />
       </button>
 
       <div
-        className="mt-5 flex items-center justify-center gap-1 tablet:absolute tablet:bottom-0 tablet:left-1/2 tablet:mt-0 tablet:-translate-x-1/2"
+        className="mt-3 flex items-center justify-center gap-0 tablet:absolute tablet:bottom-0 tablet:left-1/2 tablet:mt-0 tablet:gap-1 tablet:-translate-x-1/2"
         role="tablist"
         aria-label={tr('Branch carousel', 'Մասնաճյուղերի կարուսել')}
       >
@@ -277,14 +281,14 @@ export function BranchCarousel({ tr, isHy }: BranchCarouselProps) {
               aria-selected={isActive}
               aria-label={isHy ? branch.shortLabelHy : branch.shortLabel}
               className={cn(
-                'flex h-10 min-w-10 items-center justify-center rounded-full px-2 transition-colors duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:ring-offset-2 focus-visible:ring-offset-[#093394]',
+                'flex h-6 min-w-6 items-center justify-center rounded-full transition-colors duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:ring-offset-2 focus-visible:ring-offset-[#093394] tablet:h-10 tablet:min-w-10 tablet:px-2',
                 isActive ? 'bg-white/15' : 'hover:bg-white/10',
               )}
               onClick={() => goToIndex(index)}
             >
               <span
                 className={cn(
-                  'block size-2.5 rounded-full transition-colors duration-200',
+                  'block size-1.5 rounded-full transition-colors duration-200 tablet:size-2.5',
                   isActive ? 'bg-white' : 'bg-white/40',
                 )}
               />
