@@ -28,12 +28,12 @@ export function LandingAboutCopy({
       : 'text-[17px] leading-[28px]';
 
   return (
-    <div className={cn(compact ? 'space-y-3' : 'space-y-5')}>
+      <div className={compact ? 'space-y-2.5' : 'space-y-5'}>
       <p className={cn(bodyClass, 'font-medium tracking-[-0.2px] text-[#101828]')}>{intro}</p>
 
       <div>
         <p className={cn(bodyClass, 'tracking-[-0.2px] text-[#4a5565]')}>{method}</p>
-        <ul className={cn('flex flex-wrap', compact ? 'mt-2.5 gap-1.5' : 'mt-3 gap-2')}>
+        <ul className={cn(compact ? 'mt-2 grid w-fit grid-cols-2 gap-1.5' : 'mt-3 flex flex-wrap gap-2')}>
           {LANGUAGE_SKILLS.map((skill) => (
             <li
               key={skill}

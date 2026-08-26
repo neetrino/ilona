@@ -20,18 +20,6 @@ import {
   getWeekDates,
 } from '@/features/schedule/schedule-dates';
 
-function areSetsEqual(a: Set<string>, b: Set<string>): boolean {
-  if (a.size !== b.size) {
-    return false;
-  }
-  for (const value of a) {
-    if (!b.has(value)) {
-      return false;
-    }
-  }
-  return true;
-}
-
 export default function AdminSchedulePage() {
   const t = useTranslations('nav');
   const tAttendance = useTranslations('attendance');
@@ -39,12 +27,7 @@ export default function AdminSchedulePage() {
   const managerCenterId =
     user?.role === 'MANAGER' ? user.managerCenterId : undefined;
 
-  const [draftSelectedCenterIds, setDraftSelectedCenterIds] = useState<Set<string>>(
-    new Set(),
-  );
-  const [appliedSelectedCenterIds, setAppliedSelectedCenterIds] = useState<Set<string>>(
-    new Set(),
-  );
+  const [selectedCenterIds, setSelectedCenterIds] = useState<Set<string>>(new Set());
   const { viewMode, setViewMode } = useScheduleViewMode();
   const [currentDate, setCurrentDate] = useState(new Date());
 
@@ -76,11 +59,11 @@ export default function AdminSchedulePage() {
 
   const groups = useMemo(() => {
     const allGroups = groupsData?.items ?? [];
-    if (managerCenterId || appliedSelectedCenterIds.size === 0) {
+    if (managerCenterId || selectedCenterIds.size === 0) {
       return allGroups;
     }
-    return allGroups.filter((group) => appliedSelectedCenterIds.has(group.centerId));
-  }, [appliedSelectedCenterIds, groupsData?.items, managerCenterId]);
+    return allGroups.filter((group) => selectedCenterIds.has(group.centerId));
+  }, [selectedCenterIds, groupsData?.items, managerCenterId]);
   const groupIds = useMemo(() => groups.map((group) => group.id), [groups]);
   const filteredGroupIds = useMemo(() => new Set(groupIds), [groupIds]);
 
@@ -125,12 +108,12 @@ export default function AdminSchedulePage() {
 
   const lessons = useMemo(() => {
     const allLessons = lessonsData?.items ?? [];
-    if (managerCenterId || appliedSelectedCenterIds.size === 0) {
+    if (managerCenterId || selectedCenterIds.size === 0) {
       return allLessons;
     }
     return allLessons.filter((lesson) => filteredGroupIds.has(lesson.groupId));
   }, [
-    appliedSelectedCenterIds.size,
+    selectedCenterIds.size,
     filteredGroupIds,
     lessonsData?.items,
     managerCenterId,
@@ -155,16 +138,12 @@ export default function AdminSchedulePage() {
     }
     setCurrentDate(next);
   };
-  const hasPendingCenterSelection = useMemo(
-    () => !areSetsEqual(draftSelectedCenterIds, appliedSelectedCenterIds),
-    [appliedSelectedCenterIds, draftSelectedCenterIds],
-  );
   const selectedCenterNames = useMemo(
     () =>
       visibleCenters
-        .filter((center) => appliedSelectedCenterIds.has(center.id))
+        .filter((center) => selectedCenterIds.has(center.id))
         .map((center) => center.name),
-    [appliedSelectedCenterIds, visibleCenters],
+    [selectedCenterIds, visibleCenters],
   );
   const selectedCentersLabel = useMemo(() => {
     if (selectedCenterNames.length === 0) {
@@ -177,23 +156,10 @@ export default function AdminSchedulePage() {
   }, [selectedCenterNames]);
   const centerFilterBlock = !managerCenterId ? (
     <div className="w-full md:w-[20rem]">
-      {hasPendingCenterSelection && (
-        <div className="mb-1.5 flex items-center justify-end">
-          <button
-            type="button"
-            onClick={() =>
-              setAppliedSelectedCenterIds(new Set(draftSelectedCenterIds))
-            }
-            className="text-[11px] font-semibold text-[#1010a3] transition-colors hover:text-[#0d0d85]"
-          >
-            Save
-          </button>
-        </div>
-      )}
       <MultiSelectChipsDropdown
         options={centerOptions}
-        selectedIds={draftSelectedCenterIds}
-        onSelectionChange={setDraftSelectedCenterIds}
+        selectedIds={selectedCenterIds}
+        onSelectionChange={setSelectedCenterIds}
         placeholder={tAttendance('allCenters')}
         searchPlaceholder="Search centers..."
         emptyOptionsHint="No centers available"

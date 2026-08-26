@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { cn } from '@/shared/lib/utils';
 import { createLandingPrograms } from '../landingProgramsContent';
@@ -16,9 +16,43 @@ function formatProgramPrice(price: number): string {
 
 export function LandingProgramsSection({ tr, isHy }: LandingSectionProps) {
   const [activeProgramIndex, setActiveProgramIndex] = useState(0);
+  const touchStartXRef = useRef<number | null>(null);
   const programs = createLandingPrograms(tr);
   const activeProgram = programs[activeProgramIndex] ?? programs[0];
   const monthlyLabel = isHy ? 'ամսական' : 'monthly';
+  const programCount = programs.length;
+
+  const goToNextProgram = useCallback(() => {
+    if (programCount <= 1) return;
+    setActiveProgramIndex((index) => (index + 1) % programCount);
+  }, [programCount]);
+
+  const goToPreviousProgram = useCallback(() => {
+    if (programCount <= 1) return;
+    setActiveProgramIndex((index) => (index - 1 + programCount) % programCount);
+  }, [programCount]);
+
+  const handleTouchStart = useCallback((clientX: number) => {
+    touchStartXRef.current = clientX;
+  }, []);
+
+  const handleTouchEnd = useCallback(
+    (clientX: number) => {
+      if (touchStartXRef.current === null || programCount <= 1) {
+        return;
+      }
+
+      const delta = clientX - touchStartXRef.current;
+      touchStartXRef.current = null;
+
+      if (delta < -50) {
+        goToNextProgram();
+      } else if (delta > 50) {
+        goToPreviousProgram();
+      }
+    },
+    [goToNextProgram, goToPreviousProgram, programCount],
+  );
 
   return (
     <>
@@ -30,7 +64,14 @@ export function LandingProgramsSection({ tr, isHy }: LandingSectionProps) {
             titleClassName="text-center text-[28px] font-extrabold leading-[42px] tracking-[0.35px] text-[#0a0a0a]"
           />
       
-          <div className="px-5">
+          <div
+            className="px-5 touch-pan-y"
+            role="region"
+            aria-roledescription="carousel"
+            aria-label={tr('Our Courses', 'Մեր դասընթացները')}
+            onTouchStart={(event) => handleTouchStart(event.touches[0]?.clientX ?? 0)}
+            onTouchEnd={(event) => handleTouchEnd(event.changedTouches[0]?.clientX ?? 0)}
+          >
             <AnimatePresence mode="wait" initial={false}>
               <motion.article
                 key={activeProgramIndex}

@@ -1,6 +1,6 @@
 'use client';
 
-import Link from 'next/link';
+import { useState } from 'react';
 import Image from 'next/image';
 import { FileText } from 'lucide-react';
 import { cn } from '@/shared/lib/utils';
@@ -9,6 +9,7 @@ import { LANDING_PREMIUM_CARD_CLASS } from '../landingAnimations';
 import { paytoneOne } from '../landingFont';
 import { LandingScrollReveal } from './LandingScrollReveal';
 import { LandingStaggerArticle, LandingStaggerGroup, LandingStaggerItem } from './LandingStaggerGroup';
+import { LandingCvApplicationModal } from './LandingCvApplicationModal';
 import type { LandingSectionProps } from '../types';
 
 const TEAM_ROLES = [
@@ -18,6 +19,7 @@ const TEAM_ROLES = [
 ] as const;
 
 export function LandingJoinTeamSection({ tr }: LandingSectionProps) {
+  const [isCvModalOpen, setIsCvModalOpen] = useState(false);
   const roles = TEAM_ROLES.map((role) => ({
     title: tr(role.titleEn, role.titleHy),
     subtitle: tr(role.subtitleEn, role.subtitleHy),
@@ -72,8 +74,9 @@ export function LandingJoinTeamSection({ tr }: LandingSectionProps) {
         </LandingScrollReveal>
 
         <LandingScrollReveal delay={0.12}>
-          <Link
-            href="#contact"
+          <button
+            type="button"
+            onClick={() => setIsCvModalOpen(true)}
             className={cn(
               'inline-flex h-[50px] items-center justify-center gap-2 rounded-full bg-white px-8 text-[15px] font-medium leading-[22.5px] tracking-[-0.31px] text-[#1c398e] shadow-lg',
               BUTTON_HOVER_CLASS,
@@ -81,7 +84,7 @@ export function LandingJoinTeamSection({ tr }: LandingSectionProps) {
           >
             <FileText className="size-5" strokeWidth={2.25} />
             <span>{tr('Send Your CV', 'Ուղարկել CV')}</span>
-          </Link>
+          </button>
         </LandingScrollReveal>
       </div>
 
@@ -130,8 +133,9 @@ export function LandingJoinTeamSection({ tr }: LandingSectionProps) {
         </LandingScrollReveal>
 
         <LandingScrollReveal className="mt-8 flex justify-center" delay={0.16}>
-          <Link
-            href="#contact"
+          <button
+            type="button"
+            onClick={() => setIsCvModalOpen(true)}
             className={cn(
               'inline-flex h-[56px] w-[192px] items-center justify-center gap-2 rounded-[80px] bg-white text-[16px] font-medium leading-[24px] tracking-[-0.3125px] text-[#1c398e] shadow-lg',
               BUTTON_HOVER_CLASS,
@@ -139,9 +143,15 @@ export function LandingJoinTeamSection({ tr }: LandingSectionProps) {
           >
             <FileText className="size-[26px]" strokeWidth={2.25} />
             <span>{tr('Send Your CV', 'Ուղարկել CV')}</span>
-          </Link>
+          </button>
         </LandingScrollReveal>
       </div>
+
+      <LandingCvApplicationModal
+        open={isCvModalOpen}
+        onOpenChange={setIsCvModalOpen}
+        tr={tr}
+      />
     </section>
   );
 }
