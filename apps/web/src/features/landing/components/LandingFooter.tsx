@@ -41,32 +41,6 @@ export function LandingFooter({ tr, isHy, logoUrl }: LandingFooterProps) {
             }}
           />
 
-          <div aria-hidden="true" className="relative h-[210px] overflow-hidden">
-            <div className="footer-flags-stage absolute left-1/2 top-0 h-[220px] w-[276px]">
-              <div className="footer-flag footer-flag--usa absolute left-0 top-0 h-[220px] w-[220px] overflow-hidden">
-                <Image
-                  src={FOOTER_FLAG_USA}
-                  alt=""
-                  fill
-                  loading="lazy"
-                  sizes="220px"
-                  className="object-cover"
-                />
-              </div>
-
-              <div className="footer-flag footer-flag--uk absolute left-[56px] top-0 h-[220px] w-[220px] overflow-hidden">
-                <Image
-                  src={FOOTER_FLAG_UK}
-                  alt=""
-                  fill
-                  loading="lazy"
-                  sizes="220px"
-                  className="object-cover"
-                />
-              </div>
-            </div>
-          </div>
-      
           <div className="grid grid-cols-2 gap-x-6 border-t border-white/20 pt-6">
             <div>
               <h3 className="text-[15px] font-bold leading-[22.5px] text-white">
