@@ -6,6 +6,7 @@ import { useTranslations } from 'next-intl';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { useEffect, useState, type MouseEvent as ReactMouseEvent } from 'react';
 import { LandingMobileNavbarPill } from '@/shared/components/layout/LandingMobileNavbarPill';
+import { LandingNavbarLanguageToggle } from '@/shared/components/layout/LandingNavbarLanguageToggle';
 import {
   LANDING_MOBILE_HORIZONTAL_PADDING,
   LANDING_NAV_DESKTOP_MIN_WIDTH,
@@ -291,20 +292,28 @@ export function LandingNavbar({
                     </Link>
                   </li>
                 ))}
-                {!isOnLoginPage ? (
-                  <li className="mt-1 border-t border-white/15 pt-1">
-                    <Link
-                      href={profileHref}
-                      onClick={() => setMenuOpen(false)}
-                      className="flex items-center gap-3 rounded-2xl px-4 py-3 text-base font-medium tracking-[-0.2px] text-white transition-colors hover:bg-white/10"
-                    >
-                      <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center">
-                        <ProfileIcon className="h-full w-full" />
-                      </span>
-                      {tHome('login')}
-                    </Link>
-                  </li>
-                ) : null}
+                <li className="mt-1 border-t border-white/15 pt-1">
+                  <div
+                    className={cn(
+                      'flex items-center gap-3 px-1 py-1',
+                      isOnLoginPage ? 'justify-end' : 'justify-between',
+                    )}
+                  >
+                    {!isOnLoginPage ? (
+                      <Link
+                        href={profileHref}
+                        onClick={() => setMenuOpen(false)}
+                        className="flex min-w-0 items-center gap-3 rounded-2xl px-3 py-2 text-base font-medium tracking-[-0.2px] text-white transition-colors hover:bg-white/10"
+                      >
+                        <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center">
+                          <ProfileIcon className="h-full w-full" />
+                        </span>
+                        {tHome('login')}
+                      </Link>
+                    ) : null}
+                    <LandingNavbarLanguageToggle className="shrink-0" />
+                  </div>
+                </li>
               </ul>
             </motion.nav>
           </>
