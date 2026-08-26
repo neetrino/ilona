@@ -1,12 +1,8 @@
 'use client';
 
 import { useCallback, useMemo, useState } from 'react';
-import Link from 'next/link';
-import { cn } from '@/shared/lib/utils';
-import { BUTTON_HOVER_CLASS } from '../landingConstants';
 import { createLandingFaqItems } from '../landingFaqContent';
 import { LandingSectionHeader } from './LandingSectionHeader';
-import { LandingScrollReveal } from './LandingScrollReveal';
 import { LandingStaggerGroup, LandingStaggerItem } from './LandingStaggerGroup';
 import { LandingFaqAccordionItem } from './LandingFaqAccordionItem';
 import type { LandingSectionProps } from '../types';
@@ -42,21 +38,6 @@ export function LandingFaqSection({ tr }: LandingSectionProps) {
             </LandingStaggerItem>
           ))}
         </LandingStaggerGroup>
-
-        <LandingScrollReveal className="text-center" delay={0.12}>
-          <p className="text-[15px] leading-[22.5px] tracking-[-0.44px] text-[#364153]">
-            {tr('Still have questions?', 'Դեռ հարցե՞ր ունեք')}
-          </p>
-          <Link
-            href="#contact"
-            className={cn(
-              'mt-3 inline-flex h-[49px] items-center justify-center rounded-full bg-gradient-to-r from-[#fb2c36] to-[#e7000b] px-8 text-[14px] font-normal leading-[21px] tracking-[-0.31px] text-white shadow-md',
-              BUTTON_HOVER_CLASS,
-            )}
-          >
-            {tr('Contact Us', 'Կապ մեզ հետ')}
-          </Link>
-        </LandingScrollReveal>
       </div>
 
       <div className="hidden pb-[96px] pt-[96px] tablet:block">
@@ -81,21 +62,6 @@ export function LandingFaqSection({ tr }: LandingSectionProps) {
               </LandingStaggerItem>
             ))}
           </LandingStaggerGroup>
-
-          <LandingScrollReveal className="mt-[52px] text-center" delay={0.16}>
-            <p className="text-[18px] leading-[28px] tracking-[-0.4395px] text-[#364153]">
-              {tr('Still have questions?', 'Դեռ հարցե՞ր ունեք')}
-            </p>
-            <Link
-              href="#contact"
-              className={cn(
-                'mt-[14px] inline-flex h-14 items-center justify-center rounded-full bg-gradient-to-r from-[#fb2c36] to-[#e7000b] px-[30px] text-[16px] font-normal leading-6 tracking-[-0.3125px] text-white shadow-md',
-                BUTTON_HOVER_CLASS,
-              )}
-            >
-              {tr('Contact Us', 'Կապ մեզ հետ')}
-            </Link>
-          </LandingScrollReveal>
         </div>
       </div>
     </section>
