@@ -109,17 +109,7 @@ export function LandingAboutSection({ tr, isHy }: LandingSectionProps) {
         />
       
         <motion.div
-          className="absolute left-5 top-6 z-30 max-w-[237px]"
-          variants={mobileFadeFromLeft}
-        >
-          <h2 className="text-[30px] font-extrabold leading-[31px] tracking-[0.35px] text-[#0a0a0a]">
-            {aboutHeading}
-          </h2>
-          <div className="mt-2.5 h-[3px] w-11 rounded-full bg-[#0025db]" aria-hidden />
-        </motion.div>
-      
-        <motion.div
-          className="relative z-10 mx-auto flex min-h-[640px] w-full flex-col bg-[#dde7ff] px-5 pb-0 pt-[200px]"
+          className="relative z-10 mx-auto flex w-full flex-col bg-[#dde7ff] px-5 pb-0 pt-6"
           variants={mobileAboutContainerVariants}
         >
           <motion.div
@@ -142,7 +132,7 @@ export function LandingAboutSection({ tr, isHy }: LandingSectionProps) {
           </motion.div>
       
           <motion.div
-            className="absolute right-16 top-[62px] z-10"
+            className="absolute right-12 top-10 z-10"
             variants={mobileBadgeFromRight}
           >
             <div className="rotate-[6deg] rounded-full bg-[#093394] px-4 py-1.5">
@@ -153,18 +143,7 @@ export function LandingAboutSection({ tr, isHy }: LandingSectionProps) {
           </motion.div>
       
           <motion.div
-            className="absolute right-12 top-[180px] z-10"
-            variants={mobileBadgeFromRight}
-          >
-            <div className="-rotate-[19deg] rounded-full bg-white px-4 py-1.5">
-              <span className="text-[13px] font-bold leading-[19.5px] text-[#0025db]">
-                {aboutTag}
-              </span>
-            </div>
-          </motion.div>
-      
-          <motion.div
-            className="absolute right-[72px] top-[310px] z-10"
+            className="absolute right-[72px] top-[300px] z-10"
             variants={mobileBadgeFromLeft}
           >
             <div className="-rotate-6 rounded-full bg-[#fb2c36] px-4 py-1.5">
@@ -174,9 +153,14 @@ export function LandingAboutSection({ tr, isHy }: LandingSectionProps) {
             </div>
           </motion.div>
       
-          <div className="min-h-1 flex-1" aria-hidden />
+          <motion.div className="relative z-20 max-w-[237px]" variants={mobileFadeFromLeft}>
+            <h2 className="text-[30px] font-extrabold leading-[31px] tracking-[0.35px] text-[#0a0a0a]">
+              {aboutHeading}
+            </h2>
+            <div className="mt-2.5 h-[3px] w-11 rounded-full bg-[#0025db]" aria-hidden />
+          </motion.div>
 
-          <motion.div className="relative z-10 mb-4" variants={mobileFadeFromLeft}>
+          <motion.div className="relative z-10 mt-3 mb-5 max-w-[268px] shrink-0" variants={mobileFadeFromLeft}>
             <LandingAboutCopy
               intro={aboutIntro}
               method={aboutMethod}
