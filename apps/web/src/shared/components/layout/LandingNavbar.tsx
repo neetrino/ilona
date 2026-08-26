@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { useEffect, useState, type MouseEvent as ReactMouseEvent } from 'react';
 import { LandingMobileNavbarPill } from '@/shared/components/layout/LandingMobileNavbarPill';
 import {
@@ -40,6 +41,31 @@ function ProfileIcon({ className }: { className?: string }) {
   );
 }
 
+function BurgerMenuIcon({ open }: { open: boolean }) {
+  return (
+    <span className="relative block h-5 w-5" aria-hidden>
+      <span
+        className={cn(
+          'absolute left-0 block h-0.5 w-5 rounded-full bg-current transition-all duration-300 ease-out',
+          open ? 'top-[9px] rotate-45' : 'top-[3px] rotate-0',
+        )}
+      />
+      <span
+        className={cn(
+          'absolute left-0 top-[9px] block h-0.5 w-5 rounded-full bg-current transition-all duration-300 ease-out',
+          open ? 'opacity-0 scale-x-0' : 'opacity-100 scale-x-100',
+        )}
+      />
+      <span
+        className={cn(
+          'absolute left-0 block h-0.5 w-5 rounded-full bg-current transition-all duration-300 ease-out',
+          open ? 'top-[9px] -rotate-45' : 'top-[15px] rotate-0',
+        )}
+      />
+    </span>
+  );
+}
+
 export function LandingNavbar({
   logoUrl,
   profileHref,
@@ -52,6 +78,7 @@ export function LandingNavbar({
   const tCommon = useTranslations('common');
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
+  const prefersReducedMotion = useReducedMotion();
   const isOnLoginPage = pathname.endsWith('/login');
   const isOnHomePage = pathname === '/';
   const isHomeAnchorLogo = logoHref.startsWith('#');
@@ -145,6 +172,14 @@ export function LandingNavbar({
   const iconButtonClassName =
     'relative inline-flex h-[32px] w-[32px] shrink-0 items-center justify-center overflow-hidden rounded-full sm:h-[34px] sm:w-[34px] tablet:h-[37px] tablet:w-[37px]';
 
+  const menuMotionTransition = prefersReducedMotion
+    ? { duration: 0 }
+    : { duration: 0.28, ease: [0.22, 1, 0.36, 1] as const };
+
+  const backdropMotionTransition = prefersReducedMotion
+    ? { duration: 0 }
+    : { duration: 0.24, ease: 'easeOut' as const };
+
   return (
     <>
       <header
@@ -190,15 +225,7 @@ export function LandingNavbar({
                   aria-controls="landing-mobile-menu"
                   aria-label={menuOpen ? tCommon('close') : t('openMenu')}
                 >
-                  {menuOpen ? (
-                    <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  ) : (
-                    <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                    </svg>
-                  )}
+                  <BurgerMenuIcon open={menuOpen} />
                 </button>
 
                 {!isOnLoginPage ? (
@@ -216,52 +243,76 @@ export function LandingNavbar({
         </div>
       </header>
 
-      {menuOpen ? (
-        <>
-          <button
-            type="button"
-            className="fixed inset-0 z-40 bg-black/40 navDesktop:hidden"
-            onClick={() => setMenuOpen(false)}
-            aria-label={tCommon('close')}
-          />
-          <nav
-            id="landing-mobile-menu"
-            className={cn(
-              'landing-mobile-menu-canvas fixed z-40 max-h-[min(70vh,calc(100dvh-5.5rem))] overflow-y-auto rounded-[28px] bg-[#093394] p-3 shadow-xl navDesktop:hidden',
-              'inset-x-4 top-[calc(0.5rem+58px+0.5rem)] sm:top-[calc(0.75rem+64px+0.5rem)] tablet:top-[calc(0.75rem+70px+0.5rem)]',
-            )}
-          >
-            <ul className="flex flex-col gap-1">
-              {LANDING_NAV_ITEMS.map((item) => (
-                <li key={item.id}>
-                  <Link
-                    href={getNavHref(item.href)}
-                    onClick={(event) => handleNavClick(event, item.id)}
-                    aria-current={activeSection === item.id ? 'page' : undefined}
-                    className={getNavLinkClassName(item.id, 'mobile')}
-                  >
-                    {t(item.id)}
-                  </Link>
-                </li>
-              ))}
-              {!isOnLoginPage ? (
-                <li className="mt-1 border-t border-white/15 pt-1">
-                  <Link
-                    href={profileHref}
-                    onClick={() => setMenuOpen(false)}
-                    className="flex items-center gap-3 rounded-2xl px-4 py-3 text-base font-medium tracking-[-0.2px] text-white transition-colors hover:bg-white/10"
-                  >
-                    <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center">
-                      <ProfileIcon className="h-full w-full" />
-                    </span>
-                    {tHome('login')}
-                  </Link>
-                </li>
-              ) : null}
-            </ul>
-          </nav>
-        </>
-      ) : null}
+      <AnimatePresence>
+        {menuOpen ? (
+          <>
+            <motion.button
+              key="landing-mobile-menu-backdrop"
+              type="button"
+              className="fixed inset-0 z-40 bg-black/40 navDesktop:hidden"
+              onClick={() => setMenuOpen(false)}
+              aria-label={tCommon('close')}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={backdropMotionTransition}
+            />
+            <motion.nav
+              key="landing-mobile-menu-panel"
+              id="landing-mobile-menu"
+              className={cn(
+                'landing-mobile-menu-canvas fixed z-40 max-h-[min(70vh,calc(100dvh-5.5rem))] overflow-y-auto rounded-[28px] bg-[#093394] p-3 shadow-xl navDesktop:hidden',
+                'inset-x-4 top-[calc(0.5rem+58px+0.5rem)] sm:top-[calc(0.75rem+64px+0.5rem)] tablet:top-[calc(0.75rem+70px+0.5rem)]',
+              )}
+              initial={
+                prefersReducedMotion
+                  ? { opacity: 0 }
+                  : { opacity: 0, y: -10, scale: 0.98 }
+              }
+              animate={
+                prefersReducedMotion
+                  ? { opacity: 1 }
+                  : { opacity: 1, y: 0, scale: 1 }
+              }
+              exit={
+                prefersReducedMotion
+                  ? { opacity: 0 }
+                  : { opacity: 0, y: -8, scale: 0.98 }
+              }
+              transition={menuMotionTransition}
+            >
+              <ul className="flex flex-col gap-1">
+                {LANDING_NAV_ITEMS.map((item) => (
+                  <li key={item.id}>
+                    <Link
+                      href={getNavHref(item.href)}
+                      onClick={(event) => handleNavClick(event, item.id)}
+                      aria-current={activeSection === item.id ? 'page' : undefined}
+                      className={getNavLinkClassName(item.id, 'mobile')}
+                    >
+                      {t(item.id)}
+                    </Link>
+                  </li>
+                ))}
+                {!isOnLoginPage ? (
+                  <li className="mt-1 border-t border-white/15 pt-1">
+                    <Link
+                      href={profileHref}
+                      onClick={() => setMenuOpen(false)}
+                      className="flex items-center gap-3 rounded-2xl px-4 py-3 text-base font-medium tracking-[-0.2px] text-white transition-colors hover:bg-white/10"
+                    >
+                      <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center">
+                        <ProfileIcon className="h-full w-full" />
+                      </span>
+                      {tHome('login')}
+                    </Link>
+                  </li>
+                ) : null}
+              </ul>
+            </motion.nav>
+          </>
+        ) : null}
+      </AnimatePresence>
     </>
   );
 }
