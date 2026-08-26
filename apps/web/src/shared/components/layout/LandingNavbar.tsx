@@ -217,10 +217,7 @@ export function LandingNavbar({
                 <button
                   type="button"
                   onClick={() => setMenuOpen((open) => !open)}
-                  className={cn(
-                    iconButtonClassName,
-                    'text-white transition-colors hover:bg-white/10 navDesktop:hidden',
-                  )}
+                  className="inline-flex h-[32px] w-[32px] shrink-0 items-center justify-center text-white outline-none focus-visible:outline-none navDesktop:hidden sm:h-[34px] sm:w-[34px] tablet:h-[37px] tablet:w-[37px]"
                   aria-expanded={menuOpen}
                   aria-controls="landing-mobile-menu"
                   aria-label={menuOpen ? tCommon('close') : t('openMenu')}
