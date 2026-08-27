@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useTranslations } from 'next-intl';
-import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
+import { AnimatePresence, LayoutGroup, motion, useReducedMotion } from 'framer-motion';
 import { useEffect, useState, type MouseEvent as ReactMouseEvent } from 'react';
 import { LandingMobileNavbarPill } from '@/shared/components/layout/LandingMobileNavbarPill';
 import { LandingNavbarLanguageToggle } from '@/shared/components/layout/LandingNavbarLanguageToggle';
@@ -70,7 +70,7 @@ function BurgerMenuIcon({ open }: { open: boolean }) {
 export function LandingNavbar({
   logoUrl,
   profileHref,
-  logoHref = '#home',
+  logoHref = '/',
   activeSection = 'home',
   onSectionNavigate,
 }: LandingNavbarProps) {
@@ -83,15 +83,6 @@ export function LandingNavbar({
   const isOnLoginPage = pathname.endsWith('/login');
   const isOnHomePage = pathname === '/';
   const isOnBlogPage = pathname === '/blog' || pathname.startsWith('/blog/');
-  const isHomeAnchorLogo = logoHref.startsWith('#');
-
-  const getNavHref = (href: string) => {
-    if (href.startsWith('/')) {
-      return href;
-    }
-
-    return isOnHomePage ? href : `/${href}`;
-  };
 
   useEffect(() => {
     if (!menuOpen) {
@@ -134,51 +125,52 @@ export function LandingNavbar({
   }, [menuOpen]);
 
   const handleLogoClick = (event: ReactMouseEvent<HTMLAnchorElement>) => {
-    if (!isHomeAnchorLogo) {
-      setMenuOpen(false);
+    setMenuOpen(false);
+
+    if (!isOnHomePage || !onSectionNavigate) {
       return;
     }
 
     event.preventDefault();
-    setMenuOpen(false);
-    onSectionNavigate?.('home');
+    onSectionNavigate('home');
   };
 
   const handleNavClick = (
     event: ReactMouseEvent<HTMLAnchorElement>,
     sectionId: LandingNavSectionId,
-    href: string,
   ) => {
     setMenuOpen(false);
 
-    if (href.startsWith('/')) {
+    if (sectionId === 'blog') {
       return;
     }
 
-    if (!isOnHomePage) {
+    if (!isOnHomePage || !onSectionNavigate) {
       return;
     }
 
     event.preventDefault();
-    onSectionNavigate?.(sectionId);
+    onSectionNavigate(sectionId);
   };
+
+  const navUnderlineTransition = prefersReducedMotion
+    ? { duration: 0 as const }
+    : { type: 'spring' as const, stiffness: 380, damping: 32, mass: 0.75 };
 
   const getNavLinkClassName = (sectionId: LandingNavSectionId, variant: 'desktop' | 'mobile') => {
     const isActive = activeSection === sectionId || (sectionId === 'blog' && isOnBlogPage);
 
     if (variant === 'mobile') {
       return cn(
-        'block rounded-2xl px-4 py-3 text-base font-medium tracking-[-0.2px] transition-colors duration-300',
+        'block rounded-2xl px-4 py-3 text-base font-medium tracking-[-0.2px] transition-[color,background-color] duration-500 ease-in-out',
         isActive ? 'bg-white/12 text-white' : 'text-white/85 hover:bg-white/10 hover:text-white',
       );
     }
 
     return cn(
-      'relative whitespace-nowrap font-normal tracking-[-0.3px] transition-colors duration-300',
+      'relative whitespace-nowrap py-1 font-normal tracking-[-0.3px] transition-colors duration-500 ease-in-out',
       'text-sm navDesktop:text-base',
-      isActive
-        ? 'text-white after:absolute after:-bottom-1 after:left-0 after:h-[2px] after:w-full after:rounded-full after:bg-white/90 after:content-[""]'
-        : 'text-white/70 hover:text-white',
+      isActive ? 'text-white' : 'text-white/70 hover:text-white',
     );
   };
 
@@ -211,19 +203,31 @@ export function LandingNavbar({
             canvasLayout
             languageToggleClassName="hidden lg:inline-flex"
             center={
-              <>
-                {LANDING_NAV_ITEMS.map((item) => (
-                  <Link
-                    key={item.id}
-                    href={getNavHref(item.href)}
-                    onClick={(event) => handleNavClick(event, item.id, item.href)}
-                    aria-current={activeSection === item.id || (item.id === 'blog' && isOnBlogPage) ? 'page' : undefined}
-                    className={getNavLinkClassName(item.id, 'desktop')}
-                  >
-                    {t(item.id)}
-                  </Link>
-                ))}
-              </>
+              <LayoutGroup id="landing-desktop-nav">
+                {LANDING_NAV_ITEMS.map((item) => {
+                  const isActive =
+                    activeSection === item.id || (item.id === 'blog' && isOnBlogPage);
+
+                  return (
+                    <Link
+                      key={item.id}
+                      href={item.href}
+                      onClick={(event) => handleNavClick(event, item.id)}
+                      aria-current={isActive ? 'page' : undefined}
+                      className={getNavLinkClassName(item.id, 'desktop')}
+                    >
+                      {isActive ? (
+                        <motion.span
+                          layoutId="landing-nav-underline"
+                          className="absolute -bottom-0.5 inset-x-0 h-0.5 rounded-full bg-white/90"
+                          transition={navUnderlineTransition}
+                        />
+                      ) : null}
+                      {t(item.id)}
+                    </Link>
+                  );
+                })}
+              </LayoutGroup>
             }
             trailing={
               <>
@@ -295,8 +299,8 @@ export function LandingNavbar({
                 {LANDING_NAV_ITEMS.map((item) => (
                   <li key={item.id}>
                     <Link
-                      href={getNavHref(item.href)}
-                      onClick={(event) => handleNavClick(event, item.id, item.href)}
+                      href={item.href}
+                      onClick={(event) => handleNavClick(event, item.id)}
                       aria-current={activeSection === item.id ? 'page' : undefined}
                       className={getNavLinkClassName(item.id, 'mobile')}
                     >

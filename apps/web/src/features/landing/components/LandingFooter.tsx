@@ -1,12 +1,19 @@
 'use client';
 
+import type { MouseEvent } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { cn } from '@/shared/lib/utils';
 import { FOOTER_LOGO_IMAGE, FOOTER_FLAG_USA, FOOTER_FLAG_UK } from '../landingConstants';
+import { scrollToLandingSection } from '../landingScroll';
 import { FooterSocialIcons } from './FooterSocialIcons';
 import type { FooterIconKey } from '@ilona/types';
 import type { LandingFooterProps } from '../types';
+
+function handleFooterSectionClick(event: MouseEvent<HTMLAnchorElement>, sectionId: string) {
+  event.preventDefault();
+  scrollToLandingSection(sectionId);
+}
 
 export function LandingFooter({ tr, isHy, logoUrl }: LandingFooterProps) {
 
@@ -48,7 +55,7 @@ export function LandingFooter({ tr, isHy, logoUrl }: LandingFooterProps) {
               </h3>
               <ul className="mt-3 flex flex-col gap-2 text-[13px] leading-[20px] text-white/80">
                 <li>
-                  <Link href="#about" className="hover:text-white">
+                  <Link href="/" onClick={(event) => handleFooterSectionClick(event, 'about')} className="hover:text-white">
                     {tr('About Us', 'Մեր մասին')}
                   </Link>
                 </li>
@@ -58,7 +65,7 @@ export function LandingFooter({ tr, isHy, logoUrl }: LandingFooterProps) {
                   </Link>
                 </li>
                 <li>
-                  <Link href="#faq" className="hover:text-white">
+                  <Link href="/" onClick={(event) => handleFooterSectionClick(event, 'faq')} className="hover:text-white">
                     {tr('FAQs', 'ՀՏՀ')}
                   </Link>
                 </li>
@@ -68,7 +75,7 @@ export function LandingFooter({ tr, isHy, logoUrl }: LandingFooterProps) {
                   </Link>
                 </li>
                 <li>
-                  <Link href="#contact" className="hover:text-white">
+                  <Link href="/" onClick={(event) => handleFooterSectionClick(event, 'contact')} className="hover:text-white">
                     {tr('Contact Us', 'Կապ մեզ հետ')}
                   </Link>
                 </li>
@@ -218,7 +225,7 @@ export function LandingFooter({ tr, isHy, logoUrl }: LandingFooterProps) {
               <h3 className="text-[18px] font-bold leading-[normal]">{tr('Navigation', 'Նավիգացիա')}</h3>
               <ul className="mt-[29px] space-y-2 text-[14px] leading-[normal]">
                 <li>
-                  <Link href="#about" className="hover:text-white/80">
+                  <Link href="/" onClick={(event) => handleFooterSectionClick(event, 'about')} className="hover:text-white/80">
                     {tr('About Us', 'Մեր մասին')}
                   </Link>
                 </li>
@@ -228,7 +235,7 @@ export function LandingFooter({ tr, isHy, logoUrl }: LandingFooterProps) {
                   </Link>
                 </li>
                 <li>
-                  <Link href="#faq" className="hover:text-white/80">
+                  <Link href="/" onClick={(event) => handleFooterSectionClick(event, 'faq')} className="hover:text-white/80">
                     {tr('FAQs', 'ՀՏՀ')}
                   </Link>
                 </li>
@@ -238,7 +245,7 @@ export function LandingFooter({ tr, isHy, logoUrl }: LandingFooterProps) {
                   </Link>
                 </li>
                 <li>
-                  <Link href="#contact" className="hover:text-white/80">
+                  <Link href="/" onClick={(event) => handleFooterSectionClick(event, 'contact')} className="hover:text-white/80">
                     {tr('Contact Us', 'Կապ մեզ հետ')}
                   </Link>
                 </li>
