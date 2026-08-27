@@ -15,7 +15,16 @@ type LandingBlogCardProps = {
   variant: 'mobile' | 'desktop';
 };
 
+function getFirstSentence(text: string): string {
+  const trimmed = text.trim();
+  const match = trimmed.match(/^[\s\S]*?[.!?](?=\s|$)/);
+
+  return match?.[0].trim() ?? trimmed;
+}
+
 function localizePost(post: LandingBlogPost, tr: LandingTr) {
+  const preview = getFirstSentence(tr(post.bodyEn[0], post.bodyHy[0]));
+
   return {
     slug: post.slug,
     image: post.image,
@@ -23,7 +32,7 @@ function localizePost(post: LandingBlogPost, tr: LandingTr) {
     date: tr(post.dateEn, post.dateHy),
     dateColor: post.dateColor,
     title: tr(post.titleEn, post.titleHy),
-    excerpt: tr(post.excerptEn, post.excerptHy),
+    preview,
     imageClassName: post.imageClassName,
   };
 }
@@ -108,26 +117,33 @@ export function LandingBlogCard({ post, tr, variant }: LandingBlogCardProps) {
 
           <p
             className={cn(
-              'text-[#4a5565]',
+              'line-clamp-2 text-[#4a5565]',
               isMobile
                 ? 'mt-2 text-[13px] leading-[19.5px] tracking-[-0.31px]'
                 : 'mt-3 text-[16px] leading-[24px] tracking-[-0.3125px]',
             )}
           >
-            {article.excerpt}
+            {article.preview}
           </p>
 
-          <span
+          <div
             className={cn(
-              'inline-flex items-center gap-2 font-bold text-[#155dfc] transition-opacity group-hover:opacity-80',
-              isMobile
-                ? 'mt-3 text-[13px] leading-[19.5px] tracking-[-0.31px]'
-                : 'mt-auto text-[16px] leading-[24px] tracking-[-0.3125px]',
+              'flex justify-end',
+              isMobile ? 'mt-3' : 'mt-auto pt-4',
             )}
           >
-            <span>{tr('Read more', 'Կարդալ ավելին')}</span>
-            <Image src={NEWS_ARROW_ICON} alt="" width={isMobile ? 14 : 16} height={isMobile ? 14 : 16} unoptimized />
-          </span>
+            <span
+              className={cn(
+                'inline-flex items-center gap-2 font-bold text-[#155dfc] transition-opacity group-hover:opacity-80',
+                isMobile
+                  ? 'text-[13px] leading-[19.5px] tracking-[-0.31px]'
+                  : 'text-[16px] leading-[24px] tracking-[-0.3125px]',
+              )}
+            >
+              <span>{tr('Read more', 'Կարդալ ավելին')}</span>
+              <Image src={NEWS_ARROW_ICON} alt="" width={isMobile ? 14 : 16} height={isMobile ? 14 : 16} unoptimized />
+            </span>
+          </div>
         </div>
       </Link>
     </LandingStaggerArticle>
