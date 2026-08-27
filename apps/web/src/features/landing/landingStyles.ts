@@ -1,6 +1,10 @@
 export const whyChooseMobileIconBase = 'absolute -left-[10px] -top-[10px] object-contain';
 export const whyChooseMobileContentBase =
   'relative z-10 flex w-full flex-col gap-1 pt-[90px]';
+export const whyChooseMobileTeachersContentBase =
+  'relative z-10 flex w-full flex-col gap-1 pt-[108px]';
+export const whyChooseMobileCertificateContentBase =
+  'relative z-10 flex w-full flex-col gap-1 pt-[108px]';
 export const whyChooseMobileTitleBase =
   'text-[15px] font-medium leading-[22.5px] tracking-[-0.44px] text-[#101828]';
 export const whyChooseMobileBodyBase =
@@ -8,6 +12,10 @@ export const whyChooseMobileBodyBase =
 export const whyChooseMobileIconHy = 'absolute -left-[10px] -top-[18px] object-contain';
 export const whyChooseMobileContentHy =
   'relative z-10 flex w-full flex-col gap-1 pt-[78px]';
+export const whyChooseMobileTeachersContentHy =
+  'relative z-10 flex w-full flex-col gap-1 pt-[96px]';
+export const whyChooseMobileCertificateContentHy =
+  'relative z-10 flex w-full flex-col gap-1 pt-[96px]';
 export const whyChooseMobileTitleHy =
   'text-[13px] font-medium leading-[18px] tracking-[-0.44px] text-[#101828]';
 export const whyChooseMobileBodyHy =
