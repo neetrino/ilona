@@ -1,16 +1,23 @@
 'use client';
 
+import type { MouseEvent } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { cn } from '@/shared/lib/utils';
 import { BUTTON_HOVER_CLASS, STUDENT_SUCCESS_IMAGE } from '../landingConstants';
 import { LANDING_PREMIUM_CARD_CLASS } from '../landingAnimations';
+import { scrollToLandingSection } from '../landingScroll';
 import { LandingSectionHeader } from './LandingSectionHeader';
 import { LandingScrollReveal } from './LandingScrollReveal';
 import { LandingStaggerArticle, LandingStaggerGroup } from './LandingStaggerGroup';
 import type { LandingSectionProps } from '../types';
 
 export function LandingStudentSuccessSection({ tr }: LandingSectionProps) {
+  const handleContactClick = (event: MouseEvent<HTMLAnchorElement>) => {
+    event.preventDefault();
+    scrollToLandingSection('contact');
+  };
+
   return (
     <section className="bg-[#f9fafb]">
       <div className="flex flex-col gap-6 pb-10 pt-10 tablet:hidden">
@@ -58,7 +65,8 @@ export function LandingStudentSuccessSection({ tr }: LandingSectionProps) {
 
         <LandingScrollReveal className="flex justify-center px-5" delay={0.12}>
           <Link
-            href="#contact"
+            href="/"
+            onClick={handleContactClick}
             className={cn(
               'inline-flex h-[50px] w-[180.633px] items-center justify-center rounded-full bg-[#093394] text-[15px] font-semibold leading-[22.5px] text-white',
               BUTTON_HOVER_CLASS,
@@ -111,7 +119,8 @@ export function LandingStudentSuccessSection({ tr }: LandingSectionProps) {
 
           <LandingScrollReveal delay={0.16}>
             <Link
-              href="#contact"
+              href="/"
+              onClick={handleContactClick}
               className={cn(
                 'inline-flex h-[56px] w-[180.633px] items-center justify-center rounded-full bg-[#093394] text-[16px] font-semibold leading-[24px] tracking-[-0.3125px] text-white',
                 BUTTON_HOVER_CLASS,

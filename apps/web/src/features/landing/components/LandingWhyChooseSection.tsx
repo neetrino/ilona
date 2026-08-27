@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { WHY_METHODS_IMAGE, WHY_RESULTS_IMAGE, WHY_TEACHERS_IMAGE, WHY_PLATFORM_IMAGE } from '../landingConstants';
-import { whyChooseDesktopBodyBase, whyChooseDesktopBodyHy, whyChooseDesktopMethodsIconBase, whyChooseDesktopMethodsIconHy, whyChooseDesktopPlatformBodyBase, whyChooseDesktopPlatformIconBase, whyChooseDesktopPlatformIconHy, whyChooseDesktopPlatformTitleBase, whyChooseDesktopResultsIconWrapBase, whyChooseDesktopResultsIconWrapHy, whyChooseDesktopTeachersIconWrapBase, whyChooseDesktopTeachersIconWrapHy, whyChooseDesktopTitleBase, whyChooseDesktopTitleHy, whyChooseMobileBodyBase, whyChooseMobileBodyHy, whyChooseMobileContentBase, whyChooseMobileContentHy, whyChooseMobileFourthContentHy, whyChooseMobileIconBase, whyChooseMobileIconHy, whyChooseMobilePlatformIconBase, whyChooseMobilePlatformIconHy, whyChooseMobileTitleBase, whyChooseMobileTitleHy } from '../landingStyles';
+import { whyChooseDesktopBodyBase, whyChooseDesktopBodyHy, whyChooseDesktopMethodsIconBase, whyChooseDesktopMethodsIconHy, whyChooseDesktopPlatformBodyBase, whyChooseDesktopPlatformIconBase, whyChooseDesktopPlatformIconHy, whyChooseDesktopPlatformTitleBase, whyChooseDesktopResultsIconWrapBase, whyChooseDesktopResultsIconWrapHy, whyChooseDesktopTeachersIconWrapBase, whyChooseDesktopTeachersIconWrapHy, whyChooseDesktopTitleBase, whyChooseDesktopTitleHy, whyChooseMobileBodyBase, whyChooseMobileBodyHy, whyChooseMobileCertificateContentBase, whyChooseMobileCertificateContentHy, whyChooseMobileContentBase, whyChooseMobileContentHy, whyChooseMobileFourthContentHy, whyChooseMobileIconBase, whyChooseMobileIconHy, whyChooseMobilePlatformIconBase, whyChooseMobilePlatformIconHy, whyChooseMobileTeachersContentBase, whyChooseMobileTeachersContentHy, whyChooseMobileTitleBase, whyChooseMobileTitleHy } from '../landingStyles';
 import { LandingScrollReveal } from './LandingScrollReveal';
 import type { LandingSectionProps } from '../types';
 
@@ -60,7 +60,7 @@ export function LandingWhyChooseSection({ tr, isHy }: LandingSectionProps) {
                 loading="lazy"
                 className={isHy ? whyChooseMobileIconHy : whyChooseMobileIconBase}
               />
-              <div className={isHy ? whyChooseMobileContentHy : whyChooseMobileContentBase}>
+              <div className={isHy ? whyChooseMobileTeachersContentHy : whyChooseMobileTeachersContentBase}>
                 <h3 className={isHy ? whyChooseMobileTitleHy : whyChooseMobileTitleBase}>
                   {teachersTitle}
                 </h3>
@@ -112,7 +112,7 @@ export function LandingWhyChooseSection({ tr, isHy }: LandingSectionProps) {
                 loading="lazy"
                 className={isHy ? whyChooseMobileIconHy : whyChooseMobileIconBase}
               />
-              <div className={isHy ? whyChooseMobileContentHy : whyChooseMobileContentBase}>
+              <div className={isHy ? whyChooseMobileCertificateContentHy : whyChooseMobileCertificateContentBase}>
                 <h3 className={isHy ? whyChooseMobileTitleHy : whyChooseMobileTitleBase}>
                   {certificateTitle}
                 </h3>

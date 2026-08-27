@@ -1,11 +1,11 @@
 export const LANDING_NAV_ITEMS = [
-  { id: 'home', href: '#home' },
-  { id: 'about', href: '#about' },
-  { id: 'courses', href: '#courses' },
-  { id: 'teachers', href: '#teachers' },
-  { id: 'branches', href: '#branches' },
-  { id: 'contact', href: '#contact' },
-  { id: 'blog', href: '#blog' },
+  { id: 'home', href: '/' },
+  { id: 'about', href: '/' },
+  { id: 'courses', href: '/' },
+  { id: 'teachers', href: '/' },
+  { id: 'branches', href: '/' },
+  { id: 'contact', href: '/' },
+  { id: 'blog', href: '/blog' },
 ] as const;
 
 export type LandingNavSectionId = (typeof LANDING_NAV_ITEMS)[number]['id'];

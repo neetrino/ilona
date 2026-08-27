@@ -9,7 +9,6 @@ import {
   scrollToLandingSection,
 } from '../landingScroll';
 
-const OBSERVER_ROOT_MARGIN = `-${LANDING_HEADER_SCROLL_OFFSET}px 0px -55% 0px`;
 const SCROLL_LOCK_MS = 900;
 
 function resolveActiveSection(sectionIds: readonly LandingNavSectionId[]): LandingNavSectionId {
@@ -36,6 +35,11 @@ export function useLandingActiveSection(
   const isProgrammaticScrollRef = useRef(false);
   const scrollLockTimerRef = useRef<number | undefined>(undefined);
   const suppressScrollSyncRef = useRef(true);
+  const activeSectionRef = useRef(activeSection);
+
+  useLayoutEffect(() => {
+    activeSectionRef.current = activeSection;
+  }, [activeSection]);
 
   useLayoutEffect(() => {
     if (!enabled) {
@@ -53,7 +57,10 @@ export function useLandingActiveSection(
 
     const enableScrollSync = () => {
       suppressScrollSyncRef.current = false;
-      setActiveSection(resolveActiveSection(sectionIds));
+      const next = resolveActiveSection(sectionIds);
+      if (next !== activeSectionRef.current) {
+        setActiveSection(next);
+      }
     };
 
     if (!document.documentElement.classList.contains(LANDING_SCROLL_RESTORE_PENDING_CLASS)) {
@@ -69,7 +76,7 @@ export function useLandingActiveSection(
 
   const scrollToSection = useCallback(
     (sectionId: LandingNavSectionId) => {
-      if (!sectionIds.includes(sectionId)) {
+      if (!enabled || !sectionIds.includes(sectionId)) {
         return;
       }
 
@@ -81,11 +88,8 @@ export function useLandingActiveSection(
       scrollLockTimerRef.current = window.setTimeout(() => {
         isProgrammaticScrollRef.current = false;
       }, SCROLL_LOCK_MS);
-
-      const nextUrl = `${window.location.pathname}${window.location.search}#${sectionId}`;
-      window.history.replaceState(null, '', nextUrl);
     },
-    [sectionIds],
+    [enabled, sectionIds],
   );
 
   useEffect(() => {
@@ -93,51 +97,36 @@ export function useLandingActiveSection(
       return;
     }
 
-    const elements = sectionIds
-      .map((id) => document.getElementById(id))
-      .filter((element): element is HTMLElement => element !== null);
+    let rafId = 0;
+    let scrollPending = false;
 
-    if (elements.length === 0) {
-      return;
-    }
+    const syncActiveSection = () => {
+      scrollPending = false;
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (isProgrammaticScrollRef.current || suppressScrollSyncRef.current) {
-          return;
-        }
-
-        const visibleEntries = entries
-          .filter((entry) => entry.isIntersecting)
-          .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
-
-        if (visibleEntries.length > 0) {
-          const nextSection = visibleEntries[0].target.id as LandingNavSectionId;
-          if (sectionIds.includes(nextSection)) {
-            setActiveSection(nextSection);
-          }
-          return;
-        }
-
-        setActiveSection(resolveActiveSection(sectionIds));
-      },
-      { rootMargin: OBSERVER_ROOT_MARGIN, threshold: [0, 0.15, 0.35, 0.55] },
-    );
-
-    elements.forEach((element) => observer.observe(element));
-
-    const handleScroll = () => {
       if (isProgrammaticScrollRef.current || suppressScrollSyncRef.current) {
         return;
       }
-      setActiveSection(resolveActiveSection(sectionIds));
+
+      const next = resolveActiveSection(sectionIds);
+      if (next !== activeSectionRef.current) {
+        setActiveSection(next);
+      }
     };
 
-    window.addEventListener('scroll', handleScroll, { passive: true });
+    const onScroll = () => {
+      if (scrollPending) {
+        return;
+      }
+
+      scrollPending = true;
+      rafId = window.requestAnimationFrame(syncActiveSection);
+    };
+
+    window.addEventListener('scroll', onScroll, { passive: true });
 
     return () => {
-      observer.disconnect();
-      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('scroll', onScroll);
+      window.cancelAnimationFrame(rafId);
       window.clearTimeout(scrollLockTimerRef.current);
     };
   }, [enabled, sectionIds]);

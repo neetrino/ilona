@@ -160,7 +160,7 @@ export function LandingHeroSection({ tr, isHy, onSectionNavigate }: LandingHeroS
       
           <motion.div {...heroCtaMotion} className="absolute left-3 right-3 top-[740px] z-20">
             <Link
-              href="#branches"
+              href="/"
               onClick={handleChooseBranch}
               className={cn(
                 'inline-flex h-[52px] w-full items-center justify-center rounded-[999px] border border-[#1447e6] bg-white/10 text-[14px] font-normal text-[#1548e6] backdrop-blur-md',
@@ -210,7 +210,7 @@ export function LandingHeroSection({ tr, isHy, onSectionNavigate }: LandingHeroS
       
           <motion.div {...heroCtaMotion} className="absolute left-[36px] top-[586px]">
             <Link
-              href="#branches"
+              href="/"
               onClick={handleChooseBranch}
               className={cn(
                 'inline-flex h-[60px] w-[199.055px] items-center justify-center rounded-[16777200px] border-2 border-[#1447e6] bg-[rgba(255,255,255,0.1)] text-[16px] font-normal tracking-[-0.3125px] text-[#1548e6]',
