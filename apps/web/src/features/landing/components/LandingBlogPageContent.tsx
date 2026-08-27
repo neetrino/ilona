@@ -32,7 +32,7 @@ export function LandingBlogPageContent() {
       <LandingNavbar logoUrl={logoUrl} profileHref={profileHref} logoHref="/" activeSection="blog" />
       <CanvasScaler className="min-h-screen">
         <section className="bg-[#f9fafb] pt-28">
-          <LandingBlogGrid tr={tr} />
+          <LandingBlogGrid tr={tr} sectionTitleTone="brand" />
         </section>
         <LandingFooter tr={tr} isHy={isHy} logoUrl={logoUrl} />
       </CanvasScaler>

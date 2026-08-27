@@ -49,7 +49,7 @@ export function LandingBlogPostPageContent({ slug }: LandingBlogPostPageContentP
       <LandingNavbar logoUrl={logoUrl} profileHref={profileHref} logoHref="/" activeSection="blog" />
       <CanvasScaler className="min-h-screen">
         <section className="bg-[#f9fafb] pt-28">
-          <article className="mx-auto w-full max-w-[800px] px-5 pb-16 pt-10 tablet:px-6 tablet:pb-24 tablet:pt-16">
+          <article className="mx-auto w-full max-w-[800px] px-5 pb-16 pt-4 tablet:px-6 tablet:pb-24 tablet:pt-6">
             <Link
               href="/blog"
               className="inline-flex items-center text-[14px] font-semibold leading-[21px] text-[#155dfc] transition-opacity hover:opacity-80 tablet:text-[16px]"
@@ -78,13 +78,13 @@ export function LandingBlogPostPageContent({ slug }: LandingBlogPostPageContentP
               />
             </div>
 
-            <div className="mt-6 inline-flex h-7 items-center rounded-full bg-white px-3 tablet:mt-8 tablet:h-[28px] tablet:px-4">
+            <div className="mt-6 inline-flex h-7 items-center rounded-full bg-[#ecf0f7] px-3 ring-1 ring-[#dbe2ee] tablet:mt-8 tablet:h-[28px] tablet:px-4">
               <span className={cn('text-[12px] font-bold leading-[18px] tablet:text-[14px] tablet:leading-[20px]', post.dateColor)}>
                 {date}
               </span>
             </div>
 
-            <h1 className="mt-4 text-[28px] font-extrabold leading-[36px] tracking-[0.2px] text-[#0a0a0a] tablet:mt-6 tablet:text-[40px] tablet:leading-[48px]">
+            <h1 className="mt-4 text-[28px] font-extrabold leading-[36px] tracking-[0.2px] text-[#093394] tablet:mt-6 tablet:text-[40px] tablet:leading-[48px]">
               {title}
             </h1>
 
