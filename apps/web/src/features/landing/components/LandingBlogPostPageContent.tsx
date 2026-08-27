@@ -1,0 +1,108 @@
+'use client';
+
+import dynamic from 'next/dynamic';
+import Link from 'next/link';
+import Image from 'next/image';
+import { notFound } from 'next/navigation';
+import { useAuthStore, getPortalEntryPath } from '@/features/auth/store/auth.store';
+import { useLogo } from '@/features/settings/hooks/useSettings';
+import { getFullApiUrl } from '@/shared/lib/api';
+import { LandingNavbar } from '@/shared/components/layout/LandingNavbar';
+import { LandingCanvasScaleRuntime } from '@/shared/components/layout/LandingCanvasScaleInit';
+import { CanvasScaler } from '@/shared/components/layout/CanvasScaler';
+import { cn } from '@/shared/lib/utils';
+import { useLandingTr } from '../hooks/useLandingTr';
+import { getLandingBlogPost } from '../landingBlogContent';
+import { LandingSectionPlaceholder } from './LandingSectionPlaceholder';
+
+const LandingFooter = dynamic(
+  () =>
+    import('./LandingFooter').then((module) => ({
+      default: module.LandingFooter,
+    })),
+  { loading: () => <LandingSectionPlaceholder className="min-h-[280px] bg-black" /> },
+);
+
+type LandingBlogPostPageContentProps = {
+  slug: string;
+};
+
+export function LandingBlogPostPageContent({ slug }: LandingBlogPostPageContentProps) {
+  const { tr, isHy } = useLandingTr();
+  const { isAuthenticated, user } = useAuthStore();
+  const { data: logoData } = useLogo();
+  const logoUrl = getFullApiUrl(logoData?.logoUrl) || '/logo.webp';
+  const profileHref = isAuthenticated && user ? getPortalEntryPath(user.role) : '/login';
+  const post = getLandingBlogPost(slug);
+
+  if (!post) {
+    notFound();
+  }
+
+  const title = tr(post.titleEn, post.titleHy);
+  const date = tr(post.dateEn, post.dateHy);
+  const paragraphs = isHy ? post.bodyHy : post.bodyEn;
+
+  return (
+    <>
+      <LandingCanvasScaleRuntime />
+      <LandingNavbar logoUrl={logoUrl} profileHref={profileHref} logoHref="/" activeSection="blog" />
+      <CanvasScaler className="min-h-screen">
+        <section className="bg-[#f9fafb] pt-28">
+          <article className="mx-auto w-full max-w-[800px] px-5 pb-16 pt-10 tablet:px-6 tablet:pb-24 tablet:pt-16">
+            <Link
+              href="/blog"
+              className="inline-flex items-center text-[14px] font-semibold leading-[21px] text-[#155dfc] transition-opacity hover:opacity-80 tablet:text-[16px]"
+            >
+              {tr('← Back to blog', '← Վերադառնալ բլոգ')}
+            </Link>
+
+            <div className="relative mt-8 h-[220px] w-full overflow-hidden rounded-[28px] tablet:mt-10 tablet:h-[360px] tablet:rounded-[32px]">
+              <Image
+                src={post.image}
+                alt=""
+                fill
+                unoptimized
+                priority
+                sizes="(max-width: 800px) 100vw, 800px"
+                className={cn('object-cover', post.imageClassName)}
+              />
+              <Image
+                src={post.overlay}
+                alt=""
+                fill
+                unoptimized
+                priority
+                sizes="(max-width: 800px) 100vw, 800px"
+                className={post.imageClassName ?? 'object-cover'}
+              />
+            </div>
+
+            <div className="mt-6 inline-flex h-7 items-center rounded-full bg-white px-3 tablet:mt-8 tablet:h-[28px] tablet:px-4">
+              <span className={cn('text-[12px] font-bold leading-[18px] tablet:text-[14px] tablet:leading-[20px]', post.dateColor)}>
+                {date}
+              </span>
+            </div>
+
+            <h1 className="mt-4 text-[28px] font-extrabold leading-[36px] tracking-[0.2px] text-[#0a0a0a] tablet:mt-6 tablet:text-[40px] tablet:leading-[48px]">
+              {title}
+            </h1>
+
+            <div className="mt-6 flex flex-col gap-4 tablet:mt-8 tablet:gap-5">
+              {paragraphs.map((paragraph, index) => (
+                <p
+                  key={index}
+                  className="text-[15px] leading-[24px] tracking-[-0.2px] text-[#4a5565] tablet:text-[18px] tablet:leading-[28px]"
+                >
+                  {paragraph}
+                </p>
+              ))}
+            </div>
+          </article>
+        </section>
+
+        <LandingFooter tr={tr} isHy={isHy} logoUrl={logoUrl} />
+      </CanvasScaler>
+    </>
+  );
+}

@@ -82,9 +82,16 @@ export function LandingNavbar({
   const prefersReducedMotion = useReducedMotion();
   const isOnLoginPage = pathname.endsWith('/login');
   const isOnHomePage = pathname === '/';
+  const isOnBlogPage = pathname === '/blog' || pathname.startsWith('/blog/');
   const isHomeAnchorLogo = logoHref.startsWith('#');
 
-  const getNavHref = (href: string) => (isOnHomePage ? href : `/${href}`);
+  const getNavHref = (href: string) => {
+    if (href.startsWith('/')) {
+      return href;
+    }
+
+    return isOnHomePage ? href : `/${href}`;
+  };
 
   useEffect(() => {
     if (!menuOpen) {
@@ -140,8 +147,13 @@ export function LandingNavbar({
   const handleNavClick = (
     event: ReactMouseEvent<HTMLAnchorElement>,
     sectionId: LandingNavSectionId,
+    href: string,
   ) => {
     setMenuOpen(false);
+
+    if (href.startsWith('/')) {
+      return;
+    }
 
     if (!isOnHomePage) {
       return;
@@ -152,7 +164,7 @@ export function LandingNavbar({
   };
 
   const getNavLinkClassName = (sectionId: LandingNavSectionId, variant: 'desktop' | 'mobile') => {
-    const isActive = activeSection === sectionId;
+    const isActive = activeSection === sectionId || (sectionId === 'blog' && isOnBlogPage);
 
     if (variant === 'mobile') {
       return cn(
@@ -204,8 +216,8 @@ export function LandingNavbar({
                   <Link
                     key={item.id}
                     href={getNavHref(item.href)}
-                    onClick={(event) => handleNavClick(event, item.id)}
-                    aria-current={activeSection === item.id ? 'page' : undefined}
+                    onClick={(event) => handleNavClick(event, item.id, item.href)}
+                    aria-current={activeSection === item.id || (item.id === 'blog' && isOnBlogPage) ? 'page' : undefined}
                     className={getNavLinkClassName(item.id, 'desktop')}
                   >
                     {t(item.id)}
@@ -284,7 +296,7 @@ export function LandingNavbar({
                   <li key={item.id}>
                     <Link
                       href={getNavHref(item.href)}
-                      onClick={(event) => handleNavClick(event, item.id)}
+                      onClick={(event) => handleNavClick(event, item.id, item.href)}
                       aria-current={activeSection === item.id ? 'page' : undefined}
                       className={getNavLinkClassName(item.id, 'mobile')}
                     >
