@@ -12,7 +12,10 @@ import {
 import { AutoDismissToast } from '@/shared/components/ui';
 import { getBlogPostCoverUrl } from '@/features/landing/landingBlogContent';
 import { LatestNewsFormSheet } from './LatestNewsFormSheet';
-import { LatestNewsPostsSection } from './LatestNewsPostsSection';
+import {
+  LatestNewsPostsSection,
+  type LatestNewsViewMode,
+} from './LatestNewsPostsSection';
 import { LatestNewsPublishConfirmDialog } from './LatestNewsPublishConfirmDialog';
 import {
   EMPTY_LATEST_NEWS_FORM,
@@ -46,6 +49,17 @@ export function LatestNewsPageContent() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [publishConfirm, setPublishConfirm] = useState<PublishConfirmState | null>(null);
+  const [viewMode, setViewMode] = useState<LatestNewsViewMode>('active');
+
+  const activePosts = useMemo(
+    () => posts.filter((post) => post.isPublished),
+    [posts],
+  );
+  const archivedPosts = useMemo(
+    () => posts.filter((post) => !post.isPublished),
+    [posts],
+  );
+  const visiblePosts = viewMode === 'archive' ? archivedPosts : activePosts;
 
   const editingPost = useMemo(
     () => posts.find((post) => post.id === editingId) ?? null,
@@ -185,7 +199,10 @@ export function LatestNewsPageContent() {
         setForm((prev) => ({ ...prev, isPublished }));
       }
       setPublishConfirm(null);
-      setSuccessMessage(t('latestNewsUpdatedSuccess'));
+      setViewMode('active');
+      setSuccessMessage(
+        isPublished ? t('latestNewsRestoredSuccess') : t('latestNewsArchivedSuccess'),
+      );
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : t('latestNewsSaveFailed'));
     }
@@ -222,24 +239,35 @@ export function LatestNewsPageContent() {
       ) : null}
 
       <LatestNewsPostsSection
-        posts={posts}
+        posts={visiblePosts}
         isLoading={isLoading}
         isPending={isPending}
         isHy={isHy}
         selectedId={isFormOpen ? editingId : null}
-        title={t('latestNewsTitle')}
-        description={t('latestNewsDescription')}
+        viewMode={viewMode}
+        archiveCount={archivedPosts.length}
+        title={viewMode === 'archive' ? t('latestNewsArchiveTitle') : t('latestNewsTitle')}
+        description={
+          viewMode === 'archive'
+            ? t('latestNewsArchiveDescription')
+            : t('latestNewsDescription')
+        }
         loadingLabel={t('loading')}
-        emptyLabel={t('latestNewsEmpty')}
-        draftLabel={t('latestNewsDraft')}
+        emptyLabel={
+          viewMode === 'archive' ? t('latestNewsArchiveEmpty') : t('latestNewsEmpty')
+        }
+        draftLabel={t('latestNewsArchivedBadge')}
         publishedLabel={t('latestNewsPublished')}
         editHintLabel={t('latestNewsEdit')}
         removeLabel={t('remove')}
         createLabel={t('latestNewsCreatePost')}
+        archiveLabel={t('latestNewsArchive')}
+        backToActiveLabel={t('latestNewsBackToActive')}
         onCreate={handleCreate}
         onSelect={handleEdit}
         onDelete={(post) => void handleDelete(post)}
         onTogglePublished={requestTogglePublished}
+        onViewModeChange={setViewMode}
       />
 
       <LatestNewsPublishConfirmDialog
