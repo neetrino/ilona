@@ -74,17 +74,6 @@ export function LatestNewsAdminCard({
               view.imageClassName ?? 'object-cover',
             )}
           />
-          {view.overlay ? (
-            <Image
-              src={view.overlay}
-              alt=""
-              fill
-              unoptimized
-              loading="lazy"
-              sizes="(max-width: 743px) 100vw, 384px"
-              className={view.imageClassName ?? 'object-cover'}
-            />
-          ) : null}
           {!post.isPublished ? (
             <span className="absolute left-3 top-3 rounded-full bg-white/95 px-3 py-1 text-xs font-semibold text-[#8b8b90]">
               {draftLabel}

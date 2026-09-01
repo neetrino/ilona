@@ -29,7 +29,6 @@ function localizePost(post: LandingBlogPostView, tr: LandingTr, isHy: boolean) {
   return {
     slug: post.slug,
     image: post.image,
-    overlay: post.overlay,
     date: formatLandingBlogDate(post.publishedAt, isHy),
     dateColor: post.dateColor,
     title: tr(post.titleEn, post.titleHy),
@@ -74,17 +73,6 @@ export function LandingBlogCard({ post, tr, variant, isHy }: LandingBlogCardProp
               article.imageClassName ?? 'object-cover',
             )}
           />
-          {article.overlay ? (
-            <Image
-              src={article.overlay}
-              alt=""
-              fill
-              unoptimized
-              loading="lazy"
-              sizes={isMobile ? '(max-width: 743px) 100vw, 384px' : '(max-width: 1200px) 100vw, 384px'}
-              className={article.imageClassName ?? 'object-cover'}
-            />
-          ) : null}
         </div>
 
         <div className={cn('flex flex-1 flex-col', isMobile ? 'px-5 pb-5 pt-5' : 'px-8 pb-8 pt-8')}>

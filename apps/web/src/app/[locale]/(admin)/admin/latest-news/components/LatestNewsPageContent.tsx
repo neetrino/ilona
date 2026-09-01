@@ -9,6 +9,7 @@ import {
   useDeleteBlogPost,
   useUpdateBlogPost,
 } from '@/features/blog';
+import { getBlogPostCoverUrl } from '@/features/landing/landingBlogContent';
 import { LatestNewsFormSheet } from './LatestNewsFormSheet';
 import { LatestNewsPostsSection } from './LatestNewsPostsSection';
 import {
@@ -195,7 +196,7 @@ export function LatestNewsPageContent() {
         editingId={editingId}
         form={form}
         imageFile={imageFile}
-        currentImageUrl={editingPost?.imageUrl ?? null}
+        currentImageUrl={editingPost ? getBlogPostCoverUrl(editingPost) : null}
         isPending={isPending}
         errorMessage={errorMessage}
         labels={{

@@ -92,17 +92,6 @@ export function LandingBlogPostPageContent({ slug }: LandingBlogPostPageContentP
                     sizes="(max-width: 800px) 100vw, 800px"
                     className={cn('object-cover', post.imageClassName)}
                   />
-                  {post.overlay ? (
-                    <Image
-                      src={post.overlay}
-                      alt=""
-                      fill
-                      unoptimized
-                      priority
-                      sizes="(max-width: 800px) 100vw, 800px"
-                      className={post.imageClassName ?? 'object-cover'}
-                    />
-                  ) : null}
                 </div>
 
                 <div className="mt-6 inline-flex h-7 items-center rounded-full bg-[#ecf0f7] px-3 ring-1 ring-[#dbe2ee] tablet:mt-8 tablet:h-[28px] tablet:px-4">

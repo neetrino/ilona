@@ -4,7 +4,6 @@ import { getFullApiUrl } from '@/shared/lib/api-url-utils';
 export type LandingBlogPostView = {
   slug: string;
   image: string;
-  overlay: string | null;
   dateColor: string;
   titleEn: string;
   titleHy: string;
@@ -27,14 +26,21 @@ export function formatLandingBlogDate(isoDate: string, isHy: boolean): string {
   }).format(date);
 }
 
+/**
+ * Seeded Figma posts store a base `imageUrl` plus an opaque `overlayUrl`.
+ * The overlay is the real cover visitors should see; admin "Cover image" must match.
+ */
+export function getBlogPostCoverUrl(post: Pick<BlogPostDto, 'imageUrl' | 'overlayUrl'>): string {
+  return post.overlayUrl ?? post.imageUrl;
+}
+
 export function mapBlogPostToLandingView(post: BlogPostDto): LandingBlogPostView {
-  const image = getFullApiUrl(post.imageUrl) ?? post.imageUrl;
-  const overlay = post.overlayUrl ? getFullApiUrl(post.overlayUrl) ?? post.overlayUrl : null;
+  const coverUrl = getBlogPostCoverUrl(post);
+  const image = getFullApiUrl(coverUrl) ?? coverUrl;
 
   return {
     slug: post.slug,
     image,
-    overlay,
     dateColor: post.dateColor,
     titleEn: post.titleEn,
     titleHy: post.titleHy,
