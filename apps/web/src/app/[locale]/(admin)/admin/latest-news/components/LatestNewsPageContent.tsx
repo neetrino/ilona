@@ -32,6 +32,7 @@ export function LatestNewsPageContent() {
   const deleteMutation = useDeleteBlogPost();
 
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [isFormOpen, setIsFormOpen] = useState(false);
   const [form, setForm] = useState<LatestNewsFormState>(EMPTY_LATEST_NEWS_FORM);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -49,27 +50,33 @@ export function LatestNewsPageContent() {
     }
   }, [editingPost]);
 
-  const isPending =
-    createMutation.isPending || updateMutation.isPending || deleteMutation.isPending;
-
-  const scrollToForm = () => {
+  useEffect(() => {
+    if (!isFormOpen) return;
     requestAnimationFrame(() => {
       formSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
-  };
+  }, [isFormOpen, editingId]);
 
-  const resetForm = () => {
+  const isPending =
+    createMutation.isPending || updateMutation.isPending || deleteMutation.isPending;
+
+  const closeForm = () => {
+    setIsFormOpen(false);
     setEditingId(null);
     setForm(EMPTY_LATEST_NEWS_FORM);
     setImageFile(null);
+    setErrorMessage(null);
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   const handleCreate = () => {
-    resetForm();
+    setEditingId(null);
+    setForm(EMPTY_LATEST_NEWS_FORM);
+    setImageFile(null);
+    if (fileInputRef.current) fileInputRef.current.value = '';
     setErrorMessage(null);
     setSuccessMessage(null);
-    scrollToForm();
+    setIsFormOpen(true);
   };
 
   const handleFileSelect = (file: File) => {
@@ -136,7 +143,7 @@ export function LatestNewsPageContent() {
         });
         setSuccessMessage(t('latestNewsCreatedSuccess'));
       }
-      resetForm();
+      closeForm();
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : t('latestNewsSaveFailed'));
     }
@@ -146,7 +153,7 @@ export function LatestNewsPageContent() {
     setErrorMessage(null);
     setSuccessMessage(null);
     setEditingId(post.id);
-    scrollToForm();
+    setIsFormOpen(true);
   };
 
   const handleDelete = async (post: BlogPostDto) => {
@@ -157,7 +164,7 @@ export function LatestNewsPageContent() {
     setSuccessMessage(null);
     try {
       await deleteMutation.mutateAsync(post.id);
-      if (editingId === post.id) resetForm();
+      if (editingId === post.id) closeForm();
       setSuccessMessage(t('latestNewsDeletedSuccess'));
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : t('latestNewsDeleteFailed'));
@@ -166,12 +173,18 @@ export function LatestNewsPageContent() {
 
   return (
     <div className="space-y-6 tablet:space-y-8">
+      {successMessage && !isFormOpen ? (
+        <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700">
+          {successMessage}
+        </div>
+      ) : null}
+
       <LatestNewsPostsSection
         posts={posts}
         isLoading={isLoading}
         isPending={isPending}
         isHy={isHy}
-        selectedId={editingId}
+        selectedId={isFormOpen ? editingId : null}
         title={t('latestNewsTitle')}
         description={t('latestNewsDescription')}
         loadingLabel={t('loading')}
@@ -185,42 +198,44 @@ export function LatestNewsPageContent() {
         onDelete={(post) => void handleDelete(post)}
       />
 
-      <LatestNewsFormPanel
-        editingId={editingId}
-        form={form}
-        imageFile={imageFile}
-        currentImageUrl={editingPost?.imageUrl ?? null}
-        isPending={isPending}
-        errorMessage={errorMessage}
-        successMessage={successMessage}
-        labels={{
-          createTitle: t('latestNewsCreatePost'),
-          editTitle: t('latestNewsEditPost'),
-          cancelEdit: t('latestNewsCancelEdit'),
-          titleEn: t('latestNewsTitleEn'),
-          titleHy: t('latestNewsTitleHy'),
-          titleEnPlaceholder: t('latestNewsTitleEnPlaceholder'),
-          titleHyPlaceholder: t('latestNewsTitleHyPlaceholder'),
-          bodyEn: t('latestNewsBodyEn'),
-          bodyHy: t('latestNewsBodyHy'),
-          bodyHint: t('latestNewsBodyHint'),
-          publishedAt: t('latestNewsPublishedAt'),
-          published: t('latestNewsPublished'),
-          image: t('latestNewsImage'),
-          formats: t('imageFormats'),
-          chooseImage: t('latestNewsChooseImage'),
-          changeImage: t('latestNewsChangeImage'),
-          keepCurrentImage: t('latestNewsKeepCurrentImage'),
-          save: t('saveChanges'),
-          saving: t('saving'),
-        }}
-        fileInputRef={fileInputRef}
-        formSectionRef={formSectionRef}
-        onChange={setForm}
-        onFileSelect={handleFileSelect}
-        onCancel={resetForm}
-        onSave={() => void handleSave()}
-      />
+      {isFormOpen ? (
+        <LatestNewsFormPanel
+          editingId={editingId}
+          form={form}
+          imageFile={imageFile}
+          currentImageUrl={editingPost?.imageUrl ?? null}
+          isPending={isPending}
+          errorMessage={errorMessage}
+          successMessage={null}
+          labels={{
+            createTitle: t('latestNewsCreatePost'),
+            editTitle: t('latestNewsEditPost'),
+            cancelEdit: t('latestNewsCancelEdit'),
+            titleEn: t('latestNewsTitleEn'),
+            titleHy: t('latestNewsTitleHy'),
+            titleEnPlaceholder: t('latestNewsTitleEnPlaceholder'),
+            titleHyPlaceholder: t('latestNewsTitleHyPlaceholder'),
+            bodyEn: t('latestNewsBodyEn'),
+            bodyHy: t('latestNewsBodyHy'),
+            bodyHint: t('latestNewsBodyHint'),
+            publishedAt: t('latestNewsPublishedAt'),
+            published: t('latestNewsPublished'),
+            image: t('latestNewsImage'),
+            formats: t('imageFormats'),
+            chooseImage: t('latestNewsChooseImage'),
+            changeImage: t('latestNewsChangeImage'),
+            keepCurrentImage: t('latestNewsKeepCurrentImage'),
+            save: t('saveChanges'),
+            saving: t('saving'),
+          }}
+          fileInputRef={fileInputRef}
+          formSectionRef={formSectionRef}
+          onChange={setForm}
+          onFileSelect={handleFileSelect}
+          onCancel={closeForm}
+          onSave={() => void handleSave()}
+        />
+      ) : null}
     </div>
   );
 }

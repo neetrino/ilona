@@ -68,7 +68,7 @@ export function LatestNewsFormPanel({
       ref={formSectionRef}
       className="overflow-hidden rounded-3xl border border-[rgba(14,14,16,0.07)] bg-white shadow-[0_12px_40px_rgba(16,16,163,0.04)]"
     >
-      <div className="flex items-center justify-between gap-3 border-b border-[rgba(14,14,16,0.06)] bg-gradient-to-r from-[#f5f6ff] via-white to-[#f8fafc] px-6 py-5 tablet:px-8">
+        <div className="flex items-center justify-between gap-3 border-b border-[rgba(14,14,16,0.06)] bg-gradient-to-r from-[#f5f6ff] via-white to-[#f8fafc] px-6 py-5 tablet:px-8">
         <div className="flex items-center gap-3">
           <span
             className={cn(
@@ -81,11 +81,9 @@ export function LatestNewsFormPanel({
             {editingId ? labels.editTitle : labels.createTitle}
           </span>
         </div>
-        {editingId ? (
-          <Button type="button" variant="outline" size="sm" onClick={onCancel} disabled={isPending}>
-            {labels.cancelEdit}
-          </Button>
-        ) : null}
+        <Button type="button" variant="outline" size="sm" onClick={onCancel} disabled={isPending}>
+          {labels.cancelEdit}
+        </Button>
       </div>
 
       <div className="space-y-6 p-6 tablet:p-8">
