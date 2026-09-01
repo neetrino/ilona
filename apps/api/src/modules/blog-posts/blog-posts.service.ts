@@ -225,10 +225,9 @@ export class BlogPostsService {
 
   private async ensureUniqueSlug(candidate: string, excludeId?: string): Promise<string> {
     const base = slugifyBlogTitle(candidate);
-    let slug = base;
-    let suffix = 2;
 
-    while (true) {
+    for (let attempt = 0; attempt < 100; attempt += 1) {
+      const slug = attempt === 0 ? base : `${base}-${attempt + 1}`;
       const existing = await this.prisma.blogPost.findUnique({
         where: { slug },
         select: { id: true },
@@ -236,12 +235,9 @@ export class BlogPostsService {
       if (!existing || existing.id === excludeId) {
         return slug;
       }
-      slug = `${base}-${suffix}`;
-      suffix += 1;
-      if (suffix > 100) {
-        throw new ConflictException('Unable to generate a unique slug');
-      }
     }
+
+    throw new ConflictException('Unable to generate a unique slug');
   }
 
   private async safeDeleteStorage(key: string): Promise<void> {

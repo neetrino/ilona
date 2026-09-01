@@ -81,7 +81,9 @@ export class UpdateBlogPostDto {
   sortOrder?: number;
 
   @IsOptional()
-  @Transform(({ obj }) => parseFormBoolean(obj.isPublished))
+  @Transform(({ obj }) =>
+    parseFormBoolean((obj as Record<string, unknown>).isPublished),
+  )
   @IsBoolean()
   isPublished?: boolean;
 }
