@@ -40,7 +40,8 @@ export function LatestNewsPostsList({
   return (
     <ul className="space-y-3">
       {posts.map((post) => {
-        const imageSrc = getFullApiUrl(post.imageUrl);
+        // Prefer overlay when present — Home/Blog cards stack overlay on top of the base image.
+        const imageSrc = getFullApiUrl(post.overlayUrl ?? post.imageUrl);
         return (
           <li
             key={post.id}
