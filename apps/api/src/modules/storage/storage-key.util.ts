@@ -1,4 +1,4 @@
-export const STORAGE_KEY_PREFIXES = ['avatars', 'chat', 'documents', 'settings'] as const;
+export const STORAGE_KEY_PREFIXES = ['avatars', 'chat', 'documents', 'settings', 'cv-applications'] as const;
 
 export const PROXY_STORAGE_KEY_PREFIXES = ['chat', 'avatars', 'documents'] as const;
 

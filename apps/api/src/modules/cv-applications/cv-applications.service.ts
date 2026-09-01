@@ -6,14 +6,18 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { EmailService } from '../notifications/email.service';
+import { StorageService } from '../storage/storage.service';
 import {
   buildCvApplicationEmailHtml,
   buildCvApplicationEmailText,
+  type CvApplicationEmailFile,
 } from './cv-application-email.template';
 import type { SubmitCvApplicationDto } from './dto/submit-cv-application.dto';
 
 const CV_MAX_BYTES = 5 * 1024 * 1024;
 const CV_MAX_FILES = 2;
+/** Longest practical signed URL lifetime for S3-compatible storage (7 days). */
+const CV_DOWNLOAD_URL_TTL_SEC = 7 * 24 * 60 * 60;
 const CV_MIME_TYPES = new Set([
   'application/pdf',
   'application/msword',
@@ -46,6 +50,7 @@ export class CvApplicationsService {
   constructor(
     private readonly emailService: EmailService,
     private readonly configService: ConfigService,
+    private readonly storageService: StorageService,
   ) {}
 
   async submit(
@@ -72,15 +77,15 @@ export class CvApplicationsService {
       throw new InternalServerErrorException('Application email is not configured.');
     }
 
+    const emailFiles = await this.uploadCvFiles(cvFiles);
     const fullName = `${dto.firstName} ${dto.lastName}`.trim();
     const message = dto.message?.trim() || '—';
-    const fileNames = cvFiles.map((file) => file.originalname);
     const emailPayload = {
       fullName,
       email: dto.email,
       phone: dto.phone,
       message,
-      fileNames,
+      files: emailFiles,
     };
 
     const sent = await this.emailService.send({
@@ -101,5 +106,45 @@ export class CvApplicationsService {
     }
 
     return { ok: true };
+  }
+
+  private async uploadCvFiles(files: Express.Multer.File[]): Promise<CvApplicationEmailFile[]> {
+    const uploaded: CvApplicationEmailFile[] = [];
+
+    for (const file of files) {
+      try {
+        const result = await this.storageService.upload(
+          file.buffer,
+          file.originalname,
+          file.mimetype || 'application/octet-stream',
+          'cv-applications',
+        );
+
+        let url = result.url;
+        try {
+          url = await this.storageService.getPresignedDownloadUrl(
+            result.key,
+            CV_DOWNLOAD_URL_TTL_SEC,
+          );
+        } catch (error) {
+          this.logger.warn(
+            `Using public CV URL for ${file.originalname}: ${
+              error instanceof Error ? error.message : String(error)
+            }`,
+          );
+        }
+
+        uploaded.push({ name: file.originalname, url });
+      } catch (error) {
+        this.logger.error(
+          `Failed to store CV file ${file.originalname}: ${
+            error instanceof Error ? error.message : String(error)
+          }`,
+        );
+        throw new InternalServerErrorException('Failed to store CV file. Please try again later.');
+      }
+    }
+
+    return uploaded;
   }
 }

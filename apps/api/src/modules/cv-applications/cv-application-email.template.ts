@@ -7,37 +7,55 @@ function escapeHtml(value: string): string {
     .replaceAll("'", '&#39;');
 }
 
+export type CvApplicationEmailFile = {
+  name: string;
+  url: string;
+};
+
 export type CvApplicationEmailPayload = {
   fullName: string;
   email: string;
   phone: string;
   message: string;
-  fileNames: string[];
+  files: CvApplicationEmailFile[];
 };
 
-function fileRowsHtml(fileNames: string[]): string {
-  return fileNames
-    .map(
-      (name) => `
+function fileRowsHtml(files: CvApplicationEmailFile[]): string {
+  return files
+    .map((file) => {
+      const safeName = escapeHtml(file.name);
+      const safeUrl = escapeHtml(file.url);
+      return `
         <tr>
-          <td style="padding: 10px 14px; border: 1px solid #e5e7eb; border-radius: 10px; background: #fafafa;">
-            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
-              <tr>
-                <td width="28" valign="middle" style="padding-right: 10px;">
-                  <div style="width: 28px; height: 28px; border-radius: 8px; background: #fee2e2; color: #fb2c36; text-align: center; line-height: 28px; font-family: Arial, Helvetica, sans-serif; font-size: 11px; font-weight: 700;">
-                    CV
-                  </div>
-                </td>
-                <td valign="middle" style="font-family: Arial, Helvetica, sans-serif; font-size: 14px; line-height: 20px; color: #101828; font-weight: 600;">
-                  ${escapeHtml(name)}
-                </td>
-              </tr>
-            </table>
+          <td style="padding: 0;">
+            <a href="${safeUrl}" target="_blank" style="display: block; text-decoration: none; color: inherit;">
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="border: 1px solid #e5e7eb; border-radius: 10px; background: #fafafa;">
+                <tr>
+                  <td style="padding: 10px 14px;">
+                    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+                      <tr>
+                        <td width="28" valign="middle" style="padding-right: 10px;">
+                          <div style="width: 28px; height: 28px; border-radius: 8px; background: #fee2e2; color: #fb2c36; text-align: center; line-height: 28px; font-family: Arial, Helvetica, sans-serif; font-size: 11px; font-weight: 700;">
+                            CV
+                          </div>
+                        </td>
+                        <td valign="middle" style="font-family: Arial, Helvetica, sans-serif; font-size: 14px; line-height: 20px; color: #1b3ba4; font-weight: 600; text-decoration: underline;">
+                          ${safeName}
+                        </td>
+                        <td width="72" valign="middle" align="right" style="font-family: Arial, Helvetica, sans-serif; font-size: 12px; line-height: 18px; color: #1b3ba4; font-weight: 600;">
+                          Open →
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+            </a>
           </td>
         </tr>
         <tr><td style="height: 8px; font-size: 0; line-height: 0;">&nbsp;</td></tr>
-      `,
-    )
+      `;
+    })
     .join('');
 }
 
@@ -136,13 +154,13 @@ export function buildCvApplicationEmailHtml(payload: CvApplicationEmailPayload):
           <tr>
             <td style="padding: 0 32px 28px 32px;">
               <div style="font-family: Arial, Helvetica, sans-serif; font-size: 12px; line-height: 16px; letter-spacing: 0.04em; text-transform: uppercase; color: #6a7282; margin-bottom: 10px;">
-                Attached CV files (${payload.fileNames.length})
+                Attached CV files (${payload.files.length})
               </div>
               <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
-                ${fileRowsHtml(payload.fileNames)}
+                ${fileRowsHtml(payload.files)}
               </table>
               <div style="font-family: Arial, Helvetica, sans-serif; font-size: 13px; line-height: 18px; color: #6a7282; margin-top: 4px;">
-                Files are attached to this email.
+                Click a file to open it. Copies are also attached to this email.
               </div>
             </td>
           </tr>
@@ -175,6 +193,7 @@ export function buildCvApplicationEmailText(payload: CvApplicationEmailPayload):
     'Cover letter:',
     payload.message,
     '',
-    `CV files: ${payload.fileNames.join(', ')}`,
+    'CV files:',
+    ...payload.files.map((file) => `- ${file.name}: ${file.url}`),
   ].join('\n');
 }
