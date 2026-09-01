@@ -12,6 +12,7 @@ import {
 import { getBlogPostCoverUrl } from '@/features/landing/landingBlogContent';
 import { LatestNewsFormSheet } from './LatestNewsFormSheet';
 import { LatestNewsPostsSection } from './LatestNewsPostsSection';
+import { LatestNewsPublishConfirmDialog } from './LatestNewsPublishConfirmDialog';
 import {
   EMPTY_LATEST_NEWS_FORM,
   LATEST_NEWS_ALLOWED_TYPES,
@@ -21,8 +22,14 @@ import {
   type LatestNewsFormState,
 } from '../../settings/components/latestNewsForm.utils';
 
+type PublishConfirmState = {
+  post: BlogPostDto;
+  nextIsPublished: boolean;
+};
+
 export function LatestNewsPageContent() {
   const t = useTranslations('settings');
+  const tCommon = useTranslations('common');
   const locale = useLocale();
   const isHy = locale === 'hy';
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -37,6 +44,7 @@ export function LatestNewsPageContent() {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [publishConfirm, setPublishConfirm] = useState<PublishConfirmState | null>(null);
 
   const editingPost = useMemo(
     () => posts.find((post) => post.id === editingId) ?? null,
@@ -175,11 +183,25 @@ export function LatestNewsPageContent() {
       if (editingId === post.id) {
         setForm((prev) => ({ ...prev, isPublished }));
       }
+      setPublishConfirm(null);
       setSuccessMessage(t('latestNewsUpdatedSuccess'));
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : t('latestNewsSaveFailed'));
     }
   };
+
+  const requestTogglePublished = (post: BlogPostDto, nextIsPublished: boolean) => {
+    setErrorMessage(null);
+    setSuccessMessage(null);
+    setPublishConfirm({ post, nextIsPublished });
+  };
+
+  const publishConfirmTitle = publishConfirm
+    ? isHy
+      ? publishConfirm.post.titleHy
+      : publishConfirm.post.titleEn
+    : '';
+  const isPublishingConfirm = publishConfirm?.nextIsPublished === true;
 
   return (
     <div className="space-y-6 tablet:space-y-8">
@@ -207,7 +229,36 @@ export function LatestNewsPageContent() {
         onCreate={handleCreate}
         onSelect={handleEdit}
         onDelete={(post) => void handleDelete(post)}
-        onTogglePublished={(post, isPublished) => void handleTogglePublished(post, isPublished)}
+        onTogglePublished={requestTogglePublished}
+      />
+
+      <LatestNewsPublishConfirmDialog
+        open={publishConfirm != null}
+        isPublishing={isPublishingConfirm}
+        isPending={updateMutation.isPending}
+        title={
+          isPublishingConfirm
+            ? t('latestNewsPublishConfirmTitle')
+            : t('latestNewsUnpublishConfirmTitle')
+        }
+        description={
+          isPublishingConfirm
+            ? t('latestNewsPublishConfirmDescription', { title: publishConfirmTitle })
+            : t('latestNewsUnpublishConfirmDescription', { title: publishConfirmTitle })
+        }
+        confirmLabel={
+          isPublishingConfirm
+            ? t('latestNewsPublishConfirmAction')
+            : t('latestNewsUnpublishConfirmAction')
+        }
+        cancelLabel={tCommon('cancel')}
+        onOpenChange={(open) => {
+          if (!open && !updateMutation.isPending) setPublishConfirm(null);
+        }}
+        onConfirm={() => {
+          if (!publishConfirm) return;
+          void handleTogglePublished(publishConfirm.post, publishConfirm.nextIsPublished);
+        }}
       />
 
       <LatestNewsFormSheet

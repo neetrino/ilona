@@ -128,23 +128,29 @@ export function LatestNewsAdminCard({
           <Pencil className="size-4" aria-hidden="true" />
         </button>
 
-        <label
-          className={cn(
-            'relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center',
-            isPending && 'cursor-not-allowed opacity-60',
-          )}
+        <button
+          type="button"
+          role="switch"
+          aria-checked={post.isPublished}
+          aria-label={publishedLabel}
           title={publishedLabel}
+          disabled={isPending}
+          onClick={() => onTogglePublished(post, !post.isPublished)}
+          className={cn(
+            'relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors duration-200 ease-out',
+            'focus:outline-none focus:ring-2 focus:ring-[#1010a3]/25 focus:ring-offset-1',
+            'disabled:cursor-not-allowed disabled:opacity-60',
+            post.isPublished ? 'bg-[#1010a3]' : 'bg-slate-300',
+          )}
         >
-          <input
-            type="checkbox"
-            checked={post.isPublished}
-            disabled={isPending}
-            onChange={(event) => onTogglePublished(post, event.target.checked)}
-            className="peer sr-only"
-            aria-label={publishedLabel}
+          <span
+            aria-hidden="true"
+            className={cn(
+              'absolute top-[2px] left-[2px] size-4 rounded-full border border-slate-300 bg-white shadow-sm transition-transform duration-200 ease-out',
+              post.isPublished && 'translate-x-4',
+            )}
           />
-          <span className="h-5 w-9 rounded-full bg-[#f1f1f2] transition-colors peer-checked:bg-[#1010a3] peer-focus-visible:ring-2 peer-focus-visible:ring-[#1010a3]/20 after:absolute after:start-[2px] after:top-[2px] after:size-4 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all peer-checked:after:translate-x-4 rtl:peer-checked:after:-translate-x-4 peer-checked:after:border-white" />
-        </label>
+        </button>
 
         <button
           type="button"
