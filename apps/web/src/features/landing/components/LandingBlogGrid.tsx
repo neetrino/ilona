@@ -62,8 +62,15 @@ export function LandingBlogGrid({
           <p className="px-5 text-[15px] text-[#4a5565]">{emptyMessage}</p>
         ) : (
           <LandingStaggerGroup className="flex flex-col gap-4 px-5">
-            {posts.map((post) => (
-              <LandingBlogCard key={post.slug} post={post} tr={tr} isHy={isHy} variant="mobile" />
+            {posts.map((post, index) => (
+              <LandingBlogCard
+                key={post.slug}
+                post={post}
+                tr={tr}
+                isHy={isHy}
+                variant="mobile"
+                priority={index === 0}
+              />
             ))}
           </LandingStaggerGroup>
         )}
@@ -97,8 +104,15 @@ export function LandingBlogGrid({
             <p className="text-[16px] text-[#4a5565]">{emptyMessage}</p>
           ) : (
             <LandingStaggerGroup className="grid grid-cols-3 items-start gap-x-8 gap-y-8">
-              {posts.map((post) => (
-                <LandingBlogCard key={post.slug} post={post} tr={tr} isHy={isHy} variant="desktop" />
+              {posts.map((post, index) => (
+                <LandingBlogCard
+                  key={post.slug}
+                  post={post}
+                  tr={tr}
+                  isHy={isHy}
+                  variant="desktop"
+                  priority={index < 3}
+                />
               ))}
             </LandingStaggerGroup>
           )}

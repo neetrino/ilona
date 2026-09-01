@@ -134,6 +134,7 @@ export function LandingFooter({ tr, isHy, logoUrl }: LandingFooterProps) {
                 alt=""
                 fill
                 loading="lazy"
+                fetchPriority="low"
                 sizes="400px"
                 className="object-cover"
               />
@@ -145,6 +146,7 @@ export function LandingFooter({ tr, isHy, logoUrl }: LandingFooterProps) {
                 alt=""
                 fill
                 loading="lazy"
+                fetchPriority="low"
                 sizes="400px"
                 className="object-cover"
               />
@@ -162,6 +164,7 @@ export function LandingFooter({ tr, isHy, logoUrl }: LandingFooterProps) {
                 height={52}
                 unoptimized
                 className="rounded-full"
+                style={{ width: 52, height: 'auto' }}
               />
               <span className="text-[26px] font-bold leading-[18px] tracking-[-0.18px]">
                 Ilona English Centre

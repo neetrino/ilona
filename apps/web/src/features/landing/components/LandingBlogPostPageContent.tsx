@@ -89,6 +89,8 @@ export function LandingBlogPostPageContent({ slug }: LandingBlogPostPageContentP
                     fill
                     unoptimized
                     priority
+                    loading="eager"
+                    fetchPriority="high"
                     sizes="(max-width: 800px) 100vw, 800px"
                     className={cn('object-cover', post.imageClassName)}
                   />

@@ -14,6 +14,7 @@ type LandingBlogCardProps = {
   tr: LandingTr;
   variant: 'mobile' | 'desktop';
   isHy: boolean;
+  priority?: boolean;
 };
 
 function getFirstSentence(text: string): string {
@@ -37,7 +38,13 @@ function localizePost(post: LandingBlogPostView, tr: LandingTr, isHy: boolean) {
   };
 }
 
-export function LandingBlogCard({ post, tr, variant, isHy }: LandingBlogCardProps) {
+export function LandingBlogCard({
+  post,
+  tr,
+  variant,
+  isHy,
+  priority = false,
+}: LandingBlogCardProps) {
   const article = localizePost(post, tr, isHy);
   const href = `/blog/${article.slug}`;
   const isMobile = variant === 'mobile';
@@ -66,7 +73,9 @@ export function LandingBlogCard({ post, tr, variant, isHy }: LandingBlogCardProp
             alt=""
             fill
             unoptimized
-            loading="lazy"
+            priority={priority}
+            loading={priority ? 'eager' : 'lazy'}
+            fetchPriority={priority ? 'high' : 'auto'}
             sizes={isMobile ? '(max-width: 743px) 100vw, 384px' : '(max-width: 1200px) 100vw, 384px'}
             className={cn(
               'transition-transform duration-700 ease-out group-hover:scale-105',
