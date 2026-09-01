@@ -198,6 +198,7 @@ export function LandingCvApplicationModal({
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent
         sheet={false}
+        hideCloseButton={isSubmitted}
         className="max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] max-w-[640px] gap-0 overflow-y-auto rounded-[16px] border-0 p-0 shadow-2xl"
         overlayClassName="bg-black/50"
         closeButtonClassName="flex size-8 items-center justify-center rounded-full text-[#6a7282] opacity-100 transition-colors hover:bg-[#1b3ba4] hover:text-white focus-visible:ring-2 focus-visible:ring-[#1b3ba4]/25"
