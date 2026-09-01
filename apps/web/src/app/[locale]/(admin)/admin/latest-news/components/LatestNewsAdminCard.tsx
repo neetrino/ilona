@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { Globe, GlobeLock, Pencil, Trash2 } from 'lucide-react';
+import { Pencil, Trash2 } from 'lucide-react';
 import type { BlogPostDto } from '@ilona/types';
 import { cn } from '@/shared/lib/utils';
 import {
@@ -53,7 +53,6 @@ export function LatestNewsAdminCard({
   const title = isHy ? view.titleHy : view.titleEn;
   const preview = getFirstSentence(isHy ? (view.bodyHy[0] ?? '') : (view.bodyEn[0] ?? ''));
   const date = formatLandingBlogDate(view.publishedAt, isHy);
-  const PublishIcon = post.isPublished ? Globe : GlobeLock;
 
   return (
     <article
@@ -114,7 +113,7 @@ export function LatestNewsAdminCard({
         </div>
       </button>
 
-      <div className="flex items-center justify-end gap-1 border-t border-[rgba(14,14,16,0.06)] px-5 py-3 tablet:px-8">
+      <div className="flex items-center justify-end gap-2 border-t border-[rgba(14,14,16,0.06)] px-5 py-3 tablet:px-8">
         <button
           type="button"
           aria-label={editHintLabel}
@@ -129,21 +128,23 @@ export function LatestNewsAdminCard({
           <Pencil className="size-4" aria-hidden="true" />
         </button>
 
-        <button
-          type="button"
-          aria-label={publishedLabel}
-          title={publishedLabel}
-          disabled={isPending}
-          onClick={() => onTogglePublished(post, !post.isPublished)}
+        <label
           className={cn(
-            iconButtonClassName,
-            post.isPublished
-              ? 'text-[#1010a3] hover:bg-[#1010a3]/10 focus:ring-[#1010a3]/30'
-              : 'text-slate-400 hover:bg-slate-50 hover:text-slate-700 focus:ring-slate-400',
+            'relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center',
+            isPending && 'cursor-not-allowed opacity-60',
           )}
+          title={publishedLabel}
         >
-          <PublishIcon className="size-4" aria-hidden="true" />
-        </button>
+          <input
+            type="checkbox"
+            checked={post.isPublished}
+            disabled={isPending}
+            onChange={(event) => onTogglePublished(post, event.target.checked)}
+            className="peer sr-only"
+            aria-label={publishedLabel}
+          />
+          <span className="h-6 w-11 rounded-full bg-[#f1f1f2] transition-colors peer-checked:bg-[#1010a3] peer-focus-visible:ring-4 peer-focus-visible:ring-[#1010a3]/20 after:absolute after:start-[2px] after:top-[2px] after:size-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white" />
+        </label>
 
         <button
           type="button"
