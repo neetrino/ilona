@@ -3,7 +3,7 @@ import * as path from 'path';
 import { Logger } from '@nestjs/common';
 import { assertSafeStorageKey } from './storage-key.util';
 
-const LOCAL_SUBDIRECTORIES = ['avatars', 'chat', 'documents', 'settings'] as const;
+const LOCAL_SUBDIRECTORIES = ['avatars', 'chat', 'documents', 'settings', 'blog'] as const;
 
 export function resolveLocalStoragePath(basePath?: string): string {
   return basePath ?? path.join(process.cwd(), 'uploads');

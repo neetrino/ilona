@@ -266,10 +266,11 @@ export class ApiClient {
   }
 
   patch<T>(endpoint: string, body?: unknown, options?: FetchOptions): Promise<T> {
+    const requestBody = body instanceof FormData ? body : body ? JSON.stringify(body) : undefined;
     return this.request<T>(endpoint, {
       ...options,
       method: 'PATCH',
-      body: body ? JSON.stringify(body) : undefined,
+      body: requestBody,
     });
   }
 

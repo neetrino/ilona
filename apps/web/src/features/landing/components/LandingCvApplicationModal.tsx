@@ -1,17 +1,22 @@
 'use client';
 
 import { useCallback, useRef, useState } from 'react';
-import { FileUp, Send } from 'lucide-react';
+import { Check, FileUp, Send, X } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { cn } from '@/shared/lib/utils';
+import { api } from '@/shared/lib/api';
+import { ApiError } from '@/shared/lib/api-errors';
 import {
   Dialog,
   DialogContent,
   DialogTitle,
 } from '@/shared/components/ui';
 import { BUTTON_HOVER_CLASS } from '../landingConstants';
+import { paytoneOne } from '../landingFont';
 import type { LandingTr } from '../types';
 
 const CV_MAX_BYTES = 5 * 1024 * 1024;
+const CV_MAX_FILES = 2;
 const CV_ACCEPT = '.pdf,.doc,.docx';
 const CV_MIME_TYPES = new Set([
   'application/pdf',
@@ -47,6 +52,13 @@ const EMPTY_FORM: FormState = {
   message: '',
 };
 
+function isAllowedCvFile(file: File): boolean {
+  const extension = file.name.split('.').pop()?.toLowerCase();
+  const isAllowedExtension = extension === 'pdf' || extension === 'doc' || extension === 'docx';
+  const isAllowedMime = CV_MIME_TYPES.has(file.type) || file.type === '';
+  return isAllowedExtension && isAllowedMime;
+}
+
 export function LandingCvApplicationModal({
   open,
   onOpenChange,
@@ -54,14 +66,18 @@ export function LandingCvApplicationModal({
 }: LandingCvApplicationModalProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
-  const [cvFile, setCvFile] = useState<File | null>(null);
+  const [cvFiles, setCvFiles] = useState<File[]>([]);
   const [cvError, setCvError] = useState<string | null>(null);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
 
   const resetForm = useCallback(() => {
     setForm(EMPTY_FORM);
-    setCvFile(null);
+    setCvFiles([]);
     setCvError(null);
+    setSubmitError(null);
+    setIsSubmitting(false);
     setIsSubmitted(false);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
@@ -80,89 +96,178 @@ export function LandingCvApplicationModal({
 
   const handleFileChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
-      const file = event.target.files?.[0];
-      setCvError(null);
+      const selected = Array.from(event.target.files ?? []);
+      setSubmitError(null);
+      event.target.value = '';
 
-      if (!file) {
-        setCvFile(null);
+      if (selected.length === 0) {
         return;
       }
 
-      const extension = file.name.split('.').pop()?.toLowerCase();
-      const isAllowedExtension = extension === 'pdf' || extension === 'doc' || extension === 'docx';
-      const isAllowedMime = CV_MIME_TYPES.has(file.type) || file.type === '';
-
-      if (!isAllowedExtension || !isAllowedMime) {
-        setCvFile(null);
-        setCvError(tr('Please upload a PDF, DOC, or DOCX file.', 'Խնդրում ենք վերբեռնել PDF, DOC կամ DOCX ֆայլ։'));
-        event.target.value = '';
+      const remainingSlots = CV_MAX_FILES - cvFiles.length;
+      if (remainingSlots <= 0) {
+        setCvError(tr('You can attach up to 2 files.', 'Կարող եք կցել մինչև 2 ֆայլ։'));
         return;
       }
 
-      if (file.size > CV_MAX_BYTES) {
-        setCvFile(null);
-        setCvError(tr('File must be 5 MB or smaller.', 'Ֆայլի չափը պետք է լինի 5 ՄԲ կամ ավելի փոքր։'));
-        event.target.value = '';
-        return;
+      const nextFiles = [...cvFiles];
+      let nextError: string | null = null;
+
+      for (const file of selected.slice(0, remainingSlots)) {
+        if (!isAllowedCvFile(file)) {
+          nextError = tr(
+            'Please upload a PDF, DOC, or DOCX file.',
+            'Խնդրում ենք վերբեռնել PDF, DOC կամ DOCX ֆայլ։',
+          );
+          continue;
+        }
+
+        if (file.size > CV_MAX_BYTES) {
+          nextError = tr('File must be 5 MB or smaller.', 'Ֆայլի չափը պետք է լինի 5 ՄԲ կամ ավելի փոքր։');
+          continue;
+        }
+
+        const alreadyAdded = nextFiles.some(
+          (existing) =>
+            existing.name === file.name &&
+            existing.size === file.size &&
+            existing.lastModified === file.lastModified,
+        );
+        if (!alreadyAdded) {
+          nextFiles.push(file);
+        }
       }
 
-      setCvFile(file);
+      setCvFiles(nextFiles);
+      setCvError(nextError);
     },
-    [tr],
+    [cvFiles, tr],
   );
 
-  const handleSubmit = useCallback(
-    (event: React.FormEvent<HTMLFormElement>) => {
-      event.preventDefault();
+  const handleClearFile = useCallback((index: number) => {
+    setCvFiles((current) => current.filter((_, fileIndex) => fileIndex !== index));
+    setCvError(null);
+    setSubmitError(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  }, []);
 
-      if (!cvFile) {
+  const handleSubmit = useCallback(
+    async (event: React.FormEvent<HTMLFormElement>) => {
+      event.preventDefault();
+      setSubmitError(null);
+
+      if (cvFiles.length === 0) {
         setCvError(tr('Please attach your CV.', 'Խնդրում ենք ավելացնել CV-ն։'));
         return;
       }
 
-      setIsSubmitted(true);
+      const body = new FormData();
+      body.append('firstName', form.firstName.trim());
+      body.append('lastName', form.lastName.trim());
+      body.append('email', form.email.trim());
+      body.append('phone', form.phone.trim());
+      if (form.message.trim()) {
+        body.append('message', form.message.trim());
+      }
+      for (const file of cvFiles) {
+        body.append('cv', file);
+      }
+
+      setIsSubmitting(true);
+      try {
+        await api.post<{ ok: true }>('/cv-applications', body, { skipAuthRefresh: true });
+        setIsSubmitted(true);
+      } catch (error) {
+        const message =
+          error instanceof ApiError
+            ? error.message
+            : tr('Failed to send application. Please try again.', 'Չհաջողվեց ուղարկել դիմումը։ Փորձեք նորից։');
+        setSubmitError(message);
+      } finally {
+        setIsSubmitting(false);
+      }
     },
-    [cvFile, tr],
+    [cvFiles, form, tr],
   );
+
+  const canAddMoreFiles = cvFiles.length < CV_MAX_FILES;
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent
         sheet={false}
+        hideCloseButton={isSubmitted}
         className="max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] max-w-[640px] gap-0 overflow-y-auto rounded-[16px] border-0 p-0 shadow-2xl"
         overlayClassName="bg-black/50"
         closeButtonClassName="flex size-8 items-center justify-center rounded-full text-[#6a7282] opacity-100 transition-colors hover:bg-[#1b3ba4] hover:text-white focus-visible:ring-2 focus-visible:ring-[#1b3ba4]/25"
         onOpenAutoFocus={(event) => event.preventDefault()}
       >
         <div className="px-5 pb-5 pt-6 tablet:px-7 tablet:pb-6 tablet:pt-7">
-          <DialogTitle className="text-[22px] font-bold leading-[30px] tracking-[-0.35px] text-[#1b3ba4] tablet:text-[24px] tablet:leading-[32px]">
-            {tr('Apply for the Position', 'Դիմել հաստիքին')}
-          </DialogTitle>
-
           {isSubmitted ? (
-            <div className="mt-8 rounded-2xl bg-[#ecf0f7] px-5 py-6 text-center">
-              <p className="text-[16px] font-medium leading-[24px] tracking-[-0.31px] text-[#101828]">
+            <>
+              <DialogTitle className="sr-only">
                 {tr('Application received!', 'Դիմումը ստացվել է!')}
-              </p>
-              <p className="mt-2 text-[14px] leading-[21px] tracking-[-0.31px] text-[#4a5565]">
-                {tr(
-                  'Thank you for your interest. We will review your application and get back to you soon.',
-                  'Շնորհակալություն հետաքրքրության համար։ Մենք կուսումնասիրենք ձեր դիմումը և շուտով կկապ հաստատենք ձեզ հետ։',
-                )}
-              </p>
-              <button
-                type="button"
-                onClick={() => handleOpenChange(false)}
-                className={cn(
-                  'mt-6 inline-flex h-11 items-center justify-center rounded-full bg-[#1b3ba4] px-8 text-[14px] font-medium leading-[21px] tracking-[-0.31px] text-white shadow-md',
-                  BUTTON_HOVER_CLASS,
-                )}
+              </DialogTitle>
+              <motion.div
+                initial={{ opacity: 0, y: 12, scale: 0.98 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+                className="relative overflow-hidden rounded-[20px] bg-[linear-gradient(155deg,#eef3fb_0%,#f7f9fd_48%,#ffffff_100%)] px-5 py-8 text-center tablet:px-8 tablet:py-10"
               >
-                {tr('Close', 'Փակել')}
-              </button>
-            </div>
+                <div
+                  aria-hidden
+                  className="pointer-events-none absolute -left-10 -top-12 size-40 rounded-full bg-[radial-gradient(circle,rgba(27,59,164,0.16)_0%,rgba(27,59,164,0)_70%)]"
+                />
+                <div
+                  aria-hidden
+                  className="pointer-events-none absolute -bottom-16 -right-8 size-44 rounded-full bg-[radial-gradient(circle,rgba(25,60,184,0.14)_0%,rgba(25,60,184,0)_72%)]"
+                />
+
+                <motion.div
+                  initial={{ scale: 0.7, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ delay: 0.08, type: 'spring', stiffness: 260, damping: 18 }}
+                  className="relative mx-auto flex size-16 items-center justify-center rounded-full bg-[linear-gradient(145deg,#1c398e_0%,#1b3ba4_55%,#193cb8_100%)] shadow-[0_12px_28px_rgba(27,59,164,0.28)]"
+                >
+                  <Check className="size-8 text-white" strokeWidth={2.75} />
+                </motion.div>
+
+                <h2
+                  className={cn(
+                    paytoneOne.className,
+                    'relative mt-5 text-[26px] leading-[34px] tracking-[0.2px] text-[#1b3ba4] tablet:text-[30px] tablet:leading-[38px]',
+                  )}
+                >
+                  {tr('Application received!', 'Դիմումը ստացվել է!')}
+                </h2>
+                <p className="relative mx-auto mt-3 max-w-[420px] text-[14px] leading-[22px] tracking-[-0.31px] text-[#4a5565] tablet:text-[15px] tablet:leading-[24px]">
+                  {tr(
+                    'Thank you for your interest. We will review your application and get back to you soon.',
+                    'Շնորհակալություն հետաքրքրության համար։ Մենք կուսումնասիրենք ձեր դիմումը և շուտով կկապ հաստատենք ձեզ հետ։',
+                  )}
+                </p>
+
+                <button
+                  type="button"
+                  onClick={() => handleOpenChange(false)}
+                  className={cn(
+                    'relative mt-7 inline-flex h-12 items-center justify-center rounded-full bg-[#1b3ba4] px-10 text-[15px] font-medium leading-[22px] tracking-[-0.31px] text-white shadow-[0_10px_24px_rgba(27,59,164,0.28)]',
+                    BUTTON_HOVER_CLASS,
+                  )}
+                >
+                  {tr('Close', 'Փակել')}
+                </button>
+              </motion.div>
+            </>
           ) : (
-            <form onSubmit={handleSubmit} className="mt-4 space-y-3.5">
+            <>
+              <DialogTitle className="text-[22px] font-bold leading-[30px] tracking-[-0.35px] text-[#1b3ba4] tablet:text-[24px] tablet:leading-[32px]">
+                {tr('Apply for the Position', 'Դիմել հաստիքին')}
+              </DialogTitle>
+
+              <form onSubmit={handleSubmit} className="mt-4 space-y-3.5">
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className={LABEL_CLASS} htmlFor="cv-first-name">
@@ -174,7 +279,9 @@ export function LandingCvApplicationModal({
                     required
                     value={form.firstName}
                     onChange={(event) => setForm((current) => ({ ...current, firstName: event.target.value }))}
+                    placeholder={tr('Enter your first name', 'Մուտքագրեք ձեր անունը')}
                     className={FIELD_CLASS}
+                    disabled={isSubmitting}
                   />
                 </div>
                 <div>
@@ -187,7 +294,9 @@ export function LandingCvApplicationModal({
                     required
                     value={form.lastName}
                     onChange={(event) => setForm((current) => ({ ...current, lastName: event.target.value }))}
+                    placeholder={tr('Enter your last name', 'Մուտքագրեք ձեր ազգանունը')}
                     className={FIELD_CLASS}
+                    disabled={isSubmitting}
                   />
                 </div>
               </div>
@@ -203,7 +312,9 @@ export function LandingCvApplicationModal({
                     required
                     value={form.email}
                     onChange={(event) => setForm((current) => ({ ...current, email: event.target.value }))}
+                    placeholder={tr('example@email.com', 'example@email.com')}
                     className={FIELD_CLASS}
+                    disabled={isSubmitting}
                   />
                 </div>
                 <div>
@@ -216,7 +327,9 @@ export function LandingCvApplicationModal({
                     required
                     value={form.phone}
                     onChange={(event) => setForm((current) => ({ ...current, phone: event.target.value }))}
+                    placeholder={tr('+374 XX XXX XXX', '+374 XX XXX XXX')}
                     className={FIELD_CLASS}
+                    disabled={isSubmitting}
                   />
                 </div>
               </div>
@@ -230,57 +343,110 @@ export function LandingCvApplicationModal({
                   rows={2}
                   value={form.message}
                   onChange={(event) => setForm((current) => ({ ...current, message: event.target.value }))}
-                  className={cn(
-                    FIELD_CLASS,
-                    'min-h-[72px] resize-none py-2.5',
+                  placeholder={tr(
+                    'Tell us briefly about yourself and why you are a good fit…',
+                    'Կարճ պատմեք ձեր մասին և ինչու եք համապատասխանում…',
                   )}
+                  className={cn(FIELD_CLASS, 'min-h-[72px] resize-none py-2.5')}
+                  disabled={isSubmitting}
                 />
               </div>
 
               <div>
-                <p className={LABEL_CLASS}>
-                  {tr('CV / Resume', 'CV / ռեզյումե')}
-                </p>
+                <p className={LABEL_CLASS}>{tr('CV / Resume', 'CV / ռեզյումե')}</p>
                 <p className="mb-2 text-[12px] leading-[18px] tracking-[-0.15px] text-[#6a7282]">
-                  {tr('PDF, DOC or DOCX, up to 5 MB', 'PDF, DOC կամ DOCX, մինչև 5 ՄԲ')}
-                </p>
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  className={cn(
-                    'flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-[#d1d5dc] bg-[#fafafa] px-4 py-3 transition-colors hover:border-[#1b3ba4]/40 hover:bg-[#f3f6fc]',
+                  {tr(
+                    'PDF, DOC or DOCX, up to 5 MB each · max 2 files',
+                    'PDF, DOC կամ DOCX, յուրաքանչյուրը մինչև 5 ՄԲ · մինչև 2 ֆայլ',
                   )}
-                >
-                  <FileUp className="size-6 shrink-0 text-[#fb2c36]" strokeWidth={2} />
-                  <span className="truncate text-[13px] font-medium leading-[19px] tracking-[-0.15px] text-[#364153]">
-                    {cvFile ? cvFile.name : tr('Choose file', 'Ընտրել ֆայլ')}
-                  </span>
-                </button>
+                </p>
+
+                <div className="space-y-2">
+                  {cvFiles.map((file, index) => (
+                    <div
+                      key={`${file.name}-${file.size}-${file.lastModified}-${index}`}
+                      className={cn(
+                        'flex w-full items-center gap-2 rounded-xl border border-dashed border-[#d1d5dc] bg-[#fafafa] px-4 py-3',
+                        isSubmitting && 'opacity-60',
+                      )}
+                    >
+                      <FileUp className="size-6 shrink-0 text-[#fb2c36]" strokeWidth={2} />
+                      <span className="min-w-0 flex-1 truncate text-[13px] font-medium leading-[19px] tracking-[-0.15px] text-[#364153]">
+                        {file.name}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => handleClearFile(index)}
+                        disabled={isSubmitting}
+                        aria-label={tr('Remove file', 'Ջնջել ֆայլը')}
+                        className={cn(
+                          'inline-flex size-8 shrink-0 items-center justify-center rounded-full text-[#6a7282] transition-colors hover:bg-[#e5e7eb] hover:text-[#101828]',
+                          isSubmitting && 'cursor-not-allowed',
+                        )}
+                      >
+                        <X className="size-4" strokeWidth={2.25} />
+                      </button>
+                    </div>
+                  ))}
+
+                  {canAddMoreFiles ? (
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={isSubmitting}
+                      className={cn(
+                        'flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-[#d1d5dc] bg-[#fafafa] px-4 py-3 transition-colors hover:border-[#1b3ba4]/40 hover:bg-[#f3f6fc]',
+                        isSubmitting && 'cursor-not-allowed opacity-60',
+                      )}
+                    >
+                      <FileUp className="size-6 shrink-0 text-[#fb2c36]" strokeWidth={2} />
+                      <span className="truncate text-[13px] font-medium leading-[19px] tracking-[-0.15px] text-[#364153]">
+                        {cvFiles.length === 0
+                          ? tr('Choose file', 'Ընտրել ֆայլ')
+                          : tr('Add another file', 'Ավելացնել ևս մեկ ֆայլ')}
+                      </span>
+                    </button>
+                  ) : null}
+                </div>
+
                 <input
                   ref={fileInputRef}
                   type="file"
                   accept={CV_ACCEPT}
+                  multiple
                   className="hidden"
                   onChange={handleFileChange}
+                  disabled={isSubmitting || !canAddMoreFiles}
                 />
                 {cvError ? (
                   <p className="mt-2 text-[13px] leading-[19px] text-[#e7000b]">{cvError}</p>
                 ) : null}
               </div>
 
+              {submitError ? (
+                <p className="text-[13px] leading-[19px] text-[#e7000b]">{submitError}</p>
+              ) : null}
+
               <div className="flex justify-end pt-1">
                 <button
                   type="submit"
+                  disabled={isSubmitting}
                   className={cn(
                     'inline-flex h-11 items-center justify-center gap-2 rounded-full bg-[#1b3ba4] px-5 text-[14px] font-medium leading-[21px] tracking-[-0.31px] text-white shadow-md',
                     BUTTON_HOVER_CLASS,
+                    isSubmitting && 'cursor-not-allowed opacity-70',
                   )}
                 >
-                  <span>{tr('Send Application', 'Ուղարկել դիմումը')}</span>
+                  <span>
+                    {isSubmitting
+                      ? tr('Sending…', 'Ուղարկվում է…')
+                      : tr('Send Application', 'Ուղարկել դիմումը')}
+                  </span>
                   <Send className="size-4" strokeWidth={2.25} />
                 </button>
               </div>
             </form>
+            </>
           )}
         </div>
       </DialogContent>

@@ -6,13 +6,15 @@ import { cn } from '@/shared/lib/utils';
 import { NEWS_ARROW_ICON } from '../landingConstants';
 import { LANDING_PREMIUM_CARD_CLASS } from '../landingAnimations';
 import { LandingStaggerArticle } from './LandingStaggerGroup';
-import type { LandingBlogPost } from '../landingBlogContent';
+import { formatLandingBlogDate, getBlogDateBadgeClasses, type LandingBlogPostView } from '../landingBlogContent';
 import type { LandingTr } from '../types';
 
 type LandingBlogCardProps = {
-  post: LandingBlogPost;
+  post: LandingBlogPostView;
   tr: LandingTr;
   variant: 'mobile' | 'desktop';
+  isHy: boolean;
+  priority?: boolean;
 };
 
 function getFirstSentence(text: string): string {
@@ -22,14 +24,13 @@ function getFirstSentence(text: string): string {
   return match?.[0].trim() ?? trimmed;
 }
 
-function localizePost(post: LandingBlogPost, tr: LandingTr) {
-  const preview = getFirstSentence(tr(post.bodyEn[0], post.bodyHy[0]));
+function localizePost(post: LandingBlogPostView, tr: LandingTr, isHy: boolean) {
+  const preview = getFirstSentence(tr(post.bodyEn[0] ?? '', post.bodyHy[0] ?? ''));
 
   return {
     slug: post.slug,
     image: post.image,
-    overlay: post.overlay,
-    date: tr(post.dateEn, post.dateHy),
+    date: formatLandingBlogDate(post.publishedAt, isHy),
     dateColor: post.dateColor,
     title: tr(post.titleEn, post.titleHy),
     preview,
@@ -37,28 +38,35 @@ function localizePost(post: LandingBlogPost, tr: LandingTr) {
   };
 }
 
-export function LandingBlogCard({ post, tr, variant }: LandingBlogCardProps) {
-  const article = localizePost(post, tr);
+export function LandingBlogCard({
+  post,
+  tr,
+  variant,
+  isHy,
+  priority = false,
+}: LandingBlogCardProps) {
+  const article = localizePost(post, tr, isHy);
   const href = `/blog/${article.slug}`;
   const isMobile = variant === 'mobile';
+  const dateBadge = getBlogDateBadgeClasses(article.dateColor);
 
   return (
     <LandingStaggerArticle
       className={cn(
-        'overflow-hidden rounded-[28px] bg-[#ecf0f7]',
+        'flex h-full flex-col overflow-hidden rounded-[28px] bg-[#ecf0f7]',
         LANDING_PREMIUM_CARD_CLASS,
-        isMobile ? 'w-full' : 'h-[419.992px] w-full rounded-[32px]',
+        isMobile ? 'w-full' : 'min-h-[420px] w-full rounded-[32px]',
       )}
     >
       <Link
         href={href}
-        className="group flex h-full flex-col"
+        className="group flex h-full min-h-0 flex-col"
         aria-label={tr(`Read more about ${article.title}`, `Կարդալ ավելին «${article.title}» մասին`)}
       >
         <div
           className={cn(
-            'relative w-full overflow-hidden',
-            isMobile ? 'h-[160px]' : 'h-[203.992px]',
+            'relative w-full shrink-0 overflow-hidden bg-[#dbe2ee]',
+            isMobile ? 'h-[160px]' : 'h-[204px]',
           )}
         >
           <Image
@@ -66,42 +74,43 @@ export function LandingBlogCard({ post, tr, variant }: LandingBlogCardProps) {
             alt=""
             fill
             unoptimized
-            loading="lazy"
+            priority={priority}
+            loading={priority ? 'eager' : 'lazy'}
+            fetchPriority={priority ? 'high' : 'auto'}
             sizes={isMobile ? '(max-width: 743px) 100vw, 384px' : '(max-width: 1200px) 100vw, 384px'}
             className={cn(
-              'transition-transform duration-700 ease-out group-hover:scale-105',
-              article.imageClassName ?? 'object-cover',
+              'object-cover transition-transform duration-700 ease-out group-hover:scale-105',
+              article.imageClassName,
             )}
-          />
-          <Image
-            src={article.overlay}
-            alt=""
-            fill
-            unoptimized
-            loading="lazy"
-            sizes={isMobile ? '(max-width: 743px) 100vw, 384px' : '(max-width: 1200px) 100vw, 384px'}
-            className={article.imageClassName ?? 'object-cover'}
           />
         </div>
 
-        <div className={cn('flex flex-1 flex-col', isMobile ? 'px-5 pb-5 pt-5' : 'px-8 pb-8 pt-8')}>
-          <div
-            className={cn(
-              'inline-flex w-fit items-center rounded-full bg-white',
-              isMobile ? 'h-7 px-3' : 'h-[28px] px-4',
-            )}
-          >
-            <span
+        <div
+          className={cn(
+            'flex min-h-0 flex-1 flex-col',
+            isMobile ? 'px-5 pb-5 pt-5' : 'px-8 pb-8 pt-8',
+          )}
+        >
+          <div className={cn('flex h-7 shrink-0 items-center', isMobile ? '' : 'h-[28px]')}>
+            <div
               className={cn(
-                'font-bold',
-                article.dateColor,
-                isMobile
-                  ? 'text-[12px] leading-[18px] tracking-[-0.15px]'
-                  : 'text-[14px] leading-[20px] tracking-[-0.1504px]',
+                'inline-flex h-full items-center rounded-full shadow-[0_2px_8px_rgba(16,16,163,0.08)] ring-1',
+                dateBadge.shell,
+                isMobile ? 'px-3' : 'px-4',
               )}
             >
-              {article.date}
-            </span>
+              <span
+                className={cn(
+                  'font-bold tabular-nums',
+                  dateBadge.text,
+                  isMobile
+                    ? 'text-[12px] leading-[18px] tracking-[-0.15px]'
+                    : 'text-[14px] leading-[20px] tracking-[-0.1504px]',
+                )}
+              >
+                {article.date}
+              </span>
+            </div>
           </div>
 
           <h3
@@ -141,7 +150,13 @@ export function LandingBlogCard({ post, tr, variant }: LandingBlogCardProps) {
               )}
             >
               <span>{tr('Read more', 'Կարդալ ավելին')}</span>
-              <Image src={NEWS_ARROW_ICON} alt="" width={isMobile ? 14 : 16} height={isMobile ? 14 : 16} unoptimized />
+              <Image
+                src={NEWS_ARROW_ICON}
+                alt=""
+                width={isMobile ? 14 : 16}
+                height={isMobile ? 14 : 16}
+                unoptimized
+              />
             </span>
           </div>
         </div>

@@ -2,6 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
+import { useRouter } from '@/config/navigation';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { useSettingsPage } from './hooks/useSettingsPage';
 import { SettingsSidebar } from './components/SettingsSidebar';
@@ -16,10 +17,14 @@ import { useAuthStore } from '@/features/auth/store/auth.store';
 import { useChangePassword, useUpdateProfile } from '@/features/settings';
 import { Button } from '@/shared/components/ui';
 import { useIsIPad } from '@/shared/hooks/useIsIPad';
+import { toRolePortalPath } from '@/shared/lib/role-routes';
+
+const MANAGER_ALLOWED_TABS = ['security', 'latest-news'] as const;
 
 export default function SettingsPage() {
   const t = useTranslations('settings');
   const tAuth = useTranslations('auth');
+  const router = useRouter();
   const { user } = useAuthStore();
   const isIPad = useIsIPad();
   const isManager = user?.role === 'MANAGER';
@@ -36,6 +41,19 @@ export default function SettingsPage() {
   useEffect(() => {
     setEmail(user?.email ?? '');
   }, [user?.email]);
+
+  useEffect(() => {
+    if (activeTab === 'latest-news') {
+      router.replace(toRolePortalPath('/admin/latest-news', user?.role));
+    }
+  }, [activeTab, router, user?.role]);
+
+  useEffect(() => {
+    if (!isManager) return;
+    if (activeTab !== 'security' && activeTab !== 'latest-news') {
+      handleTabChange('security');
+    }
+  }, [activeTab, handleTabChange, isManager]);
 
   const handleUpdateLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -75,6 +93,10 @@ export default function SettingsPage() {
     }
   };
 
+  if (activeTab === 'latest-news') {
+    return null;
+  }
+
   if (isManager) {
     return (
       <DashboardLayout
@@ -84,8 +106,8 @@ export default function SettingsPage() {
         <div className={`flex min-w-0 flex-col gap-4 ${isIPad ? '' : 'lg:flex-row lg:gap-6'}`}>
           <SettingsSidebar
             activeTab="security"
-            onTabChange={() => {}}
-            allowedTabs={['security']}
+            onTabChange={handleTabChange}
+            allowedTabs={[...MANAGER_ALLOWED_TABS]}
           />
           <div className="min-w-0 flex-1 space-y-6">
             <div className="rounded-3xl border border-[rgba(14,14,16,0.07)] bg-white p-6">

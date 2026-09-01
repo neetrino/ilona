@@ -543,6 +543,24 @@ exports.Prisma.AuditLogScalarFieldEnum = {
   createdAt: 'createdAt'
 };
 
+exports.Prisma.BlogPostScalarFieldEnum = {
+  id: 'id',
+  slug: 'slug',
+  publishedAt: 'publishedAt',
+  titleEn: 'titleEn',
+  titleHy: 'titleHy',
+  bodyEn: 'bodyEn',
+  bodyHy: 'bodyHy',
+  imageKey: 'imageKey',
+  overlayKey: 'overlayKey',
+  dateColor: 'dateColor',
+  imageClassName: 'imageClassName',
+  sortOrder: 'sortOrder',
+  isPublished: 'isPublished',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -550,6 +568,10 @@ exports.Prisma.SortOrder = {
 
 exports.Prisma.NullableJsonNullValueInput = {
   DbNull: Prisma.DbNull,
+  JsonNull: Prisma.JsonNull
+};
+
+exports.Prisma.JsonNullValueInput = {
   JsonNull: Prisma.JsonNull
 };
 
@@ -721,7 +743,8 @@ exports.Prisma.ModelName = {
   CrmLead: 'CrmLead',
   CrmLeadActivity: 'CrmLeadActivity',
   CrmLeadAttachment: 'CrmLeadAttachment',
-  AuditLog: 'AuditLog'
+  AuditLog: 'AuditLog',
+  BlogPost: 'BlogPost'
 };
 
 /**

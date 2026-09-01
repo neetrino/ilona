@@ -2,9 +2,11 @@
 
 import Link from 'next/link';
 import { Newspaper } from 'lucide-react';
+import { useMemo } from 'react';
 import { cn } from '@/shared/lib/utils';
+import { usePublicBlogPosts } from '@/features/blog';
 import { BUTTON_HOVER_CLASS } from '../landingConstants';
-import { LANDING_BLOG_POSTS } from '../landingBlogContent';
+import { mapBlogPostToLandingView } from '../landingBlogContent';
 import { LandingSectionHeader } from './LandingSectionHeader';
 import { LandingStaggerGroup } from './LandingStaggerGroup';
 import { LandingBlogCard } from './LandingBlogCard';
@@ -19,6 +21,7 @@ const LANDING_BLOG_SECTION_TITLE_COLOR = {
 
 type LandingBlogGridProps = {
   tr: LandingTr;
+  isHy: boolean;
   showViewAllLink?: boolean;
   maxItems?: number;
   sectionTitleTone?: keyof typeof LANDING_BLOG_SECTION_TITLE_COLOR;
@@ -26,13 +29,23 @@ type LandingBlogGridProps = {
 
 export function LandingBlogGrid({
   tr,
+  isHy,
   showViewAllLink = false,
   maxItems,
   sectionTitleTone = 'default',
 }: LandingBlogGridProps) {
-  const posts =
-    maxItems != null ? LANDING_BLOG_POSTS.slice(0, maxItems) : [...LANDING_BLOG_POSTS];
+  const { data: apiPosts = [], isLoading, isError } = usePublicBlogPosts();
+  const posts = useMemo(() => {
+    const mapped = apiPosts.map(mapBlogPostToLandingView);
+    return maxItems != null ? mapped.slice(0, maxItems) : mapped;
+  }, [apiPosts, maxItems]);
   const sectionTitleColor = LANDING_BLOG_SECTION_TITLE_COLOR[sectionTitleTone];
+
+  const emptyMessage = isLoading
+    ? tr('Loading news…', 'Նորությունները բեռնվում են…')
+    : isError
+      ? tr('Unable to load news.', 'Չհաջողվեց բեռնել նորությունները։')
+      : tr('No news posts yet.', 'Դեռ նորություններ չկան։');
 
   return (
     <>
@@ -45,11 +58,22 @@ export function LandingBlogGrid({
           subtitleClassName="text-[16px] leading-[24px] tracking-[-0.45px] text-[#4a5565]"
         />
 
-        <LandingStaggerGroup className="flex flex-col gap-4 px-5">
-          {posts.map((post) => (
-            <LandingBlogCard key={post.slug} post={post} tr={tr} variant="mobile" />
-          ))}
-        </LandingStaggerGroup>
+        {posts.length === 0 ? (
+          <p className="px-5 text-[15px] text-[#4a5565]">{emptyMessage}</p>
+        ) : (
+          <LandingStaggerGroup className="flex flex-col gap-4 px-5">
+            {posts.map((post, index) => (
+              <LandingBlogCard
+                key={post.slug}
+                post={post}
+                tr={tr}
+                isHy={isHy}
+                variant="mobile"
+                priority={index === 0}
+              />
+            ))}
+          </LandingStaggerGroup>
+        )}
 
         {showViewAllLink ? (
           <div className="flex justify-center px-5">
@@ -76,11 +100,22 @@ export function LandingBlogGrid({
             subtitleClassName="text-[20px] leading-[28px] tracking-[-0.4492px] text-[#4a5565]"
           />
 
-          <LandingStaggerGroup className="grid grid-cols-3 items-start gap-x-8 gap-y-8">
-            {posts.map((post) => (
-              <LandingBlogCard key={post.slug} post={post} tr={tr} variant="desktop" />
-            ))}
-          </LandingStaggerGroup>
+          {posts.length === 0 ? (
+            <p className="text-[16px] text-[#4a5565]">{emptyMessage}</p>
+          ) : (
+            <LandingStaggerGroup className="grid grid-cols-3 items-stretch gap-x-8 gap-y-8">
+              {posts.map((post, index) => (
+                <LandingBlogCard
+                  key={post.slug}
+                  post={post}
+                  tr={tr}
+                  isHy={isHy}
+                  variant="desktop"
+                  priority={index < 3}
+                />
+              ))}
+            </LandingStaggerGroup>
+          )}
 
           {showViewAllLink ? (
             <div className="flex justify-center">

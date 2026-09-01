@@ -2,11 +2,19 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Resend } from 'resend';
 
+export interface EmailAttachment {
+  filename: string;
+  content: Buffer;
+  contentType?: string;
+}
+
 export interface EmailOptions {
   to: string | string[];
   subject: string;
   html: string;
   text?: string;
+  replyTo?: string;
+  attachments?: EmailAttachment[];
 }
 
 @Injectable()
@@ -28,7 +36,7 @@ export class EmailService {
   }
 
   async send(options: EmailOptions): Promise<boolean> {
-    const { to, subject, html, text } = options;
+    const { to, subject, html, text, replyTo, attachments } = options;
 
     // If Resend is not configured, just log
     if (!this.resend) {
@@ -45,7 +53,23 @@ export class EmailService {
         subject,
         html,
         text,
+        ...(replyTo ? { replyTo } : {}),
+        ...(attachments?.length
+          ? {
+              attachments: attachments.map((file) => ({
+                filename: file.filename,
+                content: file.content,
+                contentType: file.contentType,
+              })),
+            }
+          : {}),
       });
+
+      if (response.error) {
+        const toDisplay = Array.isArray(to) ? to.join(', ') : to;
+        this.logger.error(`Failed to send email to ${toDisplay}: ${response.error.message}`);
+        return false;
+      }
 
       const toDisplay = Array.isArray(to) ? to.join(', ') : to;
       this.logger.log(`Email sent successfully to ${toDisplay}, id: ${response.data?.id}`);
