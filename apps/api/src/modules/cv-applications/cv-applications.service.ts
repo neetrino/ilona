@@ -9,6 +9,7 @@ import { EmailService } from '../notifications/email.service';
 import type { SubmitCvApplicationDto } from './dto/submit-cv-application.dto';
 
 const CV_MAX_BYTES = 5 * 1024 * 1024;
+const CV_MAX_FILES = 2;
 const CV_MIME_TYPES = new Set([
   'application/pdf',
   'application/msword',
@@ -31,6 +32,18 @@ function isAllowedCv(file: Express.Multer.File): boolean {
   return isAllowedExtension && isAllowedMime;
 }
 
+function assertValidCv(file: Express.Multer.File): void {
+  if (!file.buffer?.length) {
+    throw new BadRequestException('Please attach your CV.');
+  }
+  if (!isAllowedCv(file)) {
+    throw new BadRequestException('Please upload a PDF, DOC, or DOCX file.');
+  }
+  if (file.size > CV_MAX_BYTES) {
+    throw new BadRequestException('File must be 5 MB or smaller.');
+  }
+}
+
 @Injectable()
 export class CvApplicationsService {
   private readonly logger = new Logger(CvApplicationsService.name);
@@ -40,17 +53,22 @@ export class CvApplicationsService {
     private readonly configService: ConfigService,
   ) {}
 
-  async submit(dto: SubmitCvApplicationDto, file: Express.Multer.File | undefined): Promise<{ ok: true }> {
-    if (!file?.buffer?.length) {
+  async submit(
+    dto: SubmitCvApplicationDto,
+    files: Express.Multer.File[] | undefined,
+  ): Promise<{ ok: true }> {
+    const cvFiles = (files ?? []).filter((file) => Boolean(file?.buffer?.length));
+
+    if (cvFiles.length === 0) {
       throw new BadRequestException('Please attach your CV.');
     }
 
-    if (!isAllowedCv(file)) {
-      throw new BadRequestException('Please upload a PDF, DOC, or DOCX file.');
+    if (cvFiles.length > CV_MAX_FILES) {
+      throw new BadRequestException('You can attach up to 2 files.');
     }
 
-    if (file.size > CV_MAX_BYTES) {
-      throw new BadRequestException('File must be 5 MB or smaller.');
+    for (const file of cvFiles) {
+      assertValidCv(file);
     }
 
     const to = this.configService.get<string>('EMAIL_TO')?.trim();
@@ -61,14 +79,13 @@ export class CvApplicationsService {
 
     const fullName = `${dto.firstName} ${dto.lastName}`.trim();
     const message = dto.message?.trim() || '—';
+    const fileNames = cvFiles.map((file) => file.originalname);
     const safe = {
       fullName: escapeHtml(fullName),
-      firstName: escapeHtml(dto.firstName),
-      lastName: escapeHtml(dto.lastName),
       email: escapeHtml(dto.email),
       phone: escapeHtml(dto.phone),
       message: escapeHtml(message).replaceAll('\n', '<br />'),
-      fileName: escapeHtml(file.originalname),
+      fileNamesHtml: fileNames.map((name) => `<li>${escapeHtml(name)}</li>`).join(''),
     };
 
     const sent = await this.emailService.send({
@@ -81,7 +98,7 @@ export class CvApplicationsService {
         `Email: ${dto.email}`,
         `Phone: ${dto.phone}`,
         `Message: ${message}`,
-        `CV: ${file.originalname}`,
+        `CV files: ${fileNames.join(', ')}`,
       ].join('\n'),
       html: `
         <div style="font-family: Arial, sans-serif; line-height: 1.5; color: #101828;">
@@ -91,16 +108,15 @@ export class CvApplicationsService {
           <p><strong>Phone:</strong> ${safe.phone}</p>
           <p><strong>Cover letter:</strong></p>
           <p>${safe.message}</p>
-          <p><strong>CV file:</strong> ${safe.fileName}</p>
+          <p><strong>CV files:</strong></p>
+          <ul>${safe.fileNamesHtml}</ul>
         </div>
       `,
-      attachments: [
-        {
-          filename: file.originalname,
-          content: file.buffer,
-          contentType: file.mimetype || undefined,
-        },
-      ],
+      attachments: cvFiles.map((file) => ({
+        filename: file.originalname,
+        content: file.buffer,
+        contentType: file.mimetype || undefined,
+      })),
     });
 
     if (!sent) {

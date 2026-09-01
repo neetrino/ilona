@@ -14,6 +14,7 @@ import { BUTTON_HOVER_CLASS } from '../landingConstants';
 import type { LandingTr } from '../types';
 
 const CV_MAX_BYTES = 5 * 1024 * 1024;
+const CV_MAX_FILES = 2;
 const CV_ACCEPT = '.pdf,.doc,.docx';
 const CV_MIME_TYPES = new Set([
   'application/pdf',
@@ -49,6 +50,13 @@ const EMPTY_FORM: FormState = {
   message: '',
 };
 
+function isAllowedCvFile(file: File): boolean {
+  const extension = file.name.split('.').pop()?.toLowerCase();
+  const isAllowedExtension = extension === 'pdf' || extension === 'doc' || extension === 'docx';
+  const isAllowedMime = CV_MIME_TYPES.has(file.type) || file.type === '';
+  return isAllowedExtension && isAllowedMime;
+}
+
 export function LandingCvApplicationModal({
   open,
   onOpenChange,
@@ -56,7 +64,7 @@ export function LandingCvApplicationModal({
 }: LandingCvApplicationModalProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
-  const [cvFile, setCvFile] = useState<File | null>(null);
+  const [cvFiles, setCvFiles] = useState<File[]>([]);
   const [cvError, setCvError] = useState<string | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -64,7 +72,7 @@ export function LandingCvApplicationModal({
 
   const resetForm = useCallback(() => {
     setForm(EMPTY_FORM);
-    setCvFile(null);
+    setCvFiles([]);
     setCvError(null);
     setSubmitError(null);
     setIsSubmitting(false);
@@ -86,40 +94,56 @@ export function LandingCvApplicationModal({
 
   const handleFileChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
-      const file = event.target.files?.[0];
-      setCvError(null);
+      const selected = Array.from(event.target.files ?? []);
       setSubmitError(null);
+      event.target.value = '';
 
-      if (!file) {
-        setCvFile(null);
+      if (selected.length === 0) {
         return;
       }
 
-      const extension = file.name.split('.').pop()?.toLowerCase();
-      const isAllowedExtension = extension === 'pdf' || extension === 'doc' || extension === 'docx';
-      const isAllowedMime = CV_MIME_TYPES.has(file.type) || file.type === '';
-
-      if (!isAllowedExtension || !isAllowedMime) {
-        setCvFile(null);
-        setCvError(tr('Please upload a PDF, DOC, or DOCX file.', 'Խնդրում ենք վերբեռնել PDF, DOC կամ DOCX ֆայլ։'));
-        event.target.value = '';
+      const remainingSlots = CV_MAX_FILES - cvFiles.length;
+      if (remainingSlots <= 0) {
+        setCvError(tr('You can attach up to 2 files.', 'Կարող եք կցել մինչև 2 ֆայլ։'));
         return;
       }
 
-      if (file.size > CV_MAX_BYTES) {
-        setCvFile(null);
-        setCvError(tr('File must be 5 MB or smaller.', 'Ֆայլի չափը պետք է լինի 5 ՄԲ կամ ավելի փոքր։'));
-        event.target.value = '';
-        return;
+      const nextFiles = [...cvFiles];
+      let nextError: string | null = null;
+
+      for (const file of selected.slice(0, remainingSlots)) {
+        if (!isAllowedCvFile(file)) {
+          nextError = tr(
+            'Please upload a PDF, DOC, or DOCX file.',
+            'Խնդրում ենք վերբեռնել PDF, DOC կամ DOCX ֆայլ։',
+          );
+          continue;
+        }
+
+        if (file.size > CV_MAX_BYTES) {
+          nextError = tr('File must be 5 MB or smaller.', 'Ֆայլի չափը պետք է լինի 5 ՄԲ կամ ավելի փոքր։');
+          continue;
+        }
+
+        const alreadyAdded = nextFiles.some(
+          (existing) =>
+            existing.name === file.name &&
+            existing.size === file.size &&
+            existing.lastModified === file.lastModified,
+        );
+        if (!alreadyAdded) {
+          nextFiles.push(file);
+        }
       }
 
-      setCvFile(file);
+      setCvFiles(nextFiles);
+      setCvError(nextError);
     },
-    [tr],
+    [cvFiles, tr],
   );
 
-  const handleClearFile = useCallback(() => {
-    setCvFile(null);
+  const handleClearFile = useCallback((index: number) => {
+    setCvFiles((current) => current.filter((_, fileIndex) => fileIndex !== index));
     setCvError(null);
     setSubmitError(null);
     if (fileInputRef.current) {
@@ -132,7 +156,7 @@ export function LandingCvApplicationModal({
       event.preventDefault();
       setSubmitError(null);
 
-      if (!cvFile) {
+      if (cvFiles.length === 0) {
         setCvError(tr('Please attach your CV.', 'Խնդրում ենք ավելացնել CV-ն։'));
         return;
       }
@@ -145,7 +169,9 @@ export function LandingCvApplicationModal({
       if (form.message.trim()) {
         body.append('message', form.message.trim());
       }
-      body.append('cv', cvFile);
+      for (const file of cvFiles) {
+        body.append('cv', file);
+      }
 
       setIsSubmitting(true);
       try {
@@ -161,8 +187,10 @@ export function LandingCvApplicationModal({
         setIsSubmitting(false);
       }
     },
-    [cvFile, form, tr],
+    [cvFiles, form, tr],
   );
+
+  const canAddMoreFiles = cvFiles.length < CV_MAX_FILES;
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -289,51 +317,68 @@ export function LandingCvApplicationModal({
               <div>
                 <p className={LABEL_CLASS}>{tr('CV / Resume', 'CV / ռեզյումե')}</p>
                 <p className="mb-2 text-[12px] leading-[18px] tracking-[-0.15px] text-[#6a7282]">
-                  {tr('PDF, DOC or DOCX, up to 5 MB', 'PDF, DOC կամ DOCX, մինչև 5 ՄԲ')}
-                </p>
-                <div
-                  className={cn(
-                    'flex w-full items-center gap-2 rounded-xl border border-dashed border-[#d1d5dc] bg-[#fafafa] px-4 py-3',
-                    isSubmitting && 'opacity-60',
+                  {tr(
+                    'PDF, DOC or DOCX, up to 5 MB each · max 2 files',
+                    'PDF, DOC կամ DOCX, յուրաքանչյուրը մինչև 5 ՄԲ · մինչև 2 ֆայլ',
                   )}
-                >
-                  <button
-                    type="button"
-                    onClick={() => fileInputRef.current?.click()}
-                    disabled={isSubmitting}
-                    className={cn(
-                      'flex min-w-0 flex-1 items-center justify-center gap-2 transition-colors',
-                      !isSubmitting && 'hover:opacity-90',
-                      isSubmitting && 'cursor-not-allowed',
-                    )}
-                  >
-                    <FileUp className="size-6 shrink-0 text-[#fb2c36]" strokeWidth={2} />
-                    <span className="truncate text-[13px] font-medium leading-[19px] tracking-[-0.15px] text-[#364153]">
-                      {cvFile ? cvFile.name : tr('Choose file', 'Ընտրել ֆայլ')}
-                    </span>
-                  </button>
-                  {cvFile ? (
-                    <button
-                      type="button"
-                      onClick={handleClearFile}
-                      disabled={isSubmitting}
-                      aria-label={tr('Remove file', 'Ջնջել ֆայլը')}
+                </p>
+
+                <div className="space-y-2">
+                  {cvFiles.map((file, index) => (
+                    <div
+                      key={`${file.name}-${file.size}-${file.lastModified}-${index}`}
                       className={cn(
-                        'inline-flex size-8 shrink-0 items-center justify-center rounded-full text-[#6a7282] transition-colors hover:bg-[#e5e7eb] hover:text-[#101828]',
-                        isSubmitting && 'cursor-not-allowed',
+                        'flex w-full items-center gap-2 rounded-xl border border-dashed border-[#d1d5dc] bg-[#fafafa] px-4 py-3',
+                        isSubmitting && 'opacity-60',
                       )}
                     >
-                      <X className="size-4" strokeWidth={2.25} />
+                      <FileUp className="size-6 shrink-0 text-[#fb2c36]" strokeWidth={2} />
+                      <span className="min-w-0 flex-1 truncate text-[13px] font-medium leading-[19px] tracking-[-0.15px] text-[#364153]">
+                        {file.name}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => handleClearFile(index)}
+                        disabled={isSubmitting}
+                        aria-label={tr('Remove file', 'Ջնջել ֆայլը')}
+                        className={cn(
+                          'inline-flex size-8 shrink-0 items-center justify-center rounded-full text-[#6a7282] transition-colors hover:bg-[#e5e7eb] hover:text-[#101828]',
+                          isSubmitting && 'cursor-not-allowed',
+                        )}
+                      >
+                        <X className="size-4" strokeWidth={2.25} />
+                      </button>
+                    </div>
+                  ))}
+
+                  {canAddMoreFiles ? (
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={isSubmitting}
+                      className={cn(
+                        'flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-[#d1d5dc] bg-[#fafafa] px-4 py-3 transition-colors hover:border-[#1b3ba4]/40 hover:bg-[#f3f6fc]',
+                        isSubmitting && 'cursor-not-allowed opacity-60',
+                      )}
+                    >
+                      <FileUp className="size-6 shrink-0 text-[#fb2c36]" strokeWidth={2} />
+                      <span className="truncate text-[13px] font-medium leading-[19px] tracking-[-0.15px] text-[#364153]">
+                        {cvFiles.length === 0
+                          ? tr('Choose file', 'Ընտրել ֆայլ')
+                          : tr('Add another file', 'Ավելացնել ևս մեկ ֆայլ')}
+                      </span>
                     </button>
                   ) : null}
                 </div>
+
                 <input
                   ref={fileInputRef}
                   type="file"
                   accept={CV_ACCEPT}
+                  multiple
                   className="hidden"
                   onChange={handleFileChange}
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || !canAddMoreFiles}
                 />
                 {cvError ? (
                   <p className="mt-2 text-[13px] leading-[19px] text-[#e7000b]">{cvError}</p>
