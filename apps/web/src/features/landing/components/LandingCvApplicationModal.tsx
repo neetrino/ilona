@@ -174,6 +174,7 @@ export function LandingCvApplicationModal({
                     required
                     value={form.firstName}
                     onChange={(event) => setForm((current) => ({ ...current, firstName: event.target.value }))}
+                    placeholder={tr('Enter your first name', 'Մուտքագրեք ձեր անունը')}
                     className={FIELD_CLASS}
                   />
                 </div>
@@ -187,6 +188,7 @@ export function LandingCvApplicationModal({
                     required
                     value={form.lastName}
                     onChange={(event) => setForm((current) => ({ ...current, lastName: event.target.value }))}
+                    placeholder={tr('Enter your last name', 'Մուտքագրեք ձեր ազգանունը')}
                     className={FIELD_CLASS}
                   />
                 </div>
@@ -203,6 +205,7 @@ export function LandingCvApplicationModal({
                     required
                     value={form.email}
                     onChange={(event) => setForm((current) => ({ ...current, email: event.target.value }))}
+                    placeholder={tr('example@email.com', 'example@email.com')}
                     className={FIELD_CLASS}
                   />
                 </div>
@@ -216,6 +219,7 @@ export function LandingCvApplicationModal({
                     required
                     value={form.phone}
                     onChange={(event) => setForm((current) => ({ ...current, phone: event.target.value }))}
+                    placeholder={tr('+374 XX XXX XXX', '+374 XX XXX XXX')}
                     className={FIELD_CLASS}
                   />
                 </div>
@@ -230,6 +234,10 @@ export function LandingCvApplicationModal({
                   rows={2}
                   value={form.message}
                   onChange={(event) => setForm((current) => ({ ...current, message: event.target.value }))}
+                  placeholder={tr(
+                    'Tell us briefly about yourself and why you are a good fit…',
+                    'Կարճ պատմեք ձեր մասին և ինչու եք համապատասխանում…',
+                  )}
                   className={cn(
                     FIELD_CLASS,
                     'min-h-[72px] resize-none py-2.5',
