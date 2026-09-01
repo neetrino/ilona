@@ -130,7 +130,7 @@ export function LatestNewsAdminCard({
 
         <label
           className={cn(
-            'relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center',
+            'relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center',
             isPending && 'cursor-not-allowed opacity-60',
           )}
           title={publishedLabel}
@@ -143,7 +143,7 @@ export function LatestNewsAdminCard({
             className="peer sr-only"
             aria-label={publishedLabel}
           />
-          <span className="h-6 w-11 rounded-full bg-[#f1f1f2] transition-colors peer-checked:bg-[#1010a3] peer-focus-visible:ring-4 peer-focus-visible:ring-[#1010a3]/20 after:absolute after:start-[2px] after:top-[2px] after:size-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white" />
+          <span className="h-5 w-9 rounded-full bg-[#f1f1f2] transition-colors peer-checked:bg-[#1010a3] peer-focus-visible:ring-2 peer-focus-visible:ring-[#1010a3]/20 after:absolute after:start-[2px] after:top-[2px] after:size-4 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all peer-checked:after:translate-x-4 rtl:peer-checked:after:-translate-x-4 peer-checked:after:border-white" />
         </label>
 
         <button
