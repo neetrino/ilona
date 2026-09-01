@@ -12,10 +12,13 @@ import { ManagerTab } from '@/app/[locale]/(admin)/admin/settings/components/Man
 import { DashboardBannerTab } from './components/DashboardBannerTab';
 import { SidebarVisibilityTab } from './components/SidebarVisibilityTab';
 import { FooterIconLinksTab } from './components/FooterIconLinksTab';
+import { LatestNewsTab } from './components/LatestNewsTab';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { useChangePassword, useUpdateProfile } from '@/features/settings';
 import { Button } from '@/shared/components/ui';
 import { useIsIPad } from '@/shared/hooks/useIsIPad';
+
+const MANAGER_ALLOWED_TABS = ['security', 'latest-news'] as const;
 
 export default function SettingsPage() {
   const t = useTranslations('settings');
@@ -36,6 +39,13 @@ export default function SettingsPage() {
   useEffect(() => {
     setEmail(user?.email ?? '');
   }, [user?.email]);
+
+  useEffect(() => {
+    if (!isManager) return;
+    if (activeTab !== 'security' && activeTab !== 'latest-news') {
+      handleTabChange('security');
+    }
+  }, [activeTab, handleTabChange, isManager]);
 
   const handleUpdateLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -75,6 +85,8 @@ export default function SettingsPage() {
     }
   };
 
+  const managerActiveTab = activeTab === 'latest-news' ? 'latest-news' : 'security';
+
   if (isManager) {
     return (
       <DashboardLayout
@@ -83,11 +95,15 @@ export default function SettingsPage() {
       >
         <div className={`flex min-w-0 flex-col gap-4 ${isIPad ? '' : 'lg:flex-row lg:gap-6'}`}>
           <SettingsSidebar
-            activeTab="security"
-            onTabChange={() => {}}
-            allowedTabs={['security']}
+            activeTab={managerActiveTab}
+            onTabChange={handleTabChange}
+            allowedTabs={[...MANAGER_ALLOWED_TABS]}
           />
           <div className="min-w-0 flex-1 space-y-6">
+            {managerActiveTab === 'latest-news' ? (
+              <LatestNewsTab />
+            ) : (
+              <>
             <div className="rounded-3xl border border-[rgba(14,14,16,0.07)] bg-white p-6">
               <h2 className="text-lg font-semibold text-[#3b3b40] mb-6">{tAuth('login')}</h2>
               <form onSubmit={handleUpdateLogin} className="space-y-4">
@@ -171,6 +187,8 @@ export default function SettingsPage() {
                 </div>
               </form>
             </div>
+              </>
+            )}
           </div>
         </div>
       </DashboardLayout>
@@ -217,6 +235,10 @@ export default function SettingsPage() {
 
           {activeTab === 'footer-icon-links' && (
             <FooterIconLinksTab />
+          )}
+
+          {activeTab === 'latest-news' && (
+            <LatestNewsTab />
           )}
         </div>
       </div>

@@ -1,0 +1,84 @@
+import {
+  ArrayMinSize,
+  IsArray,
+  IsBoolean,
+  IsISO8601,
+  IsInt,
+  IsOptional,
+  IsString,
+  MaxLength,
+  Min,
+  MinLength,
+} from 'class-validator';
+import { Transform, Type } from 'class-transformer';
+
+function parseBodyParagraphs(value: unknown): unknown {
+  if (typeof value === 'string') {
+    try {
+      return JSON.parse(value) as unknown;
+    } catch {
+      return value
+        .split(/\n\s*\n/)
+        .map((part) => part.trim())
+        .filter(Boolean);
+    }
+  }
+  return value;
+}
+
+export class CreateBlogPostDto {
+  @IsOptional()
+  @IsString()
+  @MaxLength(120)
+  slug?: string;
+
+  @IsISO8601()
+  publishedAt!: string;
+
+  @IsString()
+  @MinLength(1)
+  @MaxLength(200)
+  titleEn!: string;
+
+  @IsString()
+  @MinLength(1)
+  @MaxLength(200)
+  titleHy!: string;
+
+  @Transform(({ value }) => parseBodyParagraphs(value))
+  @IsArray()
+  @ArrayMinSize(1)
+  @IsString({ each: true })
+  bodyEn!: string[];
+
+  @Transform(({ value }) => parseBodyParagraphs(value))
+  @IsArray()
+  @ArrayMinSize(1)
+  @IsString({ each: true })
+  bodyHy!: string[];
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(64)
+  dateColor?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(120)
+  imageClassName?: string | null;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  sortOrder?: number;
+
+  @IsOptional()
+  @Transform(({ value }) => {
+    if (value === 'true' || value === true) return true;
+    if (value === 'false' || value === false) return false;
+    return value;
+  })
+  @IsBoolean()
+  isPublished?: boolean;
+}

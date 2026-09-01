@@ -51,6 +51,7 @@ import { TeacherNotesModule } from './modules/teacher-notes/teacher-notes.module
 import { StudentNotesModule } from './modules/student-notes/student-notes.module';
 import { SearchModule } from './modules/search/search.module';
 import { CvApplicationsModule } from './modules/cv-applications/cv-applications.module';
+import { BlogPostsModule } from './modules/blog-posts/blog-posts.module';
 
 // Guards
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
@@ -157,6 +158,7 @@ import { AppController } from './app.controller';
     StudentNotesModule,
     SearchModule,
     CvApplicationsModule,
+    BlogPostsModule,
   ],
   providers: [
     // Correlation ID and request logging

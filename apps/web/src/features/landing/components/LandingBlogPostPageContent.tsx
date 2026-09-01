@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import { useAuthStore, getPortalEntryPath } from '@/features/auth/store/auth.store';
+import { useBlogPost } from '@/features/blog';
 import { useLogo } from '@/features/settings/hooks/useSettings';
 import { getFullApiUrl } from '@/shared/lib/api';
 import { LandingNavbar } from '@/shared/components/layout/LandingNavbar';
@@ -12,7 +13,10 @@ import { LandingCanvasScaleRuntime } from '@/shared/components/layout/LandingCan
 import { CanvasScaler } from '@/shared/components/layout/CanvasScaler';
 import { cn } from '@/shared/lib/utils';
 import { useLandingTr } from '../hooks/useLandingTr';
-import { getLandingBlogPost } from '../landingBlogContent';
+import {
+  formatLandingBlogDate,
+  mapBlogPostToLandingView,
+} from '../landingBlogContent';
 import { LandingSectionPlaceholder } from './LandingSectionPlaceholder';
 
 const LandingFooter = dynamic(
@@ -31,17 +35,18 @@ export function LandingBlogPostPageContent({ slug }: LandingBlogPostPageContentP
   const { tr, isHy } = useLandingTr();
   const { isAuthenticated, user } = useAuthStore();
   const { data: logoData } = useLogo();
+  const { data: apiPost, isLoading, isError } = useBlogPost(slug);
   const logoUrl = getFullApiUrl(logoData?.logoUrl) || '/logo.webp';
   const profileHref = isAuthenticated && user ? getPortalEntryPath(user.role) : '/login';
-  const post = getLandingBlogPost(slug);
 
-  if (!post) {
+  if (!isLoading && (isError || !apiPost)) {
     notFound();
   }
 
-  const title = tr(post.titleEn, post.titleHy);
-  const date = tr(post.dateEn, post.dateHy);
-  const paragraphs = isHy ? post.bodyHy : post.bodyEn;
+  const post = apiPost ? mapBlogPostToLandingView(apiPost) : null;
+  const title = post ? tr(post.titleEn, post.titleHy) : '';
+  const date = post ? formatLandingBlogDate(post.publishedAt, isHy) : '';
+  const paragraphs = post ? (isHy ? post.bodyHy : post.bodyEn) : [];
 
   return (
     <>
@@ -57,47 +62,62 @@ export function LandingBlogPostPageContent({ slug }: LandingBlogPostPageContentP
               {tr('← Back to blog', '← Վերադառնալ բլոգ')}
             </Link>
 
-            <div className="relative mt-8 h-[220px] w-full overflow-hidden rounded-[28px] tablet:mt-10 tablet:h-[360px] tablet:rounded-[32px]">
-              <Image
-                src={post.image}
-                alt=""
-                fill
-                unoptimized
-                priority
-                sizes="(max-width: 800px) 100vw, 800px"
-                className={cn('object-cover', post.imageClassName)}
-              />
-              <Image
-                src={post.overlay}
-                alt=""
-                fill
-                unoptimized
-                priority
-                sizes="(max-width: 800px) 100vw, 800px"
-                className={post.imageClassName ?? 'object-cover'}
-              />
-            </div>
+            {isLoading || !post ? (
+              <p className="mt-10 text-[16px] text-[#4a5565]">
+                {tr('Loading…', 'Բեռնվում է…')}
+              </p>
+            ) : (
+              <>
+                <div className="relative mt-8 h-[220px] w-full overflow-hidden rounded-[28px] tablet:mt-10 tablet:h-[360px] tablet:rounded-[32px]">
+                  <Image
+                    src={post.image}
+                    alt=""
+                    fill
+                    unoptimized
+                    priority
+                    sizes="(max-width: 800px) 100vw, 800px"
+                    className={cn('object-cover', post.imageClassName)}
+                  />
+                  {post.overlay ? (
+                    <Image
+                      src={post.overlay}
+                      alt=""
+                      fill
+                      unoptimized
+                      priority
+                      sizes="(max-width: 800px) 100vw, 800px"
+                      className={post.imageClassName ?? 'object-cover'}
+                    />
+                  ) : null}
+                </div>
 
-            <div className="mt-6 inline-flex h-7 items-center rounded-full bg-[#ecf0f7] px-3 ring-1 ring-[#dbe2ee] tablet:mt-8 tablet:h-[28px] tablet:px-4">
-              <span className={cn('text-[12px] font-bold leading-[18px] tablet:text-[14px] tablet:leading-[20px]', post.dateColor)}>
-                {date}
-              </span>
-            </div>
+                <div className="mt-6 inline-flex h-7 items-center rounded-full bg-[#ecf0f7] px-3 ring-1 ring-[#dbe2ee] tablet:mt-8 tablet:h-[28px] tablet:px-4">
+                  <span
+                    className={cn(
+                      'text-[12px] font-bold leading-[18px] tablet:text-[14px] tablet:leading-[20px]',
+                      post.dateColor,
+                    )}
+                  >
+                    {date}
+                  </span>
+                </div>
 
-            <h1 className="mt-4 text-[28px] font-extrabold leading-[36px] tracking-[0.2px] text-[#093394] tablet:mt-6 tablet:text-[40px] tablet:leading-[48px]">
-              {title}
-            </h1>
+                <h1 className="mt-4 text-[28px] font-extrabold leading-[36px] tracking-[0.2px] text-[#093394] tablet:mt-6 tablet:text-[40px] tablet:leading-[48px]">
+                  {title}
+                </h1>
 
-            <div className="mt-6 flex flex-col gap-4 tablet:mt-8 tablet:gap-5">
-              {paragraphs.map((paragraph, index) => (
-                <p
-                  key={index}
-                  className="text-[15px] leading-[24px] tracking-[-0.2px] text-[#4a5565] tablet:text-[18px] tablet:leading-[28px]"
-                >
-                  {paragraph}
-                </p>
-              ))}
-            </div>
+                <div className="mt-6 flex flex-col gap-4 tablet:mt-8 tablet:gap-5">
+                  {paragraphs.map((paragraph, index) => (
+                    <p
+                      key={index}
+                      className="text-[15px] leading-[24px] tracking-[-0.2px] text-[#4a5565] tablet:text-[18px] tablet:leading-[28px]"
+                    >
+                      {paragraph}
+                    </p>
+                  ))}
+                </div>
+              </>
+            )}
           </article>
         </section>
 

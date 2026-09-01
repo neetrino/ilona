@@ -687,6 +687,28 @@ model AuditLog {
   @@map("audit_logs")
 }
 
+model BlogPost {
+  id             String   @id @default(cuid())
+  slug           String   @unique
+  publishedAt    DateTime
+  titleEn        String
+  titleHy        String
+  bodyEn         Json
+  bodyHy         Json
+  imageKey       String
+  overlayKey     String?
+  dateColor      String   @default("text-[#1447e6]")
+  imageClassName String?
+  sortOrder      Int      @default(0)
+  isPublished    Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([isPublished, publishedAt])
+  @@index([sortOrder])
+  @@map("blog_posts")
+}
+
 enum UserRole {
   ADMIN
   MANAGER

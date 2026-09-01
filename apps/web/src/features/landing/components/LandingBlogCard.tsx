@@ -6,13 +6,14 @@ import { cn } from '@/shared/lib/utils';
 import { NEWS_ARROW_ICON } from '../landingConstants';
 import { LANDING_PREMIUM_CARD_CLASS } from '../landingAnimations';
 import { LandingStaggerArticle } from './LandingStaggerGroup';
-import type { LandingBlogPost } from '../landingBlogContent';
+import { formatLandingBlogDate, type LandingBlogPostView } from '../landingBlogContent';
 import type { LandingTr } from '../types';
 
 type LandingBlogCardProps = {
-  post: LandingBlogPost;
+  post: LandingBlogPostView;
   tr: LandingTr;
   variant: 'mobile' | 'desktop';
+  isHy: boolean;
 };
 
 function getFirstSentence(text: string): string {
@@ -22,14 +23,14 @@ function getFirstSentence(text: string): string {
   return match?.[0].trim() ?? trimmed;
 }
 
-function localizePost(post: LandingBlogPost, tr: LandingTr) {
-  const preview = getFirstSentence(tr(post.bodyEn[0], post.bodyHy[0]));
+function localizePost(post: LandingBlogPostView, tr: LandingTr, isHy: boolean) {
+  const preview = getFirstSentence(tr(post.bodyEn[0] ?? '', post.bodyHy[0] ?? ''));
 
   return {
     slug: post.slug,
     image: post.image,
     overlay: post.overlay,
-    date: tr(post.dateEn, post.dateHy),
+    date: formatLandingBlogDate(post.publishedAt, isHy),
     dateColor: post.dateColor,
     title: tr(post.titleEn, post.titleHy),
     preview,
@@ -37,8 +38,8 @@ function localizePost(post: LandingBlogPost, tr: LandingTr) {
   };
 }
 
-export function LandingBlogCard({ post, tr, variant }: LandingBlogCardProps) {
-  const article = localizePost(post, tr);
+export function LandingBlogCard({ post, tr, variant, isHy }: LandingBlogCardProps) {
+  const article = localizePost(post, tr, isHy);
   const href = `/blog/${article.slug}`;
   const isMobile = variant === 'mobile';
 
@@ -73,15 +74,17 @@ export function LandingBlogCard({ post, tr, variant }: LandingBlogCardProps) {
               article.imageClassName ?? 'object-cover',
             )}
           />
-          <Image
-            src={article.overlay}
-            alt=""
-            fill
-            unoptimized
-            loading="lazy"
-            sizes={isMobile ? '(max-width: 743px) 100vw, 384px' : '(max-width: 1200px) 100vw, 384px'}
-            className={article.imageClassName ?? 'object-cover'}
-          />
+          {article.overlay ? (
+            <Image
+              src={article.overlay}
+              alt=""
+              fill
+              unoptimized
+              loading="lazy"
+              sizes={isMobile ? '(max-width: 743px) 100vw, 384px' : '(max-width: 1200px) 100vw, 384px'}
+              className={article.imageClassName ?? 'object-cover'}
+            />
+          ) : null}
         </div>
 
         <div className={cn('flex flex-1 flex-col', isMobile ? 'px-5 pb-5 pt-5' : 'px-8 pb-8 pt-8')}>
