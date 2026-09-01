@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import type { BlogPostDto } from '@ilona/types';
 import {
@@ -9,6 +9,7 @@ import {
   useDeleteBlogPost,
   useUpdateBlogPost,
 } from '@/features/blog';
+import { AutoDismissToast } from '@/shared/components/ui';
 import { getBlogPostCoverUrl } from '@/features/landing/landingBlogContent';
 import { LatestNewsFormSheet } from './LatestNewsFormSheet';
 import { LatestNewsPostsSection } from './LatestNewsPostsSection';
@@ -203,12 +204,21 @@ export function LatestNewsPageContent() {
     : '';
   const isPublishingConfirm = publishConfirm?.nextIsPublished === true;
 
+  const dismissSuccessMessage = useCallback(() => {
+    setSuccessMessage(null);
+  }, []);
+
   return (
     <div className="space-y-6 tablet:space-y-8">
-      {successMessage && !isFormOpen ? (
-        <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700">
-          {successMessage}
-        </div>
+      {successMessage ? (
+        <AutoDismissToast
+          key={successMessage}
+          message={successMessage}
+          variant="success"
+          position="center"
+          durationMs={2500}
+          onDismiss={dismissSuccessMessage}
+        />
       ) : null}
 
       <LatestNewsPostsSection
