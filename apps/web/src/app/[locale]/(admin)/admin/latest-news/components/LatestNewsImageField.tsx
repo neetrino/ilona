@@ -64,21 +64,43 @@ export function LatestNewsImageField({
         )}
       >
         {previewSrc ? (
-          <div className="relative aspect-[16/10] w-full bg-[#ecf0f7]">
-            <Image
-              src={previewSrc}
-              alt=""
-              fill
-              unoptimized
-              className="object-cover"
-            />
-          </div>
+          <>
+            <div className="relative aspect-[16/10] w-full bg-[#ecf0f7]">
+              <Image
+                src={previewSrc}
+                alt=""
+                fill
+                unoptimized
+                className="object-cover"
+              />
+            </div>
+            <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3">
+              <div className="min-w-0">
+                {fileName ? (
+                  <p className="truncate text-sm font-medium text-[#1010a3]">{fileName}</p>
+                ) : (
+                  <p className="text-sm text-[#8b8b90]">{keepCurrentLabel}</p>
+                )}
+                <p className="mt-0.5 text-xs text-[#8b8b90]">{formatsHint}</p>
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={disabled}
+                onClick={() => fileInputRef.current?.click()}
+                className="shrink-0 rounded-[12px]"
+              >
+                {changeLabel}
+              </Button>
+            </div>
+          </>
         ) : (
           <button
             type="button"
             disabled={disabled}
             onClick={() => fileInputRef.current?.click()}
-            className="flex w-full flex-col items-center justify-center gap-3 px-6 py-10 text-center transition-colors hover:bg-[#f0f0fc] disabled:opacity-60"
+            className="relative flex aspect-[16/10] w-full flex-col items-center justify-center gap-3 px-6 text-center transition-colors hover:bg-[#f0f0fc] disabled:opacity-60"
           >
             <span className="flex size-12 items-center justify-center rounded-2xl bg-white text-[#1010a3] shadow-sm">
               <ImagePlus className="size-6" strokeWidth={1.75} />
@@ -87,29 +109,6 @@ export function LatestNewsImageField({
             <span className="max-w-xs text-xs text-[#8b8b90]">{formatsHint}</span>
           </button>
         )}
-
-        {previewSrc ? (
-          <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3">
-            <div className="min-w-0">
-              {fileName ? (
-                <p className="truncate text-sm font-medium text-[#1010a3]">{fileName}</p>
-              ) : (
-                <p className="text-sm text-[#8b8b90]">{keepCurrentLabel}</p>
-              )}
-              <p className="mt-0.5 text-xs text-[#8b8b90]">{formatsHint}</p>
-            </div>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              disabled={disabled}
-              onClick={() => fileInputRef.current?.click()}
-              className="shrink-0 rounded-[12px]"
-            >
-              {changeLabel}
-            </Button>
-          </div>
-        ) : null}
       </div>
 
       <input

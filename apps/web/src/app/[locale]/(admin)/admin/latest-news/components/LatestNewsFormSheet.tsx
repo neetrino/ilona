@@ -48,7 +48,8 @@ type LatestNewsFormSheetProps = {
     chooseImage: string;
     changeImage: string;
     keepCurrentImage: string;
-    save: string;
+    createAction: string;
+    saveAction: string;
     saving: string;
   };
   fileInputRef: RefObject<HTMLInputElement | null>;
@@ -74,7 +75,9 @@ export function LatestNewsFormSheet({
   onSave,
 }: LatestNewsFormSheetProps) {
   const tCommon = useTranslations('common');
-  const title = editingId ? labels.editTitle : labels.createTitle;
+  const isEditing = Boolean(editingId);
+  const title = isEditing ? labels.editTitle : labels.createTitle;
+  const submitLabel = isEditing ? labels.saveAction : labels.createAction;
 
   const requestClose = () => {
     if (isPending) return;
@@ -121,66 +124,7 @@ export function LatestNewsFormSheet({
 
         <PortalFormSheetScrollArea className="min-h-0 flex-1">
           <div className="space-y-5 pb-4">
-            <div className="rounded-2xl bg-white p-4 shadow-sm">
-              <label className="mb-2 block text-sm font-medium text-[#3b3b40]">{labels.titleEn}</label>
-              <input
-                value={form.titleEn}
-                onChange={(e) => onChange({ ...form, titleEn: e.target.value })}
-                className={latestNewsInputClassName}
-                placeholder={labels.titleEnPlaceholder}
-              />
-              <label className="mb-2 mt-4 block text-sm font-medium text-[#3b3b40]">{labels.bodyEn}</label>
-              <textarea
-                rows={5}
-                value={form.bodyEn}
-                onChange={(e) => onChange({ ...form, bodyEn: e.target.value })}
-                className={latestNewsTextareaClassName}
-                placeholder={labels.bodyHint}
-              />
-            </div>
-
-            <div className="rounded-2xl bg-white p-4 shadow-sm">
-              <label className="mb-2 block text-sm font-medium text-[#3b3b40]">{labels.titleHy}</label>
-              <input
-                value={form.titleHy}
-                onChange={(e) => onChange({ ...form, titleHy: e.target.value })}
-                className={latestNewsInputClassName}
-                placeholder={labels.titleHyPlaceholder}
-              />
-              <label className="mb-2 mt-4 block text-sm font-medium text-[#3b3b40]">{labels.bodyHy}</label>
-              <textarea
-                rows={5}
-                value={form.bodyHy}
-                onChange={(e) => onChange({ ...form, bodyHy: e.target.value })}
-                className={latestNewsTextareaClassName}
-                placeholder={labels.bodyHint}
-              />
-            </div>
-
-            <div className="rounded-2xl bg-white p-4 shadow-sm">
-              <label className="mb-2 block text-sm font-medium text-[#3b3b40]">{labels.publishedAt}</label>
-              <input
-                type="date"
-                value={form.publishedAt}
-                onChange={(e) => onChange({ ...form, publishedAt: e.target.value })}
-                className={latestNewsInputClassName}
-              />
-
-              <label className="mt-4 flex cursor-pointer items-center justify-between gap-4 rounded-2xl border border-[rgba(14,14,16,0.07)] bg-[#f7f8fc] px-4 py-3">
-                <span className="text-sm font-medium text-[#3b3b40]">{labels.published}</span>
-                <span className="relative inline-flex h-6 w-11 shrink-0">
-                  <input
-                    type="checkbox"
-                    checked={form.isPublished}
-                    onChange={(e) => onChange({ ...form, isPublished: e.target.checked })}
-                    className="peer sr-only"
-                  />
-                  <span className="h-6 w-11 rounded-full bg-[#f1f1f2] transition-colors peer-checked:bg-[#1010a3] peer-focus-visible:ring-4 peer-focus-visible:ring-[#1010a3]/20 after:absolute after:start-[2px] after:top-[2px] after:size-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white" />
-                </span>
-              </label>
-            </div>
-
-            <div className="rounded-2xl bg-white p-4 shadow-sm">
+            <div className="rounded-2xl bg-white p-4 shadow-sm sm:p-5">
               <LatestNewsImageField
                 label={labels.image}
                 formatsHint={labels.formats}
@@ -194,6 +138,98 @@ export function LatestNewsFormSheet({
                 onFileSelect={onFileSelect}
                 fileInputRef={fileInputRef}
               />
+
+              <div className="mt-5 space-y-4 border-t border-[rgba(14,14,16,0.06)] pt-5">
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-[#3b3b40]">
+                    {labels.titleEn}
+                  </label>
+                  <input
+                    value={form.titleEn}
+                    onChange={(e) => onChange({ ...form, titleEn: e.target.value })}
+                    className={latestNewsInputClassName}
+                    placeholder={labels.titleEnPlaceholder}
+                  />
+                </div>
+
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-[#3b3b40]">
+                    {labels.bodyEn}
+                  </label>
+                  <textarea
+                    rows={4}
+                    value={form.bodyEn}
+                    onChange={(e) => onChange({ ...form, bodyEn: e.target.value })}
+                    className={latestNewsTextareaClassName}
+                    placeholder={labels.bodyHint}
+                  />
+                </div>
+
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-[#3b3b40]">
+                    {labels.titleHy}
+                  </label>
+                  <input
+                    value={form.titleHy}
+                    onChange={(e) => onChange({ ...form, titleHy: e.target.value })}
+                    className={latestNewsInputClassName}
+                    placeholder={labels.titleHyPlaceholder}
+                  />
+                </div>
+
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-[#3b3b40]">
+                    {labels.bodyHy}
+                  </label>
+                  <textarea
+                    rows={4}
+                    value={form.bodyHy}
+                    onChange={(e) => onChange({ ...form, bodyHy: e.target.value })}
+                    className={latestNewsTextareaClassName}
+                    placeholder={labels.bodyHint}
+                  />
+                </div>
+
+                <div className="grid gap-4 tablet:grid-cols-2">
+                  <div>
+                    <label className="mb-2 block text-sm font-medium text-[#3b3b40]">
+                      {labels.publishedAt}
+                    </label>
+                    <input
+                      type="date"
+                      value={form.publishedAt}
+                      onChange={(e) => onChange({ ...form, publishedAt: e.target.value })}
+                      className={latestNewsInputClassName}
+                    />
+                  </div>
+
+                  <div className="flex items-end">
+                    <label className="flex h-11 w-full cursor-pointer items-center justify-between gap-3 rounded-[15px] border border-[rgba(14,14,16,0.07)] bg-[#f7f8fc] px-4">
+                      <span className="text-sm font-medium text-[#3b3b40]">{labels.published}</span>
+                      <span
+                        className={cn(
+                          'relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors duration-200',
+                          form.isPublished ? 'bg-[#1010a3]' : 'bg-slate-300',
+                        )}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={form.isPublished}
+                          onChange={(e) => onChange({ ...form, isPublished: e.target.checked })}
+                          className="peer sr-only"
+                        />
+                        <span
+                          aria-hidden="true"
+                          className={cn(
+                            'absolute top-[2px] left-[2px] size-4 rounded-full border border-slate-300 bg-white shadow-sm transition-transform duration-200',
+                            form.isPublished && 'translate-x-4',
+                          )}
+                        />
+                      </span>
+                    </label>
+                  </div>
+                </div>
+              </div>
             </div>
 
             {errorMessage ? (
@@ -210,7 +246,7 @@ export function LatestNewsFormSheet({
                 onClick={onSave}
                 disabled={isPending}
               >
-                {isPending ? labels.saving : labels.save}
+                {isPending ? labels.saving : submitLabel}
               </Button>
             </div>
           </div>

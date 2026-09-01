@@ -159,6 +159,7 @@ export function LatestNewsPageContent() {
         });
         setSuccessMessage(t('latestNewsCreatedSuccess'));
       }
+      setViewMode(form.isPublished ? 'active' : 'archive');
       closeForm();
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : t('latestNewsSaveFailed'));
@@ -324,7 +325,8 @@ export function LatestNewsPageContent() {
           chooseImage: t('latestNewsChooseImage'),
           changeImage: t('latestNewsChangeImage'),
           keepCurrentImage: t('latestNewsKeepCurrentImage'),
-          save: t('saveChanges'),
+          createAction: t('latestNewsCreatePost'),
+          saveAction: t('saveChanges'),
           saving: t('saving'),
         }}
         fileInputRef={fileInputRef}
