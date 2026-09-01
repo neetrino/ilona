@@ -2033,7 +2033,7 @@
     "footerIconLinksSaveFailed": "Failed to update footer icon links. Please try again.",
     "latestNewsTab": "Latest News",
     "latestNewsTitle": "Latest News",
-    "latestNewsDescription": "Create and manage news posts shown on the public Home and Blog pages. Changes sync for Admin and Manager.",
+    "latestNewsDescription": "Create and manage news posts shown on the public Home and Blog pages.",
     "latestNewsSubtitle": "Click a card to edit a post",
     "latestNewsEmpty": "No posts yet. Create the first one below.",
     "latestNewsCreatePost": "Create post",

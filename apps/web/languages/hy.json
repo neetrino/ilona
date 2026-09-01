@@ -2033,7 +2033,7 @@
     "footerIconLinksSaveFailed": "Չհաջողվեց թարմացնել footer-ի պատկերակների հղումները։ Խնդրում ենք կրկին փորձել։",
     "latestNewsTab": "Վերջին նորություններ",
     "latestNewsTitle": "Վերջին նորություններ",
-    "latestNewsDescription": "Ստեղծեք և կառավարեք Home և Blog էջերում ցուցադրվող նորությունների պոստերը։ Փոփոխությունները համաժամեցվում են Admin-ի և Manager-ի միջև։",
+    "latestNewsDescription": "Ստեղծեք և կառավարեք Home և Blog էջերում ցուցադրվող նորությունների պոստերը։",
     "latestNewsSubtitle": "Սեղմեք կարտի վրա՝ խմբագրելու համար",
     "latestNewsEmpty": "Դեռ պոստեր չկան։ Ստեղծեք առաջինը ներքևում։",
     "latestNewsCreatePost": "Ստեղծել պոստ",
