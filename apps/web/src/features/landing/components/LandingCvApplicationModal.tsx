@@ -1,7 +1,8 @@
 'use client';
 
 import { useCallback, useRef, useState } from 'react';
-import { FileUp, Send, X } from 'lucide-react';
+import { Check, FileUp, Send, X } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { cn } from '@/shared/lib/utils';
 import { api } from '@/shared/lib/api';
 import { ApiError } from '@/shared/lib/api-errors';
@@ -11,6 +12,7 @@ import {
   DialogTitle,
 } from '@/shared/components/ui';
 import { BUTTON_HOVER_CLASS } from '../landingConstants';
+import { paytoneOne } from '../landingFont';
 import type { LandingTr } from '../types';
 
 const CV_MAX_BYTES = 5 * 1024 * 1024;
@@ -202,34 +204,69 @@ export function LandingCvApplicationModal({
         onOpenAutoFocus={(event) => event.preventDefault()}
       >
         <div className="px-5 pb-5 pt-6 tablet:px-7 tablet:pb-6 tablet:pt-7">
-          <DialogTitle className="text-[22px] font-bold leading-[30px] tracking-[-0.35px] text-[#1b3ba4] tablet:text-[24px] tablet:leading-[32px]">
-            {tr('Apply for the Position', 'Դիմել հաստիքին')}
-          </DialogTitle>
-
           {isSubmitted ? (
-            <div className="mt-8 rounded-2xl bg-[#ecf0f7] px-5 py-6 text-center">
-              <p className="text-[16px] font-medium leading-[24px] tracking-[-0.31px] text-[#101828]">
+            <>
+              <DialogTitle className="sr-only">
                 {tr('Application received!', 'Դիմումը ստացվել է!')}
-              </p>
-              <p className="mt-2 text-[14px] leading-[21px] tracking-[-0.31px] text-[#4a5565]">
-                {tr(
-                  'Thank you for your interest. We will review your application and get back to you soon.',
-                  'Շնորհակալություն հետաքրքրության համար։ Մենք կուսումնասիրենք ձեր դիմումը և շուտով կկապ հաստատենք ձեզ հետ։',
-                )}
-              </p>
-              <button
-                type="button"
-                onClick={() => handleOpenChange(false)}
-                className={cn(
-                  'mt-6 inline-flex h-11 items-center justify-center rounded-full bg-[#1b3ba4] px-8 text-[14px] font-medium leading-[21px] tracking-[-0.31px] text-white shadow-md',
-                  BUTTON_HOVER_CLASS,
-                )}
+              </DialogTitle>
+              <motion.div
+                initial={{ opacity: 0, y: 12, scale: 0.98 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+                className="relative overflow-hidden rounded-[20px] bg-[linear-gradient(155deg,#eef3fb_0%,#f7f9fd_48%,#ffffff_100%)] px-5 py-8 text-center tablet:px-8 tablet:py-10"
               >
-                {tr('Close', 'Փակել')}
-              </button>
-            </div>
+                <div
+                  aria-hidden
+                  className="pointer-events-none absolute -left-10 -top-12 size-40 rounded-full bg-[radial-gradient(circle,rgba(27,59,164,0.16)_0%,rgba(27,59,164,0)_70%)]"
+                />
+                <div
+                  aria-hidden
+                  className="pointer-events-none absolute -bottom-16 -right-8 size-44 rounded-full bg-[radial-gradient(circle,rgba(25,60,184,0.14)_0%,rgba(25,60,184,0)_72%)]"
+                />
+
+                <motion.div
+                  initial={{ scale: 0.7, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ delay: 0.08, type: 'spring', stiffness: 260, damping: 18 }}
+                  className="relative mx-auto flex size-16 items-center justify-center rounded-full bg-[linear-gradient(145deg,#1c398e_0%,#1b3ba4_55%,#193cb8_100%)] shadow-[0_12px_28px_rgba(27,59,164,0.28)]"
+                >
+                  <Check className="size-8 text-white" strokeWidth={2.75} />
+                </motion.div>
+
+                <h2
+                  className={cn(
+                    paytoneOne.className,
+                    'relative mt-5 text-[26px] leading-[34px] tracking-[0.2px] text-[#1b3ba4] tablet:text-[30px] tablet:leading-[38px]',
+                  )}
+                >
+                  {tr('Application received!', 'Դիմումը ստացվել է!')}
+                </h2>
+                <p className="relative mx-auto mt-3 max-w-[420px] text-[14px] leading-[22px] tracking-[-0.31px] text-[#4a5565] tablet:text-[15px] tablet:leading-[24px]">
+                  {tr(
+                    'Thank you for your interest. We will review your application and get back to you soon.',
+                    'Շնորհակալություն հետաքրքրության համար։ Մենք կուսումնասիրենք ձեր դիմումը և շուտով կկապ հաստատենք ձեզ հետ։',
+                  )}
+                </p>
+
+                <button
+                  type="button"
+                  onClick={() => handleOpenChange(false)}
+                  className={cn(
+                    'relative mt-7 inline-flex h-12 items-center justify-center rounded-full bg-[#1b3ba4] px-10 text-[15px] font-medium leading-[22px] tracking-[-0.31px] text-white shadow-[0_10px_24px_rgba(27,59,164,0.28)]',
+                    BUTTON_HOVER_CLASS,
+                  )}
+                >
+                  {tr('Close', 'Փակել')}
+                </button>
+              </motion.div>
+            </>
           ) : (
-            <form onSubmit={handleSubmit} className="mt-4 space-y-3.5">
+            <>
+              <DialogTitle className="text-[22px] font-bold leading-[30px] tracking-[-0.35px] text-[#1b3ba4] tablet:text-[24px] tablet:leading-[32px]">
+                {tr('Apply for the Position', 'Դիմել հաստիքին')}
+              </DialogTitle>
+
+              <form onSubmit={handleSubmit} className="mt-4 space-y-3.5">
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className={LABEL_CLASS} htmlFor="cv-first-name">
@@ -408,6 +445,7 @@ export function LandingCvApplicationModal({
                 </button>
               </div>
             </form>
+            </>
           )}
         </div>
       </DialogContent>
