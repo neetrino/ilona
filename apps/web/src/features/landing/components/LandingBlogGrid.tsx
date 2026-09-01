@@ -103,7 +103,7 @@ export function LandingBlogGrid({
           {posts.length === 0 ? (
             <p className="text-[16px] text-[#4a5565]">{emptyMessage}</p>
           ) : (
-            <LandingStaggerGroup className="grid grid-cols-3 items-start gap-x-8 gap-y-8">
+            <LandingStaggerGroup className="grid grid-cols-3 items-stretch gap-x-8 gap-y-8">
               {posts.map((post, index) => (
                 <LandingBlogCard
                   key={post.slug}
