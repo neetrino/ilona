@@ -2043,6 +2043,8 @@
     "latestNewsDraft": "Draft",
     "latestNewsTitleEn": "Title (English)",
     "latestNewsTitleHy": "Title (Armenian)",
+    "latestNewsTitleEnPlaceholder": "e.g. Achievement Awards",
+    "latestNewsTitleHyPlaceholder": "e.g. Հաջողության մրցանակաբաշխություն",
     "latestNewsBodyEn": "Body (English)",
     "latestNewsBodyHy": "Body (Armenian)",
     "latestNewsBodyHint": "Separate paragraphs with a blank line.",

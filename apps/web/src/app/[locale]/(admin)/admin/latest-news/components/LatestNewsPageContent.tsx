@@ -199,6 +199,8 @@ export function LatestNewsPageContent() {
           cancelEdit: t('latestNewsCancelEdit'),
           titleEn: t('latestNewsTitleEn'),
           titleHy: t('latestNewsTitleHy'),
+          titleEnPlaceholder: t('latestNewsTitleEnPlaceholder'),
+          titleHyPlaceholder: t('latestNewsTitleHyPlaceholder'),
           bodyEn: t('latestNewsBodyEn'),
           bodyHy: t('latestNewsBodyHy'),
           bodyHint: t('latestNewsBodyHint'),

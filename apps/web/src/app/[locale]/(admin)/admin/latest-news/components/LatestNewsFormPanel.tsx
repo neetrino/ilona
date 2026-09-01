@@ -24,6 +24,8 @@ type LatestNewsFormPanelProps = {
     cancelEdit: string;
     titleEn: string;
     titleHy: string;
+    titleEnPlaceholder: string;
+    titleHyPlaceholder: string;
     bodyEn: string;
     bodyHy: string;
     bodyHint: string;
@@ -94,6 +96,7 @@ export function LatestNewsFormPanel({
               value={form.titleEn}
               onChange={(e) => onChange({ ...form, titleEn: e.target.value })}
               className={latestNewsInputClassName}
+              placeholder={labels.titleEnPlaceholder}
             />
             <label className="mb-2 mt-4 block text-sm font-medium text-[#3b3b40]">{labels.bodyEn}</label>
             <textarea
@@ -111,6 +114,7 @@ export function LatestNewsFormPanel({
               value={form.titleHy}
               onChange={(e) => onChange({ ...form, titleHy: e.target.value })}
               className={latestNewsInputClassName}
+              placeholder={labels.titleHyPlaceholder}
             />
             <label className="mb-2 mt-4 block text-sm font-medium text-[#3b3b40]">{labels.bodyHy}</label>
             <textarea

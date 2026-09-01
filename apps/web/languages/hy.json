@@ -2043,6 +2043,8 @@
     "latestNewsDraft": "Սևագիր",
     "latestNewsTitleEn": "Վերնագիր (անգլերեն)",
     "latestNewsTitleHy": "Վերնագիր (հայերեն)",
+    "latestNewsTitleEnPlaceholder": "օր.՝ Achievement Awards",
+    "latestNewsTitleHyPlaceholder": "օր.՝ Հաջողության մրցանակաբաշխություն",
     "latestNewsBodyEn": "Տեքստ (անգլերեն)",
     "latestNewsBodyHy": "Տեքստ (հայերեն)",
     "latestNewsBodyHint": "Պարբերությունները բաժանեք դատարկ տողով։",
