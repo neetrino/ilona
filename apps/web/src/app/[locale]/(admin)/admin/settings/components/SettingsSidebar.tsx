@@ -2,7 +2,10 @@
 
 import { useTranslations } from 'next-intl';
 import { useLocale } from 'next-intl';
+import { Link } from '@/config/navigation';
+import { useAuthStore } from '@/features/auth/store/auth.store';
 import { useIsIPad } from '@/shared/hooks/useIsIPad';
+import { toRolePortalPath } from '@/shared/lib/role-routes';
 import { cn } from '@/shared/lib/utils';
 
 type SettingsTab =
@@ -26,6 +29,8 @@ export function SettingsSidebar({ activeTab, onTabChange, allowedTabs }: Setting
   const locale = useLocale();
   const isIPad = useIsIPad();
   const isArmenianLocale = locale === 'hy';
+  const { user } = useAuthStore();
+  const latestNewsHref = toRolePortalPath('/admin/latest-news', user?.role);
 
   const allTabs: { id: SettingsTab; label: string; icon: React.ReactNode }[] = [
     {
@@ -120,32 +125,50 @@ export function SettingsSidebar({ activeTab, onTabChange, allowedTabs }: Setting
         )}
         style={{ msOverflowStyle: 'none', scrollbarWidth: 'none' }}
       >
-        {tabs.map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => onTabChange(tab.id)}
-            title={tab.label}
-            className={cn(
-              'flex min-w-0 shrink-0 items-center gap-3 rounded-xl text-left transition-colors',
-              isIPad ? 'max-w-[12rem] py-2.5' : 'py-3 lg:w-full',
-              isArmenianLocale ? (isIPad ? 'px-3.5' : 'px-5') : isIPad ? 'px-3' : 'px-4',
-              activeTab === tab.id
-                ? 'bg-[#f0f0fc] text-[#1010a3]'
-                : 'text-[#3b3b40] hover:bg-[#fafafa]',
-            )}
-          >
-            <span className="shrink-0">{tab.icon}</span>
-            <span
-              className={cn(
-                'min-w-0 font-medium',
-                isArmenianLocale && 'pl-0.5',
-                isIPad && 'truncate text-sm',
-              )}
+        {tabs.map((tab) => {
+          const itemClassName = cn(
+            'flex min-w-0 shrink-0 items-center gap-3 rounded-xl text-left transition-colors',
+            isIPad ? 'max-w-[12rem] py-2.5' : 'py-3 lg:w-full',
+            isArmenianLocale ? (isIPad ? 'px-3.5' : 'px-5') : isIPad ? 'px-3' : 'px-4',
+            activeTab === tab.id
+              ? 'bg-[#f0f0fc] text-[#1010a3]'
+              : 'text-[#3b3b40] hover:bg-[#fafafa]',
+          );
+          const label = (
+            <>
+              <span className="shrink-0">{tab.icon}</span>
+              <span
+                className={cn(
+                  'min-w-0 font-medium',
+                  isArmenianLocale && 'pl-0.5',
+                  isIPad && 'truncate text-sm',
+                )}
+              >
+                {tab.label}
+              </span>
+            </>
+          );
+
+          if (tab.id === 'latest-news') {
+            return (
+              <Link key={tab.id} href={latestNewsHref} title={tab.label} className={itemClassName}>
+                {label}
+              </Link>
+            );
+          }
+
+          return (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => onTabChange(tab.id)}
+              title={tab.label}
+              className={itemClassName}
             >
-              {tab.label}
-            </span>
-          </button>
-        ))}
+              {label}
+            </button>
+          );
+        })}
       </nav>
     </div>
   );

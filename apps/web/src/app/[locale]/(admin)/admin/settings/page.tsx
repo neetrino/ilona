@@ -2,6 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
+import { useRouter } from '@/config/navigation';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { useSettingsPage } from './hooks/useSettingsPage';
 import { SettingsSidebar } from './components/SettingsSidebar';
@@ -12,17 +13,18 @@ import { ManagerTab } from '@/app/[locale]/(admin)/admin/settings/components/Man
 import { DashboardBannerTab } from './components/DashboardBannerTab';
 import { SidebarVisibilityTab } from './components/SidebarVisibilityTab';
 import { FooterIconLinksTab } from './components/FooterIconLinksTab';
-import { LatestNewsTab } from './components/LatestNewsTab';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { useChangePassword, useUpdateProfile } from '@/features/settings';
 import { Button } from '@/shared/components/ui';
 import { useIsIPad } from '@/shared/hooks/useIsIPad';
+import { toRolePortalPath } from '@/shared/lib/role-routes';
 
 const MANAGER_ALLOWED_TABS = ['security', 'latest-news'] as const;
 
 export default function SettingsPage() {
   const t = useTranslations('settings');
   const tAuth = useTranslations('auth');
+  const router = useRouter();
   const { user } = useAuthStore();
   const isIPad = useIsIPad();
   const isManager = user?.role === 'MANAGER';
@@ -39,6 +41,12 @@ export default function SettingsPage() {
   useEffect(() => {
     setEmail(user?.email ?? '');
   }, [user?.email]);
+
+  useEffect(() => {
+    if (activeTab === 'latest-news') {
+      router.replace(toRolePortalPath('/admin/latest-news', user?.role));
+    }
+  }, [activeTab, router, user?.role]);
 
   useEffect(() => {
     if (!isManager) return;
@@ -85,7 +93,9 @@ export default function SettingsPage() {
     }
   };
 
-  const managerActiveTab = activeTab === 'latest-news' ? 'latest-news' : 'security';
+  if (activeTab === 'latest-news') {
+    return null;
+  }
 
   if (isManager) {
     return (
@@ -95,15 +105,11 @@ export default function SettingsPage() {
       >
         <div className={`flex min-w-0 flex-col gap-4 ${isIPad ? '' : 'lg:flex-row lg:gap-6'}`}>
           <SettingsSidebar
-            activeTab={managerActiveTab}
+            activeTab="security"
             onTabChange={handleTabChange}
             allowedTabs={[...MANAGER_ALLOWED_TABS]}
           />
           <div className="min-w-0 flex-1 space-y-6">
-            {managerActiveTab === 'latest-news' ? (
-              <LatestNewsTab />
-            ) : (
-              <>
             <div className="rounded-3xl border border-[rgba(14,14,16,0.07)] bg-white p-6">
               <h2 className="text-lg font-semibold text-[#3b3b40] mb-6">{tAuth('login')}</h2>
               <form onSubmit={handleUpdateLogin} className="space-y-4">
@@ -187,8 +193,6 @@ export default function SettingsPage() {
                 </div>
               </form>
             </div>
-              </>
-            )}
           </div>
         </div>
       </DashboardLayout>
@@ -235,10 +239,6 @@ export default function SettingsPage() {
 
           {activeTab === 'footer-icon-links' && (
             <FooterIconLinksTab />
-          )}
-
-          {activeTab === 'latest-news' && (
-            <LatestNewsTab />
           )}
         </div>
       </div>
