@@ -16,12 +16,14 @@ type LatestNewsPostsSectionProps = {
   loadingLabel: string;
   emptyLabel: string;
   draftLabel: string;
+  publishedLabel: string;
   editHintLabel: string;
   removeLabel: string;
   createLabel: string;
   onCreate: () => void;
   onSelect: (post: BlogPostDto) => void;
   onDelete: (post: BlogPostDto) => void;
+  onTogglePublished: (post: BlogPostDto, isPublished: boolean) => void;
 };
 
 export function LatestNewsPostsSection({
@@ -35,12 +37,14 @@ export function LatestNewsPostsSection({
   loadingLabel,
   emptyLabel,
   draftLabel,
+  publishedLabel,
   editHintLabel,
   removeLabel,
   createLabel,
   onCreate,
   onSelect,
   onDelete,
+  onTogglePublished,
 }: LatestNewsPostsSectionProps) {
   return (
     <section className="overflow-hidden rounded-3xl border border-[rgba(14,14,16,0.07)] bg-white shadow-[0_12px_40px_rgba(16,16,163,0.04)]">
@@ -94,10 +98,12 @@ export function LatestNewsPostsSection({
             loadingLabel={loadingLabel}
             emptyLabel={emptyLabel}
             draftLabel={draftLabel}
+            publishedLabel={publishedLabel}
             editHintLabel={editHintLabel}
             removeLabel={removeLabel}
             onSelect={onSelect}
             onDelete={onDelete}
+            onTogglePublished={onTogglePublished}
           />
         )}
       </div>

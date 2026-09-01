@@ -12,10 +12,12 @@ type LatestNewsCardsGridProps = {
   loadingLabel: string;
   emptyLabel: string;
   draftLabel: string;
+  publishedLabel: string;
   editHintLabel: string;
   removeLabel: string;
   onSelect: (post: BlogPostDto) => void;
   onDelete: (post: BlogPostDto) => void;
+  onTogglePublished: (post: BlogPostDto, isPublished: boolean) => void;
 };
 
 export function LatestNewsCardsGrid({
@@ -27,10 +29,12 @@ export function LatestNewsCardsGrid({
   loadingLabel,
   emptyLabel,
   draftLabel,
+  publishedLabel,
   editHintLabel,
   removeLabel,
   onSelect,
   onDelete,
+  onTogglePublished,
 }: LatestNewsCardsGridProps) {
   if (isLoading) {
     return <p className="text-sm text-[#8b8b90]">{loadingLabel}</p>;
@@ -50,10 +54,12 @@ export function LatestNewsCardsGrid({
             isSelected={selectedId === post.id}
             isPending={isPending}
             draftLabel={draftLabel}
+            publishedLabel={publishedLabel}
             editHintLabel={editHintLabel}
             removeLabel={removeLabel}
             onSelect={onSelect}
             onDelete={onDelete}
+            onTogglePublished={onTogglePublished}
           />
         </li>
       ))}

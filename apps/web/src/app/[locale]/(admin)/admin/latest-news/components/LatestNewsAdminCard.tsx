@@ -1,10 +1,9 @@
 'use client';
 
 import Image from 'next/image';
+import { Globe, GlobeLock, Pencil, Trash2 } from 'lucide-react';
 import type { BlogPostDto } from '@ilona/types';
-import { Button } from '@/shared/components/ui';
 import { cn } from '@/shared/lib/utils';
-import { NEWS_ARROW_ICON } from '@/features/landing/landingConstants';
 import {
   formatLandingBlogDate,
   mapBlogPostToLandingView,
@@ -16,10 +15,12 @@ type LatestNewsAdminCardProps = {
   isSelected: boolean;
   isPending: boolean;
   draftLabel: string;
+  publishedLabel: string;
   editHintLabel: string;
   removeLabel: string;
   onSelect: (post: BlogPostDto) => void;
   onDelete: (post: BlogPostDto) => void;
+  onTogglePublished: (post: BlogPostDto, isPublished: boolean) => void;
 };
 
 function getFirstSentence(text: string): string {
@@ -28,21 +29,31 @@ function getFirstSentence(text: string): string {
   return match?.[0].trim() ?? trimmed;
 }
 
+const iconButtonClassName = cn(
+  'rounded-lg p-2 transition-colors duration-150 ease-out',
+  'focus:outline-none focus:ring-2 focus:ring-offset-1',
+  'disabled:cursor-not-allowed disabled:opacity-50',
+  'active:scale-95',
+);
+
 export function LatestNewsAdminCard({
   post,
   isHy,
   isSelected,
   isPending,
   draftLabel,
+  publishedLabel,
   editHintLabel,
   removeLabel,
   onSelect,
   onDelete,
+  onTogglePublished,
 }: LatestNewsAdminCardProps) {
   const view = mapBlogPostToLandingView(post);
   const title = isHy ? view.titleHy : view.titleEn;
   const preview = getFirstSentence(isHy ? (view.bodyHy[0] ?? '') : (view.bodyEn[0] ?? ''));
   const date = formatLandingBlogDate(view.publishedAt, isHy);
+  const PublishIcon = post.isPublished ? Globe : GlobeLock;
 
   return (
     <article
@@ -100,34 +111,54 @@ export function LatestNewsAdminCard({
           <p className="mt-2 line-clamp-2 text-[13px] leading-[19.5px] tracking-[-0.31px] text-[#4a5565] tablet:mt-3 tablet:text-[16px] tablet:leading-[24px]">
             {preview}
           </p>
-
-          <div className="mt-3 flex justify-end tablet:mt-auto tablet:pt-4">
-            <span className="inline-flex items-center gap-2 text-[13px] font-bold leading-[19.5px] text-[#155dfc] transition-opacity group-hover:opacity-80 tablet:text-[16px] tablet:leading-[24px]">
-              <span>{editHintLabel}</span>
-              <Image
-                src={NEWS_ARROW_ICON}
-                alt=""
-                width={14}
-                height={14}
-                unoptimized
-                className="tablet:h-4 tablet:w-4"
-              />
-            </span>
-          </div>
         </div>
       </button>
 
-      <div className="border-t border-[rgba(14,14,16,0.06)] px-5 py-3 tablet:px-8">
-        <Button
+      <div className="flex items-center justify-end gap-1 border-t border-[rgba(14,14,16,0.06)] px-5 py-3 tablet:px-8">
+        <button
           type="button"
-          variant="ghost"
-          size="sm"
-          className="w-full text-red-600 hover:bg-red-50 hover:text-red-700"
+          aria-label={editHintLabel}
+          title={editHintLabel}
+          disabled={isPending}
+          onClick={() => onSelect(post)}
+          className={cn(
+            iconButtonClassName,
+            'text-slate-900 hover:bg-slate-50 hover:text-slate-700 focus:ring-slate-400',
+          )}
+        >
+          <Pencil className="size-4" aria-hidden="true" />
+        </button>
+
+        <button
+          type="button"
+          aria-label={publishedLabel}
+          title={publishedLabel}
+          disabled={isPending}
+          onClick={() => onTogglePublished(post, !post.isPublished)}
+          className={cn(
+            iconButtonClassName,
+            post.isPublished
+              ? 'text-[#1010a3] hover:bg-[#1010a3]/10 focus:ring-[#1010a3]/30'
+              : 'text-slate-400 hover:bg-slate-50 hover:text-slate-700 focus:ring-slate-400',
+          )}
+        >
+          <PublishIcon className="size-4" aria-hidden="true" />
+        </button>
+
+        <button
+          type="button"
+          aria-label={removeLabel}
+          title={removeLabel}
           disabled={isPending}
           onClick={() => onDelete(post)}
+          className={cn(
+            iconButtonClassName,
+            'text-red-600 hover:bg-red-50 hover:text-red-700 focus:ring-red-400/30',
+            'disabled:hover:bg-transparent disabled:hover:text-red-600',
+          )}
         >
-          {removeLabel}
-        </Button>
+          <Trash2 className="size-4" aria-hidden="true" />
+        </button>
       </div>
     </article>
   );

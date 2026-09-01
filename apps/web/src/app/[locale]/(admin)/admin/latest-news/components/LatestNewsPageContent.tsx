@@ -164,6 +164,23 @@ export function LatestNewsPageContent() {
     }
   };
 
+  const handleTogglePublished = async (post: BlogPostDto, isPublished: boolean) => {
+    setErrorMessage(null);
+    setSuccessMessage(null);
+    try {
+      await updateMutation.mutateAsync({
+        id: post.id,
+        payload: { isPublished },
+      });
+      if (editingId === post.id) {
+        setForm((prev) => ({ ...prev, isPublished }));
+      }
+      setSuccessMessage(t('latestNewsUpdatedSuccess'));
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : t('latestNewsSaveFailed'));
+    }
+  };
+
   return (
     <div className="space-y-6 tablet:space-y-8">
       {successMessage && !isFormOpen ? (
@@ -183,12 +200,14 @@ export function LatestNewsPageContent() {
         loadingLabel={t('loading')}
         emptyLabel={t('latestNewsEmpty')}
         draftLabel={t('latestNewsDraft')}
+        publishedLabel={t('latestNewsPublished')}
         editHintLabel={t('latestNewsEdit')}
         removeLabel={t('remove')}
         createLabel={t('latestNewsCreatePost')}
         onCreate={handleCreate}
         onSelect={handleEdit}
         onDelete={(post) => void handleDelete(post)}
+        onTogglePublished={(post, isPublished) => void handleTogglePublished(post, isPublished)}
       />
 
       <LatestNewsFormSheet
