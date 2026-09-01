@@ -141,10 +141,6 @@ export function LandingNavbar({
   ) => {
     setMenuOpen(false);
 
-    if (sectionId === 'blog') {
-      return;
-    }
-
     if (!isOnHomePage || !onSectionNavigate) {
       return;
     }

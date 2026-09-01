@@ -9,6 +9,7 @@ import { LandingCanvasScaleRuntime } from '@/shared/components/layout/LandingCan
 import { CanvasScaler } from '@/shared/components/layout/CanvasScaler';
 import { useLandingTr } from '../hooks/useLandingTr';
 import { useLandingActiveSection } from '../hooks/useLandingActiveSection';
+import { useLandingHashScroll } from '../hooks/useLandingHashScroll';
 import { useScrollPositionRestore } from '../hooks/useScrollPositionRestore';
 import { LANDING_NAV_SECTION_IDS } from '../landingNav';
 import { LandingHeroSection } from './LandingHeroSection';
@@ -95,6 +96,7 @@ export function LandingPageContent() {
   const logoUrl = getFullApiUrl(logoData?.logoUrl) || '/logo.webp';
   const profileHref = isAuthenticated && user ? getPortalEntryPath(user.role) : '/login';
   const { activeSection, scrollToSection } = useLandingActiveSection(LANDING_NAV_SECTION_IDS, true);
+  useLandingHashScroll(scrollToSection, true);
   useScrollPositionRestore();
 
   return (

@@ -5,7 +5,7 @@ export const LANDING_NAV_ITEMS = [
   { id: 'teachers', href: '/' },
   { id: 'branches', href: '/' },
   { id: 'contact', href: '/' },
-  { id: 'blog', href: '/blog' },
+  { id: 'blog', href: '/#blog' },
 ] as const;
 
 export type LandingNavSectionId = (typeof LANDING_NAV_ITEMS)[number]['id'];
