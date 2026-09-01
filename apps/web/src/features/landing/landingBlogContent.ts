@@ -26,6 +26,31 @@ export function formatLandingBlogDate(isoDate: string, isHy: boolean): string {
   }).format(date);
 }
 
+const BLOG_DATE_BADGE_STYLES: Record<string, { shell: string; text: string }> = {
+  'text-[#1447e6]': {
+    shell: 'bg-gradient-to-r from-[#e8efff] to-[#dbe7ff] ring-[#b8ccff]/80',
+    text: 'text-[#1447e6]',
+  },
+  'text-[#008236]': {
+    shell: 'bg-gradient-to-r from-[#e6f8ee] to-[#d4f3e1] ring-[#9ad9b5]/80',
+    text: 'text-[#008236]',
+  },
+  'text-[#8200db]': {
+    shell: 'bg-gradient-to-r from-[#f4e8ff] to-[#ead5ff] ring-[#d0a8f5]/80',
+    text: 'text-[#8200db]',
+  },
+};
+
+const DEFAULT_BLOG_DATE_BADGE = {
+  shell: 'bg-gradient-to-r from-[#eef1ff] to-[#e4e9ff] ring-[#c5cdf8]/80',
+  text: 'text-[#1010a3]',
+};
+
+/** Soft colorful chip styles for blog date badges on landing cards/pages. */
+export function getBlogDateBadgeClasses(dateColor: string): { shell: string; text: string } {
+  return BLOG_DATE_BADGE_STYLES[dateColor] ?? DEFAULT_BLOG_DATE_BADGE;
+}
+
 /**
  * Seeded Figma posts store a base `imageUrl` plus an opaque `overlayUrl`.
  * The overlay is the real cover visitors should see; admin "Cover image" must match.

@@ -6,7 +6,7 @@ import { cn } from '@/shared/lib/utils';
 import { NEWS_ARROW_ICON } from '../landingConstants';
 import { LANDING_PREMIUM_CARD_CLASS } from '../landingAnimations';
 import { LandingStaggerArticle } from './LandingStaggerGroup';
-import { formatLandingBlogDate, type LandingBlogPostView } from '../landingBlogContent';
+import { formatLandingBlogDate, getBlogDateBadgeClasses, type LandingBlogPostView } from '../landingBlogContent';
 import type { LandingTr } from '../types';
 
 type LandingBlogCardProps = {
@@ -48,6 +48,7 @@ export function LandingBlogCard({
   const article = localizePost(post, tr, isHy);
   const href = `/blog/${article.slug}`;
   const isMobile = variant === 'mobile';
+  const dateBadge = getBlogDateBadgeClasses(article.dateColor);
 
   return (
     <LandingStaggerArticle
@@ -93,14 +94,15 @@ export function LandingBlogCard({
           <div className={cn('flex h-7 shrink-0 items-center', isMobile ? '' : 'h-[28px]')}>
             <div
               className={cn(
-                'inline-flex h-full items-center rounded-full bg-white shadow-[0_1px_2px_rgba(9,51,148,0.06)] ring-1 ring-[#dbe2ee]',
+                'inline-flex h-full items-center rounded-full shadow-[0_2px_8px_rgba(16,16,163,0.08)] ring-1',
+                dateBadge.shell,
                 isMobile ? 'px-3' : 'px-4',
               )}
             >
               <span
                 className={cn(
                   'font-bold tabular-nums',
-                  article.dateColor,
+                  dateBadge.text,
                   isMobile
                     ? 'text-[12px] leading-[18px] tracking-[-0.15px]'
                     : 'text-[14px] leading-[20px] tracking-[-0.1504px]',

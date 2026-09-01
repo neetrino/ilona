@@ -15,6 +15,7 @@ import { cn } from '@/shared/lib/utils';
 import { useLandingTr } from '../hooks/useLandingTr';
 import {
   formatLandingBlogDate,
+  getBlogDateBadgeClasses,
   mapBlogPostToLandingView,
 } from '../landingBlogContent';
 import { LandingSectionPlaceholder } from './LandingSectionPlaceholder';
@@ -47,6 +48,7 @@ export function LandingBlogPostPageContent({ slug }: LandingBlogPostPageContentP
   const title = post ? tr(post.titleEn, post.titleHy) : '';
   const date = post ? formatLandingBlogDate(post.publishedAt, isHy) : '';
   const paragraphs = post ? (isHy ? post.bodyHy : post.bodyEn) : [];
+  const dateBadge = post ? getBlogDateBadgeClasses(post.dateColor) : null;
 
   return (
     <>
@@ -96,11 +98,16 @@ export function LandingBlogPostPageContent({ slug }: LandingBlogPostPageContentP
                   />
                 </div>
 
-                <div className="mt-6 inline-flex h-7 items-center rounded-full bg-[#ecf0f7] px-3 ring-1 ring-[#dbe2ee] tablet:mt-8 tablet:h-[28px] tablet:px-4">
+                <div
+                  className={cn(
+                    'mt-6 inline-flex h-7 items-center rounded-full px-3 shadow-[0_2px_8px_rgba(16,16,163,0.08)] ring-1 tablet:mt-8 tablet:h-[28px] tablet:px-4',
+                    dateBadge?.shell,
+                  )}
+                >
                   <span
                     className={cn(
-                      'text-[12px] font-bold leading-[18px] tablet:text-[14px] tablet:leading-[20px]',
-                      post.dateColor,
+                      'text-[12px] font-bold leading-[18px] tabular-nums tablet:text-[14px] tablet:leading-[20px]',
+                      dateBadge?.text,
                     )}
                   >
                     {date}
