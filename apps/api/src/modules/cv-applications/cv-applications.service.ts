@@ -6,6 +6,10 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { EmailService } from '../notifications/email.service';
+import {
+  buildCvApplicationEmailHtml,
+  buildCvApplicationEmailText,
+} from './cv-application-email.template';
 import type { SubmitCvApplicationDto } from './dto/submit-cv-application.dto';
 
 const CV_MAX_BYTES = 5 * 1024 * 1024;
@@ -15,15 +19,6 @@ const CV_MIME_TYPES = new Set([
   'application/msword',
   'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
 ]);
-
-function escapeHtml(value: string): string {
-  return value
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;')
-    .replaceAll("'", '&#39;');
-}
 
 function isAllowedCv(file: Express.Multer.File): boolean {
   const extension = file.originalname.split('.').pop()?.toLowerCase();
@@ -80,38 +75,20 @@ export class CvApplicationsService {
     const fullName = `${dto.firstName} ${dto.lastName}`.trim();
     const message = dto.message?.trim() || '—';
     const fileNames = cvFiles.map((file) => file.originalname);
-    const safe = {
-      fullName: escapeHtml(fullName),
-      email: escapeHtml(dto.email),
-      phone: escapeHtml(dto.phone),
-      message: escapeHtml(message).replaceAll('\n', '<br />'),
-      fileNamesHtml: fileNames.map((name) => `<li>${escapeHtml(name)}</li>`).join(''),
+    const emailPayload = {
+      fullName,
+      email: dto.email,
+      phone: dto.phone,
+      message,
+      fileNames,
     };
 
     const sent = await this.emailService.send({
       to,
       replyTo: dto.email,
       subject: `CV Application — ${fullName}`,
-      text: [
-        'New CV application',
-        `Name: ${fullName}`,
-        `Email: ${dto.email}`,
-        `Phone: ${dto.phone}`,
-        `Message: ${message}`,
-        `CV files: ${fileNames.join(', ')}`,
-      ].join('\n'),
-      html: `
-        <div style="font-family: Arial, sans-serif; line-height: 1.5; color: #101828;">
-          <h2 style="margin: 0 0 16px;">New CV Application</h2>
-          <p><strong>Name:</strong> ${safe.fullName}</p>
-          <p><strong>Email:</strong> ${safe.email}</p>
-          <p><strong>Phone:</strong> ${safe.phone}</p>
-          <p><strong>Cover letter:</strong></p>
-          <p>${safe.message}</p>
-          <p><strong>CV files:</strong></p>
-          <ul>${safe.fileNamesHtml}</ul>
-        </div>
-      `,
+      text: buildCvApplicationEmailText(emailPayload),
+      html: buildCvApplicationEmailHtml(emailPayload),
       attachments: cvFiles.map((file) => ({
         filename: file.originalname,
         content: file.buffer,

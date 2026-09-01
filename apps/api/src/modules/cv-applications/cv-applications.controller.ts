@@ -1,9 +1,6 @@
 import {
-  BadRequestException,
   Body,
   Controller,
-  MaxFileSizeValidator,
-  ParseFilePipe,
   Post,
   UploadedFiles,
   UseInterceptors,
@@ -14,7 +11,6 @@ import { Public } from '../../common/decorators';
 import { CvApplicationsService } from './cv-applications.service';
 import { SubmitCvApplicationDto } from './dto/submit-cv-application.dto';
 
-const CV_MAX_BYTES = 5 * 1024 * 1024;
 const CV_MAX_FILES = 2;
 
 @ApiTags('cv-applications')
@@ -47,19 +43,7 @@ export class CvApplicationsController {
   @UseInterceptors(FilesInterceptor('cv', CV_MAX_FILES))
   submit(
     @Body() dto: SubmitCvApplicationDto,
-    @UploadedFiles(
-      new ParseFilePipe({
-        fileIsRequired: true,
-        validators: [new MaxFileSizeValidator({ maxSize: CV_MAX_BYTES })],
-        exceptionFactory: (error) =>
-          new BadRequestException(
-            error.includes('File is too large')
-              ? 'File must be 5 MB or smaller.'
-              : `File validation failed: ${error}`,
-          ),
-      }),
-    )
-    files: Express.Multer.File[],
+    @UploadedFiles() files: Express.Multer.File[],
   ) {
     return this.cvApplicationsService.submit(dto, files);
   }
