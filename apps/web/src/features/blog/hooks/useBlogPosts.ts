@@ -27,10 +27,16 @@ export function usePublicBlogPosts() {
 }
 
 export function useBlogPost(slug: string, options?: { enabled?: boolean }) {
+  const queryClient = useQueryClient();
+
   return useQuery({
     queryKey: blogKeys.detail(slug),
     queryFn: () => fetchBlogPostBySlug(slug),
     enabled: options?.enabled ?? Boolean(slug),
+    placeholderData: () => {
+      const publicPosts = queryClient.getQueryData<BlogPostDto[]>(blogKeys.public());
+      return publicPosts?.find((post) => post.slug === slug);
+    },
   });
 }
 

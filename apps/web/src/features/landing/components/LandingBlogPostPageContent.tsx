@@ -53,7 +53,7 @@ export function LandingBlogPostPageContent({ slug }: LandingBlogPostPageContentP
       <LandingCanvasScaleRuntime />
       <LandingNavbar logoUrl={logoUrl} profileHref={profileHref} logoHref="/" activeSection="blog" />
       <CanvasScaler className="min-h-screen">
-        <section className="bg-[#f9fafb] pt-28">
+        <section className="min-h-[calc(100dvh-6rem)] bg-[#f9fafb] pt-28">
           <article className="mx-auto w-full max-w-[800px] px-5 pb-16 pt-4 tablet:px-6 tablet:pb-24 tablet:pt-6">
             <Link
               href="/blog"
@@ -63,9 +63,23 @@ export function LandingBlogPostPageContent({ slug }: LandingBlogPostPageContentP
             </Link>
 
             {isLoading || !post ? (
-              <p className="mt-10 text-[16px] text-[#4a5565]">
-                {tr('Loading…', 'Բեռնվում է…')}
-              </p>
+              <div className="mt-8 animate-pulse tablet:mt-10" aria-busy="true" aria-live="polite">
+                <span className="sr-only">{tr('Loading…', 'Բեռնվում է…')}</span>
+                <div className="h-[220px] w-full rounded-[28px] bg-[#e5eaf2] tablet:h-[360px] tablet:rounded-[32px]" />
+                <div className="mt-6 h-7 w-28 rounded-full bg-[#e5eaf2] tablet:mt-8" />
+                <div className="mt-4 space-y-3 tablet:mt-6">
+                  <div className="h-9 w-[88%] rounded-lg bg-[#e5eaf2] tablet:h-11" />
+                  <div className="h-9 w-[62%] rounded-lg bg-[#e5eaf2] tablet:h-11" />
+                </div>
+                <div className="mt-6 space-y-3 tablet:mt-8 tablet:space-y-4">
+                  <div className="h-5 w-full rounded bg-[#e5eaf2]" />
+                  <div className="h-5 w-full rounded bg-[#e5eaf2]" />
+                  <div className="h-5 w-[94%] rounded bg-[#e5eaf2]" />
+                  <div className="h-5 w-full rounded bg-[#e5eaf2]" />
+                  <div className="h-5 w-[86%] rounded bg-[#e5eaf2]" />
+                  <div className="h-5 w-[72%] rounded bg-[#e5eaf2]" />
+                </div>
+              </div>
             ) : (
               <>
                 <div className="relative mt-8 h-[220px] w-full overflow-hidden rounded-[28px] tablet:mt-10 tablet:h-[360px] tablet:rounded-[32px]">
