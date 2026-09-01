@@ -70,6 +70,24 @@ export async function updateBlogPost(
   id: string,
   payload: Partial<BlogPostWritePayload>,
 ): Promise<BlogPostDto> {
+  // Prefer JSON when no file is uploaded so booleans stay real booleans
+  // (multipart FormData string "false" can be coerced to true by Nest).
+  if (!payload.image) {
+    const jsonPayload: Record<string, unknown> = {};
+    if (payload.publishedAt) jsonPayload.publishedAt = payload.publishedAt;
+    if (payload.titleEn) jsonPayload.titleEn = payload.titleEn;
+    if (payload.titleHy) jsonPayload.titleHy = payload.titleHy;
+    if (payload.bodyEn) jsonPayload.bodyEn = payload.bodyEn;
+    if (payload.bodyHy) jsonPayload.bodyHy = payload.bodyHy;
+    if (payload.slug) jsonPayload.slug = payload.slug;
+    if (payload.dateColor) jsonPayload.dateColor = payload.dateColor;
+    if (payload.imageClassName != null) jsonPayload.imageClassName = payload.imageClassName;
+    if (payload.sortOrder != null) jsonPayload.sortOrder = payload.sortOrder;
+    if (payload.isPublished != null) jsonPayload.isPublished = payload.isPublished;
+
+    return api.patch<BlogPostDto>(`/blog-posts/${encodeURIComponent(id)}`, jsonPayload);
+  }
+
   const formData = new FormData();
 
   if (payload.publishedAt) formData.append('publishedAt', payload.publishedAt);
@@ -88,9 +106,7 @@ export async function updateBlogPost(
   if (payload.isPublished != null) {
     formData.append('isPublished', String(payload.isPublished));
   }
-  if (payload.image) {
-    formData.append('image', payload.image);
-  }
+  formData.append('image', payload.image);
 
   return api.patch<BlogPostDto>(`/blog-posts/${encodeURIComponent(id)}`, formData);
 }

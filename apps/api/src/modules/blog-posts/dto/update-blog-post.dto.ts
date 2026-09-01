@@ -11,6 +11,7 @@ import {
   MinLength,
 } from 'class-validator';
 import { Transform, Type } from 'class-transformer';
+import { parseFormBoolean } from '../blog-posts.util';
 
 function parseBodyParagraphs(value: unknown): unknown {
   if (value === undefined || value === null) return value;
@@ -80,12 +81,7 @@ export class UpdateBlogPostDto {
   sortOrder?: number;
 
   @IsOptional()
-  @Transform(({ value }) => {
-    if (value === undefined || value === null || value === '') return undefined;
-    if (value === 'true' || value === true) return true;
-    if (value === 'false' || value === false) return false;
-    return value;
-  })
+  @Transform(({ obj }) => parseFormBoolean(obj.isPublished))
   @IsBoolean()
   isPublished?: boolean;
 }

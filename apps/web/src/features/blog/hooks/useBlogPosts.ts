@@ -63,8 +63,11 @@ export function useUpdateBlogPost() {
     mutationFn: ({ id, payload }: { id: string; payload: Partial<BlogPostWritePayload> }) =>
       updateBlogPost(id, payload),
     onSuccess: (post: BlogPostDto) => {
-      void queryClient.invalidateQueries({ queryKey: blogKeys.all });
+      queryClient.setQueryData<BlogPostDto[]>(blogKeys.admin(), (current) =>
+        current?.map((item) => (item.id === post.id ? post : item)),
+      );
       queryClient.setQueryData(blogKeys.detail(post.slug), post);
+      void queryClient.invalidateQueries({ queryKey: blogKeys.all });
     },
   });
 }
