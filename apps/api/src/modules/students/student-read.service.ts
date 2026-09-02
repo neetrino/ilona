@@ -1,7 +1,6 @@
 import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { UserRole } from '@ilona/database';
-import { omitStudentPassportForTeacher } from './student-visibility.util';
 
 @Injectable()
 export class StudentReadService {
@@ -187,8 +186,7 @@ export class StudentReadService {
           }
         : null);
 
-    return omitStudentPassportForTeacher(
-      {
+    return {
         ...student,
         teacher: resolvedTeacher,
         groupHistory: groupHistory.map((entry) => ({
@@ -206,9 +204,7 @@ export class StudentReadService {
             },
           },
         })),
-      },
-      userRole,
-    );
+      };
   }
 
   async findByUserId(userId: string) {

@@ -197,21 +197,6 @@ export function StudentAccountCrmProfileSections({
               <p className="text-sm text-red-600">{errors.parentEmail.message}</p>
             ) : null}
           </div>
-          <div className="min-w-0 space-y-2">
-            <Label htmlFor={p('parentPassportInfo')}>
-              {tCrm('parentPassport')} <span className="text-red-500">*</span>
-            </Label>
-            <Input
-              id={p('parentPassportInfo')}
-              className={ADMIN_FORM_INPUT_CLASS}
-              placeholder={tCrm('passportPlaceholder')}
-              {...register('parentPassportInfo')}
-              disabled={isSubmitting}
-            />
-            {errors.parentPassportInfo ? (
-              <p className="text-sm text-red-600">{errors.parentPassportInfo.message}</p>
-            ) : null}
-          </div>
         </section>
       ) : null}
     </>

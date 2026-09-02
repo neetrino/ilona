@@ -212,16 +212,6 @@ export function EditLeadModalFormBody(props: EditLeadModalFormBodyProps) {
               className={FORM_FIELD_CLASS}
             />
           </div>
-          <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700">{t('parentPassport')}</label>
-            <input
-              type="text"
-              value={form.parentPassportInfo ?? ''}
-              onChange={(e) => setForm((f) => ({ ...f, parentPassportInfo: e.target.value }))}
-              placeholder={t('passportPlaceholder')}
-              className={FORM_FIELD_CLASS}
-            />
-          </div>
         </section>
       )}
 

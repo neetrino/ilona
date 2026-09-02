@@ -22,7 +22,6 @@ export function formDataToCreateStudentDto(data: CreateStudentFormData): CreateS
     parentName: combineParentDisplayName(data.parentName, data.parentSurname),
     parentPhone: data.parentPhone || undefined,
     parentEmail: data.parentEmail || undefined,
-    parentPassportInfo: data.parentPassportInfo || undefined,
     monthlyFee: data.monthlyFee,
     notes: data.notes || undefined,
     receiveReports: data.receiveReports ?? true,

@@ -47,6 +47,9 @@ export interface StudentRisk {
   attendanceRate: number;
   riskLevel: 'LOW' | 'MEDIUM' | 'HIGH';
   pendingPayments: number;
+  hasLatePayment: boolean;
+  absenceCount: number;
+  isAtRisk: boolean;
 }
 
 export interface RevenueData {

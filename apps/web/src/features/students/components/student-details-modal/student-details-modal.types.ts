@@ -6,7 +6,7 @@ export interface StudentDetailsModalProps {
   open: boolean;
   onClose: () => void;
   locale: string;
-  /** Teachers see contact/enrollment only — no passport, fees, or payments. */
+  /** Teachers see contact/enrollment only — no fees or payments. */
   audience?: StudentDetailsAudience;
   onEdit?: (student: Student) => void;
   onDelete?: (student: Student) => void;

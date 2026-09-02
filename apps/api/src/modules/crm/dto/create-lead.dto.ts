@@ -60,12 +60,6 @@ export class CreateLeadDto {
   @MaxLength(254)
   parentEmail?: string | null;
 
-  /** Passport/ID info — used for the responsible adult (parent if minor, student if 18+). */
-  @IsString()
-  @IsOptional()
-  @MaxLength(500)
-  parentPassportInfo?: string;
-
   /** First-lesson date scheduled by admin (ISO-8601). */
   @IsISO8601()
   @IsOptional()

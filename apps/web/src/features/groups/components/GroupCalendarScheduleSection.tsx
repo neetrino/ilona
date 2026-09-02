@@ -26,6 +26,8 @@ export interface GroupCalendarScheduleSectionProps {
   mode?: 'rolling' | 'range';
   /** Submit-time / external validation message shown under weekly slots. */
   sectionError?: string | null;
+  /** Group create/edit: at least one weekly slot is required before save. */
+  requireSlots?: boolean;
 }
 
 export function GroupCalendarScheduleSection({
@@ -39,11 +41,15 @@ export function GroupCalendarScheduleSection({
   adminControls = false,
   mode = 'range',
   sectionError = null,
+  requireSlots = false,
 }: GroupCalendarScheduleSectionProps) {
   const t = useTranslations('groups');
+  const tForm = useTranslations('groups.form');
   const tCommon = useTranslations('common');
   const slotError = schedule.length > 0 ? scheduleSlotsValidationError(schedule) : null;
-  const displayError = sectionError || slotError;
+  const missingSlotsError =
+    requireSlots && schedule.length === 0 ? tForm('addAtLeastOneWeeklySlot') : null;
+  const displayError = sectionError || slotError || missingSlotsError;
   const isRolling = mode === 'rolling';
 
   const handleDateFromChange = useCallback(
@@ -116,7 +122,10 @@ export function GroupCalendarScheduleSection({
       )}
 
       <div className="space-y-2">
-        <Label>{t('weeklyTimeSlots')}</Label>
+        <Label>
+          {t('weeklyTimeSlots')}
+          {requireSlots ? <span className="ml-1 text-red-500">*</span> : null}
+        </Label>
         <GroupScheduleEditor
           value={schedule}
           onChange={onScheduleChange}

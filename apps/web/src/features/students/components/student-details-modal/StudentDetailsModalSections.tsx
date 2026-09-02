@@ -5,7 +5,6 @@ import {
   CircleDollarSign,
   GraduationCap,
   Mail,
-  IdCard,
   Phone,
   UserRound,
   UserCircle,
@@ -134,8 +133,7 @@ export function StudentDetailsModalParentContact({
     Boolean(
       student.parentName ||
         student.parentPhone ||
-        (visibility.parentEmail && student.parentEmail) ||
-        (visibility.parentPassport && student.parentPassportInfo),
+        (visibility.parentEmail && student.parentEmail),
     );
   if (!showParent) return null;
 
@@ -162,12 +160,6 @@ export function StudentDetailsModalParentContact({
           <StudentDetailsModalField
             label={<IconLabel icon={<Mail className="h-4 w-4 shrink-0 text-slate-400" aria-hidden="true" />} text={t('parentEmail')} />}
             value={student.parentEmail}
-          />
-        ) : null}
-        {visibility.parentPassport ? (
-          <StudentDetailsModalField
-            label={<IconLabel icon={<IdCard className="h-4 w-4 shrink-0 text-slate-400" aria-hidden="true" />} text={t('parentPassportInfo')} />}
-            value={student.parentPassportInfo?.trim() || '—'}
           />
         ) : null}
       </div>

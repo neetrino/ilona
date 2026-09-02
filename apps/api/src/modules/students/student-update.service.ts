@@ -55,7 +55,6 @@ export class StudentUpdateService {
       parentName?: string;
       parentPhone?: string;
       parentEmail?: string;
-      parentPassportInfo?: string;
       monthlyFee?: number;
       notes?: string;
       receiveReports?: boolean;
@@ -70,7 +69,6 @@ export class StudentUpdateService {
       parentName: dto.parentName,
       parentPhone: dto.parentPhone,
       parentEmail: dto.parentEmail,
-      parentPassportInfo: dto.parentPassportInfo,
       monthlyFee: dto.monthlyFee,
       notes: dto.notes,
       receiveReports: dto.receiveReports,

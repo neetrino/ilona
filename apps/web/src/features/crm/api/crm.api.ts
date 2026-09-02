@@ -73,7 +73,6 @@ function sanitizeUpdateLeadPayload(data: UpdateLeadDto): Record<string, unknown>
     'archivedReason',
     'parentName',
     'parentPhone',
-    'parentPassportInfo',
     'comment',
   ] as const;
   for (const key of strFields) {

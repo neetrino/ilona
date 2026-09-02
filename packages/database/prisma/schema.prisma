@@ -186,7 +186,6 @@ model Student {
   parentName      String?
   parentPhone     String?
   parentEmail     String?
-  parentPassportInfo String?
   monthlyFee      Decimal        @db.Decimal(10, 2)
   enrolledAt      DateTime       @default(now())
   registerDate    DateTime?
@@ -606,7 +605,6 @@ model CrmLead {
   parentName          String?
   parentPhone         String?
   parentEmail         String?
-  parentPassportInfo  String?
   firstLessonDate     DateTime?
   comment             String?
   levelId             String?

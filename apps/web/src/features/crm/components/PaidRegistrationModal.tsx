@@ -116,7 +116,6 @@ export function PaidRegistrationModal({
       parentSurname: '',
       parentPhone: '',
       parentEmail: '',
-      parentPassportInfo: '',
       monthlyFee: 0,
       notes: '',
       receiveReports: true,
@@ -182,7 +181,6 @@ export function PaidRegistrationModal({
         parentSurname: '',
         parentPhone: '',
         parentEmail: '',
-        parentPassportInfo: '',
         monthlyFee: 0,
         notes: '',
         receiveReports: true,
@@ -197,7 +195,6 @@ export function PaidRegistrationModal({
       setValue('parentSurname', '');
       setValue('parentPhone', '');
       setValue('parentEmail', '');
-      setValue('parentPassportInfo', '');
     }
   }, [computedAge, setValue]);
 

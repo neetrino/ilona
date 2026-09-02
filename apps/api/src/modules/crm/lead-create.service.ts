@@ -29,7 +29,6 @@ export class LeadCreateService {
         parentName: dto.parentName,
         parentPhone: dto.parentPhone,
         parentEmail: dto.parentEmail,
-        parentPassportInfo: dto.parentPassportInfo,
         firstLessonDate: dto.firstLessonDate ? new Date(dto.firstLessonDate) : undefined,
         comment: dto.comment,
         levelId: dto.levelId,

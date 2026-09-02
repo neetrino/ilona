@@ -311,17 +311,6 @@ export function EditStudentFormFields(props: EditStudentFormFieldsProps) {
                       placeholder={tForm('emailPlaceholder')}
                     />
                   </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="parentPassportInfo">{tForm('parentPassportInfo')}</Label>
-                    <Input
-                      id="parentPassportInfo"
-                      className={ADMIN_FORM_INPUT_CLASS}
-                      {...register('parentPassportInfo')}
-                      error={errors.parentPassportInfo?.message}
-                      placeholder={tForm('parentPassportInfo')}
-                    />
-                  </div>
                 </div>
               </div>
             </div>

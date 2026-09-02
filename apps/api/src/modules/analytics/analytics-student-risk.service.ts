@@ -1,6 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { subDays } from './analytics.util';
+import { UserStatus } from '@ilona/database';
+import {
+  evaluateStudentsAtRisk,
+  loadAttendanceBreakdownByStudent,
+} from '../students/student-at-risk.query';
+import { getAtRiskMonthRange } from '../students/student-at-risk.util';
 import type { StudentRiskLevel } from './analytics.types';
 
 @Injectable()
@@ -8,7 +13,10 @@ export class AnalyticsStudentRiskService {
   constructor(private readonly prisma: PrismaService) {}
 
   async getStudentRiskAnalytics() {
+    const asOf = new Date();
+    const range = getAtRiskMonthRange(asOf);
     const students = await this.prisma.student.findMany({
+      where: { user: { status: UserStatus.ACTIVE } },
       include: {
         user: {
           select: {
@@ -27,60 +35,43 @@ export class AnalyticsStudentRiskService {
       },
     });
 
-    const riskAnalytics = await Promise.all(
-      students.map(async (student) => {
-        const thirtyDaysAgo = subDays(new Date(), 30);
+    const studentIds = students.map((student) => student.id);
+    const [evaluations, breakdown] = await Promise.all([
+      evaluateStudentsAtRisk(this.prisma, studentIds, { asOf }),
+      loadAttendanceBreakdownByStudent(this.prisma, studentIds, range.start, range.end),
+    ]);
 
-        const attendances = await this.prisma.attendance.findMany({
-          where: {
-            studentId: student.id,
-            lesson: {
-              scheduledAt: { gte: thirtyDaysAgo },
-            },
-          },
-        });
+    const riskAnalytics = students.map((student) => {
+      const stats = breakdown.get(student.id) ?? {
+        present: 0,
+        justified: 0,
+        unjustified: 0,
+        total: 0,
+      };
+      const evaluation = evaluations.get(student.id);
+      const attendanceRate =
+        stats.total > 0 ? Math.round((stats.present / stats.total) * 100) : 100;
+      const riskLevel: StudentRiskLevel = evaluation?.riskLevel ?? 'LOW';
+      const hasLatePayment = evaluation?.hasLatePayment ?? false;
 
-        const totalLessons = attendances.length;
-        const present = attendances.filter((a) => a.isPresent).length;
-        const absentUnjustified = attendances.filter(
-          (a) => !a.isPresent && a.absenceType === 'UNJUSTIFIED',
-        ).length;
-        const absentJustified = attendances.filter(
-          (a) => !a.isPresent && a.absenceType === 'JUSTIFIED',
-        ).length;
-
-        const attendanceRate = totalLessons > 0 ? Math.round((present / totalLessons) * 100) : 100;
-
-        let riskLevel: StudentRiskLevel = 'LOW';
-        if (absentUnjustified >= 3 || attendanceRate < 60) {
-          riskLevel = 'HIGH';
-        } else if (absentUnjustified >= 2 || attendanceRate < 80) {
-          riskLevel = 'MEDIUM';
-        }
-
-        const pendingPayments = await this.prisma.payment.count({
-          where: {
-            studentId: student.id,
-            status: { in: ['PENDING', 'OVERDUE'] },
-          },
-        });
-
-        return {
-          id: student.id,
-          name: `${student.user.firstName} ${student.user.lastName}`,
-          email: student.user.email,
-          phone: student.user.phone,
-          group: student.group,
-          totalLessons,
-          present,
-          absentJustified,
-          absentUnjustified,
-          attendanceRate,
-          riskLevel,
-          pendingPayments,
-        };
-      }),
-    );
+      return {
+        id: student.id,
+        name: `${student.user.firstName} ${student.user.lastName}`,
+        email: student.user.email,
+        phone: student.user.phone,
+        group: student.group,
+        totalLessons: stats.total,
+        present: stats.present,
+        absentJustified: stats.justified,
+        absentUnjustified: stats.unjustified,
+        attendanceRate,
+        riskLevel,
+        pendingPayments: hasLatePayment ? 1 : 0,
+        hasLatePayment,
+        absenceCount: evaluation?.absenceCount ?? 0,
+        isAtRisk: evaluation?.isAtRisk ?? false,
+      };
+    });
 
     const riskOrder: Record<StudentRiskLevel, number> = { HIGH: 0, MEDIUM: 1, LOW: 2 };
     return riskAnalytics.sort((a, b) => riskOrder[a.riskLevel] - riskOrder[b.riskLevel]);

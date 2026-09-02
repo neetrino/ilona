@@ -13,7 +13,6 @@ import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { X } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useStudent } from '@/features/students';
-import { useAuthStore } from '@/features/auth/store/auth.store';
 import { PORTAL_SHEET_DRAG_HANDLE_ATTR, usePortalSheetDrag } from '@/shared/hooks/usePortalSheetDrag';
 import { formatPhoneForDisplay } from '@/shared/lib/utils';
 import { portalFormSheetContentClass } from '@/shared/lib/portal-form-sheet-classes';
@@ -60,8 +59,6 @@ export function StudentDetailsModal({ open, onOpenChange, studentId }: StudentDe
   const tStudents = useTranslations('students');
   const tSettings = useTranslations('settings');
   const tAttendance = useTranslations('attendance');
-  const { user } = useAuthStore();
-  const canViewPassport = user?.role === 'MANAGER' || user?.role === 'ADMIN';
   const [isDialogOpen, setIsDialogOpen] = useState(open);
   const { data: student, isLoading, isError, error } = useStudent(studentId ?? '', open && !!studentId);
 
@@ -153,9 +150,6 @@ export function StudentDetailsModal({ open, onOpenChange, studentId }: StudentDe
                   <DetailSection title={tCommon('parentInformation')}>
                     <DetailField label={tStudents('parentName')} value={student.parentName || '—'} />
                     <DetailField label={tStudents('parentPhone')} value={formatPhoneForDisplay(student.parentPhone)} />
-                    {canViewPassport ? (
-                      <DetailField label={t('parentPassportInfo')} value={student.parentPassportInfo || '—'} />
-                    ) : null}
                   </DetailSection>
                 ) : null}
 

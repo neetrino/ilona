@@ -4,8 +4,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { Prisma, UserRole, UserStatus } from '@ilona/database';
-import { omitStudentPassportForTeacher } from './student-visibility.util';
+import { Prisma, UserStatus } from '@ilona/database';
 
 @Injectable()
 export class StudentQueryService {
@@ -220,12 +219,8 @@ export class StudentQueryService {
 
     // Remove _sortKey from response
     const items = paginated.map((item) => {
-      if (item.type === 'onboarding') {
-        const { _sortKey: _, ...rest } = item;
-        return rest;
-      }
-      const { _sortKey: __, ...rest } = item;
-      return omitStudentPassportForTeacher(rest, UserRole.TEACHER);
+      const { _sortKey: _, ...rest } = item;
+      return rest;
     });
 
     const totalMonthlyFees = students.reduce(

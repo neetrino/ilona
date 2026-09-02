@@ -80,11 +80,6 @@ export class UpdateStudentDto {
   @IsOptional()
   parentEmail?: string;
 
-  @IsString()
-  @IsOptional()
-  @MaxLength(100)
-  parentPassportInfo?: string;
-
   @IsNumber()
   @IsOptional()
   @Min(0)

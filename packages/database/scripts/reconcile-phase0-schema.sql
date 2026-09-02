@@ -168,7 +168,6 @@ ALTER TABLE "crm_leads"
   ADD COLUMN IF NOT EXISTS "dateOfBirth"        TIMESTAMP(3),
   ADD COLUMN IF NOT EXISTS "parentName"         TEXT,
   ADD COLUMN IF NOT EXISTS "parentPhone"        TEXT,
-  ADD COLUMN IF NOT EXISTS "parentPassportInfo" TEXT,
   ADD COLUMN IF NOT EXISTS "firstLessonDate"    TIMESTAMP(3),
   ADD COLUMN IF NOT EXISTS "comment"            TEXT;
 

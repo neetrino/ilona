@@ -147,7 +147,7 @@ export class AttendanceController {
   @Get('at-risk')
   @Roles(UserRole.ADMIN, UserRole.MANAGER)
   async getAtRiskStudents(@CurrentUser() user: JwtPayload) {
-    return this.attendanceService.getAtRiskStudents(undefined, user);
+    return this.attendanceService.getAtRiskStudents(user);
   }
 
   @Post()

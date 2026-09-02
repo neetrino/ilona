@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { endOfDay, endOfMonth, startOfDay, startOfMonth, subDays } from './analytics.util';
+import { findAtRiskStudentIds } from '../students/student-at-risk.query';
+import { endOfDay, endOfMonth, startOfDay, startOfMonth } from './analytics.util';
 
 @Injectable()
 export class AnalyticsDashboardService {
@@ -21,6 +22,7 @@ export class AnalyticsDashboardService {
       monthlyIncome,
       monthlyExpenses,
       pendingPayments,
+      atRiskIds,
     ] = await Promise.all([
       this.prisma.teacher.count({ where: { user: { status: 'ACTIVE' } } }),
       this.prisma.student.count({ where: { user: { status: 'ACTIVE' } } }),
@@ -39,19 +41,10 @@ export class AnalyticsDashboardService {
       this.prisma.payment.count({
         where: { status: { in: ['PENDING', 'OVERDUE'] } },
       }),
+      findAtRiskStudentIds(this.prisma),
     ]);
 
-    const thirtyDaysAgo = subDays(new Date(), 30);
-    const studentsWithAbsences = await this.prisma.attendance.groupBy({
-      by: ['studentId'],
-      where: {
-        isPresent: false,
-        absenceType: 'UNJUSTIFIED',
-        createdAt: { gte: thirtyDaysAgo },
-      },
-      _count: true,
-    });
-    const atRiskStudents = studentsWithAbsences.filter((s) => s._count >= 3).length;
+    const atRiskStudents = atRiskIds.length;
 
     const incomeAmount = Number(monthlyIncome._sum.amount) || 0;
     const expensesAmount = Number(monthlyExpenses._sum?.netAmount) || 0;
