@@ -1,13 +1,24 @@
 'use client';
 
-import { useRef } from 'react';
-import { AdminPaginationControls, DataTable } from '@/shared/components/ui';
+import { useMemo, useRef } from 'react';
+import { AdminListPagination, DataTable } from '@/shared/components/ui';
 import { scrollListStartSoon } from '@/shared/lib/scroll-element-to-list-start';
 import { createStudentsTableColumns } from './StudentsTableColumns';
+import { StudentsCentersStrip } from './StudentsCentersStrip';
 import { getItemId, isOnboardingItem, type TeacherAssignedItem, type Student } from '@/features/students';
 import type { Group } from '@/features/groups';
+import type { Center } from '@ilona/types';
+import { useTranslations as useTranslationsRuntime, type useTranslations } from 'next-intl';
+
+type StripCenter = Pick<Center, 'id' | 'name'> & { colorHex?: string | null };
 
 interface StudentsListProps {
+  centers: StripCenter[];
+  studentsByCenter: Record<string, TeacherAssignedItem[]>;
+  activeCenterTabId: string | null;
+  onSelectCenter: (centerId: string) => void;
+  uniqueStudentsCount: number;
+  onTotalClick?: () => void;
   students: TeacherAssignedItem[];
   totalStudents: number;
   totalPages: number;
@@ -36,18 +47,24 @@ interface StudentsListProps {
   isDeleting: boolean;
   isUpdating: boolean;
   searchQuery: string;
-  t: (key: string, values?: Record<string, string | number>) => string;
+  t: ReturnType<typeof useTranslations<'students'>>;
   tCommon: (key: string) => string;
   tTeachers: (key: string) => string;
   tAnalytics: (key: string) => string;
 }
 
 export function StudentsList({
+  centers,
+  studentsByCenter,
+  activeCenterTabId,
+  onSelectCenter,
+  uniqueStudentsCount,
+  onTotalClick,
   students,
-  totalStudents: _totalStudents,
+  totalStudents,
   totalPages,
   page,
-  pageSize: _pageSize,
+  pageSize,
   onPageChange,
   sortBy,
   sortOrder,
@@ -76,6 +93,12 @@ export function StudentsList({
   tTeachers,
   tAnalytics,
 }: StudentsListProps) {
+  const tc = useTranslationsRuntime('common');
+  const safeTotalPages = Math.max(1, totalPages);
+  const safePage = Math.min(Math.max(0, page), safeTotalPages - 1);
+  const hasStudents = totalStudents > 0;
+  const listStartRef = useRef<HTMLDivElement | null>(null);
+
   const studentColumns = createStudentsTableColumns({
     t,
     tCommon,
@@ -100,12 +123,40 @@ export function StudentsList({
     isLoading,
   });
 
-  const listStartRef = useRef<HTMLDivElement | null>(null);
+  const hasCenterTabs =
+    isLoading ||
+    centers.length > 0 ||
+    (studentsByCenter.unassigned?.length || 0) > 0;
+
+  const emptyMessage = useMemo(() => {
+    if (searchQuery.trim()) {
+      return t('noStudentsMatch');
+    }
+    if (hasCenterTabs) {
+      if (activeCenterTabId === 'unassigned') {
+        return t('noUnassignedStudents');
+      }
+      if (activeCenterTabId === 'all') {
+        return t('noStudentsFound');
+      }
+      return t('noStudentsInCenter');
+    }
+    return t('noStudentsFound');
+  }, [searchQuery, hasCenterTabs, activeCenterTabId, t]);
 
   return (
-    <>
-      {/* Students Table — natural column widths + horizontal scroll (no table-fixed overlap) */}
-      <div ref={listStartRef} className="w-full min-w-0">
+    <div ref={listStartRef} className="mb-6 overflow-hidden rounded-2xl border bg-white shadow-sm">
+      <StudentsCentersStrip
+        centers={centers}
+        studentsByCenter={studentsByCenter}
+        activeCenterTabId={activeCenterTabId}
+        onSelectCenter={onSelectCenter}
+        uniqueStudentsCount={uniqueStudentsCount}
+        isLoading={isLoading}
+        onTotalClick={onTotalClick}
+        t={t}
+        unassignedLabel={tc('unassigned')}
+      />
       <DataTable
         columns={studentColumns}
         data={students}
@@ -115,29 +166,27 @@ export function StudentsList({
           onView(student);
         }}
         isLoading={isLoading}
-        emptyMessage={searchQuery ? "No students match your search" : "No students found"}
+        emptyMessage={emptyMessage}
         sortBy={sortBy}
         sortOrder={sortOrder}
         onSort={onSort}
         compact
+        embedInParentCard={hasCenterTabs}
       />
-      </div>
-
-      {/* Pagination */}
-      <div className="relative z-10 mt-3 flex items-center justify-center lg:justify-start">
-        <AdminPaginationControls
-          page={page}
-          totalPages={totalPages}
-          onPageChange={(nextPage) => {
-            onPageChange(nextPage);
-            scrollListStartSoon(listStartRef.current);
-          }}
-          previousLabel={tCommon('previousPage')}
-          nextLabel={tCommon('nextPage')}
-          disabled={isDeleting || isUpdating}
-        />
-      </div>
-    </>
+      <AdminListPagination
+        page={safePage}
+        pageSize={pageSize}
+        totalItems={totalStudents}
+        onPageChange={(nextPage) => {
+          onPageChange(nextPage);
+          scrollListStartSoon(listStartRef.current);
+        }}
+        previousLabel={tCommon('previousPage')}
+        nextLabel={tCommon('nextPage')}
+        disabled={isDeleting || isUpdating || !hasStudents}
+        hideWhenSinglePage={false}
+        withFooter
+      />
+    </div>
   );
 }
-

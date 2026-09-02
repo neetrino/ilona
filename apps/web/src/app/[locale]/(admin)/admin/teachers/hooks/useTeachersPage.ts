@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useMemo, useCallback, useRef, startTransition } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { 
   useTeachers, 
@@ -16,7 +16,6 @@ import { readUrlSearchParam } from '@/shared/lib/url-search-params';
 import { useAppSearchUrl } from '@/shared/hooks/useAppSearchUrl';
 import { countUniqueTeachers, filterTeachersByBranches, groupTeachersByCenter } from '../utils';
 import { useAuthStore } from '@/features/auth/store/auth.store';
-import { getAdminPortalBasePath } from '@/shared/lib/role-routes';
 
 type ViewMode = 'list' | 'board';
 
@@ -31,14 +30,12 @@ const EDIT_TEACHER_URL_PARAM = 'editTeacherId';
 
 export function useTeachersPage() {
   const params = useParams();
-  const router = useRouter();
   const { searchParams, urlRevision, replaceParams, setParams, removeParams } = useAppSearchUrl();
   const locale = params.locale as string;
   const t = useTranslations('teachers');
   const tCommon = useTranslations('common');
   const tStatus = useTranslations('status');
   const { user } = useAuthStore();
-  const portalBasePath = getAdminPortalBasePath(user?.role);
   const managerCenterId = user?.role === 'MANAGER' ? user.managerCenterId : undefined;
 
   const readViewModeFromUrl = useCallback((): ViewMode => {
@@ -231,7 +228,7 @@ export function useTeachersPage() {
 
   const hasUnassignedTeachers = (teachersByCenter.unassigned?.length || 0) > 0;
 
-  const [centerTabSelection, setCenterTabSelection] = useState<string | null>(null);
+  const [centerTabSelection, setCenterTabSelection] = useState<string | null>('all');
 
   /** Resolves selection on the same render (avoids empty pagination when strip exists but state is still null). */
   const activeCenterTabId = useMemo((): string | null => {
@@ -240,8 +237,11 @@ export function useTeachersPage() {
     if (!hasStrip) {
       return null;
     }
+    if (centerTabSelection === 'all') {
+      return 'all';
+    }
     if (sortedVisibleCenters.length === 0) {
-      return hasUnassignedTeachers ? 'unassigned' : null;
+      return hasUnassignedTeachers ? 'unassigned' : 'all';
     }
     if (centerTabSelection === 'unassigned' && hasUnassignedTeachers) {
       return 'unassigned';
@@ -252,12 +252,15 @@ export function useTeachersPage() {
     ) {
       return centerTabSelection;
     }
-    return sortedVisibleCenters[0].id;
+    return 'all';
   }, [sortedVisibleCenters, hasUnassignedTeachers, centerTabSelection]);
 
   useEffect(() => {
+    if (centerTabSelection === 'all') {
+      return;
+    }
     if (sortedVisibleCenters.length === 0) {
-      setCenterTabSelection(hasUnassignedTeachers ? 'unassigned' : null);
+      setCenterTabSelection(hasUnassignedTeachers ? 'unassigned' : 'all');
       return;
     }
 
@@ -270,22 +273,19 @@ export function useTeachersPage() {
       return;
     }
 
-    setCenterTabSelection(sortedVisibleCenters[0].id);
+    setCenterTabSelection('all');
   }, [centerTabSelection, hasUnassignedTeachers, sortedVisibleCenters]);
 
   const teachersPaginationSource = useMemo(() => {
     const hasCenterStrip =
       sortedVisibleCenters.length > 0 || hasUnassignedTeachers;
-    if (!hasCenterStrip) {
+    if (!hasCenterStrip || activeCenterTabId === 'all' || !activeCenterTabId) {
       return filteredTeachers;
     }
     if (activeCenterTabId === 'unassigned') {
       return teachersByCenter.unassigned ?? [];
     }
-    if (activeCenterTabId) {
-      return teachersByCenter[activeCenterTabId] ?? [];
-    }
-    return [];
+    return teachersByCenter[activeCenterTabId] ?? [];
   }, [
     filteredTeachers,
     sortedVisibleCenters.length,
@@ -563,8 +563,10 @@ export function useTeachersPage() {
   };
 
   const handleTotalTeachersClick = useCallback(() => {
-    router.push(`/${locale}${portalBasePath}/teachers/all`);
-  }, [router, locale, portalBasePath]);
+    setCenterTabSelection('all');
+    setPage(0);
+    setSelectedTeacherIds(new Set());
+  }, []);
 
   const uniqueTeachersCount = useMemo(() => {
     const clientCount = countUniqueTeachers(filteredTeachers);

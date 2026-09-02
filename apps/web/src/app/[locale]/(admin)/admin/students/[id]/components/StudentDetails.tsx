@@ -1,6 +1,16 @@
 'use client';
 
+import type { ReactNode } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
+import {
+  Building2,
+  Calendar,
+  Mail,
+  Phone,
+  UserCircle,
+  UserRound,
+  Users,
+} from 'lucide-react';
 import { Badge, Input, Label } from '@/shared/components/ui';
 import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
 import { formatDate, formatPhoneForDisplay } from '@/shared/lib/utils';
@@ -27,6 +37,30 @@ interface StudentDetailsProps {
   groupIdValue?: string;
 }
 
+function ProfileInfoRow({
+  icon,
+  label,
+  value,
+}: {
+  icon: ReactNode;
+  label: string;
+  value: ReactNode;
+}) {
+  return (
+    <div className="flex items-start gap-3">
+      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#eef2ff] text-[#1010a3]">
+        {icon}
+      </span>
+      <div className="min-w-0 flex-1">
+        <label className="text-sm font-medium text-[#8b8b90]">{label}</label>
+        <div className="mt-1 break-words text-sm font-semibold text-[#3b3b40]">{value}</div>
+      </div>
+    </div>
+  );
+}
+
+const ICON_CLASS = 'h-4 w-4';
+
 export function StudentDetails({
   student,
   isEditMode,
@@ -48,9 +82,9 @@ export function StudentDetails({
   const secondTeacher = student.group?.secondTeacher;
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <div className="bg-white rounded-xl border border-[rgba(14,14,16,0.07)] p-6">
-        <h3 className="text-lg font-semibold text-[#3b3b40] mb-4">{tc('personalInformation')}</h3>
+    <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+      <div className="rounded-xl border border-[rgba(14,14,16,0.07)] bg-white p-6">
+        <h3 className="mb-4 text-lg font-semibold text-[#3b3b40]">{tc('personalInformation')}</h3>
         <div className="space-y-4">
           {isEditMode ? (
             <div className="space-y-2">
@@ -65,37 +99,42 @@ export function StudentDetails({
             </div>
           ) : (
             <>
-              <div>
-                <label className="text-sm font-medium text-[#8b8b90]">{tc('firstName')}</label>
-                <p className="text-[#3b3b40] mt-1">{firstName}</p>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-[#8b8b90]">{tc('lastName')}</label>
-                <p className="text-[#3b3b40] mt-1">{lastName}</p>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-[#8b8b90]">{tc('email')}</label>
-                <p className="text-[#3b3b40] mt-1">{student.user?.email || na}</p>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-[#8b8b90]">{tc('phone')}</label>
-                <p className="text-[#3b3b40] mt-1">{formatPhoneForDisplay(student.user?.phone, na)}</p>
-              </div>
-              <div>
-                <label className="text-sm font-medium text-[#8b8b90]">{t('memberSince')}</label>
-                <p className="text-[#3b3b40] mt-1">
-                  {student.user?.createdAt
+              <ProfileInfoRow
+                icon={<UserRound className={ICON_CLASS} aria-hidden="true" />}
+                label={tc('firstName')}
+                value={firstName || na}
+              />
+              <ProfileInfoRow
+                icon={<UserRound className={ICON_CLASS} aria-hidden="true" />}
+                label={tc('lastName')}
+                value={lastName || na}
+              />
+              <ProfileInfoRow
+                icon={<Mail className={ICON_CLASS} aria-hidden="true" />}
+                label={tc('email')}
+                value={student.user?.email || na}
+              />
+              <ProfileInfoRow
+                icon={<Phone className={ICON_CLASS} aria-hidden="true" />}
+                label={tc('phone')}
+                value={formatPhoneForDisplay(student.user?.phone, na)}
+              />
+              <ProfileInfoRow
+                icon={<Calendar className={ICON_CLASS} aria-hidden="true" />}
+                label={t('memberSince')}
+                value={
+                  student.user?.createdAt
                     ? formatDate(student.user.createdAt, locale)
-                    : na}
-                </p>
-              </div>
+                    : na
+                }
+              />
             </>
           )}
         </div>
       </div>
 
-      <div className="bg-white rounded-xl border border-[rgba(14,14,16,0.07)] p-6">
-        <h3 className="text-lg font-semibold text-[#3b3b40] mb-4">{t('groupParentSection')}</h3>
+      <div className="rounded-xl border border-[rgba(14,14,16,0.07)] bg-white p-6">
+        <h3 className="mb-4 text-lg font-semibold text-[#3b3b40]">{t('groupParentSection')}</h3>
         <div className="space-y-4">
           {isEditMode ? (
             <>
@@ -168,61 +207,64 @@ export function StudentDetails({
             </>
           ) : (
             <>
-              <div>
-                <label className="text-sm font-medium text-[#8b8b90]">{t('group')}</label>
-                <div className="text-[#3b3b40] mt-1">
-                  {student.group ? (
-                    <div className="flex items-center gap-2">
+              <ProfileInfoRow
+                icon={<Users className={ICON_CLASS} aria-hidden="true" />}
+                label={t('group')}
+                value={
+                  student.group ? (
+                    <div className="flex flex-wrap items-center gap-2">
                       <Badge variant="info">{student.group.name}</Badge>
-                      {student.group.level && (
-                        <span className="text-sm text-[#8b8b90]">{student.group.level}</span>
-                      )}
+                      {student.group.level ? (
+                        <span className="text-sm font-medium text-[#8b8b90]">{student.group.level}</span>
+                      ) : null}
                     </div>
                   ) : (
-                    <span className="text-[#8b8b90]">{tc('notAssigned')}</span>
-                  )}
-                </div>
-              </div>
-              {student.group?.center && (
-                <div>
-                  <label className="text-sm font-medium text-[#8b8b90]">{tc('center')}</label>
-                  <p className="text-[#3b3b40] mt-1">{student.group.center.name}</p>
-                </div>
-              )}
-              {assignedTeacher && (
-                <div>
-                  <label className="text-sm font-medium text-[#8b8b90]">{t('teacher')}</label>
-                  <p className="text-[#3b3b40] mt-1">
-                    {assignedTeacher.user.firstName} {assignedTeacher.user.lastName}
-                  </p>
-                </div>
-              )}
-              {secondTeacher && secondTeacher.id !== assignedTeacher?.id && (
-                <div>
-                  <label className="text-sm font-medium text-[#8b8b90]">{t('teacher2')}</label>
-                  <p className="text-[#3b3b40] mt-1">
-                    {secondTeacher.user.firstName} {secondTeacher.user.lastName}
-                  </p>
-                </div>
-              )}
-              {student.parentName && (
-                <div>
-                  <label className="text-sm font-medium text-[#8b8b90]">{t('parentName')}</label>
-                  <p className="text-[#3b3b40] mt-1">{student.parentName}</p>
-                </div>
-              )}
-              {student.parentPhone && (
-                <div>
-                  <label className="text-sm font-medium text-[#8b8b90]">{t('parentPhone')}</label>
-                  <p className="text-[#3b3b40] mt-1">{formatPhoneForDisplay(student.parentPhone)}</p>
-                </div>
-              )}
-              {student.parentEmail && (
-                <div>
-                  <label className="text-sm font-medium text-[#8b8b90]">{t('parentEmail')}</label>
-                  <p className="text-[#3b3b40] mt-1">{student.parentEmail}</p>
-                </div>
-              )}
+                    <span className="font-medium text-[#8b8b90]">{tc('notAssigned')}</span>
+                  )
+                }
+              />
+              {student.group?.center ? (
+                <ProfileInfoRow
+                  icon={<Building2 className={ICON_CLASS} aria-hidden="true" />}
+                  label={tc('center')}
+                  value={student.group.center.name}
+                />
+              ) : null}
+              {assignedTeacher ? (
+                <ProfileInfoRow
+                  icon={<UserRound className={ICON_CLASS} aria-hidden="true" />}
+                  label={t('teacher')}
+                  value={`${assignedTeacher.user.firstName} ${assignedTeacher.user.lastName}`}
+                />
+              ) : null}
+              {secondTeacher && secondTeacher.id !== assignedTeacher?.id ? (
+                <ProfileInfoRow
+                  icon={<UserRound className={ICON_CLASS} aria-hidden="true" />}
+                  label={t('teacher2')}
+                  value={`${secondTeacher.user.firstName} ${secondTeacher.user.lastName}`}
+                />
+              ) : null}
+              {student.parentName ? (
+                <ProfileInfoRow
+                  icon={<UserCircle className={ICON_CLASS} aria-hidden="true" />}
+                  label={t('parentName')}
+                  value={student.parentName}
+                />
+              ) : null}
+              {student.parentPhone ? (
+                <ProfileInfoRow
+                  icon={<Phone className={ICON_CLASS} aria-hidden="true" />}
+                  label={t('parentPhone')}
+                  value={formatPhoneForDisplay(student.parentPhone)}
+                />
+              ) : null}
+              {student.parentEmail ? (
+                <ProfileInfoRow
+                  icon={<Mail className={ICON_CLASS} aria-hidden="true" />}
+                  label={t('parentEmail')}
+                  value={student.parentEmail}
+                />
+              ) : null}
             </>
           )}
         </div>

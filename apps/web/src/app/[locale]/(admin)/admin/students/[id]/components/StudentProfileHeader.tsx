@@ -42,18 +42,18 @@ export function StudentProfileHeader({
   const avatarUrl = student.user?.avatarUrl;
 
   return (
-    <div className="bg-white rounded-xl border border-[rgba(14,14,16,0.07)] p-6">
-      <div className="flex items-start gap-6">
+    <div className="rounded-xl border border-[rgba(14,14,16,0.07)] bg-white p-4 sm:p-6">
+      <div className="flex flex-col items-start gap-4 sm:flex-row sm:gap-6">
         <Avatar
           src={avatarUrl}
           name={`${firstName} ${lastName}`.trim() || tCommon('studentFallback')}
           size="xl"
-          className={avatarUrl ? '' : 'bg-[#1010a3] text-white'}
+          className={avatarUrl ? 'shrink-0' : 'shrink-0 bg-[#1010a3] text-white'}
         />
-        <div className="flex-1">
+        <div className="min-w-0 w-full flex-1">
           {isEditMode ? (
             <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
                   <Label htmlFor="firstName">
                     {tCommon('firstName')} <span className="text-red-500">*</span>
@@ -96,30 +96,32 @@ export function StudentProfileHeader({
             </div>
           ) : (
             <>
-              <div className="flex items-center gap-3 mb-2">
-                <h2 className="text-2xl font-bold text-[#3b3b40]">
+              <div className="mb-2 flex flex-wrap items-center gap-2 sm:gap-3">
+                <h2 className="break-words text-xl font-bold text-[#3b3b40] sm:text-2xl">
                   {firstName} {lastName}
                 </h2>
                 <Badge variant={student.user?.status === 'ACTIVE' ? 'success' : 'warning'}>
                   {student.user?.status || 'UNKNOWN'}
                 </Badge>
               </div>
-              <p className="text-[#8b8b90] mb-4">{student.user?.email || ''}</p>
-              <div className="flex flex-wrap gap-4 text-sm">
+              {student.user?.email ? (
+                <p className="mb-4 break-all text-[#8b8b90]">{student.user.email}</p>
+              ) : null}
+              <div className="flex flex-col gap-2 text-sm sm:flex-row sm:flex-wrap sm:gap-4">
                 {student.user?.phone && (
-                  <div className="flex items-center gap-2 text-[#3b3b40]">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="flex min-w-0 items-center gap-2 text-[#3b3b40]">
+                    <svg className="h-4 w-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                     </svg>
-                    {formatPhoneForDisplay(student.user.phone)}
+                    <span className="break-all">{formatPhoneForDisplay(student.user.phone)}</span>
                   </div>
                 )}
                 {student.user?.lastLoginAt && (
-                  <div className="flex items-center gap-2 text-[#3b3b40]">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="flex min-w-0 items-center gap-2 text-[#3b3b40]">
+                    <svg className="h-4 w-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
-                    Last login: {formatDate(student.user.lastLoginAt, locale)}
+                    <span className="break-words">Last login: {formatDate(student.user.lastLoginAt, locale)}</span>
                   </div>
                 )}
               </div>

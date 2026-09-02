@@ -1,11 +1,11 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { useLocale, useTranslations } from 'next-intl';
 import { PORTAL_SHEET_DRAG_HANDLE_ATTR, usePortalSheetDrag } from '@/shared/hooks/usePortalSheetDrag';
 import { StudentCard } from './StudentCard';
-import { Button } from '@/shared/components/ui';
+import { Avatar, Button, ListBoardViewToggle } from '@/shared/components/ui';
 import {
   getItemId,
   isOnboardingItem,
@@ -75,7 +75,7 @@ function getLocalizedCenterName(centerName: string, isArmenianLocale: boolean): 
 
 interface StudentsBoardProps {
   studentsByCenter: Record<string, TeacherAssignedItem[]>;
-  centersData?: Array<Center>;
+  centersData?: Array<Pick<Center, 'id' | 'name'> & { colorHex?: string | null }>;
   isLoading: boolean;
   searchQuery: string;
   onCardClick?: (student: Student) => void;
@@ -93,6 +93,70 @@ export function StudentsBoard({
   const t = useTranslations('students');
   const tc = useTranslations('common');
   const [selectedCenterId, setSelectedCenterId] = useState<string | null>(null);
+  const [sheetViewMode, setSheetViewMode] = useState<'list' | 'board'>('board');
+
+  const getItemDisplayName = (item: TeacherAssignedItem): string => {
+    if (isOnboardingItem(item)) {
+      return [item.firstName, item.lastName].filter(Boolean).join(' ') || '—';
+    }
+    const firstName = item.user?.firstName || '';
+    const lastName = item.user?.lastName || '';
+    return `${firstName} ${lastName}`.trim() || '—';
+  };
+
+  const renderMobileStudentRow = (item: TeacherAssignedItem) => {
+    const name = getItemDisplayName(item);
+    const isOnboarding = isOnboardingItem(item);
+    const attendance = !isOnboarding ? item.attendanceSummary : undefined;
+    const attendanceValue = attendance
+      ? `${attendance.totalClasses}/${attendance.absences}`
+      : '0/0';
+    const avatarUrl = !isOnboarding ? item.user?.avatarUrl : undefined;
+    const groupName = !isOnboarding
+      ? item.group
+        ? `${item.group.name}${item.group.level ? ` (${item.group.level})` : ''}`
+        : null
+      : null;
+
+    return (
+      <li key={getItemId(item)}>
+        <button
+          type="button"
+          className={cn(
+            'flex w-full items-center gap-3 px-4 py-3 text-left',
+            !isOnboarding && onCardClick && 'active:bg-slate-50',
+            isOnboarding && 'cursor-default',
+          )}
+          onClick={() => {
+            if (!isOnboarding && onCardClick) {
+              onCardClick(item);
+            }
+          }}
+          disabled={isOnboarding || !onCardClick}
+        >
+          <Avatar
+            src={avatarUrl}
+            name={name}
+            size="sm"
+            className="h-9 w-9 shrink-0 bg-[#eef2ff] text-xs font-bold text-[#1010a3]"
+          />
+          <span className="min-w-0 flex-1">
+            <span className="block truncate text-sm font-semibold text-[#1e293b]">{name}</span>
+            {groupName ? (
+              <span className="mt-0.5 block truncate text-xs text-[#8b8b90]">{groupName}</span>
+            ) : null}
+          </span>
+          {isOnboarding ? (
+            <span className="shrink-0 text-xs font-medium text-amber-600">{tc('onboarding')}</span>
+          ) : (
+            <span className="shrink-0 text-sm font-semibold tabular-nums text-[#64748b]">
+              {attendanceValue}
+            </span>
+          )}
+        </button>
+      </li>
+    );
+  };
 
   const allCenters = centersData || [];
   const visibleCenters = allCenters.filter((center) => {
@@ -119,7 +183,24 @@ export function StudentsBoard({
       : []),
   ];
   const selectedCenter = centerCards.find((center) => center.id === selectedCenterId) ?? null;
-  const isSheetOpen = selectedCenter !== null;
+  const trimmedSearch = searchQuery.trim();
+  const isSearching = trimmedSearch.length > 0;
+  const searchResultStudents = useMemo(() => {
+    if (!isSearching) return [];
+    const seen = new Set<string>();
+    const results: TeacherAssignedItem[] = [];
+    for (const students of Object.values(studentsByCenter)) {
+      for (const item of students) {
+        const id = getItemId(item);
+        if (seen.has(id)) continue;
+        seen.add(id);
+        results.push(item);
+      }
+    }
+    return results;
+  }, [isSearching, studentsByCenter]);
+
+  const isSheetOpen = selectedCenter !== null && !isSearching;
 
   const requestClose = useCallback(() => {
     setSelectedCenterId(null);
@@ -135,6 +216,12 @@ export function StudentsBoard({
       resetDrag();
     }
   }, [isSheetOpen, resetDrag]);
+
+  useEffect(() => {
+    if (isSearching) {
+      setSelectedCenterId(null);
+    }
+  }, [isSearching]);
 
   if (isLoading) {
     return (
@@ -155,50 +242,62 @@ export function StudentsBoard({
   return (
     <>
       <div className="grid w-full min-w-0 grid-cols-1 gap-3 pb-3 sheet:hidden">
-        {centerCards.map((center) => {
-          const primaryColor = center.colorHex || '#253046';
-          const softColor = center.isUnassigned ? '#f6f6f7' : lightenColor(primaryColor, 0.65);
-          const softBorderColor = center.isUnassigned ? '#e8e8ec' : lightenColor(primaryColor, 0.35);
-          const textColor = center.isUnassigned
-            ? '#3b3b40'
-            : getContrastColor(primaryColor) === 'white'
-              ? '#1e293b'
-              : '#0f172a';
+        {isSearching ? (
+          searchResultStudents.length > 0 ? (
+            <ul className="divide-y divide-slate-100 overflow-hidden rounded-xl border border-slate-200 bg-white">
+              {searchResultStudents.map((item) => renderMobileStudentRow(item))}
+            </ul>
+          ) : (
+            <div className="rounded-xl border border-dashed border-slate-200 bg-white py-10 text-center text-sm text-[#8b8b90]">
+              {t('noStudentsMatch')}
+            </div>
+          )
+        ) : (
+          centerCards.map((center) => {
+            const primaryColor = center.colorHex || '#253046';
+            const softColor = center.isUnassigned ? '#f6f6f7' : lightenColor(primaryColor, 0.65);
+            const softBorderColor = center.isUnassigned ? '#e8e8ec' : lightenColor(primaryColor, 0.35);
+            const textColor = center.isUnassigned
+              ? '#3b3b40'
+              : getContrastColor(primaryColor) === 'white'
+                ? '#1e293b'
+                : '#0f172a';
 
-          return (
-            <Button
-              key={center.id}
-              type="button"
-              variant="outline"
-              className="h-auto min-h-[68px] w-full rounded-xl px-4 py-3 text-left"
-              style={{ backgroundColor: softColor, borderColor: softBorderColor, color: textColor }}
-              onClick={() => setSelectedCenterId(center.id)}
-            >
-              <div className="flex w-full items-center justify-between gap-3">
-                <div className="min-w-0">
-                  <p className="truncate text-[15px] font-semibold">
-                    {center.name}
-                  </p>
-                  <p className="mt-1 text-sm opacity-75">{t('studentCount', { count: center.students.length })}</p>
+            return (
+              <Button
+                key={center.id}
+                type="button"
+                variant="outline"
+                className="h-auto min-h-[68px] w-full rounded-xl px-4 py-3 text-left"
+                style={{ backgroundColor: softColor, borderColor: softBorderColor, color: textColor }}
+                onClick={() => setSelectedCenterId(center.id)}
+              >
+                <div className="flex w-full items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="truncate text-[15px] font-semibold">
+                      {center.name}
+                    </p>
+                    <p className="mt-1 text-sm opacity-75">{t('studentCount', { count: center.students.length })}</p>
+                  </div>
+                  <span
+                    className="inline-flex size-9 shrink-0 items-center justify-center rounded-full border border-white/45 text-[#1f2937] shadow-[inset_0_1px_0_rgba(255,255,255,0.7),0_6px_16px_rgba(15,23,42,0.16)] backdrop-blur-md"
+                    style={{ background: 'linear-gradient(145deg, rgba(255,255,255,0.55), rgba(255,255,255,0.2))' }}
+                  >
+                    <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                      <path
+                        d="M5 12H19M19 12L13 6M19 12L13 18"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </span>
                 </div>
-                <span
-                  className="inline-flex size-9 shrink-0 items-center justify-center rounded-full border border-white/45 text-[#1f2937] shadow-[inset_0_1px_0_rgba(255,255,255,0.7),0_6px_16px_rgba(15,23,42,0.16)] backdrop-blur-md"
-                  style={{ background: 'linear-gradient(145deg, rgba(255,255,255,0.55), rgba(255,255,255,0.2))' }}
-                >
-                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                    <path
-                      d="M5 12H19M19 12L13 6M19 12L13 18"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </span>
-              </div>
-            </Button>
-          );
-        })}
+              </Button>
+            );
+          })
+        )}
       </div>
 
       <div className="hidden w-full min-w-0 overflow-x-auto pb-1 [-webkit-overflow-scrolling:touch] sheet:block">
@@ -212,17 +311,30 @@ export function StudentsBoard({
             })
             .map((center) => {
               const centerStudents = studentsByCenter[center.id] || [];
+              const primaryColor = center.colorHex || '#253046';
+              const softColor = lightenColor(primaryColor, 0.65);
+              const softBorderColor = lightenColor(primaryColor, 0.35);
+              const textColor =
+                getContrastColor(primaryColor) === 'white' ? '#1e293b' : '#0f172a';
               return (
                 <div
                   key={center.id}
-                  className="flex w-[clamp(14rem,42vw,20rem)] shrink-0 flex-col rounded-xl border border-[rgba(14,14,16,0.07)] bg-[#fafafa]"
+                  className="flex w-[clamp(14rem,42vw,20rem)] shrink-0 flex-col overflow-hidden rounded-xl border bg-[#fafafa]"
+                  style={{ borderColor: softBorderColor }}
                 >
                   {/* Column Header */}
-                  <div className="p-4 border-b border-[rgba(14,14,16,0.07)] bg-white rounded-t-xl">
-                    <h3 className="font-semibold text-[#3b3b40]">
+                  <div
+                    className="rounded-t-xl border-b p-4"
+                    style={{
+                      backgroundColor: softColor,
+                      borderColor: softBorderColor,
+                      color: textColor,
+                    }}
+                  >
+                    <h3 className="font-semibold">
                       {getLocalizedCenterName(center.name, isArmenianLocale)}
                     </h3>
-                    <p className="text-sm text-[#8b8b90] mt-1">
+                    <p className="mt-1 text-sm opacity-75">
                       {t('studentCount', { count: centerStudents.length })}
                     </p>
                   </div>
@@ -265,11 +377,11 @@ export function StudentsBoard({
           
           {/* Unassigned Students Column */}
           {studentsByCenter['unassigned'] && studentsByCenter['unassigned'].length > 0 && (
-            <div className="flex w-[clamp(14rem,42vw,20rem)] shrink-0 flex-col rounded-xl border border-[rgba(14,14,16,0.07)] bg-[#fafafa]">
+            <div className="flex w-[clamp(14rem,42vw,20rem)] shrink-0 flex-col overflow-hidden rounded-xl border border-[#e8e8ec] bg-[#fafafa]">
               {/* Column Header */}
-              <div className="p-4 border-b border-[rgba(14,14,16,0.07)] bg-white rounded-t-xl">
-                <h3 className="font-semibold text-[#3b3b40]">{tc('unassigned')}</h3>
-                <p className="text-sm text-[#8b8b90] mt-1">
+              <div className="rounded-t-xl border-b border-[#e8e8ec] bg-[#f6f6f7] p-4 text-[#3b3b40]">
+                <h3 className="font-semibold">{tc('unassigned')}</h3>
+                <p className="mt-1 text-sm opacity-75">
                   {t('studentCount', { count: studentsByCenter['unassigned'].length })}
                 </p>
               </div>
@@ -340,43 +452,56 @@ export function StudentsBoard({
               <div className="h-1.5 w-14 rounded-full bg-slate-400" />
             </div>
             <DialogPrimitive.Title className="sr-only">{selectedCenter?.name ?? t('boardView')}</DialogPrimitive.Title>
-            <div className="flex items-center justify-between border-b border-slate-200 bg-white px-4 py-3">
-              <div>
-                <h3 className="text-base font-semibold text-[#3b3b40]">{selectedCenter?.name}</h3>
+            <div className="flex items-start justify-between gap-3 border-b border-slate-200 bg-white px-4 py-3">
+              <div className="min-w-0 flex-1">
+                <h3 className="truncate text-base font-semibold text-[#3b3b40]">{selectedCenter?.name}</h3>
                 <p className="text-sm text-[#8b8b90]">
                   {t('studentCount', { count: selectedCenter?.students.length ?? 0 })}
                 </p>
               </div>
+              <ListBoardViewToggle
+                className="shrink-0 [&_button]:gap-1.5 [&_button]:px-2.5"
+                value={sheetViewMode}
+                onChange={setSheetViewMode}
+                listLabel={t('listView')}
+                boardLabel={t('cardView')}
+              />
             </div>
             <div
               className="overflow-y-auto px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-4"
             >
               {selectedCenter?.students.length ? (
-                <div className="space-y-3">
-                  {selectedCenter.students.map((item) => {
-                    if (isOnboardingItem(item)) {
+                sheetViewMode === 'list' ? (
+                  <ul className="divide-y divide-slate-100 overflow-hidden rounded-xl border border-slate-200 bg-white">
+                    {selectedCenter.students.map((item) => renderMobileStudentRow(item))}
+                  </ul>
+                ) : (
+                  <div className="space-y-3">
+                    {selectedCenter.students.map((item) => {
+                      if (isOnboardingItem(item)) {
+                        return (
+                          <div
+                            key={getItemId(item)}
+                            className="rounded-lg border border-[rgba(14,14,16,0.07)] border-dashed bg-white p-4 opacity-90"
+                          >
+                            <p className="font-medium text-[#3b3b40]">
+                              {[item.firstName, item.lastName].filter(Boolean).join(' ') || '—'}
+                            </p>
+                            <p className="mt-1 text-xs text-[#8b8b90]">{formatPhoneForDisplay(item.phone, t('noPhone'))}</p>
+                            <span className="mt-2 inline-block text-xs font-medium text-amber-600">{tc('onboarding')}</span>
+                          </div>
+                        );
+                      }
                       return (
-                        <div
+                        <StudentCard
                           key={getItemId(item)}
-                          className="rounded-lg border border-[rgba(14,14,16,0.07)] border-dashed bg-white p-4 opacity-90"
-                        >
-                          <p className="font-medium text-[#3b3b40]">
-                            {[item.firstName, item.lastName].filter(Boolean).join(' ') || '—'}
-                          </p>
-                          <p className="mt-1 text-xs text-[#8b8b90]">{formatPhoneForDisplay(item.phone, t('noPhone'))}</p>
-                          <span className="mt-2 inline-block text-xs font-medium text-amber-600">{tc('onboarding')}</span>
-                        </div>
+                          student={item}
+                          onCardClick={onCardClick}
+                        />
                       );
-                    }
-                    return (
-                      <StudentCard
-                        key={getItemId(item)}
-                        student={item}
-                        onCardClick={onCardClick}
-                      />
-                    );
-                  })}
-                </div>
+                    })}
+                  </div>
+                )
               ) : (
                 <div className="py-8 text-center text-sm text-[#8b8b90]">{t('noStudentsInCenter')}</div>
               )}

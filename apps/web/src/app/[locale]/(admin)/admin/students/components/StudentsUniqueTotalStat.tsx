@@ -4,21 +4,21 @@ import { Skeleton } from '@/shared/components/ui/Skeleton';
 import { cn } from '@/shared/lib/utils';
 import type { useTranslations } from 'next-intl';
 
-interface TeachersUniqueTotalStatProps {
+interface StudentsUniqueTotalStatProps {
   count: number;
   isLoading: boolean;
-  t: ReturnType<typeof useTranslations<'teachers'>>;
+  t: ReturnType<typeof useTranslations<'students'>>;
   onClick?: () => void;
   isActive?: boolean;
 }
 
-export function TeachersUniqueTotalStat({
+export function StudentsUniqueTotalStat({
   count,
   isLoading,
   t,
   onClick,
   isActive = false,
-}: TeachersUniqueTotalStatProps) {
+}: StudentsUniqueTotalStatProps) {
   const content = (
     <>
       <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#f0f0ff] text-[#1010a3]">
@@ -39,7 +39,7 @@ export function TeachersUniqueTotalStat({
       </div>
       <div className="min-w-0">
         <p className="text-[0.625rem] font-semibold uppercase tracking-[0.12em] text-[#8b8b90]">
-          {t('totalTeachers')}
+          {t('totalStudents')}
         </p>
         {isLoading ? (
           <Skeleton className="mt-1 h-6 w-10 rounded-md bg-[#ececec]" />
@@ -49,7 +49,7 @@ export function TeachersUniqueTotalStat({
           </p>
         )}
         <p className="mt-0.5 max-w-[10rem] text-[0.625rem] leading-tight text-[#8b8b90]">
-          {onClick ? t('viewAllTeachers') : t('uniqueTeachersHelper')}
+          {onClick ? t('viewAllStudents') : t('uniqueStudentsHelper')}
         </p>
       </div>
     </>
@@ -67,7 +67,7 @@ export function TeachersUniqueTotalStat({
             ? 'border-[#1010a3]/35 shadow-[0_4px_14px_rgba(16,16,163,0.14)]'
             : 'border-[rgba(14,14,16,0.07)] hover:-translate-y-px hover:border-[rgba(16,16,163,0.18)] hover:shadow-[0_4px_14px_rgba(16,16,163,0.12)]',
         )}
-        aria-label={t('viewAllTeachers')}
+        aria-label={t('viewAllStudents')}
       >
         {content}
       </button>
@@ -77,7 +77,7 @@ export function TeachersUniqueTotalStat({
   return (
     <div
       className="flex shrink-0 items-center gap-3 rounded-2xl border border-[rgba(14,14,16,0.07)] bg-white px-3.5 py-2.5 shadow-[0_2px_8px_rgba(15,23,42,0.06)]"
-      aria-label={t('totalTeachers')}
+      aria-label={t('totalStudents')}
     >
       {content}
     </div>

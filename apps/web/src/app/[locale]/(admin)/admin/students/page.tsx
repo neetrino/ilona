@@ -24,6 +24,9 @@ export default function StudentsPage() {
     totalStudents,
     totalPages,
     studentsByCenter,
+    sortedVisibleCenters,
+    uniqueStudentsCount,
+    activeCenterTabId,
     isLoading,
     teachersData,
     centersData,
@@ -87,6 +90,8 @@ export default function StudentsPage() {
     handlePageChange,
     setViewMode,
     handleSort,
+    handleActiveCenterTabChange,
+    handleTotalStudentsClick,
     handleToggleSelect,
     handleSelectAll,
     handleBulkDeleteClick,
@@ -223,6 +228,12 @@ export default function StudentsPage() {
         {/* Students View */}
         {viewMode === 'list' ? (
           <StudentsList
+            centers={sortedVisibleCenters}
+            studentsByCenter={studentsByCenter}
+            activeCenterTabId={activeCenterTabId}
+            onSelectCenter={handleActiveCenterTabChange}
+            uniqueStudentsCount={uniqueStudentsCount}
+            onTotalClick={handleTotalStudentsClick}
             students={students}
             totalStudents={totalStudents}
             totalPages={totalPages}
@@ -259,7 +270,7 @@ export default function StudentsPage() {
         ) : (
           <StudentsBoard
             studentsByCenter={studentsByCenter}
-            centersData={centersData?.items}
+            centersData={sortedVisibleCenters}
             isLoading={isLoading}
             searchQuery={searchQuery}
             onCardClick={handleStudentDetailsOpen}

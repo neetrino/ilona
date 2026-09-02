@@ -1,4 +1,3 @@
-import type { ReactNode } from 'react';
 import {
   Building2,
   Calendar,
@@ -27,14 +26,7 @@ type SectionProps = {
   tTeachers: Translate;
 };
 
-function IconLabel({ icon, text }: { icon: ReactNode; text: string }) {
-  return (
-    <>
-      {icon}
-      {text}
-    </>
-  );
-}
+const FIELD_ICON_CLASS = 'h-4 w-4';
 
 export function StudentDetailsModalBasicInfo({
   student,
@@ -50,22 +42,26 @@ export function StudentDetailsModalBasicInfo({
   return (
     <div className="space-y-5 pt-[10px] min-[1367px]:pt-0">
       <h4 className="text-base font-semibold text-slate-800 sm:text-lg">{tTeachers('basicInformation')}</h4>
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 min-[1367px]:flex min-[1367px]:gap-3">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <StudentDetailsModalField
-          label={<IconLabel icon={<Phone className="h-4 w-4 shrink-0 text-slate-400" aria-hidden="true" />} text={tTeachers('phoneNumber')} />}
+          icon={<Phone className={FIELD_ICON_CLASS} aria-hidden="true" />}
+          label={tTeachers('phoneNumber')}
           value={formatPhoneForDisplay(student.user?.phone, tTeachers('noPhoneNumber'))}
         />
         <StudentDetailsModalField
-          label={<IconLabel icon={<UserCircle className="h-4 w-4 shrink-0 text-slate-400" aria-hidden="true" />} text={t('dateOfBirth')} />}
+          icon={<UserCircle className={FIELD_ICON_CLASS} aria-hidden="true" />}
+          label={t('dateOfBirth')}
           value={formatDateOfBirth(student.dateOfBirth, locale)}
         />
         <StudentDetailsModalField
-          label={<IconLabel icon={<Calendar className="h-4 w-4 shrink-0 text-slate-400" aria-hidden="true" />} text={visibility.useAdmissionDate ? t('registerDateLabel') : t('memberSince')} />}
+          icon={<Calendar className={FIELD_ICON_CLASS} aria-hidden="true" />}
+          label={visibility.useAdmissionDate ? t('registerDateLabel') : t('memberSince')}
           value={formatDisplayDate(visibility.useAdmissionDate ? admissionDate : student.user?.createdAt, locale)}
         />
         {visibility.monthlyFee ? (
           <StudentDetailsModalField
-            label={<IconLabel icon={<CircleDollarSign className="h-4 w-4 shrink-0 text-slate-400" aria-hidden="true" />} text={t('monthlyFeeLabel')} />}
+            icon={<CircleDollarSign className={FIELD_ICON_CLASS} aria-hidden="true" />}
+            label={t('monthlyFeeLabel')}
             value={formatCurrency(monthlyFee)}
           />
         ) : null}
@@ -89,31 +85,34 @@ export function StudentDetailsModalEnrollment({
         <GraduationCap className="h-4 w-4 text-slate-500" aria-hidden="true" />
         {t('enrollmentSection')}
       </h4>
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 min-[1367px]:flex min-[1367px]:gap-3">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <StudentDetailsModalField
-          label={<IconLabel icon={<Users className="h-4 w-4 shrink-0 text-slate-400" aria-hidden="true" />} text={t('group')} />}
+          icon={<Users className={FIELD_ICON_CLASS} aria-hidden="true" />}
+          label={t('group')}
           value={student.group ? `${student.group.name}${student.group.level ? ` (${student.group.level})` : ''}` : '—'}
         />
         <StudentDetailsModalField
-          label={<IconLabel icon={<UserRound className="h-4 w-4 shrink-0 text-slate-400" aria-hidden="true" />} text={t('teacher')} />}
+          icon={<UserRound className={FIELD_ICON_CLASS} aria-hidden="true" />}
+          label={t('teacher')}
           value={assignedTeacherName}
         />
         {visibility.alwaysShowTeacher2 || secondTeacherName ? (
           <StudentDetailsModalField
-            label={<IconLabel icon={<UserRound className="h-4 w-4 shrink-0 text-slate-400" aria-hidden="true" />} text={t('teacher2')} />}
+            icon={<UserRound className={FIELD_ICON_CLASS} aria-hidden="true" />}
+            label={t('teacher2')}
             value={secondTeacherName ?? '—'}
           />
         ) : null}
         {student.center?.name || student.group?.center?.name ? (
           <StudentDetailsModalField
-            className="sm:col-span-2 min-[1367px]:col-span-1"
-            label={<IconLabel icon={<Building2 className="h-4 w-4 shrink-0 text-slate-400" aria-hidden="true" />} text={tTeachers('centers')} />}
+            icon={<Building2 className={FIELD_ICON_CLASS} aria-hidden="true" />}
+            label={tTeachers('centers')}
             value={student.center?.name ?? student.group?.center?.name}
           />
         ) : null}
         {!visibility.useAdmissionDate && student.registerDate ? (
           <StudentDetailsModalField
-            className="sm:col-span-2 min-[1367px]:col-span-1"
+            icon={<Calendar className={FIELD_ICON_CLASS} aria-hidden="true" />}
             label={t('registerDateLabel')}
             value={formatDisplayDate(student.registerDate, locale)}
           />
@@ -143,22 +142,25 @@ export function StudentDetailsModalParentContact({
         <ParentIcon className="h-4 w-4 text-slate-500" />
         {t('parentContact')}
       </h4>
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 min-[1367px]:flex min-[1367px]:gap-3">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         {student.parentName ? (
           <StudentDetailsModalField
-            label={<IconLabel icon={<ParentIcon className="h-4 w-4 shrink-0 text-slate-400" />} text={t('parentName')} />}
+            icon={<UserCircle className={FIELD_ICON_CLASS} aria-hidden="true" />}
+            label={t('parentName')}
             value={student.parentName}
           />
         ) : null}
         {visibility.alwaysShowParentContact || student.parentPhone ? (
           <StudentDetailsModalField
-            label={<IconLabel icon={<Phone className="h-4 w-4 shrink-0 text-slate-400" aria-hidden="true" />} text={t('parentPhone')} />}
+            icon={<Phone className={FIELD_ICON_CLASS} aria-hidden="true" />}
+            label={t('parentPhone')}
             value={formatPhoneForDisplay(student.parentPhone)}
           />
         ) : null}
         {visibility.parentEmail && student.parentEmail ? (
           <StudentDetailsModalField
-            label={<IconLabel icon={<Mail className="h-4 w-4 shrink-0 text-slate-400" aria-hidden="true" />} text={t('parentEmail')} />}
+            icon={<Mail className={FIELD_ICON_CLASS} aria-hidden="true" />}
+            label={t('parentEmail')}
             value={student.parentEmail}
           />
         ) : null}

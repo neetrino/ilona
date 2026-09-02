@@ -6,11 +6,11 @@ import { createLeadFromVoice } from '@/features/crm/api/crm.api';
 import type { CrmLead } from '@/features/crm/types';
 import { cn } from '@/shared/lib/utils';
 import {
-  portalSheetLayerProps,
-  useSheetStackZIndex,
-  stackedSheetOverlayClassName,
-} from '@/shared/lib/sheet-stack';
-import { CUSTOM_MODAL_OVERLAY_CLASS, CUSTOM_MODAL_PANEL_CLASS } from '@/shared/lib/portal-form-sheet-classes';
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+} from '@/shared/components/ui/dialog';
 import {
   createAudioRecorder,
   getAudioExtension,
@@ -31,6 +31,8 @@ interface VoiceLeadModalProps {
 
 export function VoiceLeadModal({ open, onClose, onCreated, centerId }: VoiceLeadModalProps) {
   const t = useTranslations('crm');
+  const tc = useTranslations('common');
+  const tChat = useTranslations('chat');
   const [isRecording, setIsRecording] = useState(false);
   const [hasRecording, setHasRecording] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -53,12 +55,35 @@ export function VoiceLeadModal({ open, onClose, onCreated, centerId }: VoiceLead
     };
   }, [previewUrl]);
 
+  const resetRecordingState = useCallback(() => {
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+      mediaRecorderRef.current.stop();
+      mediaRecorderRef.current = null;
+    }
+    stopStreamTracks(streamRef.current);
+    streamRef.current = null;
+    chunksRef.current = [];
+    setIsRecording(false);
+    setHasRecording(false);
+    setError(null);
+    setPreviewUrl((prev) => {
+      if (prev) URL.revokeObjectURL(prev);
+      return null;
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!open) {
+      resetRecordingState();
+    }
+  }, [open, resetRecordingState]);
+
   const startRecording = useCallback(async () => {
     setError(null);
-    if (previewUrl) {
-      URL.revokeObjectURL(previewUrl);
-      setPreviewUrl(null);
-    }
+    setPreviewUrl((prev) => {
+      if (prev) URL.revokeObjectURL(prev);
+      return null;
+    });
     setHasRecording(false);
     try {
       const stream = await requestMicrophoneStream();
@@ -98,7 +123,7 @@ export function VoiceLeadModal({ open, onClose, onCreated, centerId }: VoiceLead
       stopStreamTracks(streamRef.current);
       streamRef.current = null;
     }
-  }, [previewUrl]);
+  }, []);
 
   const stopRecording = useCallback(() => {
     if (mediaRecorderRef.current && isRecording) {
@@ -125,10 +150,10 @@ export function VoiceLeadModal({ open, onClose, onCreated, centerId }: VoiceLead
       const createdLead = await createLeadFromVoice(file, fileName, centerId ?? undefined);
       chunksRef.current = [];
       setHasRecording(false);
-      if (previewUrl) {
-        URL.revokeObjectURL(previewUrl);
-        setPreviewUrl(null);
-      }
+      setPreviewUrl((prev) => {
+        if (prev) URL.revokeObjectURL(prev);
+        return null;
+      });
       onCreated(createdLead);
       onClose();
     } catch (err) {
@@ -136,52 +161,56 @@ export function VoiceLeadModal({ open, onClose, onCreated, centerId }: VoiceLead
     } finally {
       setIsSaving(false);
     }
-  }, [onCreated, onClose, previewUrl, centerId, t]);
+  }, [onCreated, onClose, centerId, t]);
 
-  const handleCancel = useCallback(() => {
-    if (mediaRecorderRef.current && isRecording) {
-      mediaRecorderRef.current.stop();
-      mediaRecorderRef.current = null;
-    }
-    stopStreamTracks(streamRef.current);
-    streamRef.current = null;
-    chunksRef.current = [];
-    setIsRecording(false);
-    setHasRecording(false);
-    if (previewUrl) {
-      URL.revokeObjectURL(previewUrl);
-      setPreviewUrl(null);
-    }
-    setError(null);
-    onClose();
-  }, [isRecording, onClose, previewUrl]);
-
-  const { contentStyle, isBaseLayer } = useSheetStackZIndex(open);
-
-  if (!open) return null;
+  const handleOpenChange = useCallback(
+    (nextOpen: boolean) => {
+      if (!nextOpen && !isSaving) {
+        onClose();
+      }
+    },
+    [isSaving, onClose],
+  );
 
   return (
-    <>
-      <div className={stackedSheetOverlayClassName(CUSTOM_MODAL_OVERLAY_CLASS, isBaseLayer)} onClick={handleCancel} aria-hidden="true" />
-      <div style={contentStyle} {...portalSheetLayerProps} className={cn(CUSTOM_MODAL_PANEL_CLASS, 'max-w-sm')} onClick={(e) => e.stopPropagation()}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
+      <DialogContent
+        sheet={false}
+        stackOpen={open}
+        className="w-[calc(100%-1.5rem)] max-w-sm gap-0 overflow-hidden rounded-[15px] p-0 sm:w-full"
+        overlayClassName="bg-black/50"
+        onOpenAutoFocus={(event) => event.preventDefault()}
+        onInteractOutside={(event) => {
+          if (isSaving || isRecording) event.preventDefault();
+        }}
+        onEscapeKeyDown={(event) => {
+          if (isSaving || isRecording) event.preventDefault();
+        }}
+      >
         <div className="border-b border-slate-200 px-6 py-4">
-          <h2 className="text-lg font-semibold text-slate-900">{t('newLeadFromVoice')}</h2>
-          <p className="text-sm text-slate-500 mt-0.5">{t('recordVoiceToCreateLead')}</p>
+          <DialogTitle className="text-lg font-semibold text-slate-900">
+            {t('newLeadFromVoice')}
+          </DialogTitle>
+          <DialogDescription className="mt-0.5 text-sm text-slate-500">
+            {t('recordVoiceToCreateLead')}
+          </DialogDescription>
         </div>
-        <div className="p-6 space-y-4">
+        <div className="space-y-4 p-6">
           {error && (
-            <p className="text-sm text-red-600 rounded-lg bg-red-50 p-2">{error}</p>
+            <p className="rounded-lg bg-red-50 p-2 text-sm text-red-600">{error}</p>
           )}
           <div className="flex flex-wrap gap-2">
             {!isRecording ? (
               <button
                 type="button"
-                onClick={startRecording}
+                onClick={() => {
+                  void startRecording();
+                }}
                 disabled={isSaving}
                 className="inline-flex items-center gap-2 rounded-lg bg-red-100 px-4 py-2 text-sm font-medium text-red-700 hover:bg-red-200 disabled:opacity-50"
               >
                 <span className="h-2 w-2 rounded-full bg-red-500" />
-                Start Recording
+                {tChat('startRecording')}
               </button>
             ) : (
               <button
@@ -189,8 +218,8 @@ export function VoiceLeadModal({ open, onClose, onCreated, centerId }: VoiceLead
                 onClick={stopRecording}
                 className="inline-flex items-center gap-2 rounded-lg bg-slate-200 px-4 py-2 text-sm font-medium text-slate-800 hover:bg-slate-300"
               >
-                <span className="h-2 w-2 rounded-full bg-red-500 animate-pulse" />
-                Stop Recording
+                <span className="h-2 w-2 animate-pulse rounded-full bg-red-500" />
+                {tChat('stopRecording')}
               </button>
             )}
           </div>
@@ -200,39 +229,38 @@ export function VoiceLeadModal({ open, onClose, onCreated, centerId }: VoiceLead
               <audio
                 src={previewUrl}
                 controls
-                className="w-full h-10"
+                className="h-10 w-full"
                 style={{ maxHeight: 40 }}
               >
                 Your browser does not support audio playback.
               </audio>
-              <p className="text-xs text-slate-500">Play the recording above. If it sounds good, click Save to create the lead.</p>
             </div>
           )}
           <div className="flex justify-end gap-2 pt-2">
             <button
               type="button"
-              onClick={handleCancel}
+              onClick={onClose}
               disabled={isSaving}
               className={cn(
                 'rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50',
-                isSaving && 'opacity-50'
+                isSaving && 'opacity-50',
               )}
             >
-              Cancel
+              {tc('cancel')}
             </button>
             <button
               type="button"
-              onClick={handleSave}
+              onClick={() => {
+                void handleSave();
+              }}
               disabled={!hasRecording || isSaving}
-              className={cn(
-                'rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90 disabled:opacity-50 disabled:pointer-events-none'
-              )}
+              className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90 disabled:pointer-events-none disabled:opacity-50"
             >
-              {isSaving ? 'Saving…' : 'Save'}
+              {isSaving ? t('saving') : tc('save')}
             </button>
           </div>
         </div>
-      </div>
-    </>
+      </DialogContent>
+    </Dialog>
   );
 }

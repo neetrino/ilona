@@ -34,6 +34,7 @@ export function AddStudentForm(props: AddStudentFormProps) {
           style={{ ...form.dragStyle, ...form.contentStyle }}
           {...stackedSheetDialogHandlers}
           {...portalSheetLayerProps}
+          onOpenAutoFocus={(event) => event.preventDefault()}
           className={cn(
             'fixed inset-x-0 bottom-[7px] top-auto z-50 grid w-full translate-y-0',
             'duration-700 ease-in-out data-[state=open]:animate-in data-[state=closed]:animate-out',

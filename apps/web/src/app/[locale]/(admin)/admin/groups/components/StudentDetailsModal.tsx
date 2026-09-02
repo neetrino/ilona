@@ -8,11 +8,12 @@ import {
 } from '@/shared/lib/sheet-stack';
 
 
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState, type ReactNode } from 'react';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
-import { X } from 'lucide-react';
+import { Calendar, Phone, UserCircle, UserRound, X } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useStudent } from '@/features/students';
+import { ParentIcon } from '@/features/students/components/student-details-modal/ParentIcon';
 import { PORTAL_SHEET_DRAG_HANDLE_ATTR, usePortalSheetDrag } from '@/shared/hooks/usePortalSheetDrag';
 import { formatPhoneForDisplay } from '@/shared/lib/utils';
 import { portalFormSheetContentClass } from '@/shared/lib/portal-form-sheet-classes';
@@ -34,11 +35,24 @@ function formatDate(value: string | null | undefined, locale: string): string {
   return date.toLocaleDateString(locale, { year: 'numeric', month: 'short', day: 'numeric' });
 }
 
-function DetailField({ label, value }: { label: string; value: React.ReactNode }) {
+function DetailField({
+  icon,
+  label,
+  value,
+}: {
+  icon: ReactNode;
+  label: string;
+  value: React.ReactNode;
+}) {
   return (
-    <div className="space-y-1">
-      <p className="text-xs font-medium text-[#8b8b90]">{label}</p>
-      <p className="break-words text-sm font-medium text-[#3b3b40]">{value}</p>
+    <div className="flex items-start gap-3">
+      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#eef2ff] text-[#1010a3]">
+        {icon}
+      </span>
+      <div className="min-w-0 flex-1 space-y-1">
+        <p className="text-xs font-medium text-[#8b8b90]">{label}</p>
+        <p className="break-words text-sm font-medium text-[#3b3b40]">{value}</p>
+      </div>
     </div>
   );
 }
@@ -139,17 +153,45 @@ export function StudentDetailsModal({ open, onOpenChange, studentId }: StudentDe
             ) : (
               <div className="space-y-4">
                 <DetailSection title={tCommon('studentInformation')}>
-                  <DetailField label={tCommon('firstName')} value={student.user.firstName || '—'} />
-                  <DetailField label={tCommon('lastName')} value={student.user.lastName || '—'} />
-                  <DetailField label={tSettings('age')} value={age ?? '—'} />
-                  <DetailField label={tSettings('phoneNumber')} value={formatPhoneForDisplay(student.user.phone)} />
-                  <DetailField label={t('courseStartDate')} value={formatDate(courseStartDate, locale)} />
+                  <DetailField
+                    icon={<UserRound className="h-4 w-4" aria-hidden="true" />}
+                    label={tCommon('firstName')}
+                    value={student.user.firstName || '—'}
+                  />
+                  <DetailField
+                    icon={<UserRound className="h-4 w-4" aria-hidden="true" />}
+                    label={tCommon('lastName')}
+                    value={student.user.lastName || '—'}
+                  />
+                  <DetailField
+                    icon={<UserCircle className="h-4 w-4" aria-hidden="true" />}
+                    label={tSettings('age')}
+                    value={age ?? '—'}
+                  />
+                  <DetailField
+                    icon={<Phone className="h-4 w-4" aria-hidden="true" />}
+                    label={tSettings('phoneNumber')}
+                    value={formatPhoneForDisplay(student.user.phone)}
+                  />
+                  <DetailField
+                    icon={<Calendar className="h-4 w-4" aria-hidden="true" />}
+                    label={t('courseStartDate')}
+                    value={formatDate(courseStartDate, locale)}
+                  />
                 </DetailSection>
 
                 {isUnder18 ? (
                   <DetailSection title={tCommon('parentInformation')}>
-                    <DetailField label={tStudents('parentName')} value={student.parentName || '—'} />
-                    <DetailField label={tStudents('parentPhone')} value={formatPhoneForDisplay(student.parentPhone)} />
+                    <DetailField
+                      icon={<ParentIcon className="h-4 w-4" />}
+                      label={tStudents('parentName')}
+                      value={student.parentName || '—'}
+                    />
+                    <DetailField
+                      icon={<Phone className="h-4 w-4" aria-hidden="true" />}
+                      label={tStudents('parentPhone')}
+                      value={formatPhoneForDisplay(student.parentPhone)}
+                    />
                   </DetailSection>
                 ) : null}
 
