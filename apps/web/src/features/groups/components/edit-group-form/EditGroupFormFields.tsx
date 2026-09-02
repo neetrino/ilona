@@ -255,6 +255,7 @@ export function EditGroupFormFields(props: EditGroupFormFieldsProps) {
         disabled={isFormBusy}
         adminControls
         mode="rolling"
+        requireSlots
         sectionError={scheduleSectionError}
       />
 
@@ -270,7 +271,13 @@ export function EditGroupFormFields(props: EditGroupFormFieldsProps) {
         </Button>
         <Button
           type="submit"
-          disabled={isFormBusy || isLoadingCenters || isLoadingTeachers || centers.length === 0}
+          disabled={
+            isFormBusy ||
+            isLoadingCenters ||
+            isLoadingTeachers ||
+            centers.length === 0 ||
+            schedule.length === 0
+          }
           className={cn(ADMIN_PRIMARY_BUTTON_CLASS, 'bg-primary text-primary-foreground hover:bg-primary/90')}
         >
           {isSubmitting || updateGroup.isPending ? tForm('saving') : tForm('saveChanges')}
