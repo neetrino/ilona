@@ -24,9 +24,7 @@ export function AtRiskStudentsBlock() {
   const { data, isLoading } = useStudentRisk();
 
   const rows = useMemo(() => {
-    return (data ?? [])
-      .filter((s) => s.riskLevel === 'HIGH' || s.riskLevel === 'MEDIUM')
-      .slice(0, 6);
+    return (data ?? []).filter((s) => s.isAtRisk || s.riskLevel === 'HIGH').slice(0, 6);
   }, [data]);
 
   return (
@@ -71,7 +69,8 @@ export function AtRiskStudentsBlock() {
                     {risk.name}
                   </Link>
                   <p className="text-xs text-[#8b8b90]">
-                    {risk.group?.name ?? t('noGroup')} · {risk.attendanceRate}%
+                    {risk.group?.name ?? t('noGroup')} ·{' '}
+                    {t('atRiskReason', { absences: risk.absenceCount ?? 0 })}
                   </p>
                 </div>
               </div>

@@ -159,8 +159,9 @@ export interface AtRiskStudent {
     id: string;
     name: string;
   };
-  unjustifiedAbsences: number;
-  threshold: number;
+  absenceCount: number;
+  hasLatePayment: boolean;
+  isAtRisk: boolean;
 }
 
 export interface GroupAttendanceReport {

@@ -2,6 +2,10 @@ import { Injectable, ForbiddenException, NotFoundException } from '@nestjs/commo
 import { PrismaService } from '../prisma/prisma.service';
 import { UserRole } from '@ilona/database';
 import { AttendanceScopeService } from './attendance-scope.service';
+import {
+  evaluateStudentsAtRisk,
+  findAtRiskStudentIds,
+} from '../students/student-at-risk.query';
 
 @Injectable()
 export class AttendanceReportService {
@@ -108,30 +112,18 @@ export class AttendanceReportService {
     };
   }
 
-  async getAtRiskStudents(maxUnjustifiedAbsences = 3, currentUser?: { sub: string; role: UserRole }) {
-    // Get system settings for threshold
-    const settings = await this.prisma.systemSettings.findFirst();
-    const threshold = settings?.maxUnjustifiedAbsences ?? maxUnjustifiedAbsences;
-
-    // Find students with too many unjustified absences in the last month
-    const oneMonthAgo = new Date();
-    oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
-
+  async getAtRiskStudents(currentUser?: { sub: string; role: UserRole }) {
     const managerCenterId = await this.scope.getManagerCenterId(currentUser?.sub, currentUser?.role);
+    const atRiskIds = await findAtRiskStudentIds(this.prisma, {
+      centerId: managerCenterId ?? undefined,
+    });
+    if (atRiskIds.length === 0) {
+      return [];
+    }
 
+    const evaluations = await evaluateStudentsAtRisk(this.prisma, atRiskIds);
     const atRiskStudents = await this.prisma.student.findMany({
-      where: {
-        ...(managerCenterId ? { group: { centerId: managerCenterId } } : {}),
-        attendances: {
-          some: {
-            isPresent: false,
-            absenceType: 'UNJUSTIFIED',
-            lesson: {
-              scheduledAt: { gte: oneMonthAgo },
-            },
-          },
-        },
-      },
+      where: { id: { in: atRiskIds } },
       include: {
         user: {
           select: {
@@ -145,21 +137,12 @@ export class AttendanceReportService {
         group: {
           select: { id: true, name: true },
         },
-        attendances: {
-          where: {
-            isPresent: false,
-            absenceType: 'UNJUSTIFIED',
-            lesson: {
-              scheduledAt: { gte: oneMonthAgo },
-            },
-          },
-        },
       },
     });
 
-    return atRiskStudents
-      .filter((student) => student.attendances.length >= threshold)
-      .map((student) => ({
+    return atRiskStudents.map((student) => {
+      const evaluation = evaluations.get(student.id);
+      return {
         student: {
           id: student.id,
           name: `${student.user.firstName} ${student.user.lastName}`,
@@ -169,8 +152,10 @@ export class AttendanceReportService {
           parentEmail: student.parentEmail,
         },
         group: student.group,
-        unjustifiedAbsences: student.attendances.length,
-        threshold,
-      }));
+        absenceCount: evaluation?.absenceCount ?? 0,
+        hasLatePayment: evaluation?.hasLatePayment ?? true,
+        isAtRisk: true,
+      };
+    });
   }
 }

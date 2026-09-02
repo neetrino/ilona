@@ -314,6 +314,7 @@
     "noUnpaid": "All payments are up to date.",
     "noCapacity": "All groups are full.",
     "noAtRisk": "No at-risk students right now.",
+    "atRiskReason": "{absences} absences · late payment",
     "noLessonsToday": "No lessons scheduled for today.",
     "noGroup": "No group",
     "noTeacher": "No teacher",

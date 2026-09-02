@@ -1,8 +1,15 @@
 import { Injectable, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { Prisma, UserRole, UserStatus, RiskLabel, StudentStatus } from '@ilona/database';
+import { getZonedParts } from '@ilona/types';
 import { NEW_PAID_STUDENT_LABEL_DAYS } from './student-crud.util';
 import { omitStudentPassportForTeacher } from './student-visibility.util';
+import {
+  applyAtRiskLifecycleFilter,
+  getPaymentDueDay,
+  loadLatePaymentByStudent,
+} from './student-at-risk.query';
+import { evaluateStudentAtRisk, getAtRiskMonthRange } from './student-at-risk.util';
 
 @Injectable()
 export class StudentListService {
@@ -29,6 +36,10 @@ export class StudentListService {
     userRole?: UserRole;
   }) {
     const { skip = 0, take = 50, search, groupId, groupIds, status, statusIds, teacherId, teacherIds, centerId, centerIds, lifecycleStatuses, sortBy, sortOrder = 'asc', currentUserId, userRole } = params || {};
+    const asOf = new Date();
+    const zonedNow = getZonedParts(asOf);
+    const selectedMonth = params?.month ?? zonedNow.month;
+    const selectedYear = params?.year ?? zonedNow.year;
 
     const where: Prisma.StudentWhereInput = {};
     const userWhere: Prisma.UserWhereInput = {};
@@ -123,10 +134,12 @@ export class StudentListService {
       ];
     }
 
-    // Filter by persisted lifecycle status (NEW, UNGROUPED, RISK, HIGH_RISK, etc.).
-    if (lifecycleStatuses && lifecycleStatuses.length > 0) {
-      where.status = { in: lifecycleStatuses };
-    }
+    await applyAtRiskLifecycleFilter(this.prisma, where, lifecycleStatuses, {
+      asOf,
+      month: selectedMonth,
+      year: selectedYear,
+      centerId,
+    });
 
     // Build orderBy based on sortBy parameter
     // Only 'absence' requires in-memory sort (depends on computed attendance). 'student' uses DB orderBy.
@@ -221,17 +234,9 @@ export class StudentListService {
       ? Number(totalMonthlyFeesResult._sum.monthlyFee) 
       : 0;
 
-    // Calculate attendance data for the selected month
-    // If month/year not provided, use current month
-    const now = new Date();
-    const selectedMonth = params?.month ?? now.getMonth() + 1; // 1-12 (January-December)
-    const selectedYear = params?.year ?? now.getFullYear();
-    
-    // Calculate date range for the selected month
-    // JavaScript Date months are 0-indexed (0-11), so we subtract 1
-    const monthStart = new Date(selectedYear, selectedMonth - 1, 1, 0, 0, 0, 0);
-    // Get the last day of the month by going to the first day of next month and subtracting 1 day
-    const monthEnd = new Date(selectedYear, selectedMonth, 0, 23, 59, 59, 999);
+    const monthRange = getAtRiskMonthRange(asOf, selectedMonth, selectedYear);
+    const monthStart = monthRange.start;
+    const monthEnd = monthRange.end;
 
     // Get all student IDs from the fetched items
     const studentIds = sortedItems.map(item => item.id);
@@ -286,8 +291,7 @@ export class StudentListService {
         });
       }
 
-      // Fetch absences for all students grouped by absenceType so we can
-      // distinguish excused vs unexcused absences for risk-label logic.
+      // Fetch absences for all students grouped by absenceType.
       const absencesResults = await this.prisma.attendance.groupBy({
         by: ['studentId', 'absenceType'],
         where: {
@@ -330,14 +334,20 @@ export class StudentListService {
       });
     }
 
-    // Add attendance data to each student item, plus a derived risk label
-    // computed from absence breakdown (per ilona.md):
-    //   > 1 unjustified absence → HIGH_RISK
-    //   > 1 justified absence   → RISK
-    //   otherwise               → NONE
+    // Add attendance data to each student item. At-risk requires both:
+    // late payment (from the 5th of the billing month) and 1+ absences.
     const recentPaidCutoffDate = new Date();
     recentPaidCutoffDate.setDate(
       recentPaidCutoffDate.getDate() - NEW_PAID_STUDENT_LABEL_DAYS,
+    );
+    const dueDay = await getPaymentDueDay(this.prisma);
+    const latePayments = await loadLatePaymentByStudent(
+      this.prisma,
+      studentIds,
+      asOf,
+      dueDay,
+      selectedYear,
+      selectedMonth,
     );
 
     let itemsWithAttendance = sortedItems.map((student) => {
@@ -347,12 +357,12 @@ export class StudentListService {
       };
       const justified = justifiedAbsencesMap.get(student.id) ?? 0;
       const unjustified = unjustifiedAbsencesMap.get(student.id) ?? 0;
-      const derivedRisk: RiskLabel =
-        unjustified > 1
-          ? RiskLabel.HIGH_RISK
-          : justified > 1
-            ? RiskLabel.RISK
-            : RiskLabel.NONE;
+      const derivedRisk: RiskLabel = evaluateStudentAtRisk({
+        absenceCount: attendance.absences,
+        hasLatePayment: latePayments.get(student.id) ?? false,
+      }).isAtRisk
+        ? RiskLabel.HIGH_RISK
+        : RiskLabel.NONE;
       const activationDate = student.enrolledAt ?? student.createdAt;
       const newBadgeExpiresAt = new Date(activationDate);
       newBadgeExpiresAt.setDate(

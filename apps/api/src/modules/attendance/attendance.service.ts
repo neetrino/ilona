@@ -56,8 +56,8 @@ export class AttendanceService {
     return this.reportService.getGroupAttendanceReport(groupId, dateFrom, dateTo, userId, userRole);
   }
 
-  getAtRiskStudents(maxUnjustifiedAbsences = 3, currentUser?: { sub: string; role: UserRole }) {
-    return this.reportService.getAtRiskStudents(maxUnjustifiedAbsences, currentUser);
+  getAtRiskStudents(currentUser?: { sub: string; role: UserRole }) {
+    return this.reportService.getAtRiskStudents(currentUser);
   }
 
   createPlannedAbsenceForStudentUser(userId: string, dateStr: string, rawComment: string) {
