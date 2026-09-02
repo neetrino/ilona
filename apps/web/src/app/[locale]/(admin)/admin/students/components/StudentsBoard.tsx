@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { useLocale, useTranslations } from 'next-intl';
 import { PORTAL_SHEET_DRAG_HANDLE_ATTR, usePortalSheetDrag } from '@/shared/hooks/usePortalSheetDrag';
@@ -104,6 +104,60 @@ export function StudentsBoard({
     return `${firstName} ${lastName}`.trim() || '—';
   };
 
+  const renderMobileStudentRow = (item: TeacherAssignedItem) => {
+    const name = getItemDisplayName(item);
+    const isOnboarding = isOnboardingItem(item);
+    const attendance = !isOnboarding ? item.attendanceSummary : undefined;
+    const attendanceValue = attendance
+      ? `${attendance.totalClasses}/${attendance.absences}`
+      : '0/0';
+    const avatarUrl = !isOnboarding ? item.user?.avatarUrl : undefined;
+    const groupName = !isOnboarding
+      ? item.group
+        ? `${item.group.name}${item.group.level ? ` (${item.group.level})` : ''}`
+        : null
+      : null;
+
+    return (
+      <li key={getItemId(item)}>
+        <button
+          type="button"
+          className={cn(
+            'flex w-full items-center gap-3 px-4 py-3 text-left',
+            !isOnboarding && onCardClick && 'active:bg-slate-50',
+            isOnboarding && 'cursor-default',
+          )}
+          onClick={() => {
+            if (!isOnboarding && onCardClick) {
+              onCardClick(item);
+            }
+          }}
+          disabled={isOnboarding || !onCardClick}
+        >
+          <Avatar
+            src={avatarUrl}
+            name={name}
+            size="sm"
+            className="h-9 w-9 shrink-0 bg-[#eef2ff] text-xs font-bold text-[#1010a3]"
+          />
+          <span className="min-w-0 flex-1">
+            <span className="block truncate text-sm font-semibold text-[#1e293b]">{name}</span>
+            {groupName ? (
+              <span className="mt-0.5 block truncate text-xs text-[#8b8b90]">{groupName}</span>
+            ) : null}
+          </span>
+          {isOnboarding ? (
+            <span className="shrink-0 text-xs font-medium text-amber-600">{tc('onboarding')}</span>
+          ) : (
+            <span className="shrink-0 text-sm font-semibold tabular-nums text-[#64748b]">
+              {attendanceValue}
+            </span>
+          )}
+        </button>
+      </li>
+    );
+  };
+
   const allCenters = centersData || [];
   const visibleCenters = allCenters.filter((center) => {
     const centerStudents = studentsByCenter[center.id] || [];
@@ -129,7 +183,24 @@ export function StudentsBoard({
       : []),
   ];
   const selectedCenter = centerCards.find((center) => center.id === selectedCenterId) ?? null;
-  const isSheetOpen = selectedCenter !== null;
+  const trimmedSearch = searchQuery.trim();
+  const isSearching = trimmedSearch.length > 0;
+  const searchResultStudents = useMemo(() => {
+    if (!isSearching) return [];
+    const seen = new Set<string>();
+    const results: TeacherAssignedItem[] = [];
+    for (const students of Object.values(studentsByCenter)) {
+      for (const item of students) {
+        const id = getItemId(item);
+        if (seen.has(id)) continue;
+        seen.add(id);
+        results.push(item);
+      }
+    }
+    return results;
+  }, [isSearching, studentsByCenter]);
+
+  const isSheetOpen = selectedCenter !== null && !isSearching;
 
   const requestClose = useCallback(() => {
     setSelectedCenterId(null);
@@ -145,6 +216,12 @@ export function StudentsBoard({
       resetDrag();
     }
   }, [isSheetOpen, resetDrag]);
+
+  useEffect(() => {
+    if (isSearching) {
+      setSelectedCenterId(null);
+    }
+  }, [isSearching]);
 
   if (isLoading) {
     return (
@@ -165,50 +242,62 @@ export function StudentsBoard({
   return (
     <>
       <div className="grid w-full min-w-0 grid-cols-1 gap-3 pb-3 sheet:hidden">
-        {centerCards.map((center) => {
-          const primaryColor = center.colorHex || '#253046';
-          const softColor = center.isUnassigned ? '#f6f6f7' : lightenColor(primaryColor, 0.65);
-          const softBorderColor = center.isUnassigned ? '#e8e8ec' : lightenColor(primaryColor, 0.35);
-          const textColor = center.isUnassigned
-            ? '#3b3b40'
-            : getContrastColor(primaryColor) === 'white'
-              ? '#1e293b'
-              : '#0f172a';
+        {isSearching ? (
+          searchResultStudents.length > 0 ? (
+            <ul className="divide-y divide-slate-100 overflow-hidden rounded-xl border border-slate-200 bg-white">
+              {searchResultStudents.map((item) => renderMobileStudentRow(item))}
+            </ul>
+          ) : (
+            <div className="rounded-xl border border-dashed border-slate-200 bg-white py-10 text-center text-sm text-[#8b8b90]">
+              {t('noStudentsMatch')}
+            </div>
+          )
+        ) : (
+          centerCards.map((center) => {
+            const primaryColor = center.colorHex || '#253046';
+            const softColor = center.isUnassigned ? '#f6f6f7' : lightenColor(primaryColor, 0.65);
+            const softBorderColor = center.isUnassigned ? '#e8e8ec' : lightenColor(primaryColor, 0.35);
+            const textColor = center.isUnassigned
+              ? '#3b3b40'
+              : getContrastColor(primaryColor) === 'white'
+                ? '#1e293b'
+                : '#0f172a';
 
-          return (
-            <Button
-              key={center.id}
-              type="button"
-              variant="outline"
-              className="h-auto min-h-[68px] w-full rounded-xl px-4 py-3 text-left"
-              style={{ backgroundColor: softColor, borderColor: softBorderColor, color: textColor }}
-              onClick={() => setSelectedCenterId(center.id)}
-            >
-              <div className="flex w-full items-center justify-between gap-3">
-                <div className="min-w-0">
-                  <p className="truncate text-[15px] font-semibold">
-                    {center.name}
-                  </p>
-                  <p className="mt-1 text-sm opacity-75">{t('studentCount', { count: center.students.length })}</p>
+            return (
+              <Button
+                key={center.id}
+                type="button"
+                variant="outline"
+                className="h-auto min-h-[68px] w-full rounded-xl px-4 py-3 text-left"
+                style={{ backgroundColor: softColor, borderColor: softBorderColor, color: textColor }}
+                onClick={() => setSelectedCenterId(center.id)}
+              >
+                <div className="flex w-full items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="truncate text-[15px] font-semibold">
+                      {center.name}
+                    </p>
+                    <p className="mt-1 text-sm opacity-75">{t('studentCount', { count: center.students.length })}</p>
+                  </div>
+                  <span
+                    className="inline-flex size-9 shrink-0 items-center justify-center rounded-full border border-white/45 text-[#1f2937] shadow-[inset_0_1px_0_rgba(255,255,255,0.7),0_6px_16px_rgba(15,23,42,0.16)] backdrop-blur-md"
+                    style={{ background: 'linear-gradient(145deg, rgba(255,255,255,0.55), rgba(255,255,255,0.2))' }}
+                  >
+                    <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                      <path
+                        d="M5 12H19M19 12L13 6M19 12L13 18"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </span>
                 </div>
-                <span
-                  className="inline-flex size-9 shrink-0 items-center justify-center rounded-full border border-white/45 text-[#1f2937] shadow-[inset_0_1px_0_rgba(255,255,255,0.7),0_6px_16px_rgba(15,23,42,0.16)] backdrop-blur-md"
-                  style={{ background: 'linear-gradient(145deg, rgba(255,255,255,0.55), rgba(255,255,255,0.2))' }}
-                >
-                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                    <path
-                      d="M5 12H19M19 12L13 6M19 12L13 18"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </span>
-              </div>
-            </Button>
-          );
-        })}
+              </Button>
+            );
+          })
+        )}
       </div>
 
       <div className="hidden w-full min-w-0 overflow-x-auto pb-1 [-webkit-overflow-scrolling:touch] sheet:block">
@@ -384,64 +473,7 @@ export function StudentsBoard({
               {selectedCenter?.students.length ? (
                 sheetViewMode === 'list' ? (
                   <ul className="divide-y divide-slate-100 overflow-hidden rounded-xl border border-slate-200 bg-white">
-                    {selectedCenter.students.map((item) => {
-                      const name = getItemDisplayName(item);
-                      const isOnboarding = isOnboardingItem(item);
-                      const attendance = !isOnboarding ? item.attendanceSummary : undefined;
-                      const attendanceValue = attendance
-                        ? `${attendance.totalClasses}/${attendance.absences}`
-                        : '0/0';
-                      const avatarUrl = !isOnboarding ? item.user?.avatarUrl : undefined;
-                      const groupName = !isOnboarding
-                        ? item.group
-                          ? `${item.group.name}${item.group.level ? ` (${item.group.level})` : ''}`
-                          : null
-                        : null;
-                      return (
-                        <li key={getItemId(item)}>
-                          <button
-                            type="button"
-                            className={cn(
-                              'flex w-full items-center gap-3 px-4 py-3 text-left',
-                              !isOnboarding && onCardClick && 'active:bg-slate-50',
-                              isOnboarding && 'cursor-default',
-                            )}
-                            onClick={() => {
-                              if (!isOnboarding && onCardClick) {
-                                onCardClick(item);
-                              }
-                            }}
-                            disabled={isOnboarding || !onCardClick}
-                          >
-                            <Avatar
-                              src={avatarUrl}
-                              name={name}
-                              size="sm"
-                              className="h-9 w-9 shrink-0 bg-[#eef2ff] text-xs font-bold text-[#1010a3]"
-                            />
-                            <span className="min-w-0 flex-1">
-                              <span className="block truncate text-sm font-semibold text-[#1e293b]">
-                                {name}
-                              </span>
-                              {groupName ? (
-                                <span className="mt-0.5 block truncate text-xs text-[#8b8b90]">
-                                  {groupName}
-                                </span>
-                              ) : null}
-                            </span>
-                            {isOnboarding ? (
-                              <span className="shrink-0 text-xs font-medium text-amber-600">
-                                {tc('onboarding')}
-                              </span>
-                            ) : (
-                              <span className="shrink-0 text-sm font-semibold tabular-nums text-[#64748b]">
-                                {attendanceValue}
-                              </span>
-                            )}
-                          </button>
-                        </li>
-                      );
-                    })}
+                    {selectedCenter.students.map((item) => renderMobileStudentRow(item))}
                   </ul>
                 ) : (
                   <div className="space-y-3">
