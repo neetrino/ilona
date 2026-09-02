@@ -1,24 +1,26 @@
 'use client';
 
 import { Skeleton } from '@/shared/components/ui/Skeleton';
+import { cn } from '@/shared/lib/utils';
 import type { useTranslations } from 'next-intl';
 
 interface StudentsUniqueTotalStatProps {
   count: number;
   isLoading: boolean;
   t: ReturnType<typeof useTranslations<'students'>>;
+  onClick?: () => void;
+  isActive?: boolean;
 }
 
 export function StudentsUniqueTotalStat({
   count,
   isLoading,
   t,
+  onClick,
+  isActive = false,
 }: StudentsUniqueTotalStatProps) {
-  return (
-    <div
-      className="flex shrink-0 items-center gap-3 rounded-2xl border border-[rgba(14,14,16,0.07)] bg-white px-3.5 py-2.5 shadow-[0_2px_8px_rgba(15,23,42,0.06)]"
-      aria-label={t('totalStudents')}
-    >
+  const content = (
+    <>
       <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#f0f0ff] text-[#1010a3]">
         <svg
           className="h-[1.125rem] w-[1.125rem]"
@@ -47,9 +49,37 @@ export function StudentsUniqueTotalStat({
           </p>
         )}
         <p className="mt-0.5 max-w-[10rem] text-[0.625rem] leading-tight text-[#8b8b90]">
-          {t('uniqueStudentsHelper')}
+          {onClick ? t('viewAllStudents') : t('uniqueStudentsHelper')}
         </p>
       </div>
+    </>
+  );
+
+  if (onClick) {
+    return (
+      <button
+        type="button"
+        onClick={onClick}
+        aria-pressed={isActive}
+        className={cn(
+          'flex shrink-0 items-center gap-3 rounded-2xl border bg-white px-3.5 py-2.5 text-left shadow-[0_2px_8px_rgba(15,23,42,0.06)] transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1010a3]/30 active:scale-[0.985]',
+          isActive
+            ? 'border-[#1010a3]/35 shadow-[0_4px_14px_rgba(16,16,163,0.14)]'
+            : 'border-[rgba(14,14,16,0.07)] hover:-translate-y-px hover:border-[rgba(16,16,163,0.18)] hover:shadow-[0_4px_14px_rgba(16,16,163,0.12)]',
+        )}
+        aria-label={t('viewAllStudents')}
+      >
+        {content}
+      </button>
+    );
+  }
+
+  return (
+    <div
+      className="flex shrink-0 items-center gap-3 rounded-2xl border border-[rgba(14,14,16,0.07)] bg-white px-3.5 py-2.5 shadow-[0_2px_8px_rgba(15,23,42,0.06)]"
+      aria-label={t('totalStudents')}
+    >
+      {content}
     </div>
   );
 }

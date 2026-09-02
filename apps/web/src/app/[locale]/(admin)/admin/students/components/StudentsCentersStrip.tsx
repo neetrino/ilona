@@ -15,6 +15,7 @@ interface StudentsCentersStripProps {
   onSelectCenter: (centerId: string) => void;
   uniqueStudentsCount: number;
   isLoading: boolean;
+  onTotalClick?: () => void;
   t: ReturnType<typeof useTranslations<'students'>>;
   unassignedLabel: string;
 }
@@ -26,6 +27,7 @@ export function StudentsCentersStrip({
   onSelectCenter,
   uniqueStudentsCount,
   isLoading,
+  onTotalClick,
   t,
   unassignedLabel,
 }: StudentsCentersStripProps) {
@@ -38,6 +40,8 @@ export function StudentsCentersStrip({
         <StudentsUniqueTotalStat
           count={uniqueStudentsCount}
           isLoading={isLoading}
+          onClick={onTotalClick}
+          isActive={activeCenterTabId === 'all'}
           t={t}
         />
 

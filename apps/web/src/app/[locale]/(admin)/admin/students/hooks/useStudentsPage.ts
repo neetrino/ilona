@@ -310,15 +310,18 @@ export function useStudentsPage() {
 
   const hasUnassignedStudents = (studentsByCenter.unassigned?.length || 0) > 0;
 
-  const [centerTabSelection, setCenterTabSelection] = useState<string | null>(null);
+  const [centerTabSelection, setCenterTabSelection] = useState<string | null>('all');
 
   const activeCenterTabId = useMemo((): string | null => {
     const hasStrip = sortedVisibleCenters.length > 0 || hasUnassignedStudents;
     if (!hasStrip) {
       return null;
     }
+    if (centerTabSelection === 'all') {
+      return 'all';
+    }
     if (sortedVisibleCenters.length === 0) {
-      return hasUnassignedStudents ? 'unassigned' : null;
+      return hasUnassignedStudents ? 'unassigned' : 'all';
     }
     if (centerTabSelection === 'unassigned' && hasUnassignedStudents) {
       return 'unassigned';
@@ -329,12 +332,15 @@ export function useStudentsPage() {
     ) {
       return centerTabSelection;
     }
-    return sortedVisibleCenters[0]?.id ?? null;
+    return 'all';
   }, [sortedVisibleCenters, hasUnassignedStudents, centerTabSelection]);
 
   useEffect(() => {
+    if (centerTabSelection === 'all') {
+      return;
+    }
     if (sortedVisibleCenters.length === 0) {
-      setCenterTabSelection(hasUnassignedStudents ? 'unassigned' : null);
+      setCenterTabSelection(hasUnassignedStudents ? 'unassigned' : 'all');
       return;
     }
 
@@ -347,11 +353,17 @@ export function useStudentsPage() {
       return;
     }
 
-    setCenterTabSelection(sortedVisibleCenters[0].id);
+    setCenterTabSelection('all');
   }, [centerTabSelection, hasUnassignedStudents, sortedVisibleCenters]);
 
   const handleActiveCenterTabChange = useCallback((centerId: string) => {
     setCenterTabSelection(centerId);
+    setPage(0);
+    setSelectedStudentIds(new Set());
+  }, []);
+
+  const handleTotalStudentsClick = useCallback(() => {
+    setCenterTabSelection('all');
     setPage(0);
     setSelectedStudentIds(new Set());
   }, []);
@@ -361,16 +373,13 @@ export function useStudentsPage() {
       return allStudents;
     }
     const hasCenterStrip = sortedVisibleCenters.length > 0 || hasUnassignedStudents;
-    if (!hasCenterStrip) {
+    if (!hasCenterStrip || activeCenterTabId === 'all' || !activeCenterTabId) {
       return allStudents;
     }
     if (activeCenterTabId === 'unassigned') {
       return studentsByCenter.unassigned ?? [];
     }
-    if (activeCenterTabId) {
-      return studentsByCenter[activeCenterTabId] ?? [];
-    }
-    return [];
+    return studentsByCenter[activeCenterTabId] ?? [];
   }, [
     viewMode,
     allStudents,
@@ -868,6 +877,7 @@ export function useStudentsPage() {
     updateViewModeInUrl,
     handleSort,
     handleActiveCenterTabChange,
+    handleTotalStudentsClick,
     handleToggleSelect,
     handleSelectAll,
     handleBulkDeleteClick,

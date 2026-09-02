@@ -111,6 +111,9 @@ export function TeachersList({
       if (activeCenterTabId === 'unassigned') {
         return t('noUnassignedTeachers');
       }
+      if (activeCenterTabId === 'all') {
+        return t('noTeachersFound');
+      }
       return t('noTeachersInThisCenter');
     }
     return t('noTeachersFound');

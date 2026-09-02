@@ -18,6 +18,7 @@ interface StudentsListProps {
   activeCenterTabId: string | null;
   onSelectCenter: (centerId: string) => void;
   uniqueStudentsCount: number;
+  onTotalClick?: () => void;
   students: TeacherAssignedItem[];
   totalStudents: number;
   totalPages: number;
@@ -58,6 +59,7 @@ export function StudentsList({
   activeCenterTabId,
   onSelectCenter,
   uniqueStudentsCount,
+  onTotalClick,
   students,
   totalStudents,
   totalPages,
@@ -134,6 +136,9 @@ export function StudentsList({
       if (activeCenterTabId === 'unassigned') {
         return t('noUnassignedStudents');
       }
+      if (activeCenterTabId === 'all') {
+        return t('noStudentsFound');
+      }
       return t('noStudentsInCenter');
     }
     return t('noStudentsFound');
@@ -148,6 +153,7 @@ export function StudentsList({
         onSelectCenter={onSelectCenter}
         uniqueStudentsCount={uniqueStudentsCount}
         isLoading={isLoading}
+        onTotalClick={onTotalClick}
         t={t}
         unassignedLabel={tc('unassigned')}
       />

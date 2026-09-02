@@ -699,6 +699,7 @@
     "centers": "Centers",
     "centerStudentsCount": "Students",
     "uniqueStudentsHelper": "Across all branches",
+    "viewAllStudents": "View all students",
     "noUnassignedStudents": "No unassigned students",
     "deleteAll": "Delete All ({count})",
     "deleteSelected": "Delete ({count})",

@@ -39,6 +39,7 @@ export function TeachersCentersStrip({
           count={uniqueTeachersCount}
           isLoading={isLoading}
           onClick={onTotalClick}
+          isActive={activeCenterTabId === 'all'}
           t={t}
         />
 

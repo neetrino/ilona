@@ -91,6 +91,7 @@ export default function StudentsPage() {
     setViewMode,
     handleSort,
     handleActiveCenterTabChange,
+    handleTotalStudentsClick,
     handleToggleSelect,
     handleSelectAll,
     handleBulkDeleteClick,
@@ -232,6 +233,7 @@ export default function StudentsPage() {
             activeCenterTabId={activeCenterTabId}
             onSelectCenter={handleActiveCenterTabChange}
             uniqueStudentsCount={uniqueStudentsCount}
+            onTotalClick={handleTotalStudentsClick}
             students={students}
             totalStudents={totalStudents}
             totalPages={totalPages}

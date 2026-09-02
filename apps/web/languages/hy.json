@@ -699,6 +699,7 @@
     "centers": "Կենտրոններ",
     "centerStudentsCount": "Աշակերտներ",
     "uniqueStudentsHelper": "Բոլոր մասնաճյուղերում",
+    "viewAllStudents": "Դիտել բոլոր աշակերտներին",
     "noUnassignedStudents": "Չկան չնշանակված աշակերտներ",
     "deleteAll": "Ջնջել բոլորը ({count})",
     "deleteSelected": "Ջնջել ({count})",

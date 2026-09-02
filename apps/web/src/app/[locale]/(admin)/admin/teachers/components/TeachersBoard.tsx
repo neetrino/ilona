@@ -50,13 +50,21 @@ export function TeachersBoard({
   const sortedCenters = centersData ?? [];
   const hasUnassigned = (teachersByCenter.unassigned?.length || 0) > 0;
 
-  const selectedTeachers = useMemo(
-    () =>
-      activeCenterTabId === 'unassigned'
-        ? teachersByCenter.unassigned || []
-        : teachersByCenter[activeCenterTabId || ''] || [],
-    [activeCenterTabId, teachersByCenter],
-  );
+  const selectedTeachers = useMemo(() => {
+    if (activeCenterTabId === 'all') {
+      const unique = new Map<string, Teacher>();
+      for (const list of Object.values(teachersByCenter)) {
+        for (const teacher of list) {
+          unique.set(teacher.id, teacher);
+        }
+      }
+      return Array.from(unique.values());
+    }
+    if (activeCenterTabId === 'unassigned') {
+      return teachersByCenter.unassigned || [];
+    }
+    return teachersByCenter[activeCenterTabId || ''] || [];
+  }, [activeCenterTabId, teachersByCenter]);
   const teachersPageSize = isIPad ? IPAD_TEACHERS_PAGE_SIZE : MOBILE_TEACHERS_PAGE_SIZE;
   const totalMobileTeachersPages = Math.max(
     1,
@@ -85,7 +93,12 @@ export function TeachersBoard({
   };
 
   const selectedCenter = sortedCenters.find((center) => center.id === activeCenterTabId);
-  const panelTitle = activeCenterTabId === 'unassigned' ? tc('unassigned') : selectedCenter?.name || tc('center');
+  const panelTitle =
+    activeCenterTabId === 'all'
+      ? t('totalTeachers')
+      : activeCenterTabId === 'unassigned'
+        ? tc('unassigned')
+        : selectedCenter?.name || tc('center');
 
   const teachersPanelContent = (
     <>
@@ -109,7 +122,11 @@ export function TeachersBoard({
         </div>
       ) : selectedTeachers.length === 0 ? (
         <div className="flex items-center justify-center py-12 text-sm text-[#8b8b90]">
-          {activeCenterTabId === 'unassigned' ? t('noUnassignedTeachers') : t('noTeachersInThisCenter')}
+          {activeCenterTabId === 'unassigned'
+            ? t('noUnassignedTeachers')
+            : activeCenterTabId === 'all'
+              ? t('noTeachersFound')
+              : t('noTeachersInThisCenter')}
         </div>
       ) : (
         <div className="space-y-3 sm:space-y-4">

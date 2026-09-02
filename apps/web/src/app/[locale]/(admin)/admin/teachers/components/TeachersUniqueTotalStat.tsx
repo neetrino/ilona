@@ -1,6 +1,7 @@
 'use client';
 
 import { Skeleton } from '@/shared/components/ui/Skeleton';
+import { cn } from '@/shared/lib/utils';
 import type { useTranslations } from 'next-intl';
 
 interface TeachersUniqueTotalStatProps {
@@ -8,6 +9,7 @@ interface TeachersUniqueTotalStatProps {
   isLoading: boolean;
   t: ReturnType<typeof useTranslations<'teachers'>>;
   onClick?: () => void;
+  isActive?: boolean;
 }
 
 export function TeachersUniqueTotalStat({
@@ -15,6 +17,7 @@ export function TeachersUniqueTotalStat({
   isLoading,
   t,
   onClick,
+  isActive = false,
 }: TeachersUniqueTotalStatProps) {
   const content = (
     <>
@@ -57,7 +60,13 @@ export function TeachersUniqueTotalStat({
       <button
         type="button"
         onClick={onClick}
-        className="flex shrink-0 items-center gap-3 rounded-2xl border border-[rgba(14,14,16,0.07)] bg-white px-3.5 py-2.5 text-left shadow-[0_2px_8px_rgba(15,23,42,0.06)] transition-all hover:-translate-y-px hover:border-[rgba(16,16,163,0.18)] hover:shadow-[0_4px_14px_rgba(16,16,163,0.12)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1010a3]/30 active:scale-[0.985]"
+        aria-pressed={isActive}
+        className={cn(
+          'flex shrink-0 items-center gap-3 rounded-2xl border bg-white px-3.5 py-2.5 text-left shadow-[0_2px_8px_rgba(15,23,42,0.06)] transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-[#1010a3]/30 active:scale-[0.985]',
+          isActive
+            ? 'border-[#1010a3]/35 shadow-[0_4px_14px_rgba(16,16,163,0.14)]'
+            : 'border-[rgba(14,14,16,0.07)] hover:-translate-y-px hover:border-[rgba(16,16,163,0.18)] hover:shadow-[0_4px_14px_rgba(16,16,163,0.12)]',
+        )}
         aria-label={t('viewAllTeachers')}
       >
         {content}
