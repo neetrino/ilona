@@ -113,7 +113,7 @@ export function StudentDetailsModalIdentity({
             src={student.user?.avatarUrl}
             name={fullName}
             size="xl"
-            className="h-56 w-56 rounded-full lg:h-64 lg:w-64 min-[1367px]:rounded-xl"
+            className="h-40 w-40 rounded-full lg:h-44 lg:w-44 min-[1367px]:rounded-xl"
             alt={fullName}
           />
         </button>
