@@ -5,7 +5,7 @@ import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { useLocale, useTranslations } from 'next-intl';
 import { PORTAL_SHEET_DRAG_HANDLE_ATTR, usePortalSheetDrag } from '@/shared/hooks/usePortalSheetDrag';
 import { StudentCard } from './StudentCard';
-import { Button } from '@/shared/components/ui';
+import { Button, ListBoardViewToggle } from '@/shared/components/ui';
 import {
   getItemId,
   isOnboardingItem,
@@ -75,7 +75,7 @@ function getLocalizedCenterName(centerName: string, isArmenianLocale: boolean): 
 
 interface StudentsBoardProps {
   studentsByCenter: Record<string, TeacherAssignedItem[]>;
-  centersData?: Array<Center>;
+  centersData?: Array<Pick<Center, 'id' | 'name'> & { colorHex?: string | null }>;
   isLoading: boolean;
   searchQuery: string;
   onCardClick?: (student: Student) => void;
@@ -93,6 +93,16 @@ export function StudentsBoard({
   const t = useTranslations('students');
   const tc = useTranslations('common');
   const [selectedCenterId, setSelectedCenterId] = useState<string | null>(null);
+  const [sheetViewMode, setSheetViewMode] = useState<'list' | 'board'>('board');
+
+  const getItemDisplayName = (item: TeacherAssignedItem): string => {
+    if (isOnboardingItem(item)) {
+      return [item.firstName, item.lastName].filter(Boolean).join(' ') || '—';
+    }
+    const firstName = item.user?.firstName || '';
+    const lastName = item.user?.lastName || '';
+    return `${firstName} ${lastName}`.trim() || '—';
+  };
 
   const allCenters = centersData || [];
   const visibleCenters = allCenters.filter((center) => {
@@ -212,17 +222,30 @@ export function StudentsBoard({
             })
             .map((center) => {
               const centerStudents = studentsByCenter[center.id] || [];
+              const primaryColor = center.colorHex || '#253046';
+              const softColor = lightenColor(primaryColor, 0.65);
+              const softBorderColor = lightenColor(primaryColor, 0.35);
+              const textColor =
+                getContrastColor(primaryColor) === 'white' ? '#1e293b' : '#0f172a';
               return (
                 <div
                   key={center.id}
-                  className="flex w-[clamp(14rem,42vw,20rem)] shrink-0 flex-col rounded-xl border border-[rgba(14,14,16,0.07)] bg-[#fafafa]"
+                  className="flex w-[clamp(14rem,42vw,20rem)] shrink-0 flex-col overflow-hidden rounded-xl border bg-[#fafafa]"
+                  style={{ borderColor: softBorderColor }}
                 >
                   {/* Column Header */}
-                  <div className="p-4 border-b border-[rgba(14,14,16,0.07)] bg-white rounded-t-xl">
-                    <h3 className="font-semibold text-[#3b3b40]">
+                  <div
+                    className="rounded-t-xl border-b p-4"
+                    style={{
+                      backgroundColor: softColor,
+                      borderColor: softBorderColor,
+                      color: textColor,
+                    }}
+                  >
+                    <h3 className="font-semibold">
                       {getLocalizedCenterName(center.name, isArmenianLocale)}
                     </h3>
-                    <p className="text-sm text-[#8b8b90] mt-1">
+                    <p className="mt-1 text-sm opacity-75">
                       {t('studentCount', { count: centerStudents.length })}
                     </p>
                   </div>
@@ -265,11 +288,11 @@ export function StudentsBoard({
           
           {/* Unassigned Students Column */}
           {studentsByCenter['unassigned'] && studentsByCenter['unassigned'].length > 0 && (
-            <div className="flex w-[clamp(14rem,42vw,20rem)] shrink-0 flex-col rounded-xl border border-[rgba(14,14,16,0.07)] bg-[#fafafa]">
+            <div className="flex w-[clamp(14rem,42vw,20rem)] shrink-0 flex-col overflow-hidden rounded-xl border border-[#e8e8ec] bg-[#fafafa]">
               {/* Column Header */}
-              <div className="p-4 border-b border-[rgba(14,14,16,0.07)] bg-white rounded-t-xl">
-                <h3 className="font-semibold text-[#3b3b40]">{tc('unassigned')}</h3>
-                <p className="text-sm text-[#8b8b90] mt-1">
+              <div className="rounded-t-xl border-b border-[#e8e8ec] bg-[#f6f6f7] p-4 text-[#3b3b40]">
+                <h3 className="font-semibold">{tc('unassigned')}</h3>
+                <p className="mt-1 text-sm opacity-75">
                   {t('studentCount', { count: studentsByCenter['unassigned'].length })}
                 </p>
               </div>
@@ -340,43 +363,84 @@ export function StudentsBoard({
               <div className="h-1.5 w-14 rounded-full bg-slate-400" />
             </div>
             <DialogPrimitive.Title className="sr-only">{selectedCenter?.name ?? t('boardView')}</DialogPrimitive.Title>
-            <div className="flex items-center justify-between border-b border-slate-200 bg-white px-4 py-3">
-              <div>
-                <h3 className="text-base font-semibold text-[#3b3b40]">{selectedCenter?.name}</h3>
+            <div className="flex items-start justify-between gap-3 border-b border-slate-200 bg-white px-4 py-3">
+              <div className="min-w-0 flex-1">
+                <h3 className="truncate text-base font-semibold text-[#3b3b40]">{selectedCenter?.name}</h3>
                 <p className="text-sm text-[#8b8b90]">
                   {t('studentCount', { count: selectedCenter?.students.length ?? 0 })}
                 </p>
               </div>
+              <ListBoardViewToggle
+                className="shrink-0 [&_button]:gap-1.5 [&_button]:px-2.5"
+                value={sheetViewMode}
+                onChange={setSheetViewMode}
+                listLabel={t('listView')}
+                boardLabel={t('cardView')}
+              />
             </div>
             <div
               className="overflow-y-auto px-4 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pt-4"
             >
               {selectedCenter?.students.length ? (
-                <div className="space-y-3">
-                  {selectedCenter.students.map((item) => {
-                    if (isOnboardingItem(item)) {
+                sheetViewMode === 'list' ? (
+                  <ul className="divide-y divide-slate-100 overflow-hidden rounded-xl border border-slate-200 bg-white">
+                    {selectedCenter.students.map((item) => {
+                      const name = getItemDisplayName(item);
+                      const isOnboarding = isOnboardingItem(item);
                       return (
-                        <div
-                          key={getItemId(item)}
-                          className="rounded-lg border border-[rgba(14,14,16,0.07)] border-dashed bg-white p-4 opacity-90"
-                        >
-                          <p className="font-medium text-[#3b3b40]">
-                            {[item.firstName, item.lastName].filter(Boolean).join(' ') || '—'}
-                          </p>
-                          <p className="mt-1 text-xs text-[#8b8b90]">{formatPhoneForDisplay(item.phone, t('noPhone'))}</p>
-                          <span className="mt-2 inline-block text-xs font-medium text-amber-600">{tc('onboarding')}</span>
-                        </div>
+                        <li key={getItemId(item)}>
+                          <button
+                            type="button"
+                            className={cn(
+                              'flex w-full items-center px-4 py-3.5 text-left text-sm font-semibold text-[#1e293b]',
+                              !isOnboarding && onCardClick && 'active:bg-slate-50',
+                              isOnboarding && 'cursor-default text-[#3b3b40]',
+                            )}
+                            onClick={() => {
+                              if (!isOnboarding && onCardClick) {
+                                onCardClick(item);
+                              }
+                            }}
+                            disabled={isOnboarding || !onCardClick}
+                          >
+                            <span className="min-w-0 flex-1 truncate">{name}</span>
+                            {isOnboarding ? (
+                              <span className="ml-2 shrink-0 text-xs font-medium text-amber-600">
+                                {tc('onboarding')}
+                              </span>
+                            ) : null}
+                          </button>
+                        </li>
                       );
-                    }
-                    return (
-                      <StudentCard
-                        key={getItemId(item)}
-                        student={item}
-                        onCardClick={onCardClick}
-                      />
-                    );
-                  })}
-                </div>
+                    })}
+                  </ul>
+                ) : (
+                  <div className="space-y-3">
+                    {selectedCenter.students.map((item) => {
+                      if (isOnboardingItem(item)) {
+                        return (
+                          <div
+                            key={getItemId(item)}
+                            className="rounded-lg border border-[rgba(14,14,16,0.07)] border-dashed bg-white p-4 opacity-90"
+                          >
+                            <p className="font-medium text-[#3b3b40]">
+                              {[item.firstName, item.lastName].filter(Boolean).join(' ') || '—'}
+                            </p>
+                            <p className="mt-1 text-xs text-[#8b8b90]">{formatPhoneForDisplay(item.phone, t('noPhone'))}</p>
+                            <span className="mt-2 inline-block text-xs font-medium text-amber-600">{tc('onboarding')}</span>
+                          </div>
+                        );
+                      }
+                      return (
+                        <StudentCard
+                          key={getItemId(item)}
+                          student={item}
+                          onCardClick={onCardClick}
+                        />
+                      );
+                    })}
+                  </div>
+                )
               ) : (
                 <div className="py-8 text-center text-sm text-[#8b8b90]">{t('noStudentsInCenter')}</div>
               )}

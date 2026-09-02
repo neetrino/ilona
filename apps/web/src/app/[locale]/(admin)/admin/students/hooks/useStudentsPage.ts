@@ -246,15 +246,14 @@ export function useStudentsPage() {
     [selectedLifecycleIds],
   );
 
-  // Fetch students - for board view, fetch max allowed (100); for list view, use pagination
-  const shouldFetchAll = viewMode === 'board';
+  // Fetch students — take up to API max so list center strip + board can group client-side
   const { 
     data: studentsData, 
     isLoading,
     error 
   } = useStudents({ 
-    skip: shouldFetchAll ? 0 : page * PAGE_SIZE,
-    take: shouldFetchAll ? 100 : PAGE_SIZE, // API max is 100
+    skip: 0,
+    take: 100,
     search: debouncedSearchQuery.trim() || undefined,
     teacherIds: teacherIdsArray,
     centerIds: centerIdsArray,
@@ -272,7 +271,7 @@ export function useStudentsPage() {
   const deleteStudentsBulk = useDeleteStudentsBulk();
   const updateStudent = useUpdateStudent();
 
-  const students = useMemo(() => {
+  const allStudents = useMemo(() => {
     const items = studentsData?.items || [];
     return [...items].sort((a, b) => {
       const aIsNew = !isOnboardingItem(a) && isWithinNewStudentWindow(a);
@@ -281,15 +280,13 @@ export function useStudentsPage() {
       return aIsNew ? -1 : 1;
     });
   }, [studentsData?.items]);
-  const totalStudents = studentsData?.total || 0;
-  const totalPages = studentsData?.totalPages || 1;
+
   const allCenters = useMemo(() => {
     const centers = centersData?.items || [];
     if (!managerCenterId) return centers;
     const scoped = centers.filter((center) => center.id === managerCenterId);
     if (scoped.length > 0) return scoped;
-    // Centers list may omit the manager branch (pagination / stale cache). Recover from student rows.
-    for (const student of students) {
+    for (const student of allStudents) {
       if (isOnboardingItem(student)) continue;
       if (student.center?.id === managerCenterId) {
         return [{ id: student.center.id, name: student.center.name }];
@@ -299,13 +296,114 @@ export function useStudentsPage() {
       }
     }
     return scoped;
-  }, [centersData?.items, managerCenterId, students]);
+  }, [centersData?.items, managerCenterId, allStudents]);
 
-  // Group students by center for board view
-  const studentsByCenter = useMemo(() => 
-    groupStudentsByCenter(students, allCenters, viewMode),
-    [students, allCenters, viewMode]
+  const sortedVisibleCenters = useMemo(
+    () => [...allCenters].sort((a, b) => a.name.localeCompare(b.name)),
+    [allCenters],
   );
+
+  const studentsByCenter = useMemo(
+    () => groupStudentsByCenter(allStudents, allCenters),
+    [allStudents, allCenters],
+  );
+
+  const hasUnassignedStudents = (studentsByCenter.unassigned?.length || 0) > 0;
+
+  const [centerTabSelection, setCenterTabSelection] = useState<string | null>(null);
+
+  const activeCenterTabId = useMemo((): string | null => {
+    const hasStrip = sortedVisibleCenters.length > 0 || hasUnassignedStudents;
+    if (!hasStrip) {
+      return null;
+    }
+    if (sortedVisibleCenters.length === 0) {
+      return hasUnassignedStudents ? 'unassigned' : null;
+    }
+    if (centerTabSelection === 'unassigned' && hasUnassignedStudents) {
+      return 'unassigned';
+    }
+    if (
+      centerTabSelection &&
+      sortedVisibleCenters.some((center) => center.id === centerTabSelection)
+    ) {
+      return centerTabSelection;
+    }
+    return sortedVisibleCenters[0]?.id ?? null;
+  }, [sortedVisibleCenters, hasUnassignedStudents, centerTabSelection]);
+
+  useEffect(() => {
+    if (sortedVisibleCenters.length === 0) {
+      setCenterTabSelection(hasUnassignedStudents ? 'unassigned' : null);
+      return;
+    }
+
+    const activeStillExists =
+      centerTabSelection === 'unassigned'
+        ? hasUnassignedStudents
+        : sortedVisibleCenters.some((center) => center.id === centerTabSelection);
+
+    if (activeStillExists) {
+      return;
+    }
+
+    setCenterTabSelection(sortedVisibleCenters[0].id);
+  }, [centerTabSelection, hasUnassignedStudents, sortedVisibleCenters]);
+
+  const handleActiveCenterTabChange = useCallback((centerId: string) => {
+    setCenterTabSelection(centerId);
+    setPage(0);
+    setSelectedStudentIds(new Set());
+  }, []);
+
+  const listSourceStudents = useMemo(() => {
+    if (viewMode !== 'list') {
+      return allStudents;
+    }
+    const hasCenterStrip = sortedVisibleCenters.length > 0 || hasUnassignedStudents;
+    if (!hasCenterStrip) {
+      return allStudents;
+    }
+    if (activeCenterTabId === 'unassigned') {
+      return studentsByCenter.unassigned ?? [];
+    }
+    if (activeCenterTabId) {
+      return studentsByCenter[activeCenterTabId] ?? [];
+    }
+    return [];
+  }, [
+    viewMode,
+    allStudents,
+    sortedVisibleCenters.length,
+    hasUnassignedStudents,
+    studentsByCenter,
+    activeCenterTabId,
+  ]);
+
+  const { students, totalStudents, totalPages } = useMemo(() => {
+    if (viewMode === 'board') {
+      return {
+        students: allStudents,
+        totalStudents: studentsData?.total || allStudents.length,
+        totalPages: 1,
+      };
+    }
+    const startIndex = page * PAGE_SIZE;
+    const paginated = listSourceStudents.slice(startIndex, startIndex + PAGE_SIZE);
+    return {
+      students: paginated,
+      totalStudents: listSourceStudents.length,
+      totalPages: Math.max(1, Math.ceil(listSourceStudents.length / PAGE_SIZE)),
+    };
+  }, [viewMode, allStudents, listSourceStudents, page, studentsData?.total]);
+
+  const uniqueStudentsCount = useMemo(() => {
+    const apiTotal = studentsData?.total;
+    if (typeof apiTotal === 'number') {
+      return apiTotal;
+    }
+    return allStudents.length;
+  }, [allStudents.length, studentsData?.total]);
 
   // Handle sorting
   const handleSort = (key: string) => {
@@ -684,8 +782,8 @@ export function useStudentsPage() {
   };
 
   // Stats calculation (only full students have user.status; onboarding items are not counted as active)
-  const activeStudents = students.filter((s): s is Student => 'user' in s && s.user?.status === 'ACTIVE').length;
-  const studentsWithGroup = students.filter(s => s.group).length;
+  const activeStudents = allStudents.filter((s): s is Student => 'user' in s && s.user?.status === 'ACTIVE').length;
+  const studentsWithGroup = allStudents.filter(s => s.group).length;
   // Use backend-provided totalMonthlyFees (calculated from all matching students, respecting filters, independent of pagination)
   const totalFees = studentsData?.totalMonthlyFees || 0;
 
@@ -695,7 +793,10 @@ export function useStudentsPage() {
     totalStudents,
     totalPages,
     allCenters,
+    sortedVisibleCenters,
     studentsByCenter,
+    uniqueStudentsCount,
+    activeCenterTabId,
     isLoading,
     error,
     teachersData,
@@ -766,6 +867,7 @@ export function useStudentsPage() {
     setViewMode,
     updateViewModeInUrl,
     handleSort,
+    handleActiveCenterTabChange,
     handleToggleSelect,
     handleSelectAll,
     handleBulkDeleteClick,
