@@ -5,7 +5,7 @@ import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { useLocale, useTranslations } from 'next-intl';
 import { PORTAL_SHEET_DRAG_HANDLE_ATTR, usePortalSheetDrag } from '@/shared/hooks/usePortalSheetDrag';
 import { StudentCard } from './StudentCard';
-import { Button, ListBoardViewToggle } from '@/shared/components/ui';
+import { Avatar, Button, ListBoardViewToggle } from '@/shared/components/ui';
 import {
   getItemId,
   isOnboardingItem,
@@ -387,14 +387,24 @@ export function StudentsBoard({
                     {selectedCenter.students.map((item) => {
                       const name = getItemDisplayName(item);
                       const isOnboarding = isOnboardingItem(item);
+                      const attendance = !isOnboarding ? item.attendanceSummary : undefined;
+                      const attendanceValue = attendance
+                        ? `${attendance.totalClasses}/${attendance.absences}`
+                        : '0/0';
+                      const avatarUrl = !isOnboarding ? item.user?.avatarUrl : undefined;
+                      const groupName = !isOnboarding
+                        ? item.group
+                          ? `${item.group.name}${item.group.level ? ` (${item.group.level})` : ''}`
+                          : null
+                        : null;
                       return (
                         <li key={getItemId(item)}>
                           <button
                             type="button"
                             className={cn(
-                              'flex w-full items-center px-4 py-3.5 text-left text-sm font-semibold text-[#1e293b]',
+                              'flex w-full items-center gap-3 px-4 py-3 text-left',
                               !isOnboarding && onCardClick && 'active:bg-slate-50',
-                              isOnboarding && 'cursor-default text-[#3b3b40]',
+                              isOnboarding && 'cursor-default',
                             )}
                             onClick={() => {
                               if (!isOnboarding && onCardClick) {
@@ -403,12 +413,31 @@ export function StudentsBoard({
                             }}
                             disabled={isOnboarding || !onCardClick}
                           >
-                            <span className="min-w-0 flex-1 truncate">{name}</span>
+                            <Avatar
+                              src={avatarUrl}
+                              name={name}
+                              size="sm"
+                              className="h-9 w-9 shrink-0 bg-[#eef2ff] text-xs font-bold text-[#1010a3]"
+                            />
+                            <span className="min-w-0 flex-1">
+                              <span className="block truncate text-sm font-semibold text-[#1e293b]">
+                                {name}
+                              </span>
+                              {groupName ? (
+                                <span className="mt-0.5 block truncate text-xs text-[#8b8b90]">
+                                  {groupName}
+                                </span>
+                              ) : null}
+                            </span>
                             {isOnboarding ? (
-                              <span className="ml-2 shrink-0 text-xs font-medium text-amber-600">
+                              <span className="shrink-0 text-xs font-medium text-amber-600">
                                 {tc('onboarding')}
                               </span>
-                            ) : null}
+                            ) : (
+                              <span className="shrink-0 text-sm font-semibold tabular-nums text-[#64748b]">
+                                {attendanceValue}
+                              </span>
+                            )}
                           </button>
                         </li>
                       );
