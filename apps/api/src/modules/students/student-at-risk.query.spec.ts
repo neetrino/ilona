@@ -66,6 +66,24 @@ describe('findAtRiskStudentIds', () => {
     ).resolves.toEqual([]);
   });
 
+  it('treats a previous unpaid month as late even before the current 5th', async () => {
+    const prisma = createPrisma({
+      studentIds: ['carry-over'],
+      absences: [{ studentId: 'carry-over', _count: { _all: 1 } }],
+      payments: [
+        {
+          studentId: 'carry-over',
+          month: new Date(Date.UTC(2026, 7, 1)),
+          status: PaymentStatus.PENDING,
+        },
+      ],
+    });
+
+    await expect(
+      findAtRiskStudentIds(prisma, { asOf: yerevan('2026-09-02') }),
+    ).resolves.toEqual(['carry-over']);
+  });
+
   it('counts any recorded absence, including a single justified one', async () => {
     const prisma = createPrisma({
       studentIds: ['justified'],

@@ -2,7 +2,6 @@ import { PaymentStatus, StudentStatus, UserStatus } from '@ilona/database';
 import type { Prisma } from '@ilona/database';
 import type { PrismaService } from '../prisma/prisma.service';
 import {
-  billingMonthUtcRange,
   DEFAULT_PAYMENT_DUE_DAY,
   evaluateStudentAtRisk,
   getAtRiskMonthRange,
@@ -117,20 +116,16 @@ export async function loadLatePaymentByStudent(
   studentIds: string[],
   asOf: Date,
   dueDay: number,
-  year: number,
-  month: number,
 ): Promise<Map<string, boolean>> {
   const flags = new Map<string, boolean>();
   if (studentIds.length === 0) {
     return flags;
   }
 
-  const billing = billingMonthUtcRange(year, month);
   const payments = await prisma.payment.findMany({
     where: {
       studentId: { in: studentIds },
       status: { in: [PaymentStatus.PENDING, PaymentStatus.OVERDUE] },
-      month: { gte: billing.start, lt: billing.endExclusive },
     },
     select: { studentId: true, month: true, status: true },
   });
@@ -156,7 +151,7 @@ export async function evaluateStudentsAtRisk(
   const dueDay = await getPaymentDueDay(prisma);
   const [absences, latePayments] = await Promise.all([
     loadAbsenceCountsByStudent(prisma, studentIds, range.start, range.end),
-    loadLatePaymentByStudent(prisma, studentIds, asOf, dueDay, range.year, range.month),
+    loadLatePaymentByStudent(prisma, studentIds, asOf, dueDay),
   ]);
 
   const result = new Map<string, AtRiskEvaluation>();
@@ -206,8 +201,6 @@ export async function findAtRiskStudentIds(
     withAbsences,
     asOf,
     dueDay,
-    range.year,
-    range.month,
   );
   return withAbsences.filter((id) => latePayments.get(id));
 }

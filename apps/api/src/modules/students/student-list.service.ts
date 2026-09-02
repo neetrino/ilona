@@ -346,8 +346,6 @@ export class StudentListService {
       studentIds,
       asOf,
       dueDay,
-      selectedYear,
-      selectedMonth,
     );
 
     let itemsWithAttendance = sortedItems.map((student) => {
