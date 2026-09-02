@@ -5,6 +5,7 @@ export const STORAGE_KEY_PREFIXES = [
   'settings',
   'cv-applications',
   'blog',
+  'crm',
 ] as const;
 
 export const PROXY_STORAGE_KEY_PREFIXES = ['chat', 'avatars', 'documents'] as const;
