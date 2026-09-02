@@ -33,7 +33,6 @@ export function leadToCreateStudentFormDefaults(
     parentSurname: '',
     parentPhone: parentPhoneDigits,
     parentEmail: (p.parentEmail ?? lead.parentEmail) ?? '',
-    parentPassportInfo: (p.parentPassportInfo ?? lead.parentPassportInfo) ?? '',
     monthlyFee: 0,
     notes: notesFromLead,
     receiveReports: true,

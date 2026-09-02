@@ -19,7 +19,6 @@ export function getAddStudentFormDefaultValues(centerId = '') {
     parentSurname: '',
     parentPhone: '',
     parentEmail: '',
-    parentPassportInfo: '',
     monthlyFee: undefined,
     notes: '',
     receiveReports: true,

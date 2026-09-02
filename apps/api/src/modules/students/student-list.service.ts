@@ -3,7 +3,6 @@ import { PrismaService } from '../prisma/prisma.service';
 import { Prisma, UserRole, UserStatus, RiskLabel, StudentStatus } from '@ilona/database';
 import { getZonedParts } from '@ilona/types';
 import { NEW_PAID_STUDENT_LABEL_DAYS } from './student-crud.util';
-import { omitStudentPassportForTeacher } from './student-visibility.util';
 import {
   applyAtRiskLifecycleFilter,
   getPaymentDueDay,
@@ -402,9 +401,7 @@ export class StudentListService {
     }
 
     return {
-      items: itemsWithAttendance.map((item) =>
-        omitStudentPassportForTeacher(item, userRole),
-      ),
+      items: itemsWithAttendance,
       total,
       page: Math.floor(skip / take) + 1,
       pageSize: take,

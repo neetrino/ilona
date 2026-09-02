@@ -12,7 +12,6 @@ export type UpdateStudentFormData = {
   parentName?: string;
   parentPhone?: string;
   parentEmail?: string;
-  parentPassportInfo?: string;
   monthlyFee: number;
   registerDate?: string;
 };

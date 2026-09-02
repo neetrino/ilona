@@ -85,11 +85,6 @@ export class CreateStudentDto {
   @IsOptional()
   parentEmail?: string;
 
-  @IsString()
-  @IsOptional()
-  @MaxLength(100)
-  parentPassportInfo?: string;
-
   @IsNumber()
   @Min(0)
   monthlyFee!: number;

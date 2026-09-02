@@ -46,7 +46,6 @@ export function CreateLeadModal({
   const [error, setError] = useState<string | null>(null);
   const age = typeof form.age === 'number' ? form.age : null;
   const isUnder18 = age !== null && age > 0 && age < 18;
-  const isAdult = age !== null && age >= 18;
 
   const { data: centers = [] } = useQuery({
     queryKey: ['centers'],
@@ -234,55 +233,40 @@ export function CreateLeadModal({
               />
             )}
           </div>
-          {(isUnder18 || isAdult) && (
+          {isUnder18 && (
             <div className="space-y-3 rounded-lg border border-slate-200 bg-slate-50 p-3">
               <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                {isUnder18 ? t('parentDetailsUnder18') : t('studentDetailsOver18')}
+                {t('parentDetailsUnder18')}
               </p>
-              {isUnder18 && (
-                <>
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-1">{t('parentName')}</label>
-                    <input
-                      type="text"
-                      value={form.parentName ?? ''}
-                      onChange={(e) => setForm((f) => ({ ...f, parentName: e.target.value }))}
-                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-1">{t('parentPhone')}</label>
-                    <input
-                      type="tel"
-                      inputMode="numeric"
-                      value={form.parentPhone != null && form.parentPhone !== '' ? `+${form.parentPhone}` : '+'}
-                      onChange={(e) =>
-                        setForm((f) => ({ ...f, parentPhone: e.target.value.replace(/\D/g, '') }))
-                      }
-                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-1">{t('parentEmail')}</label>
-                    <input
-                      type="email"
-                      autoComplete="email"
-                      value={form.parentEmail ?? ''}
-                      onChange={(e) => setForm((f) => ({ ...f, parentEmail: e.target.value }))}
-                      placeholder={t('parentEmailPlaceholder')}
-                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-                    />
-                  </div>
-                </>
-              )}
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">
-                  {isUnder18 ? t('parentPassport') : t('studentPassport')}
-                </label>
+                <label className="block text-sm font-medium text-slate-700 mb-1">{t('parentName')}</label>
                 <input
                   type="text"
-                  value={form.parentPassportInfo ?? ''}
-                  onChange={(e) => setForm((f) => ({ ...f, parentPassportInfo: e.target.value }))}
+                  value={form.parentName ?? ''}
+                  onChange={(e) => setForm((f) => ({ ...f, parentName: e.target.value }))}
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">{t('parentPhone')}</label>
+                <input
+                  type="tel"
+                  inputMode="numeric"
+                  value={form.parentPhone != null && form.parentPhone !== '' ? `+${form.parentPhone}` : '+'}
+                  onChange={(e) =>
+                    setForm((f) => ({ ...f, parentPhone: e.target.value.replace(/\D/g, '') }))
+                  }
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">{t('parentEmail')}</label>
+                <input
+                  type="email"
+                  autoComplete="email"
+                  value={form.parentEmail ?? ''}
+                  onChange={(e) => setForm((f) => ({ ...f, parentEmail: e.target.value }))}
+                  placeholder={t('parentEmailPlaceholder')}
                   className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
                 />
               </div>

@@ -26,7 +26,6 @@ export interface Student {
   parentName?: string;
   parentPhone?: string;
   parentEmail?: string;
-  parentPassportInfo?: string;
   monthlyFee: number;
   notes?: string;
   receiveReports: boolean;
@@ -174,7 +173,6 @@ export interface CreateStudentDto {
   parentName?: string;
   parentPhone?: string;
   parentEmail?: string;
-  parentPassportInfo?: string;
   monthlyFee: number;
   notes?: string;
   receiveReports?: boolean;
@@ -196,7 +194,6 @@ export interface UpdateStudentDto {
   parentName?: string;
   parentPhone?: string;
   parentEmail?: string;
-  parentPassportInfo?: string;
   monthlyFee?: number;
   notes?: string;
   receiveReports?: boolean;

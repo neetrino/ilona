@@ -75,19 +75,6 @@ export function StudentAccountFormFieldsParentSection({
             placeholder={tForm('emailPlaceholder')}
           />
         </div>
-
-        <div className="space-y-2">
-          <Label htmlFor={p('parentPassportInfo')}>
-            {tForm('parentPassportInfo')} <span className="text-red-500">{tForm('requiredMark')}</span>
-          </Label>
-          <Input
-            id={p('parentPassportInfo')}
-            {...register('parentPassportInfo')}
-            className={FORM_INPUT_CLASS_NAME}
-            error={errors.parentPassportInfo?.message}
-            placeholder={tForm('parentPassportInfo')}
-          />
-        </div>
       </div>
     </div>
   );

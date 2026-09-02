@@ -62,7 +62,6 @@ const createStudentBaseSchema = z.object({
   parentSurname: z.string().max(100, 'Parent surname must be at most 100 characters').optional(),
   parentPhone: z.string().max(50, 'Parent phone must be at most 50 characters').optional(),
   parentEmail: z.union([z.string().email('Please enter a valid email address'), z.literal('')]).optional(),
-  parentPassportInfo: z.string().max(100, 'Passport info must be at most 100 characters').optional(),
   monthlyFee: z.number().min(0, 'Monthly fee must be positive'),
   notes: z.string().max(500, 'Notes must be at most 500 characters').optional(),
   receiveReports: z.boolean().optional(),
@@ -108,13 +107,6 @@ function applyCreateStudentBusinessRules(
         code: z.ZodIssueCode.custom,
         message: 'Please enter a valid email address',
         path: ['parentEmail'],
-      });
-    }
-    if (!data.parentPassportInfo || data.parentPassportInfo.trim() === '') {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: 'Parent passport information is required for students under 18',
-        path: ['parentPassportInfo'],
       });
     }
   }

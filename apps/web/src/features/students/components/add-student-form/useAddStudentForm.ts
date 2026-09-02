@@ -151,7 +151,6 @@ export function useAddStudentForm({ open, onOpenChange }: AddStudentFormProps) {
       setValue('parentSurname', '');
       setValue('parentPhone', '');
       setValue('parentEmail', '');
-      setValue('parentPassportInfo', '');
     }
   }, [computedAge, setValue]);
 

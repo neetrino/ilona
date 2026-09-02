@@ -188,7 +188,6 @@ export class StudentCreateService {
       registerDate: link?.leadId ? new Date() : undefined,
     };
     (studentCreateData as Record<string, unknown>).age = finalAge;
-    (studentCreateData as Record<string, unknown>).parentPassportInfo = dto.parentPassportInfo;
 
     const student = await tx.student.create({
       data: studentCreateData,
@@ -292,7 +291,6 @@ export class StudentCreateService {
           parentName: dto.parentName ?? null,
           parentPhone: dto.parentPhone ?? null,
           parentEmail: dto.parentEmail ?? null,
-          parentPassportInfo: dto.parentPassportInfo ?? null,
           teacherId: prep.resolvedTeacherId ?? null,
           groupId: dto.groupId,
           centerId: group.centerId,
