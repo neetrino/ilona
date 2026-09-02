@@ -1,9 +1,7 @@
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { Logger } from '@nestjs/common';
-import { assertSafeStorageKey } from './storage-key.util';
-
-const LOCAL_SUBDIRECTORIES = ['avatars', 'chat', 'documents', 'settings', 'blog'] as const;
+import { STORAGE_KEY_PREFIXES, assertSafeStorageKey } from './storage-key.util';
 
 export function resolveLocalStoragePath(basePath?: string): string {
   return basePath ?? path.join(process.cwd(), 'uploads');
@@ -29,7 +27,7 @@ export async function ensureLocalStorageDirectory(
   try {
     await fs.mkdir(localStoragePath, { recursive: true });
     await Promise.all(
-      LOCAL_SUBDIRECTORIES.map((dir) =>
+      STORAGE_KEY_PREFIXES.map((dir) =>
         fs.mkdir(path.join(localStoragePath, dir), { recursive: true }),
       ),
     );

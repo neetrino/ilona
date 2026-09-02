@@ -9,6 +9,9 @@ describe('storage-key.util', () => {
   describe('assertSafeStorageKey', () => {
     it('accepts allowed nested keys', () => {
       expect(assertSafeStorageKey('chat/voice/file.webm')).toBe('chat/voice/file.webm');
+      expect(
+        assertSafeStorageKey('crm/recordings/7197f24e-c97d-437e-a4af-88e950c50265.m4a'),
+      ).toBe('crm/recordings/7197f24e-c97d-437e-a4af-88e950c50265.m4a');
     });
 
     it('rejects path traversal', () => {
