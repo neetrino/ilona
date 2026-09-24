@@ -172,7 +172,38 @@ export function useChatContainer({
 
     const typeFromUrl = readUrlSearchParam('type', searchParams, urlRevision);
     const teacherIdFromUrl = readUrlSearchParam('teacherId', searchParams, urlRevision);
-    if (isStudent && typeFromUrl === 'dm' && teacherIdFromUrl && isLoadingTeachers) {
+    if (isStudent && typeFromUrl === 'dm' && teacherIdFromUrl) {
+      const existingChat = chats.find((chat) => {
+        if (chat.type !== 'DIRECT') return false;
+        return chat.participants.some((p) => p.userId === teacherIdFromUrl);
+      });
+
+      const clearDmBootParams = (params: URLSearchParams) => {
+        params.delete('type');
+        params.delete('teacherId');
+        // Keep record + lessonId so ChatWindow can open the lesson recorder.
+      };
+
+      if (existingChat) {
+        setActiveChat(existingChat);
+        setMobileListVisible(false);
+        replaceSearchParams((params) => {
+          clearDmBootParams(params);
+          setConversationSearchParam(params, existingChat, user?.id, chats);
+        });
+      } else {
+        createDirectChat.mutate(teacherIdFromUrl, {
+          onSuccess: (newChat) => {
+            setActiveChat(newChat);
+            setMobileListVisible(false);
+            replaceSearchParams((params) => {
+              clearDmBootParams(params);
+              setConversationSearchParam(params, newChat, user?.id, chats);
+            });
+          },
+        });
+      }
+      isInitialMount.current = false;
       return;
     }
 
@@ -182,40 +213,6 @@ export function useChatContainer({
       }
       isInitialMount.current = false;
       return;
-    }
-
-    if (isStudent && typeFromUrl === 'dm' && teacherIdFromUrl && teachers.length > 0) {
-      const teacher = teachers.find((t) => t.userId === teacherIdFromUrl);
-      if (teacher) {
-        const existingChat = chats.find((chat) => {
-          if (chat.type !== 'DIRECT') return false;
-          return chat.participants.some((p) => p.userId === teacher.userId);
-        });
-
-        if (existingChat) {
-          setActiveChat(existingChat);
-          setMobileListVisible(false);
-          replaceSearchParams((params) => {
-            params.delete('type');
-            params.delete('teacherId');
-            setConversationSearchParam(params, existingChat, user?.id, chats);
-          });
-        } else {
-          createDirectChat.mutate(teacher.userId, {
-            onSuccess: (newChat) => {
-              setActiveChat(newChat);
-              setMobileListVisible(false);
-              replaceSearchParams((params) => {
-                params.delete('type');
-                params.delete('teacherId');
-                setConversationSearchParam(params, newChat, user?.id, chats);
-              });
-            },
-          });
-        }
-        isInitialMount.current = false;
-        return;
-      }
     }
 
     if (conversationFromUrl && chats.length > 0) {

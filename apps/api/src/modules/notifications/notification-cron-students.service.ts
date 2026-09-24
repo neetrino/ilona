@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { LessonStatus, PaymentStatus, RiskLabel } from '@ilona/database';
+import { APP_TIMEZONE } from '@ilona/types';
 import { evaluateStudentAtRisk } from '../students/student-at-risk.util';
+import { effectiveLessonInstructorTeacherId } from '../../common/lesson-instructor';
 import { PrismaService } from '../prisma/prisma.service';
 import { EmailService } from './email.service';
 import { NotificationRecipientsService } from './notification-recipients.service';
@@ -8,8 +10,25 @@ import { NotificationWriteService } from './notification-write.service';
 import { zonedDayRange } from './notification-cron.util';
 
 const LATE_THRESHOLD = 3;
-const RECORDING_COPY =
-  'Սիրելի՛ սովորող, ցանկանում ենք հիշեցնել, որ դեռ չես ուղարկել քո այսօրվա ձայնագրությունը։ Հնարավոր է՝ հոգնած ես կամ այսօր չես կարողացել անհրաժեշտ ժամանակ հատկացնել։ Բայց հիշիր՝ այն, ինչ անում ես այսօր, քո վաղվա օրվա կարևոր ներդրումն է💙';
+
+function formatLessonTime(scheduledAt: Date): string {
+  return new Intl.DateTimeFormat('hy-AM', {
+    day: 'numeric',
+    month: 'long',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+    timeZone: APP_TIMEZONE,
+  }).format(scheduledAt);
+}
+
+function buildRecordingCopy(lessonLabel: string): string {
+  return [
+    `Սիրելի՛ սովորող, ցանկանում ենք հիշեցնել, որ դեռ չես ուղարկել քո ձայնագրությունը այս դասի համար՝`,
+    `«${lessonLabel}»։`,
+    `Հնարավոր է՝ հոգնած ես կամ այսօր չես կարողացել անհրաժեշտ ժամանակ հատկացնել։ Բայց հիշիր՝ այն, ինչ անում ես այսօր, քո վաղվա օրվա կարևոր ներդրումն է💙`,
+  ].join('\n');
+}
 
 @Injectable()
 export class NotificationCronStudentsService {
@@ -49,8 +68,14 @@ export class NotificationCronStudentsService {
       },
       select: {
         id: true,
+        topic: true,
+        scheduledAt: true,
+        teacherId: true,
+        substituteTeacherId: true,
         group: {
           select: {
+            id: true,
+            name: true,
             students: {
               select: {
                 id: true,
@@ -59,18 +84,41 @@ export class NotificationCronStudentsService {
             },
           },
         },
+        teacher: { select: { userId: true } },
+        substituteTeacher: { select: { userId: true } },
         recordingItems: { select: { studentId: true } },
       },
     });
 
     let created = 0;
     for (const lesson of lessons) {
+      const instructorTeacherId = effectiveLessonInstructorTeacherId(lesson);
+      const teacherUserId =
+        lesson.substituteTeacherId === instructorTeacherId
+          ? lesson.substituteTeacher?.userId
+          : lesson.teacher.userId;
+      if (!teacherUserId) {
+        continue;
+      }
+
+      const lessonLabel = [
+        lesson.topic?.trim() || lesson.group.name,
+        formatLessonTime(lesson.scheduledAt),
+      ].join(' · ');
+
       const sent = new Set(lesson.recordingItems.map((item) => item.studentId));
       for (const student of lesson.group.students) {
         if (sent.has(student.id)) {
           continue;
         }
-        created += await this.notifyMissingRecording(student, lesson.id, ymd);
+        created += await this.notifyMissingRecording({
+          student,
+          lessonId: lesson.id,
+          groupId: lesson.group.id,
+          teacherUserId,
+          lessonLabel,
+          ymd,
+        });
       }
     }
     return created;
@@ -140,21 +188,39 @@ export class NotificationCronStudentsService {
     });
   }
 
-  private async notifyMissingRecording(
-    student: { id: string; user: { id: string; email: string; firstName: string } },
-    lessonId: string,
-    ymd: string,
-  ): Promise<number> {
+  private async notifyMissingRecording(params: {
+    student: { id: string; user: { id: string; email: string; firstName: string } };
+    lessonId: string;
+    groupId: string;
+    teacherUserId: string;
+    lessonLabel: string;
+    ymd: string;
+  }): Promise<number> {
+    const { student, lessonId, groupId, teacherUserId, lessonLabel, ymd } = params;
+    const href =
+      `/student/chat?type=dm&teacherId=${encodeURIComponent(teacherUserId)}` +
+      `&record=1&lessonId=${encodeURIComponent(lessonId)}`;
+
     const created = await this.write.createForUsers({
       userIds: [student.user.id],
       type: 'STUDENT_RECORDING_MISSING',
-      title: 'Today’s recording is still missing',
-      content: RECORDING_COPY,
-      data: { studentId: student.id, lessonId, href: '/student/recordings' },
+      title: 'Recording missing for today’s lesson',
+      content: buildRecordingCopy(lessonLabel),
+      data: {
+        studentId: student.id,
+        lessonId,
+        groupId,
+        teacherId: teacherUserId,
+        href,
+      },
       dedupeKey: `${lessonId}:${student.id}:${ymd}`,
     });
     if (created > 0) {
-      await this.email.sendStudentRecordingReminder(student.user.email, student.user.firstName);
+      await this.email.sendStudentRecordingReminder(
+        student.user.email,
+        student.user.firstName,
+        lessonLabel,
+      );
     }
     return created;
   }

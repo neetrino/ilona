@@ -58,7 +58,9 @@ export function NotificationInboxItem({ item, locale, onOpen }: NotificationInbo
             {notificationDetail(item)}
           </p>
           {action ? (
-            <p className="mt-3 text-sm font-medium text-[#1010a3]">{action}</p>
+            <span className="mt-3 inline-flex rounded-full bg-[#1010a3] px-3.5 py-1.5 text-sm font-medium text-white">
+              {action}
+            </span>
           ) : null}
         </div>
       </button>

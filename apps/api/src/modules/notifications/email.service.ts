@@ -142,13 +142,22 @@ export class EmailService {
     });
   }
 
-  async sendStudentRecordingReminder(to: string, studentName: string): Promise<boolean> {
+  async sendStudentRecordingReminder(
+    to: string,
+    studentName: string,
+    lessonLabel: string,
+  ): Promise<boolean> {
+    const safeLesson = lessonLabel
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
     return this.send({
       to,
       subject: 'Ձայնագրության հիշեցում',
       html: this.plainLetterHtml(
         'Ձայնագրության հիշեցում',
-        `<p>Սիրելի՛ սովորող, ցանկանում ենք հիշեցնել, որ դեռ չես ուղարկել քո այսօրվա ձայնագրությունը։ Հնարավոր է՝ հոգնած ես կամ այսօր չես կարողացել անհրաժեշտ ժամանակ հատկացնել։ Բայց հիշիր՝ այն, ինչ անում ես այսօր, քո վաղվա օրվա կարևոր ներդրումն է💙</p>`,
+        `<p>Սիրելի՛ սովորող, ցանկանում ենք հիշեցնել, որ դեռ չես ուղարկել քո ձայնագրությունը այս դասի համար՝ <strong>«${safeLesson}»</strong>։ Հնարավոր է՝ հոգնած ես կամ այսօր չես կարողացել անհրաժեշտ ժամանակ հատկացնել։ Բայց հիշիր՝ այն, ինչ անում ես այսօր, քո վաղվա օրվա կարևոր ներդրումն է💙</p>`,
         studentName,
       ),
     });

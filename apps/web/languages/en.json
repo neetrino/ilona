@@ -2607,7 +2607,7 @@
     "typeChurn": "A student may leave",
     "typeUnpaidGroup": "Unpaid tuition in a group",
     "typeQuarterly": "Quarterly report deadline",
-    "typeRecording": "Today’s recording is still missing",
+    "typeRecording": "Missing voice for a lesson",
     "typeAbsence": "You missed today’s class",
     "typePlannedAbsence": "A student planned an absence",
     "typeAbsenceWarning": "Too many absences",
@@ -2617,6 +2617,7 @@
     "openGroup": "Open group",
     "openChat": "Open chat",
     "openRecordings": "Open recordings",
+    "recordLessonVoice": "Record this lesson’s voice",
     "openDashboard": "Go to home",
     "openAnalytics": "Open analytics",
     "category": {
