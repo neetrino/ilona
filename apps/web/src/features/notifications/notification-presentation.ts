@@ -64,3 +64,7 @@ export function formatInboxTime(iso: string, locale: string): string {
 export function notificationDetail(item: PortalNotification): string {
   return item.content.trim();
 }
+
+export function isRecordingCompleted(item: PortalNotification): boolean {
+  return item.type === 'STUDENT_RECORDING_MISSING' && Boolean(item.data?.recordingCompleted);
+}

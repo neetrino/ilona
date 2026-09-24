@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { useTranslations } from 'next-intl';
+import { useQueryClient } from '@tanstack/react-query';
 import { readUrlSearchParam } from '@/shared/lib/url-search-params';
 import { useAppSearchUrl } from '@/shared/hooks/useAppSearchUrl';
 import { sendMessageHttp } from '../../api/chat.api';
@@ -22,6 +23,7 @@ export function useChatVoiceHandlers({
   createDirectChat,
 }: UseChatVoiceHandlersOptions) {
   const tChat = useTranslations('chat');
+  const queryClient = useQueryClient();
   const { searchParams, urlRevision, replaceAllParams } = useAppSearchUrl();
   const [showVoiceRecorder, setShowVoiceRecorder] = useState(false);
   const [showVoiceToTeacherRecorder, setShowVoiceToTeacherRecorder] = useState(false);
@@ -112,6 +114,9 @@ export function useChatVoiceHandlers({
 
         addMessageToCache(targetChatId, message);
         setShowVoiceToTeacherRecorder(false);
+        if (lessonIdForVoice) {
+          void queryClient.invalidateQueries({ queryKey: ['notifications'] });
+        }
         setLessonIdForVoice(null);
       } catch (error) {
         console.error('Failed to send voice to teacher:', error);
@@ -130,6 +135,7 @@ export function useChatVoiceHandlers({
       addMessageToCache,
       tChat,
       lessonIdForVoice,
+      queryClient,
     ],
   );
 

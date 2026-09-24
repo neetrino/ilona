@@ -8,6 +8,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { Prisma, MessageType, ChatType, UserRole } from '@ilona/database';
+import type { NotificationData } from '@ilona/types';
 import { SendMessageDto } from './dto';
 import { SalariesService } from '../finance/salaries.service';
 import { effectiveLessonInstructorTeacherId } from '../../common/lesson-instructor';
@@ -18,6 +19,7 @@ import { chatSenderPublicSelect, mapMessageWithSender } from './chat-message-sen
 import { JwtPayload } from '../../common/types/auth.types';
 import type { SendMessageResponse } from './message.types';
 import { NotificationEventsService } from '../notifications/notification-events.service';
+import { buildStudentRecordingThankYouCopy } from '../notifications/student-recording-notification.util';
 
 @Injectable()
 export class MessageSendService {
@@ -346,19 +348,59 @@ export class MessageSendService {
       where: { lessonId, studentId: student.id },
       select: { id: true },
     });
-    if (existing) {
-      return;
+    if (!existing) {
+      await this.prisma.recordingItem.create({
+        data: {
+          groupId: lesson.groupId,
+          studentId: student.id,
+          lessonId,
+          fileUrl: dto.fileUrl,
+          fileName: dto.fileName,
+          durationSec: dto.duration,
+        },
+      });
     }
 
-    await this.prisma.recordingItem.create({
-      data: {
-        groupId: lesson.groupId,
-        studentId: student.id,
-        lessonId,
-        fileUrl: dto.fileUrl,
-        fileName: dto.fileName,
-        durationSec: dto.duration,
+    await this.markStudentRecordingNotificationsComplete(senderUserId, lessonId);
+  }
+
+  private async markStudentRecordingNotificationsComplete(
+    senderUserId: string,
+    lessonId: string,
+  ): Promise<void> {
+    const rows = await this.prisma.notification.findMany({
+      where: {
+        userId: senderUserId,
+        type: 'STUDENT_RECORDING_MISSING',
       },
+      select: { id: true, data: true },
     });
+
+    const thankYou = buildStudentRecordingThankYouCopy();
+    for (const row of rows) {
+      const data = (row.data ?? null) as NotificationData | null;
+      if (!data?.lessonId || data.lessonId !== lessonId) {
+        continue;
+      }
+      if (data.recordingCompleted) {
+        continue;
+      }
+      await this.prisma.notification.update({
+        where: { id: row.id },
+        data: {
+          content: thankYou,
+          isRead: true,
+          readAt: new Date(),
+          data: {
+            studentId: data.studentId,
+            lessonId: data.lessonId,
+            groupId: data.groupId,
+            teacherId: data.teacherId,
+            dedupeKey: data.dedupeKey,
+            recordingCompleted: true,
+          } as Prisma.InputJsonValue,
+        },
+      });
+    }
   }
 }

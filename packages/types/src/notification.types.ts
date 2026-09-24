@@ -30,6 +30,8 @@ export type NotificationData = {
   chatId?: string;
   messageId?: string;
   teacherId?: string;
+  /** Set when the student sent the missing lesson voice. */
+  recordingCompleted?: boolean;
 };
 
 export type PortalNotification = {

@@ -6,6 +6,9 @@ function studentRecordingChatHref(item: PortalNotification): string | null {
   if (item.type !== 'STUDENT_RECORDING_MISSING') {
     return null;
   }
+  if (item.data?.recordingCompleted) {
+    return null;
+  }
   const teacherId = item.data?.teacherId;
   const lessonId = item.data?.lessonId;
   if (!teacherId || !lessonId) {

@@ -35,6 +35,13 @@ export function buildStudentRecordingCopy(lessonLabel: string): string {
   ].join('\n');
 }
 
+export function buildStudentRecordingThankYouCopy(): string {
+  return [
+    'Շնորհակալություն։',
+    'Քո ձայնագրությունը հաջողությամբ ուղարկվել է։ Շարունակիր նույն ջանասիրությամբ💙',
+  ].join('\n');
+}
+
 export function resolveStudentRecordingTeacherUserId(lesson: LessonForRecordingHref): string | null {
   const instructorTeacherId = effectiveLessonInstructorTeacherId(lesson);
   if (lesson.substituteTeacherId === instructorTeacherId) {

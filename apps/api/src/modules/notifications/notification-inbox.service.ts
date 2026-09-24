@@ -5,6 +5,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import {
   buildStudentRecordingChatHref,
   buildStudentRecordingCopy,
+  buildStudentRecordingThankYouCopy,
   formatStudentRecordingLessonLabel,
   resolveStudentRecordingTeacherUserId,
   studentRecordingLessonSelect,
@@ -93,14 +94,42 @@ export class NotificationInboxService {
       })
       .filter((id): id is string => Boolean(id));
 
+    const uniqueLessonIds = [...new Set(lessonIds)];
     const lessons =
-      lessonIds.length > 0
+      uniqueLessonIds.length > 0
         ? await this.prisma.lesson.findMany({
-            where: { id: { in: [...new Set(lessonIds)] } },
+            where: { id: { in: uniqueLessonIds } },
             select: { id: true, ...studentRecordingLessonSelect },
           })
         : [];
     const lessonById = new Map(lessons.map((lesson) => [lesson.id, lesson]));
+
+    const studentLessonPairs = rows
+      .filter((row) => row.type === 'STUDENT_RECORDING_MISSING')
+      .map((row) => {
+        const data = (row.data ?? null) as NotificationData | null;
+        if (!data?.lessonId || !data.studentId) return null;
+        return { lessonId: data.lessonId, studentId: data.studentId };
+      })
+      .filter((pair): pair is { lessonId: string; studentId: string } => Boolean(pair));
+
+    const completedKeys = new Set<string>();
+    if (studentLessonPairs.length > 0) {
+      const recordingRows = await this.prisma.recordingItem.findMany({
+        where: {
+          OR: studentLessonPairs.map((pair) => ({
+            lessonId: pair.lessonId,
+            studentId: pair.studentId,
+          })),
+        },
+        select: { lessonId: true, studentId: true },
+      });
+      for (const row of recordingRows) {
+        if (row.lessonId) {
+          completedKeys.add(`${row.lessonId}:${row.studentId}`);
+        }
+      }
+    }
 
     return rows.map((row) => {
       const baseData = (row.data ?? null) as NotificationData | null;
@@ -108,20 +137,35 @@ export class NotificationInboxService {
       let data = baseData;
 
       if (row.type === 'STUDENT_RECORDING_MISSING' && baseData?.lessonId) {
-        const lesson = lessonById.get(baseData.lessonId);
-        if (lesson) {
-          const teacherUserId =
-            baseData.teacherId ?? resolveStudentRecordingTeacherUserId(lesson) ?? undefined;
-          const lessonLabel = formatStudentRecordingLessonLabel(lesson);
-          if (!content.includes('«')) {
-            content = buildStudentRecordingCopy(lessonLabel);
-          }
-          if (teacherUserId) {
-            data = {
-              ...baseData,
-              teacherId: teacherUserId,
-              href: buildStudentRecordingChatHref(teacherUserId, baseData.lessonId),
-            };
+        const alreadyDone =
+          Boolean(baseData.recordingCompleted) ||
+          (baseData.studentId
+            ? completedKeys.has(`${baseData.lessonId}:${baseData.studentId}`)
+            : false);
+
+        if (alreadyDone) {
+          content = buildStudentRecordingThankYouCopy();
+          data = {
+            ...baseData,
+            recordingCompleted: true,
+            href: undefined,
+          };
+        } else {
+          const lesson = lessonById.get(baseData.lessonId);
+          if (lesson) {
+            const teacherUserId =
+              baseData.teacherId ?? resolveStudentRecordingTeacherUserId(lesson) ?? undefined;
+            const lessonLabel = formatStudentRecordingLessonLabel(lesson);
+            if (!content.includes('«')) {
+              content = buildStudentRecordingCopy(lessonLabel);
+            }
+            if (teacherUserId) {
+              data = {
+                ...baseData,
+                teacherId: teacherUserId,
+                href: buildStudentRecordingChatHref(teacherUserId, baseData.lessonId),
+              };
+            }
           }
         }
       }
