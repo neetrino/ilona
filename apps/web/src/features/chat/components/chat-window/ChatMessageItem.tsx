@@ -16,8 +16,9 @@ import { resolveChatAvatarUrl } from '../../utils/chat-avatar';
 import { isPendingMessageId } from '../../hooks';
 import { getMessageDeliveryStatus, canViewMessageReadReceipts } from '../../utils/message-delivery-status';
 import { VoiceMessagePlayer } from '../VoiceMessagePlayer';
-import { getSubstituteVoiceLabel, isVocabularyMessage, isVoiceToTeacherMessage } from './chat-message-meta';
+import { getSubstituteVoiceLabel, isLessonDutyVoiceMessage, isVocabularyMessage, isVoiceToTeacherMessage } from './chat-message-meta';
 import { MessageDeliveryTicks } from './MessageDeliveryTicks';
+import { Check } from 'lucide-react';
 
 interface ChatCurrentUserAvatar {
   avatarUrl?: string | null;
@@ -187,6 +188,16 @@ export function ChatMessageItem({
 
           {message.type === 'VOICE' && message.fileUrl ? (
             <div className={cn(isPending && 'opacity-70')}>
+              {isLessonDutyVoiceMessage(message) ? (
+                <div className="mb-1.5 inline-flex items-center gap-1.5 rounded-full bg-[#e8f7ef] px-2.5 py-1 text-xs font-medium text-[#0f7a3f]">
+                  <Check className="h-3.5 w-3.5 shrink-0" strokeWidth={2.5} aria-hidden />
+                  {tChat('lessonVoiceCompleted')}
+                </div>
+              ) : isVoiceToTeacherMessage(message) ? (
+                <div className="mb-1.5 text-xs font-medium text-amber-800/90">
+                  {tChat('voiceToTeacherLabel')}
+                </div>
+              ) : null}
               <VoiceMessagePlayer
                 fileUrl={message.fileUrl}
                 duration={message.duration}

@@ -1498,6 +1498,8 @@
     "sendingVoiceToTeacher": "Sending voice to teacher...",
     "sendVoiceToTeacherTitle": "Send voice message to your teacher (saved in Recordings)",
     "sendVoiceToTeacherShort": "To teacher",
+    "voiceToTeacherLabel": "Voice to teacher",
+    "lessonVoiceCompleted": "Lesson recording completed",
     "recordVoiceMessage": "Record voice message",
     "unableToPlayAudio": "Unable to play audio",
     "fileMissingOrInaccessible": "File may be missing or inaccessible",

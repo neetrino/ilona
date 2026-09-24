@@ -1492,6 +1492,8 @@
     "sendingVoiceToTeacher": "Ձայնը ուղարկվում է ուսուցչին...",
     "sendVoiceToTeacherTitle": "Ուղարկել ձայնային հաղորդագրություն ուսուցչին (պահվում է Ձայնագրություններում)",
     "sendVoiceToTeacherShort": "Ուսուցչին",
+    "voiceToTeacherLabel": "Ձայն ուսուցչին",
+    "lessonVoiceCompleted": "Դասի ձայնագրությունը լրացված է",
     "recordVoiceMessage": "Ձայնագրել հաղորդագրություն",
     "unableToPlayAudio": "Չհաջողվեց նվագարկել ձայնը",
     "fileMissingOrInaccessible": "Ֆայլը կարող է բացակայել կամ անհասանելի լինել",
