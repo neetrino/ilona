@@ -10,12 +10,14 @@ import { UserRole } from '@ilona/database';
 import { teacherCanActOnLesson } from '../../common/lesson-instructor';
 import { buildStructuredFields } from './feedback.util';
 import { FeedbackCompletionService } from './feedback-completion.service';
+import { NotificationEventsService } from '../notifications/notification-events.service';
 
 @Injectable()
 export class FeedbackWriteService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly completionService: FeedbackCompletionService,
+    private readonly notifications: NotificationEventsService,
   ) {}
 
   async createOrUpdate(
@@ -104,11 +106,17 @@ export class FeedbackWriteService {
           ...(dto.participation !== undefined ? { participation: dto.participation } : {}),
           ...(dto.progress !== undefined ? { progress: dto.progress } : {}),
           ...(dto.encouragement !== undefined ? { encouragement: dto.encouragement } : {}),
+          ...(dto.recommendGroupChange !== undefined
+            ? { recommendGroupChange: dto.recommendGroupChange }
+            : {}),
         },
       });
     }
 
     await this.completionService.syncLessonFeedbacksCompleted(dto.lessonId);
+    if (dto.recommendGroupChange) {
+      await this.notifyLevelAlert(dto.studentId);
+    }
     return result;
   }
 
@@ -200,5 +208,27 @@ export class FeedbackWriteService {
 
     await this.completionService.syncLessonFeedbacksCompleted(feedback.lessonId);
     return feedback;
+  }
+
+  private async notifyLevelAlert(studentId: string): Promise<void> {
+    const student = await this.prisma.student.findUnique({
+      where: { id: studentId },
+      select: {
+        user: { select: { firstName: true, lastName: true } },
+        group: { select: { name: true, centerId: true } },
+      },
+    });
+    const group = student?.group;
+    if (!group) {
+      return;
+    }
+    await this.notifications.runSafe('level-alert', () =>
+      this.notifications.notifyManagersLevelAlert({
+        centerId: group.centerId,
+        studentId,
+        studentName: `${student.user.firstName} ${student.user.lastName}`,
+        groupName: group.name,
+      }),
+    );
   }
 }

@@ -8,6 +8,7 @@ import {
   IsArray,
   ArrayUnique,
   IsEnum,
+  IsBoolean,
 } from 'class-validator';
 
 /**
@@ -89,5 +90,9 @@ export class CreateFeedbackDto {
   @IsOptional()
   @MaxLength(2000)
   encouragement?: string;
+
+  @IsBoolean()
+  @IsOptional()
+  recommendGroupChange?: boolean;
 }
 

@@ -12,7 +12,15 @@ import { PaymentStatus } from '@ilona/database';
 
 function createPaymentsService(prisma: unknown): PaymentsService {
   const query = new PaymentQueryService(prisma as PrismaService);
-  const write = new PaymentWriteService(prisma as PrismaService, query);
+  const notifications = {
+    runSafe: async (_label: string, task: () => Promise<void>) => task(),
+    notifyPaymentConfirmed: async () => undefined,
+  };
+  const write = new PaymentWriteService(
+    prisma as PrismaService,
+    query,
+    notifications as never,
+  );
   const summary = new PaymentSummaryService(prisma as PrismaService);
   const lifecycle = new PaymentLifecycleService(prisma as PrismaService);
   return new PaymentsService(query, write, summary, lifecycle);

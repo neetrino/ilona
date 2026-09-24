@@ -55,9 +55,16 @@ describe('FeedbackWriteService — co-teacher access', () => {
       },
     };
 
-    service = new FeedbackWriteService(prisma as never, {
-      syncLessonFeedbacksCompleted,
-    } as never);
+    service = new FeedbackWriteService(
+      prisma as never,
+      {
+        syncLessonFeedbacksCompleted,
+      } as never,
+      {
+        runSafe: vi.fn(async (_label: string, task: () => Promise<void>) => task()),
+        notifyManagersLevelAlert: vi.fn(),
+      } as never,
+    );
   });
 
   it('allows Teacher X to create feedback on Teacher Y lesson day', async () => {

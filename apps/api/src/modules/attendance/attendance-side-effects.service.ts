@@ -1,10 +1,39 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { UserRole } from '@ilona/database';
+import { EmailService } from '../notifications/email.service';
+import { NotificationEventsService } from '../notifications/notification-events.service';
 
 @Injectable()
 export class AttendanceSideEffectsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly notifications: NotificationEventsService,
+    private readonly email: EmailService,
+  ) {}
+
+  async notifyStudentAbsenceLetter(studentId: string, lessonId: string): Promise<void> {
+    const student = await this.prisma.student.findUnique({
+      where: { id: studentId },
+      select: {
+        user: { select: { id: true, email: true, firstName: true, lastName: true } },
+      },
+    });
+    if (!student) {
+      return;
+    }
+    await this.notifications.runSafe('student-absence', async () => {
+      await this.notifications.notifyStudentAbsenceLetter({
+        userId: student.user.id,
+        studentId,
+        lessonId,
+      });
+      await this.email.sendAbsenceNotification(
+        student.user.email,
+        `${student.user.firstName} ${student.user.lastName}`,
+      );
+    });
+  }
   async notifyStaffOfPlannedAbsence(
     student: {
       id: string;

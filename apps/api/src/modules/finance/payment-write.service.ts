@@ -10,12 +10,14 @@ import { getPaymentDb } from './payment-db.util';
 import { paymentStudentIncludeBasic } from './payment-include.util';
 import { isPaymentAllowedInWindow, startOfMonth } from './payment.util';
 import { PaymentQueryService } from './payment-query.service';
+import { NotificationEventsService } from '../notifications/notification-events.service';
 
 @Injectable()
 export class PaymentWriteService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly queryService: PaymentQueryService,
+    private readonly notifications: NotificationEventsService,
   ) {}
 
   private get db() {
@@ -122,7 +124,7 @@ export class PaymentWriteService {
       data.paymentMethod = dto.paymentMethod.toUpperCase();
     }
 
-    return this.db.payment.update({
+    const updated = await this.db.payment.update({
       where: { id },
       data,
       include: {
@@ -131,6 +133,8 @@ export class PaymentWriteService {
         },
       },
     });
+    await this.notifyPaid(updated);
+    return updated;
   }
 
   async processPaymentForStudent(
@@ -186,7 +190,7 @@ export class PaymentWriteService {
       updateData.paidAt = now;
     }
 
-    return this.db.payment.update({
+    const updated = await this.db.payment.update({
       where: { id: paymentId },
       data: updateData,
       include: {
@@ -195,6 +199,29 @@ export class PaymentWriteService {
         },
       },
     });
+    if (updated.status === PaymentStatus.PAID) {
+      await this.notifyPaid(updated);
+    }
+    return updated;
+  }
+
+  private async notifyPaid(payment: {
+    id: string;
+    studentId: string;
+    student: { user: { firstName: string; lastName: string } };
+  }): Promise<void> {
+    const student = await this.prisma.student.findUnique({
+      where: { id: payment.studentId },
+      select: { group: { select: { centerId: true } } },
+    });
+    await this.notifications.runSafe('payment-confirmed', () =>
+      this.notifications.notifyPaymentConfirmed({
+        centerId: student?.group?.centerId ?? null,
+        paymentId: payment.id,
+        studentId: payment.studentId,
+        studentName: `${payment.student.user.firstName} ${payment.student.user.lastName}`,
+      }),
+    );
   }
 
   async cancel(id: string) {

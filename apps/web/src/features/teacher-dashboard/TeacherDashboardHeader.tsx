@@ -6,6 +6,7 @@ import { ChatBackButton } from '@/shared/components/ui/chat-back-button';
 import { LandingNavbarLanguageToggle } from '@/shared/components/layout/LandingNavbarLanguageToggle';
 import { StudentLogoutControl } from '@/shared/components/layout/StudentLogoutControl';
 import { PortalHeaderSearch } from '@/features/search/components/PortalHeaderSearch';
+import { NotificationBellButton } from '@/features/notifications';
 import { isTeacherPortalSubpage, isTeacherProfilePath, stripLocaleFromPath } from '@/shared/lib/role-routes';
 import { PORTAL_MOBILE_HEADER_ID } from '@/shared/lib/portal-mobile-layout';
 import { cn } from '@/shared/lib/utils';
@@ -113,6 +114,7 @@ export function TeacherDashboardHeader({
             </div>
 
             <div className="flex shrink-0 flex-wrap items-center justify-end gap-1.5 sm:gap-2">
+              <NotificationBellButton />
               <LandingNavbarLanguageToggle className="hidden lg:inline-flex" />
               <StudentLogoutControl variant="header" className="hidden lg:inline-flex" />
             </div>

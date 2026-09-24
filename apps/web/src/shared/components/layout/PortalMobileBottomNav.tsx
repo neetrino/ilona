@@ -7,6 +7,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { useChats } from '@/features/chat/hooks';
 import { navigateToPortalChat } from '@/features/chat/lib/navigate-to-portal-chat';
 import { navigateToPortalNotifications } from '@/features/admin-dashboard/navigate-to-portal-notifications';
+import { useNotificationUnreadCount } from '@/features/notifications';
 import { PortalMobileSearchSheet } from '@/features/search/components/PortalMobileSearchSheet';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import {
@@ -96,6 +97,8 @@ export function PortalMobileBottomNav({ showNotifications = false }: PortalMobil
   const tCommon = useTranslations('common');
   const tSettings = useTranslations('settings');
   const { user } = useAuthStore();
+  const { data: unreadData } = useNotificationUnreadCount();
+  const unreadNotifications = unreadData?.unreadCount ?? 0;
   const [searchOpen, setSearchOpen] = useState(false);
 
   const role = user?.role ?? 'ADMIN';
@@ -257,13 +260,18 @@ export function PortalMobileBottomNav({ showNotifications = false }: PortalMobil
                 label={tSettings('notifications')}
                 onClick={handleNotificationsClick}
               >
-                <svg className={BOTTOM_NAV_ICON_CLASS} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
-                  />
-                </svg>
+                <span className="relative">
+                  <svg className={BOTTOM_NAV_ICON_CLASS} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
+                    />
+                  </svg>
+                  {unreadNotifications > 0 ? (
+                    <span className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-red-400" />
+                  ) : null}
+                </span>
               </BottomNavItem>
             ) : (
               <BottomNavItem

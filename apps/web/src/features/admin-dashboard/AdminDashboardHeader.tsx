@@ -6,6 +6,7 @@ import { ChatBackButton } from '@/shared/components/ui/chat-back-button';
 import { LandingNavbarLanguageToggle } from '@/shared/components/layout/LandingNavbarLanguageToggle';
 import { StudentLogoutControl } from '@/shared/components/layout/StudentLogoutControl';
 import { PortalHeaderSearch } from '@/features/search/components/PortalHeaderSearch';
+import { NotificationBellButton } from '@/features/notifications';
 import { useAuthStore } from '@/features/auth/store/auth.store';
 import { isAdminPortalSubpage } from '@/shared/lib/role-routes';
 import { PORTAL_MOBILE_HEADER_ID } from '@/shared/lib/portal-mobile-layout';
@@ -126,6 +127,7 @@ export function AdminDashboardHeader({
             <div className="flex shrink-0 flex-wrap items-center justify-end gap-1.5 sm:gap-2">
               {headerContent}
 
+              <NotificationBellButton />
               <LandingNavbarLanguageToggle className="hidden lg:inline-flex" />
               <StudentLogoutControl variant="header" className="hidden lg:inline-flex" />
             </div>

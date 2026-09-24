@@ -12,6 +12,7 @@ export function buildStructuredFields(
     | 'participation'
     | 'progress'
     | 'encouragement'
+    | 'recommendGroupChange'
   >,
 ): Prisma.FeedbackUpdateInput {
   const payload: Prisma.FeedbackUpdateInput = {};
@@ -22,5 +23,8 @@ export function buildStructuredFields(
   if (dto.participation !== undefined) payload.participation = dto.participation ?? null;
   if (dto.progress !== undefined) payload.progress = dto.progress ?? null;
   if (dto.encouragement !== undefined) payload.encouragement = dto.encouragement ?? null;
+  if (dto.recommendGroupChange !== undefined) {
+    payload.recommendGroupChange = dto.recommendGroupChange;
+  }
   return payload;
 }

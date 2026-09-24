@@ -313,6 +313,20 @@ export function FeedbacksTabStudentCard({
         </div>
       )}
 
+      <label className="flex items-center gap-2 text-sm text-slate-700">
+        <input
+          type="checkbox"
+          checked={structured.recommendGroupChange}
+          onChange={(event) =>
+            onUpdateStructured((current) => ({
+              ...current,
+              recommendGroupChange: event.target.checked,
+            }))
+          }
+        />
+        {t('recommendGroupChange')}
+      </label>
+
       <div className="flex justify-end pt-1">
         <Button
           type="button"

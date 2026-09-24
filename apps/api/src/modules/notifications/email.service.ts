@@ -127,43 +127,46 @@ export class EmailService {
   async sendAbsenceNotification(
     to: string,
     studentName: string,
-    lessonDate: string,
-    groupName: string,
+    _lessonDate?: string,
+    _groupName?: string,
   ): Promise<boolean> {
     return this.send({
       to,
-      subject: 'Missed Lesson Notification',
-      html: `
-        <!DOCTYPE html>
-        <html>
-        <head>
-          <style>
-            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-            .header { background: #f59e0b; color: white; padding: 20px; text-align: center; border-radius: 10px 10px 0 0; }
-            .content { background: #fffbeb; padding: 30px; border-radius: 0 0 10px 10px; border: 1px solid #fcd34d; }
-            .alert { background: #fef3c7; border-left: 4px solid #f59e0b; padding: 15px; margin: 20px 0; }
-          </style>
-        </head>
-        <body>
-          <div class="container">
-            <div class="header">
-              <h2>⚠️ Missed Lesson</h2>
-            </div>
-            <div class="content">
-              <p>Hello <strong>${studentName}</strong>,</p>
-              <div class="alert">
-                <p>We noticed you missed your lesson on <strong>${lessonDate}</strong> in group <strong>${groupName}</strong>.</p>
-              </div>
-              <p>Everything okay? If you had to miss for a valid reason, please contact your teacher or admin.</p>
-              <p>Regular attendance is important for your learning progress!</p>
-              <p>Best regards,<br>Ilona English Center</p>
-            </div>
-          </div>
-        </body>
-        </html>
-      `,
+      subject: 'We missed you today! 💙',
+      html: this.plainLetterHtml(
+        'We missed you today! 💙',
+        `<p>Սիրելի՛ սովորող, այսօր մեր դասին չներկայացար, և անկեղծորեն շատ ափսոսում ենք, որ բաց թողեցիր այն։ Այսօր քո ընկերները արդեն սկսեցին ավելի վստահ ու ճիշտ խոսել։ Հուսով ենք՝ հաջորդ դասին դու էլ կմիանես մեզ, որպեսզի բաց չթողնես քո անգլերեն սովորելու հնարավորությունը:</p>
+         <p>See you next class! We’ll be waiting for you💙</p>`,
+        studentName,
+      ),
     });
+  }
+
+  async sendStudentRecordingReminder(to: string, studentName: string): Promise<boolean> {
+    return this.send({
+      to,
+      subject: 'Ձայնագրության հիշեցում',
+      html: this.plainLetterHtml(
+        'Ձայնագրության հիշեցում',
+        `<p>Սիրելի՛ սովորող, ցանկանում ենք հիշեցնել, որ դեռ չես ուղարկել քո այսօրվա ձայնագրությունը։ Հնարավոր է՝ հոգնած ես կամ այսօր չես կարողացել անհրաժեշտ ժամանակ հատկացնել։ Բայց հիշիր՝ այն, ինչ անում ես այսօր, քո վաղվա օրվա կարևոր ներդրումն է💙</p>`,
+        studentName,
+      ),
+    });
+  }
+
+  private plainLetterHtml(title: string, bodyHtml: string, studentName: string): string {
+    return `
+      <!DOCTYPE html>
+      <html>
+      <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+        <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+          <h2>${title}</h2>
+          <p>Hello <strong>${studentName}</strong>,</p>
+          ${bodyHtml}
+        </div>
+      </body>
+      </html>
+    `;
   }
 
   async sendPaymentReminder(

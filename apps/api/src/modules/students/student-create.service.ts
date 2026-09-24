@@ -25,6 +25,7 @@ import {
 import { computeAgeFromDob } from './student-crud.util';
 import { GroupChatSyncService } from '../groups/group-chat-sync.service';
 import { ChatService } from '../chat/chat.service';
+import { NotificationEventsService } from '../notifications/notification-events.service';
 
 @Injectable()
 export class StudentCreateService {
@@ -32,6 +33,7 @@ export class StudentCreateService {
     private readonly prisma: PrismaService,
     private readonly chatSync: GroupChatSyncService,
     private readonly chatService: ChatService,
+    private readonly notifications: NotificationEventsService,
   ) {}
 
   private async ensureAdminDirectChat(studentUserId: string): Promise<void> {
@@ -227,6 +229,7 @@ export class StudentCreateService {
       this.insertUserStudentAndRelationsInTx(tx, dto, prep),
     );
     await this.ensureAdminDirectChat(student.user.id);
+    await this.notifyNewStudent(student);
     return student;
   }
 
@@ -322,5 +325,38 @@ export class StudentCreateService {
     if (createdStudentUserId) {
       await this.ensureAdminDirectChat(createdStudentUserId);
     }
+    if (dto.groupId) {
+      const created = await this.prisma.student.findFirst({
+        where: { userId: createdStudentUserId ?? undefined, groupId: dto.groupId },
+        include: {
+          user: { select: { firstName: true, lastName: true } },
+          group: { select: { id: true, name: true } },
+        },
+        orderBy: { createdAt: 'desc' },
+      });
+      if (created) {
+        await this.notifyNewStudent(created);
+      }
+    }
+  }
+
+  private async notifyNewStudent(student: {
+    id: string;
+    groupId?: string | null;
+    user: { firstName: string; lastName: string };
+    group?: { id: string; name: string } | null;
+  }): Promise<void> {
+    const groupId = student.groupId ?? student.group?.id;
+    if (!groupId) {
+      return;
+    }
+    await this.notifications.runSafe('new-student', () =>
+      this.notifications.notifyTeachersNewStudent({
+        groupId,
+        studentId: student.id,
+        studentName: `${student.user.firstName} ${student.user.lastName}`,
+        groupName: student.group?.name ?? 'group',
+      }),
+    );
   }
 }

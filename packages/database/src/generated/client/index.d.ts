@@ -17728,6 +17728,7 @@ export namespace Prisma {
     studentId: string | null
     markedById: string | null
     isPresent: boolean | null
+    isLate: boolean | null
     absenceType: $Enums.AbsenceType | null
     note: string | null
     markedAt: Date | null
@@ -17741,6 +17742,7 @@ export namespace Prisma {
     studentId: string | null
     markedById: string | null
     isPresent: boolean | null
+    isLate: boolean | null
     absenceType: $Enums.AbsenceType | null
     note: string | null
     markedAt: Date | null
@@ -17754,6 +17756,7 @@ export namespace Prisma {
     studentId: number
     markedById: number
     isPresent: number
+    isLate: number
     absenceType: number
     note: number
     markedAt: number
@@ -17769,6 +17772,7 @@ export namespace Prisma {
     studentId?: true
     markedById?: true
     isPresent?: true
+    isLate?: true
     absenceType?: true
     note?: true
     markedAt?: true
@@ -17782,6 +17786,7 @@ export namespace Prisma {
     studentId?: true
     markedById?: true
     isPresent?: true
+    isLate?: true
     absenceType?: true
     note?: true
     markedAt?: true
@@ -17795,6 +17800,7 @@ export namespace Prisma {
     studentId?: true
     markedById?: true
     isPresent?: true
+    isLate?: true
     absenceType?: true
     note?: true
     markedAt?: true
@@ -17881,6 +17887,7 @@ export namespace Prisma {
     studentId: string
     markedById: string | null
     isPresent: boolean
+    isLate: boolean
     absenceType: $Enums.AbsenceType | null
     note: string | null
     markedAt: Date
@@ -17911,6 +17918,7 @@ export namespace Prisma {
     studentId?: boolean
     markedById?: boolean
     isPresent?: boolean
+    isLate?: boolean
     absenceType?: boolean
     note?: boolean
     markedAt?: boolean
@@ -17927,6 +17935,7 @@ export namespace Prisma {
     studentId?: boolean
     markedById?: boolean
     isPresent?: boolean
+    isLate?: boolean
     absenceType?: boolean
     note?: boolean
     markedAt?: boolean
@@ -17943,6 +17952,7 @@ export namespace Prisma {
     studentId?: boolean
     markedById?: boolean
     isPresent?: boolean
+    isLate?: boolean
     absenceType?: boolean
     note?: boolean
     markedAt?: boolean
@@ -17974,6 +17984,7 @@ export namespace Prisma {
       studentId: string
       markedById: string | null
       isPresent: boolean
+      isLate: boolean
       absenceType: $Enums.AbsenceType | null
       note: string | null
       markedAt: Date
@@ -18380,6 +18391,7 @@ export namespace Prisma {
     readonly studentId: FieldRef<"Attendance", 'String'>
     readonly markedById: FieldRef<"Attendance", 'String'>
     readonly isPresent: FieldRef<"Attendance", 'Boolean'>
+    readonly isLate: FieldRef<"Attendance", 'Boolean'>
     readonly absenceType: FieldRef<"Attendance", 'AbsenceType'>
     readonly note: FieldRef<"Attendance", 'String'>
     readonly markedAt: FieldRef<"Attendance", 'DateTime'>
@@ -18768,6 +18780,7 @@ export namespace Prisma {
     participation: number | null
     progress: string | null
     encouragement: string | null
+    recommendGroupChange: boolean | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -18786,6 +18799,7 @@ export namespace Prisma {
     participation: number | null
     progress: string | null
     encouragement: string | null
+    recommendGroupChange: boolean | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -18806,6 +18820,7 @@ export namespace Prisma {
     participation: number
     progress: number
     encouragement: number
+    recommendGroupChange: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -18836,6 +18851,7 @@ export namespace Prisma {
     participation?: true
     progress?: true
     encouragement?: true
+    recommendGroupChange?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -18854,6 +18870,7 @@ export namespace Prisma {
     participation?: true
     progress?: true
     encouragement?: true
+    recommendGroupChange?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -18874,6 +18891,7 @@ export namespace Prisma {
     participation?: true
     progress?: true
     encouragement?: true
+    recommendGroupChange?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -18981,6 +18999,7 @@ export namespace Prisma {
     participation: number | null
     progress: string | null
     encouragement: string | null
+    recommendGroupChange: boolean
     createdAt: Date
     updatedAt: Date
     _count: FeedbackCountAggregateOutputType | null
@@ -19020,6 +19039,7 @@ export namespace Prisma {
     participation?: boolean
     progress?: boolean
     encouragement?: boolean
+    recommendGroupChange?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     lesson?: boolean | LessonDefaultArgs<ExtArgs>
@@ -19043,6 +19063,7 @@ export namespace Prisma {
     participation?: boolean
     progress?: boolean
     encouragement?: boolean
+    recommendGroupChange?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     lesson?: boolean | LessonDefaultArgs<ExtArgs>
@@ -19066,6 +19087,7 @@ export namespace Prisma {
     participation?: boolean
     progress?: boolean
     encouragement?: boolean
+    recommendGroupChange?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
@@ -19104,6 +19126,7 @@ export namespace Prisma {
       participation: number | null
       progress: string | null
       encouragement: string | null
+      recommendGroupChange: boolean
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["feedback"]>
@@ -19517,6 +19540,7 @@ export namespace Prisma {
     readonly participation: FieldRef<"Feedback", 'Int'>
     readonly progress: FieldRef<"Feedback", 'String'>
     readonly encouragement: FieldRef<"Feedback", 'String'>
+    readonly recommendGroupChange: FieldRef<"Feedback", 'Boolean'>
     readonly createdAt: FieldRef<"Feedback", 'DateTime'>
     readonly updatedAt: FieldRef<"Feedback", 'DateTime'>
   }
@@ -37694,6 +37718,7 @@ export namespace Prisma {
     studentId: 'studentId',
     markedById: 'markedById',
     isPresent: 'isPresent',
+    isLate: 'isLate',
     absenceType: 'absenceType',
     note: 'note',
     markedAt: 'markedAt',
@@ -37720,6 +37745,7 @@ export namespace Prisma {
     participation: 'participation',
     progress: 'progress',
     encouragement: 'encouragement',
+    recommendGroupChange: 'recommendGroupChange',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
@@ -39594,6 +39620,7 @@ export namespace Prisma {
     studentId?: StringFilter<"Attendance"> | string
     markedById?: StringNullableFilter<"Attendance"> | string | null
     isPresent?: BoolFilter<"Attendance"> | boolean
+    isLate?: BoolFilter<"Attendance"> | boolean
     absenceType?: EnumAbsenceTypeNullableFilter<"Attendance"> | $Enums.AbsenceType | null
     note?: StringNullableFilter<"Attendance"> | string | null
     markedAt?: DateTimeFilter<"Attendance"> | Date | string
@@ -39610,6 +39637,7 @@ export namespace Prisma {
     studentId?: SortOrder
     markedById?: SortOrderInput | SortOrder
     isPresent?: SortOrder
+    isLate?: SortOrder
     absenceType?: SortOrderInput | SortOrder
     note?: SortOrderInput | SortOrder
     markedAt?: SortOrder
@@ -39630,6 +39658,7 @@ export namespace Prisma {
     studentId?: StringFilter<"Attendance"> | string
     markedById?: StringNullableFilter<"Attendance"> | string | null
     isPresent?: BoolFilter<"Attendance"> | boolean
+    isLate?: BoolFilter<"Attendance"> | boolean
     absenceType?: EnumAbsenceTypeNullableFilter<"Attendance"> | $Enums.AbsenceType | null
     note?: StringNullableFilter<"Attendance"> | string | null
     markedAt?: DateTimeFilter<"Attendance"> | Date | string
@@ -39646,6 +39675,7 @@ export namespace Prisma {
     studentId?: SortOrder
     markedById?: SortOrderInput | SortOrder
     isPresent?: SortOrder
+    isLate?: SortOrder
     absenceType?: SortOrderInput | SortOrder
     note?: SortOrderInput | SortOrder
     markedAt?: SortOrder
@@ -39665,6 +39695,7 @@ export namespace Prisma {
     studentId?: StringWithAggregatesFilter<"Attendance"> | string
     markedById?: StringNullableWithAggregatesFilter<"Attendance"> | string | null
     isPresent?: BoolWithAggregatesFilter<"Attendance"> | boolean
+    isLate?: BoolWithAggregatesFilter<"Attendance"> | boolean
     absenceType?: EnumAbsenceTypeNullableWithAggregatesFilter<"Attendance"> | $Enums.AbsenceType | null
     note?: StringNullableWithAggregatesFilter<"Attendance"> | string | null
     markedAt?: DateTimeWithAggregatesFilter<"Attendance"> | Date | string
@@ -39691,6 +39722,7 @@ export namespace Prisma {
     participation?: IntNullableFilter<"Feedback"> | number | null
     progress?: StringNullableFilter<"Feedback"> | string | null
     encouragement?: StringNullableFilter<"Feedback"> | string | null
+    recommendGroupChange?: BoolFilter<"Feedback"> | boolean
     createdAt?: DateTimeFilter<"Feedback"> | Date | string
     updatedAt?: DateTimeFilter<"Feedback"> | Date | string
     lesson?: XOR<LessonRelationFilter, LessonWhereInput>
@@ -39714,6 +39746,7 @@ export namespace Prisma {
     participation?: SortOrderInput | SortOrder
     progress?: SortOrderInput | SortOrder
     encouragement?: SortOrderInput | SortOrder
+    recommendGroupChange?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     lesson?: LessonOrderByWithRelationInput
@@ -39741,6 +39774,7 @@ export namespace Prisma {
     participation?: IntNullableFilter<"Feedback"> | number | null
     progress?: StringNullableFilter<"Feedback"> | string | null
     encouragement?: StringNullableFilter<"Feedback"> | string | null
+    recommendGroupChange?: BoolFilter<"Feedback"> | boolean
     createdAt?: DateTimeFilter<"Feedback"> | Date | string
     updatedAt?: DateTimeFilter<"Feedback"> | Date | string
     lesson?: XOR<LessonRelationFilter, LessonWhereInput>
@@ -39764,6 +39798,7 @@ export namespace Prisma {
     participation?: SortOrderInput | SortOrder
     progress?: SortOrderInput | SortOrder
     encouragement?: SortOrderInput | SortOrder
+    recommendGroupChange?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: FeedbackCountOrderByAggregateInput
@@ -39792,6 +39827,7 @@ export namespace Prisma {
     participation?: IntNullableWithAggregatesFilter<"Feedback"> | number | null
     progress?: StringNullableWithAggregatesFilter<"Feedback"> | string | null
     encouragement?: StringNullableWithAggregatesFilter<"Feedback"> | string | null
+    recommendGroupChange?: BoolWithAggregatesFilter<"Feedback"> | boolean
     createdAt?: DateTimeWithAggregatesFilter<"Feedback"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Feedback"> | Date | string
   }
@@ -42632,6 +42668,7 @@ export namespace Prisma {
   export type AttendanceCreateInput = {
     id?: string
     isPresent: boolean
+    isLate?: boolean
     absenceType?: $Enums.AbsenceType | null
     note?: string | null
     markedAt?: Date | string
@@ -42648,6 +42685,7 @@ export namespace Prisma {
     studentId: string
     markedById?: string | null
     isPresent: boolean
+    isLate?: boolean
     absenceType?: $Enums.AbsenceType | null
     note?: string | null
     markedAt?: Date | string
@@ -42658,6 +42696,7 @@ export namespace Prisma {
   export type AttendanceUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     isPresent?: BoolFieldUpdateOperationsInput | boolean
+    isLate?: BoolFieldUpdateOperationsInput | boolean
     absenceType?: NullableEnumAbsenceTypeFieldUpdateOperationsInput | $Enums.AbsenceType | null
     note?: NullableStringFieldUpdateOperationsInput | string | null
     markedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -42674,6 +42713,7 @@ export namespace Prisma {
     studentId?: StringFieldUpdateOperationsInput | string
     markedById?: NullableStringFieldUpdateOperationsInput | string | null
     isPresent?: BoolFieldUpdateOperationsInput | boolean
+    isLate?: BoolFieldUpdateOperationsInput | boolean
     absenceType?: NullableEnumAbsenceTypeFieldUpdateOperationsInput | $Enums.AbsenceType | null
     note?: NullableStringFieldUpdateOperationsInput | string | null
     markedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -42687,6 +42727,7 @@ export namespace Prisma {
     studentId: string
     markedById?: string | null
     isPresent: boolean
+    isLate?: boolean
     absenceType?: $Enums.AbsenceType | null
     note?: string | null
     markedAt?: Date | string
@@ -42697,6 +42738,7 @@ export namespace Prisma {
   export type AttendanceUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
     isPresent?: BoolFieldUpdateOperationsInput | boolean
+    isLate?: BoolFieldUpdateOperationsInput | boolean
     absenceType?: NullableEnumAbsenceTypeFieldUpdateOperationsInput | $Enums.AbsenceType | null
     note?: NullableStringFieldUpdateOperationsInput | string | null
     markedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -42710,6 +42752,7 @@ export namespace Prisma {
     studentId?: StringFieldUpdateOperationsInput | string
     markedById?: NullableStringFieldUpdateOperationsInput | string | null
     isPresent?: BoolFieldUpdateOperationsInput | boolean
+    isLate?: BoolFieldUpdateOperationsInput | boolean
     absenceType?: NullableEnumAbsenceTypeFieldUpdateOperationsInput | $Enums.AbsenceType | null
     note?: NullableStringFieldUpdateOperationsInput | string | null
     markedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -42730,6 +42773,7 @@ export namespace Prisma {
     participation?: number | null
     progress?: string | null
     encouragement?: string | null
+    recommendGroupChange?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     lesson: LessonCreateNestedOneWithoutFeedbacksInput
@@ -42753,6 +42797,7 @@ export namespace Prisma {
     participation?: number | null
     progress?: string | null
     encouragement?: string | null
+    recommendGroupChange?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -42770,6 +42815,7 @@ export namespace Prisma {
     participation?: NullableIntFieldUpdateOperationsInput | number | null
     progress?: NullableStringFieldUpdateOperationsInput | string | null
     encouragement?: NullableStringFieldUpdateOperationsInput | string | null
+    recommendGroupChange?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     lesson?: LessonUpdateOneRequiredWithoutFeedbacksNestedInput
@@ -42793,6 +42839,7 @@ export namespace Prisma {
     participation?: NullableIntFieldUpdateOperationsInput | number | null
     progress?: NullableStringFieldUpdateOperationsInput | string | null
     encouragement?: NullableStringFieldUpdateOperationsInput | string | null
+    recommendGroupChange?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -42813,6 +42860,7 @@ export namespace Prisma {
     participation?: number | null
     progress?: string | null
     encouragement?: string | null
+    recommendGroupChange?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -42830,6 +42878,7 @@ export namespace Prisma {
     participation?: NullableIntFieldUpdateOperationsInput | number | null
     progress?: NullableStringFieldUpdateOperationsInput | string | null
     encouragement?: NullableStringFieldUpdateOperationsInput | string | null
+    recommendGroupChange?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -42850,6 +42899,7 @@ export namespace Prisma {
     participation?: NullableIntFieldUpdateOperationsInput | number | null
     progress?: NullableStringFieldUpdateOperationsInput | string | null
     encouragement?: NullableStringFieldUpdateOperationsInput | string | null
+    recommendGroupChange?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -45744,6 +45794,7 @@ export namespace Prisma {
     studentId?: SortOrder
     markedById?: SortOrder
     isPresent?: SortOrder
+    isLate?: SortOrder
     absenceType?: SortOrder
     note?: SortOrder
     markedAt?: SortOrder
@@ -45757,6 +45808,7 @@ export namespace Prisma {
     studentId?: SortOrder
     markedById?: SortOrder
     isPresent?: SortOrder
+    isLate?: SortOrder
     absenceType?: SortOrder
     note?: SortOrder
     markedAt?: SortOrder
@@ -45770,6 +45822,7 @@ export namespace Prisma {
     studentId?: SortOrder
     markedById?: SortOrder
     isPresent?: SortOrder
+    isLate?: SortOrder
     absenceType?: SortOrder
     note?: SortOrder
     markedAt?: SortOrder
@@ -45815,6 +45868,7 @@ export namespace Prisma {
     participation?: SortOrder
     progress?: SortOrder
     encouragement?: SortOrder
+    recommendGroupChange?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -45838,6 +45892,7 @@ export namespace Prisma {
     participation?: SortOrder
     progress?: SortOrder
     encouragement?: SortOrder
+    recommendGroupChange?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -45856,6 +45911,7 @@ export namespace Prisma {
     participation?: SortOrder
     progress?: SortOrder
     encouragement?: SortOrder
+    recommendGroupChange?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -50797,6 +50853,7 @@ export namespace Prisma {
   export type AttendanceCreateWithoutMarkedByInput = {
     id?: string
     isPresent: boolean
+    isLate?: boolean
     absenceType?: $Enums.AbsenceType | null
     note?: string | null
     markedAt?: Date | string
@@ -50811,6 +50868,7 @@ export namespace Prisma {
     lessonId: string
     studentId: string
     isPresent: boolean
+    isLate?: boolean
     absenceType?: $Enums.AbsenceType | null
     note?: string | null
     markedAt?: Date | string
@@ -51171,6 +51229,7 @@ export namespace Prisma {
     studentId?: StringFilter<"Attendance"> | string
     markedById?: StringNullableFilter<"Attendance"> | string | null
     isPresent?: BoolFilter<"Attendance"> | boolean
+    isLate?: BoolFilter<"Attendance"> | boolean
     absenceType?: EnumAbsenceTypeNullableFilter<"Attendance"> | $Enums.AbsenceType | null
     note?: StringNullableFilter<"Attendance"> | string | null
     markedAt?: DateTimeFilter<"Attendance"> | Date | string
@@ -52892,6 +52951,7 @@ export namespace Prisma {
     participation?: number | null
     progress?: string | null
     encouragement?: string | null
+    recommendGroupChange?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     lesson: LessonCreateNestedOneWithoutFeedbacksInput
@@ -52913,6 +52973,7 @@ export namespace Prisma {
     participation?: number | null
     progress?: string | null
     encouragement?: string | null
+    recommendGroupChange?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -53504,6 +53565,7 @@ export namespace Prisma {
     participation?: IntNullableFilter<"Feedback"> | number | null
     progress?: StringNullableFilter<"Feedback"> | string | null
     encouragement?: StringNullableFilter<"Feedback"> | string | null
+    recommendGroupChange?: BoolFilter<"Feedback"> | boolean
     createdAt?: DateTimeFilter<"Feedback"> | Date | string
     updatedAt?: DateTimeFilter<"Feedback"> | Date | string
   }
@@ -54067,6 +54129,7 @@ export namespace Prisma {
   export type AttendanceCreateWithoutStudentInput = {
     id?: string
     isPresent: boolean
+    isLate?: boolean
     absenceType?: $Enums.AbsenceType | null
     note?: string | null
     markedAt?: Date | string
@@ -54081,6 +54144,7 @@ export namespace Prisma {
     lessonId: string
     markedById?: string | null
     isPresent: boolean
+    isLate?: boolean
     absenceType?: $Enums.AbsenceType | null
     note?: string | null
     markedAt?: Date | string
@@ -54111,6 +54175,7 @@ export namespace Prisma {
     participation?: number | null
     progress?: string | null
     encouragement?: string | null
+    recommendGroupChange?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     lesson: LessonCreateNestedOneWithoutFeedbacksInput
@@ -54132,6 +54197,7 @@ export namespace Prisma {
     participation?: number | null
     progress?: string | null
     encouragement?: string | null
+    recommendGroupChange?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -55556,6 +55622,7 @@ export namespace Prisma {
   export type AttendanceCreateWithoutLessonInput = {
     id?: string
     isPresent: boolean
+    isLate?: boolean
     absenceType?: $Enums.AbsenceType | null
     note?: string | null
     markedAt?: Date | string
@@ -55570,6 +55637,7 @@ export namespace Prisma {
     studentId: string
     markedById?: string | null
     isPresent: boolean
+    isLate?: boolean
     absenceType?: $Enums.AbsenceType | null
     note?: string | null
     markedAt?: Date | string
@@ -55600,6 +55668,7 @@ export namespace Prisma {
     participation?: number | null
     progress?: string | null
     encouragement?: string | null
+    recommendGroupChange?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
     student: StudentCreateNestedOneWithoutFeedbacksInput
@@ -55621,6 +55690,7 @@ export namespace Prisma {
     participation?: number | null
     progress?: string | null
     encouragement?: string | null
+    recommendGroupChange?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -60111,6 +60181,7 @@ export namespace Prisma {
     lessonId: string
     studentId: string
     isPresent: boolean
+    isLate?: boolean
     absenceType?: $Enums.AbsenceType | null
     note?: string | null
     markedAt?: Date | string
@@ -60412,6 +60483,7 @@ export namespace Prisma {
   export type AttendanceUpdateWithoutMarkedByInput = {
     id?: StringFieldUpdateOperationsInput | string
     isPresent?: BoolFieldUpdateOperationsInput | boolean
+    isLate?: BoolFieldUpdateOperationsInput | boolean
     absenceType?: NullableEnumAbsenceTypeFieldUpdateOperationsInput | $Enums.AbsenceType | null
     note?: NullableStringFieldUpdateOperationsInput | string | null
     markedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -60426,6 +60498,7 @@ export namespace Prisma {
     lessonId?: StringFieldUpdateOperationsInput | string
     studentId?: StringFieldUpdateOperationsInput | string
     isPresent?: BoolFieldUpdateOperationsInput | boolean
+    isLate?: BoolFieldUpdateOperationsInput | boolean
     absenceType?: NullableEnumAbsenceTypeFieldUpdateOperationsInput | $Enums.AbsenceType | null
     note?: NullableStringFieldUpdateOperationsInput | string | null
     markedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -60438,6 +60511,7 @@ export namespace Prisma {
     lessonId?: StringFieldUpdateOperationsInput | string
     studentId?: StringFieldUpdateOperationsInput | string
     isPresent?: BoolFieldUpdateOperationsInput | boolean
+    isLate?: BoolFieldUpdateOperationsInput | boolean
     absenceType?: NullableEnumAbsenceTypeFieldUpdateOperationsInput | $Enums.AbsenceType | null
     note?: NullableStringFieldUpdateOperationsInput | string | null
     markedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -61335,6 +61409,7 @@ export namespace Prisma {
     participation?: number | null
     progress?: string | null
     encouragement?: string | null
+    recommendGroupChange?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -61621,6 +61696,7 @@ export namespace Prisma {
     participation?: NullableIntFieldUpdateOperationsInput | number | null
     progress?: NullableStringFieldUpdateOperationsInput | string | null
     encouragement?: NullableStringFieldUpdateOperationsInput | string | null
+    recommendGroupChange?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     lesson?: LessonUpdateOneRequiredWithoutFeedbacksNestedInput
@@ -61642,6 +61718,7 @@ export namespace Prisma {
     participation?: NullableIntFieldUpdateOperationsInput | number | null
     progress?: NullableStringFieldUpdateOperationsInput | string | null
     encouragement?: NullableStringFieldUpdateOperationsInput | string | null
+    recommendGroupChange?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -61661,6 +61738,7 @@ export namespace Prisma {
     participation?: NullableIntFieldUpdateOperationsInput | number | null
     progress?: NullableStringFieldUpdateOperationsInput | string | null
     encouragement?: NullableStringFieldUpdateOperationsInput | string | null
+    recommendGroupChange?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -62168,6 +62246,7 @@ export namespace Prisma {
     lessonId: string
     markedById?: string | null
     isPresent: boolean
+    isLate?: boolean
     absenceType?: $Enums.AbsenceType | null
     note?: string | null
     markedAt?: Date | string
@@ -62190,6 +62269,7 @@ export namespace Prisma {
     participation?: number | null
     progress?: string | null
     encouragement?: string | null
+    recommendGroupChange?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -62248,6 +62328,7 @@ export namespace Prisma {
   export type AttendanceUpdateWithoutStudentInput = {
     id?: StringFieldUpdateOperationsInput | string
     isPresent?: BoolFieldUpdateOperationsInput | boolean
+    isLate?: BoolFieldUpdateOperationsInput | boolean
     absenceType?: NullableEnumAbsenceTypeFieldUpdateOperationsInput | $Enums.AbsenceType | null
     note?: NullableStringFieldUpdateOperationsInput | string | null
     markedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -62262,6 +62343,7 @@ export namespace Prisma {
     lessonId?: StringFieldUpdateOperationsInput | string
     markedById?: NullableStringFieldUpdateOperationsInput | string | null
     isPresent?: BoolFieldUpdateOperationsInput | boolean
+    isLate?: BoolFieldUpdateOperationsInput | boolean
     absenceType?: NullableEnumAbsenceTypeFieldUpdateOperationsInput | $Enums.AbsenceType | null
     note?: NullableStringFieldUpdateOperationsInput | string | null
     markedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -62274,6 +62356,7 @@ export namespace Prisma {
     lessonId?: StringFieldUpdateOperationsInput | string
     markedById?: NullableStringFieldUpdateOperationsInput | string | null
     isPresent?: BoolFieldUpdateOperationsInput | boolean
+    isLate?: BoolFieldUpdateOperationsInput | boolean
     absenceType?: NullableEnumAbsenceTypeFieldUpdateOperationsInput | $Enums.AbsenceType | null
     note?: NullableStringFieldUpdateOperationsInput | string | null
     markedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -62294,6 +62377,7 @@ export namespace Prisma {
     participation?: NullableIntFieldUpdateOperationsInput | number | null
     progress?: NullableStringFieldUpdateOperationsInput | string | null
     encouragement?: NullableStringFieldUpdateOperationsInput | string | null
+    recommendGroupChange?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     lesson?: LessonUpdateOneRequiredWithoutFeedbacksNestedInput
@@ -62315,6 +62399,7 @@ export namespace Prisma {
     participation?: NullableIntFieldUpdateOperationsInput | number | null
     progress?: NullableStringFieldUpdateOperationsInput | string | null
     encouragement?: NullableStringFieldUpdateOperationsInput | string | null
+    recommendGroupChange?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -62334,6 +62419,7 @@ export namespace Prisma {
     participation?: NullableIntFieldUpdateOperationsInput | number | null
     progress?: NullableStringFieldUpdateOperationsInput | string | null
     encouragement?: NullableStringFieldUpdateOperationsInput | string | null
+    recommendGroupChange?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -62496,6 +62582,7 @@ export namespace Prisma {
     studentId: string
     markedById?: string | null
     isPresent: boolean
+    isLate?: boolean
     absenceType?: $Enums.AbsenceType | null
     note?: string | null
     markedAt?: Date | string
@@ -62518,6 +62605,7 @@ export namespace Prisma {
     participation?: number | null
     progress?: string | null
     encouragement?: string | null
+    recommendGroupChange?: boolean
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -62536,6 +62624,7 @@ export namespace Prisma {
   export type AttendanceUpdateWithoutLessonInput = {
     id?: StringFieldUpdateOperationsInput | string
     isPresent?: BoolFieldUpdateOperationsInput | boolean
+    isLate?: BoolFieldUpdateOperationsInput | boolean
     absenceType?: NullableEnumAbsenceTypeFieldUpdateOperationsInput | $Enums.AbsenceType | null
     note?: NullableStringFieldUpdateOperationsInput | string | null
     markedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -62550,6 +62639,7 @@ export namespace Prisma {
     studentId?: StringFieldUpdateOperationsInput | string
     markedById?: NullableStringFieldUpdateOperationsInput | string | null
     isPresent?: BoolFieldUpdateOperationsInput | boolean
+    isLate?: BoolFieldUpdateOperationsInput | boolean
     absenceType?: NullableEnumAbsenceTypeFieldUpdateOperationsInput | $Enums.AbsenceType | null
     note?: NullableStringFieldUpdateOperationsInput | string | null
     markedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -62562,6 +62652,7 @@ export namespace Prisma {
     studentId?: StringFieldUpdateOperationsInput | string
     markedById?: NullableStringFieldUpdateOperationsInput | string | null
     isPresent?: BoolFieldUpdateOperationsInput | boolean
+    isLate?: BoolFieldUpdateOperationsInput | boolean
     absenceType?: NullableEnumAbsenceTypeFieldUpdateOperationsInput | $Enums.AbsenceType | null
     note?: NullableStringFieldUpdateOperationsInput | string | null
     markedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -62582,6 +62673,7 @@ export namespace Prisma {
     participation?: NullableIntFieldUpdateOperationsInput | number | null
     progress?: NullableStringFieldUpdateOperationsInput | string | null
     encouragement?: NullableStringFieldUpdateOperationsInput | string | null
+    recommendGroupChange?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     student?: StudentUpdateOneRequiredWithoutFeedbacksNestedInput
@@ -62603,6 +62695,7 @@ export namespace Prisma {
     participation?: NullableIntFieldUpdateOperationsInput | number | null
     progress?: NullableStringFieldUpdateOperationsInput | string | null
     encouragement?: NullableStringFieldUpdateOperationsInput | string | null
+    recommendGroupChange?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -62622,6 +62715,7 @@ export namespace Prisma {
     participation?: NullableIntFieldUpdateOperationsInput | number | null
     progress?: NullableStringFieldUpdateOperationsInput | string | null
     encouragement?: NullableStringFieldUpdateOperationsInput | string | null
+    recommendGroupChange?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }

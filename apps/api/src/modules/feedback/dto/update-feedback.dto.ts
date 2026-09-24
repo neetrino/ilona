@@ -8,6 +8,7 @@ import {
   IsArray,
   ArrayUnique,
   IsEnum,
+  IsBoolean,
 } from 'class-validator';
 import { FeedbackCefrLevel } from './create-feedback.dto';
 
@@ -69,4 +70,8 @@ export class UpdateFeedbackDto {
   @IsOptional()
   @MaxLength(2000)
   encouragement?: string | null;
+
+  @IsBoolean()
+  @IsOptional()
+  recommendGroupChange?: boolean;
 }

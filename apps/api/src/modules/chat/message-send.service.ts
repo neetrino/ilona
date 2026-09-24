@@ -17,6 +17,7 @@ import { ChatManagerScopeService } from './chat-manager-scope.service';
 import { chatSenderPublicSelect, mapMessageWithSender } from './chat-message-sender.util';
 import { JwtPayload } from '../../common/types/auth.types';
 import type { SendMessageResponse } from './message.types';
+import { NotificationEventsService } from '../notifications/notification-events.service';
 
 @Injectable()
 export class MessageSendService {
@@ -29,6 +30,7 @@ export class MessageSendService {
     private readonly chatManagementService: ChatManagementService,
     private readonly authorizationService: ChatAuthorizationService,
     private readonly managerScope: ChatManagerScopeService,
+    private readonly notifications: NotificationEventsService,
   ) {}
 
   async sendMessage(
@@ -212,6 +214,14 @@ export class MessageSendService {
     });
 
     await this.syncLessonObligations(dto, messageType);
+    await this.notifications.runSafe('teacher-mention', () =>
+      this.notifications.notifyMentionsFromMessage({
+        metadata: dto.metadata,
+        chatId: dto.chatId,
+        messageId: message.id,
+        senderId,
+      }),
+    );
 
     const response: SendMessageResponse = {
       ...mapMessageWithSender(message),

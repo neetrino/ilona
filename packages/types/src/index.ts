@@ -15,4 +15,5 @@ export * from './blog.types';
 export * from './group.types';
 export * from './app-timezone';
 export * from './duty-deadline';
+export * from './notification.types';
 

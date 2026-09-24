@@ -413,6 +413,13 @@ export function ChatWindow({ chat, onBack, onChatUpdated, onOpenChat }: ChatWind
         onInputChange={handleInputChange}
         onKeyDown={handleKeyDown}
         onSend={handleSend}
+        teacherUserIdsToNotify={
+          chat.type === 'GROUP'
+            ? chat.participants
+                .filter((participant) => participant.user.role === 'TEACHER' && participant.userId !== user?.id)
+                .map((participant) => participant.userId)
+            : []
+        }
         onStartVoiceRecorder={() => setShowVoiceRecorder(true)}
         onCancelVoiceRecorder={() => setShowVoiceRecorder(false)}
         onVoiceRecorded={handleVoiceRecorded}

@@ -28,6 +28,7 @@ export interface StructuredFeedbackFields {
   participation: ParticipationOption | null;
   progress: string;
   encouragement: string;
+  recommendGroupChange: boolean;
 }
 
 export const DEFAULT_FEEDBACK_LEVEL = 'A1';
@@ -43,6 +44,7 @@ export function emptyStructuredFeedback(): StructuredFeedbackFields {
     participation: null,
     progress: '',
     encouragement: '',
+    recommendGroupChange: false,
   };
 }
 
@@ -82,6 +84,7 @@ type SavedFeedbackSlice = {
   participation?: number | null;
   progress?: string | null;
   encouragement?: string | null;
+  recommendGroupChange?: boolean;
 } | null;
 
 /** Merge API structured fields with legacy `content` parsing. */
@@ -107,6 +110,7 @@ export function structuredFromSavedFeedback(saved: SavedFeedbackSlice): Structur
         : parsed.participation,
     progress: saved.progress ?? parsed.progress,
     encouragement: saved.encouragement ?? parsed.encouragement,
+    recommendGroupChange: saved.recommendGroupChange ?? parsed.recommendGroupChange,
   };
 }
 
