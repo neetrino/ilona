@@ -1,6 +1,14 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import type { NotificationData, NotificationListResponse } from '@ilona/types';
+import type { NotificationData, NotificationListResponse, PortalNotification } from '@ilona/types';
+import { Prisma } from '@ilona/database';
 import { PrismaService } from '../prisma/prisma.service';
+import {
+  buildStudentRecordingChatHref,
+  buildStudentRecordingCopy,
+  formatStudentRecordingLessonLabel,
+  resolveStudentRecordingTeacherUserId,
+  studentRecordingLessonSelect,
+} from './student-recording-notification.util';
 
 const DEFAULT_TAKE = 30;
 const MAX_TAKE = 50;
@@ -27,17 +35,9 @@ export class NotificationInboxService {
 
     const hasMore = rows.length > limit;
     const page = hasMore ? rows.slice(0, limit) : rows;
+    const items = await this.mapRows(page);
     return {
-      items: page.map((row) => ({
-        id: row.id,
-        type: row.type,
-        title: row.title,
-        content: row.content,
-        data: (row.data ?? null) as NotificationData | null,
-        isRead: row.isRead,
-        readAt: row.readAt ? row.readAt.toISOString() : null,
-        createdAt: row.createdAt.toISOString(),
-      })),
+      items,
       unreadCount,
       nextCursor: hasMore ? page[page.length - 1]?.id ?? null : null,
     };
@@ -71,5 +71,71 @@ export class NotificationInboxService {
       data: { isRead: true, readAt: new Date() },
     });
     return { ok: true };
+  }
+
+  private async mapRows(
+    rows: Array<{
+      id: string;
+      type: string;
+      title: string;
+      content: string;
+      data: Prisma.JsonValue;
+      isRead: boolean;
+      readAt: Date | null;
+      createdAt: Date;
+    }>,
+  ): Promise<PortalNotification[]> {
+    const lessonIds = rows
+      .filter((row) => row.type === 'STUDENT_RECORDING_MISSING')
+      .map((row) => {
+        const data = (row.data ?? null) as NotificationData | null;
+        return data?.lessonId;
+      })
+      .filter((id): id is string => Boolean(id));
+
+    const lessons =
+      lessonIds.length > 0
+        ? await this.prisma.lesson.findMany({
+            where: { id: { in: [...new Set(lessonIds)] } },
+            select: { id: true, ...studentRecordingLessonSelect },
+          })
+        : [];
+    const lessonById = new Map(lessons.map((lesson) => [lesson.id, lesson]));
+
+    return rows.map((row) => {
+      const baseData = (row.data ?? null) as NotificationData | null;
+      let content = row.content;
+      let data = baseData;
+
+      if (row.type === 'STUDENT_RECORDING_MISSING' && baseData?.lessonId) {
+        const lesson = lessonById.get(baseData.lessonId);
+        if (lesson) {
+          const teacherUserId =
+            baseData.teacherId ?? resolveStudentRecordingTeacherUserId(lesson) ?? undefined;
+          const lessonLabel = formatStudentRecordingLessonLabel(lesson);
+          if (!content.includes('«')) {
+            content = buildStudentRecordingCopy(lessonLabel);
+          }
+          if (teacherUserId) {
+            data = {
+              ...baseData,
+              teacherId: teacherUserId,
+              href: buildStudentRecordingChatHref(teacherUserId, baseData.lessonId),
+            };
+          }
+        }
+      }
+
+      return {
+        id: row.id,
+        type: row.type,
+        title: row.title,
+        content,
+        data,
+        isRead: row.isRead,
+        readAt: row.readAt ? row.readAt.toISOString() : null,
+        createdAt: row.createdAt.toISOString(),
+      };
+    });
   }
 }
