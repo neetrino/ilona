@@ -1143,7 +1143,8 @@
     "teacher": "Ուսուցիչ",
     "center": "Կենտրոն",
     "createdAt": "Ստեղծված",
-    "voiceCount": "{count, plural, one {# ձայն} other {# ձայն}}"
+    "voiceCount": "{count, plural, one {# ձայն} other {# ձայն}}",
+    "lessonCompletedBadge": "Լրացված · {lesson}"
   },
   "lessons": {
     "title": "Դասեր",
@@ -2611,6 +2612,7 @@
     "typeQuarterly": "Եռամսյակային հաշվետվության վերջնաժամկետ",
     "typeRecording": "Դասի ձայնագրությունը դեռ չի ուղարկվել",
     "typeRecordingDone": "Ձայնագրությունը ուղարկված է",
+    "typeRecordingDoneStaff": "Աշակերտը լրացրել է դասի ձայնագրությունը",
     "recordingThankYou": "Շնորհակալություն։ Քո ձայնագրությունը հաջողությամբ ուղարկվել է։ Շարունակիր նույն ջանասիրությամբ💙",
     "recordingCompleted": "Կատարված է",
     "typeAbsence": "Այսօր բացակայել եք դասից",

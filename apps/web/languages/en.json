@@ -1143,7 +1143,8 @@
     "teacher": "Teacher",
     "center": "Center",
     "createdAt": "Created",
-    "voiceCount": "{count, plural, one {# voice} other {# voices}}"
+    "voiceCount": "{count, plural, one {# voice} other {# voices}}",
+    "lessonCompletedBadge": "Completed · {lesson}"
   },
   "lessons": {
     "title": "Lessons",
@@ -2611,6 +2612,7 @@
     "typeQuarterly": "Quarterly report deadline",
     "typeRecording": "Missing voice for a lesson",
     "typeRecordingDone": "Recording sent",
+    "typeRecordingDoneStaff": "Student completed a lesson recording",
     "recordingThankYou": "Thank you. Your recording was sent successfully. Keep up the great work💙",
     "recordingCompleted": "Completed",
     "typeAbsence": "You missed today’s class",

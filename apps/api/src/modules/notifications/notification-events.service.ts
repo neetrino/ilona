@@ -127,6 +127,28 @@ export class NotificationEventsService {
     });
   }
 
+  async notifyStudentLessonRecordingCompleted(params: {
+    teacherUserId: string;
+    studentId: string;
+    studentName: string;
+    lessonId: string;
+    lessonLabel: string;
+  }): Promise<void> {
+    await this.write.createForUsers({
+      userIds: [params.teacherUserId],
+      type: 'STUDENT_LESSON_RECORDING_DONE',
+      title: 'Student sent lesson recording',
+      content: `${params.studentName} completed the voice for «${params.lessonLabel}».`,
+      data: {
+        studentId: params.studentId,
+        lessonId: params.lessonId,
+        teacherId: params.teacherUserId,
+        href: '/teacher/recordings',
+      },
+      dedupeKey: `${params.lessonId}:${params.studentId}`,
+    });
+  }
+
   async notifyPaymentConfirmed(params: {
     centerId: string | null;
     paymentId: string;

@@ -348,6 +348,7 @@ export class MessageSendService {
       where: { lessonId, studentId: student.id },
       select: { id: true },
     });
+    const createdNew = !existing;
     if (!existing) {
       await this.prisma.recordingItem.create({
         data: {
@@ -362,6 +363,67 @@ export class MessageSendService {
     }
 
     await this.markStudentRecordingNotificationsComplete(senderUserId, lessonId);
+    if (createdNew) {
+      await this.notifications.runSafe('student-lesson-recording', () =>
+        this.notifyTeacherStudentLessonRecording(senderUserId, lessonId, student.id),
+      );
+    }
+  }
+
+  private async notifyTeacherStudentLessonRecording(
+    senderUserId: string,
+    lessonId: string,
+    studentId: string,
+  ): Promise<void> {
+    const [user, lesson] = await Promise.all([
+      this.prisma.user.findUnique({
+        where: { id: senderUserId },
+        select: { firstName: true, lastName: true },
+      }),
+      this.prisma.lesson.findUnique({
+        where: { id: lessonId },
+        select: {
+          topic: true,
+          scheduledAt: true,
+          teacherId: true,
+          substituteTeacherId: true,
+          group: { select: { name: true } },
+          teacher: { select: { userId: true } },
+          substituteTeacher: { select: { userId: true } },
+        },
+      }),
+    ]);
+    if (!user || !lesson) {
+      return;
+    }
+
+    const instructorId = effectiveLessonInstructorTeacherId(lesson);
+    const teacherUserId =
+      instructorId === lesson.substituteTeacherId
+        ? lesson.substituteTeacher?.userId
+        : lesson.teacher.userId;
+    if (!teacherUserId) {
+      return;
+    }
+
+    const when = new Intl.DateTimeFormat('hy-AM', {
+      day: 'numeric',
+      month: 'short',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+      timeZone: 'Asia/Yerevan',
+    }).format(lesson.scheduledAt);
+    const lessonLabel = `${lesson.topic?.trim() || lesson.group.name} · ${when}`;
+    const studentName = `${user.firstName} ${user.lastName}`.trim();
+
+    await this.notifications.notifyStudentLessonRecordingCompleted({
+      teacherUserId,
+      studentId,
+      studentName,
+      lessonId,
+      lessonLabel,
+    });
   }
 
   private async markStudentRecordingNotificationsComplete(

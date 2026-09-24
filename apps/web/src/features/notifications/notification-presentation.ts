@@ -30,6 +30,11 @@ const TYPE_META: Record<
   GROUP_UNPAID_TUITION: { titleKey: 'typeUnpaidGroup', category: 'finance', action: 'openGroup' },
   QUARTERLY_REPORT_DEADLINE: { titleKey: 'typeQuarterly', category: 'finance', action: 'openAnalytics' },
   STUDENT_RECORDING_MISSING: { titleKey: 'typeRecording', category: 'letter', action: 'recordLessonVoice' },
+  STUDENT_LESSON_RECORDING_DONE: {
+    titleKey: 'typeRecordingDoneStaff',
+    category: 'class',
+    action: 'openRecordings',
+  },
   STUDENT_ABSENCE: { titleKey: 'typeAbsence', category: 'letter', action: 'openDashboard' },
   planned_absence: { titleKey: 'typePlannedAbsence', category: 'risk', action: 'openStudent' },
   absence_warning: { titleKey: 'typeAbsenceWarning', category: 'risk', action: 'openStudent' },
