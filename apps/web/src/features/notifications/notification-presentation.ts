@@ -1,4 +1,5 @@
 import type { PortalNotification } from '@ilona/types';
+import { formatLocaleDate, getAppDateLocaleTag } from '@/shared/lib/utils';
 
 export type InboxCategory = 'class' | 'duties' | 'finance' | 'risk' | 'message' | 'letter';
 
@@ -44,12 +45,19 @@ export function isLetterNotification(type: string): boolean {
 }
 
 export function formatInboxTime(iso: string, locale: string): string {
-  return new Date(iso).toLocaleString(locale, {
+  const date = new Date(iso);
+  const datePart = formatLocaleDate(date, locale, {
     day: 'numeric',
     month: 'short',
+    timeZone: 'Asia/Yerevan',
+  });
+  const timePart = date.toLocaleTimeString(getAppDateLocaleTag(locale), {
     hour: '2-digit',
     minute: '2-digit',
+    hour12: false,
+    timeZone: 'Asia/Yerevan',
   });
+  return `${datePart}, ${timePart}`;
 }
 
 export function notificationDetail(item: PortalNotification): string {
