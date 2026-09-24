@@ -154,6 +154,7 @@ function getNavItems(role: string, t: (key: string) => string): NavItem[] {
         { label: t('students'), href: '/admin/students', icon: icons.students },
         { label: t('schedule'), href: '/admin/schedule', icon: icons.schedule },
         { label: t('dailyPlan'), href: '/admin/daily-plan', icon: icons.dailyPlan },
+        { label: t('recordings'), href: '/admin/recording', icon: icons.recordings },
         { label: t('dailyDuties'), href: '/admin/daily-duties', icon: icons.calendar },
         { label: t('attendanceRegister'), href: '/admin/attendance-register', icon: icons.attendanceRegister },
         { label: t('analytics'), href: '/admin/analytics', icon: icons.analytics },

@@ -387,7 +387,7 @@ export class MessageSendService {
           scheduledAt: true,
           teacherId: true,
           substituteTeacherId: true,
-          group: { select: { name: true } },
+          group: { select: { name: true, centerId: true } },
           teacher: { select: { userId: true } },
           substituteTeacher: { select: { userId: true } },
         },
@@ -419,6 +419,7 @@ export class MessageSendService {
 
     await this.notifications.notifyStudentLessonRecordingCompleted({
       teacherUserId,
+      centerId: lesson.group.centerId,
       studentId,
       studentName,
       lessonId,

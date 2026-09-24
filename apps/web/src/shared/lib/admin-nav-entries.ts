@@ -44,7 +44,13 @@ export function getAdminNavEntries(role: string): AdminNavEntry[] {
   };
 
   if (role === 'MANAGER') {
-    return [...core, ...tail.slice(0, 2), analytics, tail[2]].map((item) => ({
+    return [
+      ...core,
+      { labelKey: 'recordings', href: '/admin/recording', icon: { type: 'sidebar', icon: 'iconRecordings' } },
+      ...tail.slice(0, 2),
+      analytics,
+      tail[2],
+    ].map((item) => ({
       ...item,
       href: toRolePortalPath(item.href, 'MANAGER'),
     }));

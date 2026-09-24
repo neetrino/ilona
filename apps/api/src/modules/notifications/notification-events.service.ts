@@ -129,23 +129,37 @@ export class NotificationEventsService {
 
   async notifyStudentLessonRecordingCompleted(params: {
     teacherUserId: string;
+    centerId: string | null;
     studentId: string;
     studentName: string;
     lessonId: string;
     lessonLabel: string;
   }): Promise<void> {
-    await this.write.createForUsers({
-      userIds: [params.teacherUserId],
-      type: 'STUDENT_LESSON_RECORDING_DONE',
+    const shared = {
+      type: 'STUDENT_LESSON_RECORDING_DONE' as const,
       title: 'Student sent lesson recording',
       content: `${params.studentName} completed the voice for «${params.lessonLabel}».`,
+      dedupeKey: `${params.lessonId}:${params.studentId}`,
+    };
+    await this.write.createForUsers({
+      ...shared,
+      userIds: [params.teacherUserId],
       data: {
         studentId: params.studentId,
         lessonId: params.lessonId,
         teacherId: params.teacherUserId,
         href: '/teacher/recordings',
       },
-      dedupeKey: `${params.lessonId}:${params.studentId}`,
+    });
+    const managerIds = await this.recipients.findManagerUserIdsForCenter(params.centerId);
+    await this.write.createForUsers({
+      ...shared,
+      userIds: managerIds,
+      data: {
+        studentId: params.studentId,
+        lessonId: params.lessonId,
+        href: '/admin/recording',
+      },
     });
   }
 
@@ -155,7 +169,7 @@ export class NotificationEventsService {
     studentName: string;
     studentId: string;
   }): Promise<void> {
-    const userIds = await this.recipients.findStaffUserIdsForCenter(params.centerId);
+    const userIds = await this.recipients.findAdminUserIds();
     await this.write.createForUsers({
       userIds,
       type: 'PAYMENT_CONFIRMED',

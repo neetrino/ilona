@@ -42,8 +42,7 @@ export class NotificationCronFinanceService {
         });
       }
       const studentName = `${payment.student.user.firstName} ${payment.student.user.lastName}`;
-      const centerId = payment.student.group?.centerId ?? null;
-      const userIds = await this.recipients.findStaffUserIdsForCenter(centerId);
+      const userIds = await this.recipients.findAdminUserIds();
       created += await this.write.createForUsers({
         userIds,
         type: 'PAYMENT_OVERDUE',
@@ -80,7 +79,7 @@ export class NotificationCronFinanceService {
     }
     const staff = await this.prisma.user.findMany({
       where: {
-        role: { in: [UserRole.ADMIN, UserRole.MANAGER] },
+        role: UserRole.ADMIN,
         status: UserStatus.ACTIVE,
       },
       select: { id: true },
@@ -101,7 +100,7 @@ export class NotificationCronFinanceService {
   ): Promise<number> {
     let created = 0;
     for (const [groupId, info] of unpaidByGroup) {
-      const userIds = await this.recipients.findStaffUserIdsForCenter(info.centerId);
+      const userIds = await this.recipients.findAdminUserIds();
       created += await this.write.createForUsers({
         userIds,
         type: 'GROUP_UNPAID_TUITION',
