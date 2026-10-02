@@ -683,6 +683,21 @@
     "feedbackGivenAt": "Տրվել է {date}",
     "loadingStudent": "Աշակերտը բեռնվում է…",
     "loadingFeedback": "Արձագանքը բեռնվում է…",
+    "feedbackView": {
+      "yourNextTarget": "Քո հաջորդ նպատակը",
+      "todayInClass": "Այսօր դասին",
+      "yourProgress": "Քո առաջընթացը",
+      "aLittleNoteForYou": "Մի փոքր նշում քեզ համար",
+      "skillSpeaking": "Speaking",
+      "skillWriting": "Writing",
+      "participationCopy": {
+        "quietObserver": "Այսօր հիմնականում դիտում էիր, լսում և ընկալում դասը։",
+        "joiningTheFlow": "Այսօր միացար դասի ընթացքին և մասնակցեցիր, երբ պատրաստ էիր։",
+        "steadyPresence": "Այսօր դասին կայուն ներկայություն ունեիր՝ հետևելով և ներդրում անելով, երբ պետք էր։",
+        "activeParticipant": "Այսօր դասին ակտիվ մասնակցում էիր և ներդրում ունեիր գործողությունների ու քննարկումների ընթացքում։",
+        "brilliantParticipant": "Այսօր դասին մեծ էներգիա բերեցիր և սկզբից մինչև վերջ ակտիվ մասնակցում էիր։"
+      }
+    },
     "lessonLabel": "Դաս՝ {date}",
     "attendanceRateLabel": "Հաճախելիության տոկոս",
     "monthlyFeeLabelStat": "Ամսական վճար",
