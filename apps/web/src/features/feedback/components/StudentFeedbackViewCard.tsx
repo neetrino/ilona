@@ -4,7 +4,11 @@ import type { ReactNode } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import type { Feedback } from '@/features/feedback';
 import { StudentBadge, StudentCard } from '@/features/student-ui';
-import { structuredFromSavedFeedback } from '@/shared/components/daily-duties/lesson-feedback-form-utils';
+import {
+  resolveProgressAreaLabel,
+  resolveProgressTopicLabel,
+  structuredFromSavedFeedback,
+} from '@/shared/components/daily-duties/lesson-feedback-form-utils';
 import { cn } from '@/shared/lib/utils';
 import {
   buildTargetChipLabels,
@@ -32,7 +36,8 @@ export function StudentFeedbackViewCard({
     Boolean(feedback.skillsNote?.trim()) ||
     Boolean(feedback.progress?.trim()) ||
     Boolean(feedback.encouragement?.trim()) ||
-    Boolean(feedback.content?.includes('Level: '));
+    Boolean(feedback.content?.includes('Level: ')) ||
+    Boolean(feedback.content?.includes('ProgressArea: '));
 
   const hasExplicitLevel =
     Boolean(feedback.level?.trim()) ||
@@ -51,10 +56,23 @@ export function StudentFeedbackViewCard({
   const participationKey = participationKeyFromLabel(structured.participation);
   const showParticipationCard = Boolean(participationKey);
 
-  const { topic: progressTopic, body: progressBody } = splitProgressTopic(
-    structured.progress,
+  const progressAreaLabel = resolveProgressAreaLabel(
+    structured.progressArea,
+    structured.progressAreaCustom,
   );
-  const showProgressCard = Boolean(progressBody.trim());
+  const progressTopicLabel = resolveProgressTopicLabel(
+    structured.progressTopic,
+    structured.progressTopicCustom,
+  );
+  const legacyProgress = splitProgressTopic(structured.progress);
+  const progressBadges = [
+    progressAreaLabel,
+    progressTopicLabel || (!progressAreaLabel ? legacyProgress.topic : null),
+  ].filter((value): value is string => Boolean(value?.trim()));
+  const progressBody = progressAreaLabel || progressTopicLabel
+    ? structured.progress.trim() || legacyProgress.body
+    : legacyProgress.body;
+  const showProgressCard = progressBadges.length > 0 || Boolean(progressBody.trim());
 
   const personalNote = structured.encouragement.trim();
   const showPersonalNote = Boolean(personalNote);
@@ -124,19 +142,25 @@ export function StudentFeedbackViewCard({
 
               {showProgressCard ? (
                 <NarrativeCard tone="progress" emoji="📈" title={t('yourProgress')}>
-                  {progressTopic ? (
-                    <StudentBadge variant="info" className="w-fit">
-                      {progressTopic}
-                    </StudentBadge>
+                  {progressBadges.length > 0 ? (
+                    <div className="flex min-w-0 flex-wrap gap-1.5">
+                      {progressBadges.map((badge) => (
+                        <StudentBadge key={badge} variant="info" className="w-fit max-w-full">
+                          {badge}
+                        </StudentBadge>
+                      ))}
+                    </div>
                   ) : null}
-                  <p
-                    className={cn(
-                      'whitespace-pre-wrap text-sm leading-relaxed text-[#3b3b40]',
-                      progressTopic && 'mt-3',
-                    )}
-                  >
-                    {progressBody}
-                  </p>
+                  {progressBody.trim() ? (
+                    <p
+                      className={cn(
+                        'whitespace-pre-wrap text-sm leading-relaxed text-[#3b3b40]',
+                        progressBadges.length > 0 && 'mt-3',
+                      )}
+                    >
+                      {progressBody}
+                    </p>
+                  ) : null}
                 </NarrativeCard>
               ) : null}
             </div>

@@ -11,6 +11,7 @@ import {
   GRAMMAR_OPTIONS,
   type StructuredFeedbackFields,
   buildLessonFeedbackContent,
+  buildProgressStorageValue,
   emptyStructuredFeedback,
   participationToRating,
   structuredFromSavedFeedback,
@@ -167,7 +168,7 @@ export function useFeedbacksTab({ lessonId }: FeedbacksTabProps) {
       grammarTopics: structured.grammar,
       skills: skillsList,
       skillsNote: structured.skillsComment.trim() || null,
-      progress: structured.progress.trim() || null,
+      progress: buildProgressStorageValue(structured),
       encouragement: structured.encouragement.trim() || null,
       ...(participationScore != null
         ? { rating: participationScore, participation: participationScore }
