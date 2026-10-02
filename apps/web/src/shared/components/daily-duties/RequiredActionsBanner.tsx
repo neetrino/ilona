@@ -43,29 +43,31 @@ export function RequiredActionsBanner({
   onOpenAction,
 }: RequiredActionsBannerProps) {
   const t = useTranslations('dailyDuties');
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(Boolean(compact));
 
   return (
     <div
       className={cn(
-        'rounded-[15px] border border-amber-200/90 bg-gradient-to-br from-amber-50 via-orange-50/90 to-rose-50/40 px-3 py-3 shadow-sm',
-        !compact && 'sm:px-4 sm:py-3.5',
+        'rounded-[15px] border border-amber-200/90 bg-gradient-to-br from-amber-50 via-orange-50/90 to-rose-50/40 px-3 py-2.5 shadow-sm',
+        !compact && 'sm:px-4 sm:py-3',
       )}
       role="region"
       aria-label={t('lessonActions.emergencyAria')}
     >
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex min-w-0 gap-2.5">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[15px] bg-amber-100/90 text-amber-800">
-            <AlertTriangle className="h-5 w-5" aria-hidden />
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-2.5">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[15px] bg-amber-100/90 text-amber-800 sm:h-9 sm:w-9">
+            <AlertTriangle className="h-4 w-4 sm:h-5 sm:w-5" aria-hidden />
           </div>
           <div className="min-w-0">
-            <p className="text-sm font-semibold text-amber-950">{t('lessonActions.emergencyTitle')}</p>
-            {!collapsed ? (
+            <p className="truncate text-sm font-semibold text-amber-950">
+              {t('lessonActions.emergencyTitle')}
+            </p>
+            {!collapsed && !compact ? (
               <p
                 className={cn(
                   'mt-0.5 text-xs leading-relaxed text-amber-900/85',
-                  !compact && 'sm:text-sm',
+                  'sm:text-sm',
                 )}
               >
                 {t('lessonActions.emergencyIntro')}
@@ -111,12 +113,11 @@ function RequiredActionsList({
       {incomplete.map((action) => (
         <li
           key={action.id}
-          className={cn(
-            'flex flex-col gap-2 rounded-[15px] border border-white/60 bg-white/70 px-3 py-2.5 backdrop-blur-sm',
-            !compact && 'sm:flex-row sm:items-center sm:justify-between',
-          )}
+          className="flex items-center justify-between gap-3 rounded-[15px] border border-white/60 bg-white/70 px-3 py-2.5 backdrop-blur-sm"
         >
-          <p className="text-sm text-slate-800">{t(reminderKey(action.id))}</p>
+          <p className="min-w-0 flex-1 text-sm leading-snug text-slate-800">
+            {t(reminderKey(action.id))}
+          </p>
           <Button
             type="button"
             size="sm"
