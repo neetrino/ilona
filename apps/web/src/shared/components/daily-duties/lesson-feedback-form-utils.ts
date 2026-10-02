@@ -126,8 +126,8 @@ export function structuredFromSavedFeedback(saved: SavedFeedbackSlice): Structur
   let progress = parsed.progress;
   let progressArea = parsed.progressArea;
   let progressTopic = parsed.progressTopic;
-  let progressAreaCustom = parsed.progressAreaCustom;
-  let progressTopicCustom = parsed.progressTopicCustom;
+  const progressAreaCustom = parsed.progressAreaCustom;
+  const progressTopicCustom = parsed.progressTopicCustom;
 
   // DB `progress` may be "Area · Topic\n\ncomment". Prefer free-text from content when present.
   if (!progress.trim() && saved.progress?.trim()) {
