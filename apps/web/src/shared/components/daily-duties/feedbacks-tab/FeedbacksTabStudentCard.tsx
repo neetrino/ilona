@@ -236,7 +236,7 @@ export function FeedbacksTabStudentCard({
               id={`participation-options-${student.id}`}
               role="group"
               aria-labelledby={`participation-trigger-${student.id}`}
-              className="flex flex-wrap gap-2 pt-1"
+              className="grid grid-cols-2 gap-2 pt-1"
             >
               {PARTICIPATION_OPTIONS.map((option) => {
                 const selected = structured.participation === option;
@@ -251,7 +251,7 @@ export function FeedbacksTabStudentCard({
                       }));
                     }}
                     className={cn(
-                      'rounded-[15px] border px-3.5 py-2 text-sm font-medium transition-colors',
+                      'min-w-0 rounded-[15px] border px-3.5 py-2 text-sm font-medium transition-colors',
                       selected
                         ? 'border-[#1010a3] bg-[#e8e8fc] text-[#1010a3]'
                         : 'border-[rgba(14,14,16,0.07)] bg-white text-[#3b3b40] hover:border-[rgba(14,14,16,0.12)] hover:bg-white',
