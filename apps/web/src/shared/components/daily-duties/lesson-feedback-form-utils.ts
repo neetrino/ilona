@@ -18,6 +18,25 @@ export const PARTICIPATION_OPTIONS = [
 
 export type ParticipationOption = (typeof PARTICIPATION_OPTIONS)[number];
 
+export type {
+  ProgressAreaOption,
+} from './progress-feedback-options';
+export {
+  PROGRESS_AREA_OPTIONS,
+  PROGRESS_OTHER_VALUE,
+  PROGRESS_TOPICS_BY_AREA,
+  progressAreaHasTopicDropdown,
+  resolveProgressAreaLabel,
+  resolveProgressTopicLabel,
+} from './progress-feedback-options';
+
+import type { ProgressAreaOption } from './progress-feedback-options';
+import {
+  PROGRESS_AREA_OPTIONS,
+  resolveProgressAreaLabel,
+  resolveProgressTopicLabel,
+} from './progress-feedback-options';
+
 export interface StructuredFeedbackFields {
   level: string;
   grammar: string[];
@@ -26,6 +45,11 @@ export interface StructuredFeedbackFields {
   skillsComment: string;
   comment: string;
   participation: ParticipationOption | null;
+  progressArea: ProgressAreaOption | '';
+  progressTopic: string;
+  progressAreaCustom: string;
+  progressTopicCustom: string;
+  /** Free-text progress comment (not the area/topic labels). */
   progress: string;
   encouragement: string;
 }
@@ -41,6 +65,10 @@ export function emptyStructuredFeedback(): StructuredFeedbackFields {
     skillsComment: '',
     comment: '',
     participation: null,
+    progressArea: '',
+    progressTopic: '',
+    progressAreaCustom: '',
+    progressTopicCustom: '',
     progress: '',
     encouragement: '',
   };
@@ -94,6 +122,28 @@ export function structuredFromSavedFeedback(saved: SavedFeedbackSlice): Structur
   if (skillsComment?.trim() && !speaking && !writing) {
     speaking = true;
   }
+
+  let progress = parsed.progress;
+  let progressArea = parsed.progressArea;
+  let progressTopic = parsed.progressTopic;
+  const progressAreaCustom = parsed.progressAreaCustom;
+  const progressTopicCustom = parsed.progressTopicCustom;
+
+  // DB `progress` may be "Area · Topic\n\ncomment". Prefer free-text from content when present.
+  if (!progress.trim() && saved.progress?.trim()) {
+    const legacy = splitLegacyProgressStorage(saved.progress);
+    progress = legacy.comment || saved.progress.trim();
+    if (!progressArea && legacy.topic && !progressTopic) {
+      const parts = legacy.topic.split(' · ').map((part) => part.trim()).filter(Boolean);
+      if (parts.length === 2 && PROGRESS_AREA_OPTIONS.includes(parts[0] as ProgressAreaOption)) {
+        progressArea = parts[0] as ProgressAreaOption;
+        progressTopic = parts[1];
+      } else {
+        progressTopic = legacy.topic;
+      }
+    }
+  }
+
   return {
     ...parsed,
     level: (saved.level ?? parsed.level) || DEFAULT_FEEDBACK_LEVEL,
@@ -105,9 +155,36 @@ export function structuredFromSavedFeedback(saved: SavedFeedbackSlice): Structur
       saved.participation != null
         ? participationFromRating(saved.participation) ?? parsed.participation
         : parsed.participation,
-    progress: saved.progress ?? parsed.progress,
+    progressArea,
+    progressTopic,
+    progressAreaCustom,
+    progressTopicCustom,
+    progress,
     encouragement: saved.encouragement ?? parsed.encouragement,
   };
+}
+
+function splitLegacyProgressStorage(progress: string): { topic: string; comment: string } {
+  const parts = progress
+    .split(/\n+/)
+    .map((part) => part.trim())
+    .filter(Boolean);
+  if (parts.length >= 2) {
+    const first = parts[0];
+    const looksLikeTopic =
+      first.length <= 48 &&
+      !first.includes('. ') &&
+      !first.endsWith('.') &&
+      first.split(/\s+/).length <= 6;
+    if (looksLikeTopic) {
+      return { topic: first, comment: parts.slice(1).join('\n\n') };
+    }
+  }
+  // "Grammar · Inversions" badge line from newer saves
+  if (parts.length >= 2 && parts[0].includes(' · ')) {
+    return { topic: parts[0], comment: parts.slice(1).join('\n\n') };
+  }
+  return { topic: '', comment: progress.trim() };
 }
 
 /**
@@ -149,6 +226,16 @@ export function parseLessonFeedbackContent(
   let encouragement = getLine('Encouragement: ');
   if (encouragement === '-') encouragement = '';
 
+  const progressAreaRaw = getLine('ProgressArea: ');
+  const progressTopicRaw = getLine('ProgressTopic: ');
+  const progressAreaCustom = getLine('ProgressAreaCustom: ');
+  const progressTopicCustom = getLine('ProgressTopicCustom: ');
+
+  let progressArea: ProgressAreaOption | '' = '';
+  if (PROGRESS_AREA_OPTIONS.includes(progressAreaRaw as ProgressAreaOption)) {
+    progressArea = progressAreaRaw as ProgressAreaOption;
+  }
+
   const participationRaw = getLine('Participation: ');
   let participation: ParticipationOption | null = null;
   if (PARTICIPATION_OPTIONS.includes(participationRaw as ParticipationOption)) {
@@ -186,6 +273,10 @@ export function parseLessonFeedbackContent(
     ...skills,
     comment,
     participation,
+    progressArea,
+    progressTopic: progressTopicRaw === '-' ? '' : progressTopicRaw,
+    progressAreaCustom: progressAreaCustom === '-' ? '' : progressAreaCustom,
+    progressTopicCustom: progressTopicCustom === '-' ? '' : progressTopicCustom,
     progress,
     encouragement,
   };
@@ -195,6 +286,24 @@ export function participationToRating(option: ParticipationOption | null): numbe
   if (!option) return undefined;
   const idx = PARTICIPATION_OPTIONS.indexOf(option);
   return idx >= 0 ? idx + 1 : undefined;
+}
+
+/** Progress value stored in DB `progress` column (badges + comment for student view). */
+export function buildProgressStorageValue(structured: StructuredFeedbackFields): string | null {
+  const areaLabel = resolveProgressAreaLabel(
+    structured.progressArea,
+    structured.progressAreaCustom,
+  );
+  const topicLabel = resolveProgressTopicLabel(
+    structured.progressTopic,
+    structured.progressTopicCustom,
+  );
+  const badge = [areaLabel, topicLabel].filter(Boolean).join(' · ');
+  const comment = structured.progress.trim();
+  if (!badge && !comment) return null;
+  if (!badge) return comment;
+  if (!comment) return badge;
+  return `${badge}\n\n${comment}`;
 }
 
 export function buildLessonFeedbackContent(structured: StructuredFeedbackFields): string {
@@ -207,7 +316,8 @@ export function buildLessonFeedbackContent(structured: StructuredFeedbackFields)
       ? `${skillsParts.join(', ')}${structured.skillsComment ? ` (${structured.skillsComment})` : ''}`
       : 'none';
 
-  const narrative = [structured.comment, structured.progress, structured.encouragement]
+  const progressStorage = buildProgressStorageValue(structured) ?? '';
+  const narrative = [structured.comment, progressStorage, structured.encouragement]
     .map((s) => s.trim())
     .filter(Boolean)
     .join('\n\n');
@@ -218,6 +328,10 @@ export function buildLessonFeedbackContent(structured: StructuredFeedbackFields)
     `Skills: ${skillsLine}`,
     `Comment: ${structured.comment.trim() || '-'}`,
     `Participation: ${structured.participation ?? 'off'}`,
+    `ProgressArea: ${structured.progressArea || '-'}`,
+    `ProgressTopic: ${structured.progressTopic.trim() || '-'}`,
+    `ProgressAreaCustom: ${structured.progressAreaCustom.trim() || '-'}`,
+    `ProgressTopicCustom: ${structured.progressTopicCustom.trim() || '-'}`,
     `Progress: ${structured.progress.trim() || '-'}`,
     `Encouragement: ${structured.encouragement.trim() || '-'}`,
     '',

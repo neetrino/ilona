@@ -1,35 +1,34 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import {
-  BookOpenText,
-  Layers,
-  MessageSquareText,
-  Sparkles,
-  TrendingUp,
-  Users,
-  WandSparkles,
-} from 'lucide-react';
-import { useTranslations } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import type { Feedback } from '@/features/feedback';
 import { StudentBadge, StudentCard } from '@/features/student-ui';
-import { structuredFromSavedFeedback } from '@/shared/components/daily-duties/lesson-feedback-form-utils';
-import { FeedbackCategoryLabel } from '@/shared/components/daily-duties/feedbacks-tab/FeedbackCategoryLabel';
+import {
+  resolveProgressAreaLabel,
+  resolveProgressTopicLabel,
+  structuredFromSavedFeedback,
+} from '@/shared/components/daily-duties/lesson-feedback-form-utils';
 import { cn } from '@/shared/lib/utils';
+import {
+  buildTargetChipLabels,
+  participationKeyFromLabel,
+  splitProgressTopic,
+} from './student-feedback-view.utils';
 
 interface StudentFeedbackViewCardProps {
   feedback: Feedback;
-  dateLabel: string;
   teacherName: string;
 }
 
 export function StudentFeedbackViewCard({
   feedback,
-  dateLabel,
   teacherName,
 }: StudentFeedbackViewCardProps) {
-  const t = useTranslations('dailyDuties.feedback');
+  const t = useTranslations('students.feedbackView');
+  const locale = useLocale();
   const structured = structuredFromSavedFeedback(feedback);
+
   const looksStructured =
     Boolean(feedback.level) ||
     (feedback.grammarTopics?.length ?? 0) > 0 ||
@@ -37,149 +36,142 @@ export function StudentFeedbackViewCard({
     Boolean(feedback.skillsNote?.trim()) ||
     Boolean(feedback.progress?.trim()) ||
     Boolean(feedback.encouragement?.trim()) ||
-    Boolean(feedback.content?.includes('Level: '));
+    Boolean(feedback.content?.includes('Level: ')) ||
+    Boolean(feedback.content?.includes('ProgressArea: '));
 
-  const skills = [
-    structured.speaking ? t('speaking') : null,
-    structured.writing ? t('writing') : null,
-  ].filter((value): value is string => Boolean(value));
+  const hasExplicitLevel =
+    Boolean(feedback.level?.trim()) ||
+    Boolean(feedback.content?.match(/^Level:\s*\S+/m));
+  const targetChips = buildTargetChipLabels({
+    level: hasExplicitLevel ? structured.level : '',
+    grammar: structured.grammar,
+    speaking: structured.speaking,
+    writing: structured.writing,
+    speakingLabel: t('skillSpeaking'),
+    writingLabel: t('skillWriting'),
+  });
+  const academicComment = structured.comment.trim();
+  const showTargetCard = targetChips.length > 0 || Boolean(academicComment);
 
-  const hasCategoryContent =
-    looksStructured &&
-    (Boolean(structured.level) ||
-      structured.grammar.length > 0 ||
-      skills.length > 0 ||
-      Boolean(structured.skillsComment.trim()) ||
-      Boolean(structured.comment.trim()) ||
-      Boolean(structured.participation) ||
-      Boolean(structured.progress.trim()) ||
-      Boolean(structured.encouragement.trim()));
+  const participationKey = participationKeyFromLabel(structured.participation);
+  const showParticipationCard = Boolean(participationKey);
+
+  const progressAreaLabel = resolveProgressAreaLabel(
+    structured.progressArea,
+    structured.progressAreaCustom,
+  );
+  const progressTopicLabel = resolveProgressTopicLabel(
+    structured.progressTopic,
+    structured.progressTopicCustom,
+  );
+  const legacyProgress = splitProgressTopic(structured.progress);
+  const progressBadges = [
+    progressAreaLabel,
+    progressTopicLabel || (!progressAreaLabel ? legacyProgress.topic : null),
+  ].filter((value): value is string => Boolean(value?.trim()));
+  const progressBody = progressAreaLabel || progressTopicLabel
+    ? structured.progress.trim() || legacyProgress.body
+    : legacyProgress.body;
+  const showProgressCard = progressBadges.length > 0 || Boolean(progressBody.trim());
+
+  const personalNote = structured.encouragement.trim();
+  const showPersonalNote = Boolean(personalNote);
+
+  const hasNarrativeCards =
+    showTargetCard || showParticipationCard || showProgressCard || showPersonalNote;
+
+  const dateLabel = formatLessonDate(feedback.lesson?.scheduledAt, locale);
+  const headerLevel =
+    (hasExplicitLevel ? structured.level : '') ||
+    feedback.lesson?.group?.level ||
+    '';
+  const groupName = feedback.lesson?.group?.name?.trim() || '';
+  const headerParts = [dateLabel, teacherName, headerLevel, groupName].filter(Boolean);
 
   return (
     <StudentCard className="transition-[transform,box-shadow] duration-300 ease-out hover:-translate-y-1 hover:shadow-[0_10px_28px_rgba(14,14,16,0.08)]">
-      <div className="mb-4 flex flex-col gap-1.5 sm:flex-row sm:flex-wrap sm:items-center sm:gap-2">
-        <StudentBadge
-          variant="brand"
-          className="w-fit px-3 py-1 text-[0.8125rem] sm:px-2.5 sm:py-0.5 sm:text-[0.6875rem]"
-        >
-          {dateLabel}
-        </StudentBadge>
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="min-w-0 break-words text-base font-medium text-[#1010a3] sm:text-sm">
-            {teacherName}
-          </span>
-          {feedback.lesson?.group?.name ? (
-            <span className="min-w-0 break-words text-xs text-[#8b8b90]">
-              {feedback.lesson.group.name}
-            </span>
-          ) : null}
-        </div>
-      </div>
+      {headerParts.length > 0 ? (
+        <p className="mb-4 text-sm leading-relaxed text-[#8b8b90]">
+          {headerParts.join(' · ')}
+        </p>
+      ) : null}
 
-      {!hasCategoryContent ? (
+      {!looksStructured || !hasNarrativeCards ? (
         <p className="whitespace-pre-wrap text-sm leading-relaxed text-[#3b3b40]">
-          {feedback.content || '—'}
+          {feedback.content?.trim() || '—'}
         </p>
       ) : (
         <div className="space-y-3">
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-3">
-            {structured.level ? (
-              <CategoryBlock>
-                <FeedbackCategoryLabel icon={Layers} tone="violet" as="span">
-                  {t('levelLabel').replace(/\s*\*$/, '')}
-                </FeedbackCategoryLabel>
-                <StudentBadge variant="info" className="mt-2.5">
-                  {structured.level}
-                </StudentBadge>
-              </CategoryBlock>
-            ) : null}
-
-            {structured.grammar.length > 0 ? (
-              <CategoryBlock>
-                <FeedbackCategoryLabel icon={BookOpenText} tone="sky" as="span">
-                  {t('grammarLabel').replace(/\s*\*.*$/, '')}
-                </FeedbackCategoryLabel>
-                <div className="mt-2.5 flex min-w-0 flex-wrap gap-1.5">
-                  {structured.grammar.map((topic) => (
-                    <StudentBadge key={topic} variant="neutral" className="max-w-full break-words">
-                      {topic}
-                    </StudentBadge>
-                  ))}
-                </div>
-              </CategoryBlock>
-            ) : null}
-
-            {skills.length > 0 || structured.skillsComment.trim() ? (
-              <CategoryBlock>
-                <FeedbackCategoryLabel icon={WandSparkles} tone="amber" as="span">
-                  {t('skillsLabel')}
-                </FeedbackCategoryLabel>
-                {skills.length > 0 ? (
-                  <div className="mt-2.5 flex min-w-0 flex-wrap gap-1.5">
-                    {skills.map((skill) => (
-                      <StudentBadge key={skill} variant="brand" className="max-w-full break-words">
-                        {skill}
-                      </StudentBadge>
-                    ))}
-                  </div>
-                ) : null}
-                {structured.skillsComment.trim() ? (
-                  <p className="mt-2.5 break-words text-sm leading-relaxed text-[#3b3b40]">
-                    {structured.skillsComment}
-                  </p>
-                ) : null}
-              </CategoryBlock>
-            ) : null}
-
-            {structured.participation ? (
-              <CategoryBlock>
-                <FeedbackCategoryLabel icon={Users} tone="lime" as="span">
-                  {t('participation')}
-                </FeedbackCategoryLabel>
-                <p className="mt-2.5 break-words text-sm font-medium text-[#1010a3]">
-                  {structured.participation}
+          {showTargetCard ? (
+            <NarrativeCard
+              tone="target"
+              emoji="🎯"
+              title={t('yourNextTarget')}
+              className="p-4 sm:p-5"
+            >
+              {targetChips.length > 0 ? (
+                <p className="text-base font-semibold tracking-tight text-[#1010a3] sm:text-lg">
+                  {targetChips.join('   ·   ')}
                 </p>
-              </CategoryBlock>
-            ) : null}
-          </div>
+              ) : null}
+              {academicComment ? (
+                <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-[#3b3b40] sm:text-[0.9375rem]">
+                  {academicComment}
+                </p>
+              ) : null}
+            </NarrativeCard>
+          ) : null}
 
-          {structured.comment.trim() ||
-          structured.progress.trim() ||
-          structured.encouragement.trim() ? (
-            <div className="grid grid-cols-1 gap-2 sm:grid-cols-3 sm:gap-3">
-              {structured.comment.trim() ? (
-                <CategoryBlock>
-                  <FeedbackCategoryLabel icon={MessageSquareText} tone="sky" as="span">
-                    {t('commentLabel')}
-                  </FeedbackCategoryLabel>
-                  <p className="mt-2.5 break-words whitespace-pre-wrap text-sm leading-relaxed text-[#3b3b40]">
-                    {structured.comment}
+          {showParticipationCard || showProgressCard ? (
+            <div
+              className={cn(
+                'grid grid-cols-1 gap-3',
+                showParticipationCard && showProgressCard && 'sm:grid-cols-2',
+              )}
+            >
+              {showParticipationCard && participationKey ? (
+                <NarrativeCard tone="participation" emoji="👏" title={t('todayInClass')}>
+                  <StudentBadge variant="brand" className="w-fit">
+                    {structured.participation}
+                  </StudentBadge>
+                  <p className="mt-3 text-sm leading-relaxed text-[#3b3b40]">
+                    {t(`participationCopy.${participationKey}`)}
                   </p>
-                </CategoryBlock>
+                </NarrativeCard>
               ) : null}
 
-              {structured.progress.trim() ? (
-                <CategoryBlock>
-                  <FeedbackCategoryLabel icon={TrendingUp} tone="violet" as="span">
-                    {t('progress')}
-                  </FeedbackCategoryLabel>
-                  <p className="mt-2.5 break-words whitespace-pre-wrap text-sm leading-relaxed text-[#3b3b40]">
-                    {structured.progress}
-                  </p>
-                </CategoryBlock>
-              ) : null}
-
-              {structured.encouragement.trim() ? (
-                <CategoryBlock>
-                  <FeedbackCategoryLabel icon={Sparkles} tone="amber" as="span">
-                    {t('encouragement')}
-                  </FeedbackCategoryLabel>
-                  <p className="mt-2.5 break-words whitespace-pre-wrap text-sm leading-relaxed text-[#3b3b40]">
-                    {structured.encouragement}
-                  </p>
-                </CategoryBlock>
+              {showProgressCard ? (
+                <NarrativeCard tone="progress" emoji="📈" title={t('yourProgress')}>
+                  {progressBadges.length > 0 ? (
+                    <div className="flex min-w-0 flex-wrap gap-1.5">
+                      {progressBadges.map((badge) => (
+                        <StudentBadge key={badge} variant="info" className="w-fit max-w-full">
+                          {badge}
+                        </StudentBadge>
+                      ))}
+                    </div>
+                  ) : null}
+                  {progressBody.trim() ? (
+                    <p
+                      className={cn(
+                        'whitespace-pre-wrap text-sm leading-relaxed text-[#3b3b40]',
+                        progressBadges.length > 0 && 'mt-3',
+                      )}
+                    >
+                      {progressBody}
+                    </p>
+                  ) : null}
+                </NarrativeCard>
               ) : null}
             </div>
+          ) : null}
+
+          {showPersonalNote ? (
+            <NarrativeCard tone="note" emoji="💙" title={t('aLittleNoteForYou')}>
+              <p className="whitespace-pre-wrap text-sm leading-relaxed text-[#3b3b40] sm:text-[0.9375rem]">
+                {personalNote}
+              </p>
+            </NarrativeCard>
           ) : null}
         </div>
       )}
@@ -187,21 +179,54 @@ export function StudentFeedbackViewCard({
   );
 }
 
-function CategoryBlock({
+type NarrativeTone = 'target' | 'participation' | 'progress' | 'note';
+
+const toneSurface: Record<NarrativeTone, string> = {
+  target: 'border-[#d9d9f4]/90 bg-gradient-to-br from-[#f5f5ff] to-white',
+  participation: 'border-[rgba(14,14,16,0.07)] bg-[#fafafa]/90',
+  progress: 'border-[rgba(14,14,16,0.07)] bg-[#fafafa]/90',
+  note: 'border-[#ddecff] bg-gradient-to-br from-[#f3f8ff] to-white',
+};
+
+function NarrativeCard({
+  tone,
+  emoji,
+  title,
   children,
   className,
 }: {
+  tone: NarrativeTone;
+  emoji: string;
+  title: string;
   children: ReactNode;
   className?: string;
 }) {
   return (
     <div
       className={cn(
-        'min-w-0 overflow-hidden rounded-[1.125rem] border border-[rgba(14,14,16,0.07)] bg-[#fafafa]/80 p-2.5 sm:p-4',
+        'min-w-0 rounded-[1.125rem] border p-3.5 sm:p-4',
+        toneSurface[tone],
         className,
       )}
     >
+      <div className="mb-3 flex items-center gap-2">
+        <span className="text-base leading-none" aria-hidden>
+          {emoji}
+        </span>
+        <h3 className="text-sm font-semibold tracking-tight text-[#1010a3]">{title}</h3>
+      </div>
       {children}
     </div>
   );
+}
+
+function formatLessonDate(scheduledAt: string | undefined, locale: string): string {
+  if (!scheduledAt) return '';
+  const date = new Date(scheduledAt);
+  if (Number.isNaN(date.getTime())) return '';
+  return new Intl.DateTimeFormat(locale, {
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
+  }).format(date);
 }
