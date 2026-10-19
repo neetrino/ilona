@@ -8,7 +8,7 @@ import { useAuthStore } from '@/features/auth/store/auth.store';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { AutoDismissToast, Button } from '@/shared/components/ui';
 import { getAdminPortalBasePath } from '@/shared/lib/role-routes';
-import { fetchParentReports, previewParentReport, type ParentReportLetter } from './api';
+import { fetchParentReports, previewParentReport, type ParentReportItem, type ParentReportLetter } from './api';
 import { ParentReportFilters, useParentReportFilters } from './ParentReportFilters';
 import { ParentReportHistory } from './ParentReportHistory';
 import { LetterPreview } from './LetterPreviewModal';
@@ -17,6 +17,8 @@ import { ParentReportSummary } from './ParentReportSummary';
 import { ParentReportTable } from './ParentReportTable';
 import { canSendParentReport, filterParentReports, quarterMonthNumbers, summarizeParentReports } from './parent-report-range';
 import { useParentReportSending } from './useParentReportSending';
+
+const EMPTY_ITEMS: ParentReportItem[] = [];
 
 export function ParentReportsPage() {
   const t = useTranslations('parentReportsPage');
@@ -32,7 +34,7 @@ export function ParentReportsPage() {
   const viewingCurrent = !query.data || activeQuarter === query.data.currentQuarterKey;
   const preview = useLetterPreview(activeQuarter);
   const sending = useParentReportSending(activeQuarter, preview.close);
-  const items = query.data?.items ?? [];
+  const items = useMemo(() => query.data?.items ?? EMPTY_ITEMS, [query.data?.items]);
   const shown = useMemo(
     () =>
       filterParentReports(items, {

@@ -1,3 +1,4 @@
+import { describe, expect, it } from 'vitest';
 import { factsFromRecords } from './parent-report-facts';
 
 describe('parent report facts', () => {
