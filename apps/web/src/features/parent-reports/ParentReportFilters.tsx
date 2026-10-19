@@ -7,7 +7,7 @@ import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropd
 import { ADMIN_CONTROL_CLASS, ADMIN_FORM_INPUT_CLASS } from '@/shared/lib/admin-control-theme';
 import { DROPDOWN_LABEL_CLASS } from '@/shared/components/ui/dropdown-theme';
 import type { ParentReportItem } from './api';
-import { NO_GROUP_ID, quarterKeyFromDate, recentQuarterKeys } from './parent-report-range';
+import { formatQuarterMonths, NO_GROUP_ID, quarterKeyFromDate, recentQuarterKeys } from './parent-report-range';
 
 export function useParentReportFilters() {
   const now = new Date();
@@ -38,9 +38,14 @@ export function ParentReportFilters({
   filters: ReturnType<typeof useParentReportFilters>;
 }) {
   const t = useTranslations('parentReportsPage');
+  const tCommon = useTranslations('common');
   const quarterOptions = useMemo(
-    () => recentQuarterKeys(new Date()).map((key) => ({ id: key, label: key })),
-    [],
+    () =>
+      recentQuarterKeys(new Date()).map((key) => ({
+        id: key,
+        label: formatQuarterMonths(key, (month) => tCommon(`months.${month}`)),
+      })),
+    [tCommon],
   );
   const groupOptions = useMemo(() => groupOptionsFrom(items, t('noGroup')), [items, t]);
   const statusOptions = [
@@ -61,6 +66,7 @@ export function ParentReportFilters({
           if (next) filters.setFromQuarter(next);
         }}
         triggerClassName={ADMIN_CONTROL_CLASS}
+        wrapText
       />
       <SingleSelectDropdown
         id="parent-report-to"
@@ -71,6 +77,7 @@ export function ParentReportFilters({
           if (next) filters.setToQuarter(next);
         }}
         triggerClassName={ADMIN_CONTROL_CLASS}
+        wrapText
       />
       <FilterDropdown
         label={t('group')}

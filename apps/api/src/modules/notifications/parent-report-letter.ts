@@ -22,7 +22,8 @@ export function buildParentReportLetter(input: {
   previous: ParentReportFacts;
 }): ParentReportLetter {
   const parent = input.parentName?.trim() || 'ծնող';
-  const greeting = `Սիրելի ${parent}, այս եռամսյակում Ձեր երեխան սերտել է հետևյալ թեմաներն ու հմտությունները։`;
+  const months = quarterMonthsText(input.quarterKey);
+  const greeting = `Սիրելի ${parent}, ${months} ամիսներին Ձեր երեխան սերտել է հետևյալ թեմաներն ու հմտությունները։`;
   const comparison = comparisonText(input.current, input.previous);
   const sections = [
     section('Թեմաներ', input.current.topics, 'Այս եռամսյակում օրական պլանի թեմաներ չեն գրանցվել։'),
@@ -42,10 +43,31 @@ export function buildParentReportLetter(input: {
     <p>${escapeHtml(CLOSING)}</p>
   </div>`;
   return {
-    subject: `Եռամսյակային հաշվետվություն — ${input.studentName} (${input.quarterKey})`,
+    subject: `Եռամսյակային հաշվետվություն — ${input.studentName} (${months})`,
     html,
     text,
   };
+}
+
+const MONTH_NAMES = [
+  'հունվար',
+  'փետրվար',
+  'մարտ',
+  'ապրիլ',
+  'մայիս',
+  'հունիս',
+  'հուլիս',
+  'օգոստոս',
+  'սեպտեմբեր',
+  'հոկտեմբեր',
+  'նոյեմբեր',
+  'դեկտեմբեր',
+];
+
+function quarterMonthsText(quarterKey: string): string {
+  const quarter = Number(quarterKey.slice(6));
+  const start = (quarter - 1) * 3;
+  return MONTH_NAMES.slice(start, start + 3).join(', ');
 }
 
 function comparisonText(current: ParentReportFacts, previous: ParentReportFacts): string {

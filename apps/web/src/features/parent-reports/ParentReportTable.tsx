@@ -3,7 +3,7 @@
 import { useTranslations } from 'next-intl';
 import { Button } from '@/shared/components/ui';
 import type { ParentReportItem } from './api';
-import { canSendParentReport, sentQuartersInRange } from './parent-report-range';
+import { canSendParentReport, formatQuarterMonths, sentQuarterKeysInRange } from './parent-report-range';
 
 export function ParentReportTable({
   items,
@@ -53,7 +53,7 @@ export function ParentReportTable({
             <ReportRow
               key={item.studentId}
               item={item}
-              quarters={sentQuartersInRange(item.sentQuarters, fromQuarter, toQuarter)}
+              sentKeys={sentQuarterKeysInRange(item.sentQuarters, fromQuarter, toQuarter)}
               sending={sendingId === item.studentId}
               onPreview={onPreview}
               onSend={onSend}
@@ -67,13 +67,13 @@ export function ParentReportTable({
 
 function ReportRow({
   item,
-  quarters,
+  sentKeys,
   sending,
   onPreview,
   onSend,
 }: {
   item: ParentReportItem;
-  quarters: number;
+  sentKeys: string[];
   sending: boolean;
   onPreview: (studentId: string) => Promise<void>;
   onSend: (studentId: string) => void;
@@ -90,7 +90,9 @@ function ReportRow({
       <td className="px-4 py-3">{item.parentEmail || t('missingEmail')}</td>
       <td className="px-4 py-3">{item.groupName || '—'}</td>
       <td className="px-4 py-3">{statusLabel(item, t)}</td>
-      <td className="px-4 py-3">{t('sentQuarters', { count: quarters })}</td>
+      <td className="px-4 py-3">
+        <SentMonths quarterKeys={sentKeys} />
+      </td>
       <td className="px-4 py-3">
         <div className="flex gap-2">
           <Button type="button" variant="outline" size="sm">
@@ -110,6 +112,18 @@ function ReportRow({
         </div>
       </td>
     </tr>
+  );
+}
+
+function SentMonths({ quarterKeys }: { quarterKeys: string[] }) {
+  const tCommon = useTranslations('common');
+  if (quarterKeys.length === 0) return <>—</>;
+  return (
+    <ul className="space-y-1">
+      {quarterKeys.map((key) => (
+        <li key={key}>{formatQuarterMonths(key, (month) => tCommon(`months.${month}`))}</li>
+      ))}
+    </ul>
   );
 }
 

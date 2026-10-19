@@ -15,7 +15,7 @@ import {
 import { ParentReportFilters, useParentReportFilters } from './ParentReportFilters';
 import { LetterPreview } from './LetterPreviewModal';
 import { ParentReportTable } from './ParentReportTable';
-import { canSendParentReport, filterParentReports, quartersInRange } from './parent-report-range';
+import { canSendParentReport, filterParentReports, quarterMonthNumbers } from './parent-report-range';
 
 export function ParentReportsPage() {
   const t = useTranslations('parentReportsPage');
@@ -38,7 +38,6 @@ export function ParentReportsPage() {
       }),
     [items, filters.groupIds, filters.statusIds, filters.search],
   );
-  const rangeQuarters = quartersInRange(filters.fromQuarter, filters.toQuarter).length;
   const sendableIds = shown.filter(canSendParentReport).map((item) => item.studentId);
   const sendOne = useMutation({
     mutationFn: (studentId: string) => sendParentReport(studentId, activeQuarter ?? ''),
@@ -54,10 +53,10 @@ export function ParentReportsPage() {
       <div className="space-y-4">
         <ParentReportFilters items={items} filters={filters} />
         <ReportToolbar
+          quarterKey={activeQuarter}
           daysPassed={query.data?.daysPassed}
           daysLeft={query.data?.daysLeft}
           shown={shown.length}
-          quarters={rangeQuarters}
           canSend={Boolean(activeQuarter) && sendableIds.length > 0 && !sendAll.isPending}
           onSend={() => sendAll.mutate(sendableIds)}
         />
@@ -114,25 +113,27 @@ function useLetterPreview(quarterKey: string | undefined) {
 }
 
 function ReportToolbar({
+  quarterKey,
   daysPassed,
   daysLeft,
   shown,
-  quarters,
   canSend,
   onSend,
 }: {
+  quarterKey: string | undefined;
   daysPassed: number | undefined;
   daysLeft: number | undefined;
   shown: number;
-  quarters: number;
   canSend: boolean;
   onSend: () => void;
 }) {
   const t = useTranslations('parentReportsPage');
   return (
     <div className="flex flex-wrap items-center gap-3">
-      {daysPassed != null && daysLeft != null ? <QuarterTiming daysPassed={daysPassed} daysLeft={daysLeft} /> : null}
-      <p className="text-sm text-slate-600">{t('rangeSummary', { shown, quarters })}</p>
+      {quarterKey && daysPassed != null && daysLeft != null ? (
+        <QuarterTiming quarterKey={quarterKey} daysPassed={daysPassed} daysLeft={daysLeft} />
+      ) : null}
+      <p className="text-sm text-slate-600">{t('rangeSummary', { shown })}</p>
       <Button type="button" className="h-11 min-h-11 rounded-[15px]" disabled={!canSend} onClick={onSend}>
         {t('sendAll')}
       </Button>
@@ -140,13 +141,29 @@ function ReportToolbar({
   );
 }
 
-function QuarterTiming({ daysPassed, daysLeft }: { daysPassed: number; daysLeft: number }) {
+function QuarterTiming({
+  quarterKey,
+  daysPassed,
+  daysLeft,
+}: {
+  quarterKey: string;
+  daysPassed: number;
+  daysLeft: number;
+}) {
   const t = useTranslations('parentReportsPage');
+  const tCommon = useTranslations('common');
   const total = Math.max(daysPassed + daysLeft, 1);
   const percent = Math.min(100, Math.round((daysPassed / total) * 100));
   const ready = daysLeft === 0;
   return (
     <div className="min-w-[16rem] flex-1 rounded-[15px] border border-[rgba(14,14,16,0.08)] bg-white px-4 py-3">
+      <ul className="mb-2 flex flex-wrap gap-2">
+        {quarterMonthNumbers(quarterKey).map((month) => (
+          <li key={month} className="rounded-full bg-[#ecefff] px-3 py-1 text-sm font-medium text-[#1010a3]">
+            {tCommon(`months.${month}`)}
+          </li>
+        ))}
+      </ul>
       <p className={`text-sm ${ready ? 'font-medium text-[#1010a3]' : 'text-[#3b3b40]'}`}>
         {ready ? t('sendToday') : t('quarterTiming', { passed: daysPassed, left: daysLeft })}
       </p>

@@ -19,6 +19,24 @@ export function quarterKeyFromDate(date: Date): string {
   return `${date.getFullYear()}-Q${Math.ceil((date.getMonth() + 1) / 3)}`;
 }
 
+type MonthNumber = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
+
+const QUARTER_MONTHS: Record<number, MonthNumber[]> = {
+  1: [1, 2, 3],
+  2: [4, 5, 6],
+  3: [7, 8, 9],
+  4: [10, 11, 12],
+};
+
+export function quarterMonthNumbers(quarterKey: string): MonthNumber[] {
+  return QUARTER_MONTHS[Number(quarterKey.slice(6))] ?? [];
+}
+
+export function formatQuarterMonths(quarterKey: string, monthName: (month: number) => string): string {
+  const names = quarterMonthNumbers(quarterKey).map((month) => monthName(month));
+  return names.length === 3 ? `${names.join(' · ')} ${quarterKey.slice(0, 4)}` : quarterKey;
+}
+
 export function recentQuarterKeys(anchor: Date, count = 8): string[] {
   const keys: string[] = [];
   let year = anchor.getFullYear();
@@ -53,9 +71,13 @@ export function quartersInRange(from: string, to: string): string[] {
   return keys;
 }
 
+export function sentQuarterKeysInRange(sentQuarters: string[] | undefined, from: string, to: string): string[] {
+  const sent = new Set(sentQuarters ?? []);
+  return quartersInRange(from, to).filter((key) => sent.has(key));
+}
+
 export function sentQuartersInRange(sentQuarters: string[] | undefined, from: string, to: string): number {
-  const range = new Set(quartersInRange(from, to));
-  return (sentQuarters ?? []).filter((key) => range.has(key)).length;
+  return sentQuarterKeysInRange(sentQuarters, from, to).length;
 }
 
 export function filterParentReports<T extends FilterableReport>(
