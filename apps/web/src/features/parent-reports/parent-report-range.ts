@@ -44,6 +44,16 @@ export function canSendParentReport(item: FilterableReport): boolean {
   return Boolean(item.parentEmail) && !item.sentAt;
 }
 
+export function summarizeParentReports(items: FilterableReport[]) {
+  const summary = { total: items.length, ready: 0, sent: 0, missingEmail: 0 };
+  for (const item of items) {
+    if (item.sentAt) summary.sent += 1;
+    else if (!item.parentEmail) summary.missingEmail += 1;
+    else summary.ready += 1;
+  }
+  return summary;
+}
+
 function matchesReport(item: FilterableReport, input: ParentReportFilterInput, query: string): boolean {
   if (input.groupIds.size > 0 && !input.groupIds.has(item.groupId ?? NO_GROUP_ID)) {
     return false;

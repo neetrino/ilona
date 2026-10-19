@@ -2,9 +2,9 @@
 
 import { useEffect, useRef } from 'react';
 import type { LucideIcon } from 'lucide-react';
-import { ArrowLeftRight, Award, BookOpen, Mail, Sparkles, Target } from 'lucide-react';
+import { ArrowLeftRight, Award, BookOpen, Mail, Send, Sparkles, Target } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/shared/components/ui';
+import { Button, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/shared/components/ui';
 import type { ParentReportLetter } from './api';
 
 const SECTION_ICONS: Array<{ match: string; icon: LucideIcon }> = [
@@ -15,7 +15,19 @@ const SECTION_ICONS: Array<{ match: string; icon: LucideIcon }> = [
   { match: 'Համեմատություն', icon: ArrowLeftRight },
 ];
 
-export function LetterPreview({ letter, onClose }: { letter: ParentReportLetter | null; onClose: () => void }) {
+export function LetterPreview({
+  letter,
+  canSend,
+  sending,
+  onClose,
+  onSend,
+}: {
+  letter: ParentReportLetter | null;
+  canSend: boolean;
+  sending: boolean;
+  onClose: () => void;
+  onSend: () => void;
+}) {
   const t = useTranslations('parentReportsPage');
   const dismiss = useDismissGuard(onClose);
   return (
@@ -42,6 +54,14 @@ export function LetterPreview({ letter, onClose }: { letter: ParentReportLetter 
         <div className="min-h-0 flex-1 overflow-y-auto bg-[#f8f9fb] px-6 py-5">
           {letter ? <LetterBody text={letter.text} /> : <p className="text-sm text-[#3b3b40]">{t('loading')}</p>}
         </div>
+        {canSend ? (
+          <div className="flex shrink-0 justify-end border-t border-[rgba(14,14,16,0.08)] px-6 py-4">
+            <Button type="button" className="gap-1.5" disabled={!letter || sending} isLoading={sending} onClick={onSend}>
+              <Send className="h-3.5 w-3.5" aria-hidden />
+              {t('send')}
+            </Button>
+          </div>
+        ) : null}
       </DialogContent>
     </Dialog>
   );

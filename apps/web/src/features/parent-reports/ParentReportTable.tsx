@@ -1,6 +1,7 @@
 'use client';
 
 import { type ReactNode } from 'react';
+import Link from 'next/link';
 import type { LucideIcon } from 'lucide-react';
 import {
   CalendarCheck2,
@@ -37,6 +38,7 @@ export function ParentReportTable({
   loading,
   noMatches,
   sendingId,
+  cardBase,
   onPreview,
   onSend,
 }: {
@@ -44,6 +46,7 @@ export function ParentReportTable({
   loading: boolean;
   noMatches: boolean;
   sendingId: string | undefined | null;
+  cardBase: string;
   onPreview: (studentId: string) => Promise<void>;
   onSend: (studentId: string) => void;
 }) {
@@ -78,6 +81,7 @@ export function ParentReportTable({
               item={item}
               sentKeys={[...(item.sentQuarters ?? [])].sort()}
               sending={sendingId === item.studentId}
+              cardHref={`${cardBase}/${item.studentId}`}
               onPreview={onPreview}
               onSend={onSend}
             />
@@ -92,12 +96,14 @@ function ReportRow({
   item,
   sentKeys,
   sending,
+  cardHref,
   onPreview,
   onSend,
 }: {
   item: ParentReportItem;
   sentKeys: string[];
   sending: boolean;
+  cardHref: string;
   onPreview: (studentId: string) => Promise<void>;
   onSend: (studentId: string) => void;
 }) {
@@ -107,7 +113,7 @@ function ReportRow({
       className="cursor-pointer border-t border-slate-100 transition-colors hover:bg-[#f8f9fb]"
       onClick={() => void onPreview(item.studentId)}
     >
-      <IdentityCells item={item} missingEmail={t('missingEmail')} />
+      <IdentityCells item={item} missingEmail={t('missingEmail')} openCardLabel={t('openCard')} cardHref={cardHref} />
       <td className="px-4 py-3">
         <StatusPill status={reportStatus(item)} label={statusLabel(item, t)} />
       </td>
@@ -126,7 +132,17 @@ function ReportRow({
   );
 }
 
-function IdentityCells({ item, missingEmail }: { item: ParentReportItem; missingEmail: string }) {
+function IdentityCells({
+  item,
+  missingEmail,
+  openCardLabel,
+  cardHref,
+}: {
+  item: ParentReportItem;
+  missingEmail: string;
+  openCardLabel: string;
+  cardHref: string;
+}) {
   return (
     <>
       <td className="px-4 py-3">
@@ -139,7 +155,7 @@ function IdentityCells({ item, missingEmail }: { item: ParentReportItem; missing
       </td>
       <td className="px-4 py-3">
         <LabeledCell icon={item.parentEmail ? Mail : MailX} tone={item.parentEmail ? 'brand' : 'warn'}>
-          {item.parentEmail || missingEmail}
+          <EmailValue email={item.parentEmail} missingEmail={missingEmail} openCardLabel={openCardLabel} cardHref={cardHref} />
         </LabeledCell>
       </td>
       <td className="px-4 py-3">
@@ -148,6 +164,32 @@ function IdentityCells({ item, missingEmail }: { item: ParentReportItem; missing
         </LabeledCell>
       </td>
     </>
+  );
+}
+
+function EmailValue({
+  email,
+  missingEmail,
+  openCardLabel,
+  cardHref,
+}: {
+  email: string | null;
+  missingEmail: string;
+  openCardLabel: string;
+  cardHref: string;
+}) {
+  if (email) return <>{email}</>;
+  return (
+    <span className="flex flex-col items-start">
+      <span>{missingEmail}</span>
+      <Link
+        href={cardHref}
+        onClick={(event) => event.stopPropagation()}
+        className="text-xs font-medium text-[#1010a3] hover:underline"
+      >
+        {openCardLabel}
+      </Link>
+    </span>
   );
 }
 
@@ -249,7 +291,6 @@ function SentMonths({ quarterKeys }: { quarterKeys: string[] }) {
 function reportStatus(item: ParentReportItem): ReportStatus {
   return item.sentAt ? 'sent' : 'notSent';
 }
-
 function statusLabel(
   item: ParentReportItem,
   t: (key: string, values?: { date: string }) => string,

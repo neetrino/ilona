@@ -2,6 +2,7 @@ import {
   filterParentReports,
   formatQuarterMonths,
   quarterMonthNumbers,
+  summarizeParentReports,
 } from '../../../../web/src/features/parent-reports/parent-report-range';
 
 describe('parent report range', () => {
@@ -18,6 +19,15 @@ describe('parent report range', () => {
       search: 'ann',
     });
     expect(shown.map((item) => item.studentName)).toEqual(['Ann']);
+  });
+
+  it('counts ready, sent, and missing email', () => {
+    const items = [
+      report('Ann', 'Ohio', 'sent'),
+      { ...report('Ben', 'Bristol', null), parentEmail: null },
+      report('Cia', 'Bristol', null),
+    ];
+    expect(summarizeParentReports(items)).toEqual({ total: 3, ready: 1, sent: 1, missingEmail: 1 });
   });
 });
 
