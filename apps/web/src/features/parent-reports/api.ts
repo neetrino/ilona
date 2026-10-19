@@ -12,6 +12,8 @@ export type ParentReportItem = {
 
 export type ParentReportList = {
   quarterKey: string;
+  daysPassed: number;
+  daysLeft: number;
   items: ParentReportItem[];
 };
 

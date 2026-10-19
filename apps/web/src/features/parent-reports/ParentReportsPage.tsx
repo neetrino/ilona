@@ -36,16 +36,13 @@ export function ParentReportsPage() {
   return (
     <DashboardLayout title={tNav('parentReports')} subtitle={t('subtitle')}>
       <div className="space-y-4">
-        <div className="flex flex-wrap items-center gap-3">
-          <Button
-            type="button"
-            className="h-11 min-h-11 rounded-[15px]"
-            disabled={!activeQuarter || sendAll.isPending}
-            onClick={() => sendAll.mutate()}
-          >
-            {t('sendAll')}
-          </Button>
-        </div>
+        <QuarterToolbar
+          daysPassed={query.data?.daysPassed}
+          daysLeft={query.data?.daysLeft}
+          canSend={Boolean(activeQuarter) && !sendAll.isPending}
+          sendLabel={t('sendAll')}
+          onSend={() => sendAll.mutate()}
+        />
         {query.isError ? <p className="text-sm text-red-600">{t('loadError')}</p> : null}
         {sendAll.isError || sendOne.isError ? <p className="text-sm text-red-600">{t('sendFailed')}</p> : null}
         <ReportTable
@@ -61,6 +58,53 @@ export function ParentReportsPage() {
         {preview ? <LetterPreview letter={preview} onClose={() => setPreview(null)} /> : null}
       </div>
     </DashboardLayout>
+  );
+}
+
+function QuarterToolbar({
+  daysPassed,
+  daysLeft,
+  canSend,
+  sendLabel,
+  onSend,
+}: {
+  daysPassed: number | undefined;
+  daysLeft: number | undefined;
+  canSend: boolean;
+  sendLabel: string;
+  onSend: () => void;
+}) {
+  return (
+    <div className="flex flex-wrap items-center gap-3">
+      {daysPassed != null && daysLeft != null ? (
+        <QuarterTiming daysPassed={daysPassed} daysLeft={daysLeft} />
+      ) : null}
+      <Button
+        type="button"
+        className="h-11 min-h-11 rounded-[15px]"
+        disabled={!canSend}
+        onClick={onSend}
+      >
+        {sendLabel}
+      </Button>
+    </div>
+  );
+}
+
+function QuarterTiming({ daysPassed, daysLeft }: { daysPassed: number; daysLeft: number }) {
+  const t = useTranslations('parentReportsPage');
+  const total = Math.max(daysPassed + daysLeft, 1);
+  const percent = Math.min(100, Math.round((daysPassed / total) * 100));
+  const ready = daysLeft === 0;
+  return (
+    <div className="min-w-[16rem] flex-1 rounded-[15px] border border-[rgba(14,14,16,0.08)] bg-white px-4 py-3">
+      <p className={`text-sm ${ready ? 'font-medium text-[#1010a3]' : 'text-[#3b3b40]'}`}>
+        {ready ? t('sendToday') : t('quarterTiming', { passed: daysPassed, left: daysLeft })}
+      </p>
+      <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-[#ecefff]" aria-hidden>
+        <div className="h-full rounded-full bg-[#1010a3]" style={{ width: `${percent}%` }} />
+      </div>
+    </div>
   );
 }
 

@@ -1899,6 +1899,8 @@
     "sendFailed": "Could not send the letter",
     "send": "Send",
     "sendAll": "Send unsent",
+    "quarterTiming": "{passed} days passed, {left} days left",
+    "sendToday": "The quarter has ended, send today",
     "preview": "Preview",
     "close": "Close",
     "missingEmail": "No email",

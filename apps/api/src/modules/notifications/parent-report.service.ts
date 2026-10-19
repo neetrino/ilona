@@ -16,6 +16,7 @@ import { buildParentReportLetter, type ParentReportLetter } from './parent-repor
 import {
   quarterBounds,
   quarterKeyFromDate,
+  quarterSendProgress,
   previousQuarterKey,
 } from './parent-quarter.util';
 
@@ -41,8 +42,11 @@ export class ParentReportService {
     const key = quarterKey ?? quarterKeyFromDate(new Date());
     const centerId = getManagerCenterIdOrThrow(user);
     const students = await this.findStudents(key, centerId);
+    const progress = quarterSendProgress(key, new Date());
     return {
       quarterKey: key,
+      daysPassed: progress.daysPassed,
+      daysLeft: progress.daysLeft,
       items: students.map((student) => this.toListItem(student)),
     };
   }
