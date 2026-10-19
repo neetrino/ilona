@@ -3,14 +3,12 @@
 import { useTranslations } from 'next-intl';
 import { Button } from '@/shared/components/ui';
 import type { ParentReportItem } from './api';
-import { canSendParentReport, formatQuarterMonths, sentQuarterKeysInRange } from './parent-report-range';
+import { canSendParentReport, formatQuarterMonths } from './parent-report-range';
 
 export function ParentReportTable({
   items,
   loading,
   noMatches,
-  fromQuarter,
-  toQuarter,
   sendingId,
   onPreview,
   onSend,
@@ -18,8 +16,6 @@ export function ParentReportTable({
   items: ParentReportItem[];
   loading: boolean;
   noMatches: boolean;
-  fromQuarter: string;
-  toQuarter: string;
   sendingId: string | undefined | null;
   onPreview: (studentId: string) => Promise<void>;
   onSend: (studentId: string) => void;
@@ -53,7 +49,7 @@ export function ParentReportTable({
             <ReportRow
               key={item.studentId}
               item={item}
-              sentKeys={sentQuarterKeysInRange(item.sentQuarters, fromQuarter, toQuarter)}
+              sentKeys={[...(item.sentQuarters ?? [])].sort()}
               sending={sendingId === item.studentId}
               onPreview={onPreview}
               onSend={onSend}

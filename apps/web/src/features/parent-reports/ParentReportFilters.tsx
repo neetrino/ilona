@@ -3,24 +3,16 @@
 import { useMemo, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { FilterDropdown } from '@/shared/components/ui/filter-dropdown';
-import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
 import { ADMIN_CONTROL_CLASS, ADMIN_FORM_INPUT_CLASS } from '@/shared/lib/admin-control-theme';
 import { DROPDOWN_LABEL_CLASS } from '@/shared/components/ui/dropdown-theme';
 import type { ParentReportItem } from './api';
-import { formatQuarterMonths, NO_GROUP_ID, quarterKeyFromDate, recentQuarterKeys } from './parent-report-range';
+import { NO_GROUP_ID } from './parent-report-range';
 
 export function useParentReportFilters() {
-  const now = new Date();
-  const [fromQuarter, setFromQuarter] = useState(() => `${now.getFullYear()}-Q1`);
-  const [toQuarter, setToQuarter] = useState(() => quarterKeyFromDate(now));
   const [groupIds, setGroupIds] = useState<Set<string>>(() => new Set());
   const [statusIds, setStatusIds] = useState<Set<string>>(() => new Set());
   const [search, setSearch] = useState('');
   return {
-    fromQuarter,
-    setFromQuarter,
-    toQuarter,
-    setToQuarter,
     groupIds,
     setGroupIds,
     statusIds,
@@ -38,15 +30,6 @@ export function ParentReportFilters({
   filters: ReturnType<typeof useParentReportFilters>;
 }) {
   const t = useTranslations('parentReportsPage');
-  const tCommon = useTranslations('common');
-  const quarterOptions = useMemo(
-    () =>
-      recentQuarterKeys(new Date()).map((key) => ({
-        id: key,
-        label: formatQuarterMonths(key, (month) => tCommon(`months.${month}`)),
-      })),
-    [tCommon],
-  );
   const groupOptions = useMemo(() => groupOptionsFrom(items, t('noGroup')), [items, t]);
   const statusOptions = [
     { id: 'sent', label: t('sentFilter') },
@@ -56,29 +39,7 @@ export function ParentReportFilters({
   ];
 
   return (
-    <div className="grid grid-cols-1 items-end gap-3 sm:grid-cols-2 xl:grid-cols-5">
-      <SingleSelectDropdown
-        id="parent-report-from"
-        label={t('fromQuarter')}
-        options={quarterOptions}
-        value={filters.fromQuarter}
-        onValueChange={(next) => {
-          if (next) filters.setFromQuarter(next);
-        }}
-        triggerClassName={ADMIN_CONTROL_CLASS}
-        wrapText
-      />
-      <SingleSelectDropdown
-        id="parent-report-to"
-        label={t('toQuarter')}
-        options={quarterOptions}
-        value={filters.toQuarter}
-        onValueChange={(next) => {
-          if (next) filters.setToQuarter(next);
-        }}
-        triggerClassName={ADMIN_CONTROL_CLASS}
-        wrapText
-      />
+    <div className="grid grid-cols-1 items-end gap-3 sm:grid-cols-2 xl:grid-cols-3">
       <FilterDropdown
         label={t('group')}
         options={groupOptions}

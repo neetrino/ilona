@@ -67,8 +67,6 @@ export function ParentReportsPage() {
           items={shown}
           loading={query.isLoading}
           noMatches={!query.isLoading && items.length > 0 && shown.length === 0}
-          fromQuarter={filters.fromQuarter}
-          toQuarter={filters.toQuarter}
           sendingId={sendOne.isPending ? sendOne.variables : null}
           onPreview={preview.open}
           onSend={(studentId) => sendOne.mutate(studentId)}
