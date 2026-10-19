@@ -5,7 +5,6 @@ import {
   Layers,
   MessageSquareText,
   Sparkles,
-  TrendingUp,
   Users,
   WandSparkles,
 } from 'lucide-react';
@@ -21,6 +20,7 @@ import {
 } from '../lesson-feedback-form-utils';
 import { FeedbackCategoryLabel } from './FeedbackCategoryLabel';
 import { FeedbacksTabParticipationTickBox } from './FeedbacksTabParticipationTickBox';
+import { FeedbacksTabProgressFields } from './FeedbacksTabProgressFields';
 import { FeedbacksTabStudentAvatar } from './FeedbacksTabStudentAvatar';
 import { FEEDBACK_FIELD_SHELL_CLASS, type FeedbackSaveStatus, type FeedbackStudentItem } from './feedbacks-tab.types';
 
@@ -236,7 +236,7 @@ export function FeedbacksTabStudentCard({
               id={`participation-options-${student.id}`}
               role="group"
               aria-labelledby={`participation-trigger-${student.id}`}
-              className="flex flex-wrap gap-2 pt-1"
+              className="grid grid-cols-2 gap-2 pt-1"
             >
               {PARTICIPATION_OPTIONS.map((option) => {
                 const selected = structured.participation === option;
@@ -251,7 +251,7 @@ export function FeedbacksTabStudentCard({
                       }));
                     }}
                     className={cn(
-                      'rounded-[15px] border px-3.5 py-2 text-sm font-medium transition-colors',
+                      'min-w-0 rounded-[15px] border px-3.5 py-2 text-sm font-medium transition-colors',
                       selected
                         ? 'border-[#1010a3] bg-[#e8e8fc] text-[#1010a3]'
                         : 'border-[rgba(14,14,16,0.07)] bg-white text-[#3b3b40] hover:border-[rgba(14,14,16,0.12)] hover:bg-white',
@@ -267,19 +267,10 @@ export function FeedbacksTabStudentCard({
       </div>
 
       <div className="grid grid-cols-1 gap-5 md:grid-cols-2 md:gap-6 lg:gap-8">
-        <div className="space-y-2.5 rounded-[1.125rem] border border-[rgba(14,14,16,0.07)] bg-[#fafafa]/80 p-3.5 sm:p-4">
-          <FeedbackCategoryLabel icon={TrendingUp} tone="violet">
-            {t('progress')}
-          </FeedbackCategoryLabel>
-          <textarea
-            rows={4}
-            value={structured.progress}
-            onChange={(event) => {
-              onUpdateStructured((current) => ({ ...current, progress: event.target.value }));
-            }}
-            className={cn(FEEDBACK_FIELD_SHELL_CLASS, 'min-h-[100px] resize-y')}
-          />
-        </div>
+        <FeedbacksTabProgressFields
+          structured={structured}
+          onUpdateStructured={onUpdateStructured}
+        />
         <div className="space-y-2.5 rounded-[1.125rem] border border-[rgba(14,14,16,0.07)] bg-[#fafafa]/80 p-3.5 sm:p-4">
           <FeedbackCategoryLabel icon={Sparkles} tone="amber">
             {t('encouragement')}

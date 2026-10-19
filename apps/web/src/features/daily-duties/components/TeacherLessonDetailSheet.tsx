@@ -22,6 +22,7 @@ import {
   PORTAL_FORM_SHEET_HEADER_CLASS,
   portalFormSheetContentClass,
 } from '@/shared/lib/portal-form-sheet-classes';
+import { LessonRequiredActionsHeaderBanner } from '@/shared/components/daily-duties/LessonRequiredActionsHeaderBanner';
 import type { DailyDutiesLessonDetailTab } from './daily-duties.types';
 
 interface TeacherLessonDetailSheetProps {
@@ -98,15 +99,21 @@ export function TeacherLessonDetailSheet({
         <PortalFormSheetDragHandle dragHandleProps={dragHandleProps} className="bg-white" />
 
         <div className={cn(PORTAL_FORM_SHEET_HEADER_CLASS, 'border-b-0 bg-white pb-3 pt-2 tablet:pb-5 tablet:pt-6')}>
-          <div className="flex items-start justify-between gap-3">
-            <div className="min-w-0 flex-1">
+          <div className="flex items-start gap-3">
+            <div className="min-w-0 shrink-0 basis-[min(100%,14rem)] sm:basis-[min(100%,16rem)]">
               <DialogPrimitive.Title className="break-words text-xl font-semibold leading-snug text-[#1010a3] tablet:text-lg tablet:text-[#3b3b40]">
                 {title}
               </DialogPrimitive.Title>
               <p className="mt-1 hidden text-sm text-[#8b8b90] tablet:block">{subtitle}</p>
             </div>
+            <div className="min-w-0 flex-1">
+              <LessonRequiredActionsHeaderBanner
+                lesson={lesson}
+                onOpenAction={(id) => handleTabChange(id)}
+              />
+            </div>
             <DialogPrimitive.Close
-              className={PORTAL_FORM_SHEET_CLOSE_BUTTON_CLASS}
+              className={cn(PORTAL_FORM_SHEET_CLOSE_BUTTON_CLASS, 'mt-0.5 shrink-0')}
               aria-label={tCommon('close')}
             >
               <X className="h-4 w-4" />
@@ -165,6 +172,7 @@ function TeacherLessonDetailSheetBody({
       activeTab={activeTab}
       onTabChange={onTabChange}
       layout="fill"
+      showRequiredActions={false}
     >
       {{
         absence: <AbsenceTab lessonId={lessonId} />,

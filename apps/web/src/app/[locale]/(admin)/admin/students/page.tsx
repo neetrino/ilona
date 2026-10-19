@@ -29,6 +29,7 @@ export default function StudentsPage() {
     activeCenterTabId,
     isLoading,
     teachersData,
+    centersData: _centersData,
     
     // State
     searchQuery,

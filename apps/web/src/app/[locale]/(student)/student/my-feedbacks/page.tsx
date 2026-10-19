@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { useLocale, useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { useMyProfile } from '@/features/students';
 import { useStudentFeedback } from '@/features/feedback';
@@ -21,7 +21,6 @@ export default function StudentMyFeedbacksPage() {
   const tNav = useTranslations('nav');
   const tCommon = useTranslations('common');
   const tStudents = useTranslations('students');
-  const locale = useLocale();
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
 
@@ -59,15 +58,6 @@ export default function StudentMyFeedbacksPage() {
   const handleResetFilters = () => {
     setDateFrom('');
     setDateTo('');
-  };
-
-  const formatLessonDate = (iso?: string) => {
-    if (!iso) return '—';
-    return new Date(iso).toLocaleDateString(locale, {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-    });
   };
 
   return (
@@ -137,7 +127,6 @@ export default function StudentMyFeedbacksPage() {
                 <StudentFeedbackViewCard
                   key={feedback.id}
                   feedback={feedback}
-                  dateLabel={`${tCommon('date')}: ${formatLessonDate(feedback.lesson?.scheduledAt)}`}
                   teacherName={teacherName}
                 />
               );
