@@ -13,7 +13,8 @@ import {
   type ParentReportLetter,
 } from './api';
 import { ParentReportFilters, useParentReportFilters } from './ParentReportFilters';
-import { LetterPreview, ParentReportTable } from './ParentReportTable';
+import { LetterPreview } from './LetterPreviewModal';
+import { ParentReportTable } from './ParentReportTable';
 import { canSendParentReport, filterParentReports, quartersInRange } from './parent-report-range';
 
 export function ParentReportsPage() {
