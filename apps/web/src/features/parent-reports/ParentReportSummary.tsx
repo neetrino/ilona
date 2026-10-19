@@ -12,11 +12,11 @@ const TONE: Record<string, string> = {
   warn: 'bg-amber-50 text-amber-700',
 };
 
-export function ParentReportSummary({ summary }: { summary: Summary }) {
+export function ParentReportSummary({ summary, readyLabel }: { summary: Summary; readyLabel?: string }) {
   const t = useTranslations('parentReportsPage');
   const cards: Array<{ icon: LucideIcon; label: string; value: number; tone: string }> = [
     { icon: GraduationCap, label: t('statTotal'), value: summary.total, tone: 'brand' },
-    { icon: Clock3, label: t('statReady'), value: summary.ready, tone: 'brand' },
+    { icon: Clock3, label: readyLabel ?? t('statReady'), value: summary.ready, tone: 'brand' },
     { icon: CheckCircle2, label: t('statSent'), value: summary.sent, tone: 'ok' },
     { icon: MailX, label: t('statMissing'), value: summary.missingEmail, tone: 'warn' },
   ];

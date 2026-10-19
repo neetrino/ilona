@@ -18,6 +18,16 @@ export function previousQuarterKey(quarterKey: string): string {
   return `${year}-Q${quarter - 1}`;
 }
 
+export function recentQuarterKeys(current: string, count: number): string[] {
+  const keys = [current];
+  let key = current;
+  for (let index = 1; index < count; index += 1) {
+    key = previousQuarterKey(key);
+    keys.push(key);
+  }
+  return keys;
+}
+
 const QUARTER_LAST_DAY: Record<number, string> = {
   1: '03-31',
   2: '06-30',

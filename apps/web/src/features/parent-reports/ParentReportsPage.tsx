@@ -10,6 +10,7 @@ import { AutoDismissToast, Button } from '@/shared/components/ui';
 import { getAdminPortalBasePath } from '@/shared/lib/role-routes';
 import { fetchParentReports, previewParentReport, type ParentReportLetter } from './api';
 import { ParentReportFilters, useParentReportFilters } from './ParentReportFilters';
+import { ParentReportHistory } from './ParentReportHistory';
 import { LetterPreview } from './LetterPreviewModal';
 import { ParentReportSendDialog } from './ParentReportSendDialog';
 import { ParentReportSummary } from './ParentReportSummary';
@@ -22,11 +23,13 @@ export function ParentReportsPage() {
   const tNav = useTranslations('nav');
   const { user } = useAuthStore();
   const filters = useParentReportFilters();
+  const [quarterKey, setQuarterKey] = useState<string | undefined>();
   const query = useQuery({
-    queryKey: ['parent-reports'],
-    queryFn: () => fetchParentReports(),
+    queryKey: ['parent-reports', quarterKey ?? 'current'],
+    queryFn: () => fetchParentReports(quarterKey),
   });
   const activeQuarter = query.data?.quarterKey;
+  const viewingCurrent = !query.data || activeQuarter === query.data.currentQuarterKey;
   const preview = useLetterPreview(activeQuarter);
   const sending = useParentReportSending(activeQuarter, preview.close);
   const items = query.data?.items ?? [];
@@ -47,16 +50,25 @@ export function ParentReportsPage() {
   return (
     <DashboardLayout title={tNav('parentReports')} subtitle={t('subtitle')}>
       <div className="space-y-4">
-        <ParentReportSummary summary={summary} />
+        <ParentReportHistory
+          history={query.data?.history ?? []}
+          selected={activeQuarter}
+          onSelect={(key) => {
+            preview.close();
+            setQuarterKey(key);
+          }}
+        />
+        <ParentReportSummary summary={summary} readyLabel={viewingCurrent ? undefined : t('notSent')} />
         <ParentReportFilters items={items} filters={filters} />
         <ReportToolbar
-          quarterKey={activeQuarter}
+          quarterKey={viewingCurrent ? activeQuarter : undefined}
           daysPassed={query.data?.daysPassed}
           daysLeft={query.data?.daysLeft}
           shown={shown.length}
-          canSend={Boolean(activeQuarter) && sendableIds.length > 0 && !sending.sendAll.isPending}
+          canSend={viewingCurrent && Boolean(activeQuarter) && sendableIds.length > 0 && !sending.sendAll.isPending}
           onSend={() => sending.setConfirmOpen(true)}
         />
+        {viewingCurrent ? null : <p className="text-sm text-[#3b3b40]">{t('pastOnly')}</p>}
         {query.isError ? <p className="text-sm text-red-600">{t('loadError')}</p> : null}
         {preview.failed ? <p className="text-sm text-red-600">{t('previewFailed')}</p> : null}
         <ParentReportTable
@@ -65,13 +77,14 @@ export function ParentReportsPage() {
           noMatches={!query.isLoading && items.length > 0 && shown.length === 0}
           sendingId={sending.sendOne.isPending ? sending.sendOne.variables : null}
           cardBase={cardBase}
+          allowSend={viewingCurrent}
           onPreview={preview.open}
           onSend={(studentId) => sending.sendOne.mutate(studentId)}
         />
         {preview.visible ? (
           <LetterPreview
             letter={preview.letter}
-            canSend={previewItem ? canSendParentReport(previewItem) : false}
+            canSend={viewingCurrent && previewItem ? canSendParentReport(previewItem) : false}
             sending={sending.sendOne.isPending}
             onClose={preview.close}
             onSend={() => preview.studentId && sending.sendOne.mutate(preview.studentId)}

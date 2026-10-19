@@ -11,10 +11,17 @@ export type ParentReportItem = {
   sentQuarters: string[];
 };
 
+export type ParentReportHistoryItem = {
+  quarterKey: string;
+  sent: number;
+};
+
 export type ParentReportList = {
   quarterKey: string;
+  currentQuarterKey: string;
   daysPassed: number;
   daysLeft: number;
+  history: ParentReportHistoryItem[];
   items: ParentReportItem[];
 };
 

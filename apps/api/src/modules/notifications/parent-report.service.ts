@@ -18,6 +18,7 @@ import {
   quarterKeyFromDate,
   quarterSendProgress,
   previousQuarterKey,
+  recentQuarterKeys,
 } from './parent-quarter.util';
 
 type ReportStudent = {
@@ -38,14 +39,20 @@ export class ParentReportService {
   ) {}
 
   async list(quarterKey: string | undefined, user?: JwtPayload) {
-    const key = quarterKey ?? quarterKeyFromDate(new Date());
+    const currentQuarterKey = quarterKeyFromDate(new Date());
+    const key = quarterKey ?? currentQuarterKey;
     const centerId = getManagerCenterIdOrThrow(user);
-    const students = await this.findStudents(centerId);
+    const [students, history] = await Promise.all([
+      this.findStudents(centerId),
+      this.loadHistory(centerId, currentQuarterKey),
+    ]);
     const progress = quarterSendProgress(key, new Date());
     return {
       quarterKey: key,
+      currentQuarterKey,
       daysPassed: progress.daysPassed,
       daysLeft: progress.daysLeft,
+      history,
       items: students.map((student) => this.toListItem(student, key)),
     };
   }
@@ -158,6 +165,24 @@ export class ParentReportService {
     if (!student.parentEmail) {
       throw new BadRequestException('Student card has no parent email');
     }
+  }
+
+  private async loadHistory(centerId: string | undefined, currentQuarterKey: string) {
+    const recent = recentQuarterKeys(currentQuarterKey, 4);
+    const rows = await this.prisma.parentQuarterlyReport.groupBy({
+      by: ['quarterKey'],
+      where: centerId ? { student: { OR: [{ centerId }, { group: { centerId } }] } } : {},
+      _count: { _all: true },
+    });
+    const counts = new Map(rows.map((row) => [row.quarterKey, row._count._all]));
+    const older = rows
+      .map((row) => row.quarterKey)
+      .filter((key) => !recent.includes(key))
+      .sort((left, right) => right.localeCompare(left));
+    return [...recent, ...older].map((quarterKey) => ({
+      quarterKey,
+      sent: counts.get(quarterKey) ?? 0,
+    }));
   }
 
   private async findStudents(centerId: string | undefined, studentId?: string): Promise<ReportStudent[]> {

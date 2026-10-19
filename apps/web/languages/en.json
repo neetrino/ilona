@@ -1925,6 +1925,8 @@
     "sentOne": "Letter sent",
     "sentNone": "No new letter was sent",
     "openCard": "Open card",
+    "historySent": "{count} sent",
+    "pastOnly": "This quarter is closed. You can only see who received the letter",
     "missingEmail": "No email",
     "reportsOff": "Reports are off",
     "notSent": "Not sent",

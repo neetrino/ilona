@@ -39,6 +39,7 @@ export function ParentReportTable({
   noMatches,
   sendingId,
   cardBase,
+  allowSend,
   onPreview,
   onSend,
 }: {
@@ -47,6 +48,7 @@ export function ParentReportTable({
   noMatches: boolean;
   sendingId: string | undefined | null;
   cardBase: string;
+  allowSend: boolean;
   onPreview: (studentId: string) => Promise<void>;
   onSend: (studentId: string) => void;
 }) {
@@ -82,6 +84,7 @@ export function ParentReportTable({
               sentKeys={[...(item.sentQuarters ?? [])].sort()}
               sending={sendingId === item.studentId}
               cardHref={`${cardBase}/${item.studentId}`}
+              allowSend={allowSend}
               onPreview={onPreview}
               onSend={onSend}
             />
@@ -97,6 +100,7 @@ function ReportRow({
   sentKeys,
   sending,
   cardHref,
+  allowSend,
   onPreview,
   onSend,
 }: {
@@ -104,6 +108,7 @@ function ReportRow({
   sentKeys: string[];
   sending: boolean;
   cardHref: string;
+  allowSend: boolean;
   onPreview: (studentId: string) => Promise<void>;
   onSend: (studentId: string) => void;
 }) {
@@ -122,7 +127,7 @@ function ReportRow({
       </td>
       <td className="px-4 py-3">
         <RowActions
-          canSend={canSendParentReport(item)}
+          canSend={allowSend && canSendParentReport(item)}
           sending={sending}
           sendLabel={t('send')}
           onSend={() => onSend(item.studentId)}

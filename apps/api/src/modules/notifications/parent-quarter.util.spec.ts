@@ -3,6 +3,7 @@ import {
   quarterKeyFromDate,
   quarterSendProgress,
   previousQuarterKey,
+  recentQuarterKeys,
 } from './parent-quarter.util';
 
 describe('parent quarter keys', () => {
@@ -12,6 +13,7 @@ describe('parent quarter keys', () => {
 
   it('steps back across the year boundary', () => {
     expect(previousQuarterKey('2026-Q1')).toBe('2025-Q4');
+    expect(recentQuarterKeys('2026-Q1', 3)).toEqual(['2026-Q1', '2025-Q4', '2025-Q3']);
   });
 
   it('counts days until the last day of the quarter', () => {
