@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
@@ -10,13 +10,16 @@ import {
   previewParentReport,
   sendParentQuarter,
   sendParentReport,
-  type ParentReportItem,
   type ParentReportLetter,
 } from './api';
+import { ParentReportFilters, useParentReportFilters } from './ParentReportFilters';
+import { LetterPreview, ParentReportTable } from './ParentReportTable';
+import { canSendParentReport, filterParentReports, monthsInRange } from './parent-report-range';
 
 export function ParentReportsPage() {
   const t = useTranslations('parentReportsPage');
   const tNav = useTranslations('nav');
+  const filters = useParentReportFilters();
   const [preview, setPreview] = useState<ParentReportLetter | null>(null);
   const queryClient = useQueryClient();
   const query = useQuery({
@@ -24,30 +27,47 @@ export function ParentReportsPage() {
     queryFn: () => fetchParentReports(),
   });
   const activeQuarter = query.data?.quarterKey;
+  const items = query.data?.items ?? [];
+  const shown = useMemo(
+    () =>
+      filterParentReports(items, {
+        groupIds: filters.groupIds,
+        statusIds: filters.statusIds,
+        search: filters.search,
+      }),
+    [items, filters.groupIds, filters.statusIds, filters.search],
+  );
+  const rangeMonths = monthsInRange(filters.fromMonth, filters.toMonth).length;
+  const sendableIds = shown.filter(canSendParentReport).map((item) => item.studentId);
   const sendOne = useMutation({
     mutationFn: (studentId: string) => sendParentReport(studentId, activeQuarter ?? ''),
     onSuccess: () => void queryClient.invalidateQueries({ queryKey: ['parent-reports'] }),
   });
   const sendAll = useMutation({
-    mutationFn: () => sendParentQuarter(activeQuarter ?? ''),
+    mutationFn: (studentIds: string[]) => sendParentQuarter(activeQuarter ?? '', studentIds),
     onSuccess: () => void queryClient.invalidateQueries({ queryKey: ['parent-reports'] }),
   });
 
   return (
     <DashboardLayout title={tNav('parentReports')} subtitle={t('subtitle')}>
       <div className="space-y-4">
-        <QuarterToolbar
+        <ParentReportFilters items={items} filters={filters} />
+        <ReportToolbar
           daysPassed={query.data?.daysPassed}
           daysLeft={query.data?.daysLeft}
-          canSend={Boolean(activeQuarter) && !sendAll.isPending}
-          sendLabel={t('sendAll')}
-          onSend={() => sendAll.mutate()}
+          shown={shown.length}
+          months={rangeMonths}
+          canSend={Boolean(activeQuarter) && sendableIds.length > 0 && !sendAll.isPending}
+          onSend={() => sendAll.mutate(sendableIds)}
         />
         {query.isError ? <p className="text-sm text-red-600">{t('loadError')}</p> : null}
         {sendAll.isError || sendOne.isError ? <p className="text-sm text-red-600">{t('sendFailed')}</p> : null}
-        <ReportTable
-          items={query.data?.items ?? []}
+        <ParentReportTable
+          items={shown}
           loading={query.isLoading}
+          noMatches={!query.isLoading && items.length > 0 && shown.length === 0}
+          fromMonth={filters.fromMonth}
+          toMonth={filters.toMonth}
           sendingId={sendOne.isPending ? sendOne.variables : null}
           onPreview={async (studentId) => {
             if (!activeQuarter) return;
@@ -61,31 +81,28 @@ export function ParentReportsPage() {
   );
 }
 
-function QuarterToolbar({
+function ReportToolbar({
   daysPassed,
   daysLeft,
+  shown,
+  months,
   canSend,
-  sendLabel,
   onSend,
 }: {
   daysPassed: number | undefined;
   daysLeft: number | undefined;
+  shown: number;
+  months: number;
   canSend: boolean;
-  sendLabel: string;
   onSend: () => void;
 }) {
+  const t = useTranslations('parentReportsPage');
   return (
     <div className="flex flex-wrap items-center gap-3">
-      {daysPassed != null && daysLeft != null ? (
-        <QuarterTiming daysPassed={daysPassed} daysLeft={daysLeft} />
-      ) : null}
-      <Button
-        type="button"
-        className="h-11 min-h-11 rounded-[15px]"
-        disabled={!canSend}
-        onClick={onSend}
-      >
-        {sendLabel}
+      {daysPassed != null && daysLeft != null ? <QuarterTiming daysPassed={daysPassed} daysLeft={daysLeft} /> : null}
+      <p className="text-sm text-slate-600">{t('rangeSummary', { shown, months })}</p>
+      <Button type="button" className="h-11 min-h-11 rounded-[15px]" disabled={!canSend} onClick={onSend}>
+        {t('sendAll')}
       </Button>
     </div>
   );
@@ -105,113 +122,5 @@ function QuarterTiming({ daysPassed, daysLeft }: { daysPassed: number; daysLeft:
         <div className="h-full rounded-full bg-[#1010a3]" style={{ width: `${percent}%` }} />
       </div>
     </div>
-  );
-}
-
-function ReportTable({
-  items,
-  loading,
-  sendingId,
-  onPreview,
-  onSend,
-}: {
-  items: ParentReportItem[];
-  loading: boolean;
-  sendingId: string | undefined | null;
-  onPreview: (studentId: string) => Promise<void>;
-  onSend: (studentId: string) => void;
-}) {
-  const t = useTranslations('parentReportsPage');
-  if (loading) {
-    return <p className="text-sm text-slate-500">{t('loading')}</p>;
-  }
-  if (items.length === 0) {
-    return <p className="text-sm text-slate-500">{t('empty')}</p>;
-  }
-  return (
-    <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white">
-      <table className="min-w-full text-left text-sm">
-        <thead className="bg-slate-50 text-slate-500">
-          <tr>
-            <th className="px-4 py-3 font-medium">{t('student')}</th>
-            <th className="px-4 py-3 font-medium">{t('parent')}</th>
-            <th className="px-4 py-3 font-medium">{t('email')}</th>
-            <th className="px-4 py-3 font-medium">{t('group')}</th>
-            <th className="px-4 py-3 font-medium">{t('status')}</th>
-            <th className="px-4 py-3 font-medium" />
-          </tr>
-        </thead>
-        <tbody>
-          {items.map((item) => (
-            <ReportRow
-              key={item.studentId}
-              item={item}
-              sending={sendingId === item.studentId}
-              onPreview={onPreview}
-              onSend={onSend}
-            />
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
-}
-
-function ReportRow({
-  item,
-  sending,
-  onPreview,
-  onSend,
-}: {
-  item: ParentReportItem;
-  sending: boolean;
-  onPreview: (studentId: string) => Promise<void>;
-  onSend: (studentId: string) => void;
-}) {
-  const t = useTranslations('parentReportsPage');
-  const canSend = Boolean(item.parentEmail) && item.receiveReports && !item.sentAt;
-  return (
-    <tr className="border-t border-slate-100">
-      <td className="px-4 py-3">{item.studentName}</td>
-      <td className="px-4 py-3">{item.parentName || '—'}</td>
-      <td className="px-4 py-3">{item.parentEmail || t('missingEmail')}</td>
-      <td className="px-4 py-3">{item.groupName || '—'}</td>
-      <td className="px-4 py-3">{statusLabel(item, t)}</td>
-      <td className="px-4 py-3">
-        <div className="flex gap-2">
-          <Button type="button" variant="outline" size="sm" onClick={() => void onPreview(item.studentId)}>
-            {t('preview')}
-          </Button>
-          <Button type="button" size="sm" disabled={!canSend || sending} onClick={() => onSend(item.studentId)}>
-            {t('send')}
-          </Button>
-        </div>
-      </td>
-    </tr>
-  );
-}
-
-function statusLabel(
-  item: ParentReportItem,
-  t: (key: string, values?: { date: string }) => string,
-): string {
-  if (!item.receiveReports) return t('reportsOff');
-  if (!item.parentEmail) return t('missingEmail');
-  if (item.sentAt) return t('sentOn', { date: new Date(item.sentAt).toLocaleDateString() });
-  return t('notSent');
-}
-
-function LetterPreview({ letter, onClose }: { letter: ParentReportLetter; onClose: () => void }) {
-  const t = useTranslations('parentReportsPage');
-  return (
-    <section className="rounded-2xl border border-slate-200 bg-white p-4">
-      <div className="flex items-start justify-between gap-3">
-        <h2 className="text-base font-semibold text-slate-900">{letter.subject}</h2>
-        <Button type="button" variant="outline" size="sm" onClick={onClose}>
-          {t('close')}
-        </Button>
-      </div>
-      <pre className="mt-4 whitespace-pre-wrap text-sm text-slate-700">{letter.text}</pre>
-    </section>
   );
 }

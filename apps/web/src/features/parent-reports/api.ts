@@ -5,9 +5,11 @@ export type ParentReportItem = {
   studentName: string;
   parentName: string | null;
   parentEmail: string | null;
+  groupId: string | null;
   groupName: string | null;
   receiveReports: boolean;
   sentAt: string | null;
+  sentQuarters: string[];
 };
 
 export type ParentReportList = {
@@ -45,6 +47,9 @@ export async function sendParentReport(
   return api.post<{ sent: boolean }>(`${BASE}/send`, { studentId, quarterKey });
 }
 
-export async function sendParentQuarter(quarterKey: string): Promise<{ sent: number; skipped: number }> {
-  return api.post<{ sent: number; skipped: number }>(`${BASE}/send-all`, { quarterKey });
+export async function sendParentQuarter(
+  quarterKey: string,
+  studentIds: string[],
+): Promise<{ sent: number; skipped: number }> {
+  return api.post<{ sent: number; skipped: number }>(`${BASE}/send-all`, { quarterKey, studentIds });
 }

@@ -35,6 +35,6 @@ export class ParentReportsController {
   @Post('send-all')
   @Roles(UserRole.ADMIN, UserRole.MANAGER)
   sendAll(@Body() dto: SendParentQuarterDto, @CurrentUser() user: JwtPayload) {
-    return this.reports.sendAll(dto.quarterKey, user);
+    return this.reports.sendAll(dto.quarterKey, user, dto.studentIds);
   }
 }

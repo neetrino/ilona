@@ -28,7 +28,7 @@ type ReportStudent = {
   centerId: string | null;
   user: { firstName: string; lastName: string };
   group: { id: string; name: string; centerId: string } | null;
-  parentQuarterlyReports: Array<{ sentAt: Date; parentEmail: string }>;
+  parentQuarterlyReports: Array<{ quarterKey: string; sentAt: Date; parentEmail: string }>;
 };
 
 @Injectable()
@@ -41,13 +41,13 @@ export class ParentReportService {
   async list(quarterKey: string | undefined, user?: JwtPayload) {
     const key = quarterKey ?? quarterKeyFromDate(new Date());
     const centerId = getManagerCenterIdOrThrow(user);
-    const students = await this.findStudents(key, centerId);
+    const students = await this.findStudents(centerId);
     const progress = quarterSendProgress(key, new Date());
     return {
       quarterKey: key,
       daysPassed: progress.daysPassed,
       daysLeft: progress.daysLeft,
-      items: students.map((student) => this.toListItem(student)),
+      items: students.map((student) => this.toListItem(student, key)),
     };
   }
 
@@ -62,12 +62,19 @@ export class ParentReportService {
     return { sent: await this.deliver(student, quarterKey) };
   }
 
-  async sendAll(quarterKey: string, user?: JwtPayload): Promise<{ sent: number; skipped: number }> {
+  async sendAll(
+    quarterKey: string,
+    user?: JwtPayload,
+    studentIds?: string[],
+  ): Promise<{ sent: number; skipped: number }> {
     const centerId = user ? getManagerCenterIdOrThrow(user) : undefined;
-    const students = await this.findStudents(quarterKey, centerId);
+    const students = await this.findStudents(centerId);
+    const chosen = studentIds
+      ? students.filter((student) => studentIds.includes(student.id))
+      : students;
     let sent = 0;
     let skipped = 0;
-    for (const student of students) {
+    for (const student of chosen) {
       const delivered = await this.deliver(student, quarterKey);
       if (delivered) {
         sent += 1;
@@ -87,7 +94,8 @@ export class ParentReportService {
   }
 
   private async deliver(student: ReportStudent, quarterKey: string): Promise<boolean> {
-    if (!student.receiveReports || !student.parentEmail || student.parentQuarterlyReports.length > 0) {
+    const alreadySent = student.parentQuarterlyReports.some((report) => report.quarterKey === quarterKey);
+    if (!student.receiveReports || !student.parentEmail || alreadySent) {
       return false;
     }
     const letter = await this.compose(student, quarterKey);
@@ -139,7 +147,7 @@ export class ParentReportService {
 
   private async requireStudent(studentId: string, quarterKey: string, user?: JwtPayload): Promise<ReportStudent> {
     const centerId = getManagerCenterIdOrThrow(user);
-    const student = await this.findStudents(quarterKey, centerId, studentId);
+    const student = await this.findStudents(centerId, studentId);
     const match = student[0];
     if (!match) {
       throw new NotFoundException('Student not found');
@@ -156,11 +164,7 @@ export class ParentReportService {
     }
   }
 
-  private async findStudents(
-    quarterKey: string,
-    centerId: string | undefined,
-    studentId?: string,
-  ): Promise<ReportStudent[]> {
+  private async findStudents(centerId: string | undefined, studentId?: string): Promise<ReportStudent[]> {
     return this.prisma.student.findMany({
       where: {
         status: 'ACTIVE',
@@ -178,24 +182,25 @@ export class ParentReportService {
         user: { select: { firstName: true, lastName: true } },
         group: { select: { id: true, name: true, centerId: true } },
         parentQuarterlyReports: {
-          where: { quarterKey },
-          select: { sentAt: true, parentEmail: true },
+          select: { quarterKey: true, sentAt: true, parentEmail: true },
         },
       },
       orderBy: [{ user: { lastName: 'asc' } }, { user: { firstName: 'asc' } }],
     });
   }
 
-  private toListItem(student: ReportStudent) {
-    const sent = student.parentQuarterlyReports[0];
+  private toListItem(student: ReportStudent, quarterKey: string) {
+    const sent = student.parentQuarterlyReports.find((report) => report.quarterKey === quarterKey);
     return {
       studentId: student.id,
       studentName: `${student.user.firstName} ${student.user.lastName}`.trim(),
       parentName: student.parentName,
       parentEmail: student.parentEmail,
+      groupId: student.group?.id ?? null,
       groupName: student.group?.name ?? null,
       receiveReports: student.receiveReports,
       sentAt: sent?.sentAt.toISOString() ?? null,
+      sentQuarters: student.parentQuarterlyReports.map((report) => report.quarterKey),
     };
   }
 }
