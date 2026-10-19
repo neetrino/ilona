@@ -5,7 +5,7 @@ import { PrismaService } from '../prisma/prisma.service';
 
 export type CreateNotificationInput = {
   userIds: string[];
-  type: InboxNotificationType | string;
+  type: InboxNotificationType;
   title: string;
   content: string;
   data?: NotificationData;

@@ -14,7 +14,7 @@ function createPaymentsService(prisma: unknown): PaymentsService {
   const query = new PaymentQueryService(prisma as PrismaService);
   const notifications = {
     runSafe: async (_label: string, task: () => Promise<void>) => task(),
-    notifyPaymentConfirmed: async () => undefined,
+    notifyPaymentConfirmed: () => Promise.resolve(),
   };
   const write = new PaymentWriteService(
     prisma as PrismaService,
