@@ -52,12 +52,12 @@ export class ParentReportService {
   }
 
   async preview(studentId: string, quarterKey: string, user?: JwtPayload): Promise<ParentReportLetter> {
-    const student = await this.requireStudent(studentId, quarterKey, user);
+    const student = await this.requireStudent(studentId, user);
     return this.compose(student, quarterKey);
   }
 
   async sendOne(studentId: string, quarterKey: string, user?: JwtPayload): Promise<{ sent: boolean }> {
-    const student = await this.requireStudent(studentId, quarterKey, user);
+    const student = await this.requireStudent(studentId, user);
     this.assertSendable(student);
     return { sent: await this.deliver(student, quarterKey) };
   }
@@ -145,7 +145,7 @@ export class ParentReportService {
     });
   }
 
-  private async requireStudent(studentId: string, quarterKey: string, user?: JwtPayload): Promise<ReportStudent> {
+  private async requireStudent(studentId: string, user?: JwtPayload): Promise<ReportStudent> {
     const centerId = getManagerCenterIdOrThrow(user);
     const student = await this.findStudents(centerId, studentId);
     const match = student[0];
