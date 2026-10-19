@@ -5,6 +5,25 @@ const QUARTER_KEY = /^(\d{4})-Q([1-4])$/;
 
 export type QuarterBounds = { start: Date; end: Date };
 
+export type QuarterPresence = {
+  startedAt: Date;
+  groupHistory: Array<{ joinedAt: Date; leftAt: Date | null }>;
+};
+
+export function studentWasInQuarter(student: QuarterPresence, bounds: QuarterBounds): boolean {
+  if (!(student.startedAt < bounds.end)) return false;
+  if (student.groupHistory.length === 0) return true;
+  const overlapped = student.groupHistory.some(
+    (entry) => entry.joinedAt < bounds.end && (entry.leftAt == null || entry.leftAt > bounds.start),
+  );
+  if (overlapped) return true;
+  const firstJoin = student.groupHistory.reduce(
+    (earliest, entry) => (entry.joinedAt < earliest ? entry.joinedAt : earliest),
+    student.groupHistory[0].joinedAt,
+  );
+  return firstJoin > bounds.start;
+}
+
 export function quarterKeyFromDate(date: Date): string {
   const [year, month] = getCalendarDateInTimezone(date).split('-').map(Number);
   return `${year}-Q${Math.ceil(month / 3)}`;

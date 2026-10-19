@@ -19,6 +19,8 @@ import {
   quarterSendProgress,
   previousQuarterKey,
   recentQuarterKeys,
+  studentWasInQuarter,
+  type QuarterBounds,
 } from './parent-quarter.util';
 
 type ReportStudent = {
@@ -29,6 +31,14 @@ type ReportStudent = {
   user: { firstName: string; lastName: string };
   group: { id: string; name: string; centerId: string } | null;
   parentQuarterlyReports: Array<{ quarterKey: string; sentAt: Date; parentEmail: string }>;
+  registerDate?: Date | null;
+  enrolledAt?: Date;
+  createdAt?: Date;
+  groupHistory?: Array<{
+    joinedAt: Date;
+    leftAt: Date | null;
+    group: { id: string; name: string; centerId: string };
+  }>;
 };
 
 @Injectable()
@@ -42,8 +52,9 @@ export class ParentReportService {
     const currentQuarterKey = quarterKeyFromDate(new Date());
     const key = quarterKey ?? currentQuarterKey;
     const centerId = getManagerCenterIdOrThrow(user);
+    const past = key !== currentQuarterKey;
     const [students, history] = await Promise.all([
-      this.findStudents(centerId),
+      this.findStudents(centerId, undefined, past ? quarterBounds(key) : undefined),
       this.loadHistory(centerId, currentQuarterKey),
     ]);
     const progress = quarterSendProgress(key, new Date());
@@ -185,28 +196,42 @@ export class ParentReportService {
     }));
   }
 
-  private async findStudents(centerId: string | undefined, studentId?: string): Promise<ReportStudent[]> {
-    return this.prisma.student.findMany({
+  private async findStudents(
+    centerId: string | undefined,
+    studentId?: string,
+    period?: QuarterBounds,
+  ): Promise<ReportStudent[]> {
+    const rows = await this.prisma.student.findMany({
       where: {
-        status: 'ACTIVE',
+        ...(studentId || period ? {} : { status: 'ACTIVE' as const }),
         ...(studentId ? { id: studentId } : {}),
-        ...(centerId
-          ? { OR: [{ centerId }, { group: { centerId } }] }
-          : {}),
+        ...(centerId ? { OR: centerMatch(centerId, Boolean(period || studentId)) } : {}),
       },
       select: {
         id: true,
         parentName: true,
         parentEmail: true,
         centerId: true,
+        registerDate: true,
+        enrolledAt: true,
+        createdAt: true,
         user: { select: { firstName: true, lastName: true } },
         group: { select: { id: true, name: true, centerId: true } },
+        groupHistory: {
+          select: {
+            joinedAt: true,
+            leftAt: true,
+            group: { select: { id: true, name: true, centerId: true } },
+          },
+        },
         parentQuarterlyReports: {
           select: { quarterKey: true, sentAt: true, parentEmail: true },
         },
       },
       orderBy: [{ user: { lastName: 'asc' } }, { user: { firstName: 'asc' } }],
     });
+    const present = period ? rows.filter((row) => wasPresent(row, period)) : rows;
+    return present.map((row) => withQuarterGroup(row, period));
   }
 
   private toListItem(student: ReportStudent, quarterKey: string) {
@@ -222,6 +247,30 @@ export class ParentReportService {
       sentQuarters: student.parentQuarterlyReports.map((report) => report.quarterKey),
     };
   }
+}
+
+function centerMatch(centerId: string, includeHistory: boolean) {
+  const match = [{ centerId }, { group: { centerId } }];
+  if (!includeHistory) return match;
+  return [...match, { groupHistory: { some: { group: { centerId } } } }];
+}
+
+function wasPresent(student: ReportStudent, period: QuarterBounds): boolean {
+  return studentWasInQuarter(
+    {
+      startedAt: student.registerDate ?? student.enrolledAt ?? student.createdAt ?? period.end,
+      groupHistory: student.groupHistory ?? [],
+    },
+    period,
+  );
+}
+
+function withQuarterGroup(student: ReportStudent, period?: QuarterBounds): ReportStudent {
+  if (!period) return student;
+  const match = (student.groupHistory ?? [])
+    .filter((entry) => entry.joinedAt < period.end && (entry.leftAt == null || entry.leftAt > period.start))
+    .sort((left, right) => right.joinedAt.getTime() - left.joinedAt.getTime())[0];
+  return match ? { ...student, group: match.group } : student;
 }
 
 export function assertManagerCanAccessCenter(

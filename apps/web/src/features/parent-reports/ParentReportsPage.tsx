@@ -75,6 +75,7 @@ export function ParentReportsPage() {
           items={shown}
           loading={query.isLoading}
           noMatches={!query.isLoading && items.length > 0 && shown.length === 0}
+          emptyLabel={viewingCurrent ? undefined : t('pastEmpty')}
           sendingId={sending.sendOne.isPending ? sending.sendOne.variables : null}
           cardBase={cardBase}
           allowSend={viewingCurrent}

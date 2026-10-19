@@ -37,6 +37,7 @@ export function ParentReportTable({
   items,
   loading,
   noMatches,
+  emptyLabel,
   sendingId,
   cardBase,
   allowSend,
@@ -46,6 +47,7 @@ export function ParentReportTable({
   items: ParentReportItem[];
   loading: boolean;
   noMatches: boolean;
+  emptyLabel?: string;
   sendingId: string | undefined | null;
   cardBase: string;
   allowSend: boolean;
@@ -60,7 +62,7 @@ export function ParentReportTable({
     return <p className="text-sm text-slate-500">{t('noMatches')}</p>;
   }
   if (items.length === 0) {
-    return <p className="text-sm text-slate-500">{t('empty')}</p>;
+    return <p className="text-sm text-slate-500">{emptyLabel ?? t('empty')}</p>;
   }
   return (
     <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white">

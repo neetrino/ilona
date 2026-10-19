@@ -1927,6 +1927,7 @@
     "openCard": "Open card",
     "historySent": "{count} sent",
     "pastOnly": "This quarter is closed. You can only see who received the letter",
+    "pastEmpty": "No students in this quarter",
     "missingEmail": "No email",
     "reportsOff": "Reports are off",
     "notSent": "Not sent",

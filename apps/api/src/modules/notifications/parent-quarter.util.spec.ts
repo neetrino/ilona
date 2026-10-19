@@ -1,6 +1,7 @@
 import {
   quarterBounds,
   quarterKeyFromDate,
+  studentWasInQuarter,
   quarterSendProgress,
   previousQuarterKey,
   recentQuarterKeys,
@@ -28,6 +29,31 @@ describe('parent quarter keys', () => {
     const progress = quarterSendProgress('2026-Q4', new Date('2026-12-31T08:00:00.000Z'));
     expect(progress.daysLeft).toBe(0);
     expect(progress.daysPassed).toBe(92);
+  });
+
+  it('keeps students who had already joined and had not left', () => {
+    const bounds = quarterBounds('2026-Q1');
+    expect(
+      studentWasInQuarter({ startedAt: new Date('2026-10-01'), groupHistory: [] }, bounds),
+    ).toBe(false);
+    expect(
+      studentWasInQuarter(
+        {
+          startedAt: new Date('2026-01-10'),
+          groupHistory: [{ joinedAt: new Date('2026-01-10'), leftAt: new Date('2026-02-01') }],
+        },
+        bounds,
+      ),
+    ).toBe(true);
+    expect(
+      studentWasInQuarter(
+        {
+          startedAt: new Date('2026-01-10'),
+          groupHistory: [{ joinedAt: new Date('2026-01-10'), leftAt: new Date('2026-02-01') }],
+        },
+        quarterBounds('2026-Q2'),
+      ),
+    ).toBe(false);
   });
 
   it('bounds a quarter in Asia/Yerevan', () => {
