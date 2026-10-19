@@ -52,6 +52,7 @@ export interface StructuredFeedbackFields {
   /** Free-text progress comment (not the area/topic labels). */
   progress: string;
   encouragement: string;
+  recommendGroupChange: boolean;
 }
 
 export const DEFAULT_FEEDBACK_LEVEL = 'A1';
@@ -71,6 +72,7 @@ export function emptyStructuredFeedback(): StructuredFeedbackFields {
     progressTopicCustom: '',
     progress: '',
     encouragement: '',
+    recommendGroupChange: false,
   };
 }
 
@@ -110,6 +112,7 @@ type SavedFeedbackSlice = {
   participation?: number | null;
   progress?: string | null;
   encouragement?: string | null;
+  recommendGroupChange?: boolean;
 } | null;
 
 /** Merge API structured fields with legacy `content` parsing. */
@@ -161,6 +164,7 @@ export function structuredFromSavedFeedback(saved: SavedFeedbackSlice): Structur
     progressTopicCustom,
     progress,
     encouragement: saved.encouragement ?? parsed.encouragement,
+    recommendGroupChange: saved.recommendGroupChange ?? parsed.recommendGroupChange,
   };
 }
 

@@ -13,6 +13,7 @@ import { JwtPayload } from '../../common/types/auth.types';
 import { getManagerCenterIdOrThrow } from '../../common/utils/manager-scope.util';
 import { randomUUID } from 'crypto';
 import { GroupChatSyncService } from '../groups/group-chat-sync.service';
+import { NotificationEventsService } from '../notifications/notification-events.service';
 
 @Injectable()
 export class StudentGroupService {
@@ -20,6 +21,7 @@ export class StudentGroupService {
     private readonly prisma: PrismaService,
     private readonly chatService: ChatService,
     private readonly chatSync: GroupChatSyncService,
+    private readonly notifications: NotificationEventsService,
   ) {}
 
   async changeGroup(id: string, newGroupId: string | null, user?: JwtPayload): Promise<unknown> {
@@ -131,8 +133,7 @@ export class StudentGroupService {
       }
     }
 
-    // Return updated student with full details
-    return this.prisma.student.findUnique({
+    const updated = await this.prisma.student.findUnique({
       where: { id },
       include: {
         user: {
@@ -159,6 +160,20 @@ export class StudentGroupService {
         },
       },
     });
+
+    if (updated?.groupId && oldGroupId !== updated.groupId) {
+      const nextGroupId = updated.groupId;
+      await this.notifications.runSafe('student-group-change', () =>
+        this.notifications.notifyTeachersNewStudent({
+          groupId: nextGroupId,
+          studentId: updated.id,
+          studentName: `${updated.user.firstName} ${updated.user.lastName}`,
+          groupName: updated.group?.name ?? 'group',
+        }),
+      );
+    }
+
+    return updated;
   }
 }
 

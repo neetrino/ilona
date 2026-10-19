@@ -13,6 +13,7 @@ import { LessonReadService } from './lesson-read.service';
 import { LessonManagerAccessService } from './lesson-manager-access.service';
 import { SalariesService } from '../finance/salaries.service';
 import { teacherCanActOnLesson } from '../../common/lesson-instructor';
+import { NotificationEventsService } from '../notifications/notification-events.service';
 
 @Injectable()
 export class LessonUpdateService {
@@ -23,6 +24,7 @@ export class LessonUpdateService {
     private readonly managerAccessService: LessonManagerAccessService,
     @Inject(forwardRef(() => SalariesService))
     private readonly salariesService: SalariesService,
+    private readonly notifications: NotificationEventsService,
   ) {}
 
   async update(
@@ -129,29 +131,40 @@ export class LessonUpdateService {
       }
     }
 
-    return this.prisma.lesson
-      .update({
-        where: { id },
-        data: {
-          scheduledAt: dto.scheduledAt ? new Date(dto.scheduledAt) : undefined,
-          duration: dto.duration,
-          topic: dto.topic,
-          description: dto.description,
-          notes: dto.notes,
-          ...(nextSubstituteId !== undefined ? { substituteTeacherId: nextSubstituteId } : {}),
+    const row = await this.prisma.lesson.update({
+      where: { id },
+      data: {
+        scheduledAt: dto.scheduledAt ? new Date(dto.scheduledAt) : undefined,
+        duration: dto.duration,
+        topic: dto.topic,
+        description: dto.description,
+        notes: dto.notes,
+        ...(nextSubstituteId !== undefined ? { substituteTeacherId: nextSubstituteId } : {}),
+      },
+      include: {
+        group: { select: { id: true, name: true, centerId: true } },
+        teacher: {
+          include: { user: { select: { id: true, firstName: true, lastName: true } } },
         },
-        include: {
-          group: { select: { id: true, name: true, centerId: true } },
-          teacher: {
-            include: { user: { select: { id: true, firstName: true, lastName: true } } },
-          },
-          substituteTeacher: {
-            include: { user: { select: { id: true, firstName: true, lastName: true } } },
-          },
-          dailyPlan: { select: { id: true, createdAt: true } },
+        substituteTeacher: {
+          include: { user: { select: { id: true, firstName: true, lastName: true } } },
         },
-      })
-      .then((row) => this.enrichmentService.enrichLesson(row));
+        dailyPlan: { select: { id: true, createdAt: true } },
+      },
+    });
+
+    if (nextSubstituteId) {
+      await this.notifications.runSafe('substitute-assigned', () =>
+        this.notifications.notifySubstituteAssigned({
+          substituteTeacherId: nextSubstituteId,
+          groupName: row.group.name,
+          lessonId: row.id,
+          scheduledAt: row.scheduledAt,
+        }),
+      );
+    }
+
+    return this.enrichmentService.enrichLesson(row);
   }
 
   async setSubstituteForGroupDay(
@@ -245,6 +258,24 @@ export class LessonUpdateService {
         this.salariesService.recalculateSalaryForMonth(teacherId, month).catch(() => undefined),
       ),
     );
+
+    const firstLesson = lessons[0];
+    if (nextSub && firstLesson) {
+      const groupName = (
+        await this.prisma.group.findUnique({
+          where: { id: params.groupId },
+          select: { name: true },
+        })
+      )?.name ?? 'group';
+      await this.notifications.runSafe('substitute-assigned-day', () =>
+        this.notifications.notifySubstituteAssigned({
+          substituteTeacherId: nextSub,
+          groupName,
+          lessonId: firstLesson.id,
+          scheduledAt: firstLesson.scheduledAt,
+        }),
+      );
+    }
 
     return { updatedCount: lessons.length, lessonIds: lessons.map((l) => l.id) };
   }

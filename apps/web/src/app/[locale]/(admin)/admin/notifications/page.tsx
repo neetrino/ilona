@@ -1,5 +1,7 @@
 'use client';
 
-import { AdminNotificationsPage } from '@/features/admin-dashboard/AdminNotificationsPage';
+import { NotificationsInboxPage } from '@/features/notifications';
 
-export default AdminNotificationsPage;
+export default function AdminNotificationsRoute() {
+  return <NotificationsInboxPage variant="admin" />;
+}

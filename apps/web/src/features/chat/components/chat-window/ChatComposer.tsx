@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { cn } from '@/shared/lib/utils';
 import type { ChatThemeTokens } from '../../lib/chat-theme';
@@ -26,7 +27,8 @@ interface ChatComposerProps {
   isUploadingVoiceToTeacher: boolean;
   onInputChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
   onKeyDown: (e: React.KeyboardEvent) => void;
-  onSend: () => void;
+  onSend: (metadata?: Record<string, unknown>) => void;
+  teacherUserIdsToNotify?: string[];
   onStartVoiceRecorder: () => void;
   onCancelVoiceRecorder: () => void;
   onVoiceRecorded: (file: File, durationSec: number, mimeType: string) => void;
@@ -56,6 +58,7 @@ export function ChatComposer({
   onInputChange,
   onKeyDown,
   onSend,
+  teacherUserIdsToNotify = [],
   onStartVoiceRecorder,
   onCancelVoiceRecorder,
   onVoiceRecorded,
@@ -64,7 +67,9 @@ export function ChatComposer({
   onVoiceToTeacherRecorded,
 }: ChatComposerProps) {
   const tChat = useTranslations('chat');
+  const tInbox = useTranslations('inbox');
   const voiceVariant = isPortalChatRole(userRole) ? 'student' : 'default';
+  const [notifyTeacher, setNotifyTeacher] = useState(false);
 
   return (
     <div
@@ -106,6 +111,17 @@ export function ChatComposer({
           )}
         </div>
       ) : (
+        <>
+        {teacherUserIdsToNotify.length > 0 ? (
+          <label className={cn('mb-2 flex items-center gap-2 text-xs', ui.muted)}>
+            <input
+              type="checkbox"
+              checked={notifyTeacher}
+              onChange={(e) => setNotifyTeacher(e.target.checked)}
+            />
+            {tInbox('notifyTeacher')}
+          </label>
+        ) : null}
         <div className={cn('flex gap-2', useMobileComposerSizing ? 'items-center' : 'items-end')}>
           <textarea
             ref={inputRef}
@@ -157,7 +173,13 @@ export function ChatComposer({
           )}
 
           <button
-            onClick={onSend}
+            onClick={() =>
+              onSend(
+                notifyTeacher && teacherUserIdsToNotify.length > 0
+                  ? { mentionedUserIds: teacherUserIdsToNotify }
+                  : undefined,
+              )
+            }
             disabled={!inputValue.trim()}
             className={cn(
               mobileComposerBtnClass,
@@ -175,6 +197,7 @@ export function ChatComposer({
             </svg>
           </button>
         </div>
+        </>
       )}
     </div>
   );

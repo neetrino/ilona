@@ -1,5 +1,8 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { useTranslations } from 'next-intl';
+import { useQueryClient } from '@tanstack/react-query';
+import { readUrlSearchParam } from '@/shared/lib/url-search-params';
+import { useAppSearchUrl } from '@/shared/hooks/useAppSearchUrl';
 import { sendMessageHttp } from '../../api/chat.api';
 import type { Chat, Message } from '../../types';
 import { uploadChatVoiceFile } from './chat-voice-upload';
@@ -20,15 +23,39 @@ export function useChatVoiceHandlers({
   createDirectChat,
 }: UseChatVoiceHandlersOptions) {
   const tChat = useTranslations('chat');
+  const queryClient = useQueryClient();
+  const { searchParams, urlRevision, replaceAllParams } = useAppSearchUrl();
   const [showVoiceRecorder, setShowVoiceRecorder] = useState(false);
   const [showVoiceToTeacherRecorder, setShowVoiceToTeacherRecorder] = useState(false);
   const [isUploadingVoice, setIsUploadingVoice] = useState(false);
   const [isUploadingVoiceToTeacher, setIsUploadingVoiceToTeacher] = useState(false);
+  const [lessonIdForVoice, setLessonIdForVoice] = useState<string | null>(null);
+  const consumedRecordBootRef = useRef(false);
 
   useEffect(() => {
     setShowVoiceRecorder(false);
     setShowVoiceToTeacherRecorder(false);
+    consumedRecordBootRef.current = false;
   }, [chat.id]);
+
+  useEffect(() => {
+    if (consumedRecordBootRef.current || !teacherUserIdForVoice) {
+      return;
+    }
+    const record = readUrlSearchParam('record', searchParams, urlRevision);
+    const lessonId = readUrlSearchParam('lessonId', searchParams, urlRevision);
+    if (record !== '1') {
+      return;
+    }
+
+    consumedRecordBootRef.current = true;
+    setLessonIdForVoice(lessonId);
+    setShowVoiceToTeacherRecorder(true);
+    replaceAllParams((params) => {
+      params.delete('record');
+      params.delete('lessonId');
+    });
+  }, [teacherUserIdForVoice, searchParams, urlRevision, replaceAllParams]);
 
   const handleVoiceRecorded = useCallback(
     async (file: File, durationSec: number, _mimeType: string) => {
@@ -69,16 +96,28 @@ export function useChatVoiceHandlers({
           targetChatId = dmChat.id;
         }
 
+        const metadata: Record<string, unknown> = {
+          voiceToTeacher: true,
+          teacherId: teacherUserIdForVoice,
+        };
+        if (lessonIdForVoice) {
+          metadata.lessonId = lessonIdForVoice;
+        }
+
         const message = await sendMessageHttp(targetChatId, '', 'VOICE', {
           fileUrl,
           fileName,
           fileSize,
           duration: durationSec,
-          metadata: { voiceToTeacher: true, teacherId: teacherUserIdForVoice },
+          metadata,
         });
 
         addMessageToCache(targetChatId, message);
         setShowVoiceToTeacherRecorder(false);
+        if (lessonIdForVoice) {
+          void queryClient.invalidateQueries({ queryKey: ['notifications'] });
+        }
+        setLessonIdForVoice(null);
       } catch (error) {
         console.error('Failed to send voice to teacher:', error);
         const msg = error instanceof Error ? error.message : tChat('sendVoiceToTeacherFailed');
@@ -95,6 +134,8 @@ export function useChatVoiceHandlers({
       createDirectChat,
       addMessageToCache,
       tChat,
+      lessonIdForVoice,
+      queryClient,
     ],
   );
 

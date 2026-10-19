@@ -297,6 +297,7 @@ exports.Prisma.AttendanceScalarFieldEnum = {
   studentId: 'studentId',
   markedById: 'markedById',
   isPresent: 'isPresent',
+  isLate: 'isLate',
   absenceType: 'absenceType',
   note: 'note',
   markedAt: 'markedAt',
@@ -320,6 +321,7 @@ exports.Prisma.FeedbackScalarFieldEnum = {
   participation: 'participation',
   progress: 'progress',
   encouragement: 'encouragement',
+  recommendGroupChange: 'recommendGroupChange',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };

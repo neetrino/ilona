@@ -7,6 +7,7 @@ import { ChatBackButton } from '@/shared/components/ui/chat-back-button';
 import { LandingNavbarLanguageToggle } from '@/shared/components/layout/LandingNavbarLanguageToggle';
 import { StudentLogoutControl } from '@/shared/components/layout/StudentLogoutControl';
 import { PortalHeaderSearch } from '@/features/search/components/PortalHeaderSearch';
+import { NotificationBellButton } from '@/features/notifications';
 import { useMyDashboard } from '@/features/students';
 import { isStudentPortalSubpage, isStudentProfilePath, stripLocaleFromPath } from '@/shared/lib/role-routes';
 import { PORTAL_MOBILE_HEADER_ID } from '@/shared/lib/portal-mobile-layout';
@@ -119,6 +120,7 @@ export function StudentDashboardHeader({
             </div>
 
             <div className="flex shrink-0 flex-wrap items-center justify-end gap-1.5 sm:gap-2">
+              <NotificationBellButton />
               <LandingNavbarLanguageToggle className="hidden lg:inline-flex" />
               <div className="inline-flex h-11 shrink-0 items-center gap-1 rounded-full bg-[#ffeb8c] px-2.5 text-xs sm:h-12 sm:gap-1.5 sm:px-3.5 sm:text-sm">
                 <PublicAssetImage

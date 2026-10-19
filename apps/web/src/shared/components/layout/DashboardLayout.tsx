@@ -248,7 +248,7 @@ export function DashboardLayout({
             </div>
           </div>
         </main>
-        {isPortalShell ? <PortalMobileBottomNav showNotifications={isAdminPortal} /> : null}
+        {isPortalShell ? <PortalMobileBottomNav showNotifications /> : null}
         <FloatingChatWidget />
       </div>
     </PortalShellProvider>

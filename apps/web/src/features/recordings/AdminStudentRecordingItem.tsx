@@ -8,6 +8,7 @@ import {
   formatDateTime,
   formatRecordingDuration,
 } from './admin-recordings.utils';
+import { RecordingLessonBadge } from './RecordingLessonBadge';
 
 interface AdminStudentRecordingItemProps {
   recording: AdminStudentRecording;
@@ -51,6 +52,11 @@ export function AdminStudentRecordingItem({
           <p className="text-sm font-semibold text-[#3b3b40]">
             {t('recordingN', { n: indexInDay })}
           </p>
+          {recording.lesson ? (
+            <div className="mt-1.5">
+              <RecordingLessonBadge recording={recording} />
+            </div>
+          ) : null}
         </div>
         <span className="inline-flex shrink-0 rounded-md border border-amber-200 bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-800">
           {sourceLabel}

@@ -1,264 +1,108 @@
-import { NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
-import { describe, it, expect, beforeEach, vi, Mock } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { LessonsService } from './lessons.service';
 
 describe('LessonsService', () => {
   let lessonsService: LessonsService;
-  let mockPrismaService: {
-    lesson: {
-      findMany: Mock;
-      findUnique: Mock;
-      findFirst: Mock;
-      create: Mock;
-      update: Mock;
-      delete: Mock;
-      count: Mock;
-    };
-    group: { findUnique: Mock };
-    teacher: { findUnique: Mock };
+  const crudService = {
+    findAll: vi.fn(),
+    findById: vi.fn(),
+    findByTeacher: vi.fn(),
+    create: vi.fn(),
+    update: vi.fn(),
+    delete: vi.fn(),
+    setSubstituteForGroupDay: vi.fn(),
   };
-
-  const mockLesson = {
-    id: 'lesson-1',
-    groupId: 'group-1',
-    teacherId: 'teacher-1',
-    scheduledAt: new Date('2026-02-03T10:00:00Z'),
-    duration: 60,
-    topic: 'Test Topic',
-    description: 'Test Description',
-    status: 'SCHEDULED' as const,
-    vocabularySent: false,
-    vocabularySentAt: null,
-    feedbacksCompleted: false,
-    completedAt: null,
-    notes: null,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    group: {
-      id: 'group-1',
-      name: 'Test Group',
-      level: 'A1',
-      center: { id: 'center-1', name: 'Test Center' },
-      students: [],
-    },
-    teacher: {
-      id: 'teacher-1',
-      user: { id: 'user-1', firstName: 'John', lastName: 'Doe' },
-    },
-    attendances: [],
-    feedbacks: [],
+  const statusService = {
+    startLesson: vi.fn(),
+    completeLesson: vi.fn(),
+    cancelLesson: vi.fn(),
+  };
+  const actionsService = {
+    markVocabularySent: vi.fn(),
+  };
+  const schedulingService = {
+    getUpcoming: vi.fn(),
+  };
+  const statisticsService = {
+    getLessonStatistics: vi.fn(),
   };
 
   beforeEach(() => {
     vi.clearAllMocks();
-
-    mockPrismaService = {
-      lesson: {
-        findMany: vi.fn(),
-        findUnique: vi.fn(),
-        findFirst: vi.fn(),
-        create: vi.fn(),
-        update: vi.fn(),
-        delete: vi.fn(),
-        count: vi.fn(),
-      },
-      group: { findUnique: vi.fn() },
-      teacher: { findUnique: vi.fn() },
-    };
-
-    const mockSalariesService = {
-      recalculateSalaryForMonth: vi.fn().mockResolvedValue(undefined),
-    };
-
     lessonsService = new LessonsService(
-      mockPrismaService as never,
-      mockSalariesService as never,
+      crudService as never,
+      statusService as never,
+      actionsService as never,
+      schedulingService as never,
+      statisticsService as never,
     );
   });
 
-  describe('findById', () => {
-    it('should return a lesson by id', async () => {
-      mockPrismaService.lesson.findUnique.mockResolvedValue(mockLesson);
-
-      const result = await lessonsService.findById('lesson-1');
-
-      expect(result).toEqual(mockLesson);
-    });
-
-    it('should throw NotFoundException if lesson not found', async () => {
-      mockPrismaService.lesson.findUnique.mockResolvedValue(null);
-
-      await expect(lessonsService.findById('nonexistent')).rejects.toThrow(
-        NotFoundException,
-      );
-    });
+  it('delegates findById', async () => {
+    crudService.findById.mockResolvedValue({ id: 'lesson-1' });
+    await expect(lessonsService.findById('lesson-1')).resolves.toEqual({ id: 'lesson-1' });
+    expect(crudService.findById).toHaveBeenCalledWith('lesson-1', undefined, undefined);
   });
 
-  describe('create', () => {
-    const createDto = {
-      groupId: 'group-1',
-      teacherId: 'teacher-1',
-      scheduledAt: '2026-02-03T10:00:00Z',
-      duration: 60,
-      topic: 'Test Topic',
-    };
-
-    it('should create a new lesson', async () => {
-      mockPrismaService.group.findUnique.mockResolvedValue({ id: 'group-1' });
-      mockPrismaService.teacher.findUnique.mockResolvedValue({ id: 'teacher-1' });
-      mockPrismaService.lesson.findFirst.mockResolvedValue(null);
-      mockPrismaService.lesson.create.mockResolvedValue(mockLesson);
-
-      const result = await lessonsService.create(createDto);
-
-      expect(result).toEqual(mockLesson);
-    });
-
-    it('should throw BadRequestException if group not found', async () => {
-      mockPrismaService.group.findUnique.mockResolvedValue(null);
-
-      await expect(lessonsService.create(createDto)).rejects.toThrow(
-        BadRequestException,
-      );
-    });
-
-    it('should throw BadRequestException if teacher not found', async () => {
-      mockPrismaService.group.findUnique.mockResolvedValue({ id: 'group-1' });
-      mockPrismaService.teacher.findUnique.mockResolvedValue(null);
-
-      await expect(lessonsService.create(createDto)).rejects.toThrow(
-        BadRequestException,
-      );
-    });
-
-    it('should throw BadRequestException if time conflict exists', async () => {
-      mockPrismaService.group.findUnique.mockResolvedValue({ id: 'group-1' });
-      mockPrismaService.teacher.findUnique.mockResolvedValue({ id: 'teacher-1' });
-      mockPrismaService.lesson.findFirst.mockResolvedValue(mockLesson);
-
-      await expect(lessonsService.create(createDto)).rejects.toThrow(
-        BadRequestException,
-      );
-    });
+  it('delegates create', async () => {
+    const dto = { groupId: 'g1', teacherId: 't1', scheduledAt: new Date().toISOString() };
+    crudService.create.mockResolvedValue({ id: 'lesson-1', ...dto });
+    await lessonsService.create(dto as never);
+    expect(crudService.create).toHaveBeenCalledWith(dto, undefined, undefined);
   });
 
-  describe('startLesson', () => {
-    it('should start a scheduled lesson', async () => {
-      mockPrismaService.lesson.findUnique.mockResolvedValue(mockLesson);
-      mockPrismaService.teacher.findUnique.mockResolvedValue({
-        id: 'teacher-1',
-        userId: 'user-1',
-      });
-      mockPrismaService.lesson.update.mockResolvedValue({
-        ...mockLesson,
-        status: 'IN_PROGRESS',
-      });
-
-      const result = await lessonsService.startLesson('lesson-1', 'user-1', 'TEACHER');
-
-      expect(result.status).toBe('IN_PROGRESS');
-    });
-
-    it('should throw ForbiddenException if teacher is not assigned', async () => {
-      mockPrismaService.lesson.findUnique.mockResolvedValue(mockLesson);
-      mockPrismaService.teacher.findUnique.mockResolvedValue({
-        id: 'teacher-2',
-        userId: 'user-2',
-      });
-
-      await expect(
-        lessonsService.startLesson('lesson-1', 'user-2', 'TEACHER'),
-      ).rejects.toThrow(ForbiddenException);
-    });
-
-    it('should throw BadRequestException if lesson is not scheduled', async () => {
-      mockPrismaService.lesson.findUnique.mockResolvedValue({
-        ...mockLesson,
-        status: 'COMPLETED',
-      });
-      mockPrismaService.teacher.findUnique.mockResolvedValue({
-        id: 'teacher-1',
-        userId: 'user-1',
-      });
-
-      await expect(
-        lessonsService.startLesson('lesson-1', 'user-1', 'TEACHER'),
-      ).rejects.toThrow(BadRequestException);
-    });
+  it('delegates update', async () => {
+    crudService.update.mockResolvedValue({ id: 'lesson-1', topic: 'Updated' });
+    await lessonsService.update('lesson-1', { topic: 'Updated' } as never);
+    expect(crudService.update).toHaveBeenCalledWith(
+      'lesson-1',
+      { topic: 'Updated' },
+      undefined,
+      undefined,
+    );
   });
 
-  describe('completeLesson', () => {
-    it('should complete a lesson', async () => {
-      mockPrismaService.lesson.findUnique.mockResolvedValue({
-        ...mockLesson,
-        status: 'IN_PROGRESS',
-      });
-      mockPrismaService.teacher.findUnique.mockResolvedValue({
-        id: 'teacher-1',
-        userId: 'user-1',
-      });
-      mockPrismaService.lesson.update.mockResolvedValue({
-        ...mockLesson,
-        status: 'COMPLETED',
-        completedAt: new Date(),
-      });
-
-      const result = await lessonsService.completeLesson(
-        'lesson-1',
-        { notes: 'Good lesson' },
-        'user-1',
-        'TEACHER',
-      );
-
-      expect(result.status).toBe('COMPLETED');
-    });
+  it('delegates startLesson', async () => {
+    statusService.startLesson.mockResolvedValue({ id: 'lesson-1', status: 'IN_PROGRESS' });
+    await lessonsService.startLesson('lesson-1', 'user-1', 'TEACHER' as never);
+    expect(statusService.startLesson).toHaveBeenCalledWith('lesson-1', 'user-1', 'TEACHER');
   });
 
-  describe('cancelLesson', () => {
-    it('should cancel a lesson', async () => {
-      mockPrismaService.lesson.findUnique.mockResolvedValue(mockLesson);
-      mockPrismaService.lesson.update.mockResolvedValue({
-        ...mockLesson,
-        status: 'CANCELLED',
-      });
-
-      const result = await lessonsService.cancelLesson('lesson-1', 'Teacher sick');
-
-      expect(result.status).toBe('CANCELLED');
-    });
-
-    it('should throw BadRequestException if lesson is already completed', async () => {
-      mockPrismaService.lesson.findUnique.mockResolvedValue({
-        ...mockLesson,
-        status: 'COMPLETED',
-      });
-
-      await expect(
-        lessonsService.cancelLesson('lesson-1'),
-      ).rejects.toThrow(BadRequestException);
-    });
+  it('delegates completeLesson', async () => {
+    statusService.completeLesson.mockResolvedValue({ id: 'lesson-1', status: 'COMPLETED' });
+    await lessonsService.completeLesson('lesson-1', {} as never, 'user-1', 'TEACHER' as never);
+    expect(statusService.completeLesson).toHaveBeenCalled();
   });
 
-  describe('getLessonStatistics', () => {
-    it('should return lesson statistics', async () => {
-      mockPrismaService.lesson.count
-        .mockResolvedValueOnce(100) // total
-        .mockResolvedValueOnce(80) // completed
-        .mockResolvedValueOnce(5) // cancelled
-        .mockResolvedValueOnce(3) // missed
-        .mockResolvedValueOnce(2); // inProgress
+  it('delegates cancelLesson', async () => {
+    statusService.cancelLesson.mockResolvedValue({ id: 'lesson-1', status: 'CANCELLED' });
+    await lessonsService.cancelLesson('lesson-1');
+    expect(statusService.cancelLesson).toHaveBeenCalledWith(
+      'lesson-1',
+      undefined,
+      undefined,
+      undefined,
+    );
+  });
 
-      const result = await lessonsService.getLessonStatistics();
+  it('delegates getLessonStatistics', async () => {
+    statisticsService.getLessonStatistics.mockResolvedValue({ total: 10 });
+    await lessonsService.getLessonStatistics('teacher-1');
+    expect(statisticsService.getLessonStatistics).toHaveBeenCalledWith(
+      'teacher-1',
+      undefined,
+      undefined,
+      undefined,
+    );
+  });
 
-      expect(result).toEqual({
-        total: 100,
-        completed: 80,
-        cancelled: 5,
-        missed: 3,
-        inProgress: 2,
-        scheduled: 10,
-        completionRate: 80,
-      });
-    });
+  it('delegates setSubstituteForGroupDay', async () => {
+    crudService.setSubstituteForGroupDay.mockResolvedValue({ updatedCount: 2 });
+    await lessonsService.setSubstituteForGroupDay(
+      { groupId: 'g1', date: '2026-09-24', substituteTeacherId: 't2' },
+      'user-1',
+      'ADMIN' as never,
+    );
+    expect(crudService.setSubstituteForGroupDay).toHaveBeenCalled();
   });
 });

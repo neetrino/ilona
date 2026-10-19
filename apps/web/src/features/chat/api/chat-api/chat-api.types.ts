@@ -173,6 +173,14 @@ export interface AdminStudentRecording {
   createdAt: string;
   /** Always voice-to-teacher for this endpoint */
   source?: 'voiceToTeacher';
+  lessonId?: string | null;
+  lesson?: {
+    id: string;
+    topic: string | null;
+    scheduledAt: string;
+    label: string;
+    completed: true;
+  } | null;
   student: {
     userId: string;
     firstName: string;

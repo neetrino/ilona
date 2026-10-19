@@ -13,6 +13,7 @@ export interface Feedback {
   participation?: number | null;
   progress?: string | null;
   encouragement?: string | null;
+  recommendGroupChange?: boolean;
   strengths?: string | null;
   improvements?: string | null;
   createdAt: string;
@@ -70,6 +71,7 @@ export interface CreateFeedbackDto {
   participation?: number | null;
   progress?: string | null;
   encouragement?: string | null;
+  recommendGroupChange?: boolean;
 }
 
 export interface UpdateFeedbackDto {

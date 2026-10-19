@@ -21,6 +21,7 @@ import {
   getStudentFullName,
 } from './teacher-recordings.utils';
 import type { useTeacherRecordingsPage } from './useTeacherRecordingsPage';
+import { RecordingLessonBadge } from './RecordingLessonBadge';
 
 type TeacherRecordingsPageState = ReturnType<typeof useTeacherRecordingsPage>;
 
@@ -238,6 +239,11 @@ export function TeacherRecordingsPageContent({
                 <p className="mt-1 truncate text-[1rem] text-[#3b3b40]">
                   {getStudentFullName(recording)}
                 </p>
+                {recording.lesson ? (
+                  <div className="mt-2">
+                    <RecordingLessonBadge recording={recording} />
+                  </div>
+                ) : null}
                 <div className="mt-2 flex items-start gap-2 text-[#8b8b90]">
                   <svg
                     className="mt-[2px] h-4 w-4 shrink-0"
@@ -333,7 +339,12 @@ export function TeacherRecordingsPageContent({
                         {recording.group.name}
                       </td>
                       <td className="px-4 py-3 align-middle text-sm font-medium text-[#1010a3]">
-                        {getStudentFullName(recording)}
+                        <div>{getStudentFullName(recording)}</div>
+                        {recording.lesson ? (
+                          <div className="mt-1.5">
+                            <RecordingLessonBadge recording={recording} />
+                          </div>
+                        ) : null}
                       </td>
                       <td className="px-4 py-3 align-middle whitespace-nowrap">
                         <div className="text-sm text-[#3b3b40]">{formatDateTime(recording.createdAt)}</div>

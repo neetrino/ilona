@@ -8,6 +8,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { Prisma, MessageType, ChatType, UserRole } from '@ilona/database';
+import type { NotificationData } from '@ilona/types';
 import { SendMessageDto } from './dto';
 import { SalariesService } from '../finance/salaries.service';
 import { effectiveLessonInstructorTeacherId } from '../../common/lesson-instructor';
@@ -17,6 +18,8 @@ import { ChatManagerScopeService } from './chat-manager-scope.service';
 import { chatSenderPublicSelect, mapMessageWithSender } from './chat-message-sender.util';
 import { JwtPayload } from '../../common/types/auth.types';
 import type { SendMessageResponse } from './message.types';
+import { NotificationEventsService } from '../notifications/notification-events.service';
+import { buildStudentRecordingThankYouCopy } from '../notifications/student-recording-notification.util';
 
 @Injectable()
 export class MessageSendService {
@@ -29,6 +32,7 @@ export class MessageSendService {
     private readonly chatManagementService: ChatManagementService,
     private readonly authorizationService: ChatAuthorizationService,
     private readonly managerScope: ChatManagerScopeService,
+    private readonly notifications: NotificationEventsService,
   ) {}
 
   async sendMessage(
@@ -211,7 +215,15 @@ export class MessageSendService {
       data: { updatedAt: new Date() },
     });
 
-    await this.syncLessonObligations(dto, messageType);
+    await this.syncLessonObligations(dto, messageType, verifiedSenderId);
+    await this.notifications.runSafe('teacher-mention', () =>
+      this.notifications.notifyMentionsFromMessage({
+        metadata: dto.metadata,
+        chatId: dto.chatId,
+        messageId: message.id,
+        senderId,
+      }),
+    );
 
     const response: SendMessageResponse = {
       ...mapMessageWithSender(message),
@@ -226,12 +238,23 @@ export class MessageSendService {
     return response;
   }
 
-  private async syncLessonObligations(dto: SendMessageDto, messageType: MessageType) {
+  private async syncLessonObligations(
+    dto: SendMessageDto,
+    messageType: MessageType,
+    senderId: string,
+  ) {
     if (!dto.metadata || typeof dto.metadata !== 'object' || !('lessonId' in dto.metadata)) {
       return;
     }
 
     const lessonId = dto.metadata.lessonId as string;
+    const isStudentVoiceToTeacher =
+      messageType === MessageType.VOICE && dto.metadata.voiceToTeacher === true;
+
+    if (isStudentVoiceToTeacher) {
+      await this.createStudentRecordingItem(dto, lessonId, senderId);
+      return;
+    }
 
     if (messageType === MessageType.VOICE) {
       const lesson = await this.prisma.lesson
@@ -289,6 +312,158 @@ export class MessageSendService {
             .catch(() => {});
         }
       }
+    }
+  }
+
+  private async createStudentRecordingItem(
+    dto: SendMessageDto,
+    lessonId: string,
+    senderUserId: string,
+  ): Promise<void> {
+    if (!dto.fileUrl) {
+      return;
+    }
+
+    const student = await this.prisma.student.findUnique({
+      where: { userId: senderUserId },
+      select: { id: true, groupId: true },
+    });
+    if (!student?.groupId) {
+      return;
+    }
+
+    const lesson = await this.prisma.lesson.findUnique({
+      where: { id: lessonId },
+      select: { id: true, groupId: true },
+    });
+    if (!lesson || lesson.groupId !== student.groupId) {
+      this.logger.warn('[createStudentRecordingItem] lesson/group mismatch', {
+        lessonId,
+        studentId: student.id,
+      });
+      return;
+    }
+
+    const existing = await this.prisma.recordingItem.findFirst({
+      where: { lessonId, studentId: student.id },
+      select: { id: true },
+    });
+    const createdNew = !existing;
+    if (!existing) {
+      await this.prisma.recordingItem.create({
+        data: {
+          groupId: lesson.groupId,
+          studentId: student.id,
+          lessonId,
+          fileUrl: dto.fileUrl,
+          fileName: dto.fileName,
+          durationSec: dto.duration,
+        },
+      });
+    }
+
+    await this.markStudentRecordingNotificationsComplete(senderUserId, lessonId);
+    if (createdNew) {
+      await this.notifications.runSafe('student-lesson-recording', () =>
+        this.notifyTeacherStudentLessonRecording(senderUserId, lessonId, student.id),
+      );
+    }
+  }
+
+  private async notifyTeacherStudentLessonRecording(
+    senderUserId: string,
+    lessonId: string,
+    studentId: string,
+  ): Promise<void> {
+    const [user, lesson] = await Promise.all([
+      this.prisma.user.findUnique({
+        where: { id: senderUserId },
+        select: { firstName: true, lastName: true },
+      }),
+      this.prisma.lesson.findUnique({
+        where: { id: lessonId },
+        select: {
+          topic: true,
+          scheduledAt: true,
+          teacherId: true,
+          substituteTeacherId: true,
+          group: { select: { name: true, centerId: true } },
+          teacher: { select: { userId: true } },
+          substituteTeacher: { select: { userId: true } },
+        },
+      }),
+    ]);
+    if (!user || !lesson) {
+      return;
+    }
+
+    const instructorId = effectiveLessonInstructorTeacherId(lesson);
+    const teacherUserId =
+      instructorId === lesson.substituteTeacherId
+        ? lesson.substituteTeacher?.userId
+        : lesson.teacher.userId;
+    if (!teacherUserId) {
+      return;
+    }
+
+    const when = new Intl.DateTimeFormat('hy-AM', {
+      day: 'numeric',
+      month: 'short',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+      timeZone: 'Asia/Yerevan',
+    }).format(lesson.scheduledAt);
+    const lessonLabel = `${lesson.topic?.trim() || lesson.group.name} · ${when}`;
+    const studentName = `${user.firstName} ${user.lastName}`.trim();
+
+    await this.notifications.notifyStudentLessonRecordingCompleted({
+      teacherUserId,
+      centerId: lesson.group.centerId,
+      studentId,
+      studentName,
+      lessonId,
+      lessonLabel,
+    });
+  }
+
+  private async markStudentRecordingNotificationsComplete(
+    senderUserId: string,
+    lessonId: string,
+  ): Promise<void> {
+    const rows = await this.prisma.notification.findMany({
+      where: {
+        userId: senderUserId,
+        type: 'STUDENT_RECORDING_MISSING',
+      },
+      select: { id: true, data: true },
+    });
+
+    const thankYou = buildStudentRecordingThankYouCopy();
+    for (const row of rows) {
+      const data = (row.data ?? null) as NotificationData | null;
+      if (!data?.lessonId || data.lessonId !== lessonId) {
+        continue;
+      }
+      if (data.recordingCompleted) {
+        continue;
+      }
+      await this.prisma.notification.update({
+        where: { id: row.id },
+        data: {
+          content: thankYou,
+          isRead: true,
+          readAt: new Date(),
+          data: {
+            studentId: data.studentId,
+            lessonId: data.lessonId,
+            groupId: data.groupId,
+            teacherId: data.teacherId,
+            dedupeKey: data.dedupeKey,
+            recordingCompleted: true,
+          } as Prisma.InputJsonValue,
+        },
+      });
     }
   }
 }

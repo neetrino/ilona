@@ -170,6 +170,7 @@ export function useFeedbacksTab({ lessonId }: FeedbacksTabProps) {
       skillsNote: structured.skillsComment.trim() || null,
       progress: buildProgressStorageValue(structured),
       encouragement: structured.encouragement.trim() || null,
+      recommendGroupChange: structured.recommendGroupChange,
       ...(participationScore != null
         ? { rating: participationScore, participation: participationScore }
         : {}),

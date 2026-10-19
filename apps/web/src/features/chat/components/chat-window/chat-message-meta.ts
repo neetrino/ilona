@@ -42,3 +42,12 @@ export function isVoiceToTeacherMessage(message: Message): boolean {
     )
   );
 }
+
+/** Student lesson-duty voice (from missing-recording deep-link) — marked completed in chat. */
+export function isLessonDutyVoiceMessage(message: Message): boolean {
+  if (!isVoiceToTeacherMessage(message) || !message.metadata || typeof message.metadata !== 'object') {
+    return false;
+  }
+  const lessonId = (message.metadata as { lessonId?: unknown }).lessonId;
+  return typeof lessonId === 'string' && lessonId.length > 0;
+}

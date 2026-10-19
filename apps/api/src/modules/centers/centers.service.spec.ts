@@ -9,6 +9,7 @@ describe('CentersService', () => {
     center: {
       findMany: Mock;
       findUnique: Mock;
+      findFirst: Mock;
       create: Mock;
       update: Mock;
       delete: Mock;
@@ -17,6 +18,7 @@ describe('CentersService', () => {
     group: { count: Mock };
     student: { count: Mock };
     lesson: { count: Mock };
+    $transaction: Mock;
   };
 
   const mockCenter = {
@@ -39,6 +41,7 @@ describe('CentersService', () => {
       center: {
         findMany: vi.fn(),
         findUnique: vi.fn(),
+        findFirst: vi.fn(),
         create: vi.fn(),
         update: vi.fn(),
         delete: vi.fn(),
@@ -47,6 +50,7 @@ describe('CentersService', () => {
       group: { count: vi.fn() },
       student: { count: vi.fn() },
       lesson: { count: vi.fn() },
+      $transaction: vi.fn(async (ops: Promise<unknown>[]) => Promise.all(ops)),
     };
 
     centersService = new CentersService(mockPrismaService as never);
@@ -130,6 +134,7 @@ describe('CentersService', () => {
         description: 'A new center',
       };
 
+      mockPrismaService.center.findFirst.mockResolvedValue(null);
       mockPrismaService.center.create.mockResolvedValue({
         id: 'center-2',
         ...createDto,
@@ -153,6 +158,7 @@ describe('CentersService', () => {
   describe('update', () => {
     it('should update an existing center', async () => {
       mockPrismaService.center.findUnique.mockResolvedValue(mockCenter);
+      mockPrismaService.center.findFirst.mockResolvedValue(null);
       mockPrismaService.center.update.mockResolvedValue({
         ...mockCenter,
         name: 'Updated Center',
@@ -177,6 +183,8 @@ describe('CentersService', () => {
   describe('delete', () => {
     it('should delete an existing center', async () => {
       mockPrismaService.center.findUnique.mockResolvedValue(mockCenter);
+      mockPrismaService.group.count.mockResolvedValue(0);
+      mockPrismaService.student.count.mockResolvedValue(0);
       mockPrismaService.center.delete.mockResolvedValue(mockCenter);
 
       const result = await centersService.delete('center-1');

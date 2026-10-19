@@ -6,6 +6,7 @@ export interface AttendanceRecord {
   studentId: string;
   markedById?: string | null;
   isPresent: boolean;
+  isLate?: boolean;
   absenceType?: AbsenceType | null;
   note?: string;
   markedAt?: string;

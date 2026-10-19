@@ -28,7 +28,7 @@ export class AttendanceWriteService {
   ) {}
   async markAttendance(dto: MarkAttendanceDto, userId?: string, userRole?: UserRole) {
     const managerCenterId = await this.scope.getManagerCenterId(userId, userRole);
-    const { lessonId, studentId, isPresent, absenceType, note: rawNote } = dto;
+    const { lessonId, studentId, isPresent, absenceType, note: rawNote, isLate } = dto;
     const note = rawNote?.trim() || undefined;
 
     // Validate lesson exists
@@ -98,6 +98,7 @@ export class AttendanceWriteService {
         },
         update: {
           isPresent,
+          isLate: Boolean(isPresent && isLate),
           absenceType: isPresent ? null : absenceType,
           note: isPresent ? null : note ?? null,
           markedById: userId ?? null,
@@ -107,6 +108,7 @@ export class AttendanceWriteService {
           lessonId,
           studentId,
           isPresent,
+          isLate: Boolean(isPresent && isLate),
           absenceType: isPresent ? null : absenceType,
           note: isPresent ? null : note ?? null,
           markedById: userId ?? null,
@@ -158,9 +160,11 @@ export class AttendanceWriteService {
       };
     });
 
-    // Check if student has too many unjustified absences (for notifications)
     if (!isPresent && absenceType === 'UNJUSTIFIED') {
       await this.sideEffects.checkAbsenceThreshold(studentId);
+    }
+    if (!isPresent) {
+      await this.sideEffects.notifyStudentAbsenceLetter(studentId, lessonId);
     }
 
     // Trigger salary recalculation for the lesson's month when attendance becomes complete.
@@ -220,6 +224,7 @@ export class AttendanceWriteService {
           lessonId,
           studentId: item.studentId,
           isPresent: item.isPresent,
+          isLate: item.isLate,
           absenceType: item.absenceType,
           note: item.note,
         }, userId, userRole),

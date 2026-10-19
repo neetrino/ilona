@@ -5,6 +5,10 @@ import {
   resolveAdminRecordingGroupIds,
   resolveAdminRecordingStudentIds,
 } from './message-recording.util';
+import {
+  extractVoiceLessonId,
+  type RecordingLessonSummary,
+} from './message-recording-lesson.util';
 
 export const ADMIN_STUDENT_RECORDING_INCLUDE = {
   sender: {
@@ -154,6 +158,7 @@ export function mapAdminStudentRecording(message: AdminRecordingMessage) {
   const groupCenter = message.sender?.student?.group?.center ?? null;
   const studentCenter = message.sender?.student?.center ?? null;
   const center = groupCenter ?? studentCenter;
+  const lessonId = extractVoiceLessonId(message.metadata);
 
   return {
     id: message.id,
@@ -162,6 +167,8 @@ export function mapAdminStudentRecording(message: AdminRecordingMessage) {
     duration: message.duration ?? 0,
     createdAt: message.createdAt,
     source: 'voiceToTeacher' as const,
+    lessonId,
+    lesson: null as RecordingLessonSummary | null,
     student: {
       userId: message.sender?.id ?? '',
       firstName: message.sender?.firstName ?? '',

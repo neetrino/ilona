@@ -7,7 +7,12 @@ interface UseChatWindowComposerOptions {
   useMobileComposerSizing: boolean;
   startTyping: (chatId: string) => void;
   stopTyping: (chatId: string) => void;
-  sendMessage: (chatId: string, content: string) => Promise<{ success: boolean; error?: string }>;
+  sendMessage: (
+    chatId: string,
+    content: string,
+    type?: string,
+    metadata?: Record<string, unknown>,
+  ) => Promise<{ success: boolean; error?: string }>;
 }
 
 const MIN_TEXTAREA_HEIGHT = 40;
@@ -73,7 +78,7 @@ export function useChatWindowComposer({
     }
   };
 
-  const handleSend = useCallback(() => {
+  const handleSend = useCallback((metadata?: Record<string, unknown>) => {
     const content = inputValue.trim();
     if (!content) return;
 
@@ -81,7 +86,7 @@ export function useChatWindowComposer({
     clearDraft(chatId);
     stopTyping(chatId);
 
-    void sendMessage(chatId, content).then((result) => {
+    void sendMessage(chatId, content, 'TEXT', metadata).then((result) => {
       if (!result.success) {
         console.error('Failed to send message:', result.error);
         setInputValue(content);

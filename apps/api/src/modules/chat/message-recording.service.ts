@@ -8,6 +8,11 @@ import {
   isVoiceToTeacherAdminRecording,
   mapAdminStudentRecording,
 } from './message-recording.admin';
+import {
+  extractVoiceLessonId,
+  formatRecordingLessonLabel,
+  type RecordingLessonSummary,
+} from './message-recording-lesson.util';
 import { applyRecordingPagination } from './message-recording.util';
 
 @Injectable()
@@ -74,7 +79,7 @@ export class MessageRecordingService {
       return meta && meta.voiceToTeacher === true;
     });
 
-    return voiceToTeacherOnly.map((m: MessageWithChatForRecordings) => {
+    const mapped = voiceToTeacherOnly.map((m: MessageWithChatForRecordings) => {
       const teacherParticipant = m.chat.participants[0];
       return {
         id: m.id,
@@ -82,6 +87,8 @@ export class MessageRecordingService {
         fileName: m.fileName ?? undefined,
         duration: m.duration ?? 0,
         createdAt: m.createdAt,
+        lessonId: extractVoiceLessonId(m.metadata),
+        lesson: null as RecordingLessonSummary | null,
         teacher: teacherParticipant?.user
           ? {
               id: teacherParticipant.user.id,
@@ -91,6 +98,8 @@ export class MessageRecordingService {
           : null,
       };
     });
+
+    return this.attachLessons(mapped);
   }
 
   async getAdminStudentRecordings(
@@ -116,7 +125,8 @@ export class MessageRecordingService {
       )
       .map(mapAdminStudentRecording);
 
-    return applyRecordingPagination(mapped, {
+    const withLessons = await this.attachLessons(mapped);
+    return applyRecordingPagination(withLessons, {
       skip: effectiveFilters.skip,
       take: effectiveFilters.take,
     });
@@ -167,7 +177,7 @@ export class MessageRecordingService {
 
     const normalizedSearch = filters?.search?.trim().toLowerCase();
 
-    return messages
+    const mapped = messages
       .filter((message) => {
         const meta = message.metadata as Record<string, unknown> | null;
         if (!meta || meta.voiceToTeacher !== true) return false;
@@ -187,6 +197,8 @@ export class MessageRecordingService {
         fileName: message.fileName ?? undefined,
         duration: message.duration ?? 0,
         createdAt: message.createdAt,
+        lessonId: extractVoiceLessonId(message.metadata),
+        lesson: null as RecordingLessonSummary | null,
         student: {
           userId: message.sender?.id ?? '',
           firstName: message.sender?.firstName ?? '',
@@ -197,5 +209,42 @@ export class MessageRecordingService {
           name: message.sender?.student?.group?.name ?? 'Ungrouped',
         },
       }));
+
+    return this.attachLessons(mapped);
+  }
+
+  private async attachLessons<
+    T extends { lessonId: string | null; lesson: RecordingLessonSummary | null },
+  >(items: T[]): Promise<T[]> {
+    const lessonIds = [...new Set(items.map((item) => item.lessonId).filter(Boolean))] as string[];
+    if (lessonIds.length === 0) {
+      return items;
+    }
+
+    const lessons = await this.prisma.lesson.findMany({
+      where: { id: { in: lessonIds } },
+      select: {
+        id: true,
+        topic: true,
+        scheduledAt: true,
+        group: { select: { name: true } },
+      },
+    });
+    const byId = new Map(
+      lessons.map((lesson) => [
+        lesson.id,
+        formatRecordingLessonLabel({
+          id: lesson.id,
+          topic: lesson.topic,
+          scheduledAt: lesson.scheduledAt,
+          groupName: lesson.group.name,
+        }),
+      ]),
+    );
+
+    return items.map((item) => ({
+      ...item,
+      lesson: item.lessonId ? (byId.get(item.lessonId) ?? null) : null,
+    }));
   }
 }

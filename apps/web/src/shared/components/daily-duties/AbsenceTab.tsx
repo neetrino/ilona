@@ -25,7 +25,7 @@ interface AbsenceTabProps {
   embeddedInSheet?: boolean;
 }
 
-type AttendanceStatus = 'present' | 'absent_justified' | 'absent_unjustified' | 'not_marked';
+type AttendanceStatus = 'present' | 'late' | 'absent_justified' | 'absent_unjustified' | 'not_marked';
 
 type ToastState = {
   key: number;
@@ -49,7 +49,7 @@ export function AbsenceTab({ lessonId, embeddedInSheet = false }: AbsenceTabProp
   const { data: attendanceData, isLoading } = useLessonAttendance(lessonId);
   const markBulkAttendance = useMarkBulkAttendance();
   const [attendance, setAttendance] = useState<
-    Record<string, { isPresent: boolean; absenceType?: AbsenceType; note?: string }>
+    Record<string, { isPresent: boolean; isLate?: boolean; absenceType?: AbsenceType; note?: string }>
   >({});
   const [hasChanges, setHasChanges] = useState(false);
   const [toast, setToast] = useState<ToastState | null>(null);
@@ -79,7 +79,10 @@ export function AbsenceTab({ lessonId, embeddedInSheet = false }: AbsenceTabProp
 
   useEffect(() => {
     if (attendanceData?.studentsWithAttendance && attendanceData.studentsWithAttendance.length > 0) {
-      const initial: Record<string, { isPresent: boolean; absenceType?: AbsenceType; note?: string }> = {};
+      const initial: Record<
+        string,
+        { isPresent: boolean; isLate?: boolean; absenceType?: AbsenceType; note?: string }
+      > = {};
 
       attendanceData.studentsWithAttendance.forEach((swa) => {
         const savedAttendance = swa.attendance;
@@ -87,6 +90,7 @@ export function AbsenceTab({ lessonId, embeddedInSheet = false }: AbsenceTabProp
         if (savedAttendance) {
           initial[swa.student.id] = {
             isPresent: savedAttendance.isPresent,
+            isLate: savedAttendance.isLate,
             absenceType: savedAttendance.absenceType || undefined,
             note: savedAttendance.note || undefined,
           };
@@ -105,7 +109,8 @@ export function AbsenceTab({ lessonId, embeddedInSheet = false }: AbsenceTabProp
     setAttendance((prev) => ({
       ...prev,
       [studentId]: {
-        isPresent: status === 'present',
+        isPresent: status === 'present' || status === 'late',
+        isLate: status === 'late',
         absenceType:
           status === 'absent_justified'
             ? 'JUSTIFIED'
@@ -139,6 +144,7 @@ export function AbsenceTab({ lessonId, embeddedInSheet = false }: AbsenceTabProp
         return {
           studentId: student.id,
           isPresent: att.isPresent,
+          isLate: att.isLate,
           absenceType: att.absenceType,
           note: att.note?.trim() || undefined,
         };
@@ -180,19 +186,17 @@ export function AbsenceTab({ lessonId, embeddedInSheet = false }: AbsenceTabProp
       );
       const existing = studentWithAttendance?.attendance;
       if (existing) {
-        return existing.isPresent
-          ? 'present'
-          : existing.absenceType === 'JUSTIFIED'
-            ? 'absent_justified'
-            : 'absent_unjustified';
+        if (existing.isPresent) {
+          return existing.isLate ? 'late' : 'present';
+        }
+        return existing.absenceType === 'JUSTIFIED' ? 'absent_justified' : 'absent_unjustified';
       }
       return 'not_marked';
     }
-    return att.isPresent
-      ? 'present'
-      : att.absenceType === 'JUSTIFIED'
-        ? 'absent_justified'
-        : 'absent_unjustified';
+    if (att.isPresent) {
+      return att.isLate ? 'late' : 'present';
+    }
+    return att.absenceType === 'JUSTIFIED' ? 'absent_justified' : 'absent_unjustified';
   };
 
   const renderStatusButtons = (
@@ -213,6 +217,18 @@ export function AbsenceTab({ lessonId, embeddedInSheet = false }: AbsenceTabProp
         )}
       >
         {t('present')}
+      </button>
+      <button
+        type="button"
+        onClick={() => handleAttendanceChange(studentId, 'late')}
+        className={cn(
+          buttonClass,
+          attendance[studentId]?.isLate
+            ? 'border-amber-500 bg-amber-100 text-amber-700'
+            : 'border-transparent bg-slate-100 text-slate-600 hover:bg-slate-200',
+        )}
+      >
+        {t('late')}
       </button>
       <button
         type="button"

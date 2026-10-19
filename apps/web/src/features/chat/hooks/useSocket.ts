@@ -268,7 +268,7 @@ export function useSocket(options: UseSocketOptions = {}) {
 
   // Send message
   const sendMessage = useCallback(
-    async (chatId: string, content: string, type = 'TEXT') => {
+    async (chatId: string, content: string, type = 'TEXT', metadata?: Record<string, unknown>) => {
       const trimmedContent = content.trim();
       if (!trimmedContent) return { success: false, error: 'Empty message' };
 
@@ -316,7 +316,7 @@ export function useSocket(options: UseSocketOptions = {}) {
 
       // Try socket first only when its identity matches the current user
       if (socketIdentityOk) {
-        const socketResult = await emitSendMessage(chatId, trimmedContent, type);
+        const socketResult = await emitSendMessage(chatId, trimmedContent, type, metadata);
         if (socketResult.success) {
           if (socketResult.message) {
             const accepted = confirmMessage(socketResult.message as Message);
@@ -335,7 +335,7 @@ export function useSocket(options: UseSocketOptions = {}) {
 
       // Fallback to HTTP (always uses the current access token)
       try {
-        const message = await sendMessageHttp(chatId, trimmedContent, type);
+        const message = await sendMessageHttp(chatId, trimmedContent, type, { metadata });
         const accepted = confirmMessage(message);
         if (!accepted) {
           revertOptimisticMessage();

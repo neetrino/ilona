@@ -19,6 +19,10 @@ export class MarkAttendanceDto {
   @IsBoolean()
   isPresent!: boolean;
 
+  @IsBoolean()
+  @IsOptional()
+  isLate?: boolean;
+
   @IsEnum(AbsenceType)
   @IsOptional()
   absenceType?: AbsenceType;
