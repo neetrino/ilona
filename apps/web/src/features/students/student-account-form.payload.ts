@@ -24,7 +24,6 @@ export function formDataToCreateStudentDto(data: CreateStudentFormData): CreateS
     parentEmail: data.parentEmail || undefined,
     monthlyFee: data.monthlyFee,
     notes: data.notes || undefined,
-    receiveReports: data.receiveReports ?? true,
   };
 }
 

@@ -47,3 +47,22 @@ export async function updateDailyPlan(
 export async function deleteDailyPlan(id: string): Promise<{ ok: true }> {
   return api.delete<{ ok: true }>(`${BASE}/${id}`);
 }
+
+export type DailyPlanComment = {
+  id: string;
+  body: string;
+  createdAt: string;
+  authorName: string;
+  authorRole: string;
+};
+
+export async function fetchDailyPlanComments(planId: string): Promise<DailyPlanComment[]> {
+  return api.get<DailyPlanComment[]>(`${BASE}/${planId}/comments`);
+}
+
+export async function createDailyPlanComment(
+  planId: string,
+  body: string,
+): Promise<DailyPlanComment[]> {
+  return api.post<DailyPlanComment[]>(`${BASE}/${planId}/comments`, { body });
+}

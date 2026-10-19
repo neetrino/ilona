@@ -64,7 +64,6 @@ export default function StudentProfilePage() {
       parentPhone: '',
       parentEmail: '',
       monthlyFee: 0,
-      receiveReports: false,
     },
   });
 
@@ -86,7 +85,6 @@ export default function StudentProfilePage() {
         parentPhone: student.parentPhone || '',
         parentEmail: student.parentEmail || '',
         monthlyFee,
-        receiveReports: student.receiveReports ?? false,
       });
       setHasUnsavedChanges(false);
       setErrorMessage(null);
@@ -178,7 +176,6 @@ export default function StudentProfilePage() {
         parentPhone: data.parentPhone || undefined,
         parentEmail: data.parentEmail || undefined,
         monthlyFee: data.monthlyFee,
-        receiveReports: data.receiveReports,
       };
 
       await updateStudent.mutateAsync({ id: studentId, data: payload });

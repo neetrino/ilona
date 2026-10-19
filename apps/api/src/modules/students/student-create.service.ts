@@ -183,7 +183,6 @@ export class StudentCreateService {
       parentEmail: dto.parentEmail,
       monthlyFee: dto.monthlyFee,
       notes: dto.notes,
-      receiveReports: dto.receiveReports ?? true,
       dateOfBirth: dobDate ?? undefined,
       firstLessonDate: dto.firstLessonDate ? new Date(dto.firstLessonDate) : undefined,
       leadId: link?.leadId,
@@ -357,6 +356,9 @@ export class StudentCreateService {
         studentName: `${student.user.firstName} ${student.user.lastName}`,
         groupName: student.group?.name ?? 'group',
       }),
+    );
+    await this.notifications.runSafe('group-size', () =>
+      this.notifications.notifyGroupMembershipDelta(groupId, 1),
     );
   }
 }

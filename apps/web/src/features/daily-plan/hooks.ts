@@ -8,8 +8,10 @@ import {
 } from '@tanstack/react-query';
 import {
   createDailyPlan,
+  createDailyPlanComment,
   deleteDailyPlan,
   fetchDailyPlan,
+  fetchDailyPlanComments,
   fetchDailyPlans,
   updateDailyPlan,
 } from './api';
@@ -23,6 +25,7 @@ export const dailyPlanKeys = {
   all: ['daily-plans'] as const,
   list: (filters?: DailyPlanFilters) => ['daily-plans', 'list', filters ?? {}] as const,
   detail: (id: string) => ['daily-plans', 'detail', id] as const,
+  comments: (id: string) => ['daily-plans', 'comments', id] as const,
 };
 
 export function useDailyPlans(filters?: DailyPlanFilters, enabled = true) {
@@ -74,6 +77,24 @@ export function useDeleteDailyPlan() {
     mutationFn: (id: string) => deleteDailyPlan(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: dailyPlanKeys.all });
+    },
+  });
+}
+
+export function useDailyPlanComments(planId: string) {
+  return useQuery({
+    queryKey: dailyPlanKeys.comments(planId),
+    queryFn: () => fetchDailyPlanComments(planId),
+    enabled: Boolean(planId),
+  });
+}
+
+export function useCreateDailyPlanComment(planId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: string) => createDailyPlanComment(planId, body),
+    onSuccess: (comments) => {
+      qc.setQueryData(dailyPlanKeys.comments(planId), comments);
     },
   });
 }

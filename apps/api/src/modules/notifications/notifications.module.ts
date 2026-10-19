@@ -11,10 +11,12 @@ import { NotificationWriteService } from './notification-write.service';
 import { NotificationsController } from './notifications.controller';
 import { NotificationsCronController } from './notifications-cron.controller';
 import { NotificationsService } from './notifications.service';
+import { ParentReportService } from './parent-report.service';
+import { ParentReportsController } from './parent-reports.controller';
 
 @Global()
 @Module({
-  controllers: [NotificationsController, NotificationsCronController],
+  controllers: [NotificationsController, NotificationsCronController, ParentReportsController],
   providers: [
     NotificationsService,
     EmailService,
@@ -26,6 +28,7 @@ import { NotificationsService } from './notifications.service';
     NotificationCronFinanceService,
     NotificationCronStudentsService,
     NotificationCronService,
+    ParentReportService,
   ],
   exports: [
     NotificationsService,

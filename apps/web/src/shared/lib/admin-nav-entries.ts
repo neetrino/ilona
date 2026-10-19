@@ -25,6 +25,7 @@ export function getAdminNavEntries(role: string): AdminNavEntry[] {
     { labelKey: 'students', href: '/admin/students', icon: { type: 'sidebar', icon: 'iconStudents' } },
     { labelKey: 'schedule', href: '/admin/schedule', icon: { type: 'sidebar', icon: 'iconSchedule' } },
     { labelKey: 'dailyPlan', href: '/admin/daily-plan', icon: { type: 'sidebar', icon: 'iconFeedbacks' } },
+    { labelKey: 'parentReports', href: '/admin/parent-reports', icon: { type: 'sidebar', icon: 'iconAnalytics' } },
   ];
 
   const tail: AdminNavEntry[] = [

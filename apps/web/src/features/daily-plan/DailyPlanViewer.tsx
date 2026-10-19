@@ -14,6 +14,7 @@ import {
 } from '@/shared/lib/sheet-stack';
 import { PORTAL_DESKTOP_SIDE_SHEET_CLASS, PORTAL_FORM_SHEET_SCROLL_CLASS } from '@/shared/lib/portal-form-sheet-classes';
 import { DailyPlanViewerTopicSection } from './DailyPlanViewerTopicSection';
+import { DailyPlanComments } from './DailyPlanComments';
 import type { DailyPlan, DailyPlanResourceKind } from './types';
 
 interface DailyPlanViewerProps {
@@ -174,6 +175,7 @@ export function DailyPlanViewer({ plan, onClose }: DailyPlanViewerProps) {
                 />
               ))
             )}
+            <DailyPlanComments planId={plan.id} />
           </div>
         </DialogPrimitive.Content>
       </DialogPrimitive.Portal>

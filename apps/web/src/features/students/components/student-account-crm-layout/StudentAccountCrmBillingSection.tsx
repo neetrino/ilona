@@ -1,7 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { Checkbox, Input, Label } from '@/shared/components/ui';
+import { Input, Label } from '@/shared/components/ui';
 import { cn } from '@/shared/lib/utils';
 import { ADMIN_FORM_INPUT_CLASS } from '@/shared/lib/admin-control-theme';
 import {
@@ -13,9 +13,7 @@ import type { StudentAccountCrmFieldShellProps } from './student-account-crm-lay
 
 export function StudentAccountCrmBillingSection({
   register,
-  setValue,
   errors,
-  watch,
   isSubmitting,
   idPrefix,
 }: StudentAccountCrmFieldShellProps) {
@@ -61,17 +59,6 @@ export function StudentAccountCrmBillingSection({
         />
         {errors.notes ? <p className="text-sm text-red-600">{errors.notes.message}</p> : null}
       </div>
-      <label className="flex cursor-pointer select-none items-start gap-2">
-        <Checkbox
-          checked={watch('receiveReports') ?? true}
-          onCheckedChange={(checked) =>
-            setValue('receiveReports', checked === true, { shouldDirty: true })
-          }
-          disabled={isSubmitting}
-          className="mt-0.5"
-        />
-        <span className="text-sm text-slate-600">{t('receiveReportsOn')}</span>
-      </label>
     </section>
   );
 }

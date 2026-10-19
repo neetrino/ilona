@@ -9,6 +9,7 @@ export type InboxActionKey =
   | 'openGroup'
   | 'openChat'
   | 'openRecordings'
+  | 'openDailyPlan'
   | 'recordLessonVoice'
   | 'openDashboard'
   | 'openAnalytics';
@@ -36,6 +37,8 @@ const TYPE_META: Record<
     action: 'openRecordings',
   },
   STUDENT_ABSENCE: { titleKey: 'typeAbsence', category: 'letter', action: 'openDashboard' },
+  LESSON_PLAN_COMMENT: { titleKey: 'typeLessonPlanComment', category: 'duties', action: 'openDailyPlan' },
+  GROUP_SIZE_THRESHOLD: { titleKey: 'typeGroupSize', category: 'class', action: 'openGroup' },
   planned_absence: { titleKey: 'typePlannedAbsence', category: 'risk', action: 'openStudent' },
   absence_warning: { titleKey: 'typeAbsenceWarning', category: 'risk', action: 'openStudent' },
 };

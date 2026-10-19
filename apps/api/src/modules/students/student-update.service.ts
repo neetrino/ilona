@@ -12,6 +12,7 @@ import { StudentReadService } from './student-read.service';
 import { computeAgeFromDob } from './student-crud.util';
 import { syncStudentGroupHistory } from './student-group-history.util';
 import { GroupChatSyncService } from '../groups/group-chat-sync.service';
+import { NotificationEventsService } from '../notifications/notification-events.service';
 
 @Injectable()
 export class StudentUpdateService {
@@ -20,6 +21,7 @@ export class StudentUpdateService {
     private readonly managerAccess: StudentManagerAccessService,
     private readonly readService: StudentReadService,
     private readonly chatSync: GroupChatSyncService,
+    private readonly notifications: NotificationEventsService,
   ) {}
   async update(id: string, dto: UpdateStudentDto, user?: JwtPayload) {
     await this.managerAccess.assertManagerStudentAccess(id, user?.sub, user?.role);
@@ -57,7 +59,6 @@ export class StudentUpdateService {
       parentEmail?: string;
       monthlyFee?: number;
       notes?: string;
-      receiveReports?: boolean;
       groupId?: string | null;
       teacherId?: string | null;
       centerId?: string | null;
@@ -71,7 +72,6 @@ export class StudentUpdateService {
       parentEmail: dto.parentEmail,
       monthlyFee: dto.monthlyFee,
       notes: dto.notes,
-      receiveReports: dto.receiveReports,
     };
 
     if (newDob !== undefined) {
@@ -190,6 +190,16 @@ export class StudentUpdateService {
       }
       if (nextGroupId && nextGroupId !== previousGroupId) {
         await this.chatSync.ensureStudentInGroupChat(nextGroupId, student.user.id);
+      }
+      if (previousGroupId !== nextGroupId) {
+        await this.notifications.runSafe('group-size', async () => {
+          if (previousGroupId) {
+            await this.notifications.notifyGroupMembershipDelta(previousGroupId, -1);
+          }
+          if (nextGroupId) {
+            await this.notifications.notifyGroupMembershipDelta(nextGroupId, 1);
+          }
+        });
       }
     }
 

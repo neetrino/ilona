@@ -21,6 +21,5 @@ export function getAddStudentFormDefaultValues(centerId = '') {
     parentEmail: '',
     monthlyFee: undefined,
     notes: '',
-    receiveReports: true,
   };
 }

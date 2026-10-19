@@ -2,7 +2,6 @@ import {
   IsString,
   IsEmail,
   IsOptional,
-  IsBoolean,
   IsNumber,
   IsInt,
   IsEnum,
@@ -89,10 +88,6 @@ export class UpdateStudentDto {
   @IsOptional()
   @MaxLength(500)
   notes?: string;
-
-  @IsBoolean()
-  @IsOptional()
-  receiveReports?: boolean;
 
   /** Date when student joined a group (manual, Admin-only). ISO date string (YYYY-MM-DD). */
   @IsOptional()

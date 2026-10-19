@@ -64,7 +64,6 @@ const createStudentBaseSchema = z.object({
   parentEmail: z.union([z.string().email('Please enter a valid email address'), z.literal('')]).optional(),
   monthlyFee: z.number().min(0, 'Monthly fee must be positive'),
   notes: z.string().max(500, 'Notes must be at most 500 characters').optional(),
-  receiveReports: z.boolean().optional(),
 });
 
 function applyCreateStudentBusinessRules(

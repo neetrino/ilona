@@ -63,7 +63,6 @@ export interface StudentProfile {
   monthlyFee: number;
   enrolledAt: Date;
   notes?: string | null;
-  receiveReports: boolean;
 }
 
 // ============================================
