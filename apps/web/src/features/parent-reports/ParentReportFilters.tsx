@@ -7,20 +7,20 @@ import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropd
 import { ADMIN_CONTROL_CLASS, ADMIN_FORM_INPUT_CLASS } from '@/shared/lib/admin-control-theme';
 import { DROPDOWN_LABEL_CLASS } from '@/shared/components/ui/dropdown-theme';
 import type { ParentReportItem } from './api';
-import { NO_GROUP_ID, monthKey, recentMonthKeys } from './parent-report-range';
+import { NO_GROUP_ID, quarterKeyFromDate, recentQuarterKeys } from './parent-report-range';
 
 export function useParentReportFilters() {
   const now = new Date();
-  const [fromMonth, setFromMonth] = useState(() => monthKey(now.getFullYear(), 1));
-  const [toMonth, setToMonth] = useState(() => monthKey(now.getFullYear(), now.getMonth() + 1));
+  const [fromQuarter, setFromQuarter] = useState(() => `${now.getFullYear()}-Q1`);
+  const [toQuarter, setToQuarter] = useState(() => quarterKeyFromDate(now));
   const [groupIds, setGroupIds] = useState<Set<string>>(() => new Set());
   const [statusIds, setStatusIds] = useState<Set<string>>(() => new Set());
   const [search, setSearch] = useState('');
   return {
-    fromMonth,
-    setFromMonth,
-    toMonth,
-    setToMonth,
+    fromQuarter,
+    setFromQuarter,
+    toQuarter,
+    setToQuarter,
     groupIds,
     setGroupIds,
     statusIds,
@@ -38,8 +38,10 @@ export function ParentReportFilters({
   filters: ReturnType<typeof useParentReportFilters>;
 }) {
   const t = useTranslations('parentReportsPage');
-  const tCommon = useTranslations('common');
-  const monthOptions = useMemo(() => monthOptionsFrom(tCommon), [tCommon]);
+  const quarterOptions = useMemo(
+    () => recentQuarterKeys(new Date()).map((key) => ({ id: key, label: key })),
+    [],
+  );
   const groupOptions = useMemo(() => groupOptionsFrom(items, t('noGroup')), [items, t]);
   const statusOptions = [
     { id: 'sent', label: t('sentFilter') },
@@ -52,21 +54,21 @@ export function ParentReportFilters({
     <div className="grid grid-cols-1 items-end gap-3 sm:grid-cols-2 xl:grid-cols-5">
       <SingleSelectDropdown
         id="parent-report-from"
-        label={t('fromMonth')}
-        options={monthOptions}
-        value={filters.fromMonth}
+        label={t('fromQuarter')}
+        options={quarterOptions}
+        value={filters.fromQuarter}
         onValueChange={(next) => {
-          if (next) filters.setFromMonth(next);
+          if (next) filters.setFromQuarter(next);
         }}
         triggerClassName={ADMIN_CONTROL_CLASS}
       />
       <SingleSelectDropdown
         id="parent-report-to"
-        label={t('toMonth')}
-        options={monthOptions}
-        value={filters.toMonth}
+        label={t('toQuarter')}
+        options={quarterOptions}
+        value={filters.toQuarter}
         onValueChange={(next) => {
-          if (next) filters.setToMonth(next);
+          if (next) filters.setToQuarter(next);
         }}
         triggerClassName={ADMIN_CONTROL_CLASS}
       />
@@ -99,13 +101,6 @@ export function ParentReportFilters({
       </div>
     </div>
   );
-}
-
-function monthOptionsFrom(tCommon: (key: string) => string) {
-  return recentMonthKeys(new Date()).map((key) => {
-    const [year, month] = key.split('-');
-    return { id: key, label: `${tCommon(`months.${Number(month)}`)} ${year}` };
-  });
 }
 
 function groupOptionsFrom(items: ParentReportItem[], noGroupLabel: string) {

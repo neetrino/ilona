@@ -14,7 +14,7 @@ import {
 } from './api';
 import { ParentReportFilters, useParentReportFilters } from './ParentReportFilters';
 import { LetterPreview, ParentReportTable } from './ParentReportTable';
-import { canSendParentReport, filterParentReports, monthsInRange } from './parent-report-range';
+import { canSendParentReport, filterParentReports, quartersInRange } from './parent-report-range';
 
 export function ParentReportsPage() {
   const t = useTranslations('parentReportsPage');
@@ -37,7 +37,7 @@ export function ParentReportsPage() {
       }),
     [items, filters.groupIds, filters.statusIds, filters.search],
   );
-  const rangeMonths = monthsInRange(filters.fromMonth, filters.toMonth).length;
+  const rangeQuarters = quartersInRange(filters.fromQuarter, filters.toQuarter).length;
   const sendableIds = shown.filter(canSendParentReport).map((item) => item.studentId);
   const sendOne = useMutation({
     mutationFn: (studentId: string) => sendParentReport(studentId, activeQuarter ?? ''),
@@ -56,7 +56,7 @@ export function ParentReportsPage() {
           daysPassed={query.data?.daysPassed}
           daysLeft={query.data?.daysLeft}
           shown={shown.length}
-          months={rangeMonths}
+          quarters={rangeQuarters}
           canSend={Boolean(activeQuarter) && sendableIds.length > 0 && !sendAll.isPending}
           onSend={() => sendAll.mutate(sendableIds)}
         />
@@ -66,8 +66,8 @@ export function ParentReportsPage() {
           items={shown}
           loading={query.isLoading}
           noMatches={!query.isLoading && items.length > 0 && shown.length === 0}
-          fromMonth={filters.fromMonth}
-          toMonth={filters.toMonth}
+          fromQuarter={filters.fromQuarter}
+          toQuarter={filters.toQuarter}
           sendingId={sendOne.isPending ? sendOne.variables : null}
           onPreview={async (studentId) => {
             if (!activeQuarter) return;
@@ -85,14 +85,14 @@ function ReportToolbar({
   daysPassed,
   daysLeft,
   shown,
-  months,
+  quarters,
   canSend,
   onSend,
 }: {
   daysPassed: number | undefined;
   daysLeft: number | undefined;
   shown: number;
-  months: number;
+  quarters: number;
   canSend: boolean;
   onSend: () => void;
 }) {
@@ -100,7 +100,7 @@ function ReportToolbar({
   return (
     <div className="flex flex-wrap items-center gap-3">
       {daysPassed != null && daysLeft != null ? <QuarterTiming daysPassed={daysPassed} daysLeft={daysLeft} /> : null}
-      <p className="text-sm text-slate-600">{t('rangeSummary', { shown, months })}</p>
+      <p className="text-sm text-slate-600">{t('rangeSummary', { shown, quarters })}</p>
       <Button type="button" className="h-11 min-h-11 rounded-[15px]" disabled={!canSend} onClick={onSend}>
         {t('sendAll')}
       </Button>

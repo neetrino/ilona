@@ -1,16 +1,16 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { Button } from '@/shared/components/ui/button';
+import { Button, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/shared/components/ui';
 import type { ParentReportItem, ParentReportLetter } from './api';
-import { canSendParentReport, sentMonthsInRange } from './parent-report-range';
+import { canSendParentReport, sentQuartersInRange } from './parent-report-range';
 
 export function ParentReportTable({
   items,
   loading,
   noMatches,
-  fromMonth,
-  toMonth,
+  fromQuarter,
+  toQuarter,
   sendingId,
   onPreview,
   onSend,
@@ -18,8 +18,8 @@ export function ParentReportTable({
   items: ParentReportItem[];
   loading: boolean;
   noMatches: boolean;
-  fromMonth: string;
-  toMonth: string;
+  fromQuarter: string;
+  toQuarter: string;
   sendingId: string | undefined | null;
   onPreview: (studentId: string) => Promise<void>;
   onSend: (studentId: string) => void;
@@ -44,7 +44,7 @@ export function ParentReportTable({
             <th className="px-4 py-3 font-medium">{t('email')}</th>
             <th className="px-4 py-3 font-medium">{t('group')}</th>
             <th className="px-4 py-3 font-medium">{t('status')}</th>
-            <th className="px-4 py-3 font-medium">{t('sentMonthsColumn')}</th>
+            <th className="px-4 py-3 font-medium">{t('sentQuartersColumn')}</th>
             <th className="px-4 py-3 font-medium" />
           </tr>
         </thead>
@@ -53,7 +53,7 @@ export function ParentReportTable({
             <ReportRow
               key={item.studentId}
               item={item}
-              months={sentMonthsInRange(item.sentQuarters, fromMonth, toMonth)}
+              quarters={sentQuartersInRange(item.sentQuarters, fromQuarter, toQuarter)}
               sending={sendingId === item.studentId}
               onPreview={onPreview}
               onSend={onSend}
@@ -67,13 +67,13 @@ export function ParentReportTable({
 
 function ReportRow({
   item,
-  months,
+  quarters,
   sending,
   onPreview,
   onSend,
 }: {
   item: ParentReportItem;
-  months: number;
+  quarters: number;
   sending: boolean;
   onPreview: (studentId: string) => Promise<void>;
   onSend: (studentId: string) => void;
@@ -87,7 +87,7 @@ function ReportRow({
       <td className="px-4 py-3">{item.parentEmail || t('missingEmail')}</td>
       <td className="px-4 py-3">{item.groupName || '—'}</td>
       <td className="px-4 py-3">{statusLabel(item, t)}</td>
-      <td className="px-4 py-3">{t('sentMonths', { count: months })}</td>
+      <td className="px-4 py-3">{t('sentQuarters', { count: quarters })}</td>
       <td className="px-4 py-3">
         <div className="flex gap-2">
           <Button type="button" variant="outline" size="sm" onClick={() => void onPreview(item.studentId)}>
@@ -115,14 +115,14 @@ function statusLabel(
 export function LetterPreview({ letter, onClose }: { letter: ParentReportLetter; onClose: () => void }) {
   const t = useTranslations('parentReportsPage');
   return (
-    <section className="rounded-2xl border border-slate-200 bg-white p-4">
-      <div className="flex items-start justify-between gap-3">
-        <h2 className="text-base font-semibold text-slate-900">{letter.subject}</h2>
-        <Button type="button" variant="outline" size="sm" onClick={onClose}>
-          {t('close')}
-        </Button>
-      </div>
-      <pre className="mt-4 whitespace-pre-wrap text-sm text-slate-700">{letter.text}</pre>
-    </section>
+    <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
+      <DialogContent sheet={false} className="max-h-[min(85vh,40rem)] max-w-2xl overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="pr-8 text-base">{letter.subject}</DialogTitle>
+          <DialogDescription className="sr-only">{t('preview')}</DialogDescription>
+        </DialogHeader>
+        <pre className="whitespace-pre-wrap text-sm text-slate-700">{letter.text}</pre>
+      </DialogContent>
+    </Dialog>
   );
 }

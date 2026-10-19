@@ -1,17 +1,17 @@
 import {
   filterParentReports,
-  monthsInRange,
-  sentMonthsInRange,
+  quartersInRange,
+  sentQuartersInRange,
 } from '../../../../web/src/features/parent-reports/parent-report-range';
 
 describe('parent report range', () => {
-  it('counts months covered by a sent quarter inside the range', () => {
-    expect(sentMonthsInRange(['2026-Q1', '2026-Q2'], '2026-01', '2026-10')).toBe(6);
-    expect(monthsInRange('2026-01', '2026-10')).toHaveLength(10);
+  it('counts sent quarters inside the selected range', () => {
+    expect(quartersInRange('2026-Q1', '2026-Q4')).toEqual(['2026-Q1', '2026-Q2', '2026-Q3', '2026-Q4']);
+    expect(sentQuartersInRange(['2026-Q1', '2026-Q2'], '2026-Q1', '2026-Q4')).toBe(2);
   });
 
-  it('counts only the months that fall inside a partial quarter', () => {
-    expect(sentMonthsInRange(['2026-Q4'], '2026-10', '2026-10')).toBe(1);
+  it('counts a sent quarter only when it is inside the range', () => {
+    expect(sentQuartersInRange(['2026-Q4'], '2026-Q1', '2026-Q3')).toBe(0);
   });
 
   it('filters by group, status, and search together', () => {

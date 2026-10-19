@@ -15,48 +15,47 @@ type FilterableReport = {
   sentAt: string | null;
 };
 
-export function monthKey(year: number, month: number): string {
-  return `${year}-${String(month).padStart(2, '0')}`;
+export function quarterKeyFromDate(date: Date): string {
+  return `${date.getFullYear()}-Q${Math.ceil((date.getMonth() + 1) / 3)}`;
 }
 
-export function recentMonthKeys(anchor: Date, count = 24): string[] {
+export function recentQuarterKeys(anchor: Date, count = 8): string[] {
   const keys: string[] = [];
   let year = anchor.getFullYear();
-  let month = anchor.getMonth() + 1;
+  let quarter = Math.ceil((anchor.getMonth() + 1) / 3);
   for (let index = 0; index < count; index += 1) {
-    keys.unshift(monthKey(year, month));
-    month -= 1;
-    if (month === 0) {
-      month = 12;
+    keys.unshift(`${year}-Q${quarter}`);
+    quarter -= 1;
+    if (quarter === 0) {
+      quarter = 4;
       year -= 1;
     }
   }
   return keys;
 }
 
-export function monthsInRange(from: string, to: string): string[] {
+export function quartersInRange(from: string, to: string): string[] {
   const start = from <= to ? from : to;
   const end = from <= to ? to : from;
   const keys: string[] = [];
-  let [year, month] = start.split('-').map(Number);
-  const [endYear, endMonth] = end.split('-').map(Number);
-  while (year < endYear || (year === endYear && month <= endMonth)) {
-    keys.push(monthKey(year, month));
-    month += 1;
-    if (month === 13) {
-      month = 1;
+  let year = Number(start.slice(0, 4));
+  let quarter = Number(start.slice(6));
+  const endYear = Number(end.slice(0, 4));
+  const endQuarter = Number(end.slice(6));
+  while (year < endYear || (year === endYear && quarter <= endQuarter)) {
+    keys.push(`${year}-Q${quarter}`);
+    quarter += 1;
+    if (quarter === 5) {
+      quarter = 1;
       year += 1;
     }
   }
   return keys;
 }
 
-export function sentMonthsInRange(sentQuarters: string[], from: string, to: string): number {
-  const sent = new Set(sentQuarters);
-  return monthsInRange(from, to).filter((key) => {
-    const [year, month] = key.split('-').map(Number);
-    return sent.has(`${year}-Q${Math.ceil(month / 3)}`);
-  }).length;
+export function sentQuartersInRange(sentQuarters: string[] | undefined, from: string, to: string): number {
+  const range = new Set(quartersInRange(from, to));
+  return (sentQuarters ?? []).filter((key) => range.has(key)).length;
 }
 
 export function filterParentReports<T extends FilterableReport>(
