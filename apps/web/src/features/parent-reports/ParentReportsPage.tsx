@@ -74,31 +74,43 @@ export function ParentReportsPage() {
           onPreview={preview.open}
           onSend={(studentId) => sendOne.mutate(studentId)}
         />
-        {preview.letter ? <LetterPreview letter={preview.letter} onClose={preview.close} /> : null}
+        {preview.visible ? <LetterPreview letter={preview.letter} onClose={preview.close} /> : null}
       </div>
     </DashboardLayout>
   );
 }
 
 function useLetterPreview(quarterKey: string | undefined) {
+  const [visible, setVisible] = useState(false);
   const [letter, setLetter] = useState<ParentReportLetter | null>(null);
   const [failed, setFailed] = useState(false);
-  const pending = useRef(false);
+  const requestId = useRef(0);
 
   async function open(studentId: string) {
-    if (!quarterKey || pending.current) return;
-    pending.current = true;
+    if (!quarterKey) return;
+    const id = requestId.current + 1;
+    requestId.current = id;
+    setVisible(true);
+    setLetter(null);
     setFailed(false);
     try {
-      setLetter(await previewParentReport(studentId, quarterKey));
+      const next = await previewParentReport(studentId, quarterKey);
+      if (requestId.current !== id) return;
+      setLetter(next);
     } catch {
+      if (requestId.current !== id) return;
+      setVisible(false);
       setFailed(true);
-    } finally {
-      pending.current = false;
     }
   }
 
-  return { letter, failed, open, close: () => setLetter(null) };
+  function close() {
+    requestId.current += 1;
+    setVisible(false);
+    setLetter(null);
+  }
+
+  return { visible, letter, failed, open, close };
 }
 
 function ReportToolbar({

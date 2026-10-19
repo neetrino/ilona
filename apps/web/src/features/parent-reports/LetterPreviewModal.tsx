@@ -15,7 +15,7 @@ const SECTION_ICONS: Array<{ match: string; icon: LucideIcon }> = [
   { match: 'Համեմատություն', icon: ArrowLeftRight },
 ];
 
-export function LetterPreview({ letter, onClose }: { letter: ParentReportLetter; onClose: () => void }) {
+export function LetterPreview({ letter, onClose }: { letter: ParentReportLetter | null; onClose: () => void }) {
   const t = useTranslations('parentReportsPage');
   const dismiss = useDismissGuard(onClose);
   return (
@@ -34,13 +34,13 @@ export function LetterPreview({ letter, onClose }: { letter: ParentReportLetter;
             </span>
             <div className="min-w-0 space-y-1">
               <p className="text-xs font-medium text-[#1010a3]">{t('preview')}</p>
-              <DialogTitle className="text-base font-semibold text-[#0e0e10]">{letter.subject}</DialogTitle>
+              <DialogTitle className="text-base font-semibold text-[#0e0e10]">{letter?.subject ?? t('loading')}</DialogTitle>
             </div>
           </div>
           <DialogDescription className="sr-only">{t('preview')}</DialogDescription>
         </DialogHeader>
         <div className="min-h-0 flex-1 overflow-y-auto bg-[#f8f9fb] px-6 py-5">
-          <LetterBody text={letter.text} />
+          {letter ? <LetterBody text={letter.text} /> : <p className="text-sm text-[#3b3b40]">{t('loading')}</p>}
         </div>
       </DialogContent>
     </Dialog>
