@@ -173,6 +173,17 @@ export class StudentGroupService {
       );
     }
 
+    if (oldGroupId !== newGroupId) {
+      await this.notifications.runSafe('group-size', async () => {
+        if (oldGroupId) {
+          await this.notifications.notifyGroupMembershipDelta(oldGroupId, -1);
+        }
+        if (newGroupId) {
+          await this.notifications.notifyGroupMembershipDelta(newGroupId, 1);
+        }
+      });
+    }
+
     return updated;
   }
 }

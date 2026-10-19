@@ -129,6 +129,16 @@ export type SystemSettings = $Result.DefaultSelection<Prisma.$SystemSettingsPayl
  */
 export type DailyPlan = $Result.DefaultSelection<Prisma.$DailyPlanPayload>
 /**
+ * Model DailyPlanComment
+ * 
+ */
+export type DailyPlanComment = $Result.DefaultSelection<Prisma.$DailyPlanCommentPayload>
+/**
+ * Model ParentQuarterlyReport
+ * 
+ */
+export type ParentQuarterlyReport = $Result.DefaultSelection<Prisma.$ParentQuarterlyReportPayload>
+/**
  * Model DailyPlanTopic
  * 
  */
@@ -770,6 +780,26 @@ export class PrismaClient<
   get dailyPlan(): Prisma.DailyPlanDelegate<ExtArgs>;
 
   /**
+   * `prisma.dailyPlanComment`: Exposes CRUD operations for the **DailyPlanComment** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more DailyPlanComments
+    * const dailyPlanComments = await prisma.dailyPlanComment.findMany()
+    * ```
+    */
+  get dailyPlanComment(): Prisma.DailyPlanCommentDelegate<ExtArgs>;
+
+  /**
+   * `prisma.parentQuarterlyReport`: Exposes CRUD operations for the **ParentQuarterlyReport** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more ParentQuarterlyReports
+    * const parentQuarterlyReports = await prisma.parentQuarterlyReport.findMany()
+    * ```
+    */
+  get parentQuarterlyReport(): Prisma.ParentQuarterlyReportDelegate<ExtArgs>;
+
+  /**
    * `prisma.dailyPlanTopic`: Exposes CRUD operations for the **DailyPlanTopic** model.
     * Example usage:
     * ```ts
@@ -1312,6 +1342,8 @@ export namespace Prisma {
     Notification: 'Notification',
     SystemSettings: 'SystemSettings',
     DailyPlan: 'DailyPlan',
+    DailyPlanComment: 'DailyPlanComment',
+    ParentQuarterlyReport: 'ParentQuarterlyReport',
     DailyPlanTopic: 'DailyPlanTopic',
     DailyPlanResource: 'DailyPlanResource',
     RecordingItem: 'RecordingItem',
@@ -1335,7 +1367,7 @@ export namespace Prisma {
 
   export type TypeMap<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, ClientOptions = {}> = {
     meta: {
-      modelProps: "user" | "center" | "managerProfile" | "group" | "teacher" | "teacherCenter" | "teacherNote" | "student" | "studentNote" | "plannedAbsence" | "studentGroupHistory" | "lesson" | "attendance" | "feedback" | "payment" | "salaryRecord" | "deduction" | "chat" | "chatParticipant" | "message" | "notification" | "systemSettings" | "dailyPlan" | "dailyPlanTopic" | "dailyPlanResource" | "recordingItem" | "crmLead" | "crmLeadActivity" | "crmLeadAttachment" | "auditLog" | "blogPost"
+      modelProps: "user" | "center" | "managerProfile" | "group" | "teacher" | "teacherCenter" | "teacherNote" | "student" | "studentNote" | "plannedAbsence" | "studentGroupHistory" | "lesson" | "attendance" | "feedback" | "payment" | "salaryRecord" | "deduction" | "chat" | "chatParticipant" | "message" | "notification" | "systemSettings" | "dailyPlan" | "dailyPlanComment" | "parentQuarterlyReport" | "dailyPlanTopic" | "dailyPlanResource" | "recordingItem" | "crmLead" | "crmLeadActivity" | "crmLeadAttachment" | "auditLog" | "blogPost"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -2949,6 +2981,146 @@ export namespace Prisma {
           }
         }
       }
+      DailyPlanComment: {
+        payload: Prisma.$DailyPlanCommentPayload<ExtArgs>
+        fields: Prisma.DailyPlanCommentFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.DailyPlanCommentFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DailyPlanCommentPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.DailyPlanCommentFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DailyPlanCommentPayload>
+          }
+          findFirst: {
+            args: Prisma.DailyPlanCommentFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DailyPlanCommentPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.DailyPlanCommentFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DailyPlanCommentPayload>
+          }
+          findMany: {
+            args: Prisma.DailyPlanCommentFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DailyPlanCommentPayload>[]
+          }
+          create: {
+            args: Prisma.DailyPlanCommentCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DailyPlanCommentPayload>
+          }
+          createMany: {
+            args: Prisma.DailyPlanCommentCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.DailyPlanCommentCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DailyPlanCommentPayload>[]
+          }
+          delete: {
+            args: Prisma.DailyPlanCommentDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DailyPlanCommentPayload>
+          }
+          update: {
+            args: Prisma.DailyPlanCommentUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DailyPlanCommentPayload>
+          }
+          deleteMany: {
+            args: Prisma.DailyPlanCommentDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.DailyPlanCommentUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.DailyPlanCommentUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DailyPlanCommentPayload>
+          }
+          aggregate: {
+            args: Prisma.DailyPlanCommentAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateDailyPlanComment>
+          }
+          groupBy: {
+            args: Prisma.DailyPlanCommentGroupByArgs<ExtArgs>
+            result: $Utils.Optional<DailyPlanCommentGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.DailyPlanCommentCountArgs<ExtArgs>
+            result: $Utils.Optional<DailyPlanCommentCountAggregateOutputType> | number
+          }
+        }
+      }
+      ParentQuarterlyReport: {
+        payload: Prisma.$ParentQuarterlyReportPayload<ExtArgs>
+        fields: Prisma.ParentQuarterlyReportFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.ParentQuarterlyReportFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ParentQuarterlyReportPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.ParentQuarterlyReportFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ParentQuarterlyReportPayload>
+          }
+          findFirst: {
+            args: Prisma.ParentQuarterlyReportFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ParentQuarterlyReportPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.ParentQuarterlyReportFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ParentQuarterlyReportPayload>
+          }
+          findMany: {
+            args: Prisma.ParentQuarterlyReportFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ParentQuarterlyReportPayload>[]
+          }
+          create: {
+            args: Prisma.ParentQuarterlyReportCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ParentQuarterlyReportPayload>
+          }
+          createMany: {
+            args: Prisma.ParentQuarterlyReportCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.ParentQuarterlyReportCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ParentQuarterlyReportPayload>[]
+          }
+          delete: {
+            args: Prisma.ParentQuarterlyReportDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ParentQuarterlyReportPayload>
+          }
+          update: {
+            args: Prisma.ParentQuarterlyReportUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ParentQuarterlyReportPayload>
+          }
+          deleteMany: {
+            args: Prisma.ParentQuarterlyReportDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.ParentQuarterlyReportUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          upsert: {
+            args: Prisma.ParentQuarterlyReportUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ParentQuarterlyReportPayload>
+          }
+          aggregate: {
+            args: Prisma.ParentQuarterlyReportAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateParentQuarterlyReport>
+          }
+          groupBy: {
+            args: Prisma.ParentQuarterlyReportGroupByArgs<ExtArgs>
+            result: $Utils.Optional<ParentQuarterlyReportGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.ParentQuarterlyReportCountArgs<ExtArgs>
+            result: $Utils.Optional<ParentQuarterlyReportCountAggregateOutputType> | number
+          }
+        }
+      }
       DailyPlanTopic: {
         payload: Prisma.$DailyPlanTopicPayload<ExtArgs>
         fields: Prisma.DailyPlanTopicFieldRefs
@@ -3675,6 +3847,7 @@ export namespace Prisma {
     crmLeadsCreated: number
     sentMessages: number
     notifications: number
+    dailyPlanComments: number
     markedAttendances: number
   }
 
@@ -3684,6 +3857,7 @@ export namespace Prisma {
     crmLeadsCreated?: boolean | UserCountOutputTypeCountCrmLeadsCreatedArgs
     sentMessages?: boolean | UserCountOutputTypeCountSentMessagesArgs
     notifications?: boolean | UserCountOutputTypeCountNotificationsArgs
+    dailyPlanComments?: boolean | UserCountOutputTypeCountDailyPlanCommentsArgs
     markedAttendances?: boolean | UserCountOutputTypeCountMarkedAttendancesArgs
   }
 
@@ -3731,6 +3905,13 @@ export namespace Prisma {
    */
   export type UserCountOutputTypeCountNotificationsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: NotificationWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountDailyPlanCommentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: DailyPlanCommentWhereInput
   }
 
   /**
@@ -4026,6 +4207,7 @@ export namespace Prisma {
     plannedAbsences: number
     recordingItems: number
     notesList: number
+    parentQuarterlyReports: number
   }
 
   export type StudentCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -4036,6 +4218,7 @@ export namespace Prisma {
     plannedAbsences?: boolean | StudentCountOutputTypeCountPlannedAbsencesArgs
     recordingItems?: boolean | StudentCountOutputTypeCountRecordingItemsArgs
     notesList?: boolean | StudentCountOutputTypeCountNotesListArgs
+    parentQuarterlyReports?: boolean | StudentCountOutputTypeCountParentQuarterlyReportsArgs
   }
 
   // Custom InputTypes
@@ -4096,6 +4279,13 @@ export namespace Prisma {
    */
   export type StudentCountOutputTypeCountNotesListArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: StudentNoteWhereInput
+  }
+
+  /**
+   * StudentCountOutputType without action
+   */
+  export type StudentCountOutputTypeCountParentQuarterlyReportsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ParentQuarterlyReportWhereInput
   }
 
 
@@ -4194,10 +4384,12 @@ export namespace Prisma {
 
   export type DailyPlanCountOutputType = {
     topics: number
+    comments: number
   }
 
   export type DailyPlanCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     topics?: boolean | DailyPlanCountOutputTypeCountTopicsArgs
+    comments?: boolean | DailyPlanCountOutputTypeCountCommentsArgs
   }
 
   // Custom InputTypes
@@ -4216,6 +4408,13 @@ export namespace Prisma {
    */
   export type DailyPlanCountOutputTypeCountTopicsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: DailyPlanTopicWhereInput
+  }
+
+  /**
+   * DailyPlanCountOutputType without action
+   */
+  export type DailyPlanCountOutputTypeCountCommentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: DailyPlanCommentWhereInput
   }
 
 
@@ -4528,6 +4727,7 @@ export namespace Prisma {
     managerProfile?: boolean | User$managerProfileArgs<ExtArgs>
     sentMessages?: boolean | User$sentMessagesArgs<ExtArgs>
     notifications?: boolean | User$notificationsArgs<ExtArgs>
+    dailyPlanComments?: boolean | User$dailyPlanCommentsArgs<ExtArgs>
     markedAttendances?: boolean | User$markedAttendancesArgs<ExtArgs>
     student?: boolean | User$studentArgs<ExtArgs>
     teacher?: boolean | User$teacherArgs<ExtArgs>
@@ -4573,6 +4773,7 @@ export namespace Prisma {
     managerProfile?: boolean | User$managerProfileArgs<ExtArgs>
     sentMessages?: boolean | User$sentMessagesArgs<ExtArgs>
     notifications?: boolean | User$notificationsArgs<ExtArgs>
+    dailyPlanComments?: boolean | User$dailyPlanCommentsArgs<ExtArgs>
     markedAttendances?: boolean | User$markedAttendancesArgs<ExtArgs>
     student?: boolean | User$studentArgs<ExtArgs>
     teacher?: boolean | User$teacherArgs<ExtArgs>
@@ -4589,6 +4790,7 @@ export namespace Prisma {
       managerProfile: Prisma.$ManagerProfilePayload<ExtArgs> | null
       sentMessages: Prisma.$MessagePayload<ExtArgs>[]
       notifications: Prisma.$NotificationPayload<ExtArgs>[]
+      dailyPlanComments: Prisma.$DailyPlanCommentPayload<ExtArgs>[]
       markedAttendances: Prisma.$AttendancePayload<ExtArgs>[]
       student: Prisma.$StudentPayload<ExtArgs> | null
       teacher: Prisma.$TeacherPayload<ExtArgs> | null
@@ -4977,6 +5179,7 @@ export namespace Prisma {
     managerProfile<T extends User$managerProfileArgs<ExtArgs> = {}>(args?: Subset<T, User$managerProfileArgs<ExtArgs>>): Prisma__ManagerProfileClient<$Result.GetResult<Prisma.$ManagerProfilePayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
     sentMessages<T extends User$sentMessagesArgs<ExtArgs> = {}>(args?: Subset<T, User$sentMessagesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MessagePayload<ExtArgs>, T, "findMany"> | Null>
     notifications<T extends User$notificationsArgs<ExtArgs> = {}>(args?: Subset<T, User$notificationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, "findMany"> | Null>
+    dailyPlanComments<T extends User$dailyPlanCommentsArgs<ExtArgs> = {}>(args?: Subset<T, User$dailyPlanCommentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DailyPlanCommentPayload<ExtArgs>, T, "findMany"> | Null>
     markedAttendances<T extends User$markedAttendancesArgs<ExtArgs> = {}>(args?: Subset<T, User$markedAttendancesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AttendancePayload<ExtArgs>, T, "findMany"> | Null>
     student<T extends User$studentArgs<ExtArgs> = {}>(args?: Subset<T, User$studentArgs<ExtArgs>>): Prisma__StudentClient<$Result.GetResult<Prisma.$StudentPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
     teacher<T extends User$teacherArgs<ExtArgs> = {}>(args?: Subset<T, User$teacherArgs<ExtArgs>>): Prisma__TeacherClient<$Result.GetResult<Prisma.$TeacherPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
@@ -5448,6 +5651,26 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: NotificationScalarFieldEnum | NotificationScalarFieldEnum[]
+  }
+
+  /**
+   * User.dailyPlanComments
+   */
+  export type User$dailyPlanCommentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DailyPlanComment
+     */
+    select?: DailyPlanCommentSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DailyPlanCommentInclude<ExtArgs> | null
+    where?: DailyPlanCommentWhereInput
+    orderBy?: DailyPlanCommentOrderByWithRelationInput | DailyPlanCommentOrderByWithRelationInput[]
+    cursor?: DailyPlanCommentWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: DailyPlanCommentScalarFieldEnum | DailyPlanCommentScalarFieldEnum[]
   }
 
   /**
@@ -12462,6 +12685,7 @@ export namespace Prisma {
     plannedAbsences?: boolean | Student$plannedAbsencesArgs<ExtArgs>
     recordingItems?: boolean | Student$recordingItemsArgs<ExtArgs>
     notesList?: boolean | Student$notesListArgs<ExtArgs>
+    parentQuarterlyReports?: boolean | Student$parentQuarterlyReportsArgs<ExtArgs>
     _count?: boolean | StudentCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["student"]>
 
@@ -12533,6 +12757,7 @@ export namespace Prisma {
     plannedAbsences?: boolean | Student$plannedAbsencesArgs<ExtArgs>
     recordingItems?: boolean | Student$recordingItemsArgs<ExtArgs>
     notesList?: boolean | Student$notesListArgs<ExtArgs>
+    parentQuarterlyReports?: boolean | Student$parentQuarterlyReportsArgs<ExtArgs>
     _count?: boolean | StudentCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type StudentIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -12558,6 +12783,7 @@ export namespace Prisma {
       plannedAbsences: Prisma.$PlannedAbsencePayload<ExtArgs>[]
       recordingItems: Prisma.$RecordingItemPayload<ExtArgs>[]
       notesList: Prisma.$StudentNotePayload<ExtArgs>[]
+      parentQuarterlyReports: Prisma.$ParentQuarterlyReportPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -12958,6 +13184,7 @@ export namespace Prisma {
     plannedAbsences<T extends Student$plannedAbsencesArgs<ExtArgs> = {}>(args?: Subset<T, Student$plannedAbsencesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PlannedAbsencePayload<ExtArgs>, T, "findMany"> | Null>
     recordingItems<T extends Student$recordingItemsArgs<ExtArgs> = {}>(args?: Subset<T, Student$recordingItemsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$RecordingItemPayload<ExtArgs>, T, "findMany"> | Null>
     notesList<T extends Student$notesListArgs<ExtArgs> = {}>(args?: Subset<T, Student$notesListArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$StudentNotePayload<ExtArgs>, T, "findMany"> | Null>
+    parentQuarterlyReports<T extends Student$parentQuarterlyReportsArgs<ExtArgs> = {}>(args?: Subset<T, Student$parentQuarterlyReportsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ParentQuarterlyReportPayload<ExtArgs>, T, "findMany"> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -13524,6 +13751,26 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: StudentNoteScalarFieldEnum | StudentNoteScalarFieldEnum[]
+  }
+
+  /**
+   * Student.parentQuarterlyReports
+   */
+  export type Student$parentQuarterlyReportsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ParentQuarterlyReport
+     */
+    select?: ParentQuarterlyReportSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ParentQuarterlyReportInclude<ExtArgs> | null
+    where?: ParentQuarterlyReportWhereInput
+    orderBy?: ParentQuarterlyReportOrderByWithRelationInput | ParentQuarterlyReportOrderByWithRelationInput[]
+    cursor?: ParentQuarterlyReportWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: ParentQuarterlyReportScalarFieldEnum | ParentQuarterlyReportScalarFieldEnum[]
   }
 
   /**
@@ -28359,6 +28606,7 @@ export namespace Prisma {
     createdAt?: boolean
     updatedAt?: boolean
     topics?: boolean | DailyPlan$topicsArgs<ExtArgs>
+    comments?: boolean | DailyPlan$commentsArgs<ExtArgs>
     lesson?: boolean | DailyPlan$lessonArgs<ExtArgs>
     teacher?: boolean | TeacherDefaultArgs<ExtArgs>
     group?: boolean | DailyPlan$groupArgs<ExtArgs>
@@ -28390,6 +28638,7 @@ export namespace Prisma {
 
   export type DailyPlanInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     topics?: boolean | DailyPlan$topicsArgs<ExtArgs>
+    comments?: boolean | DailyPlan$commentsArgs<ExtArgs>
     lesson?: boolean | DailyPlan$lessonArgs<ExtArgs>
     teacher?: boolean | TeacherDefaultArgs<ExtArgs>
     group?: boolean | DailyPlan$groupArgs<ExtArgs>
@@ -28405,6 +28654,7 @@ export namespace Prisma {
     name: "DailyPlan"
     objects: {
       topics: Prisma.$DailyPlanTopicPayload<ExtArgs>[]
+      comments: Prisma.$DailyPlanCommentPayload<ExtArgs>[]
       lesson: Prisma.$LessonPayload<ExtArgs> | null
       teacher: Prisma.$TeacherPayload<ExtArgs>
       group: Prisma.$GroupPayload<ExtArgs> | null
@@ -28782,6 +29032,7 @@ export namespace Prisma {
   export interface Prisma__DailyPlanClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     topics<T extends DailyPlan$topicsArgs<ExtArgs> = {}>(args?: Subset<T, DailyPlan$topicsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DailyPlanTopicPayload<ExtArgs>, T, "findMany"> | Null>
+    comments<T extends DailyPlan$commentsArgs<ExtArgs> = {}>(args?: Subset<T, DailyPlan$commentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DailyPlanCommentPayload<ExtArgs>, T, "findMany"> | Null>
     lesson<T extends DailyPlan$lessonArgs<ExtArgs> = {}>(args?: Subset<T, DailyPlan$lessonArgs<ExtArgs>>): Prisma__LessonClient<$Result.GetResult<Prisma.$LessonPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
     teacher<T extends TeacherDefaultArgs<ExtArgs> = {}>(args?: Subset<T, TeacherDefaultArgs<ExtArgs>>): Prisma__TeacherClient<$Result.GetResult<Prisma.$TeacherPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
     group<T extends DailyPlan$groupArgs<ExtArgs> = {}>(args?: Subset<T, DailyPlan$groupArgs<ExtArgs>>): Prisma__GroupClient<$Result.GetResult<Prisma.$GroupPayload<ExtArgs>, T, "findUniqueOrThrow"> | null, null, ExtArgs>
@@ -29159,6 +29410,26 @@ export namespace Prisma {
   }
 
   /**
+   * DailyPlan.comments
+   */
+  export type DailyPlan$commentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DailyPlanComment
+     */
+    select?: DailyPlanCommentSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DailyPlanCommentInclude<ExtArgs> | null
+    where?: DailyPlanCommentWhereInput
+    orderBy?: DailyPlanCommentOrderByWithRelationInput | DailyPlanCommentOrderByWithRelationInput[]
+    cursor?: DailyPlanCommentWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: DailyPlanCommentScalarFieldEnum | DailyPlanCommentScalarFieldEnum[]
+  }
+
+  /**
    * DailyPlan.lesson
    */
   export type DailyPlan$lessonArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -29200,6 +29471,1878 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: DailyPlanInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model DailyPlanComment
+   */
+
+  export type AggregateDailyPlanComment = {
+    _count: DailyPlanCommentCountAggregateOutputType | null
+    _min: DailyPlanCommentMinAggregateOutputType | null
+    _max: DailyPlanCommentMaxAggregateOutputType | null
+  }
+
+  export type DailyPlanCommentMinAggregateOutputType = {
+    id: string | null
+    dailyPlanId: string | null
+    authorUserId: string | null
+    body: string | null
+    createdAt: Date | null
+  }
+
+  export type DailyPlanCommentMaxAggregateOutputType = {
+    id: string | null
+    dailyPlanId: string | null
+    authorUserId: string | null
+    body: string | null
+    createdAt: Date | null
+  }
+
+  export type DailyPlanCommentCountAggregateOutputType = {
+    id: number
+    dailyPlanId: number
+    authorUserId: number
+    body: number
+    createdAt: number
+    _all: number
+  }
+
+
+  export type DailyPlanCommentMinAggregateInputType = {
+    id?: true
+    dailyPlanId?: true
+    authorUserId?: true
+    body?: true
+    createdAt?: true
+  }
+
+  export type DailyPlanCommentMaxAggregateInputType = {
+    id?: true
+    dailyPlanId?: true
+    authorUserId?: true
+    body?: true
+    createdAt?: true
+  }
+
+  export type DailyPlanCommentCountAggregateInputType = {
+    id?: true
+    dailyPlanId?: true
+    authorUserId?: true
+    body?: true
+    createdAt?: true
+    _all?: true
+  }
+
+  export type DailyPlanCommentAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which DailyPlanComment to aggregate.
+     */
+    where?: DailyPlanCommentWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of DailyPlanComments to fetch.
+     */
+    orderBy?: DailyPlanCommentOrderByWithRelationInput | DailyPlanCommentOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: DailyPlanCommentWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` DailyPlanComments from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` DailyPlanComments.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned DailyPlanComments
+    **/
+    _count?: true | DailyPlanCommentCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: DailyPlanCommentMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: DailyPlanCommentMaxAggregateInputType
+  }
+
+  export type GetDailyPlanCommentAggregateType<T extends DailyPlanCommentAggregateArgs> = {
+        [P in keyof T & keyof AggregateDailyPlanComment]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateDailyPlanComment[P]>
+      : GetScalarType<T[P], AggregateDailyPlanComment[P]>
+  }
+
+
+
+
+  export type DailyPlanCommentGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: DailyPlanCommentWhereInput
+    orderBy?: DailyPlanCommentOrderByWithAggregationInput | DailyPlanCommentOrderByWithAggregationInput[]
+    by: DailyPlanCommentScalarFieldEnum[] | DailyPlanCommentScalarFieldEnum
+    having?: DailyPlanCommentScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: DailyPlanCommentCountAggregateInputType | true
+    _min?: DailyPlanCommentMinAggregateInputType
+    _max?: DailyPlanCommentMaxAggregateInputType
+  }
+
+  export type DailyPlanCommentGroupByOutputType = {
+    id: string
+    dailyPlanId: string
+    authorUserId: string
+    body: string
+    createdAt: Date
+    _count: DailyPlanCommentCountAggregateOutputType | null
+    _min: DailyPlanCommentMinAggregateOutputType | null
+    _max: DailyPlanCommentMaxAggregateOutputType | null
+  }
+
+  type GetDailyPlanCommentGroupByPayload<T extends DailyPlanCommentGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<DailyPlanCommentGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof DailyPlanCommentGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], DailyPlanCommentGroupByOutputType[P]>
+            : GetScalarType<T[P], DailyPlanCommentGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type DailyPlanCommentSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    dailyPlanId?: boolean
+    authorUserId?: boolean
+    body?: boolean
+    createdAt?: boolean
+    dailyPlan?: boolean | DailyPlanDefaultArgs<ExtArgs>
+    author?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["dailyPlanComment"]>
+
+  export type DailyPlanCommentSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    dailyPlanId?: boolean
+    authorUserId?: boolean
+    body?: boolean
+    createdAt?: boolean
+    dailyPlan?: boolean | DailyPlanDefaultArgs<ExtArgs>
+    author?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["dailyPlanComment"]>
+
+  export type DailyPlanCommentSelectScalar = {
+    id?: boolean
+    dailyPlanId?: boolean
+    authorUserId?: boolean
+    body?: boolean
+    createdAt?: boolean
+  }
+
+  export type DailyPlanCommentInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    dailyPlan?: boolean | DailyPlanDefaultArgs<ExtArgs>
+    author?: boolean | UserDefaultArgs<ExtArgs>
+  }
+  export type DailyPlanCommentIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    dailyPlan?: boolean | DailyPlanDefaultArgs<ExtArgs>
+    author?: boolean | UserDefaultArgs<ExtArgs>
+  }
+
+  export type $DailyPlanCommentPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "DailyPlanComment"
+    objects: {
+      dailyPlan: Prisma.$DailyPlanPayload<ExtArgs>
+      author: Prisma.$UserPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      dailyPlanId: string
+      authorUserId: string
+      body: string
+      createdAt: Date
+    }, ExtArgs["result"]["dailyPlanComment"]>
+    composites: {}
+  }
+
+  type DailyPlanCommentGetPayload<S extends boolean | null | undefined | DailyPlanCommentDefaultArgs> = $Result.GetResult<Prisma.$DailyPlanCommentPayload, S>
+
+  type DailyPlanCommentCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
+    Omit<DailyPlanCommentFindManyArgs, 'select' | 'include' | 'distinct'> & {
+      select?: DailyPlanCommentCountAggregateInputType | true
+    }
+
+  export interface DailyPlanCommentDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['DailyPlanComment'], meta: { name: 'DailyPlanComment' } }
+    /**
+     * Find zero or one DailyPlanComment that matches the filter.
+     * @param {DailyPlanCommentFindUniqueArgs} args - Arguments to find a DailyPlanComment
+     * @example
+     * // Get one DailyPlanComment
+     * const dailyPlanComment = await prisma.dailyPlanComment.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends DailyPlanCommentFindUniqueArgs>(args: SelectSubset<T, DailyPlanCommentFindUniqueArgs<ExtArgs>>): Prisma__DailyPlanCommentClient<$Result.GetResult<Prisma.$DailyPlanCommentPayload<ExtArgs>, T, "findUnique"> | null, null, ExtArgs>
+
+    /**
+     * Find one DailyPlanComment that matches the filter or throw an error with `error.code='P2025'` 
+     * if no matches were found.
+     * @param {DailyPlanCommentFindUniqueOrThrowArgs} args - Arguments to find a DailyPlanComment
+     * @example
+     * // Get one DailyPlanComment
+     * const dailyPlanComment = await prisma.dailyPlanComment.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends DailyPlanCommentFindUniqueOrThrowArgs>(args: SelectSubset<T, DailyPlanCommentFindUniqueOrThrowArgs<ExtArgs>>): Prisma__DailyPlanCommentClient<$Result.GetResult<Prisma.$DailyPlanCommentPayload<ExtArgs>, T, "findUniqueOrThrow">, never, ExtArgs>
+
+    /**
+     * Find the first DailyPlanComment that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DailyPlanCommentFindFirstArgs} args - Arguments to find a DailyPlanComment
+     * @example
+     * // Get one DailyPlanComment
+     * const dailyPlanComment = await prisma.dailyPlanComment.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends DailyPlanCommentFindFirstArgs>(args?: SelectSubset<T, DailyPlanCommentFindFirstArgs<ExtArgs>>): Prisma__DailyPlanCommentClient<$Result.GetResult<Prisma.$DailyPlanCommentPayload<ExtArgs>, T, "findFirst"> | null, null, ExtArgs>
+
+    /**
+     * Find the first DailyPlanComment that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DailyPlanCommentFindFirstOrThrowArgs} args - Arguments to find a DailyPlanComment
+     * @example
+     * // Get one DailyPlanComment
+     * const dailyPlanComment = await prisma.dailyPlanComment.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends DailyPlanCommentFindFirstOrThrowArgs>(args?: SelectSubset<T, DailyPlanCommentFindFirstOrThrowArgs<ExtArgs>>): Prisma__DailyPlanCommentClient<$Result.GetResult<Prisma.$DailyPlanCommentPayload<ExtArgs>, T, "findFirstOrThrow">, never, ExtArgs>
+
+    /**
+     * Find zero or more DailyPlanComments that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DailyPlanCommentFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all DailyPlanComments
+     * const dailyPlanComments = await prisma.dailyPlanComment.findMany()
+     * 
+     * // Get first 10 DailyPlanComments
+     * const dailyPlanComments = await prisma.dailyPlanComment.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const dailyPlanCommentWithIdOnly = await prisma.dailyPlanComment.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends DailyPlanCommentFindManyArgs>(args?: SelectSubset<T, DailyPlanCommentFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DailyPlanCommentPayload<ExtArgs>, T, "findMany">>
+
+    /**
+     * Create a DailyPlanComment.
+     * @param {DailyPlanCommentCreateArgs} args - Arguments to create a DailyPlanComment.
+     * @example
+     * // Create one DailyPlanComment
+     * const DailyPlanComment = await prisma.dailyPlanComment.create({
+     *   data: {
+     *     // ... data to create a DailyPlanComment
+     *   }
+     * })
+     * 
+     */
+    create<T extends DailyPlanCommentCreateArgs>(args: SelectSubset<T, DailyPlanCommentCreateArgs<ExtArgs>>): Prisma__DailyPlanCommentClient<$Result.GetResult<Prisma.$DailyPlanCommentPayload<ExtArgs>, T, "create">, never, ExtArgs>
+
+    /**
+     * Create many DailyPlanComments.
+     * @param {DailyPlanCommentCreateManyArgs} args - Arguments to create many DailyPlanComments.
+     * @example
+     * // Create many DailyPlanComments
+     * const dailyPlanComment = await prisma.dailyPlanComment.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends DailyPlanCommentCreateManyArgs>(args?: SelectSubset<T, DailyPlanCommentCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many DailyPlanComments and returns the data saved in the database.
+     * @param {DailyPlanCommentCreateManyAndReturnArgs} args - Arguments to create many DailyPlanComments.
+     * @example
+     * // Create many DailyPlanComments
+     * const dailyPlanComment = await prisma.dailyPlanComment.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many DailyPlanComments and only return the `id`
+     * const dailyPlanCommentWithIdOnly = await prisma.dailyPlanComment.createManyAndReturn({ 
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends DailyPlanCommentCreateManyAndReturnArgs>(args?: SelectSubset<T, DailyPlanCommentCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DailyPlanCommentPayload<ExtArgs>, T, "createManyAndReturn">>
+
+    /**
+     * Delete a DailyPlanComment.
+     * @param {DailyPlanCommentDeleteArgs} args - Arguments to delete one DailyPlanComment.
+     * @example
+     * // Delete one DailyPlanComment
+     * const DailyPlanComment = await prisma.dailyPlanComment.delete({
+     *   where: {
+     *     // ... filter to delete one DailyPlanComment
+     *   }
+     * })
+     * 
+     */
+    delete<T extends DailyPlanCommentDeleteArgs>(args: SelectSubset<T, DailyPlanCommentDeleteArgs<ExtArgs>>): Prisma__DailyPlanCommentClient<$Result.GetResult<Prisma.$DailyPlanCommentPayload<ExtArgs>, T, "delete">, never, ExtArgs>
+
+    /**
+     * Update one DailyPlanComment.
+     * @param {DailyPlanCommentUpdateArgs} args - Arguments to update one DailyPlanComment.
+     * @example
+     * // Update one DailyPlanComment
+     * const dailyPlanComment = await prisma.dailyPlanComment.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends DailyPlanCommentUpdateArgs>(args: SelectSubset<T, DailyPlanCommentUpdateArgs<ExtArgs>>): Prisma__DailyPlanCommentClient<$Result.GetResult<Prisma.$DailyPlanCommentPayload<ExtArgs>, T, "update">, never, ExtArgs>
+
+    /**
+     * Delete zero or more DailyPlanComments.
+     * @param {DailyPlanCommentDeleteManyArgs} args - Arguments to filter DailyPlanComments to delete.
+     * @example
+     * // Delete a few DailyPlanComments
+     * const { count } = await prisma.dailyPlanComment.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends DailyPlanCommentDeleteManyArgs>(args?: SelectSubset<T, DailyPlanCommentDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more DailyPlanComments.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DailyPlanCommentUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many DailyPlanComments
+     * const dailyPlanComment = await prisma.dailyPlanComment.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends DailyPlanCommentUpdateManyArgs>(args: SelectSubset<T, DailyPlanCommentUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one DailyPlanComment.
+     * @param {DailyPlanCommentUpsertArgs} args - Arguments to update or create a DailyPlanComment.
+     * @example
+     * // Update or create a DailyPlanComment
+     * const dailyPlanComment = await prisma.dailyPlanComment.upsert({
+     *   create: {
+     *     // ... data to create a DailyPlanComment
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the DailyPlanComment we want to update
+     *   }
+     * })
+     */
+    upsert<T extends DailyPlanCommentUpsertArgs>(args: SelectSubset<T, DailyPlanCommentUpsertArgs<ExtArgs>>): Prisma__DailyPlanCommentClient<$Result.GetResult<Prisma.$DailyPlanCommentPayload<ExtArgs>, T, "upsert">, never, ExtArgs>
+
+
+    /**
+     * Count the number of DailyPlanComments.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DailyPlanCommentCountArgs} args - Arguments to filter DailyPlanComments to count.
+     * @example
+     * // Count the number of DailyPlanComments
+     * const count = await prisma.dailyPlanComment.count({
+     *   where: {
+     *     // ... the filter for the DailyPlanComments we want to count
+     *   }
+     * })
+    **/
+    count<T extends DailyPlanCommentCountArgs>(
+      args?: Subset<T, DailyPlanCommentCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], DailyPlanCommentCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a DailyPlanComment.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DailyPlanCommentAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends DailyPlanCommentAggregateArgs>(args: Subset<T, DailyPlanCommentAggregateArgs>): Prisma.PrismaPromise<GetDailyPlanCommentAggregateType<T>>
+
+    /**
+     * Group by DailyPlanComment.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DailyPlanCommentGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends DailyPlanCommentGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: DailyPlanCommentGroupByArgs['orderBy'] }
+        : { orderBy?: DailyPlanCommentGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, DailyPlanCommentGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetDailyPlanCommentGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the DailyPlanComment model
+   */
+  readonly fields: DailyPlanCommentFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for DailyPlanComment.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__DailyPlanCommentClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    dailyPlan<T extends DailyPlanDefaultArgs<ExtArgs> = {}>(args?: Subset<T, DailyPlanDefaultArgs<ExtArgs>>): Prisma__DailyPlanClient<$Result.GetResult<Prisma.$DailyPlanPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    author<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the DailyPlanComment model
+   */ 
+  interface DailyPlanCommentFieldRefs {
+    readonly id: FieldRef<"DailyPlanComment", 'String'>
+    readonly dailyPlanId: FieldRef<"DailyPlanComment", 'String'>
+    readonly authorUserId: FieldRef<"DailyPlanComment", 'String'>
+    readonly body: FieldRef<"DailyPlanComment", 'String'>
+    readonly createdAt: FieldRef<"DailyPlanComment", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * DailyPlanComment findUnique
+   */
+  export type DailyPlanCommentFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DailyPlanComment
+     */
+    select?: DailyPlanCommentSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DailyPlanCommentInclude<ExtArgs> | null
+    /**
+     * Filter, which DailyPlanComment to fetch.
+     */
+    where: DailyPlanCommentWhereUniqueInput
+  }
+
+  /**
+   * DailyPlanComment findUniqueOrThrow
+   */
+  export type DailyPlanCommentFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DailyPlanComment
+     */
+    select?: DailyPlanCommentSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DailyPlanCommentInclude<ExtArgs> | null
+    /**
+     * Filter, which DailyPlanComment to fetch.
+     */
+    where: DailyPlanCommentWhereUniqueInput
+  }
+
+  /**
+   * DailyPlanComment findFirst
+   */
+  export type DailyPlanCommentFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DailyPlanComment
+     */
+    select?: DailyPlanCommentSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DailyPlanCommentInclude<ExtArgs> | null
+    /**
+     * Filter, which DailyPlanComment to fetch.
+     */
+    where?: DailyPlanCommentWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of DailyPlanComments to fetch.
+     */
+    orderBy?: DailyPlanCommentOrderByWithRelationInput | DailyPlanCommentOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for DailyPlanComments.
+     */
+    cursor?: DailyPlanCommentWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` DailyPlanComments from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` DailyPlanComments.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of DailyPlanComments.
+     */
+    distinct?: DailyPlanCommentScalarFieldEnum | DailyPlanCommentScalarFieldEnum[]
+  }
+
+  /**
+   * DailyPlanComment findFirstOrThrow
+   */
+  export type DailyPlanCommentFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DailyPlanComment
+     */
+    select?: DailyPlanCommentSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DailyPlanCommentInclude<ExtArgs> | null
+    /**
+     * Filter, which DailyPlanComment to fetch.
+     */
+    where?: DailyPlanCommentWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of DailyPlanComments to fetch.
+     */
+    orderBy?: DailyPlanCommentOrderByWithRelationInput | DailyPlanCommentOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for DailyPlanComments.
+     */
+    cursor?: DailyPlanCommentWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` DailyPlanComments from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` DailyPlanComments.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of DailyPlanComments.
+     */
+    distinct?: DailyPlanCommentScalarFieldEnum | DailyPlanCommentScalarFieldEnum[]
+  }
+
+  /**
+   * DailyPlanComment findMany
+   */
+  export type DailyPlanCommentFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DailyPlanComment
+     */
+    select?: DailyPlanCommentSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DailyPlanCommentInclude<ExtArgs> | null
+    /**
+     * Filter, which DailyPlanComments to fetch.
+     */
+    where?: DailyPlanCommentWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of DailyPlanComments to fetch.
+     */
+    orderBy?: DailyPlanCommentOrderByWithRelationInput | DailyPlanCommentOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing DailyPlanComments.
+     */
+    cursor?: DailyPlanCommentWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` DailyPlanComments from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` DailyPlanComments.
+     */
+    skip?: number
+    distinct?: DailyPlanCommentScalarFieldEnum | DailyPlanCommentScalarFieldEnum[]
+  }
+
+  /**
+   * DailyPlanComment create
+   */
+  export type DailyPlanCommentCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DailyPlanComment
+     */
+    select?: DailyPlanCommentSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DailyPlanCommentInclude<ExtArgs> | null
+    /**
+     * The data needed to create a DailyPlanComment.
+     */
+    data: XOR<DailyPlanCommentCreateInput, DailyPlanCommentUncheckedCreateInput>
+  }
+
+  /**
+   * DailyPlanComment createMany
+   */
+  export type DailyPlanCommentCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many DailyPlanComments.
+     */
+    data: DailyPlanCommentCreateManyInput | DailyPlanCommentCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * DailyPlanComment createManyAndReturn
+   */
+  export type DailyPlanCommentCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DailyPlanComment
+     */
+    select?: DailyPlanCommentSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * The data used to create many DailyPlanComments.
+     */
+    data: DailyPlanCommentCreateManyInput | DailyPlanCommentCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DailyPlanCommentIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * DailyPlanComment update
+   */
+  export type DailyPlanCommentUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DailyPlanComment
+     */
+    select?: DailyPlanCommentSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DailyPlanCommentInclude<ExtArgs> | null
+    /**
+     * The data needed to update a DailyPlanComment.
+     */
+    data: XOR<DailyPlanCommentUpdateInput, DailyPlanCommentUncheckedUpdateInput>
+    /**
+     * Choose, which DailyPlanComment to update.
+     */
+    where: DailyPlanCommentWhereUniqueInput
+  }
+
+  /**
+   * DailyPlanComment updateMany
+   */
+  export type DailyPlanCommentUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update DailyPlanComments.
+     */
+    data: XOR<DailyPlanCommentUpdateManyMutationInput, DailyPlanCommentUncheckedUpdateManyInput>
+    /**
+     * Filter which DailyPlanComments to update
+     */
+    where?: DailyPlanCommentWhereInput
+  }
+
+  /**
+   * DailyPlanComment upsert
+   */
+  export type DailyPlanCommentUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DailyPlanComment
+     */
+    select?: DailyPlanCommentSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DailyPlanCommentInclude<ExtArgs> | null
+    /**
+     * The filter to search for the DailyPlanComment to update in case it exists.
+     */
+    where: DailyPlanCommentWhereUniqueInput
+    /**
+     * In case the DailyPlanComment found by the `where` argument doesn't exist, create a new DailyPlanComment with this data.
+     */
+    create: XOR<DailyPlanCommentCreateInput, DailyPlanCommentUncheckedCreateInput>
+    /**
+     * In case the DailyPlanComment was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<DailyPlanCommentUpdateInput, DailyPlanCommentUncheckedUpdateInput>
+  }
+
+  /**
+   * DailyPlanComment delete
+   */
+  export type DailyPlanCommentDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DailyPlanComment
+     */
+    select?: DailyPlanCommentSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DailyPlanCommentInclude<ExtArgs> | null
+    /**
+     * Filter which DailyPlanComment to delete.
+     */
+    where: DailyPlanCommentWhereUniqueInput
+  }
+
+  /**
+   * DailyPlanComment deleteMany
+   */
+  export type DailyPlanCommentDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which DailyPlanComments to delete
+     */
+    where?: DailyPlanCommentWhereInput
+  }
+
+  /**
+   * DailyPlanComment without action
+   */
+  export type DailyPlanCommentDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DailyPlanComment
+     */
+    select?: DailyPlanCommentSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DailyPlanCommentInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model ParentQuarterlyReport
+   */
+
+  export type AggregateParentQuarterlyReport = {
+    _count: ParentQuarterlyReportCountAggregateOutputType | null
+    _min: ParentQuarterlyReportMinAggregateOutputType | null
+    _max: ParentQuarterlyReportMaxAggregateOutputType | null
+  }
+
+  export type ParentQuarterlyReportMinAggregateOutputType = {
+    id: string | null
+    studentId: string | null
+    quarterKey: string | null
+    parentEmail: string | null
+    sentAt: Date | null
+  }
+
+  export type ParentQuarterlyReportMaxAggregateOutputType = {
+    id: string | null
+    studentId: string | null
+    quarterKey: string | null
+    parentEmail: string | null
+    sentAt: Date | null
+  }
+
+  export type ParentQuarterlyReportCountAggregateOutputType = {
+    id: number
+    studentId: number
+    quarterKey: number
+    parentEmail: number
+    sentAt: number
+    _all: number
+  }
+
+
+  export type ParentQuarterlyReportMinAggregateInputType = {
+    id?: true
+    studentId?: true
+    quarterKey?: true
+    parentEmail?: true
+    sentAt?: true
+  }
+
+  export type ParentQuarterlyReportMaxAggregateInputType = {
+    id?: true
+    studentId?: true
+    quarterKey?: true
+    parentEmail?: true
+    sentAt?: true
+  }
+
+  export type ParentQuarterlyReportCountAggregateInputType = {
+    id?: true
+    studentId?: true
+    quarterKey?: true
+    parentEmail?: true
+    sentAt?: true
+    _all?: true
+  }
+
+  export type ParentQuarterlyReportAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which ParentQuarterlyReport to aggregate.
+     */
+    where?: ParentQuarterlyReportWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ParentQuarterlyReports to fetch.
+     */
+    orderBy?: ParentQuarterlyReportOrderByWithRelationInput | ParentQuarterlyReportOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: ParentQuarterlyReportWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ParentQuarterlyReports from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ParentQuarterlyReports.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned ParentQuarterlyReports
+    **/
+    _count?: true | ParentQuarterlyReportCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: ParentQuarterlyReportMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: ParentQuarterlyReportMaxAggregateInputType
+  }
+
+  export type GetParentQuarterlyReportAggregateType<T extends ParentQuarterlyReportAggregateArgs> = {
+        [P in keyof T & keyof AggregateParentQuarterlyReport]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateParentQuarterlyReport[P]>
+      : GetScalarType<T[P], AggregateParentQuarterlyReport[P]>
+  }
+
+
+
+
+  export type ParentQuarterlyReportGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ParentQuarterlyReportWhereInput
+    orderBy?: ParentQuarterlyReportOrderByWithAggregationInput | ParentQuarterlyReportOrderByWithAggregationInput[]
+    by: ParentQuarterlyReportScalarFieldEnum[] | ParentQuarterlyReportScalarFieldEnum
+    having?: ParentQuarterlyReportScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: ParentQuarterlyReportCountAggregateInputType | true
+    _min?: ParentQuarterlyReportMinAggregateInputType
+    _max?: ParentQuarterlyReportMaxAggregateInputType
+  }
+
+  export type ParentQuarterlyReportGroupByOutputType = {
+    id: string
+    studentId: string
+    quarterKey: string
+    parentEmail: string
+    sentAt: Date
+    _count: ParentQuarterlyReportCountAggregateOutputType | null
+    _min: ParentQuarterlyReportMinAggregateOutputType | null
+    _max: ParentQuarterlyReportMaxAggregateOutputType | null
+  }
+
+  type GetParentQuarterlyReportGroupByPayload<T extends ParentQuarterlyReportGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<ParentQuarterlyReportGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof ParentQuarterlyReportGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], ParentQuarterlyReportGroupByOutputType[P]>
+            : GetScalarType<T[P], ParentQuarterlyReportGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type ParentQuarterlyReportSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    studentId?: boolean
+    quarterKey?: boolean
+    parentEmail?: boolean
+    sentAt?: boolean
+    student?: boolean | StudentDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["parentQuarterlyReport"]>
+
+  export type ParentQuarterlyReportSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    studentId?: boolean
+    quarterKey?: boolean
+    parentEmail?: boolean
+    sentAt?: boolean
+    student?: boolean | StudentDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["parentQuarterlyReport"]>
+
+  export type ParentQuarterlyReportSelectScalar = {
+    id?: boolean
+    studentId?: boolean
+    quarterKey?: boolean
+    parentEmail?: boolean
+    sentAt?: boolean
+  }
+
+  export type ParentQuarterlyReportInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    student?: boolean | StudentDefaultArgs<ExtArgs>
+  }
+  export type ParentQuarterlyReportIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    student?: boolean | StudentDefaultArgs<ExtArgs>
+  }
+
+  export type $ParentQuarterlyReportPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "ParentQuarterlyReport"
+    objects: {
+      student: Prisma.$StudentPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      studentId: string
+      quarterKey: string
+      parentEmail: string
+      sentAt: Date
+    }, ExtArgs["result"]["parentQuarterlyReport"]>
+    composites: {}
+  }
+
+  type ParentQuarterlyReportGetPayload<S extends boolean | null | undefined | ParentQuarterlyReportDefaultArgs> = $Result.GetResult<Prisma.$ParentQuarterlyReportPayload, S>
+
+  type ParentQuarterlyReportCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = 
+    Omit<ParentQuarterlyReportFindManyArgs, 'select' | 'include' | 'distinct'> & {
+      select?: ParentQuarterlyReportCountAggregateInputType | true
+    }
+
+  export interface ParentQuarterlyReportDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['ParentQuarterlyReport'], meta: { name: 'ParentQuarterlyReport' } }
+    /**
+     * Find zero or one ParentQuarterlyReport that matches the filter.
+     * @param {ParentQuarterlyReportFindUniqueArgs} args - Arguments to find a ParentQuarterlyReport
+     * @example
+     * // Get one ParentQuarterlyReport
+     * const parentQuarterlyReport = await prisma.parentQuarterlyReport.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends ParentQuarterlyReportFindUniqueArgs>(args: SelectSubset<T, ParentQuarterlyReportFindUniqueArgs<ExtArgs>>): Prisma__ParentQuarterlyReportClient<$Result.GetResult<Prisma.$ParentQuarterlyReportPayload<ExtArgs>, T, "findUnique"> | null, null, ExtArgs>
+
+    /**
+     * Find one ParentQuarterlyReport that matches the filter or throw an error with `error.code='P2025'` 
+     * if no matches were found.
+     * @param {ParentQuarterlyReportFindUniqueOrThrowArgs} args - Arguments to find a ParentQuarterlyReport
+     * @example
+     * // Get one ParentQuarterlyReport
+     * const parentQuarterlyReport = await prisma.parentQuarterlyReport.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends ParentQuarterlyReportFindUniqueOrThrowArgs>(args: SelectSubset<T, ParentQuarterlyReportFindUniqueOrThrowArgs<ExtArgs>>): Prisma__ParentQuarterlyReportClient<$Result.GetResult<Prisma.$ParentQuarterlyReportPayload<ExtArgs>, T, "findUniqueOrThrow">, never, ExtArgs>
+
+    /**
+     * Find the first ParentQuarterlyReport that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ParentQuarterlyReportFindFirstArgs} args - Arguments to find a ParentQuarterlyReport
+     * @example
+     * // Get one ParentQuarterlyReport
+     * const parentQuarterlyReport = await prisma.parentQuarterlyReport.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends ParentQuarterlyReportFindFirstArgs>(args?: SelectSubset<T, ParentQuarterlyReportFindFirstArgs<ExtArgs>>): Prisma__ParentQuarterlyReportClient<$Result.GetResult<Prisma.$ParentQuarterlyReportPayload<ExtArgs>, T, "findFirst"> | null, null, ExtArgs>
+
+    /**
+     * Find the first ParentQuarterlyReport that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ParentQuarterlyReportFindFirstOrThrowArgs} args - Arguments to find a ParentQuarterlyReport
+     * @example
+     * // Get one ParentQuarterlyReport
+     * const parentQuarterlyReport = await prisma.parentQuarterlyReport.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends ParentQuarterlyReportFindFirstOrThrowArgs>(args?: SelectSubset<T, ParentQuarterlyReportFindFirstOrThrowArgs<ExtArgs>>): Prisma__ParentQuarterlyReportClient<$Result.GetResult<Prisma.$ParentQuarterlyReportPayload<ExtArgs>, T, "findFirstOrThrow">, never, ExtArgs>
+
+    /**
+     * Find zero or more ParentQuarterlyReports that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ParentQuarterlyReportFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all ParentQuarterlyReports
+     * const parentQuarterlyReports = await prisma.parentQuarterlyReport.findMany()
+     * 
+     * // Get first 10 ParentQuarterlyReports
+     * const parentQuarterlyReports = await prisma.parentQuarterlyReport.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const parentQuarterlyReportWithIdOnly = await prisma.parentQuarterlyReport.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends ParentQuarterlyReportFindManyArgs>(args?: SelectSubset<T, ParentQuarterlyReportFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ParentQuarterlyReportPayload<ExtArgs>, T, "findMany">>
+
+    /**
+     * Create a ParentQuarterlyReport.
+     * @param {ParentQuarterlyReportCreateArgs} args - Arguments to create a ParentQuarterlyReport.
+     * @example
+     * // Create one ParentQuarterlyReport
+     * const ParentQuarterlyReport = await prisma.parentQuarterlyReport.create({
+     *   data: {
+     *     // ... data to create a ParentQuarterlyReport
+     *   }
+     * })
+     * 
+     */
+    create<T extends ParentQuarterlyReportCreateArgs>(args: SelectSubset<T, ParentQuarterlyReportCreateArgs<ExtArgs>>): Prisma__ParentQuarterlyReportClient<$Result.GetResult<Prisma.$ParentQuarterlyReportPayload<ExtArgs>, T, "create">, never, ExtArgs>
+
+    /**
+     * Create many ParentQuarterlyReports.
+     * @param {ParentQuarterlyReportCreateManyArgs} args - Arguments to create many ParentQuarterlyReports.
+     * @example
+     * // Create many ParentQuarterlyReports
+     * const parentQuarterlyReport = await prisma.parentQuarterlyReport.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends ParentQuarterlyReportCreateManyArgs>(args?: SelectSubset<T, ParentQuarterlyReportCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many ParentQuarterlyReports and returns the data saved in the database.
+     * @param {ParentQuarterlyReportCreateManyAndReturnArgs} args - Arguments to create many ParentQuarterlyReports.
+     * @example
+     * // Create many ParentQuarterlyReports
+     * const parentQuarterlyReport = await prisma.parentQuarterlyReport.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many ParentQuarterlyReports and only return the `id`
+     * const parentQuarterlyReportWithIdOnly = await prisma.parentQuarterlyReport.createManyAndReturn({ 
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends ParentQuarterlyReportCreateManyAndReturnArgs>(args?: SelectSubset<T, ParentQuarterlyReportCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ParentQuarterlyReportPayload<ExtArgs>, T, "createManyAndReturn">>
+
+    /**
+     * Delete a ParentQuarterlyReport.
+     * @param {ParentQuarterlyReportDeleteArgs} args - Arguments to delete one ParentQuarterlyReport.
+     * @example
+     * // Delete one ParentQuarterlyReport
+     * const ParentQuarterlyReport = await prisma.parentQuarterlyReport.delete({
+     *   where: {
+     *     // ... filter to delete one ParentQuarterlyReport
+     *   }
+     * })
+     * 
+     */
+    delete<T extends ParentQuarterlyReportDeleteArgs>(args: SelectSubset<T, ParentQuarterlyReportDeleteArgs<ExtArgs>>): Prisma__ParentQuarterlyReportClient<$Result.GetResult<Prisma.$ParentQuarterlyReportPayload<ExtArgs>, T, "delete">, never, ExtArgs>
+
+    /**
+     * Update one ParentQuarterlyReport.
+     * @param {ParentQuarterlyReportUpdateArgs} args - Arguments to update one ParentQuarterlyReport.
+     * @example
+     * // Update one ParentQuarterlyReport
+     * const parentQuarterlyReport = await prisma.parentQuarterlyReport.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends ParentQuarterlyReportUpdateArgs>(args: SelectSubset<T, ParentQuarterlyReportUpdateArgs<ExtArgs>>): Prisma__ParentQuarterlyReportClient<$Result.GetResult<Prisma.$ParentQuarterlyReportPayload<ExtArgs>, T, "update">, never, ExtArgs>
+
+    /**
+     * Delete zero or more ParentQuarterlyReports.
+     * @param {ParentQuarterlyReportDeleteManyArgs} args - Arguments to filter ParentQuarterlyReports to delete.
+     * @example
+     * // Delete a few ParentQuarterlyReports
+     * const { count } = await prisma.parentQuarterlyReport.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends ParentQuarterlyReportDeleteManyArgs>(args?: SelectSubset<T, ParentQuarterlyReportDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more ParentQuarterlyReports.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ParentQuarterlyReportUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many ParentQuarterlyReports
+     * const parentQuarterlyReport = await prisma.parentQuarterlyReport.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends ParentQuarterlyReportUpdateManyArgs>(args: SelectSubset<T, ParentQuarterlyReportUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create or update one ParentQuarterlyReport.
+     * @param {ParentQuarterlyReportUpsertArgs} args - Arguments to update or create a ParentQuarterlyReport.
+     * @example
+     * // Update or create a ParentQuarterlyReport
+     * const parentQuarterlyReport = await prisma.parentQuarterlyReport.upsert({
+     *   create: {
+     *     // ... data to create a ParentQuarterlyReport
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the ParentQuarterlyReport we want to update
+     *   }
+     * })
+     */
+    upsert<T extends ParentQuarterlyReportUpsertArgs>(args: SelectSubset<T, ParentQuarterlyReportUpsertArgs<ExtArgs>>): Prisma__ParentQuarterlyReportClient<$Result.GetResult<Prisma.$ParentQuarterlyReportPayload<ExtArgs>, T, "upsert">, never, ExtArgs>
+
+
+    /**
+     * Count the number of ParentQuarterlyReports.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ParentQuarterlyReportCountArgs} args - Arguments to filter ParentQuarterlyReports to count.
+     * @example
+     * // Count the number of ParentQuarterlyReports
+     * const count = await prisma.parentQuarterlyReport.count({
+     *   where: {
+     *     // ... the filter for the ParentQuarterlyReports we want to count
+     *   }
+     * })
+    **/
+    count<T extends ParentQuarterlyReportCountArgs>(
+      args?: Subset<T, ParentQuarterlyReportCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], ParentQuarterlyReportCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a ParentQuarterlyReport.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ParentQuarterlyReportAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends ParentQuarterlyReportAggregateArgs>(args: Subset<T, ParentQuarterlyReportAggregateArgs>): Prisma.PrismaPromise<GetParentQuarterlyReportAggregateType<T>>
+
+    /**
+     * Group by ParentQuarterlyReport.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ParentQuarterlyReportGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends ParentQuarterlyReportGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: ParentQuarterlyReportGroupByArgs['orderBy'] }
+        : { orderBy?: ParentQuarterlyReportGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, ParentQuarterlyReportGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetParentQuarterlyReportGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the ParentQuarterlyReport model
+   */
+  readonly fields: ParentQuarterlyReportFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for ParentQuarterlyReport.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__ParentQuarterlyReportClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    student<T extends StudentDefaultArgs<ExtArgs> = {}>(args?: Subset<T, StudentDefaultArgs<ExtArgs>>): Prisma__StudentClient<$Result.GetResult<Prisma.$StudentPayload<ExtArgs>, T, "findUniqueOrThrow"> | Null, Null, ExtArgs>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the ParentQuarterlyReport model
+   */ 
+  interface ParentQuarterlyReportFieldRefs {
+    readonly id: FieldRef<"ParentQuarterlyReport", 'String'>
+    readonly studentId: FieldRef<"ParentQuarterlyReport", 'String'>
+    readonly quarterKey: FieldRef<"ParentQuarterlyReport", 'String'>
+    readonly parentEmail: FieldRef<"ParentQuarterlyReport", 'String'>
+    readonly sentAt: FieldRef<"ParentQuarterlyReport", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * ParentQuarterlyReport findUnique
+   */
+  export type ParentQuarterlyReportFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ParentQuarterlyReport
+     */
+    select?: ParentQuarterlyReportSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ParentQuarterlyReportInclude<ExtArgs> | null
+    /**
+     * Filter, which ParentQuarterlyReport to fetch.
+     */
+    where: ParentQuarterlyReportWhereUniqueInput
+  }
+
+  /**
+   * ParentQuarterlyReport findUniqueOrThrow
+   */
+  export type ParentQuarterlyReportFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ParentQuarterlyReport
+     */
+    select?: ParentQuarterlyReportSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ParentQuarterlyReportInclude<ExtArgs> | null
+    /**
+     * Filter, which ParentQuarterlyReport to fetch.
+     */
+    where: ParentQuarterlyReportWhereUniqueInput
+  }
+
+  /**
+   * ParentQuarterlyReport findFirst
+   */
+  export type ParentQuarterlyReportFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ParentQuarterlyReport
+     */
+    select?: ParentQuarterlyReportSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ParentQuarterlyReportInclude<ExtArgs> | null
+    /**
+     * Filter, which ParentQuarterlyReport to fetch.
+     */
+    where?: ParentQuarterlyReportWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ParentQuarterlyReports to fetch.
+     */
+    orderBy?: ParentQuarterlyReportOrderByWithRelationInput | ParentQuarterlyReportOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for ParentQuarterlyReports.
+     */
+    cursor?: ParentQuarterlyReportWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ParentQuarterlyReports from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ParentQuarterlyReports.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ParentQuarterlyReports.
+     */
+    distinct?: ParentQuarterlyReportScalarFieldEnum | ParentQuarterlyReportScalarFieldEnum[]
+  }
+
+  /**
+   * ParentQuarterlyReport findFirstOrThrow
+   */
+  export type ParentQuarterlyReportFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ParentQuarterlyReport
+     */
+    select?: ParentQuarterlyReportSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ParentQuarterlyReportInclude<ExtArgs> | null
+    /**
+     * Filter, which ParentQuarterlyReport to fetch.
+     */
+    where?: ParentQuarterlyReportWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ParentQuarterlyReports to fetch.
+     */
+    orderBy?: ParentQuarterlyReportOrderByWithRelationInput | ParentQuarterlyReportOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for ParentQuarterlyReports.
+     */
+    cursor?: ParentQuarterlyReportWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ParentQuarterlyReports from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ParentQuarterlyReports.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ParentQuarterlyReports.
+     */
+    distinct?: ParentQuarterlyReportScalarFieldEnum | ParentQuarterlyReportScalarFieldEnum[]
+  }
+
+  /**
+   * ParentQuarterlyReport findMany
+   */
+  export type ParentQuarterlyReportFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ParentQuarterlyReport
+     */
+    select?: ParentQuarterlyReportSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ParentQuarterlyReportInclude<ExtArgs> | null
+    /**
+     * Filter, which ParentQuarterlyReports to fetch.
+     */
+    where?: ParentQuarterlyReportWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ParentQuarterlyReports to fetch.
+     */
+    orderBy?: ParentQuarterlyReportOrderByWithRelationInput | ParentQuarterlyReportOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing ParentQuarterlyReports.
+     */
+    cursor?: ParentQuarterlyReportWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ParentQuarterlyReports from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ParentQuarterlyReports.
+     */
+    skip?: number
+    distinct?: ParentQuarterlyReportScalarFieldEnum | ParentQuarterlyReportScalarFieldEnum[]
+  }
+
+  /**
+   * ParentQuarterlyReport create
+   */
+  export type ParentQuarterlyReportCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ParentQuarterlyReport
+     */
+    select?: ParentQuarterlyReportSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ParentQuarterlyReportInclude<ExtArgs> | null
+    /**
+     * The data needed to create a ParentQuarterlyReport.
+     */
+    data: XOR<ParentQuarterlyReportCreateInput, ParentQuarterlyReportUncheckedCreateInput>
+  }
+
+  /**
+   * ParentQuarterlyReport createMany
+   */
+  export type ParentQuarterlyReportCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many ParentQuarterlyReports.
+     */
+    data: ParentQuarterlyReportCreateManyInput | ParentQuarterlyReportCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * ParentQuarterlyReport createManyAndReturn
+   */
+  export type ParentQuarterlyReportCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ParentQuarterlyReport
+     */
+    select?: ParentQuarterlyReportSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * The data used to create many ParentQuarterlyReports.
+     */
+    data: ParentQuarterlyReportCreateManyInput | ParentQuarterlyReportCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ParentQuarterlyReportIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * ParentQuarterlyReport update
+   */
+  export type ParentQuarterlyReportUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ParentQuarterlyReport
+     */
+    select?: ParentQuarterlyReportSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ParentQuarterlyReportInclude<ExtArgs> | null
+    /**
+     * The data needed to update a ParentQuarterlyReport.
+     */
+    data: XOR<ParentQuarterlyReportUpdateInput, ParentQuarterlyReportUncheckedUpdateInput>
+    /**
+     * Choose, which ParentQuarterlyReport to update.
+     */
+    where: ParentQuarterlyReportWhereUniqueInput
+  }
+
+  /**
+   * ParentQuarterlyReport updateMany
+   */
+  export type ParentQuarterlyReportUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update ParentQuarterlyReports.
+     */
+    data: XOR<ParentQuarterlyReportUpdateManyMutationInput, ParentQuarterlyReportUncheckedUpdateManyInput>
+    /**
+     * Filter which ParentQuarterlyReports to update
+     */
+    where?: ParentQuarterlyReportWhereInput
+  }
+
+  /**
+   * ParentQuarterlyReport upsert
+   */
+  export type ParentQuarterlyReportUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ParentQuarterlyReport
+     */
+    select?: ParentQuarterlyReportSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ParentQuarterlyReportInclude<ExtArgs> | null
+    /**
+     * The filter to search for the ParentQuarterlyReport to update in case it exists.
+     */
+    where: ParentQuarterlyReportWhereUniqueInput
+    /**
+     * In case the ParentQuarterlyReport found by the `where` argument doesn't exist, create a new ParentQuarterlyReport with this data.
+     */
+    create: XOR<ParentQuarterlyReportCreateInput, ParentQuarterlyReportUncheckedCreateInput>
+    /**
+     * In case the ParentQuarterlyReport was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<ParentQuarterlyReportUpdateInput, ParentQuarterlyReportUncheckedUpdateInput>
+  }
+
+  /**
+   * ParentQuarterlyReport delete
+   */
+  export type ParentQuarterlyReportDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ParentQuarterlyReport
+     */
+    select?: ParentQuarterlyReportSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ParentQuarterlyReportInclude<ExtArgs> | null
+    /**
+     * Filter which ParentQuarterlyReport to delete.
+     */
+    where: ParentQuarterlyReportWhereUniqueInput
+  }
+
+  /**
+   * ParentQuarterlyReport deleteMany
+   */
+  export type ParentQuarterlyReportDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which ParentQuarterlyReports to delete
+     */
+    where?: ParentQuarterlyReportWhereInput
+  }
+
+  /**
+   * ParentQuarterlyReport without action
+   */
+  export type ParentQuarterlyReportDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ParentQuarterlyReport
+     */
+    select?: ParentQuarterlyReportSelect<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ParentQuarterlyReportInclude<ExtArgs> | null
   }
 
 
@@ -37903,6 +40046,28 @@ export namespace Prisma {
   export type DailyPlanScalarFieldEnum = (typeof DailyPlanScalarFieldEnum)[keyof typeof DailyPlanScalarFieldEnum]
 
 
+  export const DailyPlanCommentScalarFieldEnum: {
+    id: 'id',
+    dailyPlanId: 'dailyPlanId',
+    authorUserId: 'authorUserId',
+    body: 'body',
+    createdAt: 'createdAt'
+  };
+
+  export type DailyPlanCommentScalarFieldEnum = (typeof DailyPlanCommentScalarFieldEnum)[keyof typeof DailyPlanCommentScalarFieldEnum]
+
+
+  export const ParentQuarterlyReportScalarFieldEnum: {
+    id: 'id',
+    studentId: 'studentId',
+    quarterKey: 'quarterKey',
+    parentEmail: 'parentEmail',
+    sentAt: 'sentAt'
+  };
+
+  export type ParentQuarterlyReportScalarFieldEnum = (typeof ParentQuarterlyReportScalarFieldEnum)[keyof typeof ParentQuarterlyReportScalarFieldEnum]
+
+
   export const DailyPlanTopicScalarFieldEnum: {
     id: 'id',
     dailyPlanId: 'dailyPlanId',
@@ -38440,6 +40605,7 @@ export namespace Prisma {
     managerProfile?: XOR<ManagerProfileNullableRelationFilter, ManagerProfileWhereInput> | null
     sentMessages?: MessageListRelationFilter
     notifications?: NotificationListRelationFilter
+    dailyPlanComments?: DailyPlanCommentListRelationFilter
     markedAttendances?: AttendanceListRelationFilter
     student?: XOR<StudentNullableRelationFilter, StudentWhereInput> | null
     teacher?: XOR<TeacherNullableRelationFilter, TeacherWhereInput> | null
@@ -38465,6 +40631,7 @@ export namespace Prisma {
     managerProfile?: ManagerProfileOrderByWithRelationInput
     sentMessages?: MessageOrderByRelationAggregateInput
     notifications?: NotificationOrderByRelationAggregateInput
+    dailyPlanComments?: DailyPlanCommentOrderByRelationAggregateInput
     markedAttendances?: AttendanceOrderByRelationAggregateInput
     student?: StudentOrderByWithRelationInput
     teacher?: TeacherOrderByWithRelationInput
@@ -38493,6 +40660,7 @@ export namespace Prisma {
     managerProfile?: XOR<ManagerProfileNullableRelationFilter, ManagerProfileWhereInput> | null
     sentMessages?: MessageListRelationFilter
     notifications?: NotificationListRelationFilter
+    dailyPlanComments?: DailyPlanCommentListRelationFilter
     markedAttendances?: AttendanceListRelationFilter
     student?: XOR<StudentNullableRelationFilter, StudentWhereInput> | null
     teacher?: XOR<TeacherNullableRelationFilter, TeacherWhereInput> | null
@@ -39115,6 +41283,7 @@ export namespace Prisma {
     plannedAbsences?: PlannedAbsenceListRelationFilter
     recordingItems?: RecordingItemListRelationFilter
     notesList?: StudentNoteListRelationFilter
+    parentQuarterlyReports?: ParentQuarterlyReportListRelationFilter
   }
 
   export type StudentOrderByWithRelationInput = {
@@ -39152,6 +41321,7 @@ export namespace Prisma {
     plannedAbsences?: PlannedAbsenceOrderByRelationAggregateInput
     recordingItems?: RecordingItemOrderByRelationAggregateInput
     notesList?: StudentNoteOrderByRelationAggregateInput
+    parentQuarterlyReports?: ParentQuarterlyReportOrderByRelationAggregateInput
   }
 
   export type StudentWhereUniqueInput = Prisma.AtLeast<{
@@ -39192,6 +41362,7 @@ export namespace Prisma {
     plannedAbsences?: PlannedAbsenceListRelationFilter
     recordingItems?: RecordingItemListRelationFilter
     notesList?: StudentNoteListRelationFilter
+    parentQuarterlyReports?: ParentQuarterlyReportListRelationFilter
   }, "id" | "userId" | "leadId">
 
   export type StudentOrderByWithAggregationInput = {
@@ -40551,6 +42722,7 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"DailyPlan"> | Date | string
     updatedAt?: DateTimeFilter<"DailyPlan"> | Date | string
     topics?: DailyPlanTopicListRelationFilter
+    comments?: DailyPlanCommentListRelationFilter
     lesson?: XOR<LessonNullableRelationFilter, LessonWhereInput> | null
     teacher?: XOR<TeacherRelationFilter, TeacherWhereInput>
     group?: XOR<GroupNullableRelationFilter, GroupWhereInput> | null
@@ -40565,6 +42737,7 @@ export namespace Prisma {
     createdAt?: SortOrder
     updatedAt?: SortOrder
     topics?: DailyPlanTopicOrderByRelationAggregateInput
+    comments?: DailyPlanCommentOrderByRelationAggregateInput
     lesson?: LessonOrderByWithRelationInput
     teacher?: TeacherOrderByWithRelationInput
     group?: GroupOrderByWithRelationInput
@@ -40582,6 +42755,7 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"DailyPlan"> | Date | string
     updatedAt?: DateTimeFilter<"DailyPlan"> | Date | string
     topics?: DailyPlanTopicListRelationFilter
+    comments?: DailyPlanCommentListRelationFilter
     lesson?: XOR<LessonNullableRelationFilter, LessonWhereInput> | null
     teacher?: XOR<TeacherRelationFilter, TeacherWhereInput>
     group?: XOR<GroupNullableRelationFilter, GroupWhereInput> | null
@@ -40611,6 +42785,120 @@ export namespace Prisma {
     date?: DateTimeWithAggregatesFilter<"DailyPlan"> | Date | string
     createdAt?: DateTimeWithAggregatesFilter<"DailyPlan"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"DailyPlan"> | Date | string
+  }
+
+  export type DailyPlanCommentWhereInput = {
+    AND?: DailyPlanCommentWhereInput | DailyPlanCommentWhereInput[]
+    OR?: DailyPlanCommentWhereInput[]
+    NOT?: DailyPlanCommentWhereInput | DailyPlanCommentWhereInput[]
+    id?: StringFilter<"DailyPlanComment"> | string
+    dailyPlanId?: StringFilter<"DailyPlanComment"> | string
+    authorUserId?: StringFilter<"DailyPlanComment"> | string
+    body?: StringFilter<"DailyPlanComment"> | string
+    createdAt?: DateTimeFilter<"DailyPlanComment"> | Date | string
+    dailyPlan?: XOR<DailyPlanRelationFilter, DailyPlanWhereInput>
+    author?: XOR<UserRelationFilter, UserWhereInput>
+  }
+
+  export type DailyPlanCommentOrderByWithRelationInput = {
+    id?: SortOrder
+    dailyPlanId?: SortOrder
+    authorUserId?: SortOrder
+    body?: SortOrder
+    createdAt?: SortOrder
+    dailyPlan?: DailyPlanOrderByWithRelationInput
+    author?: UserOrderByWithRelationInput
+  }
+
+  export type DailyPlanCommentWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: DailyPlanCommentWhereInput | DailyPlanCommentWhereInput[]
+    OR?: DailyPlanCommentWhereInput[]
+    NOT?: DailyPlanCommentWhereInput | DailyPlanCommentWhereInput[]
+    dailyPlanId?: StringFilter<"DailyPlanComment"> | string
+    authorUserId?: StringFilter<"DailyPlanComment"> | string
+    body?: StringFilter<"DailyPlanComment"> | string
+    createdAt?: DateTimeFilter<"DailyPlanComment"> | Date | string
+    dailyPlan?: XOR<DailyPlanRelationFilter, DailyPlanWhereInput>
+    author?: XOR<UserRelationFilter, UserWhereInput>
+  }, "id">
+
+  export type DailyPlanCommentOrderByWithAggregationInput = {
+    id?: SortOrder
+    dailyPlanId?: SortOrder
+    authorUserId?: SortOrder
+    body?: SortOrder
+    createdAt?: SortOrder
+    _count?: DailyPlanCommentCountOrderByAggregateInput
+    _max?: DailyPlanCommentMaxOrderByAggregateInput
+    _min?: DailyPlanCommentMinOrderByAggregateInput
+  }
+
+  export type DailyPlanCommentScalarWhereWithAggregatesInput = {
+    AND?: DailyPlanCommentScalarWhereWithAggregatesInput | DailyPlanCommentScalarWhereWithAggregatesInput[]
+    OR?: DailyPlanCommentScalarWhereWithAggregatesInput[]
+    NOT?: DailyPlanCommentScalarWhereWithAggregatesInput | DailyPlanCommentScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"DailyPlanComment"> | string
+    dailyPlanId?: StringWithAggregatesFilter<"DailyPlanComment"> | string
+    authorUserId?: StringWithAggregatesFilter<"DailyPlanComment"> | string
+    body?: StringWithAggregatesFilter<"DailyPlanComment"> | string
+    createdAt?: DateTimeWithAggregatesFilter<"DailyPlanComment"> | Date | string
+  }
+
+  export type ParentQuarterlyReportWhereInput = {
+    AND?: ParentQuarterlyReportWhereInput | ParentQuarterlyReportWhereInput[]
+    OR?: ParentQuarterlyReportWhereInput[]
+    NOT?: ParentQuarterlyReportWhereInput | ParentQuarterlyReportWhereInput[]
+    id?: StringFilter<"ParentQuarterlyReport"> | string
+    studentId?: StringFilter<"ParentQuarterlyReport"> | string
+    quarterKey?: StringFilter<"ParentQuarterlyReport"> | string
+    parentEmail?: StringFilter<"ParentQuarterlyReport"> | string
+    sentAt?: DateTimeFilter<"ParentQuarterlyReport"> | Date | string
+    student?: XOR<StudentRelationFilter, StudentWhereInput>
+  }
+
+  export type ParentQuarterlyReportOrderByWithRelationInput = {
+    id?: SortOrder
+    studentId?: SortOrder
+    quarterKey?: SortOrder
+    parentEmail?: SortOrder
+    sentAt?: SortOrder
+    student?: StudentOrderByWithRelationInput
+  }
+
+  export type ParentQuarterlyReportWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    studentId_quarterKey?: ParentQuarterlyReportStudentIdQuarterKeyCompoundUniqueInput
+    AND?: ParentQuarterlyReportWhereInput | ParentQuarterlyReportWhereInput[]
+    OR?: ParentQuarterlyReportWhereInput[]
+    NOT?: ParentQuarterlyReportWhereInput | ParentQuarterlyReportWhereInput[]
+    studentId?: StringFilter<"ParentQuarterlyReport"> | string
+    quarterKey?: StringFilter<"ParentQuarterlyReport"> | string
+    parentEmail?: StringFilter<"ParentQuarterlyReport"> | string
+    sentAt?: DateTimeFilter<"ParentQuarterlyReport"> | Date | string
+    student?: XOR<StudentRelationFilter, StudentWhereInput>
+  }, "id" | "studentId_quarterKey">
+
+  export type ParentQuarterlyReportOrderByWithAggregationInput = {
+    id?: SortOrder
+    studentId?: SortOrder
+    quarterKey?: SortOrder
+    parentEmail?: SortOrder
+    sentAt?: SortOrder
+    _count?: ParentQuarterlyReportCountOrderByAggregateInput
+    _max?: ParentQuarterlyReportMaxOrderByAggregateInput
+    _min?: ParentQuarterlyReportMinOrderByAggregateInput
+  }
+
+  export type ParentQuarterlyReportScalarWhereWithAggregatesInput = {
+    AND?: ParentQuarterlyReportScalarWhereWithAggregatesInput | ParentQuarterlyReportScalarWhereWithAggregatesInput[]
+    OR?: ParentQuarterlyReportScalarWhereWithAggregatesInput[]
+    NOT?: ParentQuarterlyReportScalarWhereWithAggregatesInput | ParentQuarterlyReportScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"ParentQuarterlyReport"> | string
+    studentId?: StringWithAggregatesFilter<"ParentQuarterlyReport"> | string
+    quarterKey?: StringWithAggregatesFilter<"ParentQuarterlyReport"> | string
+    parentEmail?: StringWithAggregatesFilter<"ParentQuarterlyReport"> | string
+    sentAt?: DateTimeWithAggregatesFilter<"ParentQuarterlyReport"> | Date | string
   }
 
   export type DailyPlanTopicWhereInput = {
@@ -41347,6 +43635,7 @@ export namespace Prisma {
     managerProfile?: ManagerProfileCreateNestedOneWithoutUserInput
     sentMessages?: MessageCreateNestedManyWithoutSenderInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
+    dailyPlanComments?: DailyPlanCommentCreateNestedManyWithoutAuthorInput
     markedAttendances?: AttendanceCreateNestedManyWithoutMarkedByInput
     student?: StudentCreateNestedOneWithoutUserInput
     teacher?: TeacherCreateNestedOneWithoutUserInput
@@ -41372,6 +43661,7 @@ export namespace Prisma {
     managerProfile?: ManagerProfileUncheckedCreateNestedOneWithoutUserInput
     sentMessages?: MessageUncheckedCreateNestedManyWithoutSenderInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    dailyPlanComments?: DailyPlanCommentUncheckedCreateNestedManyWithoutAuthorInput
     markedAttendances?: AttendanceUncheckedCreateNestedManyWithoutMarkedByInput
     student?: StudentUncheckedCreateNestedOneWithoutUserInput
     teacher?: TeacherUncheckedCreateNestedOneWithoutUserInput
@@ -41397,6 +43687,7 @@ export namespace Prisma {
     managerProfile?: ManagerProfileUpdateOneWithoutUserNestedInput
     sentMessages?: MessageUpdateManyWithoutSenderNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
+    dailyPlanComments?: DailyPlanCommentUpdateManyWithoutAuthorNestedInput
     markedAttendances?: AttendanceUpdateManyWithoutMarkedByNestedInput
     student?: StudentUpdateOneWithoutUserNestedInput
     teacher?: TeacherUpdateOneWithoutUserNestedInput
@@ -41422,6 +43713,7 @@ export namespace Prisma {
     managerProfile?: ManagerProfileUncheckedUpdateOneWithoutUserNestedInput
     sentMessages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    dailyPlanComments?: DailyPlanCommentUncheckedUpdateManyWithoutAuthorNestedInput
     markedAttendances?: AttendanceUncheckedUpdateManyWithoutMarkedByNestedInput
     student?: StudentUncheckedUpdateOneWithoutUserNestedInput
     teacher?: TeacherUncheckedUpdateOneWithoutUserNestedInput
@@ -42103,6 +44395,7 @@ export namespace Prisma {
     plannedAbsences?: PlannedAbsenceCreateNestedManyWithoutStudentInput
     recordingItems?: RecordingItemCreateNestedManyWithoutStudentInput
     notesList?: StudentNoteCreateNestedManyWithoutStudentInput
+    parentQuarterlyReports?: ParentQuarterlyReportCreateNestedManyWithoutStudentInput
   }
 
   export type StudentUncheckedCreateInput = {
@@ -42135,6 +44428,7 @@ export namespace Prisma {
     plannedAbsences?: PlannedAbsenceUncheckedCreateNestedManyWithoutStudentInput
     recordingItems?: RecordingItemUncheckedCreateNestedManyWithoutStudentInput
     notesList?: StudentNoteUncheckedCreateNestedManyWithoutStudentInput
+    parentQuarterlyReports?: ParentQuarterlyReportUncheckedCreateNestedManyWithoutStudentInput
   }
 
   export type StudentUpdateInput = {
@@ -42167,6 +44461,7 @@ export namespace Prisma {
     plannedAbsences?: PlannedAbsenceUpdateManyWithoutStudentNestedInput
     recordingItems?: RecordingItemUpdateManyWithoutStudentNestedInput
     notesList?: StudentNoteUpdateManyWithoutStudentNestedInput
+    parentQuarterlyReports?: ParentQuarterlyReportUpdateManyWithoutStudentNestedInput
   }
 
   export type StudentUncheckedUpdateInput = {
@@ -42199,6 +44494,7 @@ export namespace Prisma {
     plannedAbsences?: PlannedAbsenceUncheckedUpdateManyWithoutStudentNestedInput
     recordingItems?: RecordingItemUncheckedUpdateManyWithoutStudentNestedInput
     notesList?: StudentNoteUncheckedUpdateManyWithoutStudentNestedInput
+    parentQuarterlyReports?: ParentQuarterlyReportUncheckedUpdateManyWithoutStudentNestedInput
   }
 
   export type StudentCreateManyInput = {
@@ -43700,6 +45996,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     topics?: DailyPlanTopicCreateNestedManyWithoutDailyPlanInput
+    comments?: DailyPlanCommentCreateNestedManyWithoutDailyPlanInput
     lesson?: LessonCreateNestedOneWithoutDailyPlanInput
     teacher: TeacherCreateNestedOneWithoutDailyPlansInput
     group?: GroupCreateNestedOneWithoutDailyPlansInput
@@ -43714,6 +46011,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     topics?: DailyPlanTopicUncheckedCreateNestedManyWithoutDailyPlanInput
+    comments?: DailyPlanCommentUncheckedCreateNestedManyWithoutDailyPlanInput
   }
 
   export type DailyPlanUpdateInput = {
@@ -43722,6 +46020,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     topics?: DailyPlanTopicUpdateManyWithoutDailyPlanNestedInput
+    comments?: DailyPlanCommentUpdateManyWithoutDailyPlanNestedInput
     lesson?: LessonUpdateOneWithoutDailyPlanNestedInput
     teacher?: TeacherUpdateOneRequiredWithoutDailyPlansNestedInput
     group?: GroupUpdateOneWithoutDailyPlansNestedInput
@@ -43736,6 +46035,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     topics?: DailyPlanTopicUncheckedUpdateManyWithoutDailyPlanNestedInput
+    comments?: DailyPlanCommentUncheckedUpdateManyWithoutDailyPlanNestedInput
   }
 
   export type DailyPlanCreateManyInput = {
@@ -43763,6 +46063,115 @@ export namespace Prisma {
     date?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type DailyPlanCommentCreateInput = {
+    id?: string
+    body: string
+    createdAt?: Date | string
+    dailyPlan: DailyPlanCreateNestedOneWithoutCommentsInput
+    author: UserCreateNestedOneWithoutDailyPlanCommentsInput
+  }
+
+  export type DailyPlanCommentUncheckedCreateInput = {
+    id?: string
+    dailyPlanId: string
+    authorUserId: string
+    body: string
+    createdAt?: Date | string
+  }
+
+  export type DailyPlanCommentUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    body?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    dailyPlan?: DailyPlanUpdateOneRequiredWithoutCommentsNestedInput
+    author?: UserUpdateOneRequiredWithoutDailyPlanCommentsNestedInput
+  }
+
+  export type DailyPlanCommentUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    dailyPlanId?: StringFieldUpdateOperationsInput | string
+    authorUserId?: StringFieldUpdateOperationsInput | string
+    body?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type DailyPlanCommentCreateManyInput = {
+    id?: string
+    dailyPlanId: string
+    authorUserId: string
+    body: string
+    createdAt?: Date | string
+  }
+
+  export type DailyPlanCommentUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    body?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type DailyPlanCommentUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    dailyPlanId?: StringFieldUpdateOperationsInput | string
+    authorUserId?: StringFieldUpdateOperationsInput | string
+    body?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ParentQuarterlyReportCreateInput = {
+    id?: string
+    quarterKey: string
+    parentEmail: string
+    sentAt?: Date | string
+    student: StudentCreateNestedOneWithoutParentQuarterlyReportsInput
+  }
+
+  export type ParentQuarterlyReportUncheckedCreateInput = {
+    id?: string
+    studentId: string
+    quarterKey: string
+    parentEmail: string
+    sentAt?: Date | string
+  }
+
+  export type ParentQuarterlyReportUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    quarterKey?: StringFieldUpdateOperationsInput | string
+    parentEmail?: StringFieldUpdateOperationsInput | string
+    sentAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    student?: StudentUpdateOneRequiredWithoutParentQuarterlyReportsNestedInput
+  }
+
+  export type ParentQuarterlyReportUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    studentId?: StringFieldUpdateOperationsInput | string
+    quarterKey?: StringFieldUpdateOperationsInput | string
+    parentEmail?: StringFieldUpdateOperationsInput | string
+    sentAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ParentQuarterlyReportCreateManyInput = {
+    id?: string
+    studentId: string
+    quarterKey: string
+    parentEmail: string
+    sentAt?: Date | string
+  }
+
+  export type ParentQuarterlyReportUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    quarterKey?: StringFieldUpdateOperationsInput | string
+    parentEmail?: StringFieldUpdateOperationsInput | string
+    sentAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ParentQuarterlyReportUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    studentId?: StringFieldUpdateOperationsInput | string
+    quarterKey?: StringFieldUpdateOperationsInput | string
+    parentEmail?: StringFieldUpdateOperationsInput | string
+    sentAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type DailyPlanTopicCreateInput = {
@@ -44648,6 +47057,12 @@ export namespace Prisma {
     none?: NotificationWhereInput
   }
 
+  export type DailyPlanCommentListRelationFilter = {
+    every?: DailyPlanCommentWhereInput
+    some?: DailyPlanCommentWhereInput
+    none?: DailyPlanCommentWhereInput
+  }
+
   export type AttendanceListRelationFilter = {
     every?: AttendanceWhereInput
     some?: AttendanceWhereInput
@@ -44682,6 +47097,10 @@ export namespace Prisma {
   }
 
   export type NotificationOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type DailyPlanCommentOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -45404,6 +47823,12 @@ export namespace Prisma {
     none?: StudentNoteWhereInput
   }
 
+  export type ParentQuarterlyReportListRelationFilter = {
+    every?: ParentQuarterlyReportWhereInput
+    some?: ParentQuarterlyReportWhereInput
+    none?: ParentQuarterlyReportWhereInput
+  }
+
   export type PaymentOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
@@ -45413,6 +47838,10 @@ export namespace Prisma {
   }
 
   export type StudentNoteOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type ParentQuarterlyReportOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -46487,6 +48916,59 @@ export namespace Prisma {
     isNot?: DailyPlanWhereInput
   }
 
+  export type DailyPlanCommentCountOrderByAggregateInput = {
+    id?: SortOrder
+    dailyPlanId?: SortOrder
+    authorUserId?: SortOrder
+    body?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type DailyPlanCommentMaxOrderByAggregateInput = {
+    id?: SortOrder
+    dailyPlanId?: SortOrder
+    authorUserId?: SortOrder
+    body?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type DailyPlanCommentMinOrderByAggregateInput = {
+    id?: SortOrder
+    dailyPlanId?: SortOrder
+    authorUserId?: SortOrder
+    body?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type ParentQuarterlyReportStudentIdQuarterKeyCompoundUniqueInput = {
+    studentId: string
+    quarterKey: string
+  }
+
+  export type ParentQuarterlyReportCountOrderByAggregateInput = {
+    id?: SortOrder
+    studentId?: SortOrder
+    quarterKey?: SortOrder
+    parentEmail?: SortOrder
+    sentAt?: SortOrder
+  }
+
+  export type ParentQuarterlyReportMaxOrderByAggregateInput = {
+    id?: SortOrder
+    studentId?: SortOrder
+    quarterKey?: SortOrder
+    parentEmail?: SortOrder
+    sentAt?: SortOrder
+  }
+
+  export type ParentQuarterlyReportMinOrderByAggregateInput = {
+    id?: SortOrder
+    studentId?: SortOrder
+    quarterKey?: SortOrder
+    parentEmail?: SortOrder
+    sentAt?: SortOrder
+  }
+
   export type DailyPlanResourceListRelationFilter = {
     every?: DailyPlanResourceWhereInput
     some?: DailyPlanResourceWhereInput
@@ -47051,6 +49533,13 @@ export namespace Prisma {
     connect?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
   }
 
+  export type DailyPlanCommentCreateNestedManyWithoutAuthorInput = {
+    create?: XOR<DailyPlanCommentCreateWithoutAuthorInput, DailyPlanCommentUncheckedCreateWithoutAuthorInput> | DailyPlanCommentCreateWithoutAuthorInput[] | DailyPlanCommentUncheckedCreateWithoutAuthorInput[]
+    connectOrCreate?: DailyPlanCommentCreateOrConnectWithoutAuthorInput | DailyPlanCommentCreateOrConnectWithoutAuthorInput[]
+    createMany?: DailyPlanCommentCreateManyAuthorInputEnvelope
+    connect?: DailyPlanCommentWhereUniqueInput | DailyPlanCommentWhereUniqueInput[]
+  }
+
   export type AttendanceCreateNestedManyWithoutMarkedByInput = {
     create?: XOR<AttendanceCreateWithoutMarkedByInput, AttendanceUncheckedCreateWithoutMarkedByInput> | AttendanceCreateWithoutMarkedByInput[] | AttendanceUncheckedCreateWithoutMarkedByInput[]
     connectOrCreate?: AttendanceCreateOrConnectWithoutMarkedByInput | AttendanceCreateOrConnectWithoutMarkedByInput[]
@@ -47109,6 +49598,13 @@ export namespace Prisma {
     connectOrCreate?: NotificationCreateOrConnectWithoutUserInput | NotificationCreateOrConnectWithoutUserInput[]
     createMany?: NotificationCreateManyUserInputEnvelope
     connect?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
+  }
+
+  export type DailyPlanCommentUncheckedCreateNestedManyWithoutAuthorInput = {
+    create?: XOR<DailyPlanCommentCreateWithoutAuthorInput, DailyPlanCommentUncheckedCreateWithoutAuthorInput> | DailyPlanCommentCreateWithoutAuthorInput[] | DailyPlanCommentUncheckedCreateWithoutAuthorInput[]
+    connectOrCreate?: DailyPlanCommentCreateOrConnectWithoutAuthorInput | DailyPlanCommentCreateOrConnectWithoutAuthorInput[]
+    createMany?: DailyPlanCommentCreateManyAuthorInputEnvelope
+    connect?: DailyPlanCommentWhereUniqueInput | DailyPlanCommentWhereUniqueInput[]
   }
 
   export type AttendanceUncheckedCreateNestedManyWithoutMarkedByInput = {
@@ -47234,6 +49730,20 @@ export namespace Prisma {
     deleteMany?: NotificationScalarWhereInput | NotificationScalarWhereInput[]
   }
 
+  export type DailyPlanCommentUpdateManyWithoutAuthorNestedInput = {
+    create?: XOR<DailyPlanCommentCreateWithoutAuthorInput, DailyPlanCommentUncheckedCreateWithoutAuthorInput> | DailyPlanCommentCreateWithoutAuthorInput[] | DailyPlanCommentUncheckedCreateWithoutAuthorInput[]
+    connectOrCreate?: DailyPlanCommentCreateOrConnectWithoutAuthorInput | DailyPlanCommentCreateOrConnectWithoutAuthorInput[]
+    upsert?: DailyPlanCommentUpsertWithWhereUniqueWithoutAuthorInput | DailyPlanCommentUpsertWithWhereUniqueWithoutAuthorInput[]
+    createMany?: DailyPlanCommentCreateManyAuthorInputEnvelope
+    set?: DailyPlanCommentWhereUniqueInput | DailyPlanCommentWhereUniqueInput[]
+    disconnect?: DailyPlanCommentWhereUniqueInput | DailyPlanCommentWhereUniqueInput[]
+    delete?: DailyPlanCommentWhereUniqueInput | DailyPlanCommentWhereUniqueInput[]
+    connect?: DailyPlanCommentWhereUniqueInput | DailyPlanCommentWhereUniqueInput[]
+    update?: DailyPlanCommentUpdateWithWhereUniqueWithoutAuthorInput | DailyPlanCommentUpdateWithWhereUniqueWithoutAuthorInput[]
+    updateMany?: DailyPlanCommentUpdateManyWithWhereWithoutAuthorInput | DailyPlanCommentUpdateManyWithWhereWithoutAuthorInput[]
+    deleteMany?: DailyPlanCommentScalarWhereInput | DailyPlanCommentScalarWhereInput[]
+  }
+
   export type AttendanceUpdateManyWithoutMarkedByNestedInput = {
     create?: XOR<AttendanceCreateWithoutMarkedByInput, AttendanceUncheckedCreateWithoutMarkedByInput> | AttendanceCreateWithoutMarkedByInput[] | AttendanceUncheckedCreateWithoutMarkedByInput[]
     connectOrCreate?: AttendanceCreateOrConnectWithoutMarkedByInput | AttendanceCreateOrConnectWithoutMarkedByInput[]
@@ -47346,6 +49856,20 @@ export namespace Prisma {
     update?: NotificationUpdateWithWhereUniqueWithoutUserInput | NotificationUpdateWithWhereUniqueWithoutUserInput[]
     updateMany?: NotificationUpdateManyWithWhereWithoutUserInput | NotificationUpdateManyWithWhereWithoutUserInput[]
     deleteMany?: NotificationScalarWhereInput | NotificationScalarWhereInput[]
+  }
+
+  export type DailyPlanCommentUncheckedUpdateManyWithoutAuthorNestedInput = {
+    create?: XOR<DailyPlanCommentCreateWithoutAuthorInput, DailyPlanCommentUncheckedCreateWithoutAuthorInput> | DailyPlanCommentCreateWithoutAuthorInput[] | DailyPlanCommentUncheckedCreateWithoutAuthorInput[]
+    connectOrCreate?: DailyPlanCommentCreateOrConnectWithoutAuthorInput | DailyPlanCommentCreateOrConnectWithoutAuthorInput[]
+    upsert?: DailyPlanCommentUpsertWithWhereUniqueWithoutAuthorInput | DailyPlanCommentUpsertWithWhereUniqueWithoutAuthorInput[]
+    createMany?: DailyPlanCommentCreateManyAuthorInputEnvelope
+    set?: DailyPlanCommentWhereUniqueInput | DailyPlanCommentWhereUniqueInput[]
+    disconnect?: DailyPlanCommentWhereUniqueInput | DailyPlanCommentWhereUniqueInput[]
+    delete?: DailyPlanCommentWhereUniqueInput | DailyPlanCommentWhereUniqueInput[]
+    connect?: DailyPlanCommentWhereUniqueInput | DailyPlanCommentWhereUniqueInput[]
+    update?: DailyPlanCommentUpdateWithWhereUniqueWithoutAuthorInput | DailyPlanCommentUpdateWithWhereUniqueWithoutAuthorInput[]
+    updateMany?: DailyPlanCommentUpdateManyWithWhereWithoutAuthorInput | DailyPlanCommentUpdateManyWithWhereWithoutAuthorInput[]
+    deleteMany?: DailyPlanCommentScalarWhereInput | DailyPlanCommentScalarWhereInput[]
   }
 
   export type AttendanceUncheckedUpdateManyWithoutMarkedByNestedInput = {
@@ -48626,6 +51150,13 @@ export namespace Prisma {
     connect?: StudentNoteWhereUniqueInput | StudentNoteWhereUniqueInput[]
   }
 
+  export type ParentQuarterlyReportCreateNestedManyWithoutStudentInput = {
+    create?: XOR<ParentQuarterlyReportCreateWithoutStudentInput, ParentQuarterlyReportUncheckedCreateWithoutStudentInput> | ParentQuarterlyReportCreateWithoutStudentInput[] | ParentQuarterlyReportUncheckedCreateWithoutStudentInput[]
+    connectOrCreate?: ParentQuarterlyReportCreateOrConnectWithoutStudentInput | ParentQuarterlyReportCreateOrConnectWithoutStudentInput[]
+    createMany?: ParentQuarterlyReportCreateManyStudentInputEnvelope
+    connect?: ParentQuarterlyReportWhereUniqueInput | ParentQuarterlyReportWhereUniqueInput[]
+  }
+
   export type AttendanceUncheckedCreateNestedManyWithoutStudentInput = {
     create?: XOR<AttendanceCreateWithoutStudentInput, AttendanceUncheckedCreateWithoutStudentInput> | AttendanceCreateWithoutStudentInput[] | AttendanceUncheckedCreateWithoutStudentInput[]
     connectOrCreate?: AttendanceCreateOrConnectWithoutStudentInput | AttendanceCreateOrConnectWithoutStudentInput[]
@@ -48673,6 +51204,13 @@ export namespace Prisma {
     connectOrCreate?: StudentNoteCreateOrConnectWithoutStudentInput | StudentNoteCreateOrConnectWithoutStudentInput[]
     createMany?: StudentNoteCreateManyStudentInputEnvelope
     connect?: StudentNoteWhereUniqueInput | StudentNoteWhereUniqueInput[]
+  }
+
+  export type ParentQuarterlyReportUncheckedCreateNestedManyWithoutStudentInput = {
+    create?: XOR<ParentQuarterlyReportCreateWithoutStudentInput, ParentQuarterlyReportUncheckedCreateWithoutStudentInput> | ParentQuarterlyReportCreateWithoutStudentInput[] | ParentQuarterlyReportUncheckedCreateWithoutStudentInput[]
+    connectOrCreate?: ParentQuarterlyReportCreateOrConnectWithoutStudentInput | ParentQuarterlyReportCreateOrConnectWithoutStudentInput[]
+    createMany?: ParentQuarterlyReportCreateManyStudentInputEnvelope
+    connect?: ParentQuarterlyReportWhereUniqueInput | ParentQuarterlyReportWhereUniqueInput[]
   }
 
   export type NullableIntFieldUpdateOperationsInput = {
@@ -48837,6 +51375,20 @@ export namespace Prisma {
     deleteMany?: StudentNoteScalarWhereInput | StudentNoteScalarWhereInput[]
   }
 
+  export type ParentQuarterlyReportUpdateManyWithoutStudentNestedInput = {
+    create?: XOR<ParentQuarterlyReportCreateWithoutStudentInput, ParentQuarterlyReportUncheckedCreateWithoutStudentInput> | ParentQuarterlyReportCreateWithoutStudentInput[] | ParentQuarterlyReportUncheckedCreateWithoutStudentInput[]
+    connectOrCreate?: ParentQuarterlyReportCreateOrConnectWithoutStudentInput | ParentQuarterlyReportCreateOrConnectWithoutStudentInput[]
+    upsert?: ParentQuarterlyReportUpsertWithWhereUniqueWithoutStudentInput | ParentQuarterlyReportUpsertWithWhereUniqueWithoutStudentInput[]
+    createMany?: ParentQuarterlyReportCreateManyStudentInputEnvelope
+    set?: ParentQuarterlyReportWhereUniqueInput | ParentQuarterlyReportWhereUniqueInput[]
+    disconnect?: ParentQuarterlyReportWhereUniqueInput | ParentQuarterlyReportWhereUniqueInput[]
+    delete?: ParentQuarterlyReportWhereUniqueInput | ParentQuarterlyReportWhereUniqueInput[]
+    connect?: ParentQuarterlyReportWhereUniqueInput | ParentQuarterlyReportWhereUniqueInput[]
+    update?: ParentQuarterlyReportUpdateWithWhereUniqueWithoutStudentInput | ParentQuarterlyReportUpdateWithWhereUniqueWithoutStudentInput[]
+    updateMany?: ParentQuarterlyReportUpdateManyWithWhereWithoutStudentInput | ParentQuarterlyReportUpdateManyWithWhereWithoutStudentInput[]
+    deleteMany?: ParentQuarterlyReportScalarWhereInput | ParentQuarterlyReportScalarWhereInput[]
+  }
+
   export type AttendanceUncheckedUpdateManyWithoutStudentNestedInput = {
     create?: XOR<AttendanceCreateWithoutStudentInput, AttendanceUncheckedCreateWithoutStudentInput> | AttendanceCreateWithoutStudentInput[] | AttendanceUncheckedCreateWithoutStudentInput[]
     connectOrCreate?: AttendanceCreateOrConnectWithoutStudentInput | AttendanceCreateOrConnectWithoutStudentInput[]
@@ -48933,6 +51485,20 @@ export namespace Prisma {
     update?: StudentNoteUpdateWithWhereUniqueWithoutStudentInput | StudentNoteUpdateWithWhereUniqueWithoutStudentInput[]
     updateMany?: StudentNoteUpdateManyWithWhereWithoutStudentInput | StudentNoteUpdateManyWithWhereWithoutStudentInput[]
     deleteMany?: StudentNoteScalarWhereInput | StudentNoteScalarWhereInput[]
+  }
+
+  export type ParentQuarterlyReportUncheckedUpdateManyWithoutStudentNestedInput = {
+    create?: XOR<ParentQuarterlyReportCreateWithoutStudentInput, ParentQuarterlyReportUncheckedCreateWithoutStudentInput> | ParentQuarterlyReportCreateWithoutStudentInput[] | ParentQuarterlyReportUncheckedCreateWithoutStudentInput[]
+    connectOrCreate?: ParentQuarterlyReportCreateOrConnectWithoutStudentInput | ParentQuarterlyReportCreateOrConnectWithoutStudentInput[]
+    upsert?: ParentQuarterlyReportUpsertWithWhereUniqueWithoutStudentInput | ParentQuarterlyReportUpsertWithWhereUniqueWithoutStudentInput[]
+    createMany?: ParentQuarterlyReportCreateManyStudentInputEnvelope
+    set?: ParentQuarterlyReportWhereUniqueInput | ParentQuarterlyReportWhereUniqueInput[]
+    disconnect?: ParentQuarterlyReportWhereUniqueInput | ParentQuarterlyReportWhereUniqueInput[]
+    delete?: ParentQuarterlyReportWhereUniqueInput | ParentQuarterlyReportWhereUniqueInput[]
+    connect?: ParentQuarterlyReportWhereUniqueInput | ParentQuarterlyReportWhereUniqueInput[]
+    update?: ParentQuarterlyReportUpdateWithWhereUniqueWithoutStudentInput | ParentQuarterlyReportUpdateWithWhereUniqueWithoutStudentInput[]
+    updateMany?: ParentQuarterlyReportUpdateManyWithWhereWithoutStudentInput | ParentQuarterlyReportUpdateManyWithWhereWithoutStudentInput[]
+    deleteMany?: ParentQuarterlyReportScalarWhereInput | ParentQuarterlyReportScalarWhereInput[]
   }
 
   export type StudentCreateNestedOneWithoutNotesListInput = {
@@ -49554,6 +52120,13 @@ export namespace Prisma {
     connect?: DailyPlanTopicWhereUniqueInput | DailyPlanTopicWhereUniqueInput[]
   }
 
+  export type DailyPlanCommentCreateNestedManyWithoutDailyPlanInput = {
+    create?: XOR<DailyPlanCommentCreateWithoutDailyPlanInput, DailyPlanCommentUncheckedCreateWithoutDailyPlanInput> | DailyPlanCommentCreateWithoutDailyPlanInput[] | DailyPlanCommentUncheckedCreateWithoutDailyPlanInput[]
+    connectOrCreate?: DailyPlanCommentCreateOrConnectWithoutDailyPlanInput | DailyPlanCommentCreateOrConnectWithoutDailyPlanInput[]
+    createMany?: DailyPlanCommentCreateManyDailyPlanInputEnvelope
+    connect?: DailyPlanCommentWhereUniqueInput | DailyPlanCommentWhereUniqueInput[]
+  }
+
   export type LessonCreateNestedOneWithoutDailyPlanInput = {
     create?: XOR<LessonCreateWithoutDailyPlanInput, LessonUncheckedCreateWithoutDailyPlanInput>
     connectOrCreate?: LessonCreateOrConnectWithoutDailyPlanInput
@@ -49579,6 +52152,13 @@ export namespace Prisma {
     connect?: DailyPlanTopicWhereUniqueInput | DailyPlanTopicWhereUniqueInput[]
   }
 
+  export type DailyPlanCommentUncheckedCreateNestedManyWithoutDailyPlanInput = {
+    create?: XOR<DailyPlanCommentCreateWithoutDailyPlanInput, DailyPlanCommentUncheckedCreateWithoutDailyPlanInput> | DailyPlanCommentCreateWithoutDailyPlanInput[] | DailyPlanCommentUncheckedCreateWithoutDailyPlanInput[]
+    connectOrCreate?: DailyPlanCommentCreateOrConnectWithoutDailyPlanInput | DailyPlanCommentCreateOrConnectWithoutDailyPlanInput[]
+    createMany?: DailyPlanCommentCreateManyDailyPlanInputEnvelope
+    connect?: DailyPlanCommentWhereUniqueInput | DailyPlanCommentWhereUniqueInput[]
+  }
+
   export type DailyPlanTopicUpdateManyWithoutDailyPlanNestedInput = {
     create?: XOR<DailyPlanTopicCreateWithoutDailyPlanInput, DailyPlanTopicUncheckedCreateWithoutDailyPlanInput> | DailyPlanTopicCreateWithoutDailyPlanInput[] | DailyPlanTopicUncheckedCreateWithoutDailyPlanInput[]
     connectOrCreate?: DailyPlanTopicCreateOrConnectWithoutDailyPlanInput | DailyPlanTopicCreateOrConnectWithoutDailyPlanInput[]
@@ -49591,6 +52171,20 @@ export namespace Prisma {
     update?: DailyPlanTopicUpdateWithWhereUniqueWithoutDailyPlanInput | DailyPlanTopicUpdateWithWhereUniqueWithoutDailyPlanInput[]
     updateMany?: DailyPlanTopicUpdateManyWithWhereWithoutDailyPlanInput | DailyPlanTopicUpdateManyWithWhereWithoutDailyPlanInput[]
     deleteMany?: DailyPlanTopicScalarWhereInput | DailyPlanTopicScalarWhereInput[]
+  }
+
+  export type DailyPlanCommentUpdateManyWithoutDailyPlanNestedInput = {
+    create?: XOR<DailyPlanCommentCreateWithoutDailyPlanInput, DailyPlanCommentUncheckedCreateWithoutDailyPlanInput> | DailyPlanCommentCreateWithoutDailyPlanInput[] | DailyPlanCommentUncheckedCreateWithoutDailyPlanInput[]
+    connectOrCreate?: DailyPlanCommentCreateOrConnectWithoutDailyPlanInput | DailyPlanCommentCreateOrConnectWithoutDailyPlanInput[]
+    upsert?: DailyPlanCommentUpsertWithWhereUniqueWithoutDailyPlanInput | DailyPlanCommentUpsertWithWhereUniqueWithoutDailyPlanInput[]
+    createMany?: DailyPlanCommentCreateManyDailyPlanInputEnvelope
+    set?: DailyPlanCommentWhereUniqueInput | DailyPlanCommentWhereUniqueInput[]
+    disconnect?: DailyPlanCommentWhereUniqueInput | DailyPlanCommentWhereUniqueInput[]
+    delete?: DailyPlanCommentWhereUniqueInput | DailyPlanCommentWhereUniqueInput[]
+    connect?: DailyPlanCommentWhereUniqueInput | DailyPlanCommentWhereUniqueInput[]
+    update?: DailyPlanCommentUpdateWithWhereUniqueWithoutDailyPlanInput | DailyPlanCommentUpdateWithWhereUniqueWithoutDailyPlanInput[]
+    updateMany?: DailyPlanCommentUpdateManyWithWhereWithoutDailyPlanInput | DailyPlanCommentUpdateManyWithWhereWithoutDailyPlanInput[]
+    deleteMany?: DailyPlanCommentScalarWhereInput | DailyPlanCommentScalarWhereInput[]
   }
 
   export type LessonUpdateOneWithoutDailyPlanNestedInput = {
@@ -49633,6 +52227,62 @@ export namespace Prisma {
     update?: DailyPlanTopicUpdateWithWhereUniqueWithoutDailyPlanInput | DailyPlanTopicUpdateWithWhereUniqueWithoutDailyPlanInput[]
     updateMany?: DailyPlanTopicUpdateManyWithWhereWithoutDailyPlanInput | DailyPlanTopicUpdateManyWithWhereWithoutDailyPlanInput[]
     deleteMany?: DailyPlanTopicScalarWhereInput | DailyPlanTopicScalarWhereInput[]
+  }
+
+  export type DailyPlanCommentUncheckedUpdateManyWithoutDailyPlanNestedInput = {
+    create?: XOR<DailyPlanCommentCreateWithoutDailyPlanInput, DailyPlanCommentUncheckedCreateWithoutDailyPlanInput> | DailyPlanCommentCreateWithoutDailyPlanInput[] | DailyPlanCommentUncheckedCreateWithoutDailyPlanInput[]
+    connectOrCreate?: DailyPlanCommentCreateOrConnectWithoutDailyPlanInput | DailyPlanCommentCreateOrConnectWithoutDailyPlanInput[]
+    upsert?: DailyPlanCommentUpsertWithWhereUniqueWithoutDailyPlanInput | DailyPlanCommentUpsertWithWhereUniqueWithoutDailyPlanInput[]
+    createMany?: DailyPlanCommentCreateManyDailyPlanInputEnvelope
+    set?: DailyPlanCommentWhereUniqueInput | DailyPlanCommentWhereUniqueInput[]
+    disconnect?: DailyPlanCommentWhereUniqueInput | DailyPlanCommentWhereUniqueInput[]
+    delete?: DailyPlanCommentWhereUniqueInput | DailyPlanCommentWhereUniqueInput[]
+    connect?: DailyPlanCommentWhereUniqueInput | DailyPlanCommentWhereUniqueInput[]
+    update?: DailyPlanCommentUpdateWithWhereUniqueWithoutDailyPlanInput | DailyPlanCommentUpdateWithWhereUniqueWithoutDailyPlanInput[]
+    updateMany?: DailyPlanCommentUpdateManyWithWhereWithoutDailyPlanInput | DailyPlanCommentUpdateManyWithWhereWithoutDailyPlanInput[]
+    deleteMany?: DailyPlanCommentScalarWhereInput | DailyPlanCommentScalarWhereInput[]
+  }
+
+  export type DailyPlanCreateNestedOneWithoutCommentsInput = {
+    create?: XOR<DailyPlanCreateWithoutCommentsInput, DailyPlanUncheckedCreateWithoutCommentsInput>
+    connectOrCreate?: DailyPlanCreateOrConnectWithoutCommentsInput
+    connect?: DailyPlanWhereUniqueInput
+  }
+
+  export type UserCreateNestedOneWithoutDailyPlanCommentsInput = {
+    create?: XOR<UserCreateWithoutDailyPlanCommentsInput, UserUncheckedCreateWithoutDailyPlanCommentsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutDailyPlanCommentsInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type DailyPlanUpdateOneRequiredWithoutCommentsNestedInput = {
+    create?: XOR<DailyPlanCreateWithoutCommentsInput, DailyPlanUncheckedCreateWithoutCommentsInput>
+    connectOrCreate?: DailyPlanCreateOrConnectWithoutCommentsInput
+    upsert?: DailyPlanUpsertWithoutCommentsInput
+    connect?: DailyPlanWhereUniqueInput
+    update?: XOR<XOR<DailyPlanUpdateToOneWithWhereWithoutCommentsInput, DailyPlanUpdateWithoutCommentsInput>, DailyPlanUncheckedUpdateWithoutCommentsInput>
+  }
+
+  export type UserUpdateOneRequiredWithoutDailyPlanCommentsNestedInput = {
+    create?: XOR<UserCreateWithoutDailyPlanCommentsInput, UserUncheckedCreateWithoutDailyPlanCommentsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutDailyPlanCommentsInput
+    upsert?: UserUpsertWithoutDailyPlanCommentsInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutDailyPlanCommentsInput, UserUpdateWithoutDailyPlanCommentsInput>, UserUncheckedUpdateWithoutDailyPlanCommentsInput>
+  }
+
+  export type StudentCreateNestedOneWithoutParentQuarterlyReportsInput = {
+    create?: XOR<StudentCreateWithoutParentQuarterlyReportsInput, StudentUncheckedCreateWithoutParentQuarterlyReportsInput>
+    connectOrCreate?: StudentCreateOrConnectWithoutParentQuarterlyReportsInput
+    connect?: StudentWhereUniqueInput
+  }
+
+  export type StudentUpdateOneRequiredWithoutParentQuarterlyReportsNestedInput = {
+    create?: XOR<StudentCreateWithoutParentQuarterlyReportsInput, StudentUncheckedCreateWithoutParentQuarterlyReportsInput>
+    connectOrCreate?: StudentCreateOrConnectWithoutParentQuarterlyReportsInput
+    upsert?: StudentUpsertWithoutParentQuarterlyReportsInput
+    connect?: StudentWhereUniqueInput
+    update?: XOR<XOR<StudentUpdateToOneWithWhereWithoutParentQuarterlyReportsInput, StudentUpdateWithoutParentQuarterlyReportsInput>, StudentUncheckedUpdateWithoutParentQuarterlyReportsInput>
   }
 
   export type DailyPlanCreateNestedOneWithoutTopicsInput = {
@@ -50850,6 +53500,30 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type DailyPlanCommentCreateWithoutAuthorInput = {
+    id?: string
+    body: string
+    createdAt?: Date | string
+    dailyPlan: DailyPlanCreateNestedOneWithoutCommentsInput
+  }
+
+  export type DailyPlanCommentUncheckedCreateWithoutAuthorInput = {
+    id?: string
+    dailyPlanId: string
+    body: string
+    createdAt?: Date | string
+  }
+
+  export type DailyPlanCommentCreateOrConnectWithoutAuthorInput = {
+    where: DailyPlanCommentWhereUniqueInput
+    create: XOR<DailyPlanCommentCreateWithoutAuthorInput, DailyPlanCommentUncheckedCreateWithoutAuthorInput>
+  }
+
+  export type DailyPlanCommentCreateManyAuthorInputEnvelope = {
+    data: DailyPlanCommentCreateManyAuthorInput | DailyPlanCommentCreateManyAuthorInput[]
+    skipDuplicates?: boolean
+  }
+
   export type AttendanceCreateWithoutMarkedByInput = {
     id?: string
     isPresent: boolean
@@ -50915,6 +53589,7 @@ export namespace Prisma {
     plannedAbsences?: PlannedAbsenceCreateNestedManyWithoutStudentInput
     recordingItems?: RecordingItemCreateNestedManyWithoutStudentInput
     notesList?: StudentNoteCreateNestedManyWithoutStudentInput
+    parentQuarterlyReports?: ParentQuarterlyReportCreateNestedManyWithoutStudentInput
   }
 
   export type StudentUncheckedCreateWithoutUserInput = {
@@ -50946,6 +53621,7 @@ export namespace Prisma {
     plannedAbsences?: PlannedAbsenceUncheckedCreateNestedManyWithoutStudentInput
     recordingItems?: RecordingItemUncheckedCreateNestedManyWithoutStudentInput
     notesList?: StudentNoteUncheckedCreateNestedManyWithoutStudentInput
+    parentQuarterlyReports?: ParentQuarterlyReportUncheckedCreateNestedManyWithoutStudentInput
   }
 
   export type StudentCreateOrConnectWithoutUserInput = {
@@ -51204,6 +53880,33 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"Notification"> | Date | string
   }
 
+  export type DailyPlanCommentUpsertWithWhereUniqueWithoutAuthorInput = {
+    where: DailyPlanCommentWhereUniqueInput
+    update: XOR<DailyPlanCommentUpdateWithoutAuthorInput, DailyPlanCommentUncheckedUpdateWithoutAuthorInput>
+    create: XOR<DailyPlanCommentCreateWithoutAuthorInput, DailyPlanCommentUncheckedCreateWithoutAuthorInput>
+  }
+
+  export type DailyPlanCommentUpdateWithWhereUniqueWithoutAuthorInput = {
+    where: DailyPlanCommentWhereUniqueInput
+    data: XOR<DailyPlanCommentUpdateWithoutAuthorInput, DailyPlanCommentUncheckedUpdateWithoutAuthorInput>
+  }
+
+  export type DailyPlanCommentUpdateManyWithWhereWithoutAuthorInput = {
+    where: DailyPlanCommentScalarWhereInput
+    data: XOR<DailyPlanCommentUpdateManyMutationInput, DailyPlanCommentUncheckedUpdateManyWithoutAuthorInput>
+  }
+
+  export type DailyPlanCommentScalarWhereInput = {
+    AND?: DailyPlanCommentScalarWhereInput | DailyPlanCommentScalarWhereInput[]
+    OR?: DailyPlanCommentScalarWhereInput[]
+    NOT?: DailyPlanCommentScalarWhereInput | DailyPlanCommentScalarWhereInput[]
+    id?: StringFilter<"DailyPlanComment"> | string
+    dailyPlanId?: StringFilter<"DailyPlanComment"> | string
+    authorUserId?: StringFilter<"DailyPlanComment"> | string
+    body?: StringFilter<"DailyPlanComment"> | string
+    createdAt?: DateTimeFilter<"DailyPlanComment"> | Date | string
+  }
+
   export type AttendanceUpsertWithWhereUniqueWithoutMarkedByInput = {
     where: AttendanceWhereUniqueInput
     update: XOR<AttendanceUpdateWithoutMarkedByInput, AttendanceUncheckedUpdateWithoutMarkedByInput>
@@ -51277,6 +53980,7 @@ export namespace Prisma {
     plannedAbsences?: PlannedAbsenceUpdateManyWithoutStudentNestedInput
     recordingItems?: RecordingItemUpdateManyWithoutStudentNestedInput
     notesList?: StudentNoteUpdateManyWithoutStudentNestedInput
+    parentQuarterlyReports?: ParentQuarterlyReportUpdateManyWithoutStudentNestedInput
   }
 
   export type StudentUncheckedUpdateWithoutUserInput = {
@@ -51308,6 +54012,7 @@ export namespace Prisma {
     plannedAbsences?: PlannedAbsenceUncheckedUpdateManyWithoutStudentNestedInput
     recordingItems?: RecordingItemUncheckedUpdateManyWithoutStudentNestedInput
     notesList?: StudentNoteUncheckedUpdateManyWithoutStudentNestedInput
+    parentQuarterlyReports?: ParentQuarterlyReportUncheckedUpdateManyWithoutStudentNestedInput
   }
 
   export type TeacherUpsertWithoutUserInput = {
@@ -51586,6 +54291,7 @@ export namespace Prisma {
     plannedAbsences?: PlannedAbsenceCreateNestedManyWithoutStudentInput
     recordingItems?: RecordingItemCreateNestedManyWithoutStudentInput
     notesList?: StudentNoteCreateNestedManyWithoutStudentInput
+    parentQuarterlyReports?: ParentQuarterlyReportCreateNestedManyWithoutStudentInput
   }
 
   export type StudentUncheckedCreateWithoutCenterInput = {
@@ -51617,6 +54323,7 @@ export namespace Prisma {
     plannedAbsences?: PlannedAbsenceUncheckedCreateNestedManyWithoutStudentInput
     recordingItems?: RecordingItemUncheckedCreateNestedManyWithoutStudentInput
     notesList?: StudentNoteUncheckedCreateNestedManyWithoutStudentInput
+    parentQuarterlyReports?: ParentQuarterlyReportUncheckedCreateNestedManyWithoutStudentInput
   }
 
   export type StudentCreateOrConnectWithoutCenterInput = {
@@ -51841,6 +54548,7 @@ export namespace Prisma {
     crmLeadsCreated?: CrmLeadCreateNestedManyWithoutCreatedByUserInput
     sentMessages?: MessageCreateNestedManyWithoutSenderInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
+    dailyPlanComments?: DailyPlanCommentCreateNestedManyWithoutAuthorInput
     markedAttendances?: AttendanceCreateNestedManyWithoutMarkedByInput
     student?: StudentCreateNestedOneWithoutUserInput
     teacher?: TeacherCreateNestedOneWithoutUserInput
@@ -51865,6 +54573,7 @@ export namespace Prisma {
     crmLeadsCreated?: CrmLeadUncheckedCreateNestedManyWithoutCreatedByUserInput
     sentMessages?: MessageUncheckedCreateNestedManyWithoutSenderInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    dailyPlanComments?: DailyPlanCommentUncheckedCreateNestedManyWithoutAuthorInput
     markedAttendances?: AttendanceUncheckedCreateNestedManyWithoutMarkedByInput
     student?: StudentUncheckedCreateNestedOneWithoutUserInput
     teacher?: TeacherUncheckedCreateNestedOneWithoutUserInput
@@ -51950,6 +54659,7 @@ export namespace Prisma {
     crmLeadsCreated?: CrmLeadUpdateManyWithoutCreatedByUserNestedInput
     sentMessages?: MessageUpdateManyWithoutSenderNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
+    dailyPlanComments?: DailyPlanCommentUpdateManyWithoutAuthorNestedInput
     markedAttendances?: AttendanceUpdateManyWithoutMarkedByNestedInput
     student?: StudentUpdateOneWithoutUserNestedInput
     teacher?: TeacherUpdateOneWithoutUserNestedInput
@@ -51974,6 +54684,7 @@ export namespace Prisma {
     crmLeadsCreated?: CrmLeadUncheckedUpdateManyWithoutCreatedByUserNestedInput
     sentMessages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    dailyPlanComments?: DailyPlanCommentUncheckedUpdateManyWithoutAuthorNestedInput
     markedAttendances?: AttendanceUncheckedUpdateManyWithoutMarkedByNestedInput
     student?: StudentUncheckedUpdateOneWithoutUserNestedInput
     teacher?: TeacherUncheckedUpdateOneWithoutUserNestedInput
@@ -52330,6 +55041,7 @@ export namespace Prisma {
     plannedAbsences?: PlannedAbsenceCreateNestedManyWithoutStudentInput
     recordingItems?: RecordingItemCreateNestedManyWithoutStudentInput
     notesList?: StudentNoteCreateNestedManyWithoutStudentInput
+    parentQuarterlyReports?: ParentQuarterlyReportCreateNestedManyWithoutStudentInput
   }
 
   export type StudentUncheckedCreateWithoutGroupInput = {
@@ -52361,6 +55073,7 @@ export namespace Prisma {
     plannedAbsences?: PlannedAbsenceUncheckedCreateNestedManyWithoutStudentInput
     recordingItems?: RecordingItemUncheckedCreateNestedManyWithoutStudentInput
     notesList?: StudentNoteUncheckedCreateNestedManyWithoutStudentInput
+    parentQuarterlyReports?: ParentQuarterlyReportUncheckedCreateNestedManyWithoutStudentInput
   }
 
   export type StudentCreateOrConnectWithoutGroupInput = {
@@ -52407,6 +55120,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     topics?: DailyPlanTopicCreateNestedManyWithoutDailyPlanInput
+    comments?: DailyPlanCommentCreateNestedManyWithoutDailyPlanInput
     lesson?: LessonCreateNestedOneWithoutDailyPlanInput
     teacher: TeacherCreateNestedOneWithoutDailyPlansInput
   }
@@ -52419,6 +55133,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     topics?: DailyPlanTopicUncheckedCreateNestedManyWithoutDailyPlanInput
+    comments?: DailyPlanCommentUncheckedCreateNestedManyWithoutDailyPlanInput
   }
 
   export type DailyPlanCreateOrConnectWithoutGroupInput = {
@@ -53311,6 +56026,7 @@ export namespace Prisma {
     plannedAbsences?: PlannedAbsenceCreateNestedManyWithoutStudentInput
     recordingItems?: RecordingItemCreateNestedManyWithoutStudentInput
     notesList?: StudentNoteCreateNestedManyWithoutStudentInput
+    parentQuarterlyReports?: ParentQuarterlyReportCreateNestedManyWithoutStudentInput
   }
 
   export type StudentUncheckedCreateWithoutTeacherInput = {
@@ -53342,6 +56058,7 @@ export namespace Prisma {
     plannedAbsences?: PlannedAbsenceUncheckedCreateNestedManyWithoutStudentInput
     recordingItems?: RecordingItemUncheckedCreateNestedManyWithoutStudentInput
     notesList?: StudentNoteUncheckedCreateNestedManyWithoutStudentInput
+    parentQuarterlyReports?: ParentQuarterlyReportUncheckedCreateNestedManyWithoutStudentInput
   }
 
   export type StudentCreateOrConnectWithoutTeacherInput = {
@@ -53374,6 +56091,7 @@ export namespace Prisma {
     managerProfile?: ManagerProfileCreateNestedOneWithoutUserInput
     sentMessages?: MessageCreateNestedManyWithoutSenderInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
+    dailyPlanComments?: DailyPlanCommentCreateNestedManyWithoutAuthorInput
     markedAttendances?: AttendanceCreateNestedManyWithoutMarkedByInput
     student?: StudentCreateNestedOneWithoutUserInput
   }
@@ -53398,6 +56116,7 @@ export namespace Prisma {
     managerProfile?: ManagerProfileUncheckedCreateNestedOneWithoutUserInput
     sentMessages?: MessageUncheckedCreateNestedManyWithoutSenderInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    dailyPlanComments?: DailyPlanCommentUncheckedCreateNestedManyWithoutAuthorInput
     markedAttendances?: AttendanceUncheckedCreateNestedManyWithoutMarkedByInput
     student?: StudentUncheckedCreateNestedOneWithoutUserInput
   }
@@ -53459,6 +56178,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     topics?: DailyPlanTopicCreateNestedManyWithoutDailyPlanInput
+    comments?: DailyPlanCommentCreateNestedManyWithoutDailyPlanInput
     lesson?: LessonCreateNestedOneWithoutDailyPlanInput
     group?: GroupCreateNestedOneWithoutDailyPlansInput
   }
@@ -53471,6 +56191,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     topics?: DailyPlanTopicUncheckedCreateNestedManyWithoutDailyPlanInput
+    comments?: DailyPlanCommentUncheckedCreateNestedManyWithoutDailyPlanInput
   }
 
   export type DailyPlanCreateOrConnectWithoutTeacherInput = {
@@ -53715,6 +56436,7 @@ export namespace Prisma {
     managerProfile?: ManagerProfileUpdateOneWithoutUserNestedInput
     sentMessages?: MessageUpdateManyWithoutSenderNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
+    dailyPlanComments?: DailyPlanCommentUpdateManyWithoutAuthorNestedInput
     markedAttendances?: AttendanceUpdateManyWithoutMarkedByNestedInput
     student?: StudentUpdateOneWithoutUserNestedInput
   }
@@ -53739,6 +56461,7 @@ export namespace Prisma {
     managerProfile?: ManagerProfileUncheckedUpdateOneWithoutUserNestedInput
     sentMessages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    dailyPlanComments?: DailyPlanCommentUncheckedUpdateManyWithoutAuthorNestedInput
     markedAttendances?: AttendanceUncheckedUpdateManyWithoutMarkedByNestedInput
     student?: StudentUncheckedUpdateOneWithoutUserNestedInput
   }
@@ -54488,6 +57211,7 @@ export namespace Prisma {
     managerProfile?: ManagerProfileCreateNestedOneWithoutUserInput
     sentMessages?: MessageCreateNestedManyWithoutSenderInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
+    dailyPlanComments?: DailyPlanCommentCreateNestedManyWithoutAuthorInput
     markedAttendances?: AttendanceCreateNestedManyWithoutMarkedByInput
     teacher?: TeacherCreateNestedOneWithoutUserInput
   }
@@ -54512,6 +57236,7 @@ export namespace Prisma {
     managerProfile?: ManagerProfileUncheckedCreateNestedOneWithoutUserInput
     sentMessages?: MessageUncheckedCreateNestedManyWithoutSenderInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    dailyPlanComments?: DailyPlanCommentUncheckedCreateNestedManyWithoutAuthorInput
     markedAttendances?: AttendanceUncheckedCreateNestedManyWithoutMarkedByInput
     teacher?: TeacherUncheckedCreateNestedOneWithoutUserInput
   }
@@ -54630,6 +57355,30 @@ export namespace Prisma {
 
   export type StudentNoteCreateManyStudentInputEnvelope = {
     data: StudentNoteCreateManyStudentInput | StudentNoteCreateManyStudentInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type ParentQuarterlyReportCreateWithoutStudentInput = {
+    id?: string
+    quarterKey: string
+    parentEmail: string
+    sentAt?: Date | string
+  }
+
+  export type ParentQuarterlyReportUncheckedCreateWithoutStudentInput = {
+    id?: string
+    quarterKey: string
+    parentEmail: string
+    sentAt?: Date | string
+  }
+
+  export type ParentQuarterlyReportCreateOrConnectWithoutStudentInput = {
+    where: ParentQuarterlyReportWhereUniqueInput
+    create: XOR<ParentQuarterlyReportCreateWithoutStudentInput, ParentQuarterlyReportUncheckedCreateWithoutStudentInput>
+  }
+
+  export type ParentQuarterlyReportCreateManyStudentInputEnvelope = {
+    data: ParentQuarterlyReportCreateManyStudentInput | ParentQuarterlyReportCreateManyStudentInput[]
     skipDuplicates?: boolean
   }
 
@@ -54971,6 +57720,7 @@ export namespace Prisma {
     managerProfile?: ManagerProfileUpdateOneWithoutUserNestedInput
     sentMessages?: MessageUpdateManyWithoutSenderNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
+    dailyPlanComments?: DailyPlanCommentUpdateManyWithoutAuthorNestedInput
     markedAttendances?: AttendanceUpdateManyWithoutMarkedByNestedInput
     teacher?: TeacherUpdateOneWithoutUserNestedInput
   }
@@ -54995,6 +57745,7 @@ export namespace Prisma {
     managerProfile?: ManagerProfileUncheckedUpdateOneWithoutUserNestedInput
     sentMessages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    dailyPlanComments?: DailyPlanCommentUncheckedUpdateManyWithoutAuthorNestedInput
     markedAttendances?: AttendanceUncheckedUpdateManyWithoutMarkedByNestedInput
     teacher?: TeacherUncheckedUpdateOneWithoutUserNestedInput
   }
@@ -55087,6 +57838,33 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"StudentNote"> | Date | string
   }
 
+  export type ParentQuarterlyReportUpsertWithWhereUniqueWithoutStudentInput = {
+    where: ParentQuarterlyReportWhereUniqueInput
+    update: XOR<ParentQuarterlyReportUpdateWithoutStudentInput, ParentQuarterlyReportUncheckedUpdateWithoutStudentInput>
+    create: XOR<ParentQuarterlyReportCreateWithoutStudentInput, ParentQuarterlyReportUncheckedCreateWithoutStudentInput>
+  }
+
+  export type ParentQuarterlyReportUpdateWithWhereUniqueWithoutStudentInput = {
+    where: ParentQuarterlyReportWhereUniqueInput
+    data: XOR<ParentQuarterlyReportUpdateWithoutStudentInput, ParentQuarterlyReportUncheckedUpdateWithoutStudentInput>
+  }
+
+  export type ParentQuarterlyReportUpdateManyWithWhereWithoutStudentInput = {
+    where: ParentQuarterlyReportScalarWhereInput
+    data: XOR<ParentQuarterlyReportUpdateManyMutationInput, ParentQuarterlyReportUncheckedUpdateManyWithoutStudentInput>
+  }
+
+  export type ParentQuarterlyReportScalarWhereInput = {
+    AND?: ParentQuarterlyReportScalarWhereInput | ParentQuarterlyReportScalarWhereInput[]
+    OR?: ParentQuarterlyReportScalarWhereInput[]
+    NOT?: ParentQuarterlyReportScalarWhereInput | ParentQuarterlyReportScalarWhereInput[]
+    id?: StringFilter<"ParentQuarterlyReport"> | string
+    studentId?: StringFilter<"ParentQuarterlyReport"> | string
+    quarterKey?: StringFilter<"ParentQuarterlyReport"> | string
+    parentEmail?: StringFilter<"ParentQuarterlyReport"> | string
+    sentAt?: DateTimeFilter<"ParentQuarterlyReport"> | Date | string
+  }
+
   export type StudentCreateWithoutNotesListInput = {
     id?: string
     currentStreak?: number
@@ -55116,6 +57894,7 @@ export namespace Prisma {
     groupHistory?: StudentGroupHistoryCreateNestedManyWithoutStudentInput
     plannedAbsences?: PlannedAbsenceCreateNestedManyWithoutStudentInput
     recordingItems?: RecordingItemCreateNestedManyWithoutStudentInput
+    parentQuarterlyReports?: ParentQuarterlyReportCreateNestedManyWithoutStudentInput
   }
 
   export type StudentUncheckedCreateWithoutNotesListInput = {
@@ -55147,6 +57926,7 @@ export namespace Prisma {
     groupHistory?: StudentGroupHistoryUncheckedCreateNestedManyWithoutStudentInput
     plannedAbsences?: PlannedAbsenceUncheckedCreateNestedManyWithoutStudentInput
     recordingItems?: RecordingItemUncheckedCreateNestedManyWithoutStudentInput
+    parentQuarterlyReports?: ParentQuarterlyReportUncheckedCreateNestedManyWithoutStudentInput
   }
 
   export type StudentCreateOrConnectWithoutNotesListInput = {
@@ -55194,6 +57974,7 @@ export namespace Prisma {
     groupHistory?: StudentGroupHistoryUpdateManyWithoutStudentNestedInput
     plannedAbsences?: PlannedAbsenceUpdateManyWithoutStudentNestedInput
     recordingItems?: RecordingItemUpdateManyWithoutStudentNestedInput
+    parentQuarterlyReports?: ParentQuarterlyReportUpdateManyWithoutStudentNestedInput
   }
 
   export type StudentUncheckedUpdateWithoutNotesListInput = {
@@ -55225,6 +58006,7 @@ export namespace Prisma {
     groupHistory?: StudentGroupHistoryUncheckedUpdateManyWithoutStudentNestedInput
     plannedAbsences?: PlannedAbsenceUncheckedUpdateManyWithoutStudentNestedInput
     recordingItems?: RecordingItemUncheckedUpdateManyWithoutStudentNestedInput
+    parentQuarterlyReports?: ParentQuarterlyReportUncheckedUpdateManyWithoutStudentNestedInput
   }
 
   export type StudentCreateWithoutPlannedAbsencesInput = {
@@ -55256,6 +58038,7 @@ export namespace Prisma {
     groupHistory?: StudentGroupHistoryCreateNestedManyWithoutStudentInput
     recordingItems?: RecordingItemCreateNestedManyWithoutStudentInput
     notesList?: StudentNoteCreateNestedManyWithoutStudentInput
+    parentQuarterlyReports?: ParentQuarterlyReportCreateNestedManyWithoutStudentInput
   }
 
   export type StudentUncheckedCreateWithoutPlannedAbsencesInput = {
@@ -55287,6 +58070,7 @@ export namespace Prisma {
     groupHistory?: StudentGroupHistoryUncheckedCreateNestedManyWithoutStudentInput
     recordingItems?: RecordingItemUncheckedCreateNestedManyWithoutStudentInput
     notesList?: StudentNoteUncheckedCreateNestedManyWithoutStudentInput
+    parentQuarterlyReports?: ParentQuarterlyReportUncheckedCreateNestedManyWithoutStudentInput
   }
 
   export type StudentCreateOrConnectWithoutPlannedAbsencesInput = {
@@ -55334,6 +58118,7 @@ export namespace Prisma {
     groupHistory?: StudentGroupHistoryUpdateManyWithoutStudentNestedInput
     recordingItems?: RecordingItemUpdateManyWithoutStudentNestedInput
     notesList?: StudentNoteUpdateManyWithoutStudentNestedInput
+    parentQuarterlyReports?: ParentQuarterlyReportUpdateManyWithoutStudentNestedInput
   }
 
   export type StudentUncheckedUpdateWithoutPlannedAbsencesInput = {
@@ -55365,6 +58150,7 @@ export namespace Prisma {
     groupHistory?: StudentGroupHistoryUncheckedUpdateManyWithoutStudentNestedInput
     recordingItems?: RecordingItemUncheckedUpdateManyWithoutStudentNestedInput
     notesList?: StudentNoteUncheckedUpdateManyWithoutStudentNestedInput
+    parentQuarterlyReports?: ParentQuarterlyReportUncheckedUpdateManyWithoutStudentNestedInput
   }
 
   export type StudentCreateWithoutGroupHistoryInput = {
@@ -55396,6 +58182,7 @@ export namespace Prisma {
     plannedAbsences?: PlannedAbsenceCreateNestedManyWithoutStudentInput
     recordingItems?: RecordingItemCreateNestedManyWithoutStudentInput
     notesList?: StudentNoteCreateNestedManyWithoutStudentInput
+    parentQuarterlyReports?: ParentQuarterlyReportCreateNestedManyWithoutStudentInput
   }
 
   export type StudentUncheckedCreateWithoutGroupHistoryInput = {
@@ -55427,6 +58214,7 @@ export namespace Prisma {
     plannedAbsences?: PlannedAbsenceUncheckedCreateNestedManyWithoutStudentInput
     recordingItems?: RecordingItemUncheckedCreateNestedManyWithoutStudentInput
     notesList?: StudentNoteUncheckedCreateNestedManyWithoutStudentInput
+    parentQuarterlyReports?: ParentQuarterlyReportUncheckedCreateNestedManyWithoutStudentInput
   }
 
   export type StudentCreateOrConnectWithoutGroupHistoryInput = {
@@ -55527,6 +58315,7 @@ export namespace Prisma {
     plannedAbsences?: PlannedAbsenceUpdateManyWithoutStudentNestedInput
     recordingItems?: RecordingItemUpdateManyWithoutStudentNestedInput
     notesList?: StudentNoteUpdateManyWithoutStudentNestedInput
+    parentQuarterlyReports?: ParentQuarterlyReportUpdateManyWithoutStudentNestedInput
   }
 
   export type StudentUncheckedUpdateWithoutGroupHistoryInput = {
@@ -55558,6 +58347,7 @@ export namespace Prisma {
     plannedAbsences?: PlannedAbsenceUncheckedUpdateManyWithoutStudentNestedInput
     recordingItems?: RecordingItemUncheckedUpdateManyWithoutStudentNestedInput
     notesList?: StudentNoteUncheckedUpdateManyWithoutStudentNestedInput
+    parentQuarterlyReports?: ParentQuarterlyReportUncheckedUpdateManyWithoutStudentNestedInput
   }
 
   export type GroupUpsertWithoutStudentHistoryEntriesInput = {
@@ -55878,6 +58668,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     topics?: DailyPlanTopicCreateNestedManyWithoutDailyPlanInput
+    comments?: DailyPlanCommentCreateNestedManyWithoutDailyPlanInput
     teacher: TeacherCreateNestedOneWithoutDailyPlansInput
     group?: GroupCreateNestedOneWithoutDailyPlansInput
   }
@@ -55890,6 +58681,7 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     topics?: DailyPlanTopicUncheckedCreateNestedManyWithoutDailyPlanInput
+    comments?: DailyPlanCommentUncheckedCreateNestedManyWithoutDailyPlanInput
   }
 
   export type DailyPlanCreateOrConnectWithoutLessonInput = {
@@ -56163,6 +58955,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     topics?: DailyPlanTopicUpdateManyWithoutDailyPlanNestedInput
+    comments?: DailyPlanCommentUpdateManyWithoutDailyPlanNestedInput
     teacher?: TeacherUpdateOneRequiredWithoutDailyPlansNestedInput
     group?: GroupUpdateOneWithoutDailyPlansNestedInput
   }
@@ -56175,6 +58968,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     topics?: DailyPlanTopicUncheckedUpdateManyWithoutDailyPlanNestedInput
+    comments?: DailyPlanCommentUncheckedUpdateManyWithoutDailyPlanNestedInput
   }
 
   export type RecordingItemUpsertWithWhereUniqueWithoutLessonInput = {
@@ -56278,6 +59072,7 @@ export namespace Prisma {
     managerProfile?: ManagerProfileCreateNestedOneWithoutUserInput
     sentMessages?: MessageCreateNestedManyWithoutSenderInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
+    dailyPlanComments?: DailyPlanCommentCreateNestedManyWithoutAuthorInput
     student?: StudentCreateNestedOneWithoutUserInput
     teacher?: TeacherCreateNestedOneWithoutUserInput
   }
@@ -56302,6 +59097,7 @@ export namespace Prisma {
     managerProfile?: ManagerProfileUncheckedCreateNestedOneWithoutUserInput
     sentMessages?: MessageUncheckedCreateNestedManyWithoutSenderInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    dailyPlanComments?: DailyPlanCommentUncheckedCreateNestedManyWithoutAuthorInput
     student?: StudentUncheckedCreateNestedOneWithoutUserInput
     teacher?: TeacherUncheckedCreateNestedOneWithoutUserInput
   }
@@ -56340,6 +59136,7 @@ export namespace Prisma {
     plannedAbsences?: PlannedAbsenceCreateNestedManyWithoutStudentInput
     recordingItems?: RecordingItemCreateNestedManyWithoutStudentInput
     notesList?: StudentNoteCreateNestedManyWithoutStudentInput
+    parentQuarterlyReports?: ParentQuarterlyReportCreateNestedManyWithoutStudentInput
   }
 
   export type StudentUncheckedCreateWithoutAttendancesInput = {
@@ -56371,6 +59168,7 @@ export namespace Prisma {
     plannedAbsences?: PlannedAbsenceUncheckedCreateNestedManyWithoutStudentInput
     recordingItems?: RecordingItemUncheckedCreateNestedManyWithoutStudentInput
     notesList?: StudentNoteUncheckedCreateNestedManyWithoutStudentInput
+    parentQuarterlyReports?: ParentQuarterlyReportUncheckedCreateNestedManyWithoutStudentInput
   }
 
   export type StudentCreateOrConnectWithoutAttendancesInput = {
@@ -56480,6 +59278,7 @@ export namespace Prisma {
     managerProfile?: ManagerProfileUpdateOneWithoutUserNestedInput
     sentMessages?: MessageUpdateManyWithoutSenderNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
+    dailyPlanComments?: DailyPlanCommentUpdateManyWithoutAuthorNestedInput
     student?: StudentUpdateOneWithoutUserNestedInput
     teacher?: TeacherUpdateOneWithoutUserNestedInput
   }
@@ -56504,6 +59303,7 @@ export namespace Prisma {
     managerProfile?: ManagerProfileUncheckedUpdateOneWithoutUserNestedInput
     sentMessages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    dailyPlanComments?: DailyPlanCommentUncheckedUpdateManyWithoutAuthorNestedInput
     student?: StudentUncheckedUpdateOneWithoutUserNestedInput
     teacher?: TeacherUncheckedUpdateOneWithoutUserNestedInput
   }
@@ -56548,6 +59348,7 @@ export namespace Prisma {
     plannedAbsences?: PlannedAbsenceUpdateManyWithoutStudentNestedInput
     recordingItems?: RecordingItemUpdateManyWithoutStudentNestedInput
     notesList?: StudentNoteUpdateManyWithoutStudentNestedInput
+    parentQuarterlyReports?: ParentQuarterlyReportUpdateManyWithoutStudentNestedInput
   }
 
   export type StudentUncheckedUpdateWithoutAttendancesInput = {
@@ -56579,6 +59380,7 @@ export namespace Prisma {
     plannedAbsences?: PlannedAbsenceUncheckedUpdateManyWithoutStudentNestedInput
     recordingItems?: RecordingItemUncheckedUpdateManyWithoutStudentNestedInput
     notesList?: StudentNoteUncheckedUpdateManyWithoutStudentNestedInput
+    parentQuarterlyReports?: ParentQuarterlyReportUncheckedUpdateManyWithoutStudentNestedInput
   }
 
   export type LessonCreateWithoutFeedbacksInput = {
@@ -56675,6 +59477,7 @@ export namespace Prisma {
     plannedAbsences?: PlannedAbsenceCreateNestedManyWithoutStudentInput
     recordingItems?: RecordingItemCreateNestedManyWithoutStudentInput
     notesList?: StudentNoteCreateNestedManyWithoutStudentInput
+    parentQuarterlyReports?: ParentQuarterlyReportCreateNestedManyWithoutStudentInput
   }
 
   export type StudentUncheckedCreateWithoutFeedbacksInput = {
@@ -56706,6 +59509,7 @@ export namespace Prisma {
     plannedAbsences?: PlannedAbsenceUncheckedCreateNestedManyWithoutStudentInput
     recordingItems?: RecordingItemUncheckedCreateNestedManyWithoutStudentInput
     notesList?: StudentNoteUncheckedCreateNestedManyWithoutStudentInput
+    parentQuarterlyReports?: ParentQuarterlyReportUncheckedCreateNestedManyWithoutStudentInput
   }
 
   export type StudentCreateOrConnectWithoutFeedbacksInput = {
@@ -56881,6 +59685,7 @@ export namespace Prisma {
     plannedAbsences?: PlannedAbsenceUpdateManyWithoutStudentNestedInput
     recordingItems?: RecordingItemUpdateManyWithoutStudentNestedInput
     notesList?: StudentNoteUpdateManyWithoutStudentNestedInput
+    parentQuarterlyReports?: ParentQuarterlyReportUpdateManyWithoutStudentNestedInput
   }
 
   export type StudentUncheckedUpdateWithoutFeedbacksInput = {
@@ -56912,6 +59717,7 @@ export namespace Prisma {
     plannedAbsences?: PlannedAbsenceUncheckedUpdateManyWithoutStudentNestedInput
     recordingItems?: RecordingItemUncheckedUpdateManyWithoutStudentNestedInput
     notesList?: StudentNoteUncheckedUpdateManyWithoutStudentNestedInput
+    parentQuarterlyReports?: ParentQuarterlyReportUncheckedUpdateManyWithoutStudentNestedInput
   }
 
   export type TeacherUpsertWithoutFeedbacksInput = {
@@ -57006,6 +59812,7 @@ export namespace Prisma {
     plannedAbsences?: PlannedAbsenceCreateNestedManyWithoutStudentInput
     recordingItems?: RecordingItemCreateNestedManyWithoutStudentInput
     notesList?: StudentNoteCreateNestedManyWithoutStudentInput
+    parentQuarterlyReports?: ParentQuarterlyReportCreateNestedManyWithoutStudentInput
   }
 
   export type StudentUncheckedCreateWithoutPaymentsInput = {
@@ -57037,6 +59844,7 @@ export namespace Prisma {
     plannedAbsences?: PlannedAbsenceUncheckedCreateNestedManyWithoutStudentInput
     recordingItems?: RecordingItemUncheckedCreateNestedManyWithoutStudentInput
     notesList?: StudentNoteUncheckedCreateNestedManyWithoutStudentInput
+    parentQuarterlyReports?: ParentQuarterlyReportUncheckedCreateNestedManyWithoutStudentInput
   }
 
   export type StudentCreateOrConnectWithoutPaymentsInput = {
@@ -57084,6 +59892,7 @@ export namespace Prisma {
     plannedAbsences?: PlannedAbsenceUpdateManyWithoutStudentNestedInput
     recordingItems?: RecordingItemUpdateManyWithoutStudentNestedInput
     notesList?: StudentNoteUpdateManyWithoutStudentNestedInput
+    parentQuarterlyReports?: ParentQuarterlyReportUpdateManyWithoutStudentNestedInput
   }
 
   export type StudentUncheckedUpdateWithoutPaymentsInput = {
@@ -57115,6 +59924,7 @@ export namespace Prisma {
     plannedAbsences?: PlannedAbsenceUncheckedUpdateManyWithoutStudentNestedInput
     recordingItems?: RecordingItemUncheckedUpdateManyWithoutStudentNestedInput
     notesList?: StudentNoteUncheckedUpdateManyWithoutStudentNestedInput
+    parentQuarterlyReports?: ParentQuarterlyReportUncheckedUpdateManyWithoutStudentNestedInput
   }
 
   export type TeacherCreateWithoutSalaryRecordsInput = {
@@ -57619,6 +60429,7 @@ export namespace Prisma {
     managerProfile?: ManagerProfileCreateNestedOneWithoutUserInput
     sentMessages?: MessageCreateNestedManyWithoutSenderInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
+    dailyPlanComments?: DailyPlanCommentCreateNestedManyWithoutAuthorInput
     markedAttendances?: AttendanceCreateNestedManyWithoutMarkedByInput
     student?: StudentCreateNestedOneWithoutUserInput
     teacher?: TeacherCreateNestedOneWithoutUserInput
@@ -57643,6 +60454,7 @@ export namespace Prisma {
     managerProfile?: ManagerProfileUncheckedCreateNestedOneWithoutUserInput
     sentMessages?: MessageUncheckedCreateNestedManyWithoutSenderInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    dailyPlanComments?: DailyPlanCommentUncheckedCreateNestedManyWithoutAuthorInput
     markedAttendances?: AttendanceUncheckedCreateNestedManyWithoutMarkedByInput
     student?: StudentUncheckedCreateNestedOneWithoutUserInput
     teacher?: TeacherUncheckedCreateNestedOneWithoutUserInput
@@ -57716,6 +60528,7 @@ export namespace Prisma {
     managerProfile?: ManagerProfileUpdateOneWithoutUserNestedInput
     sentMessages?: MessageUpdateManyWithoutSenderNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
+    dailyPlanComments?: DailyPlanCommentUpdateManyWithoutAuthorNestedInput
     markedAttendances?: AttendanceUpdateManyWithoutMarkedByNestedInput
     student?: StudentUpdateOneWithoutUserNestedInput
     teacher?: TeacherUpdateOneWithoutUserNestedInput
@@ -57740,6 +60553,7 @@ export namespace Prisma {
     managerProfile?: ManagerProfileUncheckedUpdateOneWithoutUserNestedInput
     sentMessages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    dailyPlanComments?: DailyPlanCommentUncheckedUpdateManyWithoutAuthorNestedInput
     markedAttendances?: AttendanceUncheckedUpdateManyWithoutMarkedByNestedInput
     student?: StudentUncheckedUpdateOneWithoutUserNestedInput
     teacher?: TeacherUncheckedUpdateOneWithoutUserNestedInput
@@ -57791,6 +60605,7 @@ export namespace Prisma {
     crmLeadsCreated?: CrmLeadCreateNestedManyWithoutCreatedByUserInput
     managerProfile?: ManagerProfileCreateNestedOneWithoutUserInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
+    dailyPlanComments?: DailyPlanCommentCreateNestedManyWithoutAuthorInput
     markedAttendances?: AttendanceCreateNestedManyWithoutMarkedByInput
     student?: StudentCreateNestedOneWithoutUserInput
     teacher?: TeacherCreateNestedOneWithoutUserInput
@@ -57815,6 +60630,7 @@ export namespace Prisma {
     crmLeadsCreated?: CrmLeadUncheckedCreateNestedManyWithoutCreatedByUserInput
     managerProfile?: ManagerProfileUncheckedCreateNestedOneWithoutUserInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    dailyPlanComments?: DailyPlanCommentUncheckedCreateNestedManyWithoutAuthorInput
     markedAttendances?: AttendanceUncheckedCreateNestedManyWithoutMarkedByInput
     student?: StudentUncheckedCreateNestedOneWithoutUserInput
     teacher?: TeacherUncheckedCreateNestedOneWithoutUserInput
@@ -57888,6 +60704,7 @@ export namespace Prisma {
     crmLeadsCreated?: CrmLeadUpdateManyWithoutCreatedByUserNestedInput
     managerProfile?: ManagerProfileUpdateOneWithoutUserNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
+    dailyPlanComments?: DailyPlanCommentUpdateManyWithoutAuthorNestedInput
     markedAttendances?: AttendanceUpdateManyWithoutMarkedByNestedInput
     student?: StudentUpdateOneWithoutUserNestedInput
     teacher?: TeacherUpdateOneWithoutUserNestedInput
@@ -57912,6 +60729,7 @@ export namespace Prisma {
     crmLeadsCreated?: CrmLeadUncheckedUpdateManyWithoutCreatedByUserNestedInput
     managerProfile?: ManagerProfileUncheckedUpdateOneWithoutUserNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    dailyPlanComments?: DailyPlanCommentUncheckedUpdateManyWithoutAuthorNestedInput
     markedAttendances?: AttendanceUncheckedUpdateManyWithoutMarkedByNestedInput
     student?: StudentUncheckedUpdateOneWithoutUserNestedInput
     teacher?: TeacherUncheckedUpdateOneWithoutUserNestedInput
@@ -57936,6 +60754,7 @@ export namespace Prisma {
     crmLeadsCreated?: CrmLeadCreateNestedManyWithoutCreatedByUserInput
     managerProfile?: ManagerProfileCreateNestedOneWithoutUserInput
     sentMessages?: MessageCreateNestedManyWithoutSenderInput
+    dailyPlanComments?: DailyPlanCommentCreateNestedManyWithoutAuthorInput
     markedAttendances?: AttendanceCreateNestedManyWithoutMarkedByInput
     student?: StudentCreateNestedOneWithoutUserInput
     teacher?: TeacherCreateNestedOneWithoutUserInput
@@ -57960,6 +60779,7 @@ export namespace Prisma {
     crmLeadsCreated?: CrmLeadUncheckedCreateNestedManyWithoutCreatedByUserInput
     managerProfile?: ManagerProfileUncheckedCreateNestedOneWithoutUserInput
     sentMessages?: MessageUncheckedCreateNestedManyWithoutSenderInput
+    dailyPlanComments?: DailyPlanCommentUncheckedCreateNestedManyWithoutAuthorInput
     markedAttendances?: AttendanceUncheckedCreateNestedManyWithoutMarkedByInput
     student?: StudentUncheckedCreateNestedOneWithoutUserInput
     teacher?: TeacherUncheckedCreateNestedOneWithoutUserInput
@@ -58000,6 +60820,7 @@ export namespace Prisma {
     crmLeadsCreated?: CrmLeadUpdateManyWithoutCreatedByUserNestedInput
     managerProfile?: ManagerProfileUpdateOneWithoutUserNestedInput
     sentMessages?: MessageUpdateManyWithoutSenderNestedInput
+    dailyPlanComments?: DailyPlanCommentUpdateManyWithoutAuthorNestedInput
     markedAttendances?: AttendanceUpdateManyWithoutMarkedByNestedInput
     student?: StudentUpdateOneWithoutUserNestedInput
     teacher?: TeacherUpdateOneWithoutUserNestedInput
@@ -58024,6 +60845,7 @@ export namespace Prisma {
     crmLeadsCreated?: CrmLeadUncheckedUpdateManyWithoutCreatedByUserNestedInput
     managerProfile?: ManagerProfileUncheckedUpdateOneWithoutUserNestedInput
     sentMessages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
+    dailyPlanComments?: DailyPlanCommentUncheckedUpdateManyWithoutAuthorNestedInput
     markedAttendances?: AttendanceUncheckedUpdateManyWithoutMarkedByNestedInput
     student?: StudentUncheckedUpdateOneWithoutUserNestedInput
     teacher?: TeacherUncheckedUpdateOneWithoutUserNestedInput
@@ -58054,6 +60876,30 @@ export namespace Prisma {
 
   export type DailyPlanTopicCreateManyDailyPlanInputEnvelope = {
     data: DailyPlanTopicCreateManyDailyPlanInput | DailyPlanTopicCreateManyDailyPlanInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type DailyPlanCommentCreateWithoutDailyPlanInput = {
+    id?: string
+    body: string
+    createdAt?: Date | string
+    author: UserCreateNestedOneWithoutDailyPlanCommentsInput
+  }
+
+  export type DailyPlanCommentUncheckedCreateWithoutDailyPlanInput = {
+    id?: string
+    authorUserId: string
+    body: string
+    createdAt?: Date | string
+  }
+
+  export type DailyPlanCommentCreateOrConnectWithoutDailyPlanInput = {
+    where: DailyPlanCommentWhereUniqueInput
+    create: XOR<DailyPlanCommentCreateWithoutDailyPlanInput, DailyPlanCommentUncheckedCreateWithoutDailyPlanInput>
+  }
+
+  export type DailyPlanCommentCreateManyDailyPlanInputEnvelope = {
+    data: DailyPlanCommentCreateManyDailyPlanInput | DailyPlanCommentCreateManyDailyPlanInput[]
     skipDuplicates?: boolean
   }
 
@@ -58260,6 +61106,22 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"DailyPlanTopic"> | Date | string
   }
 
+  export type DailyPlanCommentUpsertWithWhereUniqueWithoutDailyPlanInput = {
+    where: DailyPlanCommentWhereUniqueInput
+    update: XOR<DailyPlanCommentUpdateWithoutDailyPlanInput, DailyPlanCommentUncheckedUpdateWithoutDailyPlanInput>
+    create: XOR<DailyPlanCommentCreateWithoutDailyPlanInput, DailyPlanCommentUncheckedCreateWithoutDailyPlanInput>
+  }
+
+  export type DailyPlanCommentUpdateWithWhereUniqueWithoutDailyPlanInput = {
+    where: DailyPlanCommentWhereUniqueInput
+    data: XOR<DailyPlanCommentUpdateWithoutDailyPlanInput, DailyPlanCommentUncheckedUpdateWithoutDailyPlanInput>
+  }
+
+  export type DailyPlanCommentUpdateManyWithWhereWithoutDailyPlanInput = {
+    where: DailyPlanCommentScalarWhereInput
+    data: XOR<DailyPlanCommentUpdateManyMutationInput, DailyPlanCommentUncheckedUpdateManyWithoutDailyPlanInput>
+  }
+
   export type LessonUpsertWithoutDailyPlanInput = {
     update: XOR<LessonUpdateWithoutDailyPlanInput, LessonUncheckedUpdateWithoutDailyPlanInput>
     create: XOR<LessonCreateWithoutDailyPlanInput, LessonUncheckedCreateWithoutDailyPlanInput>
@@ -58453,11 +61315,332 @@ export namespace Prisma {
     recordingItems?: RecordingItemUncheckedUpdateManyWithoutGroupNestedInput
   }
 
+  export type DailyPlanCreateWithoutCommentsInput = {
+    id?: string
+    date: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    topics?: DailyPlanTopicCreateNestedManyWithoutDailyPlanInput
+    lesson?: LessonCreateNestedOneWithoutDailyPlanInput
+    teacher: TeacherCreateNestedOneWithoutDailyPlansInput
+    group?: GroupCreateNestedOneWithoutDailyPlansInput
+  }
+
+  export type DailyPlanUncheckedCreateWithoutCommentsInput = {
+    id?: string
+    lessonId?: string | null
+    teacherId: string
+    groupId?: string | null
+    date: Date | string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    topics?: DailyPlanTopicUncheckedCreateNestedManyWithoutDailyPlanInput
+  }
+
+  export type DailyPlanCreateOrConnectWithoutCommentsInput = {
+    where: DailyPlanWhereUniqueInput
+    create: XOR<DailyPlanCreateWithoutCommentsInput, DailyPlanUncheckedCreateWithoutCommentsInput>
+  }
+
+  export type UserCreateWithoutDailyPlanCommentsInput = {
+    id?: string
+    email: string
+    passwordHash: string
+    firstName: string
+    lastName: string
+    phone?: string | null
+    avatarUrl?: string | null
+    role: $Enums.UserRole
+    status?: $Enums.UserStatus
+    lastLoginAt?: Date | string | null
+    lastSeenAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    chatParticipants?: ChatParticipantCreateNestedManyWithoutUserInput
+    crmLeadsAssignedManager?: CrmLeadCreateNestedManyWithoutAssignedManagerInput
+    crmLeadsCreated?: CrmLeadCreateNestedManyWithoutCreatedByUserInput
+    managerProfile?: ManagerProfileCreateNestedOneWithoutUserInput
+    sentMessages?: MessageCreateNestedManyWithoutSenderInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
+    markedAttendances?: AttendanceCreateNestedManyWithoutMarkedByInput
+    student?: StudentCreateNestedOneWithoutUserInput
+    teacher?: TeacherCreateNestedOneWithoutUserInput
+  }
+
+  export type UserUncheckedCreateWithoutDailyPlanCommentsInput = {
+    id?: string
+    email: string
+    passwordHash: string
+    firstName: string
+    lastName: string
+    phone?: string | null
+    avatarUrl?: string | null
+    role: $Enums.UserRole
+    status?: $Enums.UserStatus
+    lastLoginAt?: Date | string | null
+    lastSeenAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    chatParticipants?: ChatParticipantUncheckedCreateNestedManyWithoutUserInput
+    crmLeadsAssignedManager?: CrmLeadUncheckedCreateNestedManyWithoutAssignedManagerInput
+    crmLeadsCreated?: CrmLeadUncheckedCreateNestedManyWithoutCreatedByUserInput
+    managerProfile?: ManagerProfileUncheckedCreateNestedOneWithoutUserInput
+    sentMessages?: MessageUncheckedCreateNestedManyWithoutSenderInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    markedAttendances?: AttendanceUncheckedCreateNestedManyWithoutMarkedByInput
+    student?: StudentUncheckedCreateNestedOneWithoutUserInput
+    teacher?: TeacherUncheckedCreateNestedOneWithoutUserInput
+  }
+
+  export type UserCreateOrConnectWithoutDailyPlanCommentsInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutDailyPlanCommentsInput, UserUncheckedCreateWithoutDailyPlanCommentsInput>
+  }
+
+  export type DailyPlanUpsertWithoutCommentsInput = {
+    update: XOR<DailyPlanUpdateWithoutCommentsInput, DailyPlanUncheckedUpdateWithoutCommentsInput>
+    create: XOR<DailyPlanCreateWithoutCommentsInput, DailyPlanUncheckedCreateWithoutCommentsInput>
+    where?: DailyPlanWhereInput
+  }
+
+  export type DailyPlanUpdateToOneWithWhereWithoutCommentsInput = {
+    where?: DailyPlanWhereInput
+    data: XOR<DailyPlanUpdateWithoutCommentsInput, DailyPlanUncheckedUpdateWithoutCommentsInput>
+  }
+
+  export type DailyPlanUpdateWithoutCommentsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    topics?: DailyPlanTopicUpdateManyWithoutDailyPlanNestedInput
+    lesson?: LessonUpdateOneWithoutDailyPlanNestedInput
+    teacher?: TeacherUpdateOneRequiredWithoutDailyPlansNestedInput
+    group?: GroupUpdateOneWithoutDailyPlansNestedInput
+  }
+
+  export type DailyPlanUncheckedUpdateWithoutCommentsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    lessonId?: NullableStringFieldUpdateOperationsInput | string | null
+    teacherId?: StringFieldUpdateOperationsInput | string
+    groupId?: NullableStringFieldUpdateOperationsInput | string | null
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    topics?: DailyPlanTopicUncheckedUpdateManyWithoutDailyPlanNestedInput
+  }
+
+  export type UserUpsertWithoutDailyPlanCommentsInput = {
+    update: XOR<UserUpdateWithoutDailyPlanCommentsInput, UserUncheckedUpdateWithoutDailyPlanCommentsInput>
+    create: XOR<UserCreateWithoutDailyPlanCommentsInput, UserUncheckedCreateWithoutDailyPlanCommentsInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutDailyPlanCommentsInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutDailyPlanCommentsInput, UserUncheckedUpdateWithoutDailyPlanCommentsInput>
+  }
+
+  export type UserUpdateWithoutDailyPlanCommentsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    passwordHash?: StringFieldUpdateOperationsInput | string
+    firstName?: StringFieldUpdateOperationsInput | string
+    lastName?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    avatarUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+    status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
+    lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastSeenAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    chatParticipants?: ChatParticipantUpdateManyWithoutUserNestedInput
+    crmLeadsAssignedManager?: CrmLeadUpdateManyWithoutAssignedManagerNestedInput
+    crmLeadsCreated?: CrmLeadUpdateManyWithoutCreatedByUserNestedInput
+    managerProfile?: ManagerProfileUpdateOneWithoutUserNestedInput
+    sentMessages?: MessageUpdateManyWithoutSenderNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
+    markedAttendances?: AttendanceUpdateManyWithoutMarkedByNestedInput
+    student?: StudentUpdateOneWithoutUserNestedInput
+    teacher?: TeacherUpdateOneWithoutUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutDailyPlanCommentsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    passwordHash?: StringFieldUpdateOperationsInput | string
+    firstName?: StringFieldUpdateOperationsInput | string
+    lastName?: StringFieldUpdateOperationsInput | string
+    phone?: NullableStringFieldUpdateOperationsInput | string | null
+    avatarUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    role?: EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+    status?: EnumUserStatusFieldUpdateOperationsInput | $Enums.UserStatus
+    lastLoginAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastSeenAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    chatParticipants?: ChatParticipantUncheckedUpdateManyWithoutUserNestedInput
+    crmLeadsAssignedManager?: CrmLeadUncheckedUpdateManyWithoutAssignedManagerNestedInput
+    crmLeadsCreated?: CrmLeadUncheckedUpdateManyWithoutCreatedByUserNestedInput
+    managerProfile?: ManagerProfileUncheckedUpdateOneWithoutUserNestedInput
+    sentMessages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    markedAttendances?: AttendanceUncheckedUpdateManyWithoutMarkedByNestedInput
+    student?: StudentUncheckedUpdateOneWithoutUserNestedInput
+    teacher?: TeacherUncheckedUpdateOneWithoutUserNestedInput
+  }
+
+  export type StudentCreateWithoutParentQuarterlyReportsInput = {
+    id?: string
+    currentStreak?: number
+    age?: number | null
+    dateOfBirth?: Date | string | null
+    firstLessonDate?: Date | string | null
+    status?: $Enums.StudentStatus
+    riskLabel?: $Enums.RiskLabel
+    parentName?: string | null
+    parentPhone?: string | null
+    parentEmail?: string | null
+    monthlyFee: Decimal | DecimalJsLike | number | string
+    enrolledAt?: Date | string
+    registerDate?: Date | string | null
+    notes?: string | null
+    receiveReports?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    attendances?: AttendanceCreateNestedManyWithoutStudentInput
+    feedbacks?: FeedbackCreateNestedManyWithoutStudentInput
+    payments?: PaymentCreateNestedManyWithoutStudentInput
+    group?: GroupCreateNestedOneWithoutStudentsInput
+    center?: CenterCreateNestedOneWithoutStudentsInput
+    lead?: CrmLeadCreateNestedOneWithoutStudentInput
+    teacher?: TeacherCreateNestedOneWithoutStudentsInput
+    user: UserCreateNestedOneWithoutStudentInput
+    groupHistory?: StudentGroupHistoryCreateNestedManyWithoutStudentInput
+    plannedAbsences?: PlannedAbsenceCreateNestedManyWithoutStudentInput
+    recordingItems?: RecordingItemCreateNestedManyWithoutStudentInput
+    notesList?: StudentNoteCreateNestedManyWithoutStudentInput
+  }
+
+  export type StudentUncheckedCreateWithoutParentQuarterlyReportsInput = {
+    id?: string
+    userId: string
+    groupId?: string | null
+    teacherId?: string | null
+    centerId?: string | null
+    currentStreak?: number
+    age?: number | null
+    dateOfBirth?: Date | string | null
+    firstLessonDate?: Date | string | null
+    status?: $Enums.StudentStatus
+    riskLabel?: $Enums.RiskLabel
+    parentName?: string | null
+    parentPhone?: string | null
+    parentEmail?: string | null
+    monthlyFee: Decimal | DecimalJsLike | number | string
+    enrolledAt?: Date | string
+    registerDate?: Date | string | null
+    notes?: string | null
+    receiveReports?: boolean
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    leadId?: string | null
+    attendances?: AttendanceUncheckedCreateNestedManyWithoutStudentInput
+    feedbacks?: FeedbackUncheckedCreateNestedManyWithoutStudentInput
+    payments?: PaymentUncheckedCreateNestedManyWithoutStudentInput
+    groupHistory?: StudentGroupHistoryUncheckedCreateNestedManyWithoutStudentInput
+    plannedAbsences?: PlannedAbsenceUncheckedCreateNestedManyWithoutStudentInput
+    recordingItems?: RecordingItemUncheckedCreateNestedManyWithoutStudentInput
+    notesList?: StudentNoteUncheckedCreateNestedManyWithoutStudentInput
+  }
+
+  export type StudentCreateOrConnectWithoutParentQuarterlyReportsInput = {
+    where: StudentWhereUniqueInput
+    create: XOR<StudentCreateWithoutParentQuarterlyReportsInput, StudentUncheckedCreateWithoutParentQuarterlyReportsInput>
+  }
+
+  export type StudentUpsertWithoutParentQuarterlyReportsInput = {
+    update: XOR<StudentUpdateWithoutParentQuarterlyReportsInput, StudentUncheckedUpdateWithoutParentQuarterlyReportsInput>
+    create: XOR<StudentCreateWithoutParentQuarterlyReportsInput, StudentUncheckedCreateWithoutParentQuarterlyReportsInput>
+    where?: StudentWhereInput
+  }
+
+  export type StudentUpdateToOneWithWhereWithoutParentQuarterlyReportsInput = {
+    where?: StudentWhereInput
+    data: XOR<StudentUpdateWithoutParentQuarterlyReportsInput, StudentUncheckedUpdateWithoutParentQuarterlyReportsInput>
+  }
+
+  export type StudentUpdateWithoutParentQuarterlyReportsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    currentStreak?: IntFieldUpdateOperationsInput | number
+    age?: NullableIntFieldUpdateOperationsInput | number | null
+    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    firstLessonDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    status?: EnumStudentStatusFieldUpdateOperationsInput | $Enums.StudentStatus
+    riskLabel?: EnumRiskLabelFieldUpdateOperationsInput | $Enums.RiskLabel
+    parentName?: NullableStringFieldUpdateOperationsInput | string | null
+    parentPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    parentEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    monthlyFee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    enrolledAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    registerDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    receiveReports?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    attendances?: AttendanceUpdateManyWithoutStudentNestedInput
+    feedbacks?: FeedbackUpdateManyWithoutStudentNestedInput
+    payments?: PaymentUpdateManyWithoutStudentNestedInput
+    group?: GroupUpdateOneWithoutStudentsNestedInput
+    center?: CenterUpdateOneWithoutStudentsNestedInput
+    lead?: CrmLeadUpdateOneWithoutStudentNestedInput
+    teacher?: TeacherUpdateOneWithoutStudentsNestedInput
+    user?: UserUpdateOneRequiredWithoutStudentNestedInput
+    groupHistory?: StudentGroupHistoryUpdateManyWithoutStudentNestedInput
+    plannedAbsences?: PlannedAbsenceUpdateManyWithoutStudentNestedInput
+    recordingItems?: RecordingItemUpdateManyWithoutStudentNestedInput
+    notesList?: StudentNoteUpdateManyWithoutStudentNestedInput
+  }
+
+  export type StudentUncheckedUpdateWithoutParentQuarterlyReportsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    groupId?: NullableStringFieldUpdateOperationsInput | string | null
+    teacherId?: NullableStringFieldUpdateOperationsInput | string | null
+    centerId?: NullableStringFieldUpdateOperationsInput | string | null
+    currentStreak?: IntFieldUpdateOperationsInput | number
+    age?: NullableIntFieldUpdateOperationsInput | number | null
+    dateOfBirth?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    firstLessonDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    status?: EnumStudentStatusFieldUpdateOperationsInput | $Enums.StudentStatus
+    riskLabel?: EnumRiskLabelFieldUpdateOperationsInput | $Enums.RiskLabel
+    parentName?: NullableStringFieldUpdateOperationsInput | string | null
+    parentPhone?: NullableStringFieldUpdateOperationsInput | string | null
+    parentEmail?: NullableStringFieldUpdateOperationsInput | string | null
+    monthlyFee?: DecimalFieldUpdateOperationsInput | Decimal | DecimalJsLike | number | string
+    enrolledAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    registerDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    receiveReports?: BoolFieldUpdateOperationsInput | boolean
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    leadId?: NullableStringFieldUpdateOperationsInput | string | null
+    attendances?: AttendanceUncheckedUpdateManyWithoutStudentNestedInput
+    feedbacks?: FeedbackUncheckedUpdateManyWithoutStudentNestedInput
+    payments?: PaymentUncheckedUpdateManyWithoutStudentNestedInput
+    groupHistory?: StudentGroupHistoryUncheckedUpdateManyWithoutStudentNestedInput
+    plannedAbsences?: PlannedAbsenceUncheckedUpdateManyWithoutStudentNestedInput
+    recordingItems?: RecordingItemUncheckedUpdateManyWithoutStudentNestedInput
+    notesList?: StudentNoteUncheckedUpdateManyWithoutStudentNestedInput
+  }
+
   export type DailyPlanCreateWithoutTopicsInput = {
     id?: string
     date: Date | string
     createdAt?: Date | string
     updatedAt?: Date | string
+    comments?: DailyPlanCommentCreateNestedManyWithoutDailyPlanInput
     lesson?: LessonCreateNestedOneWithoutDailyPlanInput
     teacher: TeacherCreateNestedOneWithoutDailyPlansInput
     group?: GroupCreateNestedOneWithoutDailyPlansInput
@@ -58471,6 +61654,7 @@ export namespace Prisma {
     date: Date | string
     createdAt?: Date | string
     updatedAt?: Date | string
+    comments?: DailyPlanCommentUncheckedCreateNestedManyWithoutDailyPlanInput
   }
 
   export type DailyPlanCreateOrConnectWithoutTopicsInput = {
@@ -58524,6 +61708,7 @@ export namespace Prisma {
     date?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    comments?: DailyPlanCommentUpdateManyWithoutDailyPlanNestedInput
     lesson?: LessonUpdateOneWithoutDailyPlanNestedInput
     teacher?: TeacherUpdateOneRequiredWithoutDailyPlansNestedInput
     group?: GroupUpdateOneWithoutDailyPlansNestedInput
@@ -58537,6 +61722,7 @@ export namespace Prisma {
     date?: DateTimeFieldUpdateOperationsInput | Date | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    comments?: DailyPlanCommentUncheckedUpdateManyWithoutDailyPlanNestedInput
   }
 
   export type DailyPlanResourceUpsertWithWhereUniqueWithoutTopicInput = {
@@ -58703,6 +61889,7 @@ export namespace Prisma {
     groupHistory?: StudentGroupHistoryCreateNestedManyWithoutStudentInput
     plannedAbsences?: PlannedAbsenceCreateNestedManyWithoutStudentInput
     notesList?: StudentNoteCreateNestedManyWithoutStudentInput
+    parentQuarterlyReports?: ParentQuarterlyReportCreateNestedManyWithoutStudentInput
   }
 
   export type StudentUncheckedCreateWithoutRecordingItemsInput = {
@@ -58734,6 +61921,7 @@ export namespace Prisma {
     groupHistory?: StudentGroupHistoryUncheckedCreateNestedManyWithoutStudentInput
     plannedAbsences?: PlannedAbsenceUncheckedCreateNestedManyWithoutStudentInput
     notesList?: StudentNoteUncheckedCreateNestedManyWithoutStudentInput
+    parentQuarterlyReports?: ParentQuarterlyReportUncheckedCreateNestedManyWithoutStudentInput
   }
 
   export type StudentCreateOrConnectWithoutRecordingItemsInput = {
@@ -58905,6 +62093,7 @@ export namespace Prisma {
     groupHistory?: StudentGroupHistoryUpdateManyWithoutStudentNestedInput
     plannedAbsences?: PlannedAbsenceUpdateManyWithoutStudentNestedInput
     notesList?: StudentNoteUpdateManyWithoutStudentNestedInput
+    parentQuarterlyReports?: ParentQuarterlyReportUpdateManyWithoutStudentNestedInput
   }
 
   export type StudentUncheckedUpdateWithoutRecordingItemsInput = {
@@ -58936,6 +62125,7 @@ export namespace Prisma {
     groupHistory?: StudentGroupHistoryUncheckedUpdateManyWithoutStudentNestedInput
     plannedAbsences?: PlannedAbsenceUncheckedUpdateManyWithoutStudentNestedInput
     notesList?: StudentNoteUncheckedUpdateManyWithoutStudentNestedInput
+    parentQuarterlyReports?: ParentQuarterlyReportUncheckedUpdateManyWithoutStudentNestedInput
   }
 
   export type LessonUpsertWithoutRecordingItemsInput = {
@@ -59084,6 +62274,7 @@ export namespace Prisma {
     managerProfile?: ManagerProfileCreateNestedOneWithoutUserInput
     sentMessages?: MessageCreateNestedManyWithoutSenderInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
+    dailyPlanComments?: DailyPlanCommentCreateNestedManyWithoutAuthorInput
     markedAttendances?: AttendanceCreateNestedManyWithoutMarkedByInput
     student?: StudentCreateNestedOneWithoutUserInput
     teacher?: TeacherCreateNestedOneWithoutUserInput
@@ -59108,6 +62299,7 @@ export namespace Prisma {
     managerProfile?: ManagerProfileUncheckedCreateNestedOneWithoutUserInput
     sentMessages?: MessageUncheckedCreateNestedManyWithoutSenderInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    dailyPlanComments?: DailyPlanCommentUncheckedCreateNestedManyWithoutAuthorInput
     markedAttendances?: AttendanceUncheckedCreateNestedManyWithoutMarkedByInput
     student?: StudentUncheckedCreateNestedOneWithoutUserInput
     teacher?: TeacherUncheckedCreateNestedOneWithoutUserInput
@@ -59176,6 +62368,7 @@ export namespace Prisma {
     managerProfile?: ManagerProfileCreateNestedOneWithoutUserInput
     sentMessages?: MessageCreateNestedManyWithoutSenderInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
+    dailyPlanComments?: DailyPlanCommentCreateNestedManyWithoutAuthorInput
     markedAttendances?: AttendanceCreateNestedManyWithoutMarkedByInput
     student?: StudentCreateNestedOneWithoutUserInput
     teacher?: TeacherCreateNestedOneWithoutUserInput
@@ -59200,6 +62393,7 @@ export namespace Prisma {
     managerProfile?: ManagerProfileUncheckedCreateNestedOneWithoutUserInput
     sentMessages?: MessageUncheckedCreateNestedManyWithoutSenderInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    dailyPlanComments?: DailyPlanCommentUncheckedCreateNestedManyWithoutAuthorInput
     markedAttendances?: AttendanceUncheckedCreateNestedManyWithoutMarkedByInput
     student?: StudentUncheckedCreateNestedOneWithoutUserInput
     teacher?: TeacherUncheckedCreateNestedOneWithoutUserInput
@@ -59349,6 +62543,7 @@ export namespace Prisma {
     plannedAbsences?: PlannedAbsenceCreateNestedManyWithoutStudentInput
     recordingItems?: RecordingItemCreateNestedManyWithoutStudentInput
     notesList?: StudentNoteCreateNestedManyWithoutStudentInput
+    parentQuarterlyReports?: ParentQuarterlyReportCreateNestedManyWithoutStudentInput
   }
 
   export type StudentUncheckedCreateWithoutLeadInput = {
@@ -59380,6 +62575,7 @@ export namespace Prisma {
     plannedAbsences?: PlannedAbsenceUncheckedCreateNestedManyWithoutStudentInput
     recordingItems?: RecordingItemUncheckedCreateNestedManyWithoutStudentInput
     notesList?: StudentNoteUncheckedCreateNestedManyWithoutStudentInput
+    parentQuarterlyReports?: ParentQuarterlyReportUncheckedCreateNestedManyWithoutStudentInput
   }
 
   export type StudentCreateOrConnectWithoutLeadInput = {
@@ -59475,6 +62671,7 @@ export namespace Prisma {
     managerProfile?: ManagerProfileUpdateOneWithoutUserNestedInput
     sentMessages?: MessageUpdateManyWithoutSenderNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
+    dailyPlanComments?: DailyPlanCommentUpdateManyWithoutAuthorNestedInput
     markedAttendances?: AttendanceUpdateManyWithoutMarkedByNestedInput
     student?: StudentUpdateOneWithoutUserNestedInput
     teacher?: TeacherUpdateOneWithoutUserNestedInput
@@ -59499,6 +62696,7 @@ export namespace Prisma {
     managerProfile?: ManagerProfileUncheckedUpdateOneWithoutUserNestedInput
     sentMessages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    dailyPlanComments?: DailyPlanCommentUncheckedUpdateManyWithoutAuthorNestedInput
     markedAttendances?: AttendanceUncheckedUpdateManyWithoutMarkedByNestedInput
     student?: StudentUncheckedUpdateOneWithoutUserNestedInput
     teacher?: TeacherUncheckedUpdateOneWithoutUserNestedInput
@@ -59579,6 +62777,7 @@ export namespace Prisma {
     managerProfile?: ManagerProfileUpdateOneWithoutUserNestedInput
     sentMessages?: MessageUpdateManyWithoutSenderNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
+    dailyPlanComments?: DailyPlanCommentUpdateManyWithoutAuthorNestedInput
     markedAttendances?: AttendanceUpdateManyWithoutMarkedByNestedInput
     student?: StudentUpdateOneWithoutUserNestedInput
     teacher?: TeacherUpdateOneWithoutUserNestedInput
@@ -59603,6 +62802,7 @@ export namespace Prisma {
     managerProfile?: ManagerProfileUncheckedUpdateOneWithoutUserNestedInput
     sentMessages?: MessageUncheckedUpdateManyWithoutSenderNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    dailyPlanComments?: DailyPlanCommentUncheckedUpdateManyWithoutAuthorNestedInput
     markedAttendances?: AttendanceUncheckedUpdateManyWithoutMarkedByNestedInput
     student?: StudentUncheckedUpdateOneWithoutUserNestedInput
     teacher?: TeacherUncheckedUpdateOneWithoutUserNestedInput
@@ -59770,6 +62970,7 @@ export namespace Prisma {
     plannedAbsences?: PlannedAbsenceUpdateManyWithoutStudentNestedInput
     recordingItems?: RecordingItemUpdateManyWithoutStudentNestedInput
     notesList?: StudentNoteUpdateManyWithoutStudentNestedInput
+    parentQuarterlyReports?: ParentQuarterlyReportUpdateManyWithoutStudentNestedInput
   }
 
   export type StudentUncheckedUpdateWithoutLeadInput = {
@@ -59801,6 +63002,7 @@ export namespace Prisma {
     plannedAbsences?: PlannedAbsenceUncheckedUpdateManyWithoutStudentNestedInput
     recordingItems?: RecordingItemUncheckedUpdateManyWithoutStudentNestedInput
     notesList?: StudentNoteUncheckedUpdateManyWithoutStudentNestedInput
+    parentQuarterlyReports?: ParentQuarterlyReportUncheckedUpdateManyWithoutStudentNestedInput
   }
 
   export type CrmLeadCreateWithoutActivitiesInput = {
@@ -60176,6 +63378,13 @@ export namespace Prisma {
     createdAt?: Date | string
   }
 
+  export type DailyPlanCommentCreateManyAuthorInput = {
+    id?: string
+    dailyPlanId: string
+    body: string
+    createdAt?: Date | string
+  }
+
   export type AttendanceCreateManyMarkedByInput = {
     id?: string
     lessonId: string
@@ -60477,6 +63686,27 @@ export namespace Prisma {
     data?: NullableJsonNullValueInput | InputJsonValue
     isRead?: BoolFieldUpdateOperationsInput | boolean
     readAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type DailyPlanCommentUpdateWithoutAuthorInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    body?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    dailyPlan?: DailyPlanUpdateOneRequiredWithoutCommentsNestedInput
+  }
+
+  export type DailyPlanCommentUncheckedUpdateWithoutAuthorInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    dailyPlanId?: StringFieldUpdateOperationsInput | string
+    body?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type DailyPlanCommentUncheckedUpdateManyWithoutAuthorInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    dailyPlanId?: StringFieldUpdateOperationsInput | string
+    body?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -60840,6 +64070,7 @@ export namespace Prisma {
     plannedAbsences?: PlannedAbsenceUpdateManyWithoutStudentNestedInput
     recordingItems?: RecordingItemUpdateManyWithoutStudentNestedInput
     notesList?: StudentNoteUpdateManyWithoutStudentNestedInput
+    parentQuarterlyReports?: ParentQuarterlyReportUpdateManyWithoutStudentNestedInput
   }
 
   export type StudentUncheckedUpdateWithoutCenterInput = {
@@ -60871,6 +64102,7 @@ export namespace Prisma {
     plannedAbsences?: PlannedAbsenceUncheckedUpdateManyWithoutStudentNestedInput
     recordingItems?: RecordingItemUncheckedUpdateManyWithoutStudentNestedInput
     notesList?: StudentNoteUncheckedUpdateManyWithoutStudentNestedInput
+    parentQuarterlyReports?: ParentQuarterlyReportUncheckedUpdateManyWithoutStudentNestedInput
   }
 
   export type StudentUncheckedUpdateManyWithoutCenterInput = {
@@ -61209,6 +64441,7 @@ export namespace Prisma {
     plannedAbsences?: PlannedAbsenceUpdateManyWithoutStudentNestedInput
     recordingItems?: RecordingItemUpdateManyWithoutStudentNestedInput
     notesList?: StudentNoteUpdateManyWithoutStudentNestedInput
+    parentQuarterlyReports?: ParentQuarterlyReportUpdateManyWithoutStudentNestedInput
   }
 
   export type StudentUncheckedUpdateWithoutGroupInput = {
@@ -61240,6 +64473,7 @@ export namespace Prisma {
     plannedAbsences?: PlannedAbsenceUncheckedUpdateManyWithoutStudentNestedInput
     recordingItems?: RecordingItemUncheckedUpdateManyWithoutStudentNestedInput
     notesList?: StudentNoteUncheckedUpdateManyWithoutStudentNestedInput
+    parentQuarterlyReports?: ParentQuarterlyReportUncheckedUpdateManyWithoutStudentNestedInput
   }
 
   export type StudentUncheckedUpdateManyWithoutGroupInput = {
@@ -61299,6 +64533,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     topics?: DailyPlanTopicUpdateManyWithoutDailyPlanNestedInput
+    comments?: DailyPlanCommentUpdateManyWithoutDailyPlanNestedInput
     lesson?: LessonUpdateOneWithoutDailyPlanNestedInput
     teacher?: TeacherUpdateOneRequiredWithoutDailyPlansNestedInput
   }
@@ -61311,6 +64546,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     topics?: DailyPlanTopicUncheckedUpdateManyWithoutDailyPlanNestedInput
+    comments?: DailyPlanCommentUncheckedUpdateManyWithoutDailyPlanNestedInput
   }
 
   export type DailyPlanUncheckedUpdateManyWithoutGroupInput = {
@@ -62116,6 +65352,7 @@ export namespace Prisma {
     plannedAbsences?: PlannedAbsenceUpdateManyWithoutStudentNestedInput
     recordingItems?: RecordingItemUpdateManyWithoutStudentNestedInput
     notesList?: StudentNoteUpdateManyWithoutStudentNestedInput
+    parentQuarterlyReports?: ParentQuarterlyReportUpdateManyWithoutStudentNestedInput
   }
 
   export type StudentUncheckedUpdateWithoutTeacherInput = {
@@ -62147,6 +65384,7 @@ export namespace Prisma {
     plannedAbsences?: PlannedAbsenceUncheckedUpdateManyWithoutStudentNestedInput
     recordingItems?: RecordingItemUncheckedUpdateManyWithoutStudentNestedInput
     notesList?: StudentNoteUncheckedUpdateManyWithoutStudentNestedInput
+    parentQuarterlyReports?: ParentQuarterlyReportUncheckedUpdateManyWithoutStudentNestedInput
   }
 
   export type StudentUncheckedUpdateManyWithoutTeacherInput = {
@@ -62218,6 +65456,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     topics?: DailyPlanTopicUpdateManyWithoutDailyPlanNestedInput
+    comments?: DailyPlanCommentUpdateManyWithoutDailyPlanNestedInput
     lesson?: LessonUpdateOneWithoutDailyPlanNestedInput
     group?: GroupUpdateOneWithoutDailyPlansNestedInput
   }
@@ -62230,6 +65469,7 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     topics?: DailyPlanTopicUncheckedUpdateManyWithoutDailyPlanNestedInput
+    comments?: DailyPlanCommentUncheckedUpdateManyWithoutDailyPlanNestedInput
   }
 
   export type DailyPlanUncheckedUpdateManyWithoutTeacherInput = {
@@ -62323,6 +65563,13 @@ export namespace Prisma {
     content: string
     createdAt?: Date | string
     updatedAt?: Date | string
+  }
+
+  export type ParentQuarterlyReportCreateManyStudentInput = {
+    id?: string
+    quarterKey: string
+    parentEmail: string
+    sentAt?: Date | string
   }
 
   export type AttendanceUpdateWithoutStudentInput = {
@@ -62575,6 +65822,27 @@ export namespace Prisma {
     content?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ParentQuarterlyReportUpdateWithoutStudentInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    quarterKey?: StringFieldUpdateOperationsInput | string
+    parentEmail?: StringFieldUpdateOperationsInput | string
+    sentAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ParentQuarterlyReportUncheckedUpdateWithoutStudentInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    quarterKey?: StringFieldUpdateOperationsInput | string
+    parentEmail?: StringFieldUpdateOperationsInput | string
+    sentAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ParentQuarterlyReportUncheckedUpdateManyWithoutStudentInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    quarterKey?: StringFieldUpdateOperationsInput | string
+    parentEmail?: StringFieldUpdateOperationsInput | string
+    sentAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type AttendanceCreateManyLessonInput = {
@@ -62865,6 +66133,13 @@ export namespace Prisma {
     updatedAt?: Date | string
   }
 
+  export type DailyPlanCommentCreateManyDailyPlanInput = {
+    id?: string
+    authorUserId: string
+    body: string
+    createdAt?: Date | string
+  }
+
   export type DailyPlanTopicUpdateWithoutDailyPlanInput = {
     id?: StringFieldUpdateOperationsInput | string
     title?: StringFieldUpdateOperationsInput | string
@@ -62889,6 +66164,27 @@ export namespace Prisma {
     order?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type DailyPlanCommentUpdateWithoutDailyPlanInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    body?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    author?: UserUpdateOneRequiredWithoutDailyPlanCommentsNestedInput
+  }
+
+  export type DailyPlanCommentUncheckedUpdateWithoutDailyPlanInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    authorUserId?: StringFieldUpdateOperationsInput | string
+    body?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type DailyPlanCommentUncheckedUpdateManyWithoutDailyPlanInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    authorUserId?: StringFieldUpdateOperationsInput | string
+    body?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type DailyPlanResourceCreateManyTopicInput = {
@@ -63140,6 +66436,14 @@ export namespace Prisma {
      * @deprecated Use DailyPlanDefaultArgs instead
      */
     export type DailyPlanArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = DailyPlanDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use DailyPlanCommentDefaultArgs instead
+     */
+    export type DailyPlanCommentArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = DailyPlanCommentDefaultArgs<ExtArgs>
+    /**
+     * @deprecated Use ParentQuarterlyReportDefaultArgs instead
+     */
+    export type ParentQuarterlyReportArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = ParentQuarterlyReportDefaultArgs<ExtArgs>
     /**
      * @deprecated Use DailyPlanTopicDefaultArgs instead
      */

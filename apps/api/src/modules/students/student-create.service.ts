@@ -358,5 +358,8 @@ export class StudentCreateService {
         groupName: student.group?.name ?? 'group',
       }),
     );
+    await this.notifications.runSafe('group-size', () =>
+      this.notifications.notifyGroupMembershipDelta(groupId, 1),
+    );
   }
 }

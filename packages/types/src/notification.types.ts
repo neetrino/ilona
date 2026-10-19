@@ -16,6 +16,8 @@ export const NOTIFICATION_TYPES = [
   'STUDENT_RECORDING_MISSING',
   'STUDENT_LESSON_RECORDING_DONE',
   'STUDENT_ABSENCE',
+  'LESSON_PLAN_COMMENT',
+  'GROUP_SIZE_THRESHOLD',
 ] as const;
 
 export type InboxNotificationType = (typeof NOTIFICATION_TYPES)[number];

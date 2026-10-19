@@ -10,26 +10,27 @@ datasource db {
 }
 
 model User {
-  id                      String            @id @default(cuid())
-  email                   String            @unique
+  id                      String             @id @default(cuid())
+  email                   String             @unique
   passwordHash            String
   firstName               String
   lastName                String
   phone                   String?
   avatarUrl               String?
   role                    UserRole
-  status                  UserStatus        @default(ACTIVE)
+  status                  UserStatus         @default(ACTIVE)
   lastLoginAt             DateTime?
   lastSeenAt              DateTime?
-  createdAt               DateTime          @default(now())
-  updatedAt               DateTime          @updatedAt
+  createdAt               DateTime           @default(now())
+  updatedAt               DateTime           @updatedAt
   chatParticipants        ChatParticipant[]
-  crmLeadsAssignedManager CrmLead[]         @relation("LeadAssignedManager")
-  crmLeadsCreated         CrmLead[]         @relation("LeadCreatedBy")
+  crmLeadsAssignedManager CrmLead[]          @relation("LeadAssignedManager")
+  crmLeadsCreated         CrmLead[]          @relation("LeadCreatedBy")
   managerProfile          ManagerProfile?
-  sentMessages            Message[]         @relation("SentMessages")
+  sentMessages            Message[]          @relation("SentMessages")
   notifications           Notification[]
-  markedAttendances       Attendance[]      @relation("AttendanceMarkedBy")
+  dailyPlanComments       DailyPlanComment[]
+  markedAttendances       Attendance[]       @relation("AttendanceMarkedBy")
   student                 Student?
   teacher                 Teacher?
 
@@ -171,41 +172,42 @@ model TeacherNote {
 }
 
 model Student {
-  id              String                @id @default(cuid())
-  userId          String                @unique
-  groupId         String?
-  teacherId       String?
+  id                     String                  @id @default(cuid())
+  userId                 String                  @unique
+  groupId                String?
+  teacherId              String?
   // Optional home center (admin); may differ from group.centerId until aligned manually.
-  centerId        String?
-  currentStreak   Int                   @default(0)
-  age             Int?
-  dateOfBirth     DateTime?
-  firstLessonDate DateTime?
-  status          StudentStatus         @default(ACTIVE)
-  riskLabel       RiskLabel             @default(NONE)
-  parentName      String?
-  parentPhone     String?
-  parentEmail     String?
-  monthlyFee      Decimal               @db.Decimal(10, 2)
-  enrolledAt      DateTime              @default(now())
-  registerDate    DateTime?
-  notes           String?
-  receiveReports  Boolean               @default(true)
-  createdAt       DateTime              @default(now())
-  updatedAt       DateTime              @updatedAt
-  leadId          String?               @unique
-  attendances     Attendance[]
-  feedbacks       Feedback[]
-  payments        Payment[]
-  group           Group?                @relation(fields: [groupId], references: [id])
-  center          Center?               @relation(fields: [centerId], references: [id], onDelete: SetNull)
-  lead            CrmLead?              @relation(fields: [leadId], references: [id])
-  teacher         Teacher?              @relation(fields: [teacherId], references: [id])
-  user            User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
-  groupHistory    StudentGroupHistory[]
-  plannedAbsences PlannedAbsence[]
-  recordingItems  RecordingItem[]
-  notesList       StudentNote[]
+  centerId               String?
+  currentStreak          Int                     @default(0)
+  age                    Int?
+  dateOfBirth            DateTime?
+  firstLessonDate        DateTime?
+  status                 StudentStatus           @default(ACTIVE)
+  riskLabel              RiskLabel               @default(NONE)
+  parentName             String?
+  parentPhone            String?
+  parentEmail            String?
+  monthlyFee             Decimal                 @db.Decimal(10, 2)
+  enrolledAt             DateTime                @default(now())
+  registerDate           DateTime?
+  notes                  String?
+  receiveReports         Boolean                 @default(true)
+  createdAt              DateTime                @default(now())
+  updatedAt              DateTime                @updatedAt
+  leadId                 String?                 @unique
+  attendances            Attendance[]
+  feedbacks              Feedback[]
+  payments               Payment[]
+  group                  Group?                  @relation(fields: [groupId], references: [id])
+  center                 Center?                 @relation(fields: [centerId], references: [id], onDelete: SetNull)
+  lead                   CrmLead?                @relation(fields: [leadId], references: [id])
+  teacher                Teacher?                @relation(fields: [teacherId], references: [id])
+  user                   User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  groupHistory           StudentGroupHistory[]
+  plannedAbsences        PlannedAbsence[]
+  recordingItems         RecordingItem[]
+  notesList              StudentNote[]
+  parentQuarterlyReports ParentQuarterlyReport[]
 
   @@index([groupId])
   @@index([teacherId])
@@ -523,22 +525,49 @@ model SystemSettings {
 }
 
 model DailyPlan {
-  id        String           @id @default(cuid())
-  lessonId  String?          @unique
+  id        String             @id @default(cuid())
+  lessonId  String?            @unique
   teacherId String
   groupId   String?
   date      DateTime
-  createdAt DateTime         @default(now())
-  updatedAt DateTime         @updatedAt
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
   topics    DailyPlanTopic[]
-  lesson    Lesson?          @relation(fields: [lessonId], references: [id], onDelete: SetNull)
-  teacher   Teacher          @relation(fields: [teacherId], references: [id], onDelete: Cascade)
-  group     Group?           @relation(fields: [groupId], references: [id], onDelete: SetNull)
+  comments  DailyPlanComment[]
+  lesson    Lesson?            @relation(fields: [lessonId], references: [id], onDelete: SetNull)
+  teacher   Teacher            @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  group     Group?             @relation(fields: [groupId], references: [id], onDelete: SetNull)
 
   @@index([teacherId])
   @@index([groupId])
   @@index([date])
   @@map("daily_plans")
+}
+
+model DailyPlanComment {
+  id           String    @id @default(cuid())
+  dailyPlanId  String
+  authorUserId String
+  body         String
+  createdAt    DateTime  @default(now())
+  dailyPlan    DailyPlan @relation(fields: [dailyPlanId], references: [id], onDelete: Cascade)
+  author       User      @relation(fields: [authorUserId], references: [id], onDelete: Cascade)
+
+  @@index([dailyPlanId])
+  @@map("daily_plan_comments")
+}
+
+model ParentQuarterlyReport {
+  id          String   @id @default(cuid())
+  studentId   String
+  quarterKey  String
+  parentEmail String
+  sentAt      DateTime @default(now())
+  student     Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, quarterKey])
+  @@index([quarterKey])
+  @@map("parent_quarterly_reports")
 }
 
 model DailyPlanTopic {

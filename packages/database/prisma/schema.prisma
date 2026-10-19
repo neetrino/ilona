@@ -29,6 +29,7 @@ model User {
   managerProfile          ManagerProfile?
   sentMessages            Message[]         @relation("SentMessages")
   notifications           Notification[]
+  dailyPlanComments       DailyPlanComment[]
   markedAttendances       Attendance[]      @relation("AttendanceMarkedBy")
   student                 Student?
   teacher                 Teacher?
@@ -204,8 +205,9 @@ model Student {
   user            User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   groupHistory    StudentGroupHistory[]
   plannedAbsences PlannedAbsence[]
-  recordingItems  RecordingItem[]
-  notesList       StudentNote[]
+  recordingItems          RecordingItem[]
+  notesList               StudentNote[]
+  parentQuarterlyReports  ParentQuarterlyReport[]
 
   @@index([groupId])
   @@index([teacherId])
@@ -531,6 +533,7 @@ model DailyPlan {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   topics    DailyPlanTopic[]
+  comments  DailyPlanComment[]
   lesson    Lesson?  @relation(fields: [lessonId], references: [id], onDelete: SetNull)
   teacher   Teacher  @relation(fields: [teacherId], references: [id], onDelete: Cascade)
   group     Group?   @relation(fields: [groupId], references: [id], onDelete: SetNull)
@@ -539,6 +542,32 @@ model DailyPlan {
   @@index([groupId])
   @@index([date])
   @@map("daily_plans")
+}
+
+model DailyPlanComment {
+  id           String    @id @default(cuid())
+  dailyPlanId  String
+  authorUserId String
+  body         String
+  createdAt    DateTime  @default(now())
+  dailyPlan    DailyPlan @relation(fields: [dailyPlanId], references: [id], onDelete: Cascade)
+  author       User      @relation(fields: [authorUserId], references: [id], onDelete: Cascade)
+
+  @@index([dailyPlanId])
+  @@map("daily_plan_comments")
+}
+
+model ParentQuarterlyReport {
+  id          String   @id @default(cuid())
+  studentId   String
+  quarterKey  String
+  parentEmail String
+  sentAt      DateTime @default(now())
+  student     Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, quarterKey])
+  @@index([quarterKey])
+  @@map("parent_quarterly_reports")
 }
 
 model DailyPlanTopic {

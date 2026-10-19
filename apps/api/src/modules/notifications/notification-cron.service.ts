@@ -3,6 +3,7 @@ import { getZonedParts } from '@ilona/types';
 import { NotificationCronDutiesService } from './notification-cron-duties.service';
 import { NotificationCronFinanceService } from './notification-cron-finance.service';
 import { NotificationCronStudentsService } from './notification-cron-students.service';
+import { ParentReportService } from './parent-report.service';
 
 @Injectable()
 export class NotificationCronService {
@@ -10,6 +11,7 @@ export class NotificationCronService {
     private readonly duties: NotificationCronDutiesService,
     private readonly finance: NotificationCronFinanceService,
     private readonly students: NotificationCronStudentsService,
+    private readonly parentReports: ParentReportService,
   ) {}
 
   async runTick(now = new Date(), options?: { force?: boolean }): Promise<Record<string, number>> {
@@ -24,6 +26,7 @@ export class NotificationCronService {
     const recordings =
       force || hour >= 21 ? await this.students.sendMissingRecordingReminders(now) : 0;
     const churn = await this.students.sendChurnAlerts(now);
+    const parentReports = await this.parentReports.sendDueQuarter(now);
     return {
       dailyBranch,
       missedDeadline,
@@ -32,6 +35,7 @@ export class NotificationCronService {
       late,
       recordings,
       churn,
+      parentReports,
     };
   }
 }

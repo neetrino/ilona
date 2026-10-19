@@ -1,0 +1,1 @@
+export { ParentReportsPage } from './ParentReportsPage';

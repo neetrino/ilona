@@ -14,13 +14,34 @@ import {
   UpdateDailyPlanDto,
   QueryDailyPlanDto,
 } from './dto';
+import { CreateDailyPlanCommentDto } from './dto/create-daily-plan-comment.dto';
+import { DailyPlanCommentService } from './daily-plan-comment.service';
 import { Roles, CurrentUser } from '../../common/decorators';
 import { UserRole } from '@ilona/database';
 import { JwtPayload } from '../../common/types/auth.types';
 
 @Controller('daily-plans')
 export class DailyPlanController {
-  constructor(private readonly service: DailyPlanService) {}
+  constructor(
+    private readonly service: DailyPlanService,
+    private readonly comments: DailyPlanCommentService,
+  ) {}
+
+  @Get(':id/comments')
+  @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.TEACHER)
+  listComments(@Param('id') id: string, @CurrentUser() user: JwtPayload) {
+    return this.comments.list(id, user);
+  }
+
+  @Post(':id/comments')
+  @Roles(UserRole.ADMIN, UserRole.MANAGER)
+  addComment(
+    @Param('id') id: string,
+    @Body() dto: CreateDailyPlanCommentDto,
+    @CurrentUser() user: JwtPayload,
+  ) {
+    return this.comments.create(id, dto.body, user);
+  }
 
   @Get()
   @Roles(UserRole.ADMIN, UserRole.MANAGER, UserRole.TEACHER)

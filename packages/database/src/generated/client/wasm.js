@@ -449,6 +449,22 @@ exports.Prisma.DailyPlanScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.DailyPlanCommentScalarFieldEnum = {
+  id: 'id',
+  dailyPlanId: 'dailyPlanId',
+  authorUserId: 'authorUserId',
+  body: 'body',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.ParentQuarterlyReportScalarFieldEnum = {
+  id: 'id',
+  studentId: 'studentId',
+  quarterKey: 'quarterKey',
+  parentEmail: 'parentEmail',
+  sentAt: 'sentAt'
+};
+
 exports.Prisma.DailyPlanTopicScalarFieldEnum = {
   id: 'id',
   dailyPlanId: 'dailyPlanId',
@@ -737,6 +753,8 @@ exports.Prisma.ModelName = {
   Notification: 'Notification',
   SystemSettings: 'SystemSettings',
   DailyPlan: 'DailyPlan',
+  DailyPlanComment: 'DailyPlanComment',
+  ParentQuarterlyReport: 'ParentQuarterlyReport',
   DailyPlanTopic: 'DailyPlanTopic',
   DailyPlanResource: 'DailyPlanResource',
   RecordingItem: 'RecordingItem',

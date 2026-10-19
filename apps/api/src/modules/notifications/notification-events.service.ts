@@ -209,6 +209,68 @@ export class NotificationEventsService {
     });
   }
 
+  async notifyLessonPlanComment(params: {
+    commentId: string;
+    planId: string;
+    teacherUserId: string;
+    authorUserId: string;
+    authorName: string;
+    excerpt: string;
+    groupName: string | null;
+  }): Promise<void> {
+    if (params.teacherUserId === params.authorUserId) {
+      return;
+    }
+    const excerpt = params.excerpt.length > 180 ? `${params.excerpt.slice(0, 177)}...` : params.excerpt;
+    const place = params.groupName ? ` (${params.groupName})` : '';
+    await this.write.createForUsers({
+      userIds: [params.teacherUserId],
+      type: 'LESSON_PLAN_COMMENT',
+      title: 'Comment on your daily plan',
+      content: `${params.authorName} մեկնաբանություն է թողել օրական պլանի վրա${place}։ «${excerpt}»`,
+      data: {
+        href: `/teacher/daily-plan?planId=${params.planId}`,
+      },
+      dedupeKey: params.commentId,
+    });
+  }
+
+  async notifyGroupMembershipDelta(groupId: string, delta: -1 | 1): Promise<void> {
+    const group = await this.prisma.group.findUnique({
+      where: { id: groupId },
+      select: {
+        name: true,
+        centerId: true,
+        maxStudents: true,
+        _count: { select: { students: true } },
+      },
+    });
+    if (!group) {
+      return;
+    }
+    const nextCount = group._count.students;
+    const previousCount = nextCount - delta;
+    const becameFull = previousCount < group.maxStudents && nextCount >= group.maxStudents;
+    const droppedBelow = previousCount >= group.maxStudents && nextCount < group.maxStudents;
+    if (!becameFull && !droppedBelow) {
+      return;
+    }
+    const managers = await this.recipients.findManagerUserIdsForCenter(group.centerId);
+    const admins = await this.recipients.findAdminUserIds();
+    const direction = becameFull ? 'full' : 'decreased';
+    const content = becameFull
+      ? `${group.name} խումբը լցվել է՝ ${nextCount}/${group.maxStudents} սովորող։`
+      : `${group.name} խմբի թիվը նվազել է՝ ${nextCount}/${group.maxStudents} սովորող։`;
+    await this.write.createForUsers({
+      userIds: [...new Set([...managers, ...admins])],
+      type: 'GROUP_SIZE_THRESHOLD',
+      title: becameFull ? 'Group reached capacity' : 'Group size decreased',
+      content,
+      data: { groupId, href: '/admin/groups' },
+      dedupeKey: `${groupId}:${direction}:${getCalendarDateInTimezone(new Date())}`,
+    });
+  }
+
   async runSafe(label: string, task: () => Promise<void>): Promise<void> {
     try {
       await task();
