@@ -1898,6 +1898,8 @@
     "loadError": "Could not load the list",
     "sendFailed": "Could not send the letter",
     "send": "Send",
+    "sentAction": "Sent",
+    "resend": "Send again",
     "sendAll": "Send unsent",
     "allGroups": "All groups",
     "noGroup": "No group",

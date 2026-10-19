@@ -16,7 +16,8 @@ export function useParentReportSending(quarterKey: string | undefined, onSent: (
   const dismissNotice = useCallback(() => setNotice(null), []);
 
   const sendOne = useMutation({
-    mutationFn: (studentId: string) => sendParentReport(studentId, quarterKey ?? ''),
+    mutationFn: (input: { studentId: string; resend?: boolean }) =>
+      sendParentReport(input.studentId, quarterKey ?? '', input.resend === true),
     onSuccess: (result) => {
       refresh();
       onSent();

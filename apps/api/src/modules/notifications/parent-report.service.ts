@@ -73,10 +73,15 @@ export class ParentReportService {
     return this.compose(student, quarterKey);
   }
 
-  async sendOne(studentId: string, quarterKey: string, user?: JwtPayload): Promise<{ sent: boolean }> {
+  async sendOne(
+    studentId: string,
+    quarterKey: string,
+    user?: JwtPayload,
+    resend = false,
+  ): Promise<{ sent: boolean }> {
     const student = await this.requireStudent(studentId, user);
     this.assertSendable(student);
-    return { sent: await this.deliver(student, quarterKey) };
+    return { sent: await this.deliver(student, quarterKey, resend) };
   }
 
   async sendAll(
@@ -110,9 +115,9 @@ export class ParentReportService {
     return result.sent;
   }
 
-  private async deliver(student: ReportStudent, quarterKey: string): Promise<boolean> {
+  private async deliver(student: ReportStudent, quarterKey: string, resend = false): Promise<boolean> {
     const alreadySent = student.parentQuarterlyReports.some((report) => report.quarterKey === quarterKey);
-    if (!student.parentEmail || alreadySent) {
+    if (!student.parentEmail || (alreadySent && !resend)) {
       return false;
     }
     const letter = await this.compose(student, quarterKey);
@@ -125,10 +130,17 @@ export class ParentReportService {
     if (!emailed) {
       return false;
     }
-    return this.recordSend(student, quarterKey);
+    return this.recordSend(student, quarterKey, alreadySent);
   }
 
-  private async recordSend(student: ReportStudent, quarterKey: string): Promise<boolean> {
+  private async recordSend(student: ReportStudent, quarterKey: string, replace: boolean): Promise<boolean> {
+    if (replace) {
+      await this.prisma.parentQuarterlyReport.update({
+        where: { studentId_quarterKey: { studentId: student.id, quarterKey } },
+        data: { sentAt: new Date(), parentEmail: student.parentEmail ?? '' },
+      });
+      return true;
+    }
     try {
       await this.prisma.parentQuarterlyReport.create({
         data: {

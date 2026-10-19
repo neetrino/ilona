@@ -29,7 +29,7 @@ export class ParentReportsController {
   @Post('send')
   @Roles(UserRole.ADMIN, UserRole.MANAGER)
   send(@Body() dto: SendParentReportDto, @CurrentUser() user: JwtPayload) {
-    return this.reports.sendOne(dto.studentId, dto.quarterKey, user);
+    return this.reports.sendOne(dto.studentId, dto.quarterKey, user, dto.resend === true);
   }
 
   @Post('send-all')

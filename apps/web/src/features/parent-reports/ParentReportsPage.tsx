@@ -76,11 +76,12 @@ export function ParentReportsPage() {
           loading={query.isLoading}
           noMatches={!query.isLoading && items.length > 0 && shown.length === 0}
           emptyLabel={viewingCurrent ? undefined : t('pastEmpty')}
-          sendingId={sending.sendOne.isPending ? sending.sendOne.variables : null}
+          sendingId={sending.sendOne.isPending ? sending.sendOne.variables?.studentId : null}
           cardBase={cardBase}
           allowSend={viewingCurrent}
           onPreview={preview.open}
-          onSend={(studentId) => sending.sendOne.mutate(studentId)}
+          onSend={(studentId) => sending.sendOne.mutate({ studentId })}
+          onResend={(studentId) => sending.sendOne.mutate({ studentId, resend: true })}
         />
         {preview.visible ? (
           <LetterPreview
@@ -88,7 +89,7 @@ export function ParentReportsPage() {
             canSend={viewingCurrent && previewItem ? canSendParentReport(previewItem) : false}
             sending={sending.sendOne.isPending}
             onClose={preview.close}
-            onSend={() => preview.studentId && sending.sendOne.mutate(preview.studentId)}
+            onSend={() => preview.studentId && sending.sendOne.mutate({ studentId: preview.studentId })}
           />
         ) : null}
         <ParentReportSendDialog

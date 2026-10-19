@@ -10,13 +10,12 @@ import {
   GraduationCap,
   Mail,
   MailX,
-  Send,
   UserRound,
   Users,
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { Button } from '@/shared/components/ui';
 import type { ParentReportItem } from './api';
+import { ParentReportSendButton } from './ParentReportSendButton';
 import { canSendParentReport, formatQuarterMonths } from './parent-report-range';
 
 type ReportStatus = 'sent' | 'notSent';
@@ -43,6 +42,7 @@ export function ParentReportTable({
   allowSend,
   onPreview,
   onSend,
+  onResend,
 }: {
   items: ParentReportItem[];
   loading: boolean;
@@ -53,6 +53,7 @@ export function ParentReportTable({
   allowSend: boolean;
   onPreview: (studentId: string) => Promise<void>;
   onSend: (studentId: string) => void;
+  onResend: (studentId: string) => void;
 }) {
   const t = useTranslations('parentReportsPage');
   if (loading) {
@@ -89,6 +90,7 @@ export function ParentReportTable({
               allowSend={allowSend}
               onPreview={onPreview}
               onSend={onSend}
+              onResend={onResend}
             />
           ))}
         </tbody>
@@ -105,6 +107,7 @@ function ReportRow({
   allowSend,
   onPreview,
   onSend,
+  onResend,
 }: {
   item: ParentReportItem;
   sentKeys: string[];
@@ -113,6 +116,7 @@ function ReportRow({
   allowSend: boolean;
   onPreview: (studentId: string) => Promise<void>;
   onSend: (studentId: string) => void;
+  onResend: (studentId: string) => void;
 }) {
   const t = useTranslations('parentReportsPage');
   return (
@@ -128,11 +132,16 @@ function ReportRow({
         <SentMonths quarterKeys={sentKeys} />
       </td>
       <td className="px-4 py-3">
-        <RowActions
+        <ParentReportSendButton
+          sent={Boolean(item.sentAt)}
           canSend={allowSend && canSendParentReport(item)}
+          canResend={allowSend && Boolean(item.sentAt) && Boolean(item.parentEmail)}
           sending={sending}
           sendLabel={t('send')}
+          sentLabel={t('sentAction')}
+          resendLabel={t('resend')}
           onSend={() => onSend(item.studentId)}
+          onResend={() => onResend(item.studentId)}
         />
       </td>
     </tr>
@@ -243,34 +252,6 @@ function StatusPill({ status, label }: { status: ReportStatus; label: string }) 
       <Icon className="h-3.5 w-3.5 shrink-0" aria-hidden />
       {label}
     </span>
-  );
-}
-
-function RowActions({
-  canSend,
-  sending,
-  sendLabel,
-  onSend,
-}: {
-  canSend: boolean;
-  sending: boolean;
-  sendLabel: string;
-  onSend: () => void;
-}) {
-  return (
-    <Button
-      type="button"
-      size="sm"
-      className="gap-1.5"
-      disabled={!canSend || sending}
-      onClick={(event) => {
-        event.stopPropagation();
-        onSend();
-      }}
-    >
-      <Send className="h-3.5 w-3.5" aria-hidden />
-      {sendLabel}
-    </Button>
   );
 }
 

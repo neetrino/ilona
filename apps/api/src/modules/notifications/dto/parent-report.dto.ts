@@ -1,4 +1,4 @@
-import { ArrayMaxSize, IsArray, IsOptional, IsString, Matches } from 'class-validator';
+import { ArrayMaxSize, IsArray, IsBoolean, IsOptional, IsString, Matches } from 'class-validator';
 
 const QUARTER = /^\d{4}-Q[1-4]$/;
 
@@ -25,6 +25,10 @@ export class SendParentReportDto {
   @IsString()
   @Matches(QUARTER)
   quarterKey!: string;
+
+  @IsOptional()
+  @IsBoolean()
+  resend?: boolean;
 }
 
 export class SendParentQuarterDto {

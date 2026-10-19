@@ -49,8 +49,13 @@ export async function previewParentReport(
 export async function sendParentReport(
   studentId: string,
   quarterKey: string,
+  resend = false,
 ): Promise<{ sent: boolean }> {
-  return api.post<{ sent: boolean }>(`${BASE}/send`, { studentId, quarterKey });
+  return api.post<{ sent: boolean }>(`${BASE}/send`, {
+    studentId,
+    quarterKey,
+    ...(resend ? { resend: true } : {}),
+  });
 }
 
 export async function sendParentQuarter(
