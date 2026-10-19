@@ -27,7 +27,7 @@ export function NotificationsInboxPage({ variant = 'admin' }: { variant?: InboxL
   const { data, isLoading } = useNotificationsInbox();
   const markRead = useMarkNotificationRead();
   const markAll = useMarkAllNotificationsRead();
-  const items = data?.items ?? [];
+  const items = useMemo(() => data?.items ?? [], [data?.items]);
   const unreadCount = data?.unreadCount ?? 0;
   const [filter, setFilter] = useState<InboxFilter>('all');
   const visible = useMemo(
