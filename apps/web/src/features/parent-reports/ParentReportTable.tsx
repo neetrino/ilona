@@ -81,7 +81,10 @@ function ReportRow({
   const t = useTranslations('parentReportsPage');
   const canSend = canSendParentReport(item);
   return (
-    <tr className="border-t border-slate-100">
+    <tr
+      className="cursor-pointer border-t border-slate-100 transition-colors hover:bg-[#f8f9fb]"
+      onClick={() => void onPreview(item.studentId)}
+    >
       <td className="px-4 py-3">{item.studentName}</td>
       <td className="px-4 py-3">{item.parentName || '—'}</td>
       <td className="px-4 py-3">{item.parentEmail || t('missingEmail')}</td>
@@ -90,10 +93,18 @@ function ReportRow({
       <td className="px-4 py-3">{t('sentQuarters', { count: quarters })}</td>
       <td className="px-4 py-3">
         <div className="flex gap-2">
-          <Button type="button" variant="outline" size="sm" onClick={() => void onPreview(item.studentId)}>
+          <Button type="button" variant="outline" size="sm">
             {t('preview')}
           </Button>
-          <Button type="button" size="sm" disabled={!canSend || sending} onClick={() => onSend(item.studentId)}>
+          <Button
+            type="button"
+            size="sm"
+            disabled={!canSend || sending}
+            onClick={(event) => {
+              event.stopPropagation();
+              onSend(item.studentId);
+            }}
+          >
             {t('send')}
           </Button>
         </div>

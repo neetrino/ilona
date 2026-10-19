@@ -1913,6 +1913,7 @@
     "quarterTiming": "{passed} days passed, {left} days left",
     "sendToday": "The quarter has ended, send today",
     "preview": "Preview",
+    "previewFailed": "Could not open the letter",
     "close": "Close",
     "missingEmail": "No email",
     "reportsOff": "Reports are off",

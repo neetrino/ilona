@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useRef } from 'react';
 import type { LucideIcon } from 'lucide-react';
 import { ArrowLeftRight, Award, BookOpen, Mail, Sparkles, Target } from 'lucide-react';
 import { useTranslations } from 'next-intl';
@@ -16,10 +17,14 @@ const SECTION_ICONS: Array<{ match: string; icon: LucideIcon }> = [
 
 export function LetterPreview({ letter, onClose }: { letter: ParentReportLetter; onClose: () => void }) {
   const t = useTranslations('parentReportsPage');
+  const dismiss = useDismissGuard(onClose);
   return (
-    <Dialog open onOpenChange={(open) => { if (!open) onClose(); }}>
+    <Dialog open onOpenChange={dismiss.onOpenChange}>
       <DialogContent
         sheet={false}
+        onPointerDownOutside={dismiss.block}
+        onInteractOutside={dismiss.block}
+        onFocusOutside={dismiss.block}
         className="flex max-h-[min(36rem,85vh)] w-[calc(100%-1.5rem)] max-w-2xl flex-col gap-0 overflow-hidden rounded-[15px] border border-[rgba(14,14,16,0.08)] bg-white p-0 shadow-[0_16px_40px_rgba(15,23,42,0.14)]"
       >
         <DialogHeader className="shrink-0 border-b border-[rgba(14,14,16,0.08)] px-6 pb-4 pr-14 pt-5">
@@ -40,6 +45,24 @@ export function LetterPreview({ letter, onClose }: { letter: ParentReportLetter;
       </DialogContent>
     </Dialog>
   );
+}
+
+function useDismissGuard(onClose: () => void) {
+  const ready = useRef(false);
+  useEffect(() => {
+    const id = window.setTimeout(() => {
+      ready.current = true;
+    }, 400);
+    return () => window.clearTimeout(id);
+  }, []);
+  return {
+    block: (event: { preventDefault: () => void }) => {
+      if (!ready.current) event.preventDefault();
+    },
+    onOpenChange: (open: boolean) => {
+      if (!open && ready.current) onClose();
+    },
+  };
 }
 
 function LetterBody({ text }: { text: string }) {

@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
@@ -21,13 +21,13 @@ export function ParentReportsPage() {
   const t = useTranslations('parentReportsPage');
   const tNav = useTranslations('nav');
   const filters = useParentReportFilters();
-  const [preview, setPreview] = useState<ParentReportLetter | null>(null);
   const queryClient = useQueryClient();
   const query = useQuery({
     queryKey: ['parent-reports'],
     queryFn: () => fetchParentReports(),
   });
   const activeQuarter = query.data?.quarterKey;
+  const preview = useLetterPreview(activeQuarter);
   const items = query.data?.items ?? [];
   const shown = useMemo(
     () =>
@@ -63,6 +63,7 @@ export function ParentReportsPage() {
         />
         {query.isError ? <p className="text-sm text-red-600">{t('loadError')}</p> : null}
         {sendAll.isError || sendOne.isError ? <p className="text-sm text-red-600">{t('sendFailed')}</p> : null}
+        {preview.failed ? <p className="text-sm text-red-600">{t('previewFailed')}</p> : null}
         <ParentReportTable
           items={shown}
           loading={query.isLoading}
@@ -70,16 +71,34 @@ export function ParentReportsPage() {
           fromQuarter={filters.fromQuarter}
           toQuarter={filters.toQuarter}
           sendingId={sendOne.isPending ? sendOne.variables : null}
-          onPreview={async (studentId) => {
-            if (!activeQuarter) return;
-            setPreview(await previewParentReport(studentId, activeQuarter));
-          }}
+          onPreview={preview.open}
           onSend={(studentId) => sendOne.mutate(studentId)}
         />
-        {preview ? <LetterPreview letter={preview} onClose={() => setPreview(null)} /> : null}
+        {preview.letter ? <LetterPreview letter={preview.letter} onClose={preview.close} /> : null}
       </div>
     </DashboardLayout>
   );
+}
+
+function useLetterPreview(quarterKey: string | undefined) {
+  const [letter, setLetter] = useState<ParentReportLetter | null>(null);
+  const [failed, setFailed] = useState(false);
+  const pending = useRef(false);
+
+  async function open(studentId: string) {
+    if (!quarterKey || pending.current) return;
+    pending.current = true;
+    setFailed(false);
+    try {
+      setLetter(await previewParentReport(studentId, quarterKey));
+    } catch {
+      setFailed(true);
+    } finally {
+      pending.current = false;
+    }
+  }
+
+  return { letter, failed, open, close: () => setLetter(null) };
 }
 
 function ReportToolbar({
