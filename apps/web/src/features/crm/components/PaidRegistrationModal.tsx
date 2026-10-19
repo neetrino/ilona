@@ -118,7 +118,6 @@ export function PaidRegistrationModal({
       parentEmail: '',
       monthlyFee: 0,
       notes: '',
-      receiveReports: true,
     },
   });
 
@@ -183,7 +182,6 @@ export function PaidRegistrationModal({
         parentEmail: '',
         monthlyFee: 0,
         notes: '',
-        receiveReports: true,
       },
       ...fromLead,
     });

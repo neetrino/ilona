@@ -28,7 +28,6 @@ export interface Student {
   parentEmail?: string;
   monthlyFee: number;
   notes?: string;
-  receiveReports: boolean;
   /** Persisted lifecycle status (separate from User.status). */
   status?: StudentLifecycleStatus;
   /** Persisted risk label. */
@@ -175,7 +174,6 @@ export interface CreateStudentDto {
   parentEmail?: string;
   monthlyFee: number;
   notes?: string;
-  receiveReports?: boolean;
 }
 
 export interface UpdateStudentDto {
@@ -196,7 +194,6 @@ export interface UpdateStudentDto {
   parentEmail?: string;
   monthlyFee?: number;
   notes?: string;
-  receiveReports?: boolean;
   /** Date when student joined a group (manual). ISO date string (YYYY-MM-DD) or null to clear. */
   registerDate?: string | null;
 }

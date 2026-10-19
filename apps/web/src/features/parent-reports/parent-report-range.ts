@@ -11,7 +11,6 @@ type FilterableReport = {
   parentName: string | null;
   parentEmail: string | null;
   groupId: string | null;
-  receiveReports: boolean;
   sentAt: string | null;
 };
 
@@ -42,7 +41,7 @@ export function filterParentReports<T extends FilterableReport>(
 }
 
 export function canSendParentReport(item: FilterableReport): boolean {
-  return Boolean(item.parentEmail) && item.receiveReports && !item.sentAt;
+  return Boolean(item.parentEmail) && !item.sentAt;
 }
 
 function matchesReport(item: FilterableReport, input: ParentReportFilterInput, query: string): boolean {
@@ -60,10 +59,6 @@ function matchesReport(item: FilterableReport, input: ParentReportFilterInput, q
 }
 
 function matchesStatus(item: FilterableReport, statusIds: Set<string>): boolean {
-  const tags = [
-    item.sentAt ? 'sent' : 'notSent',
-    item.parentEmail ? '' : 'missingEmail',
-    item.receiveReports ? '' : 'reportsOff',
-  ];
+  const tags = [item.sentAt ? 'sent' : 'notSent', item.parentEmail ? '' : 'missingEmail'];
   return tags.some((tag) => tag && statusIds.has(tag));
 }

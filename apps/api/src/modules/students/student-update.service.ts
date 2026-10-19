@@ -59,7 +59,6 @@ export class StudentUpdateService {
       parentEmail?: string;
       monthlyFee?: number;
       notes?: string;
-      receiveReports?: boolean;
       groupId?: string | null;
       teacherId?: string | null;
       centerId?: string | null;
@@ -73,7 +72,6 @@ export class StudentUpdateService {
       parentEmail: dto.parentEmail,
       monthlyFee: dto.monthlyFee,
       notes: dto.notes,
-      receiveReports: dto.receiveReports,
     };
 
     if (newDob !== undefined) {

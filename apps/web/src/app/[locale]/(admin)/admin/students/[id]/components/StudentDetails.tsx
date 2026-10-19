@@ -193,17 +193,6 @@ export function StudentDetails({
                   error={errors?.parentEmail?.message}
                 />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="receiveReports" className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    id="receiveReports"
-                    {...register('receiveReports')}
-                    className="h-4 w-4 rounded border-[rgba(14,14,16,0.12)] accent-[#1010a3]"
-                  />
-                  {t('receiveReportsLabel')}
-                </Label>
-              </div>
             </>
           ) : (
             <>

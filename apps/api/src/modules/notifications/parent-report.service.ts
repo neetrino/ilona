@@ -24,7 +24,6 @@ type ReportStudent = {
   id: string;
   parentName: string | null;
   parentEmail: string | null;
-  receiveReports: boolean;
   centerId: string | null;
   user: { firstName: string; lastName: string };
   group: { id: string; name: string; centerId: string } | null;
@@ -95,7 +94,7 @@ export class ParentReportService {
 
   private async deliver(student: ReportStudent, quarterKey: string): Promise<boolean> {
     const alreadySent = student.parentQuarterlyReports.some((report) => report.quarterKey === quarterKey);
-    if (!student.receiveReports || !student.parentEmail || alreadySent) {
+    if (!student.parentEmail || alreadySent) {
       return false;
     }
     const letter = await this.compose(student, quarterKey);
@@ -156,9 +155,6 @@ export class ParentReportService {
   }
 
   private assertSendable(student: ReportStudent): void {
-    if (!student.receiveReports) {
-      throw new BadRequestException('Parent reports are turned off for this student');
-    }
     if (!student.parentEmail) {
       throw new BadRequestException('Student card has no parent email');
     }
@@ -177,7 +173,6 @@ export class ParentReportService {
         id: true,
         parentName: true,
         parentEmail: true,
-        receiveReports: true,
         centerId: true,
         user: { select: { firstName: true, lastName: true } },
         group: { select: { id: true, name: true, centerId: true } },
@@ -198,7 +193,6 @@ export class ParentReportService {
       parentEmail: student.parentEmail,
       groupId: student.group?.id ?? null,
       groupName: student.group?.name ?? null,
-      receiveReports: student.receiveReports,
       sentAt: sent?.sentAt.toISOString() ?? null,
       sentQuarters: student.parentQuarterlyReports.map((report) => report.quarterKey),
     };

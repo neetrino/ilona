@@ -63,18 +63,6 @@ export function StudentAccountFormFieldsBillingSection({
         />
         {errors.notes && <p className="text-sm text-red-600">{errors.notes.message}</p>}
       </div>
-
-      <div className="flex items-center space-x-2">
-        <input
-          type="checkbox"
-          id={p('receiveReports')}
-          {...register('receiveReports')}
-          className="w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary"
-        />
-        <Label htmlFor={p('receiveReports')} className="text-sm font-normal cursor-pointer">
-          {t('receiveReportsOn')}
-        </Label>
-      </div>
     </>
   );
 }

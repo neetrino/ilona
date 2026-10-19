@@ -35,6 +35,5 @@ export function leadToCreateStudentFormDefaults(
     parentEmail: (p.parentEmail ?? lead.parentEmail) ?? '',
     monthlyFee: 0,
     notes: notesFromLead,
-    receiveReports: true,
   };
 }

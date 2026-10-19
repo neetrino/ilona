@@ -3,7 +3,6 @@
 import { type ReactNode } from 'react';
 import type { LucideIcon } from 'lucide-react';
 import {
-  BellOff,
   CalendarCheck2,
   CheckCircle2,
   Clock3,
@@ -19,12 +18,10 @@ import { Button } from '@/shared/components/ui';
 import type { ParentReportItem } from './api';
 import { canSendParentReport, formatQuarterMonths } from './parent-report-range';
 
-type ReportStatus = 'reportsOff' | 'missingEmail' | 'sent' | 'notSent';
+type ReportStatus = 'sent' | 'notSent';
 type IconTone = 'brand' | 'muted' | 'warn';
 
 const STATUS_STYLE: Record<ReportStatus, { icon: LucideIcon; className: string }> = {
-  reportsOff: { icon: BellOff, className: 'bg-slate-100 text-slate-600' },
-  missingEmail: { icon: MailX, className: 'bg-amber-50 text-amber-700' },
   sent: { icon: CheckCircle2, className: 'bg-emerald-50 text-emerald-700' },
   notSent: { icon: Clock3, className: 'bg-[#ecefff] text-[#1010a3]' },
 };
@@ -250,18 +247,13 @@ function SentMonths({ quarterKeys }: { quarterKeys: string[] }) {
 }
 
 function reportStatus(item: ParentReportItem): ReportStatus {
-  if (!item.receiveReports) return 'reportsOff';
-  if (!item.parentEmail) return 'missingEmail';
-  if (item.sentAt) return 'sent';
-  return 'notSent';
+  return item.sentAt ? 'sent' : 'notSent';
 }
 
 function statusLabel(
   item: ParentReportItem,
   t: (key: string, values?: { date: string }) => string,
 ): string {
-  if (!item.receiveReports) return t('reportsOff');
-  if (!item.parentEmail) return t('missingEmail');
   if (item.sentAt) return t('sentOn', { date: new Date(item.sentAt).toLocaleDateString() });
   return t('notSent');
 }

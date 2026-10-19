@@ -7,7 +7,6 @@ export type ParentReportItem = {
   parentEmail: string | null;
   groupId: string | null;
   groupName: string | null;
-  receiveReports: boolean;
   sentAt: string | null;
   sentQuarters: string[];
 };

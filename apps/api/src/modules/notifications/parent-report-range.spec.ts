@@ -27,7 +27,6 @@ function report(studentName: string, groupId: string, sentAt: string | null) {
     parentName: null,
     parentEmail: 'parent@example.com',
     groupId,
-    receiveReports: true,
     sentAt,
   };
 }

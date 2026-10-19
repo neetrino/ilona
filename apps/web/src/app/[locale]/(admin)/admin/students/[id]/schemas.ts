@@ -11,7 +11,6 @@ export const updateStudentSchema = z.object({
   parentPhone: z.string().max(50, 'Parent phone must be at most 50 characters').optional().or(z.literal('')),
   parentEmail: z.string().email('Invalid email address').optional().or(z.literal('')),
   monthlyFee: z.number().min(0, 'Monthly fee must be positive'),
-  receiveReports: z.boolean().optional(),
 });
 
 export type UpdateStudentFormData = z.infer<typeof updateStudentSchema>;

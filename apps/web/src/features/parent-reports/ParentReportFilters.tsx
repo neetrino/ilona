@@ -35,7 +35,6 @@ export function ParentReportFilters({
     { id: 'sent', label: t('sentFilter') },
     { id: 'notSent', label: t('notSent') },
     { id: 'missingEmail', label: t('missingEmail') },
-    { id: 'reportsOff', label: t('reportsOff') },
   ];
 
   return (

@@ -2,7 +2,6 @@ import {
   IsString,
   IsEmail,
   IsOptional,
-  IsBoolean,
   IsNumber,
   IsInt,
   IsISO8601,
@@ -93,8 +92,4 @@ export class CreateStudentDto {
   @IsOptional()
   @MaxLength(500)
   notes?: string;
-
-  @IsBoolean()
-  @IsOptional()
-  receiveReports?: boolean;
 }

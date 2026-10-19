@@ -183,7 +183,6 @@ export class StudentCreateService {
       parentEmail: dto.parentEmail,
       monthlyFee: dto.monthlyFee,
       notes: dto.notes,
-      receiveReports: dto.receiveReports ?? true,
       dateOfBirth: dobDate ?? undefined,
       firstLessonDate: dto.firstLessonDate ? new Date(dto.firstLessonDate) : undefined,
       leadId: link?.leadId,

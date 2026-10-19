@@ -169,20 +169,15 @@ export function StudentDetailsModalBody(props: StudentDetailsModalBodyProps) {
           activatedLabel={t('activatedNoteLabel')}
         />
       ) : null}
-      {visibility.openFullProfile || visibility.receiveReports ? (
+      {visibility.openFullProfile ? (
         <div className="flex flex-wrap items-center justify-end gap-3 pt-6">
-          {visibility.receiveReports && student.receiveReports ? (
-            <span className="text-xs text-[#8b8b90]">{t('receiveReportsOn')}</span>
-          ) : null}
-          {visibility.openFullProfile ? (
-            <Link
-              href={`/${locale}${basePath}/students/${student.id}`}
-              className={portalPrimaryButtonClass}
-              onClick={() => onClose()}
-            >
-              {t('openFullProfile')}
-            </Link>
-          ) : null}
+          <Link
+            href={`/${locale}${basePath}/students/${student.id}`}
+            className={portalPrimaryButtonClass}
+            onClick={() => onClose()}
+          >
+            {t('openFullProfile')}
+          </Link>
         </div>
       ) : null}
     </div>
