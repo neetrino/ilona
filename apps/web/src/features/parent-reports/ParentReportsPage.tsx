@@ -156,8 +156,8 @@ function QuarterTiming({
   const percent = Math.min(100, Math.round((daysPassed / total) * 100));
   const ready = daysLeft === 0;
   return (
-    <div className="min-w-[16rem] flex-1 rounded-[15px] border border-[rgba(14,14,16,0.08)] bg-white px-4 py-3">
-      <ul className="mb-2 flex flex-wrap gap-2">
+    <div className="min-w-[22rem] flex-1 rounded-[15px] border border-[rgba(14,14,16,0.08)] bg-white px-4 py-3">
+      <ul className="mb-2 flex flex-nowrap gap-2">
         {quarterMonthNumbers(quarterKey).map((month) => (
           <li key={month} className="rounded-full bg-[#ecefff] px-3 py-1 text-sm font-medium text-[#1010a3]">
             {tCommon(`months.${month}`)}
