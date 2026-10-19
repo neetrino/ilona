@@ -7,7 +7,6 @@ import {
   CalendarCheck2,
   CheckCircle2,
   Clock3,
-  Eye,
   GraduationCap,
   Mail,
   MailX,
@@ -122,7 +121,6 @@ function ReportRow({
         <RowActions
           canSend={canSendParentReport(item)}
           sending={sending}
-          previewLabel={t('preview')}
           sendLabel={t('send')}
           onSend={() => onSend(item.studentId)}
         />
@@ -205,36 +203,28 @@ function StatusPill({ status, label }: { status: ReportStatus; label: string }) 
 function RowActions({
   canSend,
   sending,
-  previewLabel,
   sendLabel,
   onSend,
 }: {
   canSend: boolean;
   sending: boolean;
-  previewLabel: string;
   sendLabel: string;
   onSend: () => void;
 }) {
   return (
-    <div className="flex gap-2">
-      <Button type="button" variant="outline" size="sm" className="gap-1.5">
-        <Eye className="h-3.5 w-3.5" aria-hidden />
-        {previewLabel}
-      </Button>
-      <Button
-        type="button"
-        size="sm"
-        className="gap-1.5"
-        disabled={!canSend || sending}
-        onClick={(event) => {
-          event.stopPropagation();
-          onSend();
-        }}
-      >
-        <Send className="h-3.5 w-3.5" aria-hidden />
-        {sendLabel}
-      </Button>
-    </div>
+    <Button
+      type="button"
+      size="sm"
+      className="gap-1.5"
+      disabled={!canSend || sending}
+      onClick={(event) => {
+        event.stopPropagation();
+        onSend();
+      }}
+    >
+      <Send className="h-3.5 w-3.5" aria-hidden />
+      {sendLabel}
+    </Button>
   );
 }
 
