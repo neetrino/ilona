@@ -17,7 +17,6 @@ import {
   quarterBounds,
   quarterKeyFromDate,
   previousQuarterKey,
-  recentQuarterKeys,
 } from './parent-quarter.util';
 
 type ReportStudent = {
@@ -44,7 +43,6 @@ export class ParentReportService {
     const students = await this.findStudents(key, centerId);
     return {
       quarterKey: key,
-      quarters: recentQuarterKeys(new Date()),
       items: students.map((student) => this.toListItem(student)),
     };
   }

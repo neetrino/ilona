@@ -1,12 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { Button } from '@/shared/components/ui/button';
-import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
-import { ADMIN_CONTROL_CLASS } from '@/shared/lib/admin-control-theme';
 import {
   fetchParentReports,
   previewParentReport,
@@ -19,15 +17,13 @@ import {
 export function ParentReportsPage() {
   const t = useTranslations('parentReportsPage');
   const tNav = useTranslations('nav');
-  const [quarterKey, setQuarterKey] = useState<string | undefined>(undefined);
   const [preview, setPreview] = useState<ParentReportLetter | null>(null);
   const queryClient = useQueryClient();
   const query = useQuery({
-    queryKey: ['parent-reports', quarterKey ?? 'current'],
-    queryFn: () => fetchParentReports(quarterKey),
-    placeholderData: keepPreviousData,
+    queryKey: ['parent-reports'],
+    queryFn: () => fetchParentReports(),
   });
-  const activeQuarter = quarterKey ?? query.data?.quarterKey;
+  const activeQuarter = query.data?.quarterKey;
   const sendOne = useMutation({
     mutationFn: (studentId: string) => sendParentReport(studentId, activeQuarter ?? ''),
     onSuccess: () => void queryClient.invalidateQueries({ queryKey: ['parent-reports'] }),
@@ -40,14 +36,7 @@ export function ParentReportsPage() {
   return (
     <DashboardLayout title={tNav('parentReports')} subtitle={t('subtitle')}>
       <div className="space-y-4">
-        <div className="flex flex-wrap items-end gap-3">
-          <QuarterSelect
-            label={t('quarter')}
-            quarters={query.data?.quarters ?? []}
-            value={activeQuarter ?? null}
-            disabled={!activeQuarter}
-            onChange={setQuarterKey}
-          />
+        <div className="flex flex-wrap items-center gap-3">
           <Button
             type="button"
             className="h-11 min-h-11 rounded-[15px]"
@@ -72,35 +61,6 @@ export function ParentReportsPage() {
         {preview ? <LetterPreview letter={preview} onClose={() => setPreview(null)} /> : null}
       </div>
     </DashboardLayout>
-  );
-}
-
-function QuarterSelect({
-  label,
-  quarters,
-  value,
-  disabled,
-  onChange,
-}: {
-  label: string;
-  quarters: string[];
-  value: string | null;
-  disabled: boolean;
-  onChange: (quarter: string) => void;
-}) {
-  return (
-    <SingleSelectDropdown
-      id="parent-report-quarter"
-      label={label}
-      options={quarters.map((quarter) => ({ id: quarter, label: quarter }))}
-      value={value}
-      onValueChange={(next) => {
-        if (next) onChange(next);
-      }}
-      disabled={disabled}
-      className="w-full min-w-[11rem] sm:w-44"
-      triggerClassName={ADMIN_CONTROL_CLASS}
-    />
   );
 }
 

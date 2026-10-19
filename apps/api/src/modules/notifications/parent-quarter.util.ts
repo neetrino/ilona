@@ -18,14 +18,6 @@ export function previousQuarterKey(quarterKey: string): string {
   return `${year}-Q${quarter - 1}`;
 }
 
-export function recentQuarterKeys(anchor: Date, count = 4): string[] {
-  const keys = [quarterKeyFromDate(anchor)];
-  for (let index = 1; index < count; index += 1) {
-    keys.push(previousQuarterKey(keys[index - 1]));
-  }
-  return keys;
-}
-
 export function quarterBounds(quarterKey: string): QuarterBounds {
   const { year, quarter } = parseQuarterKey(quarterKey);
   const startMonth = (quarter - 1) * 3 + 1;
