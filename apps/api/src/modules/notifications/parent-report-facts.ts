@@ -11,6 +11,39 @@ const SKILL_LABELS: Record<string, string> = {
   CHALLENGE: 'Մարտահրավեր',
 };
 
+type PlanRecord = {
+  topics: Array<{ title: string; resources: Array<{ kind: string }> }>;
+};
+
+type FeedbackRecord = {
+  strengths: string | null;
+  improvements: string | null;
+  skillsNote: string | null;
+  progress: string | null;
+  encouragement: string | null;
+  grammarTopics: string[];
+  skills: string[];
+};
+
+export function factsFromRecords(plans: PlanRecord[], feedbacks: FeedbackRecord[]): ParentReportFacts {
+  const topics = unique([
+    ...plans.flatMap((plan) => plan.topics.map((topic) => topic.title)),
+    ...feedbacks.flatMap((item) => item.grammarTopics),
+  ]);
+  const skills = unique([
+    ...plans.flatMap((plan) =>
+      plan.topics.flatMap((topic) => topic.resources.map((resource) => skillLabel(resource.kind))),
+    ),
+    ...feedbacks.flatMap((item) => item.skills.map(skillLabel)),
+  ]);
+  return {
+    topics,
+    skills,
+    challenges: unique(feedbacks.flatMap((item) => [item.improvements, item.skillsNote])),
+    achievements: unique(feedbacks.flatMap((item) => [item.strengths, item.progress, item.encouragement])),
+  };
+}
+
 export async function loadQuarterFacts(
   prisma: PrismaService,
   studentId: string,
@@ -34,22 +67,18 @@ export async function loadQuarterFacts(
         skillsNote: true,
         progress: true,
         encouragement: true,
+        grammarTopics: true,
+        skills: true,
       },
     }),
   ]);
 
-  const topics = unique(plans.flatMap((plan) => plan.topics.map((topic) => topic.title)));
-  const skills = unique(
-    plans.flatMap((plan) =>
-      plan.topics.flatMap((topic) => topic.resources.map((resource) => SKILL_LABELS[resource.kind] ?? resource.kind)),
-    ),
-  );
-  return {
-    topics,
-    skills,
-    challenges: unique(feedbacks.flatMap((item) => [item.improvements, item.skillsNote])),
-    achievements: unique(feedbacks.flatMap((item) => [item.strengths, item.progress, item.encouragement])),
-  };
+  return factsFromRecords(plans, feedbacks);
+}
+
+function skillLabel(kind: string): string {
+  const key = kind.trim().toUpperCase();
+  return SKILL_LABELS[key] ?? kind.trim();
 }
 
 function unique(values: Array<string | null | undefined>): string[] {
