@@ -1,10 +1,12 @@
 'use client';
 
 import { useState } from 'react';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { DashboardLayout } from '@/shared/components/layout/DashboardLayout';
 import { Button } from '@/shared/components/ui/button';
+import { SingleSelectDropdown } from '@/shared/components/ui/single-select-dropdown';
+import { ADMIN_CONTROL_CLASS } from '@/shared/lib/admin-control-theme';
 import {
   fetchParentReports,
   previewParentReport,
@@ -23,6 +25,7 @@ export function ParentReportsPage() {
   const query = useQuery({
     queryKey: ['parent-reports', quarterKey ?? 'current'],
     queryFn: () => fetchParentReports(quarterKey),
+    placeholderData: keepPreviousData,
   });
   const activeQuarter = quarterKey ?? query.data?.quarterKey;
   const sendOne = useMutation({
@@ -37,24 +40,17 @@ export function ParentReportsPage() {
   return (
     <DashboardLayout title={tNav('parentReports')} subtitle={t('subtitle')}>
       <div className="space-y-4">
-        <div className="flex flex-wrap items-center gap-3">
-          <label className="text-sm text-slate-600" htmlFor="parent-report-quarter">
-            {t('quarter')}
-          </label>
-          <select
-            id="parent-report-quarter"
-            className="rounded-xl border border-slate-200 px-3 py-2 text-sm"
-            value={activeQuarter ?? ''}
-            onChange={(event) => setQuarterKey(event.target.value)}
-          >
-            {(query.data?.quarters ?? []).map((quarter) => (
-              <option key={quarter} value={quarter}>
-                {quarter}
-              </option>
-            ))}
-          </select>
+        <div className="flex flex-wrap items-end gap-3">
+          <QuarterSelect
+            label={t('quarter')}
+            quarters={query.data?.quarters ?? []}
+            value={activeQuarter ?? null}
+            disabled={!activeQuarter}
+            onChange={setQuarterKey}
+          />
           <Button
             type="button"
+            className="h-11 min-h-11 rounded-[15px]"
             disabled={!activeQuarter || sendAll.isPending}
             onClick={() => sendAll.mutate()}
           >
@@ -76,6 +72,35 @@ export function ParentReportsPage() {
         {preview ? <LetterPreview letter={preview} onClose={() => setPreview(null)} /> : null}
       </div>
     </DashboardLayout>
+  );
+}
+
+function QuarterSelect({
+  label,
+  quarters,
+  value,
+  disabled,
+  onChange,
+}: {
+  label: string;
+  quarters: string[];
+  value: string | null;
+  disabled: boolean;
+  onChange: (quarter: string) => void;
+}) {
+  return (
+    <SingleSelectDropdown
+      id="parent-report-quarter"
+      label={label}
+      options={quarters.map((quarter) => ({ id: quarter, label: quarter }))}
+      value={value}
+      onValueChange={(next) => {
+        if (next) onChange(next);
+      }}
+      disabled={disabled}
+      className="w-full min-w-[11rem] sm:w-44"
+      triggerClassName={ADMIN_CONTROL_CLASS}
+    />
   );
 }
 
